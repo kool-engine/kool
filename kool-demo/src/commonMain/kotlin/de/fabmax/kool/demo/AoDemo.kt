@@ -302,7 +302,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
-            +toggleButton("Show Map") {
+            +toggleButton("Show AO Map") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = aoMap.isVisible
@@ -327,7 +327,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     radiusVal.text = value.toString(2)
-                    aoHelper.aoPass.radius = value
+                    aoHelper.radius = value
                 }
             }
             y -= 35f
@@ -347,7 +347,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     intensityVal.text = value.toString(2)
-                    aoHelper.aoPass.intensity = value
+                    aoHelper.intensity = value
                 }
             }
             y -= 35f
@@ -367,11 +367,11 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     biasVal.text = value.toString(2)
-                    aoHelper.aoPass.bias = value
+                    aoHelper.bias = value
                 }
             }
             y -= 35f
-            +label("Kernel Size:") {
+            +label("AO Samples:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
@@ -387,7 +387,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     aoHelper.aoPass.kernelSz = value.roundToInt()
-                    kernelSzVal.text = aoHelper.aoPass.kernelSz.toString()
+                    kernelSzVal.text = aoHelper.kernelSz.toString()
                 }
             }
 

@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 
 class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
-    private var fbos: List<Int> = mutableListOf()
+    private val fbos = mutableListOf<Int>()
 
     private var isCreated = false
 
@@ -22,8 +22,6 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
 
         val mipLevel = parentPass.offscreenPass.targetMipLevel
-        val width = parentPass.offscreenPass.mipWidth(mipLevel)
-        val height = parentPass.offscreenPass.mipHeight(mipLevel)
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])

@@ -130,7 +130,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var NotImplementedError_init = Kotlin.kotlin.NotImplementedError;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var MutableMap$MutableEntry = Kotlin.kotlin.collections.MutableMap.MutableEntry;
-  var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var IllegalStateException_init_0 = Kotlin.kotlin.IllegalStateException_init;
   var async = $module$kotlinx_coroutines_core.kotlinx.coroutines.async_pda6u4$;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
@@ -22955,7 +22954,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthPass.isUpdateDrawNode = false;
     this.depthPass.onBeforeCollectDrawCommands.add_11rb$(AmbientOcclusionHelper_init$lambda(proxyCamera, scene));
     this.aoPass = new AmbientOcclusionPass(proxyCamera, this.depthPass);
-    this.denoisePass = new AoDenoisePass(this.aoPass);
+    this.denoisePass = new AoDenoisePass(this.aoPass, this.depthPass);
     scene.addOffscreenPass_m1c2kf$(this.depthPass);
     scene.addOffscreenPass_m1c2kf$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.denoisePass);
@@ -22963,6 +22962,39 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(AmbientOcclusionHelper.prototype, 'aoMap', {
     get: function () {
       return this.denoisePass.colorTexture;
+    }
+  });
+  Object.defineProperty(AmbientOcclusionHelper.prototype, 'radius', {
+    get: function () {
+      return this.aoPass.radius;
+    },
+    set: function (value) {
+      this.aoPass.radius = value;
+      this.denoisePass.radius = value;
+    }
+  });
+  Object.defineProperty(AmbientOcclusionHelper.prototype, 'intensity', {
+    get: function () {
+      return this.aoPass.intensity;
+    },
+    set: function (value) {
+      this.aoPass.intensity = value;
+    }
+  });
+  Object.defineProperty(AmbientOcclusionHelper.prototype, 'bias', {
+    get: function () {
+      return this.aoPass.bias;
+    },
+    set: function (value) {
+      this.aoPass.bias = value;
+    }
+  });
+  Object.defineProperty(AmbientOcclusionHelper.prototype, 'kernelSz', {
+    get: function () {
+      return this.aoPass.kernelSz;
+    },
+    set: function (value) {
+      this.aoPass.kernelSz = value;
     }
   });
   AmbientOcclusionHelper.prototype.setEnabled_6taknv$ = function (enabled) {
@@ -23037,7 +23069,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     OffscreenRenderPass2D.call(this, new Group(), depthPass.texWidth, depthPass.texHeight, void 0, TexFormat$R_getInstance());
     this.radius = 1.0;
     this.intensity = 1.5;
-    this.bias = 0.0;
+    this.bias = 0.05;
     this.kernelSz_vjv56x$_0 = 32;
     this.aoNode_0 = null;
     var tmp$;
@@ -23068,7 +23100,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_4.onCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(depthPass, model, this));
     mesh.pipelineLoader = $receiver_4;
     $receiver.unaryPlus_uv0sim$(mesh);
-    this.rand_0 = new Random(17);
   }
   Object.defineProperty(AmbientOcclusionPass.prototype, 'kernelSz', {
     get: function () {
@@ -23081,11 +23112,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   AmbientOcclusionPass.prototype.generateKernel_0 = function (nKernels) {
     var tmp$;
+    var n = Math_0.min(nKernels, 128);
     if ((tmp$ = this.aoNode_0) != null) {
       var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
       var i = 0;
       var seqI = 0;
-      while (i < nKernels) {
+      while (i < n) {
         var k = new MutableVec3f(this.halton_0((tmp$_0 = seqI, seqI = tmp$_0 + 1 | 0, tmp$_0), 2) * 2 - 1, this.halton_0((tmp$_1 = seqI, seqI = tmp$_1 + 1 | 0, tmp$_1), 2) * 2 - 1, this.halton_0((tmp$_2 = seqI, seqI = tmp$_2 + 1 | 0, tmp$_2), 2) * -1);
         if (k.length() < 1.0) {
           var iNorm = i / nKernels;
@@ -23297,7 +23329,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }return AmbientOcclusionPass$Companion_instance;
   }
   function AmbientOcclusionPass_init$lambda$lambda$lambda($receiver) {
-    $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(1.0, 1.0);
+    $receiver_0.mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
@@ -23447,8 +23481,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
-  function AoDenoisePass(aoPass) {
+  function AoDenoisePass(aoPass, depthPass) {
     OffscreenRenderPass2D.call(this, new Group(), aoPass.texWidth, aoPass.texHeight, void 0, TexFormat$R_getInstance());
+    this.uRadius_0 = Uniform1f_init(1.0, 'uRadius');
     var tmp$;
     var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var $receiver_0 = new OrthographicCamera();
@@ -23468,33 +23503,47 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outPosition;
     var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
     var noisyAo = $receiver_3.textureNode_61zpoe$('noisyAo');
-    var blurNd = $receiver_3.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, $receiver_3.stage));
+    var depth = $receiver_3.textureNode_61zpoe$('depth');
+    var radius = $receiver_3.pushConstantNode1f_978i2u$(this.uRadius_0);
+    var blurNd = $receiver_3.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, depth, $receiver_3.stage));
     blurNd.inScreenPos = ifTexCoords.v.output;
+    blurNd.radius = radius.output;
     $receiver_3.colorOutput = blurNd.outColor;
     var model = $receiver_1;
     var $receiver_4 = new ModeledShader(model);
-    $receiver_4.onCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model));
+    $receiver_4.onCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model, depthPass));
     mesh.pipelineLoader = $receiver_4;
     $receiver.unaryPlus_uv0sim$(mesh);
   }
+  Object.defineProperty(AoDenoisePass.prototype, 'radius', {
+    get: function () {
+      return this.uRadius_0.value;
+    },
+    set: function (value) {
+      this.uRadius_0.value = value;
+    }
+  });
   AoDenoisePass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPass2D.prototype.dispose_aemszp$.call(this, ctx);
   };
-  function AoDenoisePass$BlurNode($outer, noisyAo, shaderGraph) {
+  function AoDenoisePass$BlurNode($outer, noisyAo, depth, shaderGraph) {
     this.$outer = $outer;
     ShaderNode.call(this, 'blurNode', shaderGraph);
     this.noisyAo = noisyAo;
+    this.depth = depth;
     this.inScreenPos = new ShaderNodeIoVar(new ModelVar2fConst(Vec2f$Companion_getInstance().ZERO));
+    this.radius = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('colorOut'), this);
   }
   AoDenoisePass$BlurNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     this.dependsOn_lhtstx$(this.noisyAo);
-    this.dependsOn_7qvs0d$(this.inScreenPos);
+    this.dependsOn_lhtstx$(this.depth);
+    this.dependsOn_8ak6wm$([this.inScreenPos, this.radius]);
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
   };
   AoDenoisePass$BlurNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                int blurSize = 4;' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyAo.name + ', 0));' + '\n' + '                float result = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 offset = (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        result += ' + generator.sampleTexture2d_buzeal$(this.noisyAo.name, this.inScreenPos.ref2f() + ' + offset') + '.r;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                result /= float(blurSize * blurSize);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(result, result, result, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                int blurSize = 4;' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyAo.name + ', 0));' + '\n' + '                float depthOri = ' + generator.sampleTexture2d_buzeal$(this.depth.name, this.inScreenPos.ref2f()) + '.a;' + '\n' + '                float depthThreshold = ' + this.radius.ref1f() + ' * 0.1;' + '\n' + '                ' + '\n' + '                float result = 0.0;' + '\n' + '                float weight = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 uv = ' + this.inScreenPos.ref2f() + ' + (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        float w = 1.0 - step(depthThreshold, abs(' + generator.sampleTexture2d_buzeal$(this.depth.name, 'uv') + '.a - depthOri));' + '\n' + '                        ' + '\n' + '                        result += ' + generator.sampleTexture2d_buzeal$(this.noisyAo.name, 'uv') + '.r * w;' + '\n' + '                        weight += w;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                result /= weight;' + '\n' + '                ' + this.outColor.declare() + ' = vec4(result, result, result, 1.0);' + '\n' + '            ');
   };
   AoDenoisePass$BlurNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -23502,13 +23551,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [ShaderNode]
   };
   function AoDenoisePass_init$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.size.set_dleff0$(1.0, 1.0);
-    $receiver_0.mirrorTexCoordsY();
+    $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function AoDenoisePass_init$lambda$lambda$lambda$lambda(closure$aoPass, closure$model) {
+  function AoDenoisePass_init$lambda$lambda$lambda$lambda(closure$aoPass, closure$model, closure$depthPass) {
     return function (it) {
       var $this = closure$model;
       var stage;
@@ -23544,6 +23591,40 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
        while (false);
       ensureNotNull(findNode_3klnlw$result).sampler.texture = closure$aoPass.colorTexture;
+      var $this_0 = closure$model;
+      var stage_0;
+      var findNode_3klnlw$result_0;
+      findNode_3klnlw$break: do {
+        stage_0 = ShaderStage.ALL;
+        var tmp$_2;
+        tmp$_2 = $this_0.stages.values.iterator();
+        while (tmp$_2.hasNext()) {
+          var element_1 = tmp$_2.next();
+          if ((element_1.stage.mask & stage_0.mask) !== 0) {
+            var tmp$_3;
+            var $receiver_0 = element_1.nodes;
+            var firstOrNull$result_0;
+            firstOrNull$break: do {
+              var tmp$_4;
+              tmp$_4 = $receiver_0.iterator();
+              while (tmp$_4.hasNext()) {
+                var element_2 = tmp$_4.next();
+                if (equals(element_2.name, 'depth') && Kotlin.isType(element_2, TextureNode)) {
+                  firstOrNull$result_0 = element_2;
+                  break firstOrNull$break;
+                }}
+              firstOrNull$result_0 = null;
+            }
+             while (false);
+            var node_0 = (tmp$_3 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_3, TextureNode) ? tmp$_3 : throwCCE();
+            if (node_0 != null) {
+              findNode_3klnlw$result_0 = node_0;
+              break findNode_3klnlw$break;
+            }}}
+        findNode_3klnlw$result_0 = null;
+      }
+       while (false);
+      ensureNotNull(findNode_3klnlw$result_0).sampler.texture = closure$depthPass.colorTexture;
       return Unit;
     };
   }
@@ -33806,7 +33887,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
       gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.texture.offscreenTex, i);
       gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTexture.offscreenDepthTex, i);
-      this.fbos_0 = plus(this.fbos_0, fbo);
+      this.fbos_0.add_11rb$(fbo);
     }
     this.isSetup_0 = true;
   };
@@ -33832,8 +33913,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (!this.isSetup_0) {
       this.setup_0(ctx);
     }var mipLevel = this.offscreenPass.targetMipLevel;
-    var width = this.offscreenPass.mipWidth_za3lpa$(mipLevel);
-    var height = this.offscreenPass.mipHeight_za3lpa$(mipLevel);
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
     ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
@@ -33919,8 +33998,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
       gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
       gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo);
-      this.fbos_0 = plus(this.fbos_0, fbo);
-      this.rbos_0 = plus(this.rbos_0, rbo);
+      this.fbos_0.add_11rb$(fbo);
+      this.rbos_0.add_11rb$(rbo);
     }
     this.isSetup_0 = true;
   };
@@ -33949,7 +34028,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var mipLevel = this.offscreenPass.targetMipLevel;
     var width = this.offscreenPass.mipWidth_za3lpa$(mipLevel);
     var height = this.offscreenPass.mipHeight_za3lpa$(mipLevel);
-    var clearColor = this.offscreenPass.clearColor;
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     this.offscreenPass.viewport = new KoolContext$Viewport(0, 0, width, height);
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
@@ -35399,7 +35477,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function CompiledShader(prog, pipeline, ctx) {
     this.prog = prog;
     this.ctx = ctx;
-    this.pipelineName = pipeline.name;
     this.pipelineId_0 = pipeline.pipelineHash.data;
     this.attributes_0 = LinkedHashMap_init();
     this.instanceAttributes_0 = LinkedHashMap_init();

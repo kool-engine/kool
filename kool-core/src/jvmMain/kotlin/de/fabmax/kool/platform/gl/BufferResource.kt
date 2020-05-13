@@ -4,7 +4,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.*
 import org.lwjgl.opengl.GL15.*
 
-class BufferResource(val target: Int, ctx: Lwjgl3Context) {
+class BufferResource(val target: Int) {
 
     val bufferId = nextBufferId++
     val buffer = glGenBuffers()

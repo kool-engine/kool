@@ -2,7 +2,6 @@ package de.fabmax.kool.util.aoMapGen
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
@@ -21,8 +20,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
 
     var radius = 1f
     var intensity = 1.5f
-    var bias = 0f
-
+    var bias = 0.05f
     var kernelSz = 32
         set(value) {
             field = value
@@ -46,6 +44,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                 generate {
                     rect {
                         size.set(1f, 1f)
+                        mirrorTexCoordsY()
                     }
                 }
 
@@ -67,15 +66,13 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                     onCreated += {
                         model.findNode<TextureNode>("linearDepthMap")!!.sampler.texture = depthPass.colorTexture
                         model.findNode<TextureNode>("noiseTex")!!.sampler.texture = makeNoiseTexture()
-                        aoNode = model.findNode<AoNode>("aoNode")!!
+                        aoNode = model.findNode("aoNode")!!
                         generateKernel(kernelSz)
                     }
                 }
             }
         }
     }
-
-    private val rand = Random(17)
 
     private fun generateKernel(nKernels: Int) {
         val n = min(nKernels, MAX_KERNEL_SIZE)

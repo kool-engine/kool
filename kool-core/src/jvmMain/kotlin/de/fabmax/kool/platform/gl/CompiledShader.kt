@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL33.glVertexAttribDivisor
 
 class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
-    val pipelineName = pipeline.name
     private val pipelineId = pipeline.pipelineHash.toLong()
 
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
@@ -235,11 +234,11 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
         private fun checkBuffers() {
             val md = mesh.geometry
             if (indexBuffer == null) {
-                indexBuffer = BufferResource(GL_ELEMENT_ARRAY_BUFFER, ctx)
+                indexBuffer = BufferResource(GL_ELEMENT_ARRAY_BUFFER)
             }
             var hasIntData = false
             if (dataBufferF == null) {
-                dataBufferF = BufferResource(GL_ARRAY_BUFFER, ctx)
+                dataBufferF = BufferResource(GL_ARRAY_BUFFER)
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
                         hasIntData = true
@@ -251,7 +250,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 }
             }
             if (hasIntData && dataBufferI == null) {
-                dataBufferI = BufferResource(GL_ARRAY_BUFFER, ctx)
+                dataBufferI = BufferResource(GL_ARRAY_BUFFER)
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
                         attributes[vertexAttrib.name]?.let { attr ->
@@ -267,7 +266,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             if (instanceList != null) {
                 var instBuf = instanceBuffer
                 if (instBuf == null) {
-                    instBuf = BufferResource(GL_ARRAY_BUFFER, ctx)
+                    instBuf = BufferResource(GL_ARRAY_BUFFER)
                     instanceBuffer = instBuf
                     for (instanceAttrib in instanceList.instanceAttributes) {
                         val stride = instanceList.strideBytesF

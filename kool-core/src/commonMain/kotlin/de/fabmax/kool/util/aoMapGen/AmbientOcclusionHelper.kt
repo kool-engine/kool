@@ -15,6 +15,25 @@ class AmbientOcclusionHelper(scene: Scene) {
     val aoMap: Texture
         get() = denoisePass.colorTexture
 
+    var radius: Float
+        get() = aoPass.radius
+        set(value) {
+            aoPass.radius = value
+            denoisePass.radius = value
+        }
+
+    var intensity: Float
+        get() = aoPass.intensity
+        set(value) { aoPass.intensity = value }
+
+    var bias: Float
+        get() = aoPass.bias
+        set(value) { aoPass.bias = value }
+
+    var kernelSz: Int
+        get() = aoPass.kernelSz
+        set(value) { aoPass.kernelSz = value }
+
     init {
         val proxyCamera = ProxyCamera(scene.camera as PerspectiveCamera)
         depthPass = NormalLinearDepthMapPass(scene, 1600, 900)
@@ -25,7 +44,7 @@ class AmbientOcclusionHelper(scene: Scene) {
         }
 
         aoPass = AmbientOcclusionPass(proxyCamera, depthPass)
-        denoisePass = AoDenoisePass(aoPass)
+        denoisePass = AoDenoisePass(aoPass, depthPass)
 
         scene.addOffscreenPass(depthPass)
         scene.addOffscreenPass(aoPass)

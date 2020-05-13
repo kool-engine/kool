@@ -20,7 +20,6 @@ class OffscreenPass2dVk(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
-        ctx as Lwjgl3Context
         ctx.runDelayed(3) {
             renderPass?.destroyNow()
             parentPass.texture.dispose()

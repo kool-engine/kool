@@ -22,7 +22,6 @@ import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
 
-    val pipelineName = pipeline.name
     private val pipelineId = pipeline.pipelineHash.toLong()
 
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()

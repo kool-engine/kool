@@ -7,7 +7,6 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
 import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.util.vma.Vma
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import kotlin.math.pow
@@ -31,7 +30,6 @@ class OffscreenPassCubeVk(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
-        ctx as Lwjgl3Context
         ctx.runDelayed(3) {
             renderPass?.destroyNow()
             parentPass.texture.dispose()
@@ -103,19 +101,19 @@ class OffscreenPassCubeVk(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         imgConfig.width = rp.maxWidth
         imgConfig.height = rp.maxHeight
         imgConfig.mipLevels = parentPass.offscreenPass.mipLevels
-        imgConfig.numSamples = VK10.VK_SAMPLE_COUNT_1_BIT
+        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
         imgConfig.format = rp.colorFormat
-        imgConfig.tiling = VK10.VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK10.VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK10.VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK10.VK_IMAGE_USAGE_SAMPLED_BIT
+        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
         imgConfig.arrayLayers = 6
-        imgConfig.flags = VK10.VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 
         image = Image(sys, imgConfig)
-        imageView = ImageView(sys, image.vkImage, image.format, VK10.VK_IMAGE_ASPECT_COLOR_BIT, image.mipLevels, VK10.VK_IMAGE_VIEW_TYPE_CUBE)
+        imageView = ImageView(sys, image.vkImage, image.format, VK_IMAGE_ASPECT_COLOR_BIT, image.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
         sampler = createSampler(sys, image)
 
-        image.transitionLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        image.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 
         val loadedTex = LoadedTextureVk(sys, rp.texFormat, image, imageView, sampler)
         rp.addDependingResource(loadedTex)

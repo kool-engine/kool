@@ -33,8 +33,8 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     actual val texture: Texture = OffscreenTexture()
     actual val depthTexture: Texture = OffscreenDepthTexture()
 
-    private var fbos: List<WebGLFramebuffer?> = mutableListOf()
-    private var rbos: List<WebGLRenderbuffer?> = mutableListOf()
+    private val fbos = mutableListOf<WebGLFramebuffer?>()
+    private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
     private var isSetup = false
 
@@ -82,8 +82,6 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
 
         val mipLevel = offscreenPass.targetMipLevel
-        val width = offscreenPass.mipWidth(mipLevel)
-        val height = offscreenPass.mipHeight(mipLevel)
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
@@ -147,8 +145,8 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
     actual val texture: CubeMapTexture = OffscreenTextureCube()
 
-    private var fbos: List<WebGLFramebuffer?> = mutableListOf()
-    private var rbos: List<WebGLRenderbuffer?> = mutableListOf()
+    private val fbos = mutableListOf<WebGLFramebuffer?>()
+    private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
     private var isSetup = false
 
@@ -190,7 +188,6 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         val mipLevel = offscreenPass.targetMipLevel
         val width = offscreenPass.mipWidth(mipLevel)
         val height = offscreenPass.mipHeight(mipLevel)
-        val clearColor = offscreenPass.clearColor
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         offscreenPass.viewport = KoolContext.Viewport(0, 0, width, height)

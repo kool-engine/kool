@@ -7,5 +7,5 @@ fun main() {
     Demo.setProperty("assetsBaseDir", "./docs/assets")
 
     // launch demo
-    demo("helloWorldDemo")
+    demo("aoDemo")
 }

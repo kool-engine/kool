@@ -731,7 +731,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$radiusVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.aoPass.radius = $receiver.value;
+      this$AmbientOcclusionDemo.aoHelper_0.radius = $receiver.value;
       return Unit;
     };
   }
@@ -763,7 +763,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$intensityVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.aoPass.intensity = $receiver.value;
+      this$AmbientOcclusionDemo.aoHelper_0.intensity = $receiver.value;
       return Unit;
     };
   }
@@ -795,7 +795,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$biasVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.aoPass.bias = $receiver.value;
+      this$AmbientOcclusionDemo.aoHelper_0.bias = $receiver.value;
       return Unit;
     };
   }
@@ -826,9 +826,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal) {
     return function ($receiver, it) {
-      2;
       this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz = roundToInt($receiver.value);
-      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz.toString();
+      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoHelper_0.kernelSz.toString();
       return Unit;
     };
   }
@@ -897,7 +896,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Enabled', AmbientOcclusionDemo$menu$lambda$lambda$lambda_4(y, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Map', AmbientOcclusionDemo$menu$lambda$lambda$lambda_5(y, closure$aoMap)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show AO Map', AmbientOcclusionDemo$menu$lambda$lambda$lambda_5(y, closure$aoMap)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_6(y)));
       var radiusVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.aoPass.radius, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_7(y));
@@ -917,7 +916,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AmbientOcclusionDemo.aoHelper_0.aoPass.bias, AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kernel Size:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('AO Samples:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y)));
       var kernelSzVal = this$.label_tokfmu$(this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz.toString(), AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y));
       $receiver.unaryPlus_uv0sim$(kernelSzVal);
       y.v -= 35.0;

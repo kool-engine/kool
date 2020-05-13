@@ -11,8 +11,8 @@ import org.lwjgl.opengl.GL42.glTexStorage2D
 
 class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
 
-    private var fbos: List<Int> = mutableListOf()
-    private var rbos: List<Int> = mutableListOf()
+    private val fbos = mutableListOf<Int>()
+    private val rbos = mutableListOf<Int>()
 
     private var isCreated = false
 
@@ -27,7 +27,6 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val mipLevel = parentPass.offscreenPass.targetMipLevel
         val width = parentPass.offscreenPass.mipWidth(mipLevel)
         val height = parentPass.offscreenPass.mipHeight(mipLevel)
-        val clearColor = parentPass.offscreenPass.clearColor
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         parentPass.offscreenPass.viewport = KoolContext.Viewport(0, 0, width, height)
