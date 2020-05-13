@@ -260,6 +260,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 generate {
                     rect {
                         size.set(aoHelper.denoisePass.texWidth.toFloat(), aoHelper.denoisePass.texHeight.toFloat())
+                        mirrorTexCoordsY()
                     }
                 }
                 pipelineLoader = ModeledShader.TextureColor(aoHelper.aoMap, "colorTex", aoMapColorModel())

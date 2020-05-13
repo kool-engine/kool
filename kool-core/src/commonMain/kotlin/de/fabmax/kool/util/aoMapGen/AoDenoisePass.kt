@@ -32,6 +32,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                 generate {
                     rect {
                         size.set(1f, 1f)
+                        mirrorTexCoordsY()
                     }
                 }
 

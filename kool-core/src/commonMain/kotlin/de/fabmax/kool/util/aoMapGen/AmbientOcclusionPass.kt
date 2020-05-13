@@ -203,6 +203,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                 mat3 tbn = mat3(tangent, bitangent, normal);
                 
                 float occlusion = 0.0;
+                float bias = uBias * uRadius;
                 for (int i = 0; i < uKernelN; i++) {
                     vec3 kernel = tbn * uKernel[i];
                     vec3 samplePos = origin + kernel * uRadius;
@@ -214,7 +215,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                     float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.w;
                     
                     float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(origin.z - sampleDepth) / (4.0 * uRadius));
-                    occlusion += (sampleDepth < samplePos.z - uBias ? 1.0 : 0.0) * rangeCheck;
+                    occlusion += (sampleDepth < samplePos.z - bias ? 1.0 : 0.0) * rangeCheck;
                 }
                 occlusion /= float(uKernelN);
                 float occlFac = clamp(1.0 - occlusion * uIntensity, 0.0, 1.0);
