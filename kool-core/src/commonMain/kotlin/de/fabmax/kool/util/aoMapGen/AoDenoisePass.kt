@@ -93,7 +93,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                 for (int x = 0; x < blurSize; x++) {
                     for (int y = 0; y < blurSize; y++) {
                         vec2 uv = ${inScreenPos.ref2f()} + (hlim + vec2(float(x), float(y))) * texelSize;
-                        float w = 1.0 - step(depthThreshold, abs(${generator.sampleTexture2d(depth.name, "uv")}.a - depthOri));
+                        float w = 1.0 - step(depthThreshold, abs(${generator.sampleTexture2d(depth.name, "uv")}.a - depthOri)) * 0.99;
                         
                         result += ${generator.sampleTexture2d(noisyAo.name, "uv")}.r * w;
                         weight += w;
