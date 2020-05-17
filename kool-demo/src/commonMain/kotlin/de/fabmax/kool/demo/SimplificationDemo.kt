@@ -52,7 +52,7 @@ class SimplificationDemo(ctx: KoolContext) {
 
         loadModel("bunny.kmfz", 1f, Vec3f(0f, -3f, 0f), ctx)
         loadModel("cow.kmfz", 1f, Vec3f.ZERO, ctx)
-        loadModel("teapot.kmfz", 1f, Vec3f.ZERO, ctx)
+        loadModel("teapot.kmfz", 1f, Vec3f(0f, -1.5f, 0f), ctx)
 
 
         simplificationScene = mainScene(ctx)
