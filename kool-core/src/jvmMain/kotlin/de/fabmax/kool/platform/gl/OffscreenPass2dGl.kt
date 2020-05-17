@@ -18,7 +18,6 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     override fun draw(ctx: Lwjgl3Context) {
         if (!isCreated) {
             create(ctx)
-            isCreated = true
         }
 
         val mipLevel = parentPass.offscreenPass.targetMipLevel
@@ -32,8 +31,15 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
     override fun dispose(ctx: Lwjgl3Context) {
         fbos.forEach { glDeleteFramebuffers(it) }
+        fbos.clear()
         parentPass.texture.dispose()
         parentPass.depthTexture.dispose()
+        isCreated = false
+    }
+
+    override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
+        dispose(ctx)
+        create(ctx)
     }
 
     private fun create(ctx: Lwjgl3Context) {
@@ -47,6 +53,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, glDepthTex, i)
             fbos += fbo
         }
+        isCreated = true
     }
 
     private fun createColorTex(ctx: Lwjgl3Context) {

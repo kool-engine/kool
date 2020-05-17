@@ -20,11 +20,30 @@ class OffscreenPass2dVk(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
+        val rp = renderPass
+        val loadedColorTex = parentPass.texture.loadedTexture
+        val loadedDepthTex = parentPass.depthTexture.loadedTexture
+
+        isCreated = false
+        renderPass = null
+        parentPass.texture.clear()
+        parentPass.depthTexture.clear()
+
         ctx.runDelayed(3) {
-            renderPass?.destroyNow()
-            parentPass.texture.dispose()
-            parentPass.depthTexture.dispose()
+            rp?.destroyNow()
+            loadedColorTex?.dispose()
+            loadedDepthTex?.dispose()
         }
+    }
+
+    private fun Texture.clear() {
+        loadedTexture = null
+        loadingState = Texture.LoadingState.NOT_LOADED
+    }
+
+    override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
+        dispose(ctx)
+        create(ctx)
     }
 
     private fun create(ctx: Lwjgl3Context) {

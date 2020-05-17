@@ -9,8 +9,9 @@ import kotlin.collections.set
 fun main() {
     Demo.setProperty("assetsBaseDir", "../assets")
 
-//    Demo.setProperty("pbrDemo.envMaps", "skybox/hdri")
-//    Demo.setProperty("pbrDemo.materials", "reserve/pbr/materials")
+    // uncomment this to use PBR and HDRI textures in docs/assets/local/
+//    Demo.setProperty("pbrDemo.envMaps", "local/hdri")
+//    Demo.setProperty("pbrDemo.materials", "local/pbr")
 
     // launch demo
     demo(getParams()["demo"])

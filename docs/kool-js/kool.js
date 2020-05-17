@@ -10327,17 +10327,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function OffscreenRenderPass(drawNode, texWidth, texHeight, mipLevels, colorFormat) {
     RenderPass.call(this, drawNode);
-    this.texWidth = texWidth;
-    this.texHeight = texHeight;
     this.mipLevels = mipLevels;
     this.colorFormat = colorFormat;
     this.targetMipLevel = -1;
     this.isEnabled = true;
+    this.texWidth_f45css$_0 = texWidth;
+    this.texHeight_xhnti3$_0 = texHeight;
     var $receiver = new PerspectiveCamera();
     $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
     this.camera_et6fa$_0 = $receiver;
-    this.viewport = new KoolContext$Viewport(0, 0, this.texWidth, this.texHeight);
+    this.viewport = new KoolContext$Viewport(0, 0, texWidth, texHeight);
   }
+  Object.defineProperty(OffscreenRenderPass.prototype, 'texWidth', {
+    get: function () {
+      return this.texWidth_f45css$_0;
+    },
+    set: function (texWidth) {
+      this.texWidth_f45css$_0 = texWidth;
+    }
+  });
+  Object.defineProperty(OffscreenRenderPass.prototype, 'texHeight', {
+    get: function () {
+      return this.texHeight_xhnti3$_0;
+    },
+    set: function (texHeight) {
+      this.texHeight_xhnti3$_0 = texHeight;
+    }
+  });
   Object.defineProperty(OffscreenRenderPass.prototype, 'camera', {
     get: function () {
       return this.camera_et6fa$_0;
@@ -10363,6 +10379,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$ = this.texHeight >> mipLevel;
     }
     return tmp$;
+  };
+  OffscreenRenderPass.prototype.resize_w70mbp$ = function (width, height, ctx) {
+    this.texWidth = width;
+    this.texHeight = height;
+    this.viewport = new KoolContext$Viewport(0, 0, width, height);
   };
   OffscreenRenderPass.$metadata$ = {
     kind: Kind_CLASS,
@@ -10390,6 +10411,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OffscreenRenderPass2D.prototype.dispose_aemszp$ = function (ctx) {
     OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
     this.impl_8be2vx$.dispose_aemszp$(ctx);
+  };
+  OffscreenRenderPass2D.prototype.resize_w70mbp$ = function (width, height, ctx) {
+    OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
+    this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
   };
   OffscreenRenderPass2D.$metadata$ = {
     kind: Kind_CLASS,
@@ -10439,6 +10464,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OffscreenRenderPassCube.prototype.dispose_aemszp$ = function (ctx) {
     OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
     this.impl_8be2vx$.dispose_aemszp$(ctx);
+  };
+  OffscreenRenderPassCube.prototype.resize_w70mbp$ = function (width, height, ctx) {
+    OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
+    this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
   };
   function OffscreenRenderPassCube$defaultCubeMapCameraConfig$lambda(closure$camDirs, this$OffscreenRenderPassCube) {
     return function (viewDir, f) {
@@ -13235,9 +13264,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   AoMapSampleNode.prototype.generateCode_626509$ = function (generator) {
     var tmp$;
     if (generator.clipSpaceOrientation === CodeGenerator$ClipSpaceOrientation$Y_UP_getInstance()) {
-      tmp$ = 'aoMapSamplePos.y = 1.0 - aoMapSamplePos.y;';
-    } else {
       tmp$ = '';
+    } else {
+      tmp$ = 'aoMapSamplePos.y = 1.0 - aoMapSamplePos.y;';
     }
     var invertY = tmp$;
     generator.appendMain_61zpoe$('\n' + '                vec2 aoMapSamplePos = gl_FragCoord.xy - ' + this.inViewport.ref2f() + ';' + '\n' + '                aoMapSamplePos.x /= ' + this.inViewport + '.z;' + '\n' + '                aoMapSamplePos.y /= ' + this.inViewport + '.w;' + '\n' + '                ' + invertY + '\n' + '                ' + this.outAo.declare() + ' = ' + generator.sampleTexture2d_buzeal$(this.aoMap.name, 'aoMapSamplePos') + '.r;' + '\n' + '            ');
@@ -22947,9 +22976,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthPass = null;
     this.aoPass = null;
     this.denoisePass = null;
+    this.size = 0.5;
+    this.mapWidth_0 = numberToInt(1600 * this.size);
+    this.mapHeight_0 = numberToInt(900 * this.size);
     var tmp$;
     var proxyCamera = new AmbientOcclusionHelper$ProxyCamera(Kotlin.isType(tmp$ = scene.camera, PerspectiveCamera) ? tmp$ : throwCCE());
-    this.depthPass = new NormalLinearDepthMapPass(scene, 1600, 900);
+    this.depthPass = new NormalLinearDepthMapPass(scene, this.mapWidth_0, this.mapHeight_0);
     this.depthPass.camera = proxyCamera;
     this.depthPass.isUpdateDrawNode = false;
     this.depthPass.onBeforeCollectDrawCommands.add_11rb$(AmbientOcclusionHelper_init$lambda(proxyCamera, scene));
@@ -22958,6 +22990,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     scene.addOffscreenPass_m1c2kf$(this.depthPass);
     scene.addOffscreenPass_m1c2kf$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.denoisePass);
+    scene.onRenderScene.add_11rb$(AmbientOcclusionHelper_init$lambda_0(this));
   }
   Object.defineProperty(AmbientOcclusionHelper.prototype, 'aoMap', {
     get: function () {
@@ -23027,6 +23060,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return function (ctx) {
       closure$proxyCamera.sync_n4xpoe$(closure$scene.mainRenderPass.viewport, ctx);
       return Unit;
+    };
+  }
+  function AmbientOcclusionHelper_init$lambda_0(this$AmbientOcclusionHelper) {
+    return function ($receiver, ctx) {
+      var mapW = numberToInt($receiver.mainRenderPass.viewport.width * this$AmbientOcclusionHelper.size);
+      var mapH = numberToInt($receiver.mainRenderPass.viewport.height * this$AmbientOcclusionHelper.size);
+      if (mapW > 0 && mapH > 0 && (mapW !== this$AmbientOcclusionHelper.mapWidth_0 || mapH !== this$AmbientOcclusionHelper.mapHeight_0)) {
+        this$AmbientOcclusionHelper.mapWidth_0 = mapW;
+        this$AmbientOcclusionHelper.mapHeight_0 = mapH;
+        this$AmbientOcclusionHelper.depthPass.resize_w70mbp$(mapW, mapH, ctx);
+        this$AmbientOcclusionHelper.aoPass.resize_w70mbp$(mapW, mapH, ctx);
+        this$AmbientOcclusionHelper.denoisePass.resize_w70mbp$(mapW, mapH, ctx);
+      }return Unit;
     };
   }
   AmbientOcclusionHelper.$metadata$ = {
@@ -23306,7 +23352,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], AmbientOcclusionPass$AoNode$setup$lambda$lambda(this, this$AmbientOcclusionPass));
   };
   AmbientOcclusionPass$AoNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                vec4 projPos = vec4(' + this.inScreenPos.ref2f() + ' * 2.0 - vec2(1.0), 1.0, 1.0);' + '\n' + '                vec4 viewPos = ' + this.uInvProj.name + ' * projPos;' + '\n' + '                ' + '\n' + '                vec4 nrmDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + ';' + '\n' + '                vec3 origin = viewPos.xyz / viewPos.w;' + '\n' + '                origin *= (nrmDepth.w / origin.z);' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.uNoiseScale.name + ';' + '\n' + '                vec3 normal = normalize(nrmDepth.xyz * 2.0 - 1.0);' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - normal * dot(rotVec, normal));' + '\n' + '                vec3 bitangent = cross(normal, tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                for (int i = 0; i < uKernelN; i++) {' + '\n' + '                    vec3 kernel = tbn * uKernel[i];' + '\n' + '                    vec3 samplePos = origin + kernel * uRadius;' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = uProj * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.w;' + '\n' + '                    ' + '\n' + '                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(origin.z - sampleDepth) / (4.0 * uRadius));' + '\n' + '                    occlusion += (sampleDepth < samplePos.z - uBias ? 1.0 : 0.0) * rangeCheck;' + '\n' + '                }' + '\n' + '                occlusion /= float(uKernelN);' + '\n' + '                float occlFac = clamp(1.0 - occlusion * uIntensity, 0.0, 1.0);' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, occlFac, occlFac, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                vec4 projPos = vec4(' + this.inScreenPos.ref2f() + ' * 2.0 - vec2(1.0), 1.0, 1.0);' + '\n' + '                vec4 viewPos = ' + this.uInvProj.name + ' * projPos;' + '\n' + '                ' + '\n' + '                vec4 nrmDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + ';' + '\n' + '                vec3 origin = viewPos.xyz / viewPos.w;' + '\n' + '                origin *= (nrmDepth.w / origin.z);' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.uNoiseScale.name + ';' + '\n' + '                vec3 normal = normalize(nrmDepth.xyz * 2.0 - 1.0);' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - normal * dot(rotVec, normal));' + '\n' + '                vec3 bitangent = cross(normal, tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                float bias = uBias * uRadius;' + '\n' + '                for (int i = 0; i < uKernelN; i++) {' + '\n' + '                    vec3 kernel = tbn * uKernel[i];' + '\n' + '                    vec3 samplePos = origin + kernel * uRadius;' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = uProj * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.w;' + '\n' + '                    ' + '\n' + '                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(origin.z - sampleDepth) / (4.0 * uRadius));' + '\n' + '                    occlusion += (sampleDepth < samplePos.z - bias ? 1.0 : 0.0) * rangeCheck;' + '\n' + '                }' + '\n' + '                occlusion /= float(uKernelN);' + '\n' + '                float occlFac = clamp(1.0 - occlusion * uIntensity, 0.0, 1.0);' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, occlFac, occlFac, 1.0);' + '\n' + '            ');
   };
   AmbientOcclusionPass$AoNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -23543,7 +23589,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
   };
   AoDenoisePass$BlurNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                int blurSize = 4;' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyAo.name + ', 0));' + '\n' + '                float depthOri = ' + generator.sampleTexture2d_buzeal$(this.depth.name, this.inScreenPos.ref2f()) + '.a;' + '\n' + '                float depthThreshold = ' + this.radius.ref1f() + ' * 0.1;' + '\n' + '                ' + '\n' + '                float result = 0.0;' + '\n' + '                float weight = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 uv = ' + this.inScreenPos.ref2f() + ' + (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        float w = 1.0 - step(depthThreshold, abs(' + generator.sampleTexture2d_buzeal$(this.depth.name, 'uv') + '.a - depthOri));' + '\n' + '                        ' + '\n' + '                        result += ' + generator.sampleTexture2d_buzeal$(this.noisyAo.name, 'uv') + '.r * w;' + '\n' + '                        weight += w;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                result /= weight;' + '\n' + '                ' + this.outColor.declare() + ' = vec4(result, result, result, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                int blurSize = 4;' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyAo.name + ', 0));' + '\n' + '                float depthOri = ' + generator.sampleTexture2d_buzeal$(this.depth.name, this.inScreenPos.ref2f()) + '.a;' + '\n' + '                float depthThreshold = ' + this.radius.ref1f() + ' * 0.1;' + '\n' + '                ' + '\n' + '                float result = 0.0;' + '\n' + '                float weight = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 uv = ' + this.inScreenPos.ref2f() + ' + (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        float w = 1.0 - step(depthThreshold, abs(' + generator.sampleTexture2d_buzeal$(this.depth.name, 'uv') + '.a - depthOri)) * 0.99;' + '\n' + '                        ' + '\n' + '                        result += ' + generator.sampleTexture2d_buzeal$(this.noisyAo.name, 'uv') + '.r * w;' + '\n' + '                        weight += w;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                result /= weight;' + '\n' + '                ' + this.outColor.declare() + ' = vec4(result, result, result, 1.0);' + '\n' + '            ');
   };
   AoDenoisePass$BlurNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -23551,7 +23597,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [ShaderNode]
   };
   function AoDenoisePass_init$lambda$lambda$lambda($receiver) {
-    $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(1.0, 1.0);
+    $receiver_0.mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
@@ -28500,9 +28548,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [ShaderNode]
   };
   function BrdfLutPass_init$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.size.set_dleff0$(1.0, 1.0);
-    $receiver_0.generateTexCoords_mx4ult$();
+    $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
@@ -33872,9 +33918,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthTexture = new OffscreenPass2dImpl$OffscreenDepthTexture(this);
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
-    this.isSetup_0 = false;
+    this.isCreated_0 = false;
   }
-  OffscreenPass2dImpl.prototype.setup_0 = function (ctx) {
+  OffscreenPass2dImpl.prototype.create_0 = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     var gl = ctx.gl_8be2vx$;
     Kotlin.isType(tmp$ = this.texture, OffscreenPass2dImpl$OffscreenTexture) ? tmp$ : throwCCE();
@@ -33889,7 +33935,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTexture.offscreenDepthTex, i);
       this.fbos_0.add_11rb$(fbo);
     }
-    this.isSetup_0 = true;
+    this.isCreated_0 = true;
   };
   OffscreenPass2dImpl.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -33906,12 +33952,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var element_0 = tmp$_1.next();
       ctx.gl_8be2vx$.deleteRenderbuffer(element_0);
     }
+    this.fbos_0.clear();
+    this.rbos_0.clear();
     this.texture.dispose();
     this.depthTexture.dispose();
+    this.isCreated_0 = false;
+  };
+  OffscreenPass2dImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
+    var tmp$;
+    this.dispose_aemszp$(ctx);
+    this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
   OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
-    if (!this.isSetup_0) {
-      this.setup_0(ctx);
+    if (!this.isCreated_0) {
+      this.create_0(ctx);
     }var mipLevel = this.offscreenPass.targetMipLevel;
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
@@ -33983,9 +34037,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.texture = new OffscreenPassCubeImpl$OffscreenTextureCube(this);
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
-    this.isSetup_0 = false;
+    this.isCreated_0 = false;
   }
-  OffscreenPassCubeImpl.prototype.setup_0 = function (ctx) {
+  OffscreenPassCubeImpl.prototype.create_0 = function (ctx) {
     var tmp$, tmp$_0;
     var gl = ctx.gl_8be2vx$;
     Kotlin.isType(tmp$ = this.texture, OffscreenPassCubeImpl$OffscreenTextureCube) ? tmp$ : throwCCE();
@@ -34001,7 +34055,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.fbos_0.add_11rb$(fbo);
       this.rbos_0.add_11rb$(rbo);
     }
-    this.isSetup_0 = true;
+    this.isCreated_0 = true;
   };
   OffscreenPassCubeImpl.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -34018,12 +34072,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var element_0 = tmp$_1.next();
       ctx.gl_8be2vx$.deleteRenderbuffer(element_0);
     }
+    this.fbos_0.clear();
+    this.rbos_0.clear();
     this.texture.dispose();
+    this.isCreated_0 = false;
+  };
+  OffscreenPassCubeImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
+    var tmp$;
+    this.dispose_aemszp$(ctx);
+    this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
   OffscreenPassCubeImpl.prototype.draw_44a5h0$ = function (ctx) {
     var tmp$;
-    if (!this.isSetup_0) {
-      this.setup_0(ctx);
+    if (!this.isCreated_0) {
+      this.create_0(ctx);
     }Kotlin.isType(tmp$ = this.texture, OffscreenPassCubeImpl$OffscreenTextureCube) ? tmp$ : throwCCE();
     var mipLevel = this.offscreenPass.targetMipLevel;
     var width = this.offscreenPass.mipWidth_za3lpa$(mipLevel);

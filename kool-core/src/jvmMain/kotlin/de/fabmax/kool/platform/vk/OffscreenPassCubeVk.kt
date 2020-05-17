@@ -30,10 +30,27 @@ class OffscreenPassCubeVk(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
+        val rp = renderPass
+        val loadedColorTex = parentPass.texture.loadedTexture
+
+        isCreated = false
+        renderPass = null
+        parentPass.texture.clear()
+
         ctx.runDelayed(3) {
-            renderPass?.destroyNow()
-            parentPass.texture.dispose()
+            rp?.destroyNow()
+            loadedColorTex?.dispose()
         }
+    }
+
+    private fun Texture.clear() {
+        loadedTexture = null
+        loadingState = Texture.LoadingState.NOT_LOADED
+    }
+
+    override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
+        dispose(ctx)
+        create(ctx)
     }
 
     fun transitionTexLayout(commandBuffer: VkCommandBuffer, dstLayout: Int) {

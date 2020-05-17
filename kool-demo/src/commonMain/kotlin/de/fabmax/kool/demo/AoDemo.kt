@@ -259,7 +259,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
             +textureMesh {
                 generate {
                     rect {
-                        size.set(aoHelper.denoisePass.texWidth.toFloat(), aoHelper.denoisePass.texHeight.toFloat())
+                        size.set(1f, 1f)
                         mirrorTexCoordsY()
                     }
                 }
@@ -268,8 +268,8 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
 
             onUpdate += { rp, _ ->
                 val screenSz = 0.33f
-                val scaleX = rp.viewport.width / aoHelper.denoisePass.texWidth.toFloat() * screenSz
-                val scaleY = rp.viewport.height / aoHelper.denoisePass.texHeight.toFloat() * screenSz
+                val scaleX = rp.viewport.width * screenSz
+                val scaleY = scaleX * (aoHelper.denoisePass.texHeight.toFloat() / aoHelper.denoisePass.texWidth.toFloat())
 
                 setIdentity()
                 val margin = rp.viewport.height * 0.05f
@@ -281,8 +281,8 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-635f), zero())
-            layoutSpec.setSize(dps(250f), dps(515f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-705f), zero())
+            layoutSpec.setSize(dps(250f), dps(585f), full())
 
             // light setup
             var y = -40f
@@ -389,6 +389,26 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 onValueChanged += {
                     aoHelper.aoPass.kernelSz = value.roundToInt()
                     kernelSzVal.text = aoHelper.kernelSz.toString()
+                }
+            }
+            y -= 35f
+            +label("Map Size:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            val mapSzVal = label("${aoHelper.size.toString(1)} x") {
+                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +mapSzVal
+            y -= 35f
+            +slider("mapSizeSlider", 1f, 10f, aoHelper.size * 10) {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                onValueChanged += {
+                    aoHelper.size = value.roundToInt() / 10f
+                    mapSzVal.text = "${aoHelper.size.toString(1)} x"
                 }
             }
 

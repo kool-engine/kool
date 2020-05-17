@@ -21,7 +21,6 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     override fun draw(ctx: Lwjgl3Context) {
         if (!isCreated) {
             create(ctx)
-            isCreated = true
         }
 
         val mipLevel = parentPass.offscreenPass.targetMipLevel
@@ -46,7 +45,15 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     override fun dispose(ctx: Lwjgl3Context) {
         fbos.forEach { glDeleteFramebuffers(it) }
         rbos.forEach { glDeleteRenderbuffers(it) }
+        fbos.clear()
+        rbos.clear()
         parentPass.texture.dispose()
+        isCreated = false
+    }
+
+    override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
+        dispose(ctx)
+        create(ctx)
     }
 
     private fun create(ctx: Lwjgl3Context) {
@@ -64,6 +71,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
             fbos += fbo
             rbos += rbo
         }
+        isCreated = true
     }
 
     private fun createColorTex(ctx: Lwjgl3Context) {

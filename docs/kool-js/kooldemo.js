@@ -632,17 +632,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.containerUi_2t3ptw$(AmbientOcclusionDemo$menu$lambda$lambda$lambda_0);
     return Unit;
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda(this$AmbientOcclusionDemo) {
-    return function ($receiver) {
-      var this$AmbientOcclusionDemo_0 = this$AmbientOcclusionDemo;
-      $receiver.rectProps.defaults().size.set_dleff0$(this$AmbientOcclusionDemo_0.aoHelper_0.denoisePass.texWidth, this$AmbientOcclusionDemo_0.aoHelper_0.denoisePass.texHeight);
-      $receiver.rect_e5k3t5$($receiver.rectProps);
-      return Unit;
-    };
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(1.0, 1.0);
+    $receiver_0.mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
   }
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda_1(this$AmbientOcclusionDemo) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda(this$AmbientOcclusionDemo));
+      $receiver.generate_v2sixm$(AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda);
       $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AmbientOcclusionDemo.aoHelper_0.aoMap, 'colorTex', this$AmbientOcclusionDemo.aoMapColorModel_0());
       return Unit;
     };
@@ -650,8 +649,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda_2(this$AmbientOcclusionDemo, this$) {
     return function ($receiver, rp, f) {
       var screenSz = 0.33;
-      var scaleX = rp.viewport.width / this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texWidth * screenSz;
-      var scaleY = rp.viewport.height / this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texHeight * screenSz;
+      var scaleX = rp.viewport.width * screenSz;
+      var scaleY = scaleX * (this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texHeight / this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texWidth);
       this$.setIdentity();
       var margin = rp.viewport.height * 0.05;
       this$.translate_y2kzbl$(margin, margin, 0.0);
@@ -841,7 +840,39 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(closure$y, closure$smallFont, this$) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo, closure$mapSzVal) {
+    return function ($receiver, it) {
+      this$AmbientOcclusionDemo.aoHelper_0.size = roundToInt($receiver.value) / 10.0;
+      closure$mapSzVal.text = toString(this$AmbientOcclusionDemo.aoHelper_0.size, 1) + ' x';
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(closure$y, this$AmbientOcclusionDemo, closure$mapSzVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo, closure$mapSzVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_21(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -851,37 +882,37 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo) {
     return function ($receiver) {
       this$AmbientOcclusionDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(closure$y, this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_22(closure$y, this$AmbientOcclusionDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$AmbientOcclusionDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo);
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_8(this$AmbientOcclusionDemo) {
     return function ($receiver) {
       this$AmbientOcclusionDemo.spotLight_0 = $receiver.isEnabled;
       this$AmbientOcclusionDemo.updateLighting_0();
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(closure$y, this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_23(closure$y, this$AmbientOcclusionDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$AmbientOcclusionDemo.spotLight_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo);
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_8(this$AmbientOcclusionDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -889,8 +920,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda_1(closure$smallFont, this$, this$AmbientOcclusionDemo, closure$aoMap) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-635.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(515.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-705.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(585.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ambient Occulsion', AmbientOcclusionDemo$menu$lambda$lambda$lambda_3(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -921,12 +952,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(kernelSzVal);
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz, AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo, kernelSzVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Map Size:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(y)));
+      var mapSzVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.size, 1) + ' x', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y));
+      $receiver.unaryPlus_uv0sim$(mapSzVal);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$AmbientOcclusionDemo.aoHelper_0.size * 10, AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo, mapSzVal)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_21(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AmbientOcclusionDemo$menu$lambda$lambda$lambda_22(y, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AmbientOcclusionDemo$menu$lambda$lambda$lambda_23(y, this$AmbientOcclusionDemo)));
       return Unit;
     };
   }
@@ -3093,9 +3130,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.irradianceMapPass_0 = null;
     this.reflectionMapPass_0 = null;
     this.brdfLut_0 = null;
-    var $receiver = new Cycler(PbrDemo$Companion_getInstance().lightSetups_0);
-    $receiver.index = 2;
-    this.lightCycler_0 = $receiver;
+    this.lightCycler_0 = new Cycler(PbrDemo$Companion_getInstance().lightSetups_0);
     this.hdriCycler_0 = new Cycler(PbrDemo$Companion_getInstance().hdriTextures_0);
     var array = Array_0(PbrDemo$Companion_getInstance().hdriTextures_0.size);
     var tmp$;
@@ -3110,12 +3145,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
     this.contentScene_0 = this.setupScene_0();
     this.contentScene_0.onDispose.add_11rb$(PbrDemo_init$lambda_3(this, nextHdriKeyListener, prevHdriKeyListener));
-    var $receiver_0 = this.scenes;
+    var $receiver = this.scenes;
     var element = this.contentScene_0;
-    $receiver_0.add_11rb$(element);
-    var $receiver_1 = this.scenes;
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.scenes;
     var element_0 = this.pbrMenu_0();
-    $receiver_1.add_11rb$(element_0);
+    $receiver_0.add_11rb$(element_0);
   }
   Object.defineProperty(PbrDemo.prototype, 'autoRotate_0', {
     get: function () {
@@ -3195,7 +3230,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Environment';
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
@@ -3255,35 +3289,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo) {
-    return function ($receiver) {
-      this$PbrDemo.autoRotate_0 = $receiver.isEnabled;
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_5(closure$y, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(8.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(84.0), dps(35.0), full());
-      $receiver.isEnabled = this$PbrDemo.autoRotate_0;
-      var $receiver_0 = $receiver.onStateChange;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_6(closure$y, closure$smallFont, this$) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_5(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Lighting';
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo, this$) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, this$) {
     return function ($receiver, f, f_0, f_1) {
       var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
       var tmp$;
@@ -3295,19 +3311,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_7(closure$y, this$PbrDemo) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_6(closure$y, this$PbrDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(8.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(84.0), dps(35.0), full());
-      $receiver.text = 'Image Based';
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo, $receiver);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_7(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo) {
     return function ($receiver, f, f_0, f_1) {
       $receiver.text = this$PbrDemo.lightCycler_0.next().name;
       this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
@@ -3320,12 +3345,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       $receiver.text = this$PbrDemo.lightCycler_0.current.name;
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel) {
     return function ($receiver, f, f_0, f_1) {
       closure$lightLabel.text = this$PbrDemo.lightCycler_0.prev().name;
       this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
@@ -3338,12 +3363,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
       $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo, closure$lightLabel) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel) {
     return function ($receiver, f, f_0, f_1) {
       closure$lightLabel.text = this$PbrDemo.lightCycler_0.next().name;
       this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
@@ -3356,7 +3381,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo, closure$lightLabel);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -3372,7 +3397,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo) {
     return function ($receiver, f, f_0, f_1) {
       this$PbrDemo.pbrContentCycler_0.current.hide();
       this$PbrDemo.pbrContentCycler_0.next().show();
@@ -3386,12 +3411,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       $receiver.text = this$PbrDemo.pbrContentCycler_0.current.name;
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel) {
     return function ($receiver, f, f_0, f_1) {
       this$PbrDemo.pbrContentCycler_0.current.hide();
       this$PbrDemo.pbrContentCycler_0.prev().show();
@@ -3405,12 +3430,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
       $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_9(this$PbrDemo, closure$contentLabel) {
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel) {
     return function ($receiver, f, f_0, f_1) {
       this$PbrDemo.pbrContentCycler_0.current.hide();
       this$PbrDemo.pbrContentCycler_0.next().show();
@@ -3424,7 +3449,24 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_9(this$PbrDemo, closure$contentLabel);
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_9(this$PbrDemo) {
+    return function ($receiver) {
+      this$PbrDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_15(closure$y, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(8.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(84.0), dps(35.0), full());
+      $receiver.isEnabled = this$PbrDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_9(this$PbrDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -3432,21 +3474,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrDemo$pbrMenu$lambda$lambda_0(closure$smallFont, this$, this$PbrDemo) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-510.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(390.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-555.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(435.0), full());
       var y = {v: -35.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('env-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Environment', PbrDemo$pbrMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 30.0;
       var envLabel = this$.button_9zrh0o$('selected-env', PbrDemo$pbrMenu$lambda$lambda$lambda_2(y, this$PbrDemo));
       $receiver.unaryPlus_uv0sim$(envLabel);
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-left', PbrDemo$pbrMenu$lambda$lambda$lambda_3(y, this$PbrDemo, envLabel)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-right', PbrDemo$pbrMenu$lambda$lambda$lambda_4(y, this$PbrDemo, envLabel)));
-      y.v -= 30.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', PbrDemo$pbrMenu$lambda$lambda$lambda_5(y, this$PbrDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('light-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_6(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Image Based Lighting', PbrDemo$pbrMenu$lambda$lambda$lambda_5(y, closure$smallFont, this$)));
       y.v -= 30.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('env-lighting', PbrDemo$pbrMenu$lambda$lambda$lambda_7(y, this$PbrDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('IBL Enabled', PbrDemo$pbrMenu$lambda$lambda$lambda_6(y, this$PbrDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Discrete Lighting', PbrDemo$pbrMenu$lambda$lambda$lambda_7(y, closure$smallFont, this$)));
       y.v -= 30.0;
       var lightLabel = this$.button_9zrh0o$('selected-light', PbrDemo$pbrMenu$lambda$lambda$lambda_8(y, this$PbrDemo));
       $receiver.unaryPlus_uv0sim$(lightLabel);
@@ -3459,6 +3501,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(contentLabel);
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-left', PbrDemo$pbrMenu$lambda$lambda$lambda_13(y, this$PbrDemo, contentLabel)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-right', PbrDemo$pbrMenu$lambda$lambda$lambda_14(y, this$PbrDemo, contentLabel)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', PbrDemo$pbrMenu$lambda$lambda$lambda_15(y, this$PbrDemo)));
       y.v -= 10.0;
       var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
       var tmp$;
@@ -3555,7 +3599,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrDemo$Companion() {
     PbrDemo$Companion_instance = this;
     this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', 'Mossy Forest')]);
+    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/syferfontein_0d_clear_1k.rgbe.png', 'South Africa'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', 'Mossy Forest')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
     this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);

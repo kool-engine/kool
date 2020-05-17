@@ -7,9 +7,14 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 
-abstract class OffscreenRenderPass(drawNode: Node, val texWidth: Int, val texHeight: Int, val mipLevels: Int, val colorFormat: TexFormat) : RenderPass(drawNode) {
+abstract class OffscreenRenderPass(drawNode: Node, texWidth: Int, texHeight: Int, val mipLevels: Int, val colorFormat: TexFormat) : RenderPass(drawNode) {
     var targetMipLevel = -1
     var isEnabled = true
+
+    var texWidth = texWidth
+        protected set
+    var texHeight = texHeight
+        protected set
 
     override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
 
@@ -32,6 +37,12 @@ abstract class OffscreenRenderPass(drawNode: Node, val texWidth: Int, val texHei
             texHeight shr mipLevel
         }
     }
+
+    open fun resize(width: Int, height: Int, ctx: KoolContext) {
+        texWidth = width
+        texHeight = height
+        viewport = KoolContext.Viewport(0, 0, width, height)
+    }
 }
 
 open class OffscreenRenderPass2D(drawNode: Node, texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFormat: TexFormat = TexFormat.RGBA) :
@@ -47,6 +58,11 @@ open class OffscreenRenderPass2D(drawNode: Node, texWidth: Int, texHeight: Int, 
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         impl.dispose(ctx)
+    }
+
+    override fun resize(width: Int, height: Int, ctx: KoolContext) {
+        super.resize(width, height, ctx)
+        impl.resize(width, height, ctx)
     }
 }
 
@@ -77,6 +93,11 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         impl.dispose(ctx)
+    }
+
+    override fun resize(width: Int, height: Int, ctx: KoolContext) {
+        super.resize(width, height, ctx)
+        impl.resize(width, height, ctx)
     }
 
     private fun defaultCubeMapCameraConfig() {
@@ -121,11 +142,15 @@ expect class OffscreenPass2dImpl(offscreenPass: OffscreenRenderPass2D) {
     val texture: Texture
     val depthTexture: Texture
 
+    fun resize(width: Int, height: Int, ctx: KoolContext)
+
     fun dispose(ctx: KoolContext)
 }
 
 expect class OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube) {
     val texture: CubeMapTexture
+
+    fun resize(width: Int, height: Int, ctx: KoolContext)
 
     fun dispose(ctx: KoolContext)
 }

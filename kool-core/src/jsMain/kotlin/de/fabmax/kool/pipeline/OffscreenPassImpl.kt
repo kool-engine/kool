@@ -36,9 +36,9 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
-    private var isSetup = false
+    private var isCreated = false
 
-    private fun setup(ctx: JsContext) {
+    private fun create(ctx: JsContext) {
         val gl = ctx.gl
 
         texture as OffscreenTexture
@@ -65,20 +65,28 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             //rbos += rbo
         }
 
-        isSetup = true
+        isCreated = true
     }
 
     actual fun dispose(ctx: KoolContext) {
         ctx as JsContext
         fbos.forEach { ctx.gl.deleteFramebuffer(it) }
         rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        fbos.clear()
+        rbos.clear()
         texture.dispose()
         depthTexture.dispose()
+        isCreated = false
+    }
+
+    actual fun resize(width: Int, height: Int, ctx: KoolContext) {
+        dispose(ctx)
+        create(ctx as JsContext)
     }
 
     fun draw(ctx: JsContext) {
-        if (!isSetup) {
-            setup(ctx)
+        if (!isCreated) {
+            create(ctx)
         }
 
         val mipLevel = offscreenPass.targetMipLevel
@@ -148,9 +156,9 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
-    private var isSetup = false
+    private var isCreated = false
 
-    private fun setup(ctx: JsContext) {
+    private fun create(ctx: JsContext) {
         val gl = ctx.gl
 
         texture as OffscreenTextureCube
@@ -169,19 +177,27 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             rbos += rbo
         }
 
-        isSetup = true
+        isCreated = true
     }
 
     actual fun dispose(ctx: KoolContext) {
         ctx as JsContext
         fbos.forEach { ctx.gl.deleteFramebuffer(it) }
         rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        fbos.clear()
+        rbos.clear()
         texture.dispose()
+        isCreated = false
+    }
+
+    actual fun resize(width: Int, height: Int, ctx: KoolContext) {
+        dispose(ctx)
+        create(ctx as JsContext)
     }
 
     fun draw(ctx: JsContext) {
-        if (!isSetup) {
-            setup(ctx)
+        if (!isCreated) {
+            create(ctx)
         }
         texture as OffscreenTextureCube
 

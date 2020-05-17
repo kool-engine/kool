@@ -34,9 +34,14 @@ class AmbientOcclusionHelper(scene: Scene) {
         get() = aoPass.kernelSz
         set(value) { aoPass.kernelSz = value }
 
+    // ao map size relative to screen resolution
+    var size = 0.5f
+    private var mapWidth = (1600 * size).toInt()
+    private var mapHeight = (900 * size).toInt()
+
     init {
         val proxyCamera = ProxyCamera(scene.camera as PerspectiveCamera)
-        depthPass = NormalLinearDepthMapPass(scene, 1600, 900)
+        depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
         depthPass.camera = proxyCamera
         depthPass.isUpdateDrawNode = false
         depthPass.onBeforeCollectDrawCommands += { ctx ->
@@ -49,6 +54,19 @@ class AmbientOcclusionHelper(scene: Scene) {
         scene.addOffscreenPass(depthPass)
         scene.addOffscreenPass(aoPass)
         scene.addOffscreenPass(denoisePass)
+
+        scene.onRenderScene += { ctx ->
+            val mapW = (mainRenderPass.viewport.width * this@AmbientOcclusionHelper.size).toInt()
+            val mapH = (mainRenderPass.viewport.height * this@AmbientOcclusionHelper.size).toInt()
+
+            if (mapW > 0 && mapH > 0 && (mapW != mapWidth || mapH != mapHeight)) {
+                mapWidth = mapW
+                mapHeight = mapH
+                depthPass.resize(mapW, mapH, ctx)
+                aoPass.resize(mapW, mapH, ctx)
+                denoisePass.resize(mapW, mapH, ctx)
+            }
+        }
     }
 
     fun setEnabled(enabled: Boolean) {
