@@ -129,7 +129,8 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
     private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
         when (offscreenPass) {
-            is OffscreenRenderPass2D -> offscreenPass.impl.draw(ctx)
+            is OffscreenRenderPass2d -> offscreenPass.impl.draw(ctx)
+            is OffscreenRenderPass2dMrt -> offscreenPass.impl.draw(ctx)
             is OffscreenRenderPassCube -> offscreenPass.impl.draw(ctx)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }
@@ -157,6 +158,10 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
         return OffscreenPass2dGl(parentPass)
+    }
+
+    override fun createOffscreenPass2dMrt(parentPass: OffscreenPass2dMrtImpl): OffscreenPass2dMrtImpl.BackendImpl {
+        return OffscreenPass2dMrtGl(parentPass)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {

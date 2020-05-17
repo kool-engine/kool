@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2D(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
+class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2d(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
 
     private val uRadius = Uniform1f(1f, "uRadius")
 
@@ -19,15 +19,16 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
         set(value) { uRadius.value = value}
 
     init {
+        camera = OrthographicCamera().apply {
+            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
+            isKeepAspectRatio = false
+            left = 0f
+            right = 1f
+            top = 1f
+            bottom = 0f
+        }
+
         (drawNode as Group).apply {
-            camera = OrthographicCamera().apply {
-                projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-                isKeepAspectRatio = false
-                left = 0f
-                right = 1f
-                top = 1f
-                bottom = 0f
-            }
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
                     rect {

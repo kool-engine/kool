@@ -101,11 +101,15 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
-        return OffscreenPass2dVk(parentPass)
+        return VkOffscreenPass2d(parentPass)
+    }
+
+    override fun createOffscreenPass2dMrt(parentPass: OffscreenPass2dMrtImpl): OffscreenPass2dMrtImpl.BackendImpl {
+        return VkOffscreenPass2dMrt(parentPass)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
-        return OffscreenPassCubeVk(parentPass)
+        return VkOffscreenPassCube(parentPass)
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {
@@ -189,7 +193,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     }
                 }
 
-                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], true, clearColor)
+                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], clearColor, 1)
 
                 // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
 
@@ -326,17 +330,30 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass) {
             when (offscreenPass) {
-                is OffscreenRenderPass2D -> renderOffscreen2d(commandBuffer, offscreenPass)
+                is OffscreenRenderPass2d -> renderOffscreen2d(commandBuffer, offscreenPass)
+                is OffscreenRenderPass2dMrt -> renderOffscreen2dMrt(commandBuffer, offscreenPass)
                 is OffscreenRenderPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
                 else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
             }
         }
 
-        private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2D) {
+        private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2d) {
             offscreenPass.impl.draw(ctx)
-            val backendImpl = offscreenPass.impl.backendImpl as OffscreenPass2dVk
+            val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2d
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, 1)
+
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+            setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+            renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
+            vkCmdEndRenderPass(commandBuffer)
+        }
+
+        private fun MemoryStack.renderOffscreen2dMrt(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2dMrt) {
+            offscreenPass.impl.draw(ctx)
+            val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2dMrt
+            val rp = backendImpl.renderPass!!
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, offscreenPass.nAttachments)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
@@ -346,9 +363,9 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
             offscreenPass.impl.draw(ctx)
-            val backendImpl = offscreenPass.impl.backendImpl as OffscreenPassCubeVk
+            val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPassCube
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, 1)
 
             backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
@@ -367,7 +384,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
     }
 
-    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearDepth: Boolean, clearColor: Color?) =
+    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearColor: Color?, colorAttachments: Int) =
             callocVkRenderPassBeginInfo {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
                 renderPass(renderPass.vkRenderPass)
@@ -377,9 +394,11 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     r.extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
                 }
 
-                pClearValues(callocVkClearValueN(2) {
-                    this[0].setColor(clearColor ?: Color.BLACK)
-                    this[1].depthStencil { it.depth(1f); it.stencil(0) }
+                pClearValues(callocVkClearValueN(colorAttachments + 1) {
+                    for (i in 0 until colorAttachments) {
+                        this[i].setColor(clearColor ?: Color.BLACK)
+                    }
+                    this[colorAttachments].depthStencil { it.depth(1f); it.stencil(0) }
                 })
 
                 // fixme: make clear values optional

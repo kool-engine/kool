@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DescriptorSetLayout
 import de.fabmax.kool.pipeline.PushConstantRange
 import de.fabmax.kool.pipeline.ShaderStage
-import de.fabmax.kool.util.Color
 
 class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar, val locationInc: Int = 1)
 
@@ -80,5 +79,5 @@ class VertexShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.VER
 }
 
 class FragmentShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.FRAGMENT_SHADER) {
-    var colorOutput = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA), null)
+    var colorOutput: ShaderNodeIoVar? = null
 }

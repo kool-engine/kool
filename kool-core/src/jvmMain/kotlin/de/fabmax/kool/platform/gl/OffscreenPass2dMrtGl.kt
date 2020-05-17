@@ -1,17 +1,18 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.pipeline.OffscreenPass2dImpl
+import de.fabmax.kool.pipeline.OffscreenPass2dMrtImpl
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.platform.Lwjgl3Context
+import org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 
-class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
-    private val fbos = mutableListOf<Int>()
+class OffscreenPass2dMrtGl(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPass2dMrtImpl.BackendImpl {
 
     private var isCreated = false
 
-    private var glColorTex = 0
+    private var fbo = 0
+    private val glColorTexs = IntArray(parentPass.offscreenPass.nAttachments)
     private var glDepthTex = 0
 
     override fun draw(ctx: Lwjgl3Context) {
@@ -19,21 +20,20 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             create(ctx)
         }
 
-        val mipLevel = parentPass.offscreenPass.targetMipLevel
-        val fboIdx = if (mipLevel < 0) 0 else mipLevel
-
-        glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo)
         val glBackend = ctx.renderBackend as GlRenderBackend
         glBackend.queueRenderer.renderQueue(parentPass.offscreenPass.drawQueue)
         glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE)
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
-        fbos.forEach { glDeleteFramebuffers(it) }
-        fbos.clear()
-        parentPass.texture.dispose()
+        if (fbo != 0) {
+            glDeleteFramebuffers(fbo)
+        }
+        fbo = 0
+        parentPass.textures.forEach { it.dispose() }
         parentPass.depthTexture.dispose()
-        glColorTex = 0
+        for (i in glColorTexs.indices) { glColorTexs[i] = 0 }
         glDepthTex = 0
         isCreated = false
     }
@@ -47,33 +47,39 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         createColorTex(ctx)
         createDepthTex(ctx)
 
-        for (i in 0 until parentPass.offscreenPass.mipLevels) {
-            val fbo = glGenFramebuffers()
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glColorTex, i)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, glDepthTex, i)
-            fbos += fbo
+        fbo = glGenFramebuffers()
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+        for (i in glColorTexs.indices) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, glColorTexs[i], 0)
         }
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, glDepthTex, 0)
+
+        val attachments = IntArray(glColorTexs.size) { GL_COLOR_ATTACHMENT0 + it }
+        glDrawBuffers(attachments)
+
         isCreated = true
     }
 
     private fun createColorTex(ctx: Lwjgl3Context) {
-        val intFormat = parentPass.offscreenPass.colorFormat.glInternalFormat
-        val width = parentPass.offscreenPass.texWidth
-        val height = parentPass.offscreenPass.texHeight
+        for (i in glColorTexs.indices) {
+            val colorFormat = parentPass.offscreenPass.texFormats[i]
+            val intFormat = colorFormat.glInternalFormat
+            val width = parentPass.offscreenPass.texWidth
+            val height = parentPass.offscreenPass.texHeight
 
-        glColorTex = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D, glColorTex)
-        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+            glColorTexs[i] = glGenTextures()
+            glBindTexture(GL_TEXTURE_2D, glColorTexs[i])
+            glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
-        val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
-        parentPass.texture.loadedTexture = LoadedTextureGl(ctx, glColorTex, estSize)
-        parentPass.texture.loadingState = Texture.LoadingState.LOADED
+            val estSize = Texture.estimatedTexSize(width, height, colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
+            parentPass.textures[i].loadedTexture = LoadedTextureGl(ctx, glColorTexs[i], estSize)
+            parentPass.textures[i].loadingState = Texture.LoadingState.LOADED
+        }
     }
 
     private fun createDepthTex(ctx: Lwjgl3Context) {

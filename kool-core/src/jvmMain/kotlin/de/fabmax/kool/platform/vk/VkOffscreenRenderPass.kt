@@ -1,18 +1,27 @@
-package de.fabmax.kool.platform.vk.util
+package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.logD
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
-class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormat: Int, private val depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
-        VkRenderPass(sys, maxWidth, maxHeight, texFormat) {
+class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormats: List<Int>, private val depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
+        VkRenderPass(sys, maxWidth, maxHeight, texFormats) {
+
+    constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int, depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
+            this(sys, maxWidth, maxHeight, isCopied, listOf(texFormat), depthCopmpareOp)
 
     override val vkRenderPass: Long
 
+    val images: List<Image>
+    val imageViews: List<ImageView>
+    val samplers: List<Long>
+
     val image: Image
+        get() = images[0]
     val imageView: ImageView
+        get() = imageViews[0]
     val sampler: Long
+        get() = samplers[0]
 
     val depthImage: Image
     val depthImageView: ImageView
@@ -21,31 +30,46 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
     val frameBuffer: Long
 
     init {
-        val fbImageCfg = Image.Config().apply {
+        val mImages = mutableListOf<Image>()
+        val mImageViews = mutableListOf<ImageView>()
+        val mSamplers = mutableListOf<Long>()
+        for (i in texFormats.indices) {
+            val fbImageCfg = Image.Config().apply {
+                width = maxWidth
+                height = maxHeight
+                format = texFormats[i]
+                tiling = VK_IMAGE_TILING_OPTIMAL
+                usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
+                allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+            }
+            triFrontDirection = VK_FRONT_FACE_CLOCKWISE
+
+            val img = Image(sys, fbImageCfg)
+            mImages += img
+            mImageViews += ImageView(sys, img, VK_IMAGE_ASPECT_COLOR_BIT)
+            mSamplers += createSampler(false)
+        }
+        images = mImages
+        imageViews = mImageViews
+        samplers = mSamplers
+
+        val depthImageCfg = Image.Config().apply {
             width = maxWidth
             height = maxHeight
-            format = texFormat
+            format = sys.physicalDevice.depthFormat
             tiling = VK_IMAGE_TILING_OPTIMAL
-            usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
+            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
             allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
         }
-        triFrontDirection = VK_FRONT_FACE_CLOCKWISE
-
-        image = Image(sys, fbImageCfg)
-        imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        sampler = createSampler(false)
-
-        fbImageCfg.format = sys.physicalDevice.depthFormat
-        fbImageCfg.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
-        depthImage = Image(sys, fbImageCfg)
+        depthImage = Image(sys, depthImageCfg)
         depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
         depthSampler = createSampler(true)
 
         vkRenderPass = createRenderPass()
-        frameBuffer = createFrameBuffer(vkRenderPass, imageView, depthImageView)
+        frameBuffer = createFrameBuffer(vkRenderPass, imageViews, depthImageView)
 
-        addDependingResource(image)
-        addDependingResource(imageView)
+        images.forEach { addDependingResource(it) }
+        imageViews.forEach { addDependingResource(it) }
         addDependingResource(depthImage)
         addDependingResource(depthImageView)
 
@@ -86,19 +110,23 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
     }
 
     override fun freeResources() {
-        vkDestroySampler(sys.device.vkDevice, sampler, null)
+        samplers.forEach { vkDestroySampler(sys.device.vkDevice, it, null) }
         vkDestroySampler(sys.device.vkDevice, depthSampler, null)
         vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
         vkDestroyFramebuffer(sys.device.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
-    private fun createFrameBuffer(renderPass: Long, imageView: ImageView, depthView: ImageView): Long {
+    private fun createFrameBuffer(renderPass: Long, imageViews: List<ImageView>, depthView: ImageView): Long {
         memStack {
+            val attachments = mallocLong(imageViews.size + 1)
+            imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.vkImageView) }
+            attachments.put(imageViews.size, depthView.vkImageView)
+
             val framebufferInfo = callocVkFramebufferCreateInfo {
                 sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
                 renderPass(renderPass)
-                pAttachments(longs(imageView.vkImageView, depthView.vkImageView))
+                pAttachments(attachments)
                 width(maxWidth)
                 height(maxHeight)
                 layers(1)
@@ -108,25 +136,26 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
     }
 
     private fun createRenderPass(): Long {
-        // fixme: merge with RenderPass class (which currently is tailored to swap chain)
         memStack {
-            val attachments = callocVkAttachmentDescriptionN(2) {
-                this[0].apply {
-                    format(colorFormat)
-                    samples(VK_SAMPLE_COUNT_1_BIT)
-                    loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            val attachments = callocVkAttachmentDescriptionN(nColorAttachments + 1) {
+                for (i in colorFormats.indices) {
+                    this[i].apply {
+                        format(colorFormats[i])
+                        samples(VK_SAMPLE_COUNT_1_BIT)
+                        loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                        storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                        stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                        initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
 
-                    if (isCopied) {
-                        finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                    } else {
-                        finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                        if (isCopied) {
+                            finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                        } else {
+                            finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                        }
                     }
                 }
-                this[1].apply {
+                this[nColorAttachments].apply {
                     format(sys.physicalDevice.depthFormat)
                     samples(VK_SAMPLE_COUNT_1_BIT)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
@@ -143,19 +172,23 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
                 }
             }
 
-            val colorAttachmentRef = callocVkAttachmentReferenceN(1) {
-                attachment(0)
-                layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+            val colorAttachmentRefs = callocVkAttachmentReferenceN(nColorAttachments) {
+                for (i in 0 until nColorAttachments) {
+                    this[i].apply {
+                        attachment(i)
+                        layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                    }
+                }
             }
             val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
-                attachment(1)
+                attachment(nColorAttachments)
                 layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
             }
 
             val subpass = callocVkSubpassDescriptionN(1) {
                 pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                colorAttachmentCount(1)
-                pColorAttachments(colorAttachmentRef)
+                colorAttachmentCount(nColorAttachments)
+                pColorAttachments(colorAttachmentRefs)
                 pDepthStencilAttachment(depthAttachmentRef[0])
             }
 

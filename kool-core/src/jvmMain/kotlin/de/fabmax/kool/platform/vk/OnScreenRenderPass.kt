@@ -5,7 +5,7 @@ import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
 class OnScreenRenderPass(swapChain: SwapChain) :
-        VkRenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), swapChain.imageFormat) {
+        VkRenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), listOf(swapChain.imageFormat)) {
 
     override val vkRenderPass: Long
 

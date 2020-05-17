@@ -76,6 +76,11 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun generateFragmentShaderCode(model: ShaderModel, pipeline: Pipeline): String {
         val codeGen = CodeGen()
         model.fragmentStageGraph.generateCode(codeGen)
+
+        // generate default color output if specified (otherwise color output is manage by a node)
+        val fragColorOut = if (model.fragmentStageGraph.colorOutput != null) { "layout(location=0) out vec4 fragStage_outColor;" } else { "" }
+        val fragColorSet = model.fragmentStageGraph.colorOutput?.let { "fragStage_outColor = ${it.ref4f()};" } ?: ""
+
         return """
             #version 450
             precision highp float;
@@ -84,13 +89,13 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
             // inputs ${model.fragmentStageGraph.generateStageInputs()}
             // outputs
-            layout(location=0) out vec4 fragStage_outColor;
+            $fragColorOut
             // functions
             ${codeGen.generateFunctions()}
 
             void main() {
                 ${codeGen.generateMain()}
-                fragStage_outColor = ${model.fragmentStageGraph.colorOutput.variable.ref4f()};
+                $fragColorSet
             }
         """.trimIndent()
     }

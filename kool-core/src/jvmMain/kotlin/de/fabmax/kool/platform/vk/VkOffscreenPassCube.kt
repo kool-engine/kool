@@ -4,7 +4,6 @@ import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
 import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
@@ -12,10 +11,10 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-class OffscreenPassCubeVk(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
+class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
     private var isCreated = false
 
-    var renderPass: OffscreenRenderPass? = null
+    var renderPass: VkOffscreenRenderPass? = null
         private set
 
     lateinit var image: Image
@@ -108,18 +107,18 @@ class OffscreenPassCubeVk(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
 
     private fun create(ctx: Lwjgl3Context) {
         val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
-        val rp = OffscreenRenderPass(sys, parentPass.offscreenPass.texWidth, parentPass.offscreenPass.texHeight, true, parentPass.offscreenPass.colorFormat.vkFormat)
+        val rp = VkOffscreenRenderPass(sys, parentPass.offscreenPass.texWidth, parentPass.offscreenPass.texHeight, true, parentPass.offscreenPass.colorFormat.vkFormat)
         createTex(rp, sys)
         renderPass = rp
     }
 
-    private fun createTex(rp: OffscreenRenderPass, sys: VkSystem) {
+    private fun createTex(rp: VkOffscreenRenderPass, sys: VkSystem) {
         val imgConfig = Image.Config()
         imgConfig.width = rp.maxWidth
         imgConfig.height = rp.maxHeight
         imgConfig.mipLevels = parentPass.offscreenPass.mipLevels
         imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = rp.colorFormat
+        imgConfig.format = rp.colorFormats[0]
         imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
         imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY

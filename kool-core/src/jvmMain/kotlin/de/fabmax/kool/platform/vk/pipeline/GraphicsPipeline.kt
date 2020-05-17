@@ -157,16 +157,20 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 //minSampleShading(0.2f)
             }
 
-            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(1) {
-                colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
-                // pre-multiplied alpha
-                blendEnable(koolRenderPass.colorBlend)
-                srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
-                dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
-                colorBlendOp(VK_BLEND_OP_ADD)
-                srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
-                dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
-                alphaBlendOp(VK_BLEND_OP_ADD)
+            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(vkRenderPass.nColorAttachments) {
+                for (i in 0 until vkRenderPass.nColorAttachments) {
+                    this[i].apply {
+                        colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
+                        // pre-multiplied alpha
+                        blendEnable(koolRenderPass.colorBlend)
+                        srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                        dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+                        colorBlendOp(VK_BLEND_OP_ADD)
+                        srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                        dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                        alphaBlendOp(VK_BLEND_OP_ADD)
+                    }
+                }
             }
 
             val colorBlending = callocVkPipelineColorBlendStateCreateInfo {

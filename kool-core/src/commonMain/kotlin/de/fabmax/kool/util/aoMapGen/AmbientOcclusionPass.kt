@@ -16,7 +16,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2D(Group(), depthPass.texWidth, depthPass.texHeight, colorFormat = TexFormat.R) {
+class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2d(Group(), depthPass.texWidth, depthPass.texHeight, colorFormat = TexFormat.R) {
 
     var radius = 1f
     var intensity = 1.5f
@@ -30,16 +30,16 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
     private var aoNode: AoNode? = null
 
     init {
-        (drawNode as Group).apply {
-            camera = OrthographicCamera().apply {
-                projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-                isKeepAspectRatio = false
-                left = 0f
-                right = 1f
-                top = 1f
-                bottom = 0f
-            }
+        camera = OrthographicCamera().apply {
+            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
+            isKeepAspectRatio = false
+            left = 0f
+            right = 1f
+            top = 1f
+            bottom = 0f
+        }
 
+        (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
                     rect {

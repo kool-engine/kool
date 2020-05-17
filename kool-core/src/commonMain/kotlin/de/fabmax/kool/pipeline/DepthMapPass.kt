@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Color
 
 
-open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFormat: TexFormat = TexFormat.R) : OffscreenRenderPass2D(drawNode, width, height, colorFormat = colorFormat) {
+open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFormat: TexFormat = TexFormat.R) : OffscreenRenderPass2d(drawNode, width, height, colorFormat = colorFormat) {
     private val shadowPipelines = mutableMapOf<Long, Pipeline?>()
 
     /**

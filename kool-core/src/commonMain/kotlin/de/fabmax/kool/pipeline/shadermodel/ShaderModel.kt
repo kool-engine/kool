@@ -276,7 +276,7 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
-        var colorOutput: ShaderNodeIoVar
+        var colorOutput: ShaderNodeIoVar?
             get() = fragmentStageGraph.colorOutput
             set(value) { fragmentStageGraph.colorOutput = value }
 

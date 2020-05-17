@@ -28,5 +28,6 @@ interface RenderBackend {
     fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData, recv: (CubeMapTexture) -> Unit)
 
     fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl
+    fun createOffscreenPass2dMrt(parentPass: OffscreenPass2dMrtImpl): OffscreenPass2dMrtImpl.BackendImpl
     fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl
 }

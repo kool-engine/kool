@@ -3,7 +3,7 @@ package de.fabmax.kool.util.pbrMapGen
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.OffscreenRenderPass2D
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -11,20 +11,21 @@ import de.fabmax.kool.scene.*
 import kotlin.math.PI
 
 
-class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512, 1, TexFormat.RG_F16) {
+class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512, 1, TexFormat.RG_F16) {
 
     init {
         clearColor = null
 
+        camera = OrthographicCamera().apply {
+            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
+            isKeepAspectRatio = false
+            left = 0f
+            right = 1f
+            top = 1f
+            bottom = 0f
+        }
+
         (drawNode as Group).apply {
-            camera = OrthographicCamera().apply {
-                projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-                isKeepAspectRatio = false
-                left = 0f
-                right = 1f
-                top = 1f
-                bottom = 0f
-            }
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
                     rect {

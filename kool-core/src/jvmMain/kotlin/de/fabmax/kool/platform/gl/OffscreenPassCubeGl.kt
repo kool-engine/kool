@@ -48,6 +48,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         fbos.clear()
         rbos.clear()
         parentPass.texture.dispose()
+        glColorTex = 0
         isCreated = false
     }
 

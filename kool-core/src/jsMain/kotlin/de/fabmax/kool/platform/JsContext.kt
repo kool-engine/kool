@@ -5,7 +5,8 @@ import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2D
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenRenderPass2dMrt
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
@@ -259,7 +260,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
         when (offscreenPass) {
-            is OffscreenRenderPass2D -> offscreenPass.impl.draw(this)
+            is OffscreenRenderPass2d -> offscreenPass.impl.draw(this)
+            is OffscreenRenderPass2dMrt -> offscreenPass.impl.draw(this)
             is OffscreenRenderPassCube -> offscreenPass.impl.draw(this)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }
