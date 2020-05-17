@@ -11,10 +11,8 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.createUint8Buffer
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
+import kotlin.math.*
+import kotlin.random.Random
 
 class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2d(Group(), depthPass.texWidth, depthPass.texHeight, colorFormat = TexFormat.R) {
 
@@ -24,7 +22,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
     var kernelSz = 32
         set(value) {
             field = value
-            generateKernel(value)
+            setKernelSize(value)
         }
 
     private var aoNode: AoNode? = null
@@ -67,50 +65,49 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                         model.findNode<TextureNode>("linearDepthMap")!!.sampler.texture = depthPass.colorTexture
                         model.findNode<TextureNode>("noiseTex")!!.sampler.texture = makeNoiseTexture()
                         aoNode = model.findNode("aoNode")!!
-                        generateKernel(kernelSz)
+                        setKernelSize(kernelSz)
                     }
                 }
             }
         }
     }
 
-    private fun generateKernel(nKernels: Int) {
+    private fun setKernelSize(nKernels: Int) {
         val n = min(nKernels, MAX_KERNEL_SIZE)
         aoNode?.apply {
-            var i = 0
-            var seqI = 0
-            while (i < n) {
-                // generate random samples in a sphere (not hemisphere!)
-                val k = MutableVec3f(
-                        halton(seqI++, 2) * 2 - 1,
-                        halton(seqI++, 2) * 2 - 1,
-                        halton(seqI++, 2) * -1
-                )
+            val scales = (0 until n)
+                    .map { lerp(0.1f, 1f, (it.toFloat() / n).pow(2)) }
+                    .shuffled(Random(17))
 
-                if (k.length() < 1f) {
-                    val iNorm = i.toFloat() / nKernels
-                    val scale = lerp(0.1f, 1f, iNorm * iNorm)
-                    uKernel.value[i++] = k.norm().scale(scale)
-                }
+            for (i in 0 until n) {
+                val xi = hammersley(i, n)
+                val phi = 2f * PI.toFloat() * xi.x
+                val cosTheta = sqrt((1f - xi.y))
+                val sinTheta = sqrt(1f - cosTheta * cosTheta)
+
+                val k = MutableVec3f(
+                        sinTheta * cos(phi),
+                        sinTheta * sin(phi),
+                        -cosTheta
+                )
+                uKernel.value[i] = k.norm().scale(scales[i])
             }
-            uKernelN.value = nKernels
+            uKernelN.value = n
         }
     }
 
-    /**
-     * Low discrepancy pseudo random distribution
-     * https://en.wikipedia.org/wiki/Halton_sequence
-     */
-    private fun halton(index: Int, base: Int): Float {
-        var i = index
-        var f = 1.0
-        var r = 0.0
-        while (i > 0) {
-            f /= base
-            r += f * (i % base)
-            i /= base
-        }
-        return r.toFloat()
+    private fun radicalInverse(pBits: Int): Float {
+        var bits = pBits.toLong()
+        bits = (bits shl 16) or (bits shr 16)
+        bits = ((bits and 0x55555555) shl 1) or ((bits and 0xAAAAAAAA) shr 1)
+        bits = ((bits and 0x33333333) shl 2) or ((bits and 0xCCCCCCCC) shr 2)
+        bits = ((bits and 0x0F0F0F0F) shl 4) or ((bits and 0xF0F0F0F0) shr 4)
+        bits = ((bits and 0x00FF00FF) shl 8) or ((bits and 0xFF00FF00) shr 8)
+        return bits.toFloat() * 2.3283064365386963e-10f // / 0x100000000
+    }
+
+    private fun hammersley(i: Int, n: Int): Vec2f {
+        return Vec2f(i.toFloat() / n.toFloat(), radicalInverse(i))
     }
 
     private fun lerp(a: Float, b: Float, f: Float): Float {
@@ -143,7 +140,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
 
     private inner class AoNode(val cam: Camera, val depthTex: TextureNode, val noiseTex: TextureNode, graph: ShaderGraph) : ShaderNode("aoNode", graph) {
         val uKernel = Uniform3fv("uKernel", MAX_KERNEL_SIZE)
-        val uKernelN = Uniform1i("uKernelN")
+        val uKernelN = Uniform1i(32, "uKernelN")
         val uProj = UniformMat4f("uProj")
         val uInvProj = UniformMat4f("uInvProj")
         val uNoiseScale = Uniform2f("uNoiseScale")
@@ -160,8 +157,6 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
             dependsOn(noiseTex)
             dependsOn(inScreenPos)
             super.setup(shaderGraph)
-
-            generateKernel(64)
 
             shaderGraph.descriptorSet.apply {
                 uniformBuffer(name, shaderGraph.stage) {
