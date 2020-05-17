@@ -29,7 +29,6 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512,
                 generate {
                     rect {
                         size.set(1f, 1f)
-                        generateTexCoords()
                     }
                 }
 

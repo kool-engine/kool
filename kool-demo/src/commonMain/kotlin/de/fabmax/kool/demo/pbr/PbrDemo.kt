@@ -37,7 +37,7 @@ class PbrDemo(val ctx: KoolContext) {
     private var reflectionMapPass: ReflectionMapPass? = null
     private var brdfLut: BrdfLutPass? = null
 
-    private val lightCycler = Cycler(lightSetups).apply { index = 2 }
+    private val lightCycler = Cycler(lightSetups)
     private val hdriCycler = Cycler(hdriTextures)
     private val loadedHdris = Array<Texture?>(hdriTextures.size) { null }
 
@@ -117,16 +117,15 @@ class PbrDemo(val ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-510f), zero())
-            layoutSpec.setSize(dps(250f), dps(390f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-555f), zero())
+            layoutSpec.setSize(dps(250f), dps(435f), full())
 
             // environment map selection
             var y = -35f
-            +label("env-lbl") {
+            +label("Environment") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
-                text = "Environment"
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
@@ -162,35 +161,32 @@ class PbrDemo(val ctx: KoolContext) {
                     updateHdri(hdriCycler.index)
                 }
             }
-            y -= 30f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(8f), dps(y), zero())
-                layoutSpec.setSize(pcs(84f), dps(35f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
 
             // light mode selection
             y -= 40f
-            +label("light-lbl") {
+            +label("Image Based Lighting") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
-                text = "Lighting"
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 30f
-            +toggleButton("env-lighting") {
+            +toggleButton("IBL Enabled") {
                 layoutSpec.setOrigin(pcs(8f), dps(y), zero())
                 layoutSpec.setSize(pcs(84f), dps(35f), full())
-                text = "Image Based"
                 isEnabled = true
                 onClick += { _, _, _ ->
                     pbrContentCycler.forEach { it.setUseImageBasedLighting(isEnabled) }
                 }
+            }
+            y -= 40f
+            +label("Discrete Lighting") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                font.setCustom(smallFont)
+                textColor.setCustom(theme.accentColor)
+                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 30f
             val lightLabel = button("selected-light") {
@@ -270,6 +266,15 @@ class PbrDemo(val ctx: KoolContext) {
                     contentLabel.text = pbrContentCycler.current.name
                 }
             }
+            y -= 35f
+            +toggleButton("Auto Rotate") {
+                layoutSpec.setOrigin(pcs(8f), dps(y), zero())
+                layoutSpec.setSize(pcs(84f), dps(35f), full())
+                isEnabled = autoRotate
+                onStateChange += {
+                    autoRotate = isEnabled
+                }
+            }
 
             y -= 10f
             pbrContentCycler.forEach { it.createMenu(this, smallFont, y) }
@@ -334,9 +339,9 @@ class PbrDemo(val ctx: KoolContext) {
                 mipMapping = true)
 
         private val hdriTextures = listOf(
+                EnvironmentMap("${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
                 EnvironmentMap("${Demo.envMapBasePath}/circus_arena_1k.rgbe.png", "Circus"),
                 EnvironmentMap("${Demo.envMapBasePath}/newport_loft.rgbe.png", "Loft"),
-                EnvironmentMap("${Demo.envMapBasePath}/spruit_sunrise_1k.rgbe.png", "Sunrise"),
                 EnvironmentMap("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
                 EnvironmentMap("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
         )
