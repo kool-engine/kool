@@ -57,7 +57,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                         val noiseTex = textureNode("noiseTex")
                         val aoNd = addNode(AoNode(screenCam, depthMap, noiseTex, stage))
                         aoNd.inScreenPos = ifTexCoords.output
-                        colorOutput = aoNd.outColor
+                        colorOutput(aoNd.outColor)
                     }
                 }
                 pipelineLoader = ModeledShader(model).apply {

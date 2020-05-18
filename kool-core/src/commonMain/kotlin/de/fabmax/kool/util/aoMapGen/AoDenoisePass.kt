@@ -50,7 +50,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                         val blurNd = addNode(BlurNode(noisyAo, depth, stage))
                         blurNd.inScreenPos = ifTexCoords.output
                         blurNd.radius = radius.output
-                        colorOutput = blurNd.outColor
+                        colorOutput(blurNd.outColor)
                     }
                 }
                 pipelineLoader = ModeledShader(model).apply {

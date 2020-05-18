@@ -35,7 +35,7 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
                     sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
                 }
                 val ldr = hdrToLdrNode(sampler.outColor)
-                colorOutput = ldr.outColor
+                colorOutput(ldr.outColor)
             }
         }
         pipelineLoader = ModeledShader.CubeMapColor(texName, model).apply {

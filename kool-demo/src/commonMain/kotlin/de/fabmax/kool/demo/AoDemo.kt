@@ -483,7 +483,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
         fragmentStage {
             val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
             val gray = addNode(Red2GrayNode(sampler.outColor, stage)).outGray
-            colorOutput = unlitMaterialNode(gray).outColor
+            colorOutput(unlitMaterialNode(gray).outColor)
         }
     }
 

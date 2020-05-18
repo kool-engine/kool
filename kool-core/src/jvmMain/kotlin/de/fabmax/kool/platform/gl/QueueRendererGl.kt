@@ -1,18 +1,20 @@
 package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.createFloat32Buffer
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL31.glClearBufferfv
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 
 class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(backend, ctx)
+
+    private val colorBuffer = createFloat32Buffer(4) as Float32BufferImpl
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {
@@ -23,10 +25,27 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     fun renderQueue(queue: DrawQueue) {
         queue.renderPass.apply {
             glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            clearColor?.let { glClearColor(it.r, it.g, it.b, it.a) }
-            val clearMask = clearMask()
-            if (clearMask != 0) {
-                glClear(clearMask)
+
+            if (this is OffscreenRenderPass2dMrt) {
+                for (i in 0 until nAttachments) {
+                    (clearColors[i] ?: clearColor)?.let {
+                        colorBuffer[0] = it.r
+                        colorBuffer[1] = it.g
+                        colorBuffer[2] = it.b
+                        colorBuffer[3] = it.a
+                        glClearBufferfv(GL_COLOR, i, colorBuffer.buffer)
+                    }
+                }
+                if (clearDepth) {
+                    glClear(GL_DEPTH_BUFFER_BIT)
+                }
+
+            } else {
+                clearColor?.let { glClearColor(it.r, it.g, it.b, it.a) }
+                val clearMask = clearMask()
+                if (clearMask != 0) {
+                    glClear(clearMask)
+                }
             }
 
             if (colorBlend) {

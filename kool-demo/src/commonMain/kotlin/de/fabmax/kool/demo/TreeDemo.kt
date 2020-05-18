@@ -535,7 +535,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             }
         }
         val hdrToLdr = hdrToLdrNode(mat.outColor)
-        colorOutput = hdrToLdr.outColor
+        colorOutput(hdrToLdr.outColor)
     }
 }
 

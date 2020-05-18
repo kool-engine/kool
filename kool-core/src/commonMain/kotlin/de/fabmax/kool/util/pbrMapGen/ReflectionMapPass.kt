@@ -46,7 +46,7 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
                             inLocalPos = ifLocalPos.output
                             inRoughness = roughness.output
                         }
-                        colorOutput = convNd.outColor
+                        colorOutput(convNd.outColor)
                     }
                 }
                 reflMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {

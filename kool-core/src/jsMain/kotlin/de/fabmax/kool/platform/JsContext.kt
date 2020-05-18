@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
+import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
@@ -379,6 +380,7 @@ external class Touch {
 }
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
+    fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Array)
     fun drawBuffers(buffers: IntArray)
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
     fun readBuffer(src: Int)
@@ -388,6 +390,11 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 
     companion object {
+        val COLOR: Int
+        val DEPTH: Int
+        val STENCIL: Int
+        val DEPTH_STENCIL: Int
+
         val DEPTH_COMPONENT24: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int

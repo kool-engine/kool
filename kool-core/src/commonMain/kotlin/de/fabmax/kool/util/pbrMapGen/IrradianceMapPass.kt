@@ -44,7 +44,7 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
                         val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
                             inLocalPos = ifLocalPos.output
                         }
-                        colorOutput = convNd.outColor
+                        colorOutput(convNd.outColor)
                     }
                 }
                 irrMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {

@@ -276,9 +276,6 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
-        var colorOutput: ShaderNodeIoVar?
-            get() = fragmentStageGraph.colorOutput
-            set(value) { fragmentStageGraph.colorOutput = value }
 
         fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
 
@@ -311,6 +308,12 @@ class ShaderModel(val modelInfo: String = "") {
             camPos?.let { mat.inCamPos = it }
             fragPos?.let { mat.inFragPos = it }
             return mat
+        }
+
+        fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1): FragmentColorOutNode {
+            val colorOut = addNode(FragmentColorOutNode(stage, channels))
+            color0?.let { colorOut.inColors[0] = color0 }
+            return colorOut
         }
     }
 }

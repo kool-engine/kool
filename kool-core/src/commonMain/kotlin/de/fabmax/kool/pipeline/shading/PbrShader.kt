@@ -311,8 +311,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     }
                     inAmbientOccl = aoFactor
                 }
-                val hdrToLdr = hdrToLdrNode(mat.outColor)
-                colorOutput = hdrToLdr.outColor
+                colorOutput(hdrToLdrNode(mat.outColor).outColor)
             }
         }
     }

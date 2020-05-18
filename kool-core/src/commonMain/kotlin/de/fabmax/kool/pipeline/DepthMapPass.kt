@@ -40,7 +40,7 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFo
         // create a minimal dummy shader for each attribute set
         val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
             vertexStage { positionOutput = simpleVertexPositionNode().outPosition }
-            fragmentStage { colorOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f))) }
+            fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
         val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
         return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
@@ -72,7 +72,7 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
             vertexStage { positionOutput = simpleVertexPositionNode().outPosition }
             fragmentStage {
                 val linDepth = addNode(LinearDepthNode(stage))
-                colorOutput = linDepth.outColor
+                colorOutput(linDepth.outColor)
             }
         })
         val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
@@ -126,7 +126,7 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
             }
             fragmentStage {
                 val linDepth = addNode(NormalLinearDepthNode(ifNormals.output, stage))
-                colorOutput = linDepth.outColor
+                colorOutput(linDepth.outColor)
             }
         })
         val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }

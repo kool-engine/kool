@@ -60,7 +60,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
                 val fontSampler = textureSamplerNode(textureNode(U_FONT_TEX), ifTexCoords.output)
                 val mulAlpha = multiplyNode(fontSampler.outColor, alpha.output)
                 val alphaColor = colorAlphaNode(ifColors.output, mulAlpha.output)
-                colorOutput = unlitMaterialNode(alphaColor.outAlphaColor).outColor
+                colorOutput(unlitMaterialNode(alphaColor.outAlphaColor).outColor)
             }
         }
     }

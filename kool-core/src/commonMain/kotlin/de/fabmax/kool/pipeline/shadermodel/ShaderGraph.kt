@@ -78,6 +78,4 @@ class VertexShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.VER
     var positionOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO), null)
 }
 
-class FragmentShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.FRAGMENT_SHADER) {
-    var colorOutput: ShaderNodeIoVar? = null
-}
+class FragmentShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.FRAGMENT_SHADER)

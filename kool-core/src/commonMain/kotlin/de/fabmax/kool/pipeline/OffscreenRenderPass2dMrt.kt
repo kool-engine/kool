@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.copy
 
 open class OffscreenRenderPass2dMrt(drawNode: Node, texWidth: Int, texHeight: Int, texFormats: List<TexFormat>) :
@@ -9,6 +10,8 @@ open class OffscreenRenderPass2dMrt(drawNode: Node, texWidth: Int, texHeight: In
 
     val texFormats = texFormats.copy()
     val nAttachments = texFormats.size
+
+    val clearColors = Array<Color?>(nAttachments) { null }
 
     internal val impl = OffscreenPass2dMrtImpl(this)
 

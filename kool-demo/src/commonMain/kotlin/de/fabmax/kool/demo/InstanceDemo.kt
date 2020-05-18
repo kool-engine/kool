@@ -155,7 +155,7 @@ class InstanceDemo(ctx: KoolContext) {
                 inShininess = pushConstantNode1f("uShininess").output
                 inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
             }
-            colorOutput = phongMat.outColor
+            colorOutput(phongMat.outColor)
         }
     }
 

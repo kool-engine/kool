@@ -163,7 +163,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
                 }
-                colorOutput = phongMat.outColor
+                colorOutput(phongMat.outColor)
             }
         }
     }

@@ -1,23 +1,24 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
-import org.khronos.webgl.WebGLRenderingContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
+import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
+import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
+import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_TEST
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRONT
 import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
 import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
 import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
 import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
+import org.khronos.webgl.set
 
 class QueueRendererWebGl(val ctx: JsContext) {
 
@@ -26,6 +27,8 @@ class QueueRendererWebGl(val ctx: JsContext) {
 
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(ctx)
+
+    private val colorBuffer = Float32Array(4)
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {
@@ -36,10 +39,27 @@ class QueueRendererWebGl(val ctx: JsContext) {
     fun renderQueue(queue: DrawQueue) {
         queue.renderPass.apply {
             ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
-            val clearMask = clearMask()
-            if (clearMask != 0) {
-                ctx.gl.clear(clearMask)
+
+            if (this is OffscreenRenderPass2dMrt) {
+                for (i in 0 until nAttachments) {
+                    (clearColors[i] ?: clearColor)?.let {
+                        colorBuffer[0] = it.r
+                        colorBuffer[1] = it.g
+                        colorBuffer[2] = it.b
+                        colorBuffer[3] = it.a
+                        ctx.gl.clearBufferfv(COLOR, i, colorBuffer)
+                    }
+                }
+                if (clearDepth) {
+                    ctx.gl.clear(DEPTH_BUFFER_BIT)
+                }
+
+            } else {
+                clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
+                val clearMask = clearMask()
+                if (clearMask != 0) {
+                    ctx.gl.clear(clearMask)
+                }
             }
 
             if (colorBlend) {
@@ -140,10 +160,10 @@ class QueueRendererWebGl(val ctx: JsContext) {
     private fun RenderPass.clearMask(): Int {
         var mask = 0
         if (clearDepth) {
-            mask = WebGLRenderingContext.DEPTH_BUFFER_BIT
+            mask = DEPTH_BUFFER_BIT
         }
         if (clearColor != null) {
-            mask = mask or WebGLRenderingContext.COLOR_BUFFER_BIT
+            mask = mask or COLOR_BUFFER_BIT
         }
         return mask
     }

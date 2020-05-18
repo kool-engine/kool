@@ -193,7 +193,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     }
                 }
 
-                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], clearColor, 1)
+                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], arrayOf(clearColor))
 
                 // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
 
@@ -341,7 +341,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2d
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, 1)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, arrayOf(offscreenPass.clearColor))
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
@@ -353,7 +353,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2dMrt
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, offscreenPass.nAttachments)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColors)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
@@ -365,7 +365,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPassCube
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor, 1)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, arrayOf(offscreenPass.clearColor))
 
             backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
@@ -384,7 +384,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
     }
 
-    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearColor: Color?, colorAttachments: Int) =
+    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearColors: Array<Color?>) =
             callocVkRenderPassBeginInfo {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
                 renderPass(renderPass.vkRenderPass)
@@ -394,30 +394,14 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     r.extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
                 }
 
+                // fixme: make clear values optional (if clear color is null or clearDepth = false)
+                val colorAttachments = clearColors.size
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
-                        this[i].setColor(clearColor ?: Color.BLACK)
+                        this[i].setColor(clearColors[i] ?: Color.BLACK)
                     }
                     this[colorAttachments].depthStencil { it.depth(1f); it.stencil(0) }
                 })
-
-                // fixme: make clear values optional
-//                var clearCnt = 0
-//                if (clearDepth) {
-//                    clearCnt++
-//                }
-//                if (clearColor != null) {
-//                    clearCnt++
-//                }
-//                pClearValues(callocVkClearValueN(clearCnt) {
-//                    var clearI = 0
-//                    if (clearColor != null) {
-//                        this[clearI++].setColor(clearColor)
-//                    }
-//                    if (clearDepth) {
-//                        this[clearI].depthStencil { it.depth(1f); it.stencil(0) }
-//                    }
-//                })
             }
 
     private fun VkClearValue.setColor(color: Color) {

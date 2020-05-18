@@ -43,7 +43,7 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512,
                         val lutNd = addNode(BrdfLutNode(stage)).apply {
                             inTexCoords = ifTexCoords.output
                         }
-                        colorOutput = lutNd.outColor
+                        colorOutput(lutNd.outColor)
                     }
                 }
                 pipelineLoader = ModeledShader(model)

@@ -76,7 +76,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
             }
             fragmentStage {
                 val color = pushConstantNodeColor("uStaticColor")
-                colorOutput = unlitMaterialNode(color.output).outColor
+                colorOutput(unlitMaterialNode(color.output).outColor)
             }
         }
 
@@ -87,7 +87,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
                 positionOutput = simpleVertexPositionNode().outPosition
             }
             fragmentStage {
-                colorOutput = unlitMaterialNode(ifColors.output).outColor
+                colorOutput(unlitMaterialNode(ifColors.output).outColor)
             }
         }
 
@@ -100,7 +100,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
             }
             fragmentStage {
                 val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
-                colorOutput = unlitMaterialNode(sampler.outColor).outColor
+                colorOutput(unlitMaterialNode(sampler.outColor).outColor)
             }
         }
 
@@ -116,7 +116,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
             fragmentStage {
                 val nrmPos = normalizeNode(ifFragPos.output)
                 val sampler = cubeMapSamplerNode(cubeMapNode(texName), nrmPos.output)
-                colorOutput = unlitMaterialNode(sampler.outColor).outColor
+                colorOutput(unlitMaterialNode(sampler.outColor).outColor)
             }
         }
     }
