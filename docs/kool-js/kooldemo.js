@@ -88,6 +88,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+  var DeferredShadingPass = $module$kool.de.fabmax.kool.util.deferred.DeferredShadingPass;
+  var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
+  var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
+  var OrthographicCamera = $module$kool.de.fabmax.kool.scene.OrthographicCamera;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
@@ -1035,7 +1039,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('colorTex'), ifTexCoords.v.output);
     var gray = $receiver_1.addNode_u9w9by$(new AmbientOcclusionDemo$Red2GrayNode(sampler.outColor, $receiver_1.stage)).outGray;
-    $receiver_1.colorOutput = $receiver_1.unlitMaterialNode_r20yfm$(gray).outColor;
+    $receiver_1.colorOutput_d76fwk$($receiver_1.unlitMaterialNode_r20yfm$(gray).outColor);
     return $receiver;
   };
   function AmbientOcclusionDemo$Red2GrayNode(inRed, graph) {
@@ -1564,7 +1568,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_2.inShininess = $receiver_1.pushConstantNode1f_61zpoe$('uShininess').output;
     $receiver_2.inSpecularIntensity = $receiver_1.pushConstantNode1f_61zpoe$('uSpecularIntensity').output;
     var phongMat = $receiver_2;
-    $receiver_1.colorOutput = phongMat.outColor;
+    $receiver_1.colorOutput_d76fwk$(phongMat.outColor);
     return $receiver;
   };
   function InstanceDemo$Lod(maxInsts, maxDist, color) {
@@ -1841,6 +1845,98 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'InstanceDemo',
     interfaces: []
   };
+  function mrtScene$lambda$lambda$lambda(closure$mrtPass) {
+    return function ($receiver) {
+      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
+      $receiver.unaryPlus_uv0sim$(closure$mrtPass.camera);
+      return Unit;
+    };
+  }
+  function mrtScene$lambda$lambda$lambda$lambda($receiver) {
+    for (var x = -3; x <= 3; x++) {
+      for (var y = -3; y <= 3; y++) {
+        var h = Math_0.atan2(y, x) * math.RAD_2_DEG;
+        var a = abs(x);
+        var b = abs(y);
+        var s = Math_0.max(a, b) / 5.0;
+        $receiver.color = Color.Companion.fromHsv_7b5o5w$(h, s, 0.75, 1.0);
+        $receiver.transform.push();
+        $receiver.translate_y2kzbl$(x, 0.5, y);
+        var $receiver_0 = $receiver.cubeProps.defaults();
+        $receiver_0.size.set_y2kzbl$(0.8, 0.8, 0.8);
+        $receiver_0.centered();
+        $receiver.cube_lhbb6w$($receiver.cubeProps);
+        $receiver.transform.pop();
+      }
+    }
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    $receiver.color = Color.Companion.GRAY;
+    var $receiver_1 = $receiver.rectProps.defaults();
+    $receiver_1.size.set_dleff0$(10.0, 10.0);
+    $receiver_1.origin.set_y2kzbl$($receiver_1.size.x, $receiver_1.size.y, 0.0).scale_mx4ult$(-0.5);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function mrtScene$lambda$lambda$lambda_0($receiver) {
+    $receiver.generate_v2sixm$(mrtScene$lambda$lambda$lambda$lambda);
+    var mrtCfg = new DeferredMrtShader$MrtPbrConfig();
+    $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
+    return Unit;
+  }
+  function mrtScene$lambda$lambda$lambda_1(closure$i) {
+    return function ($receiver) {
+      var closure$i_0 = closure$i;
+      var $receiver_0 = $receiver.rectProps.defaults();
+      $receiver_0.origin.set_y2kzbl$((closure$i_0 - 1 | 0) * 1.5 - 0.5, -0.5, 0.0);
+      $receiver_0.mirrorTexCoordsY();
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      return Unit;
+    };
+  }
+  function mrtScene$lambda$lambda(closure$i, closure$mrtPass) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(mrtScene$lambda$lambda$lambda_1(closure$i));
+      $receiver.pipelineLoader = new ModeledShader$TextureColor(closure$mrtPass.textures.get_za3lpa$(closure$i), void 0, textureColorModel('colorTex'));
+      return Unit;
+    };
+  }
+  function mrtScene() {
+    var $receiver = new Scene_init(null);
+    var tmp$;
+    var mrtPass = new DeferredShadingPass($receiver);
+    tmp$ = mrtPass.clearColors;
+    for (var i = 0; i !== tmp$.length; ++i) {
+      mrtPass.clearColors[i] = Color.Companion.WHITE;
+    }
+    $receiver.addOffscreenPass_m1c2kf$(mrtPass);
+    mrtPass.colorBlend = false;
+    var $receiver_0 = mrtPass.content;
+    $receiver_0.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, mrtScene$lambda$lambda$lambda(mrtPass)));
+    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, mrtScene$lambda$lambda$lambda_0));
+    $receiver.mainRenderPass.colorBlend = false;
+    var $receiver_1 = new OrthographicCamera();
+    $receiver_1.isKeepAspectRatio = false;
+    $receiver_1.left = -0.5;
+    $receiver_1.right = 0.5;
+    $receiver_1.top = 0.5;
+    $receiver_1.bottom = -0.5;
+    $receiver.camera = $receiver_1;
+    for (var i_0 = 0; i_0 <= 2; i_0++) {
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, mrtScene$lambda$lambda(i_0, mrtPass)));
+    }
+    return $receiver;
+  }
+  function textureColorModel(texName) {
+    var $receiver = new ShaderModel('ModeledShader.textureColor()');
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outPosition;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
+    $receiver_1.colorOutput_d76fwk$(sampler.outColor);
+    return $receiver;
+  }
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -6013,7 +6109,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.heMesh = new HalfEdgeMesh(this.srcModel);
     this.loadModel_0('bunny.kmfz', 1.0, new Vec3f(0.0, -3.0, 0.0), ctx);
     this.loadModel_0('cow.kmfz', 1.0, Vec3f.Companion.ZERO, ctx);
-    this.loadModel_0('teapot.kmfz', 1.0, Vec3f.Companion.ZERO, ctx);
+    this.loadModel_0('teapot.kmfz', 1.0, new Vec3f(0.0, -1.5, 0.0), ctx);
     this.simplificationScene = this.mainScene_0(ctx);
     var $receiver_2 = this.scenes;
     var element = this.simplificationScene;
@@ -7663,7 +7759,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     }var mat = $receiver_4;
     var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
-    $receiver_3.colorOutput = hdrToLdr.outColor;
+    $receiver_3.colorOutput_d76fwk$(hdrToLdr.outColor);
     return $receiver;
   }
   function makeTreeGroundGrid$lambda$lambda$lambda$lambda($receiver) {
@@ -8797,6 +8893,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.helloWorldScene = helloWorldScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.InstanceDemo = InstanceDemo;
+  package$demo.mrtScene = mrtScene;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance
