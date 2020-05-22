@@ -6,8 +6,9 @@ import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.util.logW
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
+import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.math.round
+import kotlin.math.roundToLong
 
 /**
  * Javascript / WebGL platform implementation
@@ -23,18 +24,25 @@ actual fun now(): Double = js("performance.now()") as Double
 
 actual fun Double.toString(precision: Int): String {
     val p = precision.clamp(0, 12)
+    val s = if (this < 0) "-" else ""
+    var a = abs(this)
+
     if (p == 0) {
-        return "${round(this).toLong()}"
+        return "$s${a.roundToLong()}"
     }
 
-    val shifted = round(this * 10.0.pow(p)).toLong()
-    var str = "$shifted"
-    var i = str.length - precision
-    while (i < 1) {
-        str = "0$str"
-        i++
+    val fac = 10.0.pow(p).roundToLong()
+    var fracF = ((a % 1.0) * fac).roundToLong()
+    if (fracF == fac) {
+        fracF = 0
+        a += 1
     }
-    return str.substring(0 until i) + "." + str.substring(i)
+
+    var frac = fracF.toString()
+    while (frac.length < p) {
+        frac = "0$frac"
+    }
+    return "$s${a.toLong()}.$frac"
 }
 
 actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
