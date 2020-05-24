@@ -49,7 +49,9 @@ class AmbientOcclusionHelper(scene: Scene) {
         }
 
         aoPass = AmbientOcclusionPass(proxyCamera, depthPass)
+        aoPass.dependsOn(depthPass)
         denoisePass = AoDenoisePass(aoPass, depthPass)
+        denoisePass.dependsOn(aoPass)
 
         scene.addOffscreenPass(depthPass)
         scene.addOffscreenPass(aoPass)

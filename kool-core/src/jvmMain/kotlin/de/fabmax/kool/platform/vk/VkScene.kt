@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import org.lwjgl.vulkan.VkCommandBuffer
+import java.nio.LongBuffer
 
 interface VkScene {
 
@@ -8,6 +8,8 @@ interface VkScene {
 
     fun onSwapChainCreated(swapChain: SwapChain)
 
-    fun onDrawFrame(swapChain: SwapChain, imageIndex: Int): VkCommandBuffer
+    fun onDrawFrame(swapChain: SwapChain, imageIndex: Int, fence: LongBuffer, waitSema: LongBuffer, signalSema: LongBuffer)
+
+    fun onDestroy(sys: VkSystem)
 
 }

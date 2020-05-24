@@ -10,10 +10,12 @@ import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
+import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkCommandBuffer
+import java.nio.LongBuffer
 import java.util.*
 
 class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
@@ -37,6 +39,9 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
 
+    private val semaPool: SemaphorePool
+    private val renderPassGraph = RenderPassGraph()
+
     init {
         windowWidth = props.width
         windowHeight = props.height
@@ -46,6 +51,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             isValidating = true
         }
         vkSystem = VkSystem(props, vkSetup, vkScene, this, ctx)
+        semaPool = SemaphorePool(vkSystem)
+        vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
 
@@ -151,59 +158,18 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             }
         }
 
-        override fun onDrawFrame(swapChain: SwapChain, imageIndex: Int): VkCommandBuffer {
-            /*
-             * From Vulkan Dos and don'ts:
-             * Aim for 15-30 command buffers and 5-10 vkQueueSubmit() calls per frame, batch VkSubmitInfo() to a
-             * single call as much as possible. Each vkQueueSubmit() has a performance cost on CPU, so lower is
-             * generally better. Note that VkSemaphore-based synchronization can only be done across vkQueueSubmit()
-             * calls, so you may be forced to split work up into multiple submits.
-             */
+        override fun onDestroy(sys: VkSystem) { }
 
+        override fun onDrawFrame(swapChain: SwapChain, imageIndex: Int, fence: LongBuffer, waitSema: LongBuffer, signalSema: LongBuffer) {
+            // delete discarded pipelines, if there are any
             if (ctx.disposablePipelines.isNotEmpty()) {
                 disposePipelines()
             }
 
-            cmdBuffers[imageIndex].destroy()
-            val pool = cmdPools[imageIndex]
-            pool.reset()
-            val cmdBufs = pool.createCommandBuffers(1)
-            cmdBuffers[imageIndex] = cmdBufs
+            renderAll(swapChain, imageIndex, fence, waitSema[0], signalSema[0])
 
-            // record command list
-
-            memStack {
-                val commandBuffer = cmdBufs.vkCommandBuffers[0]
-                val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
-                check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
-
-                // fixme: submit individual render passes instead of merging command queues
-                val mergeQueue = mutableListOf<DrawCommand>()
-                var clearColor: Color? = null
-                for (scene in ctx.scenes) {
-                    for (i in scene.offscreenPasses.indices) {
-                        if (scene.offscreenPasses[i].isEnabled) {
-                            renderOffscreen(commandBuffer, scene.offscreenPasses[i])
-                        }
-                    }
-
-                    mergeQueue += scene.mainRenderPass.drawQueue.commands
-                    if (scene.mainRenderPass.clearColor != null) {
-                        clearColor = scene.mainRenderPass.clearColor
-                    }
-                }
-
-                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], arrayOf(clearColor))
-
-                // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
-
-                vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                renderDrawQueue(commandBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
-                vkCmdEndRenderPass(commandBuffer)
-
-                check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
-
-                // delete discarded meshes
+            // perform post render actions, if there are any
+            if (actionQueue.isNotEmpty()) {
                 val delIt = actionQueue.iterator()
                 for (action in delIt) {
                     if (action.delay-- <= 0) {
@@ -214,8 +180,130 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     }
                 }
             }
+        }
 
-            return cmdBufs.vkCommandBuffers[0]
+        private fun renderAll(swapChain: SwapChain, imageIndex: Int, fence: LongBuffer, waitSema: Long, signalSema: Long) {
+            /*
+             * From Vulkan Dos and don'ts:
+             * Aim for 15-30 command buffers and 5-10 vkQueueSubmit() calls per frame, batch VkSubmitInfo() to a
+             * single call as much as possible. Each vkQueueSubmit() has a performance cost on CPU, so lower is
+             * generally better. Note that VkSemaphore-based synchronization can only be done across vkQueueSubmit()
+             * calls, so you may be forced to split work up into multiple submits.
+             */
+            renderPassGraph.updateGraph(ctx.scenes)
+            semaPool.reclaimAll(imageIndex)
+
+            for (iGrp in renderPassGraph.groups.indices) {
+                val grp = renderPassGraph.groups[iGrp]
+                if (grp.isOnScreen) {
+                    grp.signalSemaphore = signalSema
+                } else {
+                    grp.signalSemaphore = semaPool.getSemaphore(imageIndex)
+                }
+            }
+
+//            renderPassGraph.apply {
+//                System.err.println("graph update: ${groups.size} groups, frame wait sema: $waitSema, frame signal sema: $signalSema")
+//            }
+
+            memStack {
+                cmdBuffers[imageIndex].destroy()
+                val pool = cmdPools[imageIndex]
+                pool.reset()
+                val cmdBufs = pool.createCommandBuffers(renderPassGraph.requiredCommandBuffers)
+                cmdBuffers[imageIndex] = cmdBufs
+
+                for (iGrp in renderPassGraph.groups.indices) {
+                    val group = renderPassGraph.groups[iGrp]
+
+                    val submitCmdBufs = makeCommandBuffers(cmdBufs, group, swapChain, imageIndex)
+
+                    var nWaitSemas = group.dependencies.size
+                    if (group.isOnScreen) {
+                        nWaitSemas++
+                    }
+                    val waitSemas = if (nWaitSemas > 0) {
+                        val longs = mallocLong(nWaitSemas)
+                        group.dependencies.forEachIndexed { i, dep ->
+                            longs.put(i, dep.signalSemaphore)
+                        }
+                        if (group.isOnScreen) {
+                            longs.put(nWaitSemas - 1, waitSema)
+                        }
+                        longs
+                    } else {
+                        null
+                    }
+
+//                    val deps = (0 until nWaitSemas).map { String.format("0x%x", waitSemas!!.get(it)) }.joinToString(", ")
+//                    System.err.printf("  grp $iGrp [onScr: ${group.isOnScreen}]: ${group.renderPasses.size} passes, deps: [$deps], sig: 0x%x\n", group.signalSemaphore)
+
+                    val submitInfo = callocVkSubmitInfo {
+                        sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
+                        if (waitSemas != null) {
+                            waitSemaphoreCount(nWaitSemas)
+                            pWaitSemaphores(waitSemas)
+                        }
+                        pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+                        pCommandBuffers(submitCmdBufs)
+                        pSignalSemaphores(longs(group.signalSemaphore))
+                    }
+                    if (group.isOnScreen) {
+                        vkResetFences(sys.device.vkDevice, fence)
+                        check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, fence[0]) == VK_SUCCESS)
+                    } else {
+                        check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, 0L) == VK_SUCCESS)
+                    }
+                }
+            }
+        }
+
+        private fun MemoryStack.makeCommandBuffers(cmdBuffers: CommandBuffers, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int): PointerBuffer {
+            val nCmdBufs = if (group.isOnScreen) { 1 } else { group.renderPasses.size }
+            val submitCmdBufs = mallocPointer(nCmdBufs)
+
+            for (iPass in 0 until nCmdBufs) {
+                val commandBuffer = cmdBuffers.nextCommandBuffer()
+                submitCmdBufs.put(iPass, commandBuffer)
+
+                if (group.isOnScreen) {
+                    makeCommandBufferOnScreen(commandBuffer, group, swapChain, imageIndex)
+                } else {
+                    makeCommandBufferOffScreen(commandBuffer, group.renderPasses[iPass] as OffscreenRenderPass)
+                }
+            }
+            return submitCmdBufs
+        }
+
+        private fun MemoryStack.makeCommandBufferOnScreen(cmdBuffer: VkCommandBuffer, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int) {
+            val mergeQueue = mutableListOf<DrawCommand>()
+            var clearColor: Color? = null
+
+            // on screen render passes of all scenes are merged into a single command buffer
+            for (i in group.renderPasses.indices) {
+                val onScreenPass = group.renderPasses[i]
+                mergeQueue += onScreenPass.drawQueue.commands
+                onScreenPass.clearColor?.let { clearColor = it }
+            }
+
+            // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
+
+            val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
+            check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
+
+            val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], arrayOf(clearColor))
+            vkCmdBeginRenderPass(cmdBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+            renderDrawQueue(cmdBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
+            vkCmdEndRenderPass(cmdBuffer)
+
+            check(vkEndCommandBuffer(cmdBuffer) == VK_SUCCESS)
+        }
+
+        private fun MemoryStack.makeCommandBufferOffScreen(cmdBuffer: VkCommandBuffer, pass: OffscreenRenderPass) {
+            val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
+            check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
+            renderOffscreen(cmdBuffer, pass)
+            check(vkEndCommandBuffer(cmdBuffer) == VK_SUCCESS)
         }
 
         private fun disposePipelines() {
@@ -229,7 +317,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         it.destroy()
                     }
                     delPipeline?.freeDescriptorSetInstance(pipeline)
-                    // todo: dispose entire pipeline if no instances left
                 }
             }
             ctx.disposablePipelines.clear()
@@ -411,6 +498,40 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             it.float32(2, color.b)
             it.float32(3, color.a)
         }
+    }
+
+    private class SemaphorePool(val sys: VkSystem) : VkResource() {
+        private val pools = Array(sys.swapChain?.nImages ?: 3) { mutableListOf<Long>() }
+        private val available = Array(sys.swapChain?.nImages ?: 3) { mutableListOf<Long>() }
+
+        fun reclaimAll(imageIndex: Int) {
+            available[imageIndex].addAll(pools[imageIndex])
+        }
+
+        fun getSemaphore(imageIndex: Int): Long {
+            val sema: Long
+            if (available[imageIndex].isNotEmpty()) {
+                sema = available[imageIndex].removeAt(available[imageIndex].lastIndex)
+            } else {
+                memStack {
+                    val semaphoreInfo = callocVkSemaphoreCreateInfo { sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO) }
+                    sema = checkCreatePointer { vkCreateSemaphore(sys.device.vkDevice, semaphoreInfo, null, it) }
+                    pools[imageIndex].add(sema)
+                }
+            }
+            return sema
+        }
+
+        override fun freeResources() {
+            pools.forEach { pool ->
+                pool.forEach { sema ->
+                    vkDestroySemaphore(sys.device.vkDevice, sema, null)
+                }
+                pool.clear()
+            }
+            available.forEach { it.clear() }
+        }
+
     }
 
     companion object {

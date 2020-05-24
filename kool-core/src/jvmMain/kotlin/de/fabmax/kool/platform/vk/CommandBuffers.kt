@@ -7,6 +7,8 @@ class CommandBuffers(val commandPool: CommandPool, nBuffers: Int) : VkResource()
 
     val vkCommandBuffers: List<VkCommandBuffer>
 
+    private var index = 0
+
     init {
         memStack {
             val cmdBuffers = mallocPointer(nBuffers)
@@ -24,6 +26,10 @@ class CommandBuffers(val commandPool: CommandPool, nBuffers: Int) : VkResource()
             }
             vkCommandBuffers = commandBuffers
         }
+    }
+
+    fun nextCommandBuffer(): VkCommandBuffer {
+        return vkCommandBuffers[index++]
     }
 
     override fun freeResources() {

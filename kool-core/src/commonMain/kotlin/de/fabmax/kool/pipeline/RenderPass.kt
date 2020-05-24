@@ -12,6 +12,9 @@ abstract class RenderPass(val drawNode: Node) {
 
     var name: String? = null
     var type = Type.COLOR
+
+    val dependencies = mutableListOf<RenderPass>()
+
     var viewport = KoolContext.Viewport(0, 0, 0, 0)
     abstract val camera: Camera
 
@@ -28,6 +31,10 @@ abstract class RenderPass(val drawNode: Node) {
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
+
+    fun dependsOn(renderPass: RenderPass) {
+        dependencies += renderPass
+    }
 
     open fun update(ctx: KoolContext) {
         if (isUpdateDrawNode) {

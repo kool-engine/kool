@@ -19,6 +19,8 @@ class DeferredPbrPass(scene: Scene, mrtPass: DeferredMrtPass, cfg: DeferredPbrSh
         }
         lighting = scene.lighting
 
+        dependsOn(mrtPass)
+
         camera = OrthographicCamera().apply {
             projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             isKeepAspectRatio = false

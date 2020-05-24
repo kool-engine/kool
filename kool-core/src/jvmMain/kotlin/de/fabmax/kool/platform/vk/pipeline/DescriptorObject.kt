@@ -8,7 +8,6 @@ import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma
-import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
@@ -27,7 +26,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     private val buffer: Buffer
 
     init {
-        val usage = VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+        val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
         buffer = Buffer(graphicsPipeline.sys, ubo.size.toLong(), usage, allocUsage).also {
             graphicsPipeline.addDependingResource(it)
@@ -42,11 +41,11 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
                 range(ubo.size.toLong())
             }
             vkWriteDescriptorSet
-                    .sType(VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
                     .dstSet(dstSet)
                     .dstBinding(binding)
                     .dstArrayElement(0)
-                    .descriptorType(VK10.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
                     .descriptorCount(1)
                     .pBufferInfo(buffereInfo)
         }
@@ -64,7 +63,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 }
 
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
-    private var boundTex: LoadedTextureVk? = null
+    private var boundTex = mutableListOf<LoadedTextureVk>()
 
     private val loadingTextures = mutableListOf<LoadingTex>()
 
@@ -111,6 +110,9 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         }
 
         var allValid = true
+        if (boundTex.size != sampler.arraySize) {
+            boundTex.clear()
+        }
         for (i in 0 until sampler.arraySize) {
             val tex = sampler.textures[i]
             if (tex == null) {
@@ -126,8 +128,19 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                     }
                 }
 
-                if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
-                    boundTex = tex.loadedTexture as LoadedTextureVk
+                val bound = if (i < boundTex.size) boundTex[i] else null
+                if (tex.loadingState == Texture.LoadingState.LOADED && bound != tex.loadedTexture) {
+                    when {
+                        i < boundTex.size -> {
+                            boundTex[i] = tex.loadedTexture as LoadedTextureVk
+                        }
+                        i == boundTex.size -> {
+                            boundTex.add(tex.loadedTexture as LoadedTextureVk)
+                        }
+                        else -> {
+                            throw IllegalStateException()
+                        }
+                    }
                     isDescriptorSetUpdateRequired = true
                 }
 
@@ -183,9 +196,6 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d, null, sampler2d.arraySize)
         constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, null, samplerCube, samplerCube.arraySize)
-
-//        val texture: Texture?
-//            get() = if (mode == MODE_2D) { sampler2d!!.texture } else { samplerCube!!.texture }
 
         val textures: Array<out Texture?>
             get() = if (mode == MODE_2D) { sampler2d!!.textures } else { samplerCube!!.textures }

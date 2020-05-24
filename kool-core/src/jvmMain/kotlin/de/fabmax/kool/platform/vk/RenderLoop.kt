@@ -69,19 +69,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             val waitSemaphores = longs(imageAvailableSemaphore[currentFrame])
             val signalSemaphores = longs(renderFinishedSemaphore[currentFrame])
 
-            val commandBuffer = sys.scene.onDrawFrame(swapChain, imageIndex)
-
-            val submitInfo = callocVkSubmitInfo {
-                sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
-                waitSemaphoreCount(1)
-                pWaitSemaphores(waitSemaphores)
-                pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-                pCommandBuffers(pointers(commandBuffer))
-                pSignalSemaphores(signalSemaphores)
-            }
-
-            vkResetFences(sys.device.vkDevice, fence)
-            checkVk(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, inFlightFences[currentFrame]))
+            sys.scene.onDrawFrame(swapChain, imageIndex, fence, waitSemaphores, signalSemaphores)
 
             val presentInfo = callocVkPresentInfoKHR {
                 sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)

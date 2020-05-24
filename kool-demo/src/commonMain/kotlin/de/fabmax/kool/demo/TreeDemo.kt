@@ -58,10 +58,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.25f))
         }
 
-        val shadowMaps = mutableListOf(
-                CascadedShadowMap(this, 0, mapSize = 2048)
-                //CascadedShadowMap(this, 1, mapSize = 2048)
-        )
+        val shadowMaps = mutableListOf(CascadedShadowMap(this, 0, mapSize = 2048))
 
         +makeTreeGroundGrid(10, shadowMaps)
 

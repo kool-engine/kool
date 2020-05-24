@@ -76,7 +76,7 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
 
 class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
     var depthMap: TextureNode? = null
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.01f))
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.005f))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
