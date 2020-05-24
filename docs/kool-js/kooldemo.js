@@ -55,6 +55,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
+  var DeferredMrtPass = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtPass;
+  var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
+  var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
+  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
+  var DeferredPbrShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredPbrShader.DeferredPbrConfig;
+  var DeferredPbrPass = $module$kool.de.fabmax.kool.util.deferred.DeferredPbrPass;
+  var OrthographicCamera = $module$kool.de.fabmax.kool.scene.OrthographicCamera;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
@@ -79,19 +88,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
   var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var MutableColor = $module$kool.de.fabmax.kool.util.MutableColor;
   var InstancedLodController$Instance = $module$kool.de.fabmax.kool.util.InstancedLodController.Instance;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
-  var DeferredShadingPass = $module$kool.de.fabmax.kool.util.deferred.DeferredShadingPass;
-  var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
-  var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
-  var OrthographicCamera = $module$kool.de.fabmax.kool.scene.OrthographicCamera;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
@@ -118,7 +122,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
-  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var numberToInt = Kotlin.numberToInt;
@@ -129,7 +132,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
   var wrapFunction = Kotlin.wrapFunction;
   var equals = Kotlin.equals;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
@@ -1035,11 +1037,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
     ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outPosition;
+    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('colorTex'), ifTexCoords.v.output);
     var gray = $receiver_1.addNode_u9w9by$(new AmbientOcclusionDemo$Red2GrayNode(sampler.outColor, $receiver_1.stage)).outGray;
-    $receiver_1.colorOutput_d76fwk$($receiver_1.unlitMaterialNode_r20yfm$(gray).outColor);
+    $receiver_1.colorOutput_4twi6n$($receiver_1.unlitMaterialNode_r20yfm$(gray).outColor);
     return $receiver;
   };
   function AmbientOcclusionDemo$Red2GrayNode(inRed, graph) {
@@ -1105,6 +1107,141 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'AmbientOcclusionDemo',
     interfaces: []
   };
+  function deferredScene$lambda$lambda(closure$isSpotLight) {
+    return function ($receiver) {
+      var p = new MutableVec3f(6.0, 10.0, -7.0);
+      if (closure$isSpotLight) {
+        $receiver.setSpot_nve3wz$(p, scale(p, -1.0).norm(), 45.0);
+        $receiver.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.2).toLinear(), 750.0);
+      } else {
+        $receiver.setDirectional_czzhiu$(MutableVec3f_init(p).scale_mx4ult$(-1.0).norm());
+        $receiver.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.2).toLinear(), 3.0);
+      }
+      return Unit;
+    };
+  }
+  function deferredScene$lambda$lambda$lambda(closure$mrtPass) {
+    return function ($receiver) {
+      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
+      $receiver.unaryPlus_uv0sim$(closure$mrtPass.camera);
+      return Unit;
+    };
+  }
+  function deferredScene$lambda$lambda$lambda$lambda($receiver) {
+    for (var x = -3; x <= 3; x++) {
+      for (var y = -3; y <= 3; y++) {
+        var h = Math_0.atan2(y, x) * math.RAD_2_DEG;
+        var a = abs(x);
+        var b = abs(y);
+        var s = Math_0.max(a, b) / 5.0;
+        $receiver.color = Color.Companion.fromHsv_7b5o5w$(h, s, 0.75, 1.0);
+        $receiver.transform.push();
+        $receiver.translate_y2kzbl$(x, 0.5, y);
+        if ((x + 10 | 0) % 2 === (y + 10 | 0) % 2) {
+          var $receiver_0 = $receiver.cubeProps.defaults();
+          $receiver_0.size.set_y2kzbl$(0.9, 0.9, 0.9);
+          $receiver_0.centered();
+          $receiver.cube_lhbb6w$($receiver.cubeProps);
+        } else {
+          var $receiver_1 = $receiver.sphereProps.defaults();
+          $receiver_1.steps = 3;
+          $receiver_1.radius = 0.45;
+          $receiver.icoSphere_mojs8w$($receiver.sphereProps);
+        }
+        $receiver.transform.pop();
+      }
+    }
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    $receiver.color = Color.Companion.WHITE;
+    var $receiver_2 = $receiver.rectProps.defaults();
+    $receiver_2.size.set_dleff0$(15.0, 15.0);
+    $receiver_2.origin.set_y2kzbl$($receiver_2.size.x, $receiver_2.size.y, 0.0).scale_mx4ult$(-0.5);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function deferredScene$lambda$lambda$lambda_0($receiver) {
+    $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda$lambda);
+    var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
+    $receiver_0.roughness = 0.2;
+    var mrtCfg = $receiver_0;
+    $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
+    return Unit;
+  }
+  function deferredScene$lambda$lambda$lambda_1($receiver) {
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.origin.set_y2kzbl$(-0.5, -0.5, 0.0);
+    $receiver_0.mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function deferredScene$lambda$lambda_0(closure$pbrPass) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda_1);
+      $receiver.pipelineLoader = new ModeledShader$TextureColor(closure$pbrPass.colorTexture, void 0, textureColorModel('colorTex'));
+      return Unit;
+    };
+  }
+  function deferredScene() {
+    var $receiver = new Scene_init(null);
+    var isSpotLight = true;
+    $receiver.lighting.singleLight_q9zcvo$(deferredScene$lambda$lambda(isSpotLight));
+    var mrtPass = new DeferredMrtPass();
+    $receiver.addOffscreenPass_m1c2kf$(mrtPass);
+    mrtPass.colorBlend = false;
+    var $receiver_0 = mrtPass.content;
+    $receiver_0.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, deferredScene$lambda$lambda$lambda(mrtPass)));
+    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, deferredScene$lambda$lambda$lambda_0));
+    var shadows = ArrayList_init();
+    if (isSpotLight) {
+      var element = new SimpleShadowMap($receiver, 0, 2048, mrtPass.content);
+      shadows.add_11rb$(element);
+    } else {
+      var $receiver_1 = new CascadedShadowMap($receiver, 0, 3, 2048, mrtPass.content);
+      $receiver_1.maxRange = 75.0;
+      var $receiver_2 = $receiver_1.cascades;
+      var tmp$;
+      for (tmp$ = 0; tmp$ !== $receiver_2.length; ++tmp$) {
+        var element_0 = $receiver_2[tmp$];
+        element_0.sceneCam = mrtPass.camera;
+      }
+      shadows.add_11rb$($receiver_1);
+    }
+    var $receiver_3 = new DeferredPbrShader$DeferredPbrConfig();
+    addAll($receiver_3.shadowMaps, shadows);
+    var cfg = $receiver_3;
+    var pbrPass = new DeferredPbrPass($receiver, mrtPass, cfg);
+    $receiver.addOffscreenPass_m1c2kf$(pbrPass);
+    var shadowMap = shadows.get_za3lpa$(0);
+    if (Kotlin.isType(shadowMap, SimpleShadowMap))
+      pbrPass.dependsOn_yqp8fe$(shadowMap);
+    else if (Kotlin.isType(shadowMap, CascadedShadowMap)) {
+      var $receiver_4 = shadowMap.cascades;
+      var tmp$_0;
+      for (tmp$_0 = 0; tmp$_0 !== $receiver_4.length; ++tmp$_0) {
+        var element_1 = $receiver_4[tmp$_0];
+        pbrPass.dependsOn_yqp8fe$(element_1);
+      }
+    }var $receiver_5 = new OrthographicCamera();
+    $receiver_5.isKeepAspectRatio = false;
+    $receiver_5.left = -0.5;
+    $receiver_5.right = 0.5;
+    $receiver_5.top = 0.5;
+    $receiver_5.bottom = -0.5;
+    $receiver.camera = $receiver_5;
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, deferredScene$lambda$lambda_0(pbrPass)));
+    return $receiver;
+  }
+  function textureColorModel(texName) {
+    var $receiver = new ShaderModel('ModeledShader.textureColor()');
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
+    $receiver_1.colorOutput_4twi6n$(sampler.outColor);
+    return $receiver;
+  }
   function demo(startScene) {
     if (startScene === void 0)
       startScene = null;
@@ -1125,7 +1262,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_2)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_3)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_4)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_5))]);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_2)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_3)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_4)), to('deferredDemo', new Demo$DemoEntry('Deferred Shading', true, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -1335,6 +1472,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
+    $receiver.add_11rb$(deferredScene());
+    return Unit;
+  }
+  function Demo$demos$lambda_6($receiver, it) {
     $receiver.add_11rb$(helloWorldScene());
     return Unit;
   }
@@ -1438,7 +1579,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.nBunnies_0 = 10;
     this.isLodColors_0 = false;
     this.isAutoRotate_0 = true;
-    this.modelCenter_0 = MutableVec3f_init();
+    this.modelCenter_0 = MutableVec3f_init_0();
     this.modelRadius_0 = 1.0;
     this.lodController_0 = new InstancedLodController();
     this.lods_0 = mutableListOf([new InstanceDemo$Lod(8, 10.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_PURPLE)), new InstanceDemo$Lod(32, 20.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_RED)), new InstanceDemo$Lod(128, 30.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_AMBER)), new InstanceDemo$Lod(500, 40.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_LIME)), new InstanceDemo$Lod(2000, 50.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_GREEN)), new InstanceDemo$Lod(10000, 1000.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_BLUE))]);
@@ -1554,11 +1695,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     mvpNode.v = $receiver_0.mvpNode();
     var modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
     var mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
-    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
-    var worldPos = $receiver_0.transformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).output;
+    var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
+    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    var worldPos = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).outVec3;
     ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
-    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$($receiver_0.attrPositions().output, mvpMat).outPosition;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_1.multiLightNode_za3lpa$();
@@ -1568,7 +1709,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_2.inShininess = $receiver_1.pushConstantNode1f_61zpoe$('uShininess').output;
     $receiver_2.inSpecularIntensity = $receiver_1.pushConstantNode1f_61zpoe$('uSpecularIntensity').output;
     var phongMat = $receiver_2;
-    $receiver_1.colorOutput_d76fwk$(phongMat.outColor);
+    $receiver_1.colorOutput_4twi6n$(phongMat.outColor);
     return $receiver;
   };
   function InstanceDemo$Lod(maxInsts, maxDist, color) {
@@ -1604,7 +1745,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     InstancedLodController$Instance.call(this);
     this.position = position;
     this.rotSpeed = rotAxis.length() * 120.0;
-    this.rotAxis = rotAxis.norm_5s4mqq$(MutableVec3f_init());
+    this.rotAxis = rotAxis.norm_5s4mqq$(MutableVec3f_init_0());
     this.color = new InstanceDemo$InstanceColor();
   }
   InstanceDemo$BunnyInstance.prototype.update_l2cg23$ = function (lodCtrl, cam, ctx) {
@@ -1845,98 +1986,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'InstanceDemo',
     interfaces: []
   };
-  function mrtScene$lambda$lambda$lambda(closure$mrtPass) {
-    return function ($receiver) {
-      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
-      $receiver.unaryPlus_uv0sim$(closure$mrtPass.camera);
-      return Unit;
-    };
-  }
-  function mrtScene$lambda$lambda$lambda$lambda($receiver) {
-    for (var x = -3; x <= 3; x++) {
-      for (var y = -3; y <= 3; y++) {
-        var h = Math_0.atan2(y, x) * math.RAD_2_DEG;
-        var a = abs(x);
-        var b = abs(y);
-        var s = Math_0.max(a, b) / 5.0;
-        $receiver.color = Color.Companion.fromHsv_7b5o5w$(h, s, 0.75, 1.0);
-        $receiver.transform.push();
-        $receiver.translate_y2kzbl$(x, 0.5, y);
-        var $receiver_0 = $receiver.cubeProps.defaults();
-        $receiver_0.size.set_y2kzbl$(0.8, 0.8, 0.8);
-        $receiver_0.centered();
-        $receiver.cube_lhbb6w$($receiver.cubeProps);
-        $receiver.transform.pop();
-      }
-    }
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.color = Color.Companion.GRAY;
-    var $receiver_1 = $receiver.rectProps.defaults();
-    $receiver_1.size.set_dleff0$(10.0, 10.0);
-    $receiver_1.origin.set_y2kzbl$($receiver_1.size.x, $receiver_1.size.y, 0.0).scale_mx4ult$(-0.5);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
-  }
-  function mrtScene$lambda$lambda$lambda_0($receiver) {
-    $receiver.generate_v2sixm$(mrtScene$lambda$lambda$lambda$lambda);
-    var mrtCfg = new DeferredMrtShader$MrtPbrConfig();
-    $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
-    return Unit;
-  }
-  function mrtScene$lambda$lambda$lambda_1(closure$i) {
-    return function ($receiver) {
-      var closure$i_0 = closure$i;
-      var $receiver_0 = $receiver.rectProps.defaults();
-      $receiver_0.origin.set_y2kzbl$((closure$i_0 - 1 | 0) * 1.5 - 0.5, -0.5, 0.0);
-      $receiver_0.mirrorTexCoordsY();
-      $receiver.rect_e5k3t5$($receiver.rectProps);
-      return Unit;
-    };
-  }
-  function mrtScene$lambda$lambda(closure$i, closure$mrtPass) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(mrtScene$lambda$lambda$lambda_1(closure$i));
-      $receiver.pipelineLoader = new ModeledShader$TextureColor(closure$mrtPass.textures.get_za3lpa$(closure$i), void 0, textureColorModel('colorTex'));
-      return Unit;
-    };
-  }
-  function mrtScene() {
-    var $receiver = new Scene_init(null);
-    var tmp$;
-    var mrtPass = new DeferredShadingPass($receiver);
-    tmp$ = mrtPass.clearColors;
-    for (var i = 0; i !== tmp$.length; ++i) {
-      mrtPass.clearColors[i] = Color.Companion.WHITE;
-    }
-    $receiver.addOffscreenPass_m1c2kf$(mrtPass);
-    mrtPass.colorBlend = false;
-    var $receiver_0 = mrtPass.content;
-    $receiver_0.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, mrtScene$lambda$lambda$lambda(mrtPass)));
-    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, mrtScene$lambda$lambda$lambda_0));
-    $receiver.mainRenderPass.colorBlend = false;
-    var $receiver_1 = new OrthographicCamera();
-    $receiver_1.isKeepAspectRatio = false;
-    $receiver_1.left = -0.5;
-    $receiver_1.right = 0.5;
-    $receiver_1.top = 0.5;
-    $receiver_1.bottom = -0.5;
-    $receiver.camera = $receiver_1;
-    for (var i_0 = 0; i_0 <= 2; i_0++) {
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, mrtScene$lambda$lambda(i_0, mrtPass)));
-    }
-    return $receiver;
-  }
-  function textureColorModel(texName) {
-    var $receiver = new ShaderModel('ModeledShader.textureColor()');
-    var ifTexCoords = {v: null};
-    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outPosition;
-    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
-    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
-    $receiver_1.colorOutput_d76fwk$(sampler.outColor);
-    return $receiver;
-  }
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -2846,7 +2895,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.isEnabled_0 = true;
     this.animPos_0 = 0.0;
     this.lightMeshShader_0 = new ModeledShader$StaticColor();
-    this.meshPos_0 = MutableVec3f_init();
+    this.meshPos_0 = MutableVec3f_init_0();
     this.anglePos_0 = 0.0;
     this.rotOff_0 = randomF(0.0, 3.0);
     this.light.setSpot_nve3wz$(Vec3f.Companion.ZERO, Vec3f.Companion.X_AXIS, 50.0);
@@ -7586,12 +7635,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var windAnimationPos = {v: 0.0};
     var windStrength = {v: 1.0};
     var $receiver = new Scene_init(null);
-    var dirLighDirection = new Vec3f(1.0, -1.5, 1.0);
-    var spotLightPos = new Vec3f(10.0, 15.0, 10.0);
+    var backLightDirection = new Vec3f(1.0, -1.5, 1.0);
+    var sunLightDirection = new Vec3f(-1.0, -1.5, -1.0);
     var $receiver_0 = $receiver.lighting.lights;
     $receiver_0.clear();
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(spotLightPos.scale_749b8l$(-1.0, MutableVec3f_init()).norm()).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 3.0));
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(dirLighDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 0.25));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(sunLightDirection.norm_5s4mqq$(MutableVec3f_init_0())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 3.0));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(backLightDirection.norm_5s4mqq$(MutableVec3f_init_0())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 0.25));
     var shadowMaps = mutableListOf([new CascadedShadowMap($receiver, 0, void 0, 2048)]);
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver, shadowMaps, windSpeed, windAnimationPos, windStrength));
@@ -7631,13 +7680,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var ifTangents = {v: null};
     var ifFragPos = {v: null};
     var ifTexCoords = {v: null};
-    var mvp = {v: null};
+    var mvpNode = {v: null};
     var shadowMapNodes = ArrayList_init();
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    mvp.v = $receiver_0.mvpNode();
-    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, mvp.v.outModelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
+    mvpNode.v = $receiver_0.mvpNode();
+    var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, mvpNode.v.outModelMat, 0.0);
+    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
     if (cfg.requiresTexCoords()) {
       tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
     } else {
@@ -7653,15 +7702,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     } else {
       tmp$_0 = $receiver_0.attrPositions().output;
     }
-    var staticWorldPos = tmp$_0;
+    var staticLocalPos = tmp$_0;
     var $receiver_2 = $receiver_0.addNode_u9w9by$(new WindNode($receiver.vertexStageGraph));
-    $receiver_2.inputPos = staticWorldPos;
+    $receiver_2.inputPos = staticLocalPos;
     $receiver_2.inputAnim = $receiver_0.pushConstantNode1f_61zpoe$('windAnim').output;
     $receiver_2.inputStrength = $receiver_0.pushConstantNode1f_61zpoe$('windStrength').output;
     var windNd = $receiver_2;
-    var worldPos = windNd.outputPos;
-    var pos = $receiver_0.transformNode_vid4wo$(worldPos, mvp.v.outModelMat, 1.0).output;
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', pos);
+    var localPos = windNd.outputPos;
+    var worldPos = $receiver_0.vec3TransformNode_vid4wo$(localPos, mvpNode.v.outModelMat, 1.0).outVec3;
+    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
     if (cfg.albedoSource === Albedo.VERTEX_ALBEDO) {
       tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
     } else {
@@ -7669,13 +7718,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, mvp.v.outModelMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.output);
+      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, mvpNode.v.outModelMat, 0.0);
+      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.outVec3);
     } else {
       tmp$_2 = null;
     }
     ifTangents.v = tmp$_2;
-    var clipPos = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvp.v.outMvpMat).outPosition;
+    var viewPos = $receiver_0.vec4TransformNode_9krp9t$(worldPos, mvpNode.v.outViewMat).outVec4;
     var tmp$_3, tmp$_0_0;
     var index = 0;
     tmp$_3 = cfg.shadowMaps.iterator();
@@ -7683,15 +7732,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var item = tmp$_3.next();
       var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
       if (Kotlin.isType(item, CascadedShadowMap)) {
-        var element = $receiver_0.cascadedShadowMapNode_3t76e5$(item, 'depthMap_' + i, clipPos, worldPos, mvp.v.outModelMat);
+        var element = $receiver_0.cascadedShadowMapNode_zw58l$(item, 'depthMap_' + i, viewPos, worldPos);
         shadowMapNodes.add_11rb$(element);
       } else if (Kotlin.isType(item, SimpleShadowMap)) {
-        var element_0 = $receiver_0.simpleShadowMapNode_vmzvjt$(item, 'depthMap_' + i, worldPos, mvp.v.outModelMat);
+        var element_0 = $receiver_0.simpleShadowMapNode_7yd351$(item, 'depthMap_' + i, worldPos);
         shadowMapNodes.add_11rb$(element_0);
       }}
-    $receiver_0.positionOutput = clipPos;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos, mvpNode.v.outMvpMat).outVec4;
     var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
-    var mvpFrag = mvp.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_3.multiLightNode_za3lpa$(cfg.maxLights);
     var tmp$_4;
     tmp$_4 = shadowMapNodes.iterator();
@@ -7759,7 +7808,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     }var mat = $receiver_4;
     var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
-    $receiver_3.colorOutput_d76fwk$(hdrToLdr.outColor);
+    $receiver_3.colorOutput_4twi6n$(hdrToLdr.outColor);
     return $receiver;
   }
   function makeTreeGroundGrid$lambda$lambda$lambda$lambda($receiver) {
@@ -8110,7 +8159,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = this.treeNodes_0;
     var element = this.root_0;
     $receiver.add_11rb$(element);
-    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init()).norm().scale_mx4ult$(this.growDistance);
+    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init_0()).norm().scale_mx4ult$(this.growDistance);
     var prev = this.root_0;
     while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
       var newNd = new TreeGenerator$TreeNode(this);
@@ -8171,11 +8220,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     while (tmp$_4.hasNext()) {
       var node_0 = tmp$_4.next();
       if (!node_0.influencingPts.isEmpty()) {
-        var growDir = MutableVec3f_init();
+        var growDir = MutableVec3f_init_0();
         tmp$_5 = node_0.influencingPts.iterator();
         while (tmp$_5.hasNext()) {
           var attracPt_1 = tmp$_5.next();
-          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init()).norm());
+          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init_0()).norm());
         }
         growDir.norm().scale_mx4ult$(this.growDistance);
         var newNode = new TreeGenerator$TreeNode(this);
@@ -8201,7 +8250,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function TreeGenerator$finishTree$lambda(this$TreeGenerator) {
     return function ($receiver) {
       if ($receiver.parent != null) {
-        $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
+        $receiver.plusAssign_czzhiu$(MutableVec3f_init(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
         $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
@@ -8263,7 +8312,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.attractionPointsTree_0 = pointKdTree(this.attractionPoints_0);
   };
   function TreeGenerator$AttractionPoint(pt) {
-    MutableVec3f_init_0(pt, this);
+    MutableVec3f_init(pt, this);
     this.nearestNode_3mwxa2$_0 = null;
     this.nearestNodeDist_dewf4c$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.isOpen = true;
@@ -8299,7 +8348,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function TreeGenerator$TreeNode($outer) {
     this.$outer = $outer;
-    MutableVec3f_init(this);
+    MutableVec3f_init_0(this);
     this.children = ArrayList_init();
     this.parent = null;
     this.branchDepth = 0;
@@ -8399,17 +8448,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     this.circumPts.clear();
     if (this.parent != null) {
-      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
+      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init_0()).norm();
     } else {
-      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
+      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init_0()).norm();
     }
     var n = tmp$;
-    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
+    var c = MutableVec3f_init(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
     var y = c.z;
     var x = c.x;
     c.rotate_ad55pp$(-Math_0.atan2(y, x), n);
     for (var i = 0; i < 8; i++) {
-      var pt = MutableVec3f_init_0(c).add_czzhiu$(this);
+      var pt = MutableVec3f_init(c).add_czzhiu$(this);
       this.circumPts.add_11rb$(Vec3f_init_0(pt));
       c.rotate_ad55pp$(360.0 / 8, n);
     }
@@ -8520,7 +8569,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }};
   TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
     if (this.branchDepth <= 1 && this.parent != null) {
-      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
+      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init_0());
       var len = n.length();
       n.norm();
       for (var i = 1; i <= 20; i++) {
@@ -8528,9 +8577,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         target.transform.push();
         var this$TreeGenerator = this.$outer;
         var tmp$;
-        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
+        var r = MutableVec3f_init(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
         r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
-        var p = MutableVec3f_init_0(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
+        var p = MutableVec3f_init(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
         target.translate_czzhiu$(p);
         var tries = 0;
         do {
@@ -8542,7 +8591,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
           var tmp$_0 = this$TreeGenerator.primaryLightDir != null;
           if (tmp$_0) {
-            var x = target.transform.transform_w1lst9$(MutableVec3f_init_0(Vec3f.Companion.NEG_Z_AXIS), 0.0).dot_czzhiu$(this$TreeGenerator.primaryLightDir);
+            var x = target.transform.transform_w1lst9$(MutableVec3f_init(Vec3f.Companion.NEG_Z_AXIS), 0.0).dot_czzhiu$(this$TreeGenerator.primaryLightDir);
             tmp$_0 = Math_0.abs(x) < 0.1;
           }}
          while (tmp$_0 && (tmp$ = tries, tries = tmp$ + 1 | 0, tmp$) < 3);
@@ -8573,7 +8622,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.height = height;
     this.random_0 = random;
     this.borders_0 = ArrayList_init();
-    this.tmpPt1_0 = MutableVec3f_init();
+    this.tmpPt1_0 = MutableVec3f_init_0();
     this.tmpPt2_0 = MutableVec2f_init();
     this.e00_0 = MutableVec2f_init();
     this.e01_0 = MutableVec2f_init();
@@ -8883,6 +8932,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.aoDemo_aemszp$ = aoDemo;
   $$importsForInline$$.kool = $module$kool;
   package$demo.AmbientOcclusionDemo = AmbientOcclusionDemo;
+  package$demo.deferredScene = deferredScene;
   $$importsForInline$$.kooldemo = _;
   package$demo.demo_pdl1vj$ = demo;
   Object.defineProperty(Demo, 'Companion', {
@@ -8893,7 +8943,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.helloWorldScene = helloWorldScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.InstanceDemo = InstanceDemo;
-  package$demo.mrtScene = mrtScene;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance

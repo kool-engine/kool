@@ -39,6 +39,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
             "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
+            "deferredDemo" to DemoEntry("Deferred Shading", true) { add(deferredScene()) },
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
     )
 

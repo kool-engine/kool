@@ -35,8 +35,9 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Node based dynamic shader generation
 - All new Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
-- Normal, roughness, metallic, ambient occlusion and Displacement mapping
+- Deferred shading (work in progress, no optimized lighting yet)
 - Screen-space ambient occlusion
+- Normal, roughness, metallic, ambient occlusion and displacement mapping
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
@@ -163,13 +164,11 @@ dependencies {
 
 ## What's Next?
 
-The new render pipeline still lacks a lot of features the old OpenGL-only one already included; hence 
-first step should be to get these working again:
+I have a few features on my wishlist, which I may (or may not) implement in the future (in no particular order):
+- Screen-space reflections
+- Loading of glTF models
 - Shadow mapping for point lights
 - A vertex shader node for skeletal animations
+- Rendering backend for WebGPU
 
-There are also a few new features on my wish list:
-- New rendering backend for WebGPU (should actually be quite simple)
-- Loading of glTF models
-- Screen-space reflections
-- Optional deferred rendering
+Apart from that there are about one million things I could (and maybe will) optimize further (especially in the Vulkan code)
