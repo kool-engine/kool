@@ -88,6 +88,7 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
         val outViewMat = ShaderNodeIoVar(ModelVarMat4f(uViewMat.name), this)
         val outProjMat = ShaderNodeIoVar(ModelVarMat4f(uProjMat.name), this)
         val outCamPos = ShaderNodeIoVar(ModelVar4f(uCamPos.name), this)
+        val outViewport = ShaderNodeIoVar(ModelVar4f(uViewport.name), this)
         val outMvpMat = ShaderNodeIoVar(ModelVarMat4f("uMvp_outMvp"), this)
 
         override fun generateCode(generator: CodeGenerator) {

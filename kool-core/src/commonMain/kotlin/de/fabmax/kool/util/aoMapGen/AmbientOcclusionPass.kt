@@ -50,7 +50,7 @@ class AmbientOcclusionPass(screenCam: Camera, depthPass: NormalLinearDepthMapPas
                     val ifTexCoords: StageInterfaceNode
                     vertexStage {
                         ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outPosition
+                        positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
                         val depthMap = textureNode("linearDepthMap")

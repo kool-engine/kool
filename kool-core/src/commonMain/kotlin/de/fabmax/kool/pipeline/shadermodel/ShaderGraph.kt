@@ -63,8 +63,14 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
                 }
             }
             if (!anyAdded) {
-                println("Remaining nodes:")
-                nodes.forEach { println(it.name) }
+                println("${model.modelInfo} - Remaining nodes:")
+                nodes.forEach {
+                    println(it.name)
+                    it.dependencies.forEach { dep ->
+                        val state = if (sortedNodes.contains(dep)) "[ok]" else "[missing]"
+                        println("    -> ${dep.name} $state")
+                    }
+                }
                 throw IllegalStateException("Unable to resolve shader graph (circular or missing dependency?)")
             }
         }

@@ -101,6 +101,7 @@ class AoMapSampleNode(val aoMap: TextureNode, graph: ShaderGraph) : ShaderNode("
 
     override fun setup(shaderGraph: ShaderGraph) {
         dependsOn(aoMap)
+        dependsOn(inViewport)
         super.setup(shaderGraph)
     }
 
@@ -172,6 +173,27 @@ class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : Shader
             float ${name}_disp = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.x * ${inStrength.ref1f()};
             ${outPosition.declare()} = ${inPosition.ref3f()} + ${inNormal.ref3f()} * ${name}_disp;
         """)
+    }
+}
+
+class ChannelNode(val outChannels: String, graph: ShaderGraph) : ShaderNode("channel_${graph.nextNodeId}", graph) {
+    var input = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+
+    val output: ShaderNodeIoVar = when (outChannels.length) {
+        1 -> ShaderNodeIoVar(ModelVar1f("${name}_out"), this)
+        2 -> ShaderNodeIoVar(ModelVar2f("${name}_out"), this)
+        3 -> ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
+        4 -> ShaderNodeIoVar(ModelVar4f("${name}_out"), this)
+        else -> throw IllegalArgumentException("outChannels parameter must be between 1 and 4 characters long (e.g. 'xyz')")
+    }
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(input)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = ${input.name}.$outChannels;")
     }
 }
 

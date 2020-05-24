@@ -39,7 +39,7 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFo
     protected open fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
         // create a minimal dummy shader for each attribute set
         val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
-            vertexStage { positionOutput = simpleVertexPositionNode().outPosition }
+            vertexStage { positionOutput = simpleVertexPositionNode().outVec4 }
             fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
         val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
@@ -69,7 +69,7 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
 
     override fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
         val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
-            vertexStage { positionOutput = simpleVertexPositionNode().outPosition }
+            vertexStage { positionOutput = simpleVertexPositionNode().outVec4 }
             fragmentStage {
                 val linDepth = addNode(LinearDepthNode(stage))
                 colorOutput(linDepth.outColor)
@@ -119,10 +119,10 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                 val mvpNode = mvpNode()
 
                 val modelViewMat = multiplyNode(mvpNode.outModelMat, mvpNode.outViewMat).output
-                val nrm = transformNode(attrNormals().output, modelViewMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                val nrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f)
+                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                positionOutput = vertexPositionNode(attrPositions().output, mvpNode.outMvpMat).outPosition
+                positionOutput = vec4TransformNode(attrPositions().output, mvpNode.outMvpMat).outVec4
             }
             fragmentStage {
                 val linDepth = addNode(NormalLinearDepthNode(ifNormals.output, stage))

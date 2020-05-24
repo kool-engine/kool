@@ -426,8 +426,8 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
 
     vertexStage {
         mvp = mvpNode()
-        val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
-        ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+        val nrm = vec3TransformNode(attrNormals().output, mvp.outModelMat, 0f)
+        ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
         ifTexCoords = if (cfg.requiresTexCoords()) {
             stageInterfaceNode("ifTexCoords", attrTexCoords().output)
@@ -450,7 +450,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             inputStrength = pushConstantNode1f("windStrength").output
         }
         val worldPos = windNd.outputPos
-        val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
+        val pos = vec3TransformNode(worldPos, mvp.outModelMat, 1f).outVec3
         ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
         ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
@@ -459,13 +459,13 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
         ifTangents = if (cfg.isNormalMapped) {
-            val tan = transformNode(attrTangents().output, mvp.outModelMat, 0f)
-            stageInterfaceNode("ifTangents", tan.output)
+            val tan = vec3TransformNode(attrTangents().output, mvp.outModelMat, 0f)
+            stageInterfaceNode("ifTangents", tan.outVec3)
         } else {
             null
         }
 
-        val clipPos = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
+        val clipPos = vec4TransformNode(worldPos, mvp.outMvpMat).outVec4
 
         cfg.shadowMaps.forEachIndexed { i, map ->
             when (map) {

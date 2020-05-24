@@ -41,7 +41,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                     val ifTexCoords: StageInterfaceNode
                     vertexStage {
                         ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outPosition
+                        positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
                         val noisyAo = textureNode("noisyAo")

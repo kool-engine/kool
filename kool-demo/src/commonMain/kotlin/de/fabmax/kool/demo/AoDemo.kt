@@ -478,7 +478,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
 
         vertexStage {
             ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-            positionOutput = simpleVertexPositionNode().outPosition
+            positionOutput = simpleVertexPositionNode().outVec4
         }
         fragmentStage {
             val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)

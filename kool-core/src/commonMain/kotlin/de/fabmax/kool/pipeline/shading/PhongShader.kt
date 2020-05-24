@@ -115,18 +115,18 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = transformNode(attrTangents().output, modelMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.output)
+                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
+                    stageInterfaceNode("ifTangents", tan.outVec3)
                 } else {
                     null
                 }
-                val nrm = transformNode(attrNormals().output, modelMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
+                val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                val clipPos = vertexPositionNode(worldPos, mvpMat).outPosition
+                val clipPos = vec3TransformNode(worldPos, mvpMat).outVec3
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {

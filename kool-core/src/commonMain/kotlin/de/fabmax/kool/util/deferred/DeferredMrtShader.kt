@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.Texture
@@ -10,6 +11,10 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.util.Color
 
+/**
+ * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
+ * texture-based AO into three separate texture outputs.
+ */
 class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
 
     // Simple material props
@@ -116,22 +121,24 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             val mvpNode: UniformBufferMvp
 
             vertexStage {
+                val modelMat: ShaderNodeIoVar
                 val modelViewMat: ShaderNodeIoVar
                 val mvpMat: ShaderNodeIoVar
 
                 mvpNode = mvpNode()
 
                 if (cfg.isInstanced) {
-                    val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
+                    modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
                     modelViewMat = multiplyNode(modelMat, mvpNode.outViewMat).output
                     mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
                 } else {
+                    modelMat = mvpNode.outModelMat
                     modelViewMat = multiplyNode(mvpNode.outModelMat, mvpNode.outViewMat).output
                     mvpMat = mvpNode.outMvpMat
                 }
 
-                val nrm = transformNode(attrNormals().output, modelViewMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
                 ifTexCoords = if (cfg.requiresTexCoords()) {
                     stageInterfaceNode("ifTexCoords", attrTexCoords().output)
@@ -148,7 +155,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                 } else {
                     attrPositions().output
                 }
-                val pos = transformNode(worldPos, modelViewMat, 1f).output
+                val pos = vec3TransformNode(worldPos, modelViewMat, 1f).outVec3
                 ifViewPos = stageInterfaceNode("ifViewPos", pos)
 
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
@@ -157,13 +164,13 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = transformNode(attrTangents().output, modelViewMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.output)
+                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
+                    stageInterfaceNode("ifTangents", tan.outVec3)
                 } else {
                     null
                 }
 
-                positionOutput = vertexPositionNode(worldPos, mvpMat).outPosition
+                positionOutput = vec4TransformNode(worldPos, mvpMat).outVec4
             }
             fragmentStage {
                 val viewPos = ifViewPos.output
@@ -278,6 +285,35 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                 ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
                 ${outNormalRough.declare()} = vec4(normalize(${inNormal.ref3f()}) * vec3(0.5) + vec3(0.5), ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
+            """)
+        }
+    }
+
+    class MrtDeMultiplexNode(graph: ShaderGraph) : ShaderNode("mrtDeMultiplex", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+        var inPositionAo = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+        var inNormalRough = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+        var inAlbedoMetallic = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+
+        val outViewPos = ShaderNodeIoVar(ModelVar4f("outViewPos"), this)
+        val outAlbedo = ShaderNodeIoVar(ModelVar4f("outAlbedo"), this)
+        val outNormal = ShaderNodeIoVar(ModelVar3f("outNormal"), this)
+        val outRoughness = ShaderNodeIoVar(ModelVar1f("outRoughness"), this)
+        val outMetallic = ShaderNodeIoVar(ModelVar1f("outMetallic"), this)
+        val outAo = ShaderNodeIoVar(ModelVar1f("outAo"), this)
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inPositionAo, inNormalRough, inAlbedoMetallic)
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("""
+                ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
+                ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
+                ${outNormal.declare()} = vec3(${inNormalRough.ref3f()} * 2.0) - vec3(1.0);
+                ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
+                ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;
+                ${outAo.declare()} = ${inPositionAo.ref4f()}.a;
             """)
         }
     }

@@ -53,7 +53,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
             vertexStage {
                 ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 ifColors = stageInterfaceNode("ifColors", attrColors().output)
-                positionOutput = simpleVertexPositionNode().outPosition
+                positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
                 val alpha = pushConstantNode1f(U_ALPHA)

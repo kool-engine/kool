@@ -37,7 +37,7 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512,
                     val ifTexCoords: StageInterfaceNode
                     vertexStage {
                         ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outPosition
+                        positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
                         val lutNd = addNode(BrdfLutNode(stage)).apply {

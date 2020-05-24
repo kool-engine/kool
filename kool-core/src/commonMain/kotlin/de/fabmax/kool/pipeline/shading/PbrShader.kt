@@ -195,8 +195,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     mvpMat = mvpNode.outMvpMat
                 }
 
-                val nrm = transformNode(attrNormals().output, modelMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
                 ifTexCoords = if (cfg.requiresTexCoords()) {
                     stageInterfaceNode("ifTexCoords", attrTexCoords().output)
@@ -213,7 +213,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 } else {
                     attrPositions().output
                 }
-                val pos = transformNode(worldPos, modelMat, 1f).output
+                val pos = vec3TransformNode(worldPos, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
@@ -222,13 +222,13 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = transformNode(attrTangents().output, modelMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.output)
+                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
+                    stageInterfaceNode("ifTangents", tan.outVec3)
                 } else {
                     null
                 }
 
-                val clipPos = vertexPositionNode(worldPos, mvpMat).outPosition
+                val clipPos = vec4TransformNode(worldPos, mvpMat).outVec4
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
@@ -251,7 +251,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                 if (cfg.isImageBasedLighting) {
                     val irrMap = cubeMapNode("irradianceMap")
-                    irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output, false)
+                    irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output)
                     reflMap = cubeMapNode("reflectionMap")
                     brdfLut = textureNode("brdfLut")
                 } else {
@@ -271,7 +271,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         Albedo.VERTEX_ALBEDO -> ifColors!!.output
                         Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                         Albedo.TEXTURE_ALBEDO -> {
-                            val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
+                            val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
                             val albedoLin = gammaNode(albedoSampler.outColor)
                             albedoLin.outColor
                         }
@@ -284,24 +284,24 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         ifNormals.output
                     }
                     inMetallic = if (cfg.isMetallicMapped) {
-                        textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor
+                        textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
                     } else {
                         pushConstantNode1f("uMetallic").output
                     }
                     inRoughness = if (cfg.isRoughnessMapped) {
-                        textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output, false).outColor
+                        textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
                     } else {
                         pushConstantNode1f("uRoughness").output
                     }
 
                     var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
                     if (cfg.isAmbientOcclusionMapped) {
-                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
+                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output).outColor
                     }
                     if (cfg.isScrSpcAmbientOcclusion) {
                         val aoMap = textureNode("ssaoMap")
                         val aoNode = addNode(AoMapSampleNode(aoMap, graph))
-                        aoNode.inViewport = mvpNode.outViewport
+                        aoNode.inViewport = mvpFrag.outViewport
 
                         aoFactor = if (!cfg.isAmbientOcclusionMapped) {
                             aoNode.outAo

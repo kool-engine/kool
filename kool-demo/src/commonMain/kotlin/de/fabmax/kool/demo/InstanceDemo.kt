@@ -139,12 +139,12 @@ class InstanceDemo(ctx: KoolContext) {
             val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
             val mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
 
-            val nrm = transformNode(attrNormals().output, modelMat, 0f)
-            ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+            val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+            ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-            val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
+            val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
             ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
-            positionOutput = vertexPositionNode(attrPositions().output, mvpMat).outPosition
+            positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
         }
         fragmentStage {
             val mvpFrag = mvpNode.addToStage(fragmentStageGraph)

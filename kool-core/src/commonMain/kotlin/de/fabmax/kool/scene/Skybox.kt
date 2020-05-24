@@ -25,8 +25,8 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
 
             vertexStage {
                 val mvp = mvpNode()
-                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.output)
+                val worldPos = vec3TransformNode(attrPositions().output, mvp.outModelMat, 1f)
+                ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.outVec3)
                 positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
             }
             fragmentStage {

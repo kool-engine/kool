@@ -3,40 +3,38 @@ package de.fabmax.kool.pipeline.shadermodel
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.ShaderStage
 
-class TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("Matrix Transform", graph) {
+class Vec3TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("vec3MatTransform", graph) {
     var inMat: ShaderNodeIoVar? = null
-    var input: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    val output = ShaderNodeIoVar(ModelVar3f("dirTrans${nodeId}_outDirection"), this)
+    var inVec: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    val outVec3 = ShaderNodeIoVar(ModelVar3f("vec3MatTransform${nodeId}_out"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(input)
-        dependsOn(inMat ?: throw KoolException("View matrix input not set"))
+        dependsOn(inVec, inMat ?: throw KoolException("Matrix input not set"))
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        val mat = inMat ?: throw KoolException("View matrix input not set")
-        val input = if (input.variable.type == GlslType.VEC_4F) { input.ref4f() } else { "vec4(${input.ref3f()}, $w)" }
+        val mat = inMat ?: throw KoolException("Matrix input not set")
+        val input = if (inVec.variable.type == GlslType.VEC_4F) { inVec.ref4f() } else { "vec4(${inVec.ref3f()}, $w)" }
         val sign = if (invert) { "-" } else { "" }
-        generator.appendMain("${output.declare()} = $sign(${mat.refAsType(GlslType.MAT_4F)} * $input).xyz;")
+        generator.appendMain("${outVec3.declare()} = $sign(${mat.refAsType(GlslType.MAT_4F)} * $input).xyz;")
     }
 }
 
-class VertexPosTransformNode(graph: ShaderGraph) : ShaderNode("Vertex Pos Transform", graph, ShaderStage.VERTEX_SHADER.mask) {
-    var inMvp: ShaderNodeIoVar? = null
-    var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    val outPosition = ShaderNodeIoVar(ModelVar4f("vertPos_outPosition"), this)
+class Vec4TransformNode(graph: ShaderGraph, var w: Float = 1.0f) : ShaderNode("vec4MatTransform", graph) {
+    var inMat: ShaderNodeIoVar? = null
+    var inVec: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    val outVec4 = ShaderNodeIoVar(ModelVar4f("vec4MatTransform${nodeId}_out"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inPosition, inMvp ?: throw KoolException("MVP matrix input not set"))
+        dependsOn(inVec, inMat ?: throw KoolException("Matrix input not set"))
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        val mvp = inMvp?.variable ?: throw KoolException("MVP matrix input not set")
-        generator.appendMain("${outPosition.declare()} = " +
-                "${mvp.refAsType(GlslType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0);")
+        val mvp = inMat?.variable ?: throw KoolException("Matrix input not set")
+        val input = if (inVec.variable.type == GlslType.VEC_4F) { inVec.ref4f() } else { "vec4(${inVec.ref3f()}, $w)" }
+        generator.appendMain("${outVec4.declare()} = ${mvp.refAsType(GlslType.MAT_4F)} * $input;")
     }
 }

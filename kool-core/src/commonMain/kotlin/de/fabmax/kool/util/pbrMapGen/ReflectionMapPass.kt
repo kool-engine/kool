@@ -37,7 +37,7 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
                     val ifLocalPos: StageInterfaceNode
                     vertexStage {
                         ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                        positionOutput = simpleVertexPositionNode().outPosition
+                        positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
                         val roughness = pushConstantNode1f(uRoughness)

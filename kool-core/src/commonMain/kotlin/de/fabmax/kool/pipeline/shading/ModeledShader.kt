@@ -26,10 +26,10 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
         return builder.create(mesh, ctx)
     }
 
-    class StaticColor(model: ShaderModel = staticColorModel()) : ModeledShader(model) {
+    class StaticColor(color: Color = Color.GRAY, model: ShaderModel = staticColorModel()) : ModeledShader(model) {
         private var uColor: UniformColor? = null
 
-        var color: Color = Color.GRAY
+        var color: Color = color
             set(value) {
                 field = value
                 uColor?.value?.set(value)
@@ -72,7 +72,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
     companion object {
         private fun staticColorModel(): ShaderModel = ShaderModel("ModeledShader.staticColor()").apply {
             vertexStage {
-                positionOutput = simpleVertexPositionNode().outPosition
+                positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
                 val color = pushConstantNodeColor("uStaticColor")
@@ -84,7 +84,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
             val ifColors: StageInterfaceNode
             vertexStage {
                 ifColors = stageInterfaceNode("ifColors", attrColors().output)
-                positionOutput = simpleVertexPositionNode().outPosition
+                positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
                 colorOutput(unlitMaterialNode(ifColors.output).outColor)
@@ -96,7 +96,7 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
 
             vertexStage {
                 ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                positionOutput = simpleVertexPositionNode().outPosition
+                positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
                 val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
@@ -109,9 +109,9 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
 
             vertexStage {
                 val mvp = mvpNode()
-                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
-                positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
+                val worldPos = vec4TransformNode(attrPositions().output, mvp.outModelMat, 1f)
+                ifFragPos = stageInterfaceNode("ifFragPos", worldPos.outVec4)
+                positionOutput = vec4TransformNode(attrPositions().output, mvp.outMvpMat).outVec4
             }
             fragmentStage {
                 val nrmPos = normalizeNode(ifFragPos.output)

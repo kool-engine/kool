@@ -98,6 +98,12 @@ class ShaderModel(val modelInfo: String = "") {
             return node
         }
 
+        fun channelNode(channels: String, input: ShaderNodeIoVar?): ChannelNode {
+            val chNode = addNode(ChannelNode(channels, stage))
+            input?.let { chNode.input = it }
+            return chNode
+        }
+
         fun multiplyNode(left: ShaderNodeIoVar?, right: Float): MultiplyNode {
             return multiplyNode(left, ShaderNodeIoVar(ModelVar1fConst(right)))
         }
@@ -192,6 +198,22 @@ class ShaderModel(val modelInfo: String = "") {
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
+
+        fun vec3TransformNode(input: ShaderNodeIoVar? = null, inMat: ShaderNodeIoVar? = null,
+                              w: Float = 1f, invert: Boolean = false): Vec3TransformNode {
+            val tfNode = addNode(Vec3TransformNode(stage, w, invert))
+            input?.let { tfNode.inVec = it }
+            inMat?.let { tfNode.inMat = it }
+            return tfNode
+        }
+
+        fun vec4TransformNode(input: ShaderNodeIoVar? = null, inMat: ShaderNodeIoVar? = null,
+                              w: Float = 1f): Vec4TransformNode {
+            val tfNode = addNode(Vec4TransformNode(stage, w))
+            input?.let { tfNode.inVec = it }
+            inMat?.let { tfNode.inMat = it }
+            return tfNode
+        }
     }
 
     inner class VertexStageBuilder : StageBuilder(vertexStageGraph) {
@@ -257,22 +279,7 @@ class ShaderModel(val modelInfo: String = "") {
             return shadowMapNode
         }
 
-        fun simpleVertexPositionNode() = vertexPositionNode(attrPositions().output, premultipliedMvpNode().outMvpMat)
-
-        fun transformNode(input: ShaderNodeIoVar? = null, inMat: ShaderNodeIoVar? = null,
-                          w: Float = 1f, invert: Boolean = false): TransformNode {
-            val tf = addNode(TransformNode(stage, w, invert))
-            input?.let { tf.input = it }
-            inMat?.let { tf.inMat = it }
-            return tf
-        }
-
-        fun vertexPositionNode(inPosition: ShaderNodeIoVar? = null, inMvp: ShaderNodeIoVar? = null): VertexPosTransformNode {
-            val pos = addNode(VertexPosTransformNode(stage))
-            inPosition?.let { pos.inPosition = it }
-            inMvp?.let { pos.inMvp = it }
-            return pos
-        }
+        fun simpleVertexPositionNode() = vec4TransformNode(attrPositions().output, premultipliedMvpNode().outMvpMat)
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {

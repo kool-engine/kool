@@ -37,7 +37,7 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
                     val ifLocalPos: StageInterfaceNode
                     vertexStage {
                         ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                        positionOutput = simpleVertexPositionNode().outPosition
+                        positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
                         val tex = textureNode(texName)
