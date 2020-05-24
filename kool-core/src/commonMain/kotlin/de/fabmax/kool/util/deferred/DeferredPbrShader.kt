@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
@@ -131,10 +132,22 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
                 val lightNode = multiLightNode(cfg.maxLights)
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        //is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
+                        is CascadedShadowMap -> {
+                            val depthMapNd = addNode(TextureNode(stage, "depthMap_$i")).apply {
+                                isDepthTexture = true
+                                arraySize = map.numCascades
+                            }
+                            val lightSpaceTf = addNode(CascadedShadowMapTransformNode(map, stage)).apply { inWorldPos = worldPos }
+                            addNode(CascadedShadowMapFragmentNode(map, stage)).apply {
+                                inViewZ = channelNode(mrtDeMultiplex.outViewPos, "z").output
+                                inPosLightSpace = lightSpaceTf.outPosLightSpace
+                                depthMap = depthMapNd
+                                lightNode.inShaodwFacs[i] = outShadowFac
+                            }
+                        }
                         is SimpleShadowMap -> {
                             val depthMapNd = addNode(TextureNode(stage, "depthMap_$i")).apply { isDepthTexture = true }
-                            val lightSpaceTf = addNode(LightSpaceTransformNode(map, stage)).apply { inWorldPos = worldPos }
+                            val lightSpaceTf = addNode(SimpleShadowMapTransformNode(map, stage)).apply { inWorldPos = worldPos }
                             addNode(SimpleShadowMapFragmentNode(stage)).apply {
                                 inPosLightSpace = lightSpaceTf.outPosLightSpace
                                 depthMap = depthMapNd

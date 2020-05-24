@@ -126,15 +126,15 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                val clipPos = vec3TransformNode(worldPos, mvpMat).outVec3
+                val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos)
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = clipPos
+                positionOutput = vec3TransformNode(worldPos, mvpMat).outVec3
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)

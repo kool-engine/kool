@@ -1,8 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
@@ -18,6 +18,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024
 
     val lightViewProjMat = Mat4d()
 
+    var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
 
@@ -86,8 +87,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024
         cam.position.set(Vec3f.ZERO)
         cam.lookAt.set(light.direction)
 
-        scene.camera.computeFrustumPlane(clipNear, nearSceneCamPlane)
-        scene.camera.computeFrustumPlane(clipFar, farSceneCamPlane)
+        sceneCam.computeFrustumPlane(clipNear, nearSceneCamPlane)
+        sceneCam.computeFrustumPlane(clipFar, farSceneCamPlane)
 
         viewMat.setLookAt(cam.position, cam.lookAt, cam.up)
         viewMat.transform(nearSceneCamPlane)
@@ -122,7 +123,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024
     }
 }
 
-class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int = 3, mapSize: Int = 1024) : ShadowMap {
+class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int = 3, mapSize: Int = 1024, drawNode: Node = scene) : ShadowMap {
     val mapRanges = Array(numCascades) { i ->
         val near = i.toFloat().pow(2) / numCascades.toFloat().pow(2)
         val far = (i + 1).toFloat().pow(2) / numCascades.toFloat().pow(2)
@@ -130,24 +131,24 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
     }
     var maxRange = 100f
 
-    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize) }
-    val clipSpaceRanges = FloatArray(numCascades)
+    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode) }
+    val viewSpaceRanges = FloatArray(numCascades)
 
     override var isShadowMapEnabled: Boolean
         get() = cascades[0].isEnabled
         set(value) { cascades.forEach { it.isEnabled = value } }
 
     init {
-        val farPlane = FrustumPlane()
-        val clipSpacePos = MutableVec3f()
+        if (numCascades > 8) {
+            throw KoolException("Too many shadow cascades: $numCascades (maximum is 8)")
+        }
+
         cascades[0].onBeforeCollectDrawCommands += {
             for (i in 0 until numCascades) {
                 cascades[i].clipNear = mapRanges[i].near * maxRange
                 cascades[i].clipFar = mapRanges[i].far * maxRange
-
-                scene.camera.computeFrustumPlane(cascades[i].clipFar, farPlane)
-                scene.camera.project(farPlane.upperLeft, clipSpacePos)
-                clipSpaceRanges[i] = clipSpacePos.z
+                // view space z-axis is negative
+                viewSpaceRanges[i] = -cascades[i].clipFar
             }
         }
     }

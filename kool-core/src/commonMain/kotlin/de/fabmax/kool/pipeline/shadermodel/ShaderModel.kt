@@ -98,9 +98,9 @@ class ShaderModel(val modelInfo: String = "") {
             return node
         }
 
-        fun channelNode(channels: String, input: ShaderNodeIoVar?): ChannelNode {
+        fun channelNode(input: ShaderNodeIoVar, channels: String): ChannelNode {
             val chNode = addNode(ChannelNode(channels, stage))
-            input?.let { chNode.input = it }
+            chNode.input = input
             return chNode
         }
 
@@ -258,7 +258,7 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         fun cascadedShadowMapNode(cascadedShadowMap: CascadedShadowMap, depthMapName: String,
-                                  inClipPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null): CascadedShadowMapNode {
+                                  inViewPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null): CascadedShadowMapNode {
             val shadowMapNode = CascadedShadowMapNode(cascadedShadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
@@ -270,7 +270,7 @@ class ShaderModel(val modelInfo: String = "") {
             fragmentStageGraph.addNode(depthMap)
 
             inWorldPos?.let { shadowMapNode.inWorldPos = it }
-            inClipPos?.let { shadowMapNode.inClipPosition = it }
+            inViewPos?.let { shadowMapNode.inViewPosition = it }
             shadowMapNode.depthMap = depthMap
 
             return shadowMapNode
@@ -314,9 +314,10 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1): FragmentColorOutNode {
+        fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1, alpha: String? = null): FragmentColorOutNode {
             val colorOut = addNode(FragmentColorOutNode(stage, channels))
             color0?.let { colorOut.inColors[0] = color0 }
+            colorOut.alpha = alpha
             return colorOut
         }
     }

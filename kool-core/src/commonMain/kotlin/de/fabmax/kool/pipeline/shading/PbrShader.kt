@@ -228,15 +228,15 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                val clipPos = vec4TransformNode(localPos, mvpMat).outVec4
+                val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos)
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = clipPos
+                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)

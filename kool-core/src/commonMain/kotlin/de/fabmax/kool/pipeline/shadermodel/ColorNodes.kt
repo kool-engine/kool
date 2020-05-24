@@ -107,6 +107,7 @@ class HdrToLdrNode(graph: ShaderGraph) : ShaderNode("hdrToLdr_${graph.nextNodeId
 }
 
 class FragmentColorOutNode(graph: ShaderGraph, val channels: Int = 1) : ShaderNode("fragmentColorOut", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+    var alpha: String? = null
     var inColors = Array(channels) { ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA)) }
 
     override fun setup(shaderGraph: ShaderGraph) {
@@ -122,7 +123,12 @@ class FragmentColorOutNode(graph: ShaderGraph, val channels: Int = 1) : ShaderNo
         generator.appendFunction("fragOut", outCode.toString())
 
         for (i in 0 until channels) {
-            generator.appendMain("fragOutColor_$i = ${inColors[i].ref4f()};")
+            if (alpha != null) {
+                generator.appendMain("fragOutColor_$i = vec4(${inColors[i].ref3f()}, $alpha);")
+            } else {
+                generator.appendMain("fragOutColor_$i = ${inColors[i].ref4f()};")
+            }
+
         }
     }
 }

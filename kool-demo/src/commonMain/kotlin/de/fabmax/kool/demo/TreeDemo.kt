@@ -43,17 +43,17 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var windStrength = 1f
 
     val treeScene = scene {
-        val dirLighDirection = Vec3f(1f, -1.5f, 1f)
-        val spotLightPos = Vec3f(10f, 15f, 10f)
+        val backLightDirection = Vec3f(1f, -1.5f, 1f)
+        val sunLightDirection = Vec3f(-1f, -1.5f, -1f)
         lighting.lights.apply {
             clear()
             add(Light()
-                    .setDirectional(spotLightPos.scale(-1f, MutableVec3f()).norm())
+                    .setDirectional(sunLightDirection.norm(MutableVec3f()))
                     //.setColor(Color.RED, 3f))
                     .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 3f))
 
             add(Light()
-                    .setDirectional(dirLighDirection.norm(MutableVec3f()))
+                    .setDirectional(backLightDirection.norm(MutableVec3f()))
                     //.setColor(Color.GREEN, 3f))
                     .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.25f))
         }
@@ -421,12 +421,12 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
     val ifTangents: StageInterfaceNode?
     val ifFragPos: StageInterfaceNode
     val ifTexCoords: StageInterfaceNode?
-    val mvp: UniformBufferMvp
+    val mvpNode: UniformBufferMvp
     val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
     vertexStage {
-        mvp = mvpNode()
-        val nrm = vec3TransformNode(attrNormals().output, mvp.outModelMat, 0f)
+        mvpNode = mvpNode()
+        val nrm = vec3TransformNode(attrNormals().output, mvpNode.outModelMat, 0f)
         ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
         ifTexCoords = if (cfg.requiresTexCoords()) {
@@ -450,7 +450,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             inputStrength = pushConstantNode1f("windStrength").output
         }
         val localPos = windNd.outputPos
-        val worldPos = vec3TransformNode(localPos, mvp.outModelMat, 1f).outVec3
+        val worldPos = vec3TransformNode(localPos, mvpNode.outModelMat, 1f).outVec3
         ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
         ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
@@ -459,24 +459,24 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
         ifTangents = if (cfg.isNormalMapped) {
-            val tan = vec3TransformNode(attrTangents().output, mvp.outModelMat, 0f)
+            val tan = vec3TransformNode(attrTangents().output, mvpNode.outModelMat, 0f)
             stageInterfaceNode("ifTangents", tan.outVec3)
         } else {
             null
         }
 
-        val clipPos = vec4TransformNode(localPos, mvp.outMvpMat).outVec4
+        val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
 
         cfg.shadowMaps.forEachIndexed { i, map ->
             when (map) {
-                is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos)
                 is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
             }
         }
-        positionOutput = clipPos
+        positionOutput = vec4TransformNode(localPos, mvpNode.outMvpMat).outVec4
     }
     fragmentStage {
-        val mvpFrag = mvp.addToStage(fragmentStageGraph)
+        val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
         val lightNode = multiLightNode(cfg.maxLights)
         shadowMapNodes.forEach {
             lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
