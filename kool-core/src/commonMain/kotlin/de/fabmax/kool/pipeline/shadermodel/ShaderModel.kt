@@ -243,7 +243,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 
-        fun simpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): SimpleShadowMapNode {
+        fun simpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, inWorldPos: ShaderNodeIoVar? = null): SimpleShadowMapNode {
             val shadowMapNode = SimpleShadowMapNode(shadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
@@ -251,16 +251,14 @@ class ShaderModel(val modelInfo: String = "") {
             val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply { isDepthTexture = true }
             fragmentStageGraph.addNode(depthMap)
 
-            inVertexPos?.let { shadowMapNode.inPosition = it }
-            inModelMat?.let { shadowMapNode.inModelMat = it }
+            inWorldPos?.let { shadowMapNode.inWorldPos = it }
             shadowMapNode.depthMap = depthMap
 
             return shadowMapNode
         }
 
         fun cascadedShadowMapNode(cascadedShadowMap: CascadedShadowMap, depthMapName: String,
-                                  inClipPos: ShaderNodeIoVar? = null, inVertexPos: ShaderNodeIoVar? = null,
-                                  inModelMat: ShaderNodeIoVar? = null): CascadedShadowMapNode {
+                                  inClipPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null): CascadedShadowMapNode {
             val shadowMapNode = CascadedShadowMapNode(cascadedShadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
@@ -271,8 +269,7 @@ class ShaderModel(val modelInfo: String = "") {
             }
             fragmentStageGraph.addNode(depthMap)
 
-            inVertexPos?.let { shadowMapNode.inPosition = it }
-            inModelMat?.let { shadowMapNode.inModelMat = it }
+            inWorldPos?.let { shadowMapNode.inWorldPos = it }
             inClipPos?.let { shadowMapNode.inClipPosition = it }
             shadowMapNode.depthMap = depthMap
 

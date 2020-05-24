@@ -3,100 +3,120 @@ package de.fabmax.kool.pipeline.shadermodel
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.pipeline.ShaderStage
+import de.fabmax.kool.pipeline.Uniform1fv
+import de.fabmax.kool.pipeline.UniformMat4f
+import de.fabmax.kool.pipeline.UniformMat4fv
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
 abstract class ShadowMapNode {
     var lightIndex = 0
-    var depthMap: TextureNode? = null
+    open var depthMap: TextureNode? = null
 
     abstract val outShadowFac: ShaderNodeIoVar
+}
+
+class LightSpaceTransformNode(val shadowMap: SimpleShadowMap, graph: ShaderGraph) : ShaderNode("lightSpaceTf_${graph.nextNodeId}", graph) {
+    val uShadowMapVP = UniformMat4f("${name}_shadowMapVP")
+
+    var inWorldPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    val outPosLightSpace = ShaderNodeIoVar(ModelVar4f("${name}_posLightSpace"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inWorldPos)
+
+        shaderGraph.descriptorSet.apply {
+            uniformBuffer(name, shaderGraph.stage) {
+                +{ uShadowMapVP }
+                onUpdate = { _, cmd ->
+                    uShadowMapVP.value.set(shadowMap.lightViewProjMat)
+                }
+            }
+        }
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${outPosLightSpace.declare()} = ${uShadowMapVP.name} * vec4(${inWorldPos.ref3f()}, 1.0);")
+    }
 }
 
 class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
     private val ifPosLightSpace = StageInterfaceNode("posLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
 
-    val uShadowMapVP = UniformMat4f("shadowMapVP_${vertexGraph.nextNodeId}")
+    val vertexNode = LightSpaceTransformNode(shadowMap, vertexGraph)
+    val fragmentNode = SimpleShadowMapFragmentNode(fragmentGraph)
 
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.01f))
-    var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inModelMat: ShaderNodeIoVar? = null
+    var inWorldPos: ShaderNodeIoVar
+        get() = vertexNode.inWorldPos
+        set(value) { vertexNode.inWorldPos = value }
+
+    var inDepthOffset: ShaderNodeIoVar
+        get() = fragmentNode.inDepthOffset
+        set(value) { fragmentNode.inDepthOffset = value }
+
+    override var depthMap: TextureNode?
+        get() = fragmentNode.depthMap
+        set(value) { fragmentNode.depthMap = value }
+
+    override val outShadowFac: ShaderNodeIoVar
+        get() = fragmentNode.outShadowFac
 
     init {
         this.lightIndex = shadowMap.lightIndex
         vertexGraph.addNode(ifPosLightSpace.vertexNode)
         fragmentGraph.addNode(ifPosLightSpace.fragmentNode)
+
+        ifPosLightSpace.input = vertexNode.outPosLightSpace
+        fragmentNode.inPosLightSpace = ifPosLightSpace.output
+    }
+}
+
+class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+    var depthMap: TextureNode? = null
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.01f))
+    var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+
+    val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inDepthOffset, inPosLightSpace)
+        dependsOn(depthMap ?: throw KoolException("Depth map input not set"))
     }
 
-    val vertexNode = object : ShaderNode("shadowMap_${vertexGraph.nextNodeId}", vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
-        val outPosLightSpace = ShaderNodeIoVar(ModelVar4f("shadowMap_${vertexGraph.nextNodeId}_posLightSpace"), this)
+    override fun generateCode(generator: CodeGenerator) {
+        val depthTex = depthMap ?: throw KoolException("Depth map input not set")
 
-        init {
-            ifPosLightSpace.input = outPosLightSpace
-        }
+        // dithered pcf shadow map sampling
+        // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
 
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            val inModel = inModelMat ?: throw KoolException("Model matrix input not set")
-            dependsOn(inPosition, inModel)
-
-            shaderGraph.descriptorSet.apply {
-                uniformBuffer(name, shaderGraph.stage) {
-                    +{ uShadowMapVP }
-                    onUpdate = { _, cmd ->
-                        uShadowMapVP.value.set(shadowMap.lightViewProjMat)
-                    }
-                }
-            }
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            val modelMat = inModelMat?.variable ?: throw KoolException("Model matrix input not set")
-            generator.appendMain("${outPosLightSpace.declare()} = ${uShadowMapVP.name} * (${modelMat.refAsType(GlslType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0));")
-        }
-    }
-
-    val fragmentNode: ShaderNode = object : ShaderNode("shadowMap_${fragmentGraph.nextNodeId}", fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            val depthTex = depthMap ?: throw KoolException("Depth map input not set")
-            dependsOn(depthTex)
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            val depthTex = depthMap ?: throw KoolException("Depth map input not set")
-
-            // dithered pcf shadow map sampling
-            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
-
-            generator.appendMain("""
+        generator.appendMain("""
                 float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
                 float ${name}_scale = 1.0 / float(${name}_size);
-                vec4 ${name}_pos = ${ifPosLightSpace.output.ref4f()};
+                vec4 ${name}_pos = ${inPosLightSpace.ref4f()};
                 ${name}_pos.z += ${inDepthOffset.ref1f()};
                 vec2 ${name}_offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25),
                                            float(fract(gl_FragCoord.y * 0.5) > 0.25));
                 ${outShadowFac.declare()} = 0.0;
             """)
 
-            var nSamples = 0
-            val samplePattern = listOf(
-                    Vec2f(-1.5f, 0.5f),
-                    Vec2f(0.5f, 0.5f),
-                    Vec2f(-1.5f, -1.5f),
-                    Vec2f(0.5f, -1.5f))
+        var nSamples = 0
+        val samplePattern = listOf(
+                Vec2f(-1.5f, 0.5f),
+                Vec2f(0.5f, 0.5f),
+                Vec2f(-1.5f, -1.5f),
+                Vec2f(0.5f, -1.5f))
 
-            samplePattern.forEach { off ->
-                val projCoord = "vec4(${name}_pos.xy + (${name}_offset + vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
-                generator.appendMain("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};")
-                nSamples++
-            }
-            generator.appendMain("${outShadowFac.name} *= ${1f / nSamples};")
+        samplePattern.forEach { off ->
+            val projCoord = "vec4(${name}_pos.xy + (${name}_offset + vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
+            generator.appendMain("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};")
+            nSamples++
         }
+        generator.appendMain("${outShadowFac.name} *= ${1f / nSamples};")
     }
-
-    override val outShadowFac = ShaderNodeIoVar(ModelVar1f("${fragmentNode.name}_shadowFac"), fragmentNode)
 }
 
 class CascadedShadowMapNode(shadowMap: CascadedShadowMap, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
@@ -104,9 +124,8 @@ class CascadedShadowMapNode(shadowMap: CascadedShadowMap, vertexGraph: ShaderGra
     val uClipSpaceRanges = Uniform1fv("shadowMapClipRng_${fragmentGraph.nextNodeId}", shadowMap.numCascades)
 
     var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.001f))
-    var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inWorldPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inClipPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inModelMat: ShaderNodeIoVar? = null
 
     private val posClipSpaceZ = ShaderNodeIoVar(ModelVar1f("ifPosClipSpaceZ_${vertexGraph.nextNodeId}"))
     private val posLightSpace = ShaderNodeIoVar(ModelVar4f("ifPosLightSpace_${vertexGraph.nextNodeId}[${shadowMap.numCascades}]"))
@@ -120,8 +139,7 @@ class CascadedShadowMapNode(shadowMap: CascadedShadowMap, vertexGraph: ShaderGra
     val vertexNode = object : ShaderNode("shadowMap_${vertexGraph.nextNodeId}", vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            val inModel = inModelMat ?: throw KoolException("Model matrix input not set")
-            dependsOn(inPosition, inModel)
+            dependsOn(inWorldPos)
 
             ifPosClipSpaceZ = shaderGraph.addStageOutput(posClipSpaceZ.variable)
             ifPosLightSpace = shaderGraph.addStageOutput(posLightSpace.variable, shadowMap.numCascades)
@@ -139,9 +157,8 @@ class CascadedShadowMapNode(shadowMap: CascadedShadowMap, vertexGraph: ShaderGra
         }
 
         override fun generateCode(generator: CodeGenerator) {
-            val modelMat = inModelMat?.variable ?: throw KoolException("Model matrix input not set")
             for (i in 0 until shadowMap.numCascades) {
-                generator.appendMain("${posLightSpace.name.substringBefore('[')}[$i] = ${uShadowMapVP.name}[$i] * (${modelMat.refAsType(GlslType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0));")
+                generator.appendMain("${posLightSpace.name.substringBefore('[')}[$i] = ${uShadowMapVP.name}[$i] * vec4(${inWorldPos.ref3f()}, 1.0);")
             }
             generator.appendMain("${posClipSpaceZ.name} = ${inClipPosition.name}.z / ${inClipPosition.name}.w;")
         }

@@ -435,7 +435,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
 
-        val staticWorldPos = if (cfg.isDisplacementMapped) {
+        val staticLocalPos = if (cfg.isDisplacementMapped) {
             val dispTex = textureNode("tDisplacement")
             val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
                 inStrength = pushConstantNode1f("uDispStrength").output
@@ -445,13 +445,13 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             attrPositions().output
         }
         val windNd = addNode(WindNode(vertexStageGraph)).apply {
-            inputPos = staticWorldPos
+            inputPos = staticLocalPos
             inputAnim = pushConstantNode1f("windAnim").output
             inputStrength = pushConstantNode1f("windStrength").output
         }
-        val worldPos = windNd.outputPos
-        val pos = vec3TransformNode(worldPos, mvp.outModelMat, 1f).outVec3
-        ifFragPos = stageInterfaceNode("ifFragPos", pos)
+        val localPos = windNd.outputPos
+        val worldPos = vec3TransformNode(localPos, mvp.outModelMat, 1f).outVec3
+        ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
         ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
             stageInterfaceNode("ifColors", attrColors().output)
@@ -465,12 +465,12 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
 
-        val clipPos = vec4TransformNode(worldPos, mvp.outMvpMat).outVec4
+        val clipPos = vec4TransformNode(localPos, mvp.outMvpMat).outVec4
 
         cfg.shadowMaps.forEachIndexed { i, map ->
             when (map) {
-                is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, mvp.outModelMat)
-                is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, mvp.outModelMat)
+                is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
             }
         }
         positionOutput = clipPos

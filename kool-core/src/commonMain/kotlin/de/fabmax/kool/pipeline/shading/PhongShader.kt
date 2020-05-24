@@ -130,8 +130,8 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
-                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
                 positionOutput = clipPos

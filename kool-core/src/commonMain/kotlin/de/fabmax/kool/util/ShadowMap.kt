@@ -14,7 +14,7 @@ interface ShadowMap {
     fun setupSampler(sampler: TextureSampler?)
 }
 
-class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) : DepthMapPass(scene, mapSize), ShadowMap {
+class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024, drawNode: Node = scene) : DepthMapPass(drawNode, mapSize), ShadowMap {
 
     val lightViewProjMat = Mat4d()
 

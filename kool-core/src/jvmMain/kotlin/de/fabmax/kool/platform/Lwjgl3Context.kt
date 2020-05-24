@@ -225,7 +225,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = 0L
         var share = 0L
 
-        var renderBackend = RenderBackendMode.OPEN_GL
+        var renderBackend = RenderBackendMode.VULKAN
 
         var msaaSamples = 8
 

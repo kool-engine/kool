@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -42,7 +43,7 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
             albedoMetalSampler?.texture = value
         }
 
-    // lighting props
+    // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
     var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
@@ -71,6 +72,11 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
             brdfLutSampler?.texture = value
         }
 
+    // Shadow Mapping
+    private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
+    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
+    private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
+
     override fun onPipelineCreated(pipeline: Pipeline) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
@@ -92,6 +98,13 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
         brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
         brdfLutSampler?.let { it.texture = brdfLut }
 
+        if (isReceivingShadow) {
+            for (i in depthSamplers.indices) {
+                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                depthSamplers[i] = sampler
+                shadowMaps[i].setupSampler(sampler)
+            }
+        }
     }
 
     companion object {
@@ -103,9 +116,6 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
                 positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
-                val defCam = addNode(DeferredCameraNode(stage))
-                val lightNode = multiLightNode(cfg.maxLights)
-
                 val coord = ifTexCoords.output
                 val mrtDeMultiplex = addNode(DeferredMrtShader.MrtDeMultiplexNode(stage)).apply {
                     inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
@@ -115,7 +125,24 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
 
                 addNode(DiscardClearNode(stage)).apply { inViewPos = mrtDeMultiplex.outViewPos }
 
-                val pos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
+                val defCam = addNode(DeferredCameraNode(stage))
+                val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
+
+                val lightNode = multiLightNode(cfg.maxLights)
+                cfg.shadowMaps.forEachIndexed { i, map ->
+                    when (map) {
+                        //is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
+                        is SimpleShadowMap -> {
+                            val depthMapNd = addNode(TextureNode(stage, "depthMap_$i")).apply { isDepthTexture = true }
+                            val lightSpaceTf = addNode(LightSpaceTransformNode(map, stage)).apply { inWorldPos = worldPos }
+                            addNode(SimpleShadowMapFragmentNode(stage)).apply {
+                                inPosLightSpace = lightSpaceTf.outPosLightSpace
+                                depthMap = depthMapNd
+                                lightNode.inShaodwFacs[i] = outShadowFac
+                            }
+                        }
+                    }
+                }
 
                 val reflMap: CubeMapNode?
                 val brdfLut: TextureNode?
@@ -133,7 +160,7 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
 
                 val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
                     flipBacksideNormals = cfg.flipBacksideNormals
-                    inFragPos = pos
+                    inFragPos = worldPos
                     inCamPos = defCam.outCamPos
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output

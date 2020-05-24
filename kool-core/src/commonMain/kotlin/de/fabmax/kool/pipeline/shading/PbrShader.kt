@@ -204,7 +204,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                val worldPos = if (cfg.isDisplacementMapped) {
+                val localPos = if (cfg.isDisplacementMapped) {
                     val dispTex = textureNode("tDisplacement")
                     val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
                         inStrength = pushConstantNode1f("uDispStrength").output
@@ -213,8 +213,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 } else {
                     attrPositions().output
                 }
-                val pos = vec3TransformNode(worldPos, modelMat, 1f).outVec3
-                ifFragPos = stageInterfaceNode("ifFragPos", pos)
+                val worldPos = vec3TransformNode(localPos, modelMat, 1f).outVec3
+                ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
@@ -228,12 +228,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                val clipPos = vec4TransformNode(worldPos, mvpMat).outVec4
+                val clipPos = vec4TransformNode(localPos, mvpMat).outVec4
 
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
-                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos)
+                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
                 positionOutput = clipPos
