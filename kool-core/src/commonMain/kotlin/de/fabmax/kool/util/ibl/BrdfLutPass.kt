@@ -1,4 +1,4 @@
-package de.fabmax.kool.util.pbrMapGen
+package de.fabmax.kool.util.ibl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.*
 import kotlin.math.PI
 
 
-class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512, 1, TexFormat.RG_F16) {
+class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512, TexFormat.RG_F16, 1) {
 
     init {
         clearColor = null

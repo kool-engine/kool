@@ -16,10 +16,10 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.aoMapGen.AmbientOcclusionHelper
-import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
-import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
-import de.fabmax.kool.util.pbrMapGen.ReflectionMapPass
+import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.ibl.BrdfLutPass
+import de.fabmax.kool.util.ibl.IrradianceMapPass
+import de.fabmax.kool.util.ibl.ReflectionMapPass
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -39,7 +39,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
     private var spotLight = true
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
-    private lateinit var aoHelper: AmbientOcclusionHelper
+    private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
     init {
@@ -65,7 +65,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
         }
 
         shadows.add(SimpleShadowMap(this, 0, 2048))
-        aoHelper = AmbientOcclusionHelper(this)
+        aoPipeline = AoPipeline.createForward(this)
 
         val loadingAssets = LoadingAssets { teapotMesh, hdriMap ->
             val irrMapPass = IrradianceMapPass(this, hdriMap)
@@ -95,7 +95,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                     roughness = 0.1f
 
                     isScrSpcAmbientOcclusion = true
-                    scrSpcAmbientOcclusionMap = aoHelper.aoMap
+                    scrSpcAmbientOcclusionMap = aoPipeline.aoMap
 
                     isImageBasedLighting = true
                     irradianceMap = irrMapPass.colorTextureCube
@@ -105,8 +105,8 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 pipelineLoader = shader
 
                 onUpdate += { _, _ ->
-                    if (aoHelper.aoPass.isEnabled) {
-                        shader.scrSpcAmbientOcclusionMap = aoHelper.aoMap
+                    if (aoPipeline.aoPass.isEnabled) {
+                        shader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
                     } else {
                         shader.scrSpcAmbientOcclusionMap = noAoMap
                     }
@@ -190,7 +190,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                     shadowMaps += shadows
 
                     isScrSpcAmbientOcclusion = true
-                    scrSpcAmbientOcclusionMap = aoHelper.aoMap
+                    scrSpcAmbientOcclusionMap = aoPipeline.aoMap
 
                     isImageBasedLighting = true
                     irradianceMap = irrMapPass.colorTextureCube
@@ -208,8 +208,8 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 pipelineLoader = shader
 
                 onUpdate += { _, _ ->
-                    if (aoHelper.aoPass.isEnabled) {
-                        shader.scrSpcAmbientOcclusionMap = aoHelper.aoMap
+                    if (aoPipeline.aoPass.isEnabled) {
+                        shader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
                     } else {
                         shader.scrSpcAmbientOcclusionMap = noAoMap
                     }
@@ -263,13 +263,13 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         mirrorTexCoordsY()
                     }
                 }
-                pipelineLoader = ModeledShader.TextureColor(aoHelper.aoMap, "colorTex", aoMapColorModel())
+                pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", aoMapColorModel())
             }
 
             onUpdate += { rp, _ ->
                 val screenSz = 0.33f
                 val scaleX = rp.viewport.width * screenSz
-                val scaleY = scaleX * (aoHelper.denoisePass.texHeight.toFloat() / aoHelper.denoisePass.texWidth.toFloat())
+                val scaleY = scaleX * (aoPipeline.denoisePass.texHeight.toFloat() / aoPipeline.denoisePass.texWidth.toFloat())
 
                 setIdentity()
                 val margin = rp.viewport.height * 0.05f
@@ -297,9 +297,9 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
             +toggleButton("Enabled") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = aoHelper.aoPass.isEnabled
+                isEnabled = aoPipeline.aoPass.isEnabled
                 onStateChange += {
-                    aoHelper.setEnabled(isEnabled)
+                    aoPipeline.setEnabled(isEnabled)
                 }
             }
             y -= 35f
@@ -316,19 +316,19 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val radiusVal = label(aoHelper.aoPass.radius.toString(2)) {
+            val radiusVal = label(aoPipeline.aoPass.radius.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +radiusVal
             y -= 35f
-            +slider("radiusSlider", 0.1f, 3f, aoHelper.aoPass.radius) {
+            +slider("radiusSlider", 0.1f, 3f, aoPipeline.aoPass.radius) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     radiusVal.text = value.toString(2)
-                    aoHelper.radius = value
+                    aoPipeline.radius = value
                 }
             }
             y -= 35f
@@ -336,19 +336,19 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val intensityVal = label(aoHelper.aoPass.intensity.toString(2)) {
+            val intensityVal = label(aoPipeline.aoPass.intensity.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +intensityVal
             y -= 35f
-            +slider("intensitySlider", 0f, 5f, aoHelper.aoPass.intensity) {
+            +slider("intensitySlider", 0f, 5f, aoPipeline.aoPass.intensity) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     intensityVal.text = value.toString(2)
-                    aoHelper.intensity = value
+                    aoPipeline.intensity = value
                 }
             }
             y -= 35f
@@ -356,19 +356,19 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val biasVal = label(aoHelper.aoPass.bias.toString(2)) {
+            val biasVal = label(aoPipeline.aoPass.bias.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +biasVal
             y -= 35f
-            +slider("biasSlider", -0.5f, 0.5f, aoHelper.aoPass.bias) {
+            +slider("biasSlider", -0.5f, 0.5f, aoPipeline.aoPass.bias) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     biasVal.text = value.toString(2)
-                    aoHelper.bias = value
+                    aoPipeline.bias = value
                 }
             }
             y -= 35f
@@ -376,19 +376,19 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val kernelSzVal = label(aoHelper.aoPass.kernelSz.toString()) {
+            val kernelSzVal = label(aoPipeline.aoPass.kernelSz.toString()) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +kernelSzVal
             y -= 35f
-            +slider("kernelSlider", 4f, 128f, aoHelper.aoPass.kernelSz.toFloat()) {
+            +slider("kernelSlider", 4f, 128f, aoPipeline.aoPass.kernelSz.toFloat()) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
-                    aoHelper.aoPass.kernelSz = value.roundToInt()
-                    kernelSzVal.text = aoHelper.kernelSz.toString()
+                    aoPipeline.aoPass.kernelSz = value.roundToInt()
+                    kernelSzVal.text = aoPipeline.kernelSz.toString()
                 }
             }
             y -= 35f
@@ -396,19 +396,19 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val mapSzVal = label("${aoHelper.size.toString(1)} x") {
+            val mapSzVal = label("${aoPipeline.size.toString(1)} x") {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +mapSzVal
             y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, aoHelper.size * 10) {
+            +slider("mapSizeSlider", 1f, 10f, aoPipeline.size * 10) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
-                    aoHelper.size = value.roundToInt() / 10f
-                    mapSzVal.text = "${aoHelper.size.toString(1)} x"
+                    aoPipeline.size = value.roundToInt() / 10f
+                    mapSzVal.text = "${aoPipeline.size.toString(1)} x"
                 }
             }
 

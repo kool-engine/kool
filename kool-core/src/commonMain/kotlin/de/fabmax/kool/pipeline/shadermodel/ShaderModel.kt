@@ -283,6 +283,29 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
 
+        fun deferredSimpleShadoweMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
+            val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply { isDepthTexture = true }
+            val lightSpaceTf = addNode(SimpleShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
+            return addNode(SimpleShadowMapFragmentNode(stage)).apply {
+                inPosLightSpace = lightSpaceTf.outPosLightSpace
+                depthMap = depthMapNd
+            }
+        }
+
+        fun deferredCascadedShadoweMapNode(shadowMap: CascadedShadowMap, depthMapName: String,
+                                           viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
+            val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply {
+                isDepthTexture = true
+                arraySize = shadowMap.numCascades
+            }
+            val lightSpaceTf = addNode(CascadedShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
+            return addNode(CascadedShadowMapFragmentNode(shadowMap, stage)).apply {
+                inViewZ = channelNode(viewPos, "z").output
+                inPosLightSpace = lightSpaceTf.outPosLightSpace
+                depthMap = depthMapNd
+            }
+        }
+
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))
             albedo?.let { mat.inColor = it }

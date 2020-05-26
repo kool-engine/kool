@@ -169,8 +169,6 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         val functions = mutableMapOf<String, String>()
         val mainCode = mutableListOf<String>()
 
-        override val clipSpaceOrientation = CodeGenerator.ClipSpaceOrientation.Y_UP
-
         override fun appendFunction(name: String, glslCode: String) {
             functions[name] = glslCode
         }

@@ -6,10 +6,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Unit = Kotlin.kotlin.Unit;
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_uj7ww7$;
   var SimpleShadowMap = $module$kool.de.fabmax.kool.util.SimpleShadowMap;
-  var AmbientOcclusionHelper = $module$kool.de.fabmax.kool.util.aoMapGen.AmbientOcclusionHelper;
-  var IrradianceMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.IrradianceMapPass;
-  var ReflectionMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.ReflectionMapPass;
-  var BrdfLutPass = $module$kool.de.fabmax.kool.util.pbrMapGen.BrdfLutPass;
+  var AoPipeline = $module$kool.de.fabmax.kool.util.ao.AoPipeline;
+  var IrradianceMapPass = $module$kool.de.fabmax.kool.util.ibl.IrradianceMapPass;
+  var ReflectionMapPass = $module$kool.de.fabmax.kool.util.ibl.ReflectionMapPass;
+  var BrdfLutPass = $module$kool.de.fabmax.kool.util.ibl.BrdfLutPass;
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
@@ -179,20 +179,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.autoRotate_0 = true;
     this.spotLight_0 = true;
     this.noAoMap_0 = new Texture(void 0, AmbientOcclusionDemo$noAoMap$lambda);
-    this.aoHelper_em3h7u$_0 = this.aoHelper_em3h7u$_0;
+    this.aoPipeline_jgx896$_0 = this.aoPipeline_jgx896$_0;
     this.shadows_0 = ArrayList_init();
     this.mainScene = this.makeMainScene_0(ctx);
     this.menu = this.menu_0(ctx);
     this.updateLighting_0();
   }
-  Object.defineProperty(AmbientOcclusionDemo.prototype, 'aoHelper_0', {
+  Object.defineProperty(AmbientOcclusionDemo.prototype, 'aoPipeline_0', {
     get: function () {
-      if (this.aoHelper_em3h7u$_0 == null)
-        return throwUPAE('aoHelper');
-      return this.aoHelper_em3h7u$_0;
+      if (this.aoPipeline_jgx896$_0 == null)
+        return throwUPAE('aoPipeline');
+      return this.aoPipeline_jgx896$_0;
     },
-    set: function (aoHelper) {
-      this.aoHelper_em3h7u$_0 = aoHelper;
+    set: function (aoPipeline) {
+      this.aoPipeline_jgx896$_0 = aoPipeline;
     }
   });
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda(this$AmbientOcclusionDemo, closure$ctx, this$) {
@@ -240,7 +240,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       addAll($receiver.shadowMaps, this$AmbientOcclusionDemo.shadows_0);
       $receiver.roughness = 0.1;
       $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoHelper_0.aoMap;
+      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
       $receiver.isImageBasedLighting = true;
       $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
       $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
@@ -250,8 +250,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$shader) {
     return function ($receiver, f, f_0) {
-      if (this$AmbientOcclusionDemo.aoHelper_0.aoPass.isEnabled) {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoHelper_0.aoMap;
+      if (this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled) {
+        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
       } else {
         closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.noAoMap_0;
       }
@@ -532,7 +532,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       addAll($receiver.shadowMaps, this$AmbientOcclusionDemo.shadows_0);
       $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoHelper_0.aoMap;
+      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
       $receiver.isImageBasedLighting = true;
       $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
       $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
@@ -549,8 +549,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AmbientOcclusionDemo, closure$shader) {
     return function ($receiver, f, f_0) {
-      if (this$AmbientOcclusionDemo.aoHelper_0.aoPass.isEnabled) {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoHelper_0.aoMap;
+      if (this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled) {
+        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
       } else {
         closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.noAoMap_0;
       }
@@ -595,7 +595,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda($receiver, this, ctx)));
     this.shadows_0.add_11rb$(new SimpleShadowMap($receiver, 0, 2048));
-    this.aoHelper_0 = new AmbientOcclusionHelper($receiver);
+    this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
     var loadingAssets = new AmbientOcclusionDemo$LoadingAssets(AmbientOcclusionDemo$makeMainScene$lambda$lambda_0($receiver, this));
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
     ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(loadingAssets));
@@ -648,7 +648,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda_1(this$AmbientOcclusionDemo) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AmbientOcclusionDemo.aoHelper_0.aoMap, 'colorTex', this$AmbientOcclusionDemo.aoMapColorModel_0());
+      $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AmbientOcclusionDemo.aoPipeline_0.aoMap, 'colorTex', this$AmbientOcclusionDemo.aoMapColorModel_0());
       return Unit;
     };
   }
@@ -656,7 +656,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver, rp, f) {
       var screenSz = 0.33;
       var scaleX = rp.viewport.width * screenSz;
-      var scaleY = scaleX * (this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texHeight / this$AmbientOcclusionDemo.aoHelper_0.denoisePass.texWidth);
+      var scaleY = scaleX * (this$AmbientOcclusionDemo.aoPipeline_0.denoisePass.texHeight / this$AmbientOcclusionDemo.aoPipeline_0.denoisePass.texWidth);
       this$.setIdentity();
       var margin = rp.viewport.height * 0.05;
       this$.translate_y2kzbl$(margin, margin, 0.0);
@@ -686,7 +686,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo) {
     return function ($receiver) {
-      this$AmbientOcclusionDemo.aoHelper_0.setEnabled_6taknv$($receiver.isEnabled);
+      this$AmbientOcclusionDemo.aoPipeline_0.setEnabled_6taknv$($receiver.isEnabled);
       return Unit;
     };
   }
@@ -694,7 +694,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$AmbientOcclusionDemo.aoHelper_0.aoPass.isEnabled;
+      $receiver.isEnabled = this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled;
       var $receiver_0 = $receiver.onStateChange;
       var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo);
       $receiver_0.add_11rb$(element);
@@ -736,7 +736,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$radiusVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.radius = $receiver.value;
+      this$AmbientOcclusionDemo.aoPipeline_0.radius = $receiver.value;
       return Unit;
     };
   }
@@ -768,7 +768,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$intensityVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.intensity = $receiver.value;
+      this$AmbientOcclusionDemo.aoPipeline_0.intensity = $receiver.value;
       return Unit;
     };
   }
@@ -800,7 +800,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AmbientOcclusionDemo) {
     return function ($receiver, it) {
       closure$biasVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoHelper_0.bias = $receiver.value;
+      this$AmbientOcclusionDemo.aoPipeline_0.bias = $receiver.value;
       return Unit;
     };
   }
@@ -831,8 +831,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal) {
     return function ($receiver, it) {
-      this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz = roundToInt($receiver.value);
-      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoHelper_0.kernelSz.toString();
+      this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz = roundToInt($receiver.value);
+      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoPipeline_0.kernelSz.toString();
       return Unit;
     };
   }
@@ -863,8 +863,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo, closure$mapSzVal) {
     return function ($receiver, it) {
-      this$AmbientOcclusionDemo.aoHelper_0.size = roundToInt($receiver.value) / 10.0;
-      closure$mapSzVal.text = toString(this$AmbientOcclusionDemo.aoHelper_0.size, 1) + ' x';
+      this$AmbientOcclusionDemo.aoPipeline_0.size = roundToInt($receiver.value) / 10.0;
+      closure$mapSzVal.text = toString(this$AmbientOcclusionDemo.aoPipeline_0.size, 1) + ' x';
       return Unit;
     };
   }
@@ -936,34 +936,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show AO Map', AmbientOcclusionDemo$menu$lambda$lambda$lambda_5(y, closure$aoMap)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_6(y)));
-      var radiusVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.aoPass.radius, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_7(y));
+      var radiusVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.radius, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_7(y));
       $receiver.unaryPlus_uv0sim$(radiusVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('radiusSlider', 0.1, 3.0, this$AmbientOcclusionDemo.aoHelper_0.aoPass.radius, AmbientOcclusionDemo$menu$lambda$lambda$lambda_8(y, radiusVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('radiusSlider', 0.1, 3.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.radius, AmbientOcclusionDemo$menu$lambda$lambda$lambda_8(y, radiusVal, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Intensity:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_9(y)));
-      var intensityVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.aoPass.intensity, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_10(y));
+      var intensityVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.intensity, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_10(y));
       $receiver.unaryPlus_uv0sim$(intensityVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('intensitySlider', 0.0, 5.0, this$AmbientOcclusionDemo.aoHelper_0.aoPass.intensity, AmbientOcclusionDemo$menu$lambda$lambda$lambda_11(y, intensityVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('intensitySlider', 0.0, 5.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.intensity, AmbientOcclusionDemo$menu$lambda$lambda$lambda_11(y, intensityVal, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Bias:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_12(y)));
-      var biasVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.aoPass.bias, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_13(y));
+      var biasVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.bias, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_13(y));
       $receiver.unaryPlus_uv0sim$(biasVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AmbientOcclusionDemo.aoHelper_0.aoPass.bias, AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.bias, AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('AO Samples:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y)));
-      var kernelSzVal = this$.label_tokfmu$(this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz.toString(), AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y));
+      var kernelSzVal = this$.label_tokfmu$(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz.toString(), AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y));
       $receiver.unaryPlus_uv0sim$(kernelSzVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz, AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo, kernelSzVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz, AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo, kernelSzVal)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Map Size:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(y)));
-      var mapSzVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoHelper_0.size, 1) + ' x', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y));
+      var mapSzVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.size, 1) + ' x', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y));
       $receiver.unaryPlus_uv0sim$(mapSzVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$AmbientOcclusionDemo.aoHelper_0.size * 10, AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo, mapSzVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$AmbientOcclusionDemo.aoPipeline_0.size * 10, AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo, mapSzVal)));
       y.v -= 40.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_21(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -1191,6 +1191,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_0 = mrtPass.content;
     $receiver_0.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, deferredScene$lambda$lambda$lambda(mrtPass)));
     $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, deferredScene$lambda$lambda$lambda_0));
+    var aoPipeline = AoPipeline.Companion.createDeferred_4lrvgg$($receiver, mrtPass);
     var shadows = ArrayList_init();
     if (isSpotLight) {
       var element = new SimpleShadowMap($receiver, 0, 2048, mrtPass.content);
@@ -1208,6 +1209,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     var $receiver_3 = new DeferredPbrShader$DeferredPbrConfig();
     addAll($receiver_3.shadowMaps, shadows);
+    $receiver_3.isScrSpcAmbientOcclusion = true;
+    $receiver_3.scrSpcAmbientOcclusionMap = aoPipeline.aoMap;
     var cfg = $receiver_3;
     var pbrPass = new DeferredPbrPass($receiver, mrtPass, cfg);
     $receiver.addOffscreenPass_m1c2kf$(pbrPass);

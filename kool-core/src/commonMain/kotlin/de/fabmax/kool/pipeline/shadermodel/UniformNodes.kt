@@ -72,7 +72,7 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
 
                     uCamPos.value.set(cmd.renderPass.camera.globalPos, 1f)
                     cmd.renderPass.viewport.let {
-                        uViewport.value.set(it.x.toFloat(), it.y.toFloat(), it.width.toFloat(), it.height.toFloat())
+                        uViewport.value.set(it.x.toFloat(), it.ySigned.toFloat(), it.width.toFloat(), it.heightSigned.toFloat())
                     }
                 }
             }

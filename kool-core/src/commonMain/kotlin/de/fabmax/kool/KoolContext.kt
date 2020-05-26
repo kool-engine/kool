@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
+import kotlin.math.abs
 
 /**
  * @author fabmax
@@ -130,11 +131,15 @@ abstract class KoolContext {
         //shaderMgr.onRenderingHintsChanged(this)
     }
 
-    data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {
+    data class Viewport(val x: Int, val ySigned: Int, val width: Int, val heightSigned: Int) {
+        val y: Int
+            get() = if (heightSigned < 0) ySigned + heightSigned else ySigned
+        val height: Int
+            get() = abs(heightSigned)
+
         val aspectRatio get() = width.toFloat() / height.toFloat()
 
-        fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width &&
-                y >= this.y && y < this.y + height
+        fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width && y >= y && y < y + height
     }
 
     private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)

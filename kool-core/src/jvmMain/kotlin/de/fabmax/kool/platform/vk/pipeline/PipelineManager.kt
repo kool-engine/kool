@@ -43,7 +43,7 @@ class PipelineManager(val sys: VkSystem) {
 
     private fun createOnScreenPipeline(pipeline: Pipeline, koolRenderPass: RenderPass, renderPass: VkRenderPass) {
         val swapChain = this.swapChain ?: return
-        val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, sys.physicalDevice.msaaSamples, false, pipeline, swapChain.nImages)
+        val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, sys.physicalDevice.msaaSamples, true, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
         val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(true) }
         createdPipeline.addRenderPassPipeline(renderPass, gp)

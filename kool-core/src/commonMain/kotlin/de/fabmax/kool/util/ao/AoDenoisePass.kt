@@ -1,4 +1,4 @@
-package de.fabmax.kool.util.aoMapGen
+package de.fabmax.kool.util.ao
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMapPass) : OffscreenRenderPass2d(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
+class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtComponent: String) : OffscreenRenderPass2d(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
 
     private val uRadius = Uniform1f(1f, "uRadius")
 
@@ -47,7 +47,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                         val noisyAo = textureNode("noisyAo")
                         val depth = textureNode("depth")
                         val radius = pushConstantNode1f(uRadius)
-                        val blurNd = addNode(BlurNode(noisyAo, depth, stage))
+                        val blurNd = addNode(BlurNode(noisyAo, depth, dephtComponent, stage))
                         blurNd.inScreenPos = ifTexCoords.output
                         blurNd.radius = radius.output
                         colorOutput(blurNd.outColor)
@@ -56,7 +56,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                 pipelineLoader = ModeledShader(model).apply {
                     onCreated += {
                         model.findNode<TextureNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
-                        model.findNode<TextureNode>("depth")!!.sampler.texture = depthPass.colorTexture
+                        model.findNode<TextureNode>("depth")!!.sampler.texture = depthTexture
                     }
                 }
             }
@@ -68,7 +68,10 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
         super.dispose(ctx)
     }
 
-    private inner class BlurNode(val noisyAo: TextureNode, val depth: TextureNode, shaderGraph: ShaderGraph) : ShaderNode("blurNode", shaderGraph) {
+    private inner class BlurNode(val noisyAo: TextureNode, val depth: TextureNode,
+                                 val depthComponent: String, shaderGraph: ShaderGraph) :
+            ShaderNode("blurNode", shaderGraph) {
+
         var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
         var radius = ShaderNodeIoVar(ModelVar1fConst(1f))
 
@@ -85,7 +88,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
             generator.appendMain("""
                 int blurSize = 4;
                 vec2 texelSize = 1.0 / vec2(textureSize(${noisyAo.name}, 0));
-                float depthOri = ${generator.sampleTexture2d(depth.name, inScreenPos.ref2f())}.a;
+                float depthOri = ${generator.sampleTexture2d(depth.name, inScreenPos.ref2f())}.$depthComponent;
                 float depthThreshold = ${radius.ref1f()} * 0.1;
                 
                 float result = 0.0;
@@ -94,7 +97,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthPass: NormalLinearDepthMa
                 for (int x = 0; x < blurSize; x++) {
                     for (int y = 0; y < blurSize; y++) {
                         vec2 uv = ${inScreenPos.ref2f()} + (hlim + vec2(float(x), float(y))) * texelSize;
-                        float w = 1.0 - step(depthThreshold, abs(${generator.sampleTexture2d(depth.name, "uv")}.a - depthOri)) * 0.99;
+                        float w = 1.0 - step(depthThreshold, abs(${generator.sampleTexture2d(depth.name, "uv")}.$depthComponent - depthOri)) * 0.99;
                         
                         result += ${generator.sampleTexture2d(noisyAo.name, "uv")}.r * w;
                         weight += w;

@@ -14,6 +14,7 @@ import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.DeferredMrtPass
 import de.fabmax.kool.util.deferred.DeferredMrtShader
 import de.fabmax.kool.util.deferred.DeferredPbrPass
@@ -86,6 +87,8 @@ fun deferredScene() = scene {
         }
     }
 
+    val aoPipeline = AoPipeline.createDeferred(this, mrtPass)
+
     val shadows = mutableListOf<ShadowMap>()
     if (isSpotLight) {
         shadows += SimpleShadowMap(this, 0, 2048, drawNode = mrtPass.content)
@@ -98,12 +101,13 @@ fun deferredScene() = scene {
 
     val cfg = DeferredPbrShader.DeferredPbrConfig().apply {
         shadowMaps += shadows
+        isScrSpcAmbientOcclusion = true
+        scrSpcAmbientOcclusionMap = aoPipeline.aoMap
     }
     val pbrPass = DeferredPbrPass(this, mrtPass, cfg)
     addOffscreenPass(pbrPass)
 
-    val shadowMap = shadows[0]
-    when (shadowMap) {
+    when (val shadowMap = shadows[0]) {
         is SimpleShadowMap -> pbrPass.dependsOn(shadowMap)
         is CascadedShadowMap -> shadowMap.cascades.forEach { pbrPass.dependsOn(it) }
     }
@@ -125,6 +129,17 @@ fun deferredScene() = scene {
         }
         pipelineLoader = ModeledShader.TextureColor(pbrPass.colorTexture, model = textureColorModel("colorTex"))
     }
+
+//    +textureMesh {
+//        generate {
+//            rect {
+//                origin.set(-0.5f, -0.5f, 0.1f)
+//                size.set(0.5f, 0.5f)
+//                mirrorTexCoordsY()
+//            }
+//        }
+//        pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap)
+//    }
 }
 
 private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.textureColor()").apply {

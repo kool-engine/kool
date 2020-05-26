@@ -10,18 +10,19 @@ class RenderPassGraph {
     var requiredCommandBuffers = 0
         private set
 
-    private val freeGroups = mutableListOf<RenderPassGroup>()
+    private val groupPool = mutableListOf<RenderPassGroup>()
 
     private val remainingPasses = mutableSetOf<RenderPass>()
     private val addedPasses = mutableSetOf<RenderPass>()
 
     fun updateGraph(scenes: List<Scene>) {
-        freeGroups += groups
+        groupPool += groups
         groups.clear()
 
         remainingPasses.clear()
         addedPasses.clear()
 
+        // collect all offscreen render passes of all scenes (onscreen passes are handled separately)
         for (i in scenes.indices) {
             val scene = scenes[i]
             for (j in scene.offscreenPasses.indices) {
@@ -52,6 +53,8 @@ class RenderPassGraph {
                         }
                     }
                     if (added == null) {
+                        // todo: it might be better to check if there are other remaining passes, which could be added
+                        //       to the existing group instead of immediately creating a new group
                         val grp = newGroup(false)
                         grp += candidate
                         groups += grp
@@ -82,8 +85,8 @@ class RenderPassGraph {
     }
 
     private fun newGroup(isOnScreen: Boolean): RenderPassGroup {
-        val group = if (freeGroups.isNotEmpty()) {
-            freeGroups.removeAt(freeGroups.lastIndex)
+        val group = if (groupPool.isNotEmpty()) {
+            groupPool.removeAt(groupPool.lastIndex)
         } else {
             RenderPassGroup()
         }

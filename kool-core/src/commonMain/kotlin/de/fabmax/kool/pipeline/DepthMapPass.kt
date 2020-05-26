@@ -6,8 +6,6 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.OrthographicCamera
-import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Color
 
 
@@ -56,14 +54,7 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
 
     init {
         onAfterCollectDrawCommands += {
-            camera.let {
-                val far = when(it) {
-                    is PerspectiveCamera -> it.clipFar
-                    is OrthographicCamera -> it.far
-                    else -> 1e9f
-                }
-                clearColor = Color(far, 0f, 0f, 1f)
-            }
+            clearColor = Color(1f, 0f, 0f, 1f)
         }
     }
 
@@ -85,7 +76,7 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
                 float d = gl_FragCoord.z / gl_FragCoord.w;
-                ${outColor.declare()} = vec4(d, 0.0, 0.0, 1.0);
+                ${outColor.declare()} = vec4(-d, 0.0, 0.0, 1.0);
             """)
         }
     }
@@ -97,14 +88,7 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
         name = "NormalLinearDepthMapPass"
 
         onAfterCollectDrawCommands += {
-            camera.let {
-                val far = when(it) {
-                    is PerspectiveCamera -> it.clipFar
-                    is OrthographicCamera -> it.far
-                    else -> 1e9f
-                }
-                clearColor = Color(0f, 1f, 0f, far)
-            }
+            clearColor = Color(0f, 1f, 0f, 1f)
         }
     }
 
@@ -139,7 +123,7 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
                 float d = gl_FragCoord.z / gl_FragCoord.w;
-                ${outColor.declare()} = vec4(normalize(${inNormals.ref3f()}) * 0.5 + 0.5, d);
+                ${outColor.declare()} = vec4(normalize(${inNormals.ref3f()}), -d);
             """)
         }
     }

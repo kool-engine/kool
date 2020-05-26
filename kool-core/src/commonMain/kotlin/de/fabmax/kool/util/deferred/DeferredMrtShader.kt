@@ -121,24 +121,22 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             val mvpNode: UniformBufferMvp
 
             vertexStage {
-                val modelMat: ShaderNodeIoVar
                 val modelViewMat: ShaderNodeIoVar
                 val mvpMat: ShaderNodeIoVar
 
                 mvpNode = mvpNode()
 
                 if (cfg.isInstanced) {
-                    modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
+                    val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
                     modelViewMat = multiplyNode(modelMat, mvpNode.outViewMat).output
                     mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
                 } else {
-                    modelMat = mvpNode.outModelMat
                     modelViewMat = multiplyNode(mvpNode.outModelMat, mvpNode.outViewMat).output
                     mvpMat = mvpNode.outMvpMat
                 }
 
-                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
+                val worldNrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f).outVec3
+                ifNormals = stageInterfaceNode("ifNormals", worldNrm)
 
                 ifTexCoords = if (cfg.requiresTexCoords()) {
                     stageInterfaceNode("ifTexCoords", attrTexCoords().output)
@@ -164,7 +162,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
+                    val tan = vec3TransformNode(attrTangents().output, modelViewMat, 0f)
                     stageInterfaceNode("ifTangents", tan.outVec3)
                 } else {
                     null
@@ -185,7 +183,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     }
                 }
 
-                val normal = if (cfg.isNormalMapped && ifTangents != null) {
+                val viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
                     val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
                     bumpNormal.outNormal
@@ -214,7 +212,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
                     inViewPos = viewPos
                     inAlbedo = albedo
-                    inNormal = normal
+                    inViewNormal = viewNormal
                     inRoughness = roughness
                     inMetallic = metallic
                     inAo = aoFactor
@@ -266,7 +264,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
     class MrtMultiplexNode(graph: ShaderGraph) : ShaderNode("mrtMultiplex", graph, ShaderStage.FRAGMENT_SHADER.mask) {
         var inViewPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inAlbedo = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-        var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+        var inViewNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.5f))
         var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0f))
         var inAo = ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -277,13 +275,13 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inViewPos, inAlbedo, inNormal, inRoughness, inMetallic, inAo)
+            dependsOn(inViewPos, inAlbedo, inViewNormal, inRoughness, inMetallic, inAo)
         }
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
                 ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
-                ${outNormalRough.declare()} = vec4(normalize(${inNormal.ref3f()}) * vec3(0.5) + vec3(0.5), ${inRoughness.ref1f()});
+                ${outNormalRough.declare()} = vec4(normalize(${inViewNormal.ref3f()}), ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
             """)
         }
@@ -296,7 +294,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
 
         val outViewPos = ShaderNodeIoVar(ModelVar4f("outViewPos"), this)
         val outAlbedo = ShaderNodeIoVar(ModelVar4f("outAlbedo"), this)
-        val outNormal = ShaderNodeIoVar(ModelVar3f("outNormal"), this)
+        val outViewNormal = ShaderNodeIoVar(ModelVar3f("outViewNormal"), this)
         val outRoughness = ShaderNodeIoVar(ModelVar1f("outRoughness"), this)
         val outMetallic = ShaderNodeIoVar(ModelVar1f("outMetallic"), this)
         val outAo = ShaderNodeIoVar(ModelVar1f("outAo"), this)
@@ -310,7 +308,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             generator.appendMain("""
                 ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
                 ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
-                ${outNormal.declare()} = vec3(${inNormalRough.ref3f()} * 2.0) - vec3(1.0);
+                ${outViewNormal.declare()} = vec3(${inNormalRough.ref3f()});
                 ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
                 ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;
                 ${outAo.declare()} = ${inPositionAo.ref4f()}.a;

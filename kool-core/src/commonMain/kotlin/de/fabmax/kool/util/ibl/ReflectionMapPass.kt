@@ -1,4 +1,4 @@
-package de.fabmax.kool.util.pbrMapGen
+package de.fabmax.kool.util.ibl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f

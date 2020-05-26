@@ -23,6 +23,10 @@ abstract class Uniform<T>(var value: T, val name: String) {
     open val length = 1
 
     abstract fun putTo(buffer: MixedBuffer)
+
+    override fun toString(): String {
+        return name
+    }
 }
 
 class Uniform1f(name: String) : Uniform<Float>(0f, name) {

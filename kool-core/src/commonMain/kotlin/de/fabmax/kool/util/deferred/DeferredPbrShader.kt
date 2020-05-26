@@ -73,6 +73,14 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
             brdfLutSampler?.texture = value
         }
 
+    // Screen space ambient occlusion map
+    private var ssaoSampler: TextureSampler? = null
+    var scrSpcAmbientOcclusionMap: Texture? = cfg.scrSpcAmbientOcclusionMap
+        set(value) {
+            field = value
+            ssaoSampler?.texture = value
+        }
+
     // Shadow Mapping
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
@@ -98,6 +106,9 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
         reflectionMapSampler?.let { it.texture = reflectionMap }
         brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
         brdfLutSampler?.let { it.texture = brdfLut }
+
+        ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
+        ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -128,32 +139,14 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
 
                 val defCam = addNode(DeferredCameraNode(stage))
                 val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
+                val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
 
                 val lightNode = multiLightNode(cfg.maxLights)
                 cfg.shadowMaps.forEachIndexed { i, map ->
-                    when (map) {
-                        is CascadedShadowMap -> {
-                            val depthMapNd = addNode(TextureNode(stage, "depthMap_$i")).apply {
-                                isDepthTexture = true
-                                arraySize = map.numCascades
-                            }
-                            val lightSpaceTf = addNode(CascadedShadowMapTransformNode(map, stage)).apply { inWorldPos = worldPos }
-                            addNode(CascadedShadowMapFragmentNode(map, stage)).apply {
-                                inViewZ = channelNode(mrtDeMultiplex.outViewPos, "z").output
-                                inPosLightSpace = lightSpaceTf.outPosLightSpace
-                                depthMap = depthMapNd
-                                lightNode.inShaodwFacs[i] = outShadowFac
-                            }
-                        }
-                        is SimpleShadowMap -> {
-                            val depthMapNd = addNode(TextureNode(stage, "depthMap_$i")).apply { isDepthTexture = true }
-                            val lightSpaceTf = addNode(SimpleShadowMapTransformNode(map, stage)).apply { inWorldPos = worldPos }
-                            addNode(SimpleShadowMapFragmentNode(stage)).apply {
-                                inPosLightSpace = lightSpaceTf.outPosLightSpace
-                                depthMap = depthMapNd
-                                lightNode.inShaodwFacs[i] = outShadowFac
-                            }
-                        }
+                    lightNode.inShaodwFacs[i] = when (map) {
+                        is CascadedShadowMap -> deferredCascadedShadoweMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
+                        is SimpleShadowMap -> deferredSimpleShadoweMapNode(map, "depthMap_$i", worldPos).outShadowFac
+                        else -> ShaderNodeIoVar(ModelVar1fConst(1f))
                     }
                 }
 
@@ -162,7 +155,7 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
                 val irrSampler: CubeMapSamplerNode?
                 if (cfg.isImageBasedLighting) {
                     val irrMap = cubeMapNode("irradianceMap")
-                    irrSampler = cubeMapSamplerNode(irrMap, mrtDeMultiplex.outNormal)
+                    irrSampler = cubeMapSamplerNode(irrMap, worldNrm)
                     reflMap = cubeMapNode("reflectionMap")
                     brdfLut = textureNode("brdfLut")
                 } else {
@@ -179,7 +172,7 @@ class DeferredPbrShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDefe
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     inAlbedo = gammaNode(mrtDeMultiplex.outAlbedo).outColor
-                    inNormal = mrtDeMultiplex.outNormal
+                    inNormal = worldNrm
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
 

@@ -149,26 +149,15 @@ abstract class Camera(name: String = "camera") : Node(name) {
             return false
         }
         result.x = (1 + result.x) * 0.5f * viewport.width + viewport.x
-        result.y = (1 + result.y) * 0.5f * viewport.height + viewport.y
+        result.y = ctx.windowHeight - (1 + result.y) * 0.5f * viewport.height + viewport.y
         result.z = (1 + result.z) * 0.5f
-
-        // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
-        if (ctx.projCorrectionMatrixScreen[1, 1] > 0) {
-            result.y = ctx.windowHeight - result.y
-        }
 
         return true
     }
 
     fun unProjectScreen(screen: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         val x = screen.x - viewport.x
-
-        // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
-        val y = if (ctx.projCorrectionMatrixScreen[1, 1] < 0) {
-            screen.y - viewport.y.toFloat()
-        } else {
-            (ctx.windowHeight - screen.y) - viewport.y
-        }
+        val y = (ctx.windowHeight - screen.y) - viewport.y
 
         tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
         invViewProj.transform(tmpVec4)

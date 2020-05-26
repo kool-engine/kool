@@ -45,7 +45,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     init {
         windowWidth = props.width
         windowHeight = props.height
-        windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
+        windowViewport = KoolContext.Viewport(0, windowHeight, windowWidth, -windowHeight)
 
         val vkSetup = VkSetup().apply {
             isValidating = true
@@ -62,14 +62,14 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
                 windowWidth = newWidth
                 windowHeight = newHeight
-                windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
+                windowViewport = KoolContext.Viewport(0, windowHeight, windowWidth, -windowHeight)
             }
         }
 
         // maps camera projection matrices to Vulkan screen coordinates
         projCorrectionMatrixScreen.apply {
             setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
-            setRow(1, Vec4d(0.0, -1.0, 0.0, 0.0))
+            setRow(1, Vec4d(0.0, 1.0, 0.0, 0.0))
             setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
             setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
         }
@@ -240,10 +240,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
                     val submitInfo = callocVkSubmitInfo {
                         sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
-                        if (waitSemas != null) {
-                            waitSemaphoreCount(nWaitSemas)
-                            pWaitSemaphores(waitSemas)
-                        }
+                        waitSemaphoreCount(nWaitSemas)
+                        pWaitSemaphores(waitSemas)
                         pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
                         pCommandBuffers(submitCmdBufs)
                         pSignalSemaphores(longs(group.signalSemaphore))
@@ -277,13 +275,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         private fun MemoryStack.makeCommandBufferOnScreen(cmdBuffer: VkCommandBuffer, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int) {
             val mergeQueue = mutableListOf<DrawCommand>()
-            var clearColor: Color? = null
+            val viewport = group.renderPasses[0].viewport
+            val clearColor = group.renderPasses[0].clearColor
 
             // on screen render passes of all scenes are merged into a single command buffer
             for (i in group.renderPasses.indices) {
                 val onScreenPass = group.renderPasses[i]
                 mergeQueue += onScreenPass.drawQueue.commands
-                onScreenPass.clearColor?.let { clearColor = it }
             }
 
             // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
@@ -293,6 +291,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
             val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], arrayOf(clearColor))
             vkCmdBeginRenderPass(cmdBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+            setViewport(cmdBuffer, viewport)
             renderDrawQueue(cmdBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
             vkCmdEndRenderPass(cmdBuffer)
 
@@ -398,19 +397,23 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, x: Int, y: Int, width: Int, height: Int) {
-            val viewport = callocVkViewportN(1) {
-                x(x.toFloat())
-                y(y.toFloat())
-                width(width.toFloat())
-                height(height.toFloat())
+            setViewport(commandBuffer, KoolContext.Viewport(x, y, width, height))
+        }
+
+        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, viewport: KoolContext.Viewport) {
+            val vkViewport = callocVkViewportN(1) {
+                x(viewport.x.toFloat())
+                y(viewport.ySigned.toFloat())
+                width(viewport.width.toFloat())
+                height(viewport.heightSigned.toFloat())
                 minDepth(0f)
                 maxDepth(1f)
             }
-            vkCmdSetViewport(commandBuffer, 0, viewport)
+            vkCmdSetViewport(commandBuffer, 0, vkViewport)
 
             val scissor = callocVkRect2DN(1) {
-                offset { it.set(x, y) }
-                extent { it.width(width); it.height(height) }
+                offset { it.set(viewport.x, viewport.y) }
+                extent { it.width(viewport.width); it.height(viewport.height) }
             }
             vkCmdSetScissor(commandBuffer, 0, scissor)
         }

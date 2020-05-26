@@ -6,8 +6,7 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.util.Color
 
-class DeferredMrtPass() :
-        OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERRED) {
+class DeferredMrtPass() : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERRED) {
 
     val content = drawNode as Group
 

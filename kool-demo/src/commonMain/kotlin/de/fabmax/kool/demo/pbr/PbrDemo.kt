@@ -14,9 +14,9 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
-import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
-import de.fabmax.kool.util.pbrMapGen.ReflectionMapPass
+import de.fabmax.kool.util.ibl.BrdfLutPass
+import de.fabmax.kool.util.ibl.IrradianceMapPass
+import de.fabmax.kool.util.ibl.ReflectionMapPass
 import de.fabmax.kool.util.uiFont
 
 /**

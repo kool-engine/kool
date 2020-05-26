@@ -106,16 +106,10 @@ class AoMapSampleNode(val aoMap: TextureNode, graph: ShaderGraph) : ShaderNode("
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        val invertY = if (generator.clipSpaceOrientation == CodeGenerator.ClipSpaceOrientation.Y_UP) {
-            ""
-        } else {
-            "aoMapSamplePos.y = 1.0 - aoMapSamplePos.y;"
-        }
         generator.appendMain("""
                 vec2 aoMapSamplePos = gl_FragCoord.xy - ${inViewport.ref2f()};
                 aoMapSamplePos.x /= $inViewport.z;
                 aoMapSamplePos.y /= $inViewport.w;
-                $invertY
                 ${outAo.declare()} = ${generator.sampleTexture2d(aoMap.name, "aoMapSamplePos")}.r;
             """)
     }

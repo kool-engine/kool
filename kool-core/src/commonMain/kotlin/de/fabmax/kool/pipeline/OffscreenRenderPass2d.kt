@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Node
 
-open class OffscreenRenderPass2d(drawNode: Node, texWidth: Int, texHeight: Int, mipLevels: Int = 1, val colorFormat: TexFormat = TexFormat.RGBA) :
+open class OffscreenRenderPass2d(drawNode: Node, texWidth: Int, texHeight: Int, val colorFormat: TexFormat = TexFormat.RGBA, mipLevels: Int = 1) :
         OffscreenRenderPass(drawNode, texWidth, texHeight, mipLevels) {
 
     internal val impl = OffscreenPass2dImpl(this)
