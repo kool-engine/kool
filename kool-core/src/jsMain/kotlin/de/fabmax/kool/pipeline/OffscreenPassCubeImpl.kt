@@ -63,11 +63,9 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         texture as OffscreenTextureCube
 
         val mipLevel = offscreenPass.targetMipLevel
-        val width = offscreenPass.mipWidth(mipLevel)
-        val height = offscreenPass.mipHeight(mipLevel)
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
-        offscreenPass.viewport = KoolContext.Viewport(0, 0, width, height)
+        offscreenPass.setMipViewport(mipLevel)
         ctx.gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbos[fboIdx])
 
         for (i in 0 until 6) {

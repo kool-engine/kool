@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
@@ -10,6 +9,7 @@ import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
+import de.fabmax.kool.util.Viewport
 import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
@@ -25,8 +25,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override var windowWidth = 0
         private set
     override var windowHeight = 0
-        private set
-    override var windowViewport = KoolContext.Viewport(0, 0, 0, 0)
         private set
     override val glfwWindowHandle: Long
 
@@ -45,7 +43,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     init {
         windowWidth = props.width
         windowHeight = props.height
-        windowViewport = KoolContext.Viewport(0, windowHeight, windowWidth, -windowHeight)
 
         val vkSetup = VkSetup().apply {
             isValidating = true
@@ -62,7 +59,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
                 windowWidth = newWidth
                 windowHeight = newHeight
-                windowViewport = KoolContext.Viewport(0, windowHeight, windowWidth, -windowHeight)
             }
         }
 
@@ -87,6 +83,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             setRow(2, Vec4d(0.0, 0.0, 1.0, 0.0))
             setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
         }
+    }
+
+    override fun getWindowViewport(result: Viewport) {
+        result.set(0, windowHeight, windowWidth, -windowHeight)
     }
 
     override fun loadTex2d(tex: Texture, data: BufferedTextureData, recv: (Texture) -> Unit) {
@@ -396,11 +396,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             }
         }
 
-        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, x: Int, y: Int, width: Int, height: Int) {
-            setViewport(commandBuffer, KoolContext.Viewport(x, y, width, height))
-        }
-
-        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, viewport: KoolContext.Viewport) {
+        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, viewport: Viewport) {
             val vkViewport = callocVkViewportN(1) {
                 x(viewport.x.toFloat())
                 y(viewport.ySigned.toFloat())
@@ -434,7 +430,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, arrayOf(offscreenPass.clearColor))
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-            setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+            offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
+            setViewport(commandBuffer, offscreenPass.viewport)
             renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
             vkCmdEndRenderPass(commandBuffer)
         }
@@ -446,7 +443,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColors)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-            setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+            offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
+            setViewport(commandBuffer, offscreenPass.viewport)
             renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
             vkCmdEndRenderPass(commandBuffer)
         }
@@ -461,7 +459,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
             for (view in cubeRenderPassViews) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+                offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
+                setViewport(commandBuffer, offscreenPass.viewport)
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                 vkCmdEndRenderPass(commandBuffer)
                 backendImpl.copyView(commandBuffer, view)

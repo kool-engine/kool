@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.Texture
@@ -24,11 +23,9 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
 
         val mipLevel = parentPass.offscreenPass.targetMipLevel
-        val width = parentPass.offscreenPass.mipWidth(mipLevel)
-        val height = parentPass.offscreenPass.mipHeight(mipLevel)
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
-        parentPass.offscreenPass.viewport = KoolContext.Viewport(0, 0, width, height)
+        parentPass.offscreenPass.setMipViewport(mipLevel)
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
 
         for (i in 0 until 6) {

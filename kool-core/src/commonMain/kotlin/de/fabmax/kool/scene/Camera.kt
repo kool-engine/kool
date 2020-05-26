@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.Viewport
 import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.tan
@@ -56,7 +57,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    open fun updateCamera(ctx: KoolContext, viewport: KoolContext.Viewport) {
+    open fun updateCamera(ctx: KoolContext, viewport: Viewport) {
         if (useViewportAspectRatio) {
             aspectRatio = viewport.aspectRatio
         }
@@ -95,11 +96,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     protected abstract fun updateProjectionMatrix()
 
-    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, viewport, ctx)
     }
 
-    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
         var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, ctx, pickRay.origin)
         valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, ctx, pickRay.direction)
 
@@ -111,11 +112,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return valid
     }
 
-    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, viewport, ctx)
     }
 
-    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
         rayTest.clear()
         return computePickRay(rayTest.ray, screenX, screenY, viewport, ctx)
     }
@@ -144,7 +145,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
             viewProj.transform(result.set(world.x, world.y, world.z, 1f))
 
-    fun projectScreen(world: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
+    fun projectScreen(world: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         if (!project(world, result)) {
             return false
         }
@@ -155,7 +156,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    fun unProjectScreen(screen: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
+    fun unProjectScreen(screen: Vec3f, viewport: Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         val x = screen.x - viewport.x
         val y = (ctx.windowHeight - screen.y) - viewport.y
 
@@ -209,7 +210,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
-    override fun updateCamera(ctx: KoolContext, viewport: KoolContext.Viewport) {
+    override fun updateCamera(ctx: KoolContext, viewport: Viewport) {
         if (isClipToViewport) {
             left = 0f
             right = viewport.width.toFloat()

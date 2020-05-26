@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.deferred.DeferredMrtPass
 
 abstract class AoPipeline {
@@ -124,7 +125,7 @@ abstract class AoPipeline {
             projCorrectionMode = ProjCorrectionMode.OFFSCREEN
         }
 
-        fun sync(viewport: KoolContext.Viewport, ctx: KoolContext) {
+        fun sync(viewport: Viewport, ctx: KoolContext) {
             master.updateCamera(ctx, viewport)
 
             position.set(master.globalPos)

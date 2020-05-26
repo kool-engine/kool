@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Viewport
 
 abstract class RenderPass(val drawNode: Node) {
 
@@ -15,7 +16,7 @@ abstract class RenderPass(val drawNode: Node) {
 
     val dependencies = mutableListOf<RenderPass>()
 
-    var viewport = KoolContext.Viewport(0, 0, 0, 0)
+    val viewport = Viewport(0, 0, 0, 0)
     abstract val camera: Camera
 
     var lighting: Lighting? = null
@@ -74,12 +75,16 @@ class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
     override val camera
         get() = scene.camera
 
+    var useWindowViewport = true
+
     init {
         lighting = scene.lighting
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
-        viewport = ctx.viewport
+        if (useWindowViewport) {
+            ctx.getWindowViewport(viewport)
+        }
         super.collectDrawCommands(ctx)
     }
 }

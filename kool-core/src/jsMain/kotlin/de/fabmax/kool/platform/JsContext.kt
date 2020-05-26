@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
+import de.fabmax.kool.util.Viewport
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
@@ -84,7 +85,6 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight
-        viewport = Viewport(0, 0, windowWidth, windowHeight)
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
@@ -221,7 +221,6 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             // resize canvas to viewport
             canvas.width = windowWidth
             canvas.height = windowHeight
-            viewport = Viewport(0, 0, windowWidth, windowHeight)
         }
 
         // render frame
@@ -282,6 +281,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     override fun getSysInfos(): List<String> {
         return sysInfo
+    }
+
+    override fun getWindowViewport(result: Viewport) {
+        result.set(0, 0, windowWidth, windowHeight)
     }
 
     class InitProps {

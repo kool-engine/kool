@@ -62,7 +62,7 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
         shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
                 +{ uShadowMapVP }
-                onUpdate = { _, cmd ->
+                onUpdate = { _, _ ->
                     uShadowMapVP.value.set(shadowMap.lightViewProjMat)
                 }
             }

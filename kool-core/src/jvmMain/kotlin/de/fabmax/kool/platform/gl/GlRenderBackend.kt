@@ -1,11 +1,11 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
+import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic
 import org.lwjgl.opengl.GL.createCapabilities
@@ -22,8 +22,6 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override var windowWidth = 0
         private set
     override var windowHeight = 0
-        private set
-    override var windowViewport = KoolContext.Viewport(0, 0, 0, 0)
         private set
     override val glfwWindowHandle: Long
 
@@ -55,7 +53,6 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         glfwSetFramebufferSizeCallback(glfwWindowHandle) { _, width, height ->
             windowWidth = width
             windowHeight = height
-            windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
         }
 
         // make the OpenGL context current
@@ -98,6 +95,10 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         // use blending with pre-multiplied alpha
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
         glEnable(GL_BLEND)
+    }
+
+    override fun getWindowViewport(result: Viewport) {
+        result.set(0, 0, windowWidth, windowHeight)
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {

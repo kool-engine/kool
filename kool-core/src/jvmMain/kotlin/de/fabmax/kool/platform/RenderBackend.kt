@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
+import de.fabmax.kool.util.Viewport
 
 interface RenderBackend {
 
@@ -12,7 +12,6 @@ interface RenderBackend {
 
     val windowWidth: Int
     val windowHeight: Int
-    val windowViewport: KoolContext.Viewport
     val glfwWindowHandle: Long
 
     val projCorrectionMatrixScreen: Mat4d
@@ -20,6 +19,8 @@ interface RenderBackend {
     val depthBiasMatrix: Mat4d
 
     val shaderGenerator: ShaderGenerator
+
+    fun getWindowViewport(result: Viewport)
 
     fun drawFrame(ctx: Lwjgl3Context)
     fun destroy(ctx: Lwjgl3Context)

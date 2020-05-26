@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.util.TouchGestureEvaluator
+import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlin.math.abs
@@ -180,7 +181,7 @@ class InputManager internal constructor() {
          * outside a viewport and valid, if there is more than one viewport (e.g. split viewport
          * demo).
          */
-        fun isInViewport(viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+        fun isInViewport(viewport: Viewport, ctx: KoolContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
             return (isValid) && viewport.isInViewport(x, ptrY)

@@ -17,7 +17,7 @@ abstract class OffscreenRenderPass(drawNode: Node, texWidth: Int, texHeight: Int
     override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
 
     init {
-        viewport = KoolContext.Viewport(0, 0, texWidth, texHeight)
+        setMipViewport(0)
     }
 
     fun mipWidth(mipLevel: Int): Int {
@@ -36,10 +36,14 @@ abstract class OffscreenRenderPass(drawNode: Node, texWidth: Int, texHeight: Int
         }
     }
 
+    fun setMipViewport(mipLevel: Int) {
+        viewport.set(0, 0, mipWidth(mipLevel), mipHeight(mipLevel))
+    }
+
     open fun resize(width: Int, height: Int, ctx: KoolContext) {
         texWidth = width
         texHeight = height
-        viewport = KoolContext.Viewport(0, 0, width, height)
+        setMipViewport(0)
     }
 }
 

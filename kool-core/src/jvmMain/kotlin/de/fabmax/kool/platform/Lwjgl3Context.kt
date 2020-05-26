@@ -5,6 +5,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.gl.GlRenderBackend
 import de.fabmax.kool.platform.vk.VkRenderBackend
+import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.net.URI
@@ -26,9 +27,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.windowWidth
     override val windowHeight: Int
         get() = renderBackend.windowHeight
-    override var viewport: Viewport
-        get() = renderBackend.windowViewport
-        set(_) {}
 
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
@@ -106,6 +104,10 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     override fun getSysInfos(): List<String> = SysInfo
+
+    override fun getWindowViewport(result: Viewport) {
+        renderBackend.getWindowViewport(result)
+    }
 
     // fixme: use Coroutine stuff instead
     fun runOnMainThread(action: () -> Unit): CompletableFuture<Void> {
@@ -225,7 +227,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = 0L
         var share = 0L
 
-        var renderBackend = RenderBackendMode.VULKAN
+        var renderBackend = RenderBackendMode.OPEN_GL
 
         var msaaSamples = 8
 
