@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
 import de.fabmax.kool.scene.*
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 interface ShadowMap {
     var isShadowMapEnabled: Boolean
@@ -145,10 +146,13 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
 
         cascades[0].onBeforeCollectDrawCommands += {
             for (i in 0 until numCascades) {
-                cascades[i].clipNear = mapRanges[i].near * maxRange
-                cascades[i].clipFar = mapRanges[i].far * maxRange
-                // view space z-axis is negative
-                viewSpaceRanges[i] = -cascades[i].clipFar
+                val near = mapRanges[i].near * maxRange
+                val far = mapRanges[i].far * maxRange
+                val farOverlap = 2f * sqrt(far)
+                cascades[i].clipNear = near
+                cascades[i].clipFar = far + farOverlap
+                // view space z-axis points in negative direction -> depth values are negative
+                viewSpaceRanges[i] = -far
             }
         }
     }

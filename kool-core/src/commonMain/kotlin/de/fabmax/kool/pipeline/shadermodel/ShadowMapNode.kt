@@ -204,7 +204,7 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
     private val uViewSpaceRanges = Uniform1fv("uClipSpaceRanges_${name}", shadowMap.numCascades)
 
     var depthMap: TextureNode? = null
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.001f))
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.0025f))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inViewZ: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))
 

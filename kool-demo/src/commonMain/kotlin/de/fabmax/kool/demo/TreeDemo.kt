@@ -58,7 +58,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.25f))
         }
 
-        val shadowMaps = mutableListOf(CascadedShadowMap(this, 0, mapSize = 2048))
+        val shadowMaps = mutableListOf(CascadedShadowMap(this, 0, mapSize = 2048).apply { maxRange = 50f })
 
         +makeTreeGroundGrid(10, shadowMaps)
 
@@ -148,14 +148,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         +orbitInputTransform {
             +camera
             minZoom = 1.0
-            maxZoom = 100.0
+            maxZoom = 50.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 6.0
 
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
 
-            (camera as PerspectiveCamera).apply { clipFar = 150f }
+            (camera as PerspectiveCamera).apply { clipFar = 50f }
 
             onUpdate += { _, ctx ->
                 if (autoRotate) {
