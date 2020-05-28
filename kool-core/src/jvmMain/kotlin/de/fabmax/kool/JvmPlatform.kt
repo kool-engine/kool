@@ -16,11 +16,17 @@ import java.util.*
  */
 
 actual fun createDefaultContext(): KoolContext {
-    //return createContext(Lwjgl3ContextGL.InitProps())
-    return DesktopImpl.createVkContext(Lwjgl3Context.InitProps())
+    return createContext {
+        renderBackend = Lwjgl3Context.Backend.OPEN_GL
+        title = "Kool App"
+    }
 }
 
-fun createContext(props: Lwjgl3Context.InitProps): KoolContext = DesktopImpl.createContext(props)
+fun createContext(block: Lwjgl3Context.InitProps.() -> Unit): KoolContext {
+    val props = Lwjgl3Context.InitProps()
+    props.block()
+    return DesktopImpl.createContext(props)
+}
 
 actual fun now(): Double = System.nanoTime() / 1e6
 
@@ -76,10 +82,6 @@ internal object DesktopImpl {
             }
         }
         return ctx!!
-    }
-
-    fun createVkContext(props: Lwjgl3Context.InitProps): KoolContext {
-        return Lwjgl3Context(props)
     }
 }
 

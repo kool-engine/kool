@@ -24,7 +24,7 @@ import kotlin.math.atan2
 import kotlin.math.max
 
 fun deferredScene() = scene {
-    val isSpotLight = true
+    val isSpotLight = false
 
     lighting.singleLight {
         val p = MutableVec3f(6f, 10f, -7f)
@@ -88,13 +88,15 @@ fun deferredScene() = scene {
     }
 
     val aoPipeline = AoPipeline.createDeferred(this, mrtPass)
+    aoPipeline.intensity = 1.2f
+    aoPipeline.kernelSz = 64
 
     val shadows = mutableListOf<ShadowMap>()
     if (isSpotLight) {
         shadows += SimpleShadowMap(this, 0, 2048, drawNode = mrtPass.content)
     } else {
         shadows += CascadedShadowMap(this, 0, numCascades = 3, mapSize = 2048, drawNode = mrtPass.content).apply {
-            maxRange = 75f
+            maxRange = 25f
             cascades.forEach { it.sceneCam = mrtPass.camera }
         }
     }
@@ -130,16 +132,17 @@ fun deferredScene() = scene {
         pipelineLoader = ModeledShader.TextureColor(pbrPass.colorTexture, model = textureColorModel("colorTex"))
     }
 
-//    +textureMesh {
-//        generate {
-//            rect {
-//                origin.set(-0.5f, -0.5f, 0.1f)
-//                size.set(0.5f, 0.5f)
-//                mirrorTexCoordsY()
-//            }
-//        }
-//        pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap)
-//    }
+    +textureMesh {
+        isVisible = false
+        generate {
+            rect {
+                origin.set(-0.5f, -0.5f, 0.1f)
+                size.set(0.5f, 0.5f)
+                mirrorTexCoordsY()
+            }
+        }
+        pipelineLoader = ModeledShader.TextureColor((shadows[0] as CascadedShadowMap).cascades[1].depthTexture)
+    }
 }
 
 private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.textureColor()").apply {

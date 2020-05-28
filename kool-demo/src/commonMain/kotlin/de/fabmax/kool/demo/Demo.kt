@@ -12,9 +12,7 @@ import de.fabmax.kool.util.Position
  * @author fabmax
  */
 
-fun demo(startScene: String? = null) {
-    val ctx = createDefaultContext()
-
+fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext()) {
     val assetsBaseDir = Demo.getProperty("assetsBaseDir", "")
     if (assetsBaseDir.isNotEmpty()) {
         ctx.assetMgr.assetsBaseDir = assetsBaseDir

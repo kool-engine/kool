@@ -49,7 +49,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     init {
-        renderBackend = if (props.renderBackend == RenderBackendMode.VULKAN) {
+        renderBackend = if (props.renderBackend == Backend.VULKAN) {
             VkRenderBackend(props, this)
         } else {
             GlRenderBackend(props, this)
@@ -227,7 +227,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = 0L
         var share = 0L
 
-        var renderBackend = RenderBackendMode.OPEN_GL
+        var renderBackend = Backend.VULKAN
 
         var msaaSamples = 8
 
@@ -240,9 +240,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         }
     }
 
-    enum class RenderBackendMode {
-        VULKAN,
-        OPEN_GL
+    enum class Backend(val displayName: String) {
+        VULKAN("Vulkan"),
+        OPEN_GL("OpenGL")
     }
 }
 
