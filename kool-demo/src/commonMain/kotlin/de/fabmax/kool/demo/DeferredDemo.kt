@@ -46,6 +46,7 @@ fun deferredScene() = scene {
             setMouseRotation(0f, -30f)
             // Add camera to the transform group
             +mrtPass.camera
+            maxZoom = 30.0
         }
 
         +colorMesh {
@@ -72,7 +73,15 @@ fun deferredScene() = scene {
                         }
                     }
                 }
+            }
+            val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
+                roughness = 0.2f
+            }
+            pipelineLoader = DeferredMrtShader(mrtCfg)
+        }
 
+        +colorMesh {
+            generate {
                 rotate(90f, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE
                 rect {
@@ -81,7 +90,7 @@ fun deferredScene() = scene {
                 }
             }
             val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
-                roughness = 0.2f
+                roughness = 0.5f
             }
             pipelineLoader = DeferredMrtShader(mrtCfg)
         }
@@ -96,7 +105,9 @@ fun deferredScene() = scene {
         shadows += SimpleShadowMap(this, 0, 2048, drawNode = mrtPass.content)
     } else {
         shadows += CascadedShadowMap(this, 0, numCascades = 3, mapSize = 2048, drawNode = mrtPass.content).apply {
-            maxRange = 25f
+            println(mapRanges.map { "$it" }.joinToString())
+            setMapRanges(0.2f, 0.6f, 1f)
+            maxRange = 30f
             cascades.forEach { it.sceneCam = mrtPass.camera }
         }
     }
@@ -141,7 +152,7 @@ fun deferredScene() = scene {
                 mirrorTexCoordsY()
             }
         }
-        pipelineLoader = ModeledShader.TextureColor((shadows[0] as CascadedShadowMap).cascades[1].depthTexture)
+        pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap)
     }
 }
 

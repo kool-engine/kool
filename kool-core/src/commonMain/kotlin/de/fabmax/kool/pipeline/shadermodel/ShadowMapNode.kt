@@ -81,6 +81,8 @@ class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
 
+    var useDithering = false
+
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inDepthOffset, inPosLightSpace)
@@ -90,32 +92,46 @@ class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${
     override fun generateCode(generator: CodeGenerator) {
         val depthTex = depthMap ?: throw KoolException("Depth map input not set")
 
-        // dithered pcf shadow map sampling
-        // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
+        val sampleBuilder = StringBuilder()
+        var nSamples = 0
+        if (useDithering) {
+            // dithered pcf shadow map sampling
+            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
+
+            // sample only 4 positions with varying offset, depending on screen position
+            sampleBuilder.append("vec2 ${name}_offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25), float(fract(gl_FragCoord.y * 0.5) > 0.25));")
+
+            val samplePattern = listOf(Vec2f(-1.5f, 0.5f), Vec2f(0.5f, 0.5f), Vec2f(-1.5f, -1.5f), Vec2f(0.5f, -1.5f))
+            samplePattern.forEach { off ->
+                val projCoord = "vec4(${name}_pos.xy + (${name}_offset + vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
+                sampleBuilder.append("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};\n")
+                nSamples++
+            }
+
+        } else {
+            // regular 16 sample smooth shadow map sampling
+            val samplePattern = mutableListOf<Vec2f>()
+            for (y in 0..3) {
+                for (x in 0..3) {
+                    samplePattern += Vec2f(-1.5f + x, -1.5f + y)
+                }
+            }
+            samplePattern.forEach { off ->
+                val projCoord = "vec4(${name}_pos.xy + (vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
+                sampleBuilder.append("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};\n")
+                nSamples++
+            }
+        }
 
         generator.appendMain("""
                 float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
                 float ${name}_scale = 1.0 / float(${name}_size);
                 vec4 ${name}_pos = ${inPosLightSpace.ref4f()};
                 ${name}_pos.z += ${inDepthOffset.ref1f()};
-                vec2 ${name}_offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25),
-                                           float(fract(gl_FragCoord.y * 0.5) > 0.25));
                 ${outShadowFac.declare()} = 0.0;
+                $sampleBuilder
+                ${outShadowFac.name} *= ${1f / nSamples};
             """)
-
-        var nSamples = 0
-        val samplePattern = listOf(
-                Vec2f(-1.5f, 0.5f),
-                Vec2f(0.5f, 0.5f),
-                Vec2f(-1.5f, -1.5f),
-                Vec2f(0.5f, -1.5f))
-
-        samplePattern.forEach { off ->
-            val projCoord = "vec4(${name}_pos.xy + (${name}_offset + vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
-            generator.appendMain("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};")
-            nSamples++
-        }
-        generator.appendMain("${outShadowFac.name} *= ${1f / nSamples};")
     }
 }
 
@@ -210,6 +226,8 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
 
+    var useDithering = false
+
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(depthMap ?: throw KoolException("Depth map input not set"))
@@ -230,43 +248,52 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
     override fun generateCode(generator: CodeGenerator) {
         val depthTex = depthMap ?: throw KoolException("Depth map input not set")
 
-        // dithered pcf shadow map sampling
-        // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
-
-        val shadowFacFun = StringBuilder()
-        shadowFacFun.append("""
-                float cascadedShadowFac(sampler2DShadow shadowTex, vec4 projPos, float depthOffset) {
-                    float texSize = float(textureSize(shadowTex, 0).x);
-                    float texScale = 1.0 / float(texSize);
-                    projPos.z += depthOffset;
-                    vec2 offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25),
-                                       float(fract(gl_FragCoord.y * 0.5) > 0.25));
-                    float shadowFac = 0.0;
-                    if (projPos.z >= 1.0) {
-                        shadowFac = 1.0;
-                    } else {
-                        shadowFac = ${generator.sampleTexture2dDepth("shadowTex", "projPos")};
-            """)
-
+        val sampleBuilder = StringBuilder()
         var nSamples = 0
-        val samplePattern = listOf(
-                Vec2f(-1.5f, 0.5f),
-                Vec2f(0.5f, 0.5f),
-                Vec2f(-1.5f, -1.5f),
-                Vec2f(0.5f, -1.5f))
+        if (useDithering) {
+            // dithered pcf shadow map sampling
+            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
 
-        samplePattern.forEach { off ->
-            val projCoord = "vec4(projPos.xy + (offset + vec2(${off.x}, ${off.y})) * texScale * projPos.w, projPos.z, projPos.w)"
-            shadowFacFun.append("shadowFac += ${generator.sampleTexture2dDepth("shadowTex", projCoord)};")
-            nSamples++
-        }
-        shadowFacFun.append("""
-                        shadowFac *= ${1f / nSamples};
-                    }
-                    return shadowFac;
+            // sample only 4 positions with varying offset, depending on screen position
+            sampleBuilder.append("vec2 offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25), float(fract(gl_FragCoord.y * 0.5) > 0.25));")
+
+            val samplePattern = listOf(Vec2f(-1.5f, 0.5f), Vec2f(0.5f, 0.5f), Vec2f(-1.5f, -1.5f), Vec2f(0.5f, -1.5f))
+            samplePattern.forEach { off ->
+                val projCoord = "vec4(projPos.xy + (offset + vec2(${off.x}, ${off.y})) * texScale * projPos.w, projPos.z, projPos.w)"
+                sampleBuilder.append("shadowFac += ${generator.sampleTexture2dDepth("shadowTex", projCoord)};\n")
+                nSamples++
+            }
+
+        } else {
+            // regular 16 sample smooth shadow map sampling
+            val samplePattern = mutableListOf<Vec2f>()
+            for (y in 0..3) {
+                for (x in 0..3) {
+                    samplePattern += Vec2f(-1.5f + x, -1.5f + y)
                 }
-            """)
-        generator.appendFunction("cascadedShadowFac", shadowFacFun.toString())
+            }
+            samplePattern.forEach { off ->
+                val projCoord = "vec4(projPos.xy + (vec2(${off.x}, ${off.y})) * texScale * projPos.w, projPos.z, projPos.w)"
+                sampleBuilder.append("shadowFac += ${generator.sampleTexture2dDepth("shadowTex", projCoord)};\n")
+                nSamples++
+            }
+        }
+
+        generator.appendFunction("cascadedShadowFac", """
+            float cascadedShadowFac(sampler2DShadow shadowTex, vec4 projPos, float depthOffset) {
+                float texSize = float(textureSize(shadowTex, 0).x);
+                float texScale = 1.0 / float(texSize);
+                projPos.z += depthOffset;
+                float shadowFac = 0.0;
+                if (projPos.z >= 1.0) {
+                    shadowFac = 1.0;
+                } else {
+                    $sampleBuilder
+                    shadowFac *= ${1f / nSamples};
+                }
+                return shadowFac;
+            }
+        """)
 
         generator.appendMain("""
                 ${outShadowFac.declare()} = 1.0;

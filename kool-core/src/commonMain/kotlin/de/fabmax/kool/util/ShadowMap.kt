@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
 import de.fabmax.kool.scene.*
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -157,6 +158,15 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
         }
     }
 
+    fun setMapRanges(vararg farRanges: Float) {
+        var near = 0f
+        for (i in 0 until min(farRanges.size, mapRanges.size)) {
+            mapRanges[i].near = near
+            mapRanges[i].far = farRanges[i]
+            near = farRanges[i]
+        }
+    }
+
     override fun setupSampler(sampler: TextureSampler?) {
         if (sampler != null) {
             cascades.forEachIndexed { i, cascade ->
@@ -165,5 +175,9 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
         }
     }
 
-    class MapRange(var near: Float, var far: Float)
+    class MapRange(var near: Float, var far: Float) {
+        override fun toString(): String {
+            return "[$near..$far]"
+        }
+    }
 }
