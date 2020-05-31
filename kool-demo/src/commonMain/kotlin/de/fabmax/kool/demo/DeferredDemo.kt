@@ -3,10 +3,12 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shadermodel.ShaderModel
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -14,6 +16,7 @@ import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.*
 
 fun deferredScene() = scene {
+    val autoRotate = true
     val rand = Random(1337)
     val colorMap = listOf(Color.MD_RED, Color.MD_PINK, Color.MD_PURPLE, Color.MD_DEEP_PURPLE, Color.MD_INDIGO,
             Color.MD_BLUE, Color.MD_LIGHT_BLUE, Color.MD_CYAN, Color.MD_TEAL, Color.MD_GREEN, Color.MD_LIGHT_GREEN,
@@ -30,7 +33,15 @@ fun deferredScene() = scene {
             setMouseRotation(0f, -30f)
             // Add camera to the transform group
             +mrtPass.camera
+            zoom = 13.0
             maxZoom = 30.0
+
+            translation.set(0.0, -3.0, 0.0)
+            onUpdate += { _, ctx ->
+                if (autoRotate) {
+                    verticalRotation += ctx.deltaT * 3f
+                }
+            }
         }
 
         +colorMesh {
@@ -44,7 +55,7 @@ fun deferredScene() = scene {
                             translate(x.toFloat(), 0f, y.toFloat())
                             if ((x + 10) % 2 == (y + 10) % 2) {
                                 cube {
-                                    size.set(rand.randomF(0.6f, 0.8f), rand.randomF(0.6f, 1.2f), rand.randomF(0.6f, 0.8f))
+                                    size.set(rand.randomF(0.6f, 0.8f), rand.randomF(0.6f, 0.95f), rand.randomF(0.6f, 0.8f))
                                     origin.set(-size.x / 2 + rand.randomF(-0.1f, 0.1f), 0.1f + rand.randomF(0f, 0.15f), -size.y / 2 + rand.randomF(-0.1f, 0.1f))
                                 }
                             } else {
@@ -60,21 +71,51 @@ fun deferredScene() = scene {
             }
             val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
                 roughness = 0.1f
+
+//                albedoSource = Albedo.TEXTURE_ALBEDO
+//                isNormalMapped = true
+//                isRoughnessMapped = true
+//                isMetallicMapped = true
+//                isAmbientOcclusionMapped = true
+//
+//                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo2.jpg") }
+//                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal-dx.jpg") }
+//                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg") }
+//                metallicMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg") }
+//                ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg") }
             }
             pipelineLoader = DeferredMrtShader(mrtCfg)
         }
 
-        +colorMesh {
+        +textureMesh(isNormalMapped = true) {
             generate {
                 rotate(90f, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE
                 rect {
                     size.set(20f, 20f)
                     origin.set(size.x, size.y, 0f).scale(-0.5f)
+                    generateTexCoords(15f)
                 }
             }
             val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
-                roughness = 0.5f
+                //roughness = 0.5f
+
+                albedoSource = Albedo.TEXTURE_ALBEDO
+                isNormalMapped = true
+                isRoughnessMapped = true
+                isMetallicMapped = true
+                isAmbientOcclusionMapped = true
+
+                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg") }
+                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal-dx.jpg") }
+                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg") }
+                metallicMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg") }
+                ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg") }
+
+//                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/concrete_floor_02/concrete_floor_02_diff1_1k.jpg") }
+//                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/concrete_floor_02/concrete_floor_02_Nor_1k.jpg") }
+//                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/concrete_floor_02/concrete_floor_02_rough_1k.jpg") }
+//                ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/concrete_floor_02/concrete_floor_02_AO_1k.jpg") }
             }
             pipelineLoader = DeferredMrtShader(mrtCfg)
         }
@@ -109,7 +150,7 @@ fun deferredScene() = scene {
                 dir.set(0f, 0f, 1f)
                 travelDist = travel
                 travelPos = l / 10f * travelDist + ro
-                speed = rand.randomF(1f, 3f)
+                speed = rand.randomF(1f, 3f) * 0.25f
             }
 
             light = pbrPass.addPointLight {
@@ -121,7 +162,7 @@ fun deferredScene() = scene {
                 dir.set(1f, 0f, 0f)
                 travelDist = travel
                 travelPos = l / 10f * travelDist + ro
-                speed = rand.randomF(1f, 3f)
+                speed = rand.randomF(1f, 3f) * 0.25f
             }
 
             light = pbrPass.addPointLight {
@@ -133,7 +174,7 @@ fun deferredScene() = scene {
                 dir.set(0f, 0f, 1f)
                 travelDist = travel
                 travelPos = l / 10f * travelDist + ro
-                speed = rand.randomF(1f, 3f)
+                speed = rand.randomF(1f, 3f) * 0.25f
             }
 
             light = pbrPass.addPointLight {
@@ -145,10 +186,11 @@ fun deferredScene() = scene {
                 dir.set(1f, 0f, 0f)
                 travelDist = travel
                 travelPos = l / 10f * travelDist + ro
-                speed = rand.randomF(1f, 3f)
+                speed = rand.randomF(1f, 3f) * 0.25f
             }
         }
     }
+    lights.forEach { it.light.intensity = 1f }
     println("Added ${lights.size} lights")
 
     onUpdate += { _, ctx ->
