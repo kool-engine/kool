@@ -14,10 +14,7 @@ import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import de.fabmax.kool.util.Viewport
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext
-import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
-import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
-import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -77,10 +74,6 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             glCapabilities.maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
             glCapabilities.glTextureMaxAnisotropyExt = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
         }
-
-        // use blending with pre-multiplied alpha
-        gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
-        gl.enable(BLEND)
 
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth

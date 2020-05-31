@@ -11,7 +11,7 @@ open class OffscreenRenderPass2dMrt(drawNode: Node, texWidth: Int, texHeight: In
     val texFormats = texFormats.copy()
     val nAttachments = texFormats.size
 
-    val clearColors = Array<Color?>(nAttachments) { null }
+    override val clearColors = Array<Color?>(nAttachments) { null }
 
     internal val impl = OffscreenPass2dMrtImpl(this)
 

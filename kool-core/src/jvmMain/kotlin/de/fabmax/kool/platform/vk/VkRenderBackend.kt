@@ -276,7 +276,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         private fun MemoryStack.makeCommandBufferOnScreen(cmdBuffer: VkCommandBuffer, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int) {
             val mergeQueue = mutableListOf<DrawCommand>()
             val viewport = group.renderPasses[0].viewport
-            val clearColor = group.renderPasses[0].clearColor
 
             // on screen render passes of all scenes are merged into a single command buffer
             for (i in group.renderPasses.indices) {
@@ -289,7 +288,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
             check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
 
-            val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], arrayOf(clearColor))
+            val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], group.renderPasses[0])
             vkCmdBeginRenderPass(cmdBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             setViewport(cmdBuffer, viewport)
             renderDrawQueue(cmdBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
@@ -427,7 +426,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2d
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, arrayOf(offscreenPass.clearColor))
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
@@ -440,7 +439,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2dMrt
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColors)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
@@ -453,7 +452,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             offscreenPass.impl.draw(ctx)
             val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPassCube
             val rp = backendImpl.renderPass!!
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, arrayOf(offscreenPass.clearColor))
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
             backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
@@ -473,21 +472,21 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
     }
 
-    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearColors: Array<Color?>) =
+    private fun MemoryStack.renderPassBeginInfo(vkRenderPass: VkRenderPass, frameBuffer: Long, renderPass: RenderPass) =
             callocVkRenderPassBeginInfo {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
-                renderPass(renderPass.vkRenderPass)
+                renderPass(vkRenderPass.vkRenderPass)
                 framebuffer(frameBuffer)
                 renderArea { r ->
                     r.offset { it.x(0); it.y(0) }
-                    r.extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
+                    r.extent { it.width(vkRenderPass.maxWidth); it.height(vkRenderPass.maxHeight) }
                 }
 
                 // fixme: make clear values optional (if clear color is null or clearDepth = false)
-                val colorAttachments = clearColors.size
+                val colorAttachments = renderPass.clearColors.size
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
-                        this[i].setColor(clearColors[i] ?: Color.BLACK)
+                        this[i].setColor(renderPass.clearColors[i] ?: Color.BLACK)
                     }
                     this[colorAttachments].depthStencil { it.depth(1f); it.stencil(0) }
                 })

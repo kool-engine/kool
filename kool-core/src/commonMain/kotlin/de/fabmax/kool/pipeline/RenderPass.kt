@@ -23,9 +23,11 @@ abstract class RenderPass(val drawNode: Node) {
 
     var isUpdateDrawNode = true
 
+    open val clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
+    var clearColor: Color?
+        get() = clearColors[0]
+        set(value) { clearColors[0] = value }
     var clearDepth = true
-    var clearColor: Color? = Color(0.15f, 0.15f, 0.15f, 1f)
-    var colorBlend = true
 
     var drawQueue = DrawQueue(this)
         protected set

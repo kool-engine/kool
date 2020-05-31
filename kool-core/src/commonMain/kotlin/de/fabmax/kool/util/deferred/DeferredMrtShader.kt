@@ -1,14 +1,13 @@
 package de.fabmax.kool.util.deferred
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.ShaderStage
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureSampler
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
 /**
@@ -84,6 +83,11 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             field = value
             uDispStrength?.uniform?.value = value
         }
+
+    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.blendMode = BlendMode.DISABLED
+        return super.createPipeline(mesh, builder, ctx)
+    }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
         uMetallic = model.findNode("uMetallic")

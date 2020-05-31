@@ -104,6 +104,13 @@ class ShaderModel(val modelInfo: String = "") {
             return chNode
         }
 
+        fun divideNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): DivideNode {
+            val divNode = addNode(DivideNode(stage))
+            left?.let { divNode.left = it }
+            right?.let { divNode.right = it }
+            return divNode
+        }
+
         fun multiplyNode(left: ShaderNodeIoVar?, right: Float): MultiplyNode {
             return multiplyNode(left, ShaderNodeIoVar(ModelVar1fConst(right)))
         }
@@ -337,11 +344,17 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1, alpha: String? = null): FragmentColorOutNode {
+        fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1, alpha: ShaderNodeIoVar? = null): FragmentColorOutNode {
             val colorOut = addNode(FragmentColorOutNode(stage, channels))
-            color0?.let { colorOut.inColors[0] = color0 }
+            color0?.let { colorOut.inColors[0] = it }
             colorOut.alpha = alpha
             return colorOut
+        }
+
+        fun depthOutput(depth: ShaderNodeIoVar? = null): FragmentDepthOutNode {
+            val depthOut = addNode(FragmentDepthOutNode(stage))
+            depth?.let { depthOut.inDepth = it }
+            return depthOut
         }
     }
 }

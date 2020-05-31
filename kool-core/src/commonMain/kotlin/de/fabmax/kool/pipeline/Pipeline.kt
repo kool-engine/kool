@@ -18,6 +18,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     val pipelineInstanceId = instanceId++
 
     val cullMethod: CullMethod = builder.cullMethod
+    val blendMode: BlendMode = builder.blendMode
     val depthCompareOp: DepthCompareOp = builder.depthTest
     val isWriteDepth: Boolean = builder.isWriteDepth
     val lineWidth: Float = builder.lineWidth
@@ -94,6 +95,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     class Builder {
         var name = "pipeline"
         var cullMethod = CullMethod.CULL_BACK_FACES
+        var blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
         var depthTest = DepthCompareOp.LESS
         var isWriteDepth = true
         var lineWidth = 1f
@@ -115,6 +117,13 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
 
 interface PipelineFactory {
     fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline
+}
+
+enum class BlendMode {
+    DISABLED,
+    BLEND_ADDITIVE,
+    BLEND_MULTIPLY_ALPHA,
+    BLEND_PREMULTIPLIED_ALPHA
 }
 
 enum class DepthCompareOp {

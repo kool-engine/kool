@@ -91,10 +91,6 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         glCapabilities.maxTexUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
-
-        // use blending with pre-multiplied alpha
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable(GL_BLEND)
     }
 
     override fun getWindowViewport(result: Viewport) {

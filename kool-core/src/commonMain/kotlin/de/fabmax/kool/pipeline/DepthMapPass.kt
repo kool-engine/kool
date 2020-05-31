@@ -19,8 +19,6 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFo
 
     init {
         type = Type.DEPTH
-        colorBlend = false
-
         onAfterCollectDrawCommands += { ctx ->
             // replace regular object shaders by cheaper shadow versions
             drawQueue.commands.forEach {
@@ -40,7 +38,10 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFo
             vertexStage { positionOutput = simpleVertexPositionNode().outVec4 }
             fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
-        val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
+        val pipelineBuilder = Pipeline.Builder().apply {
+            blendMode = BlendMode.DISABLED
+            cullMethod = culling
+        }
         return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
     }
 
@@ -66,7 +67,10 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
                 colorOutput(linDepth.outColor)
             }
         })
-        val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
+        val pipelineBuilder = Pipeline.Builder().apply {
+            blendMode = BlendMode.DISABLED
+            cullMethod = culling
+        }
         return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
     }
 
@@ -113,7 +117,10 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                 colorOutput(linDepth.outColor)
             }
         })
-        val pipelineBuilder = Pipeline.Builder().apply { cullMethod = culling }
+        val pipelineBuilder = Pipeline.Builder().apply {
+            blendMode = BlendMode.DISABLED
+            cullMethod = culling
+        }
         return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
     }
 

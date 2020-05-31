@@ -47,12 +47,6 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                     glClear(clearMask)
                 }
             }
-
-            if (colorBlend) {
-                glEnable(GL_BLEND)
-            } else {
-                glDisable(GL_BLEND)
-            }
         }
 
         for (cmd in queue.commands) {
@@ -84,6 +78,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         var lineWidth = 0f
 
         fun setupPipelineAttribs(pipeline: Pipeline) {
+            setBlendMode(pipeline.blendMode)
             setDepthTest(pipeline.depthCompareOp)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
@@ -139,6 +134,25 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                         glDepthFunc(GL_GEQUAL)
                     }
                 }
+            }
+        }
+
+        private fun setBlendMode(blendMode: BlendMode) {
+            when (blendMode) {
+                BlendMode.DISABLED -> glDisable(GL_BLEND)
+                BlendMode.BLEND_ADDITIVE -> {
+                    glBlendFunc(GL_ONE, GL_ONE)
+                    glEnable(GL_BLEND)
+                }
+                BlendMode.BLEND_MULTIPLY_ALPHA -> {
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+                    glEnable(GL_BLEND)
+                }
+                BlendMode.BLEND_PREMULTIPLIED_ALPHA -> {
+                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+                    glEnable(GL_BLEND)
+                }
+                else -> TODO("Unimplemented blend mode: $blendMode")
             }
         }
     }

@@ -17,8 +17,8 @@ import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.DeferredMrtPass
 import de.fabmax.kool.util.deferred.DeferredMrtShader
-import de.fabmax.kool.util.deferred.DeferredPbrPass
-import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.PbrLightingPass
+import de.fabmax.kool.util.deferred.PbrSceneShader
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -39,7 +39,6 @@ fun deferredScene() = scene {
 
     val mrtPass = DeferredMrtPass()
     addOffscreenPass(mrtPass)
-    mrtPass.colorBlend = false
     mrtPass.content.apply {
         +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
@@ -112,12 +111,12 @@ fun deferredScene() = scene {
         }
     }
 
-    val cfg = DeferredPbrShader.DeferredPbrConfig().apply {
+    val cfg = PbrSceneShader.DeferredPbrConfig().apply {
         shadowMaps += shadows
         isScrSpcAmbientOcclusion = true
         scrSpcAmbientOcclusionMap = aoPipeline.aoMap
     }
-    val pbrPass = DeferredPbrPass(this, mrtPass, cfg)
+    val pbrPass = PbrLightingPass(this, mrtPass, cfg)
     addOffscreenPass(pbrPass)
 
     when (val shadowMap = shadows[0]) {
@@ -152,7 +151,7 @@ fun deferredScene() = scene {
                 mirrorTexCoordsY()
             }
         }
-        pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap)
+        pipelineLoader = ModeledShader.TextureColor(pbrPass.depthTexture)
     }
 }
 
@@ -165,6 +164,6 @@ private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.text
     }
     fragmentStage {
         val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
-        colorOutput(sampler.outColor)
+        colorOutput(hdrToLdrNode(sampler.outColor).outColor)
     }
 }

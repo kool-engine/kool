@@ -130,7 +130,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 depthClampEnable(false)
                 rasterizerDiscardEnable(false)
                 polygonMode(VK_POLYGON_MODE_FILL)
-                //polygonMode(VK_POLYGON_MODE_LINE)
                 lineWidth(pipeline.lineWidth)
                 cullMode(when (pipeline.cullMethod) {
                     CullMethod.DEFAULT -> VK_CULL_MODE_BACK_BIT
@@ -162,13 +161,37 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     this[i].apply {
                         colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                         // pre-multiplied alpha
-                        blendEnable(koolRenderPass.colorBlend)
-                        srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
-                        dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
-                        colorBlendOp(VK_BLEND_OP_ADD)
-                        srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
-                        dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
-                        alphaBlendOp(VK_BLEND_OP_ADD)
+                        when (pipeline.blendMode) {
+                            BlendMode.DISABLED -> blendEnable(false)
+                            BlendMode.BLEND_ADDITIVE -> {
+                                blendEnable(true)
+                                srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                                dstColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                                colorBlendOp(VK_BLEND_OP_ADD)
+                                srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                                dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                                alphaBlendOp(VK_BLEND_OP_ADD)
+                            }
+                            BlendMode.BLEND_MULTIPLY_ALPHA -> {
+                                blendEnable(true)
+                                srcColorBlendFactor(VK_BLEND_FACTOR_SRC_ALPHA)
+                                dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+                                colorBlendOp(VK_BLEND_OP_ADD)
+                                srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                                dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                                alphaBlendOp(VK_BLEND_OP_ADD)
+                            }
+                            BlendMode.BLEND_PREMULTIPLIED_ALPHA -> {
+                                blendEnable(true)
+                                srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                                dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
+                                colorBlendOp(VK_BLEND_OP_ADD)
+                                srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                                dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                                alphaBlendOp(VK_BLEND_OP_ADD)
+                            }
+                            else -> TODO("Unimplemented blend mode: ${pipeline.blendMode}")
+                        }
                     }
                 }
             }

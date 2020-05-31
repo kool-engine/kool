@@ -3,10 +3,11 @@ package de.fabmax.kool.util.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.*
 
-class DeferredPbrPass(scene: Scene, mrtPass: DeferredMrtPass, cfg: DeferredPbrShader.DeferredPbrConfig = DeferredPbrShader.DeferredPbrConfig()) :
-        OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight) {
+class PbrLightingPass(scene: Scene, mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
+        OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat.RGBA_F16) {
 
     init {
         scene.onRenderScene += { ctx ->
@@ -19,6 +20,7 @@ class DeferredPbrPass(scene: Scene, mrtPass: DeferredMrtPass, cfg: DeferredPbrSh
         }
         lighting = scene.lighting
 
+        clearColor = clearColor?.toLinear()
         dependsOn(mrtPass)
 
         camera = OrthographicCamera().apply {
@@ -47,7 +49,7 @@ class DeferredPbrPass(scene: Scene, mrtPass: DeferredMrtPass, cfg: DeferredPbrSh
                     if (albedoMetal == null) { albedoMetal = mrtPass.albedoMetal }
                 }
 
-                pipelineLoader = DeferredPbrShader(cfg)
+                pipelineLoader = PbrSceneShader(cfg)
             }
         }
     }

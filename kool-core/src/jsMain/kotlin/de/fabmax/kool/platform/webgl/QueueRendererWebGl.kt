@@ -18,6 +18,9 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
 import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
 import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
 import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
+import org.khronos.webgl.WebGLRenderingContext.Companion.SRC_ALPHA
 import org.khronos.webgl.set
 
 class QueueRendererWebGl(val ctx: JsContext) {
@@ -61,12 +64,6 @@ class QueueRendererWebGl(val ctx: JsContext) {
                     ctx.gl.clear(clearMask)
                 }
             }
-
-            if (colorBlend) {
-                ctx.gl.enable(BLEND)
-            } else {
-                ctx.gl.disable(BLEND)
-            }
         }
 
         for (cmd in queue.commands) {
@@ -98,6 +95,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         var lineWidth = 0f
 
         fun setupPipelineAttribs(pipeline: Pipeline) {
+            setBlendMode(pipeline.blendMode)
             setDepthTest(pipeline.depthCompareOp)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
@@ -153,6 +151,25 @@ class QueueRendererWebGl(val ctx: JsContext) {
                         gl.depthFunc(GEQUAL)
                     }
                 }
+            }
+        }
+
+        private fun setBlendMode(blendMode: BlendMode) {
+            when (blendMode) {
+                BlendMode.DISABLED -> gl.disable(BLEND)
+                BlendMode.BLEND_ADDITIVE -> {
+                    gl.blendFunc(ONE, ONE)
+                    gl.enable(BLEND)
+                }
+                BlendMode.BLEND_MULTIPLY_ALPHA -> {
+                    gl.blendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA)
+                    gl.enable(BLEND)
+                }
+                BlendMode.BLEND_PREMULTIPLIED_ALPHA -> {
+                    gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
+                    gl.enable(BLEND)
+                }
+                else -> TODO("Unimplemented blend mode: $blendMode")
             }
         }
     }
