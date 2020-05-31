@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshInstanceList
@@ -102,6 +103,20 @@ class ShaderModel(val modelInfo: String = "") {
             val chNode = addNode(ChannelNode(channels, stage))
             chNode.input = input
             return chNode
+        }
+
+        fun addNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): AddNode {
+            val addNode = addNode(AddNode(stage))
+            left?.let { addNode.left = it }
+            right?.let { addNode.right = it }
+            return addNode
+        }
+
+        fun subtractNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): SubtractNode {
+            val subNode = addNode(SubtractNode(stage))
+            left?.let { subNode.left = it }
+            right?.let { subNode.right = it }
+            return subNode
         }
 
         fun divideNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): DivideNode {
@@ -284,11 +299,23 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         fun simpleVertexPositionNode() = vec4TransformNode(attrPositions().output, premultipliedMvpNode().outMvpMat)
+
+        fun fullScreenQuadPositionNode(inTexCoords: ShaderNodeIoVar? = null): FullScreenQuadTexPosNode {
+            val quadNode = addNode(FullScreenQuadTexPosNode(stage))
+            inTexCoords?.let { quadNode.inTexCoord = it }
+            return quadNode
+        }
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
 
         fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
+
+        fun singleLightNode(light: Light? = null): SingleLightNode {
+            val lightNd = addNode(SingleLightNode(stage))
+            light?.let { lightNd.light = it }
+            return lightNd
+        }
 
         fun deferredSimpleShadoweMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
             val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply { isDepthTexture = true }
@@ -342,6 +369,10 @@ class ShaderModel(val modelInfo: String = "") {
             camPos?.let { mat.inCamPos = it }
             fragPos?.let { mat.inFragPos = it }
             return mat
+        }
+
+        fun pbrLightNode(lightNode: SingleLightNode): PbrLightNode {
+            return addNode(PbrLightNode(lightNode, stage))
         }
 
         fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1, alpha: ShaderNodeIoVar? = null): FragmentColorOutNode {

@@ -213,60 +213,6 @@ class InstanceAttributeNode(val attribute: Attribute, graph: ShaderGraph) :
     }
 }
 
-class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNodeId}", graph) {
-    var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-    val output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
-
-    override fun setup(shaderGraph: ShaderGraph) {
-        super.setup(shaderGraph)
-        dependsOn(input)
-    }
-
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${output.declare()} = normalize(${input.ref3f()});")
-    }
-}
-
-class DivideNode(graph: ShaderGraph) : ShaderNode("divide_${graph.nextNodeId}", graph) {
-    var left = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-        set(value) {
-            output = ShaderNodeIoVar(ModelVar("${name}_out", value.variable.type), this)
-            field = value
-        }
-    var right = ShaderNodeIoVar(ModelVar1fConst(1f))
-    var output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
-        private set
-
-    override fun setup(shaderGraph: ShaderGraph) {
-        super.setup(shaderGraph)
-        dependsOn(left, right)
-    }
-
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${output.declare()} = $left / $right;")
-    }
-}
-
-class MultiplyNode(graph: ShaderGraph) : ShaderNode("multiply_${graph.nextNodeId}", graph) {
-    var left = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-        set(value) {
-            output = ShaderNodeIoVar(ModelVar("${name}_out", value.variable.type), this)
-            field = value
-        }
-    var right = ShaderNodeIoVar(ModelVar1fConst(1f))
-    var output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
-        private set
-
-    override fun setup(shaderGraph: ShaderGraph) {
-        super.setup(shaderGraph)
-        dependsOn(left, right)
-    }
-
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${output.declare()} = $left * $right;")
-    }
-}
-
 class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) {
     // written in source stage (i.e. vertex shader)
     var input = ShaderNodeIoVar(ModelVar1fConst(0f))
@@ -297,5 +243,20 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
             super.setup(shaderGraph)
             shaderGraph.inputs += ifVar
         }
+    }
+}
+
+class FullScreenQuadTexPosNode(graph: ShaderGraph) : ShaderNode("fullScreenQuad_${graph.nextNodeId}", graph) {
+    var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
+    var inDepth = ShaderNodeIoVar(ModelVar1fConst(0.5f))
+    val outQuadPos = ShaderNodeIoVar(ModelVar4f("${name}_outPos"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inTexCoord, inDepth)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${outQuadPos.declare()} = vec4(${inTexCoord.ref2f()} * 2.0 - 1.0, ${inDepth.ref1f()}, 1.0);")
     }
 }

@@ -170,7 +170,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
                 vec3 H = normalize(V + L);
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
         
-                ${ if (flipBacksideNormals) "if (dot(N, L) < 0.0) { N *= -1.0; }" else "" }
+                ${ if (flipBacksideNormals) "N *= sign(dot(N, L));" else "" }
         
                 // cook-torrance BRDF
                 float NDF = DistributionGGX(N, H, rough); 
@@ -232,5 +232,124 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
+    }
+}
+
+/**
+ * Physical Based Rendering Light Shader. Only computes color contribution of a single light for deferred lighting.
+ */
+class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
+        ShaderNode("pbrLightNode", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+
+    var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
+    var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+
+    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
+    var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
+    var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
+
+    var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+
+    val outColor = ShaderNodeIoVar(ModelVar4f("pbrLight_outColor"), this)
+
+    var flipBacksideNormals = false
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance)
+        dependsOn(lightNode)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendFunction("fresnelSchlick", """
+            vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+                return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+            }
+        """)
+
+        generator.appendFunction("DistributionGGX", """
+            float DistributionGGX(vec3 N, vec3 H, float roughness) {
+                float a = roughness*roughness;
+                float a2 = a*a;
+                float NdotH = max(dot(N, H), 0.0);
+                float NdotH2 = NdotH*NdotH;
+            	
+                float num = a2;
+                float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+                denom = $PI * denom * denom;
+            	
+                return num / denom;
+            }
+        """)
+
+        generator.appendFunction("GeometrySchlickGGX", """
+            float GeometrySchlickGGX(float NdotV, float roughness) {
+                float r = (roughness + 1.0);
+                float k = (r*r) / 8.0;
+                
+                float num   = NdotV;
+                float denom = NdotV * (1.0 - k) + k;
+                
+                return num / denom;
+            }
+        """)
+
+        generator.appendFunction("GeometrySmith", """
+            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+                float NdotV = max(dot(N, V), 0.0);
+                float NdotL = max(dot(N, L), 0.0);
+                float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+                float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+                
+                return ggx1 * ggx2;
+            }
+        """)
+
+        val normalCheck = if (!flipBacksideNormals) "dot(fragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
+
+        generator.appendMain("""
+            vec3 radiance = vec3(0.0);
+            vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
+            bool normalOk = $normalCheck;
+            if (normalOk) {
+                radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+            }
+            
+            ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);
+            if (normalOk && dot(radiance, radiance) > 0.0) {
+                vec3 albedo = ${inAlbedo.ref3f()};
+                vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
+                vec3 N = normalize(${inNormal.ref3f()});
+                
+                float rough = clamp(${inRoughness.ref1f()}, 0.05, 1.0);
+                float metal = ${inMetallic.ref1f()};
+                
+                vec3 F0 = vec3(0.04); 
+                F0 = mix(F0, albedo, metal);
+        
+                vec3 L = normalize(fragToLight);
+                vec3 H = normalize(V + L);
+                ${ if (flipBacksideNormals) "N *= sign(dot(N, L));" else "" }
+        
+                // cook-torrance BRDF
+                float NDF = DistributionGGX(N, H, rough); 
+                float G = GeometrySmith(N, V, L, rough);
+                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+                
+                vec3 kS = F;
+                vec3 kD = vec3(1.0) - kS;
+                kD *= 1.0 - metal;
+                
+                vec3 numerator = NDF * G * F;
+                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                vec3 specular = numerator / max(denominator, 0.001);
+                    
+                // add to outgoing radiance Lo
+                float NdotL = max(dot(N, L), 0.0);
+                ${outColor.name} = vec4((kD * albedo / $PI + specular) * radiance * NdotL, 1.0);
+            }
+            """)
     }
 }

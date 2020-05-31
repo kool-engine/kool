@@ -12,14 +12,7 @@ import kotlin.math.min
  * @author fabmax
  */
 
-enum class Position {
-    UPPER_LEFT,
-    UPPER_RIGHT,
-    LOWER_LEFT,
-    LOWER_RIGHT
-}
-
-fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): Scene {
+fun debugOverlay(ctx: KoolContext, position: DebugOverlay.Position = DebugOverlay.Position.UPPER_RIGHT): Scene {
     return DebugOverlay(ctx, position).ui
 }
 
@@ -224,6 +217,13 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
             }
         }
         ui.isPickingEnabled = false
+    }
+
+    enum class Position {
+        UPPER_LEFT,
+        UPPER_RIGHT,
+        LOWER_LEFT,
+        LOWER_RIGHT
     }
 }
 

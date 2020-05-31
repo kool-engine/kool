@@ -91,3 +91,28 @@ class ModelVar4fConst(val value: Vec4f) : ModelVar4f("_") {
     override fun ref3f() = "vec3(float(${value.x}), float(${value.y}), float(${value.z}))"
     override fun ref4f() = "vec4(float(${value.x}), float(${value.y}), float(${value.z}), float(${value.w}))"
 }
+
+class ModelVar1iConst(val value: Int) : ModelVar1i("_") {
+    override fun ref1f() = "int($value)"
+    override fun ref2f() = "vec2i(int($value), 0)"
+    override fun ref3f() = "vec3i(int($value), 0, 0)"
+    override fun ref4f() = "vec4i(int($value), 0, 0, 0)"
+}
+class ModelVar2iConst(val x: Int, val y: Int) : ModelVar2i("_") {
+    override fun ref1f() = "$x"
+    override fun ref2f() = "vec2i($x, $y)"
+    override fun ref3f() = "vec3i($x, $y, 0)"
+    override fun ref4f() = "vec4i($x, $y, 0, 0)"
+}
+class ModelVar3iConst(val x: Int, val y: Int, val z: Int) : ModelVar3i("_") {
+    override fun ref1f() = "$x"
+    override fun ref2f() = "vec2i($x, $y)"
+    override fun ref3f() = "vec3i($x, $y, $z)"
+    override fun ref4f() = "vec4i($x, $y, $z, 0)"
+}
+class ModelVar4iConst(val x: Int, val y: Int, val z: Int, val w: Int) : ModelVar4i("_") {
+    override fun ref1f() = "$x"
+    override fun ref2f() = "vec2i($x, $y)"
+    override fun ref3f() = "vec3i($x, $y, $z)"
+    override fun ref4f() = "vec4i($x, $y, $z, $w)"
+}

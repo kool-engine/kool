@@ -127,7 +127,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     inline fun uvSphere(props: SphereProps.() -> Unit) {
-        sphereProps.defaults().props()
+        sphereProps.uvDefaults().props()
         uvSphere(sphereProps)
     }
 
@@ -191,7 +191,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     inline fun icoSphere(props: SphereProps.() -> Unit) {
-        sphereProps.defaults().props()
+        sphereProps.icoDefaults().props()
         icoSphere(sphereProps)
     }
 
@@ -770,7 +770,15 @@ class SphereProps {
         return uv.set(phi / (PI.toFloat() * 2f), theta / PI.toFloat())
     }
 
-    fun defaults(): SphereProps {
+    fun icoDefaults(): SphereProps {
+        radius = 1f
+        steps = 2
+        center.set(Vec3f.ZERO)
+        texCoordGenerator = { t, p -> defaultTexCoordGenerator(t, p) }
+        return this
+    }
+
+    fun uvDefaults(): SphereProps {
         radius = 1f
         steps = 20
         center.set(Vec3f.ZERO)
