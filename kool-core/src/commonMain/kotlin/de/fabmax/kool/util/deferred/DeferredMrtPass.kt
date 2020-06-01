@@ -21,6 +21,8 @@ class DeferredMrtPass() : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFE
         clearColors[0] = Color(0f, 0f, 2f, 0f)
         clearColors[1] = null
         clearColors[2] = null
+
+        content.isFrustumChecked = false
     }
 
     companion object {

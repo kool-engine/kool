@@ -4,7 +4,7 @@ import org.lwjgl.vulkan.VK10
 
 actual class PlatformAttributeProps actual constructor(attribute: Attribute) {
 
-    val nSlots: Int
+    actual val nSlots: Int
     val slotOffset: Int
     val slotType: Int
 

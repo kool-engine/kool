@@ -57,17 +57,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var DeferredMrtPass = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtPass;
+  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
+  var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
+  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
   var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
   var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
   var PbrSceneShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.PbrSceneShader.DeferredPbrConfig;
   var PbrLightingPass = $module$kool.de.fabmax.kool.util.deferred.PbrLightingPass;
-  var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
-  var println = Kotlin.kotlin.io.println_s8jyv4$;
   var OrthographicCamera = $module$kool.de.fabmax.kool.scene.OrthographicCamera;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
-  var DeferredPointLight_init = $module$kool.de.fabmax.kool.util.deferred.DeferredPointLight;
-  var Group = $module$kool.de.fabmax.kool.scene.Group;
-  var throwCCE = Kotlin.throwCCE;
+  var DeferredPointLights$DeferredPointLights$PointLight_init = $module$kool.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
@@ -79,6 +79,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
+  var throwCCE = Kotlin.throwCCE;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
@@ -88,13 +89,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
   var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
-  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
-  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
-  var MutableColor = $module$kool.de.fabmax.kool.util.MutableColor;
   var InstancedLodController$Instance = $module$kool.de.fabmax.kool.util.InstancedLodController.Instance;
+  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
+  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
@@ -107,7 +107,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
-  var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
+  var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
   var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
   var Array_0 = Array;
   var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
@@ -118,8 +118,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
   var toString_0 = $module$kool.de.fabmax.kool.toString_j6vyb1$;
   var toString_1 = Kotlin.toString;
-  var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
-  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
@@ -152,8 +150,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var split = Kotlin.kotlin.text.split_ip8yn$;
   AmbientOcclusionDemo$Red2GrayNode.prototype = Object.create(ShaderNode.prototype);
   AmbientOcclusionDemo$Red2GrayNode.prototype.constructor = AmbientOcclusionDemo$Red2GrayNode;
-  InstanceDemo$InstanceColor.prototype = Object.create(MutableColor.prototype);
-  InstanceDemo$InstanceColor.prototype.constructor = InstanceDemo$InstanceColor;
   InstanceDemo$BunnyInstance.prototype = Object.create(InstancedLodController$Instance.prototype);
   InstanceDemo$BunnyInstance.prototype.constructor = InstanceDemo$BunnyInstance;
   MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
@@ -1039,7 +1035,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = new ShaderModel('ModeledShader.textureColor()');
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('colorTex'), ifTexCoords.v.output);
@@ -1122,7 +1118,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.setMouseRotation_dleff0$(0.0, -30.0);
       $receiver.unaryPlus_uv0sim$(closure$mrtPass.camera);
       $receiver.zoom = 13.0;
-      $receiver.maxZoom = 30.0;
+      $receiver.maxZoom = 50.0;
       $receiver.translation.set_yvo9jy$(0.0, -3.0, 0.0);
       var $receiver_0 = $receiver.onUpdate;
       var element = deferredScene$lambda$lambda$lambda$lambda(closure$autoRotate, $receiver);
@@ -1132,23 +1128,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function deferredScene$lambda$lambda$lambda$lambda_0(closure$rand) {
     return function ($receiver) {
-      for (var x = -9; x <= 9; x++) {
-        for (var y = -9; y <= 9; y++) {
+      var sphereProtos = ArrayList_init();
+      for (var i = 0; i <= 10; i++) {
+        var builder = new MeshBuilder(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS]));
+        var element = builder.geometry;
+        sphereProtos.add_11rb$(element);
+        var closure$rand_0 = closure$rand;
+        var $receiver_0 = builder.sphereProps.icoDefaults();
+        $receiver_0.steps = 3;
+        $receiver_0.radius = closure$rand_0.randomF_dleff0$(0.3, 0.4);
+        $receiver_0.center.set_y2kzbl$(0.0, 0.1 + $receiver_0.radius, 0.0);
+        builder.icoSphere_mojs8w$(builder.sphereProps);
+      }
+      for (var x = -19; x <= 19; x++) {
+        for (var y = -19; y <= 19; y++) {
           $receiver.color = Color.Companion.WHITE;
           $receiver.transform.push();
-          var closure$rand_0 = closure$rand;
+          var closure$rand_1 = closure$rand;
           $receiver.translate_y2kzbl$(x, 0.0, y);
-          if ((x + 10 | 0) % 2 === (y + 10 | 0) % 2) {
-            var $receiver_0 = $receiver.cubeProps.defaults();
-            $receiver_0.size.set_y2kzbl$(closure$rand_0.randomF_dleff0$(0.6, 0.8), closure$rand_0.randomF_dleff0$(0.6, 0.95), closure$rand_0.randomF_dleff0$(0.6, 0.8));
-            $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2 + closure$rand_0.randomF_dleff0$(-0.1, 0.1), 0.1 + closure$rand_0.randomF_dleff0$(0.0, 0.15), -$receiver_0.size.y / 2 + closure$rand_0.randomF_dleff0$(-0.1, 0.1));
+          if ((x + 100 | 0) % 2 === (y + 100 | 0) % 2) {
+            var $receiver_1 = $receiver.cubeProps.defaults();
+            $receiver_1.size.set_y2kzbl$(closure$rand_1.randomF_dleff0$(0.6, 0.8), closure$rand_1.randomF_dleff0$(0.6, 0.95), closure$rand_1.randomF_dleff0$(0.6, 0.8));
+            $receiver_1.origin.set_y2kzbl$(-$receiver_1.size.x / 2, 0.1, -$receiver_1.size.z / 2);
             $receiver.cube_lhbb6w$($receiver.cubeProps);
           } else {
-            var $receiver_1 = $receiver.sphereProps.icoDefaults();
-            $receiver_1.steps = 3;
-            $receiver_1.radius = closure$rand_0.randomF_dleff0$(0.3, 0.4);
-            $receiver_1.center.set_y2kzbl$(closure$rand_0.randomF_dleff0$(-0.1, 0.1), 0.4 + closure$rand_0.randomF_dleff0$(0.0, 0.15), closure$rand_0.randomF_dleff0$(-0.1, 0.1));
-            $receiver.icoSphere_mojs8w$($receiver.sphereProps);
+            $receiver.geometry_ejqx55$(sphereProtos.get_za3lpa$(closure$rand_1.randomI_n8acyv$(get_indices(sphereProtos))));
           }
           $receiver.transform.pop();
         }
@@ -1160,7 +1164,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda$lambda_0(closure$rand));
       var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
-      $receiver_0.roughness = 0.1;
+      $receiver_0.roughness = 0.15;
       var mrtCfg = $receiver_0;
       $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
       return Unit;
@@ -1170,9 +1174,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
     $receiver.color = Color.Companion.WHITE;
     var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.size.set_dleff0$(20.0, 20.0);
+    $receiver_0.size.set_dleff0$(40.0, 40.0);
     $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
-    $receiver_0.generateTexCoords_mx4ult$(15.0);
+    $receiver_0.generateTexCoords_mx4ult$(30.0);
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
@@ -1460,9 +1464,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function deferredScene() {
     var $receiver = new Scene_init(null);
-    var autoRotate = true;
+    var autoRotate = false;
     var rand = new Random(1337);
-    var colorMap = listOf([Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME, Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE]);
+    var colorMap = listOf([Color.Companion.MD_PINK, Color.Companion.MD_CYAN]);
     $receiver.lighting.lights.clear();
     var mrtPass = new DeferredMrtPass();
     $receiver.addOffscreenPass_m1c2kf$(mrtPass);
@@ -1478,78 +1482,74 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.scrSpcAmbientOcclusionMap = aoPipeline.aoMap;
     var cfg = $receiver_1;
     var pbrPass = new PbrLightingPass($receiver, mrtPass, cfg);
-    $receiver.addOffscreenPass_m1c2kf$(pbrPass);
     var lights = ArrayList_init();
-    var start = -10.5;
-    var travel = 21.0;
-    for (var x = 0; x <= 20; x++) {
+    var travel = 41.0;
+    var start = travel / 2;
+    var minSat = 1.0;
+    var maxSat = 1.0;
+    for (var x = 0; x <= 40; x++) {
       var ro = rand.randomF();
-      for (var l = 0; l < 10; l++) {
-        var tmp$;
-        var light = new DeferredPointLight_init(pbrPass.mrtPass);
-        light.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(0.5, 1.0));
+      for (var l = 0; l < 30; l++) {
+        var $this = pbrPass.dynamicPointLights;
+        var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
+        light.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
         light.intensity = 1.0;
-        pbrPass.lights.add_11rb$(light);
-        (Kotlin.isType(tmp$ = pbrPass.drawNode, Group) ? tmp$ : throwCCE()).addNode_xtids1$(light.lightNode);
+        $this.addPointLight_at6cwi$(light);
         var light_0 = light;
         var $receiver_2 = new AnimatedLight(light_0);
-        $receiver_2.startPos.set_y2kzbl$(x - travel / 2, rand.randomF_dleff0$(0.3, 0.6), start);
+        $receiver_2.startPos.set_y2kzbl$(x - travel / 2, rand.randomF_dleff0$(0.3, 0.6), -start);
         $receiver_2.dir.set_y2kzbl$(0.0, 0.0, 1.0);
         $receiver_2.travelDist = travel;
         $receiver_2.travelPos = l / 10.0 * $receiver_2.travelDist + ro;
         $receiver_2.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
         lights.add_11rb$($receiver_2);
-        var tmp$_0;
-        var light_1 = new DeferredPointLight_init(pbrPass.mrtPass);
-        light_1.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(0.5, 1.0));
+        var $this_0 = pbrPass.dynamicPointLights;
+        var light_1 = new DeferredPointLights$DeferredPointLights$PointLight_init();
+        light_1.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
         light_1.intensity = 1.0;
-        pbrPass.lights.add_11rb$(light_1);
-        (Kotlin.isType(tmp$_0 = pbrPass.drawNode, Group) ? tmp$_0 : throwCCE()).addNode_xtids1$(light_1.lightNode);
+        $this_0.addPointLight_at6cwi$(light_1);
         light_0 = light_1;
         var $receiver_3 = new AnimatedLight(light_0);
-        $receiver_3.startPos.set_y2kzbl$(start, rand.randomF_dleff0$(0.3, 0.6), x - travel / 2);
+        $receiver_3.startPos.set_y2kzbl$(-start, rand.randomF_dleff0$(0.3, 0.6), x - travel / 2);
         $receiver_3.dir.set_y2kzbl$(1.0, 0.0, 0.0);
         $receiver_3.travelDist = travel;
         $receiver_3.travelPos = l / 10.0 * $receiver_3.travelDist + ro;
         $receiver_3.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
         lights.add_11rb$($receiver_3);
-        var tmp$_1;
-        var light_2 = new DeferredPointLight_init(pbrPass.mrtPass);
-        light_2.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(0.5, 1.0));
+        var $this_1 = pbrPass.dynamicPointLights;
+        var light_2 = new DeferredPointLights$DeferredPointLights$PointLight_init();
+        light_2.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
         light_2.intensity = 1.0;
-        pbrPass.lights.add_11rb$(light_2);
-        (Kotlin.isType(tmp$_1 = pbrPass.drawNode, Group) ? tmp$_1 : throwCCE()).addNode_xtids1$(light_2.lightNode);
+        $this_1.addPointLight_at6cwi$(light_2);
         light_0 = light_2;
         var $receiver_4 = new AnimatedLight(light_0);
         $receiver_4.startPos.set_y2kzbl$(x - travel / 2 + 0.5, rand.randomF_dleff0$(1.0, 1.5), start);
-        $receiver_4.dir.set_y2kzbl$(0.0, 0.0, 1.0);
+        $receiver_4.dir.set_y2kzbl$(0.0, 0.0, -1.0);
         $receiver_4.travelDist = travel;
         $receiver_4.travelPos = l / 10.0 * $receiver_4.travelDist + ro;
         $receiver_4.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
         lights.add_11rb$($receiver_4);
-        var tmp$_2;
-        var light_3 = new DeferredPointLight_init(pbrPass.mrtPass);
-        light_3.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(0.5, 1.0));
+        var $this_2 = pbrPass.dynamicPointLights;
+        var light_3 = new DeferredPointLights$DeferredPointLights$PointLight_init();
+        light_3.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
         light_3.intensity = 1.0;
-        pbrPass.lights.add_11rb$(light_3);
-        (Kotlin.isType(tmp$_2 = pbrPass.drawNode, Group) ? tmp$_2 : throwCCE()).addNode_xtids1$(light_3.lightNode);
+        $this_2.addPointLight_at6cwi$(light_3);
         light_0 = light_3;
         var $receiver_5 = new AnimatedLight(light_0);
         $receiver_5.startPos.set_y2kzbl$(start, rand.randomF_dleff0$(1.0, 1.5), x - travel / 2 + 0.5);
-        $receiver_5.dir.set_y2kzbl$(1.0, 0.0, 0.0);
+        $receiver_5.dir.set_y2kzbl$(-1.0, 0.0, 0.0);
         $receiver_5.travelDist = travel;
         $receiver_5.travelPos = l / 10.0 * $receiver_5.travelDist + ro;
         $receiver_5.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
         lights.add_11rb$($receiver_5);
       }
     }
-    var tmp$_3;
-    tmp$_3 = lights.iterator();
-    while (tmp$_3.hasNext()) {
-      var element = tmp$_3.next();
+    var tmp$;
+    tmp$ = lights.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
       element.light.intensity = 1.0;
     }
-    println('Added ' + lights.size + ' lights');
     $receiver.onUpdate.add_11rb$(deferredScene$lambda$lambda(lights));
     var $receiver_6 = new OrthographicCamera();
     $receiver_6.isKeepAspectRatio = false;
@@ -1565,7 +1565,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = new ShaderModel('ModeledShader.textureColor()');
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
@@ -1932,7 +1932,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.modelCenter_0 = MutableVec3f_init();
     this.modelRadius_0 = 1.0;
     this.lodController_0 = new InstancedLodController();
-    this.lods_0 = mutableListOf([new InstanceDemo$Lod(8, 10.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_PURPLE)), new InstanceDemo$Lod(32, 20.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_RED)), new InstanceDemo$Lod(128, 30.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_AMBER)), new InstanceDemo$Lod(500, 40.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_LIME)), new InstanceDemo$Lod(2000, 50.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_GREEN)), new InstanceDemo$Lod(10000, 1000.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_BLUE))]);
+    this.lods_0 = mutableListOf([new InstanceDemo$Lod(8, 10.0, MutableColor_init_0(Color.Companion.MD_PURPLE)), new InstanceDemo$Lod(32, 20.0, MutableColor_init_0(Color.Companion.MD_RED)), new InstanceDemo$Lod(128, 30.0, MutableColor_init_0(Color.Companion.MD_AMBER)), new InstanceDemo$Lod(500, 40.0, MutableColor_init_0(Color.Companion.MD_LIME)), new InstanceDemo$Lod(2000, 50.0, MutableColor_init_0(Color.Companion.MD_GREEN)), new InstanceDemo$Lod(10000, 1000.0, MutableColor_init_0(Color.Companion.MD_BLUE))]);
     var $receiver = this.scenes;
     var element = this.mainScene_0(ctx);
     $receiver.add_11rb$(element);
@@ -2041,14 +2041,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var ifFragPos = {v: null};
     var mvpNode = {v: null};
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    ifColors.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
+    ifColors.v = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
     mvpNode.v = $receiver_0.mvpNode();
     var modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
     var mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
     var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     var worldPos = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).outVec3;
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
+    ifFragPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos);
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
@@ -2073,30 +2073,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'Lod',
     interfaces: []
   };
-  function InstanceDemo$InstanceColor() {
-    MutableColor_init(this);
-  }
-  InstanceDemo$InstanceColor.prototype.asArray = function () {
-    return this.fields;
-  };
-  InstanceDemo$InstanceColor.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'InstanceColor',
-    interfaces: [MutableColor]
-  };
-  function InstanceDemo$InstanceDemo$InstanceColor_init(color, $this) {
-    $this = $this || Object.create(InstanceDemo$InstanceColor.prototype);
-    InstanceDemo$InstanceColor.call($this);
-    $this.set_d7aj7k$(color);
-    return $this;
-  }
   function InstanceDemo$BunnyInstance($outer, position, rotAxis) {
     this.$outer = $outer;
     InstancedLodController$Instance.call(this);
     this.position = position;
     this.rotSpeed = rotAxis.length() * 120.0;
     this.rotAxis = rotAxis.norm_5s4mqq$(MutableVec3f_init());
-    this.color = new InstanceDemo$InstanceColor();
+    this.color = MutableColor_init();
   }
   InstanceDemo$BunnyInstance.prototype.update_l2cg23$ = function (lodCtrl, cam, ctx) {
     this.instanceModelMat.setIdentity().translate_czzhiu$(this.position).rotate_ad55pp$(ctx.time * this.rotSpeed, this.rotAxis);
@@ -2110,9 +2093,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = instanceList.dataF;
     $receiver.put_q3cr5i$(this.instanceModelMat.matrix);
     if (this$InstanceDemo.isLodColors_0) {
-      $receiver.put_q3cr5i$(this$InstanceDemo.lods_0.get_za3lpa$(lod).color.asArray());
+      $receiver.put_q3cr5i$(this$InstanceDemo.lods_0.get_za3lpa$(lod).color.array);
     } else {
-      $receiver.put_q3cr5i$(this.color.asArray());
+      $receiver.put_q3cr5i$(this.color.array);
     }
     var growSz = instanceList.dataF.position - szBefore | 0;
     if (growSz !== instanceList.instanceSizeF) {
@@ -3581,7 +3564,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
           var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
+          var mesh = new Mesh_init(new IndexedVertexList_init_0(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var closure$irradianceMap_0 = closure$irradianceMap;
           var closure$reflectionMap_0 = closure$reflectionMap;
@@ -4391,13 +4374,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       pbrConfig.isMetallicMapped = true;
       pbrConfig.isAmbientOcclusionMapped = true;
       pbrConfig.isDisplacementMapped = true;
+      pbrConfig.irradianceMap = closure$irradianceMap;
+      pbrConfig.reflectionMap = closure$reflectionMap;
+      pbrConfig.brdfLut = closure$brdfLut;
       var $receiver_0 = new PbrShader(pbrConfig);
-      var closure$irradianceMap_0 = closure$irradianceMap;
-      var closure$reflectionMap_0 = closure$reflectionMap;
-      var closure$brdfLut_0 = closure$brdfLut;
-      $receiver_0.irradianceMap = closure$irradianceMap_0;
-      $receiver_0.reflectionMap = closure$reflectionMap_0;
-      $receiver_0.brdfLut = closure$brdfLut_0;
       $receiver_0.displacementStrength = 0.25;
       var shader = $receiver_0;
       $receiver.pipelineLoader = shader;
@@ -4488,7 +4468,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.defaultAoTex_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.defaultDispTex_0 = new SingleColorTexture(Color.Companion.BLACK);
     this.assetPath_0 = Demo$Companion_getInstance().pbrBasePath;
-    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Sci-Fi Panels', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_33(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_34(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_35(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_36(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_37(this)), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_38(this)))]);
+    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31(this)), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32(this)))]);
   }
   function Coroutine$PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -5428,7 +5408,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-albedo.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic4-alb.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5479,7 +5459,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-normal-dx.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-normal.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5530,7 +5510,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-roughness.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-rough.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5581,7 +5561,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-metallic.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-ao.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5632,7 +5612,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-ao.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_albedo.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5683,7 +5663,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/futuristic-panels1/futuristic-panels1-height.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_normal-dx.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5734,7 +5714,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic4-alb.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_roughness.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5785,7 +5765,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-normal.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_ao.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5836,7 +5816,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-rough.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_height.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5887,7 +5867,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-ao.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-albedo2.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5938,7 +5918,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_albedo.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-normal.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -5989,7 +5969,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_normal-dx.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-roughness1.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -6040,7 +6020,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_roughness.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -6091,7 +6071,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_ao.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -6142,7 +6122,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_height.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -6193,7 +6173,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-albedo2.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -6218,312 +6198,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrMaterialContent$Companion$materials$lambda_32(this$PbrMaterialContent$_0) {
     return function ($receiver_0, it_0, continuation_0, suspended) {
       var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_32(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_33(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_33.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_33.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_33.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_33;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_33.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_33(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_33(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_34(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_34.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_34.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_34.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_34;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_34.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-roughness1.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_34(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_34(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_35(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_35.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_35.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_35.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_35;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_35.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_35(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_35(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_36(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_36.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_36.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_36.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_36;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_36.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_36(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_36(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_37(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_37.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_37.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_37.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_37;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_37.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_37(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_37(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_38(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_38.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_38.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_38.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_38;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_38.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_38(this$PbrMaterialContent$_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_38(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
       if (suspended)
         return instance;
       else
@@ -6703,7 +6377,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
           var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
+          var mesh = new Mesh_init(new IndexedVertexList_init_0(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
           var closure$irradianceMap_0 = closure$irradianceMap;
@@ -6792,7 +6466,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.loadingModels = LinkedHashSet_init();
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
-    this.dispModel = new Mesh_init(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.dispModel = new Mesh_init(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
     this.simplifcationGrade = 1.0;
     this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
@@ -6964,7 +6638,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   SimplificationDemo.prototype.makeCosGrid_0 = function () {
-    var builder = new MeshBuilder(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    var builder = new MeshBuilder(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     builder.color = Color.Companion.MD_RED;
     var $receiver = builder.gridProps.defaults();
     $receiver.sizeX = 10.0;
@@ -8344,9 +8018,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     mvpNode.v = $receiver_0.mvpNode();
     var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, mvpNode.v.outModelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     if (cfg.requiresTexCoords()) {
-      tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     } else {
       tmp$ = null;
     }
@@ -8368,16 +8042,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var windNd = $receiver_2;
     var localPos = windNd.outputPos;
     var worldPos = $receiver_0.vec3TransformNode_vid4wo$(localPos, mvpNode.v.outModelMat, 1.0).outVec3;
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
+    ifFragPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos);
     if (cfg.albedoSource === Albedo.VERTEX_ALBEDO) {
-      tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     } else {
       tmp$_1 = null;
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
       var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, mvpNode.v.outModelMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.outVec3);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
     } else {
       tmp$_2 = null;
     }

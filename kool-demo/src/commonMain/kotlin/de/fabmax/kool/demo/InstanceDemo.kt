@@ -29,12 +29,12 @@ class InstanceDemo(ctx: KoolContext) {
     private val lodController = InstancedLodController<BunnyInstance>()
 
     private val lods = mutableListOf(
-            Lod(8, 10f, InstanceColor(Color.MD_PURPLE)),
-            Lod(32, 20f, InstanceColor(Color.MD_RED)),
-            Lod(128, 30f, InstanceColor(Color.MD_AMBER)),
-            Lod(500, 40f, InstanceColor(Color.MD_LIME)),
-            Lod(2000, 50f, InstanceColor(Color.MD_GREEN)),
-            Lod(10000, 1000f, InstanceColor(Color.MD_BLUE))
+            Lod(8, 10f, MutableColor(Color.MD_PURPLE)),
+            Lod(32, 20f, MutableColor(Color.MD_RED)),
+            Lod(128, 30f, MutableColor(Color.MD_AMBER)),
+            Lod(500, 40f, MutableColor(Color.MD_LIME)),
+            Lod(2000, 50f, MutableColor(Color.MD_GREEN)),
+            Lod(10000, 1000f, MutableColor(Color.MD_BLUE))
     )
 
     init {
@@ -159,23 +159,15 @@ class InstanceDemo(ctx: KoolContext) {
         }
     }
 
-    private class Lod(val maxInsts: Int, val maxDist: Float, val color: InstanceColor) {
+    private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {
         var mesh: Mesh? = null
-    }
-
-    private class InstanceColor() : MutableColor() {
-        constructor(color: Color) : this() {
-            set(color)
-        }
-
-        fun asArray(): FloatArray = fields
     }
 
     private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<BunnyInstance>() {
         val rotSpeed = rotAxis.length() * 120f
         val rotAxis = rotAxis.norm(MutableVec3f())
 
-        val color = InstanceColor()
+        val color = MutableColor()
 
         override fun update(lodCtrl: InstancedLodController<BunnyInstance>, cam: Camera, ctx: KoolContext) {
             instanceModelMat
@@ -189,9 +181,9 @@ class InstanceDemo(ctx: KoolContext) {
             instanceList.addInstance {
                 put(instanceModelMat.matrix)
                 if (isLodColors) {
-                    put(lods[lod].color.asArray())
+                    put(lods[lod].color.array)
                 } else {
-                    put(color.asArray())
+                    put(color.array)
                 }
             }
         }

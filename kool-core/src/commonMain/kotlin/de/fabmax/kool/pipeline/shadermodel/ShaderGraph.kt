@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.DescriptorSetLayout
 import de.fabmax.kool.pipeline.PushConstantRange
 import de.fabmax.kool.pipeline.ShaderStage
 
-class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar, val locationInc: Int = 1)
+class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar, val isFlat: Boolean, val locationInc: Int = 1)
 
 open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
     val descriptorSet = DescriptorSetLayout.Builder()
@@ -27,9 +27,9 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
         return nodes.find { it.name == name && it is T } as T?
     }
 
-    fun addStageOutput(output: ModelVar, locationInc: Int = 1): ShaderInterfaceIoVar {
+    fun addStageOutput(output: ModelVar, isFlat: Boolean, locationInc: Int = 1): ShaderInterfaceIoVar {
         val location = mutOutputs.sumBy { it.locationInc }
-        val ifVar = ShaderInterfaceIoVar(location, output, locationInc)
+        val ifVar = ShaderInterfaceIoVar(location, output, isFlat, locationInc)
         mutOutputs += ifVar
         return ifVar
     }

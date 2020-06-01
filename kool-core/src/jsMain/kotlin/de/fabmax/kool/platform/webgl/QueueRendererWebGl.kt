@@ -77,7 +77,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                             if (insts == null) {
                                 gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
-                            } else {
+                            } else if (insts.numInstances > 0) {
                                 gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
                             }
@@ -169,7 +169,6 @@ class QueueRendererWebGl(val ctx: JsContext) {
                     gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
                     gl.enable(BLEND)
                 }
-                else -> TODO("Unimplemented blend mode: $blendMode")
             }
         }
     }

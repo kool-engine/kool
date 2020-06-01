@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline
 
 actual class PlatformAttributeProps actual constructor(attribute: Attribute) {
 
-    val nSlots: Int
+    actual val nSlots: Int
     val attribSize: Int
 
     init {

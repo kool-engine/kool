@@ -112,9 +112,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var first_0 = Kotlin.kotlin.collections.first_us0mfu$;
   var last_0 = Kotlin.kotlin.collections.last_us0mfu$;
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
+  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var get_indices_1 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
-  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var isNaN_0 = Kotlin.kotlin.isNaN_81szk$;
   var toList = Kotlin.kotlin.collections.toList_us0mfu$;
   var MutableList = Kotlin.kotlin.collections.MutableList;
@@ -302,10 +302,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   FragmentDepthOutNode.prototype.constructor = FragmentDepthOutNode;
   LightNode.prototype = Object.create(ShaderNode.prototype);
   LightNode.prototype.constructor = LightNode;
-  SingleLightNode.prototype = Object.create(LightNode.prototype);
-  SingleLightNode.prototype.constructor = SingleLightNode;
   MultiLightNode.prototype = Object.create(LightNode.prototype);
   MultiLightNode.prototype.constructor = MultiLightNode;
+  SingleLightUniformDataNode.prototype = Object.create(ShaderNode.prototype);
+  SingleLightUniformDataNode.prototype.constructor = SingleLightUniformDataNode;
+  SingleLightNode.prototype = Object.create(LightNode.prototype);
+  SingleLightNode.prototype.constructor = SingleLightNode;
   UnlitMaterialNode.prototype = Object.create(ShaderNode.prototype);
   UnlitMaterialNode.prototype.constructor = UnlitMaterialNode;
   PhongMaterialNode.prototype = Object.create(ShaderNode.prototype);
@@ -626,6 +628,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DebugOverlay$Position.prototype.constructor = DebugOverlay$Position;
   DeltaTGraph.prototype = Object.create(UiComponent.prototype);
   DeltaTGraph.prototype.constructor = DeltaTGraph;
+  DeferredLightShader.prototype = Object.create(ModeledShader.prototype);
+  DeferredLightShader.prototype.constructor = DeferredLightShader;
   DeferredMrtPass.prototype = Object.create(OffscreenRenderPass2dMrt.prototype);
   DeferredMrtPass.prototype.constructor = DeferredMrtPass;
   DeferredMrtShader$MrtMultiplexNode.prototype = Object.create(ShaderNode.prototype);
@@ -634,18 +638,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredMrtShader$MrtDeMultiplexNode.prototype.constructor = DeferredMrtShader$MrtDeMultiplexNode;
   DeferredMrtShader.prototype = Object.create(ModeledShader.prototype);
   DeferredMrtShader.prototype.constructor = DeferredMrtShader;
+  DiscardClearNode.prototype = Object.create(ShaderNode.prototype);
+  DiscardClearNode.prototype.constructor = DiscardClearNode;
+  DeferredCameraNode.prototype = Object.create(ShaderNode.prototype);
+  DeferredCameraNode.prototype.constructor = DeferredCameraNode;
   PbrLightingPass.prototype = Object.create(OffscreenRenderPass2d.prototype);
   PbrLightingPass.prototype.constructor = PbrLightingPass;
-  PbrLightShader$DiscardClearNode.prototype = Object.create(ShaderNode.prototype);
-  PbrLightShader$DiscardClearNode.prototype.constructor = PbrLightShader$DiscardClearNode;
-  PbrLightShader$DeferredCameraNode.prototype = Object.create(ShaderNode.prototype);
-  PbrLightShader$DeferredCameraNode.prototype.constructor = PbrLightShader$DeferredCameraNode;
-  PbrLightShader.prototype = Object.create(ModeledShader.prototype);
-  PbrLightShader.prototype.constructor = PbrLightShader;
-  PbrSceneShader$DiscardClearNode.prototype = Object.create(ShaderNode.prototype);
-  PbrSceneShader$DiscardClearNode.prototype.constructor = PbrSceneShader$DiscardClearNode;
-  PbrSceneShader$DeferredCameraNode.prototype = Object.create(ShaderNode.prototype);
-  PbrSceneShader$DeferredCameraNode.prototype.constructor = PbrSceneShader$DeferredCameraNode;
   PbrSceneShader.prototype = Object.create(ModeledShader.prototype);
   PbrSceneShader.prototype.constructor = PbrSceneShader;
   Font.prototype = Object.create(Texture.prototype);
@@ -9935,7 +9933,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var mvpNode = $receiver_0.mvpNode();
     var modelViewMat = $receiver_0.multiplyNode_ze33is$(mvpNode.outModelMat, mvpNode.outViewMat).output;
     var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpNode.outMvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var linDepth = $receiver_1.addNode_u9w9by$(new NormalLinearDepthMapPass$NormalLinearDepthNode(ifNormals.v.output, $receiver_1.stage));
@@ -11419,91 +11417,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LightNode',
     interfaces: [ShaderNode]
   };
-  function SingleLightNode(shaderGraph) {
-    LightNode.call(this, 'lightNd_' + shaderGraph.nextNodeId, shaderGraph);
-    this.light = null;
-    this.uPosition_0 = new Uniform4f('u' + this.name + '_pos');
-    this.uColor_0 = new Uniform4f('u' + this.name + '_color');
-    this.uDirection_0 = new Uniform4f('u' + this.name + '_dir');
-    this.inShaodwFac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
-    this.outLightCount_9pb9nm$_0 = new ShaderNodeIoVar(new ModelVar1iConst(1));
-    this.isReducedSoi = false;
-  }
-  Object.defineProperty(SingleLightNode.prototype, 'outLightCount', {
-    get: function () {
-      return this.outLightCount_9pb9nm$_0;
-    }
-  });
-  function SingleLightNode$setup$lambda$lambda$lambda(this$SingleLightNode) {
-    return function () {
-      return this$SingleLightNode.uPosition_0;
-    };
-  }
-  function SingleLightNode$setup$lambda$lambda$lambda_0(this$SingleLightNode) {
-    return function () {
-      return this$SingleLightNode.uColor_0;
-    };
-  }
-  function SingleLightNode$setup$lambda$lambda$lambda_1(this$SingleLightNode) {
-    return function () {
-      return this$SingleLightNode.uDirection_0;
-    };
-  }
-  function SingleLightNode$setup$lambda$lambda$lambda_2(this$SingleLightNode) {
-    return function (f, cmd) {
-      this$SingleLightNode.encodeLightSetup_0();
-      return Unit;
-    };
-  }
-  function SingleLightNode$setup$lambda$lambda(this$SingleLightNode) {
-    return function ($receiver) {
-      $receiver.unaryPlus_wq3w46$(SingleLightNode$setup$lambda$lambda$lambda(this$SingleLightNode));
-      $receiver.unaryPlus_wq3w46$(SingleLightNode$setup$lambda$lambda$lambda_0(this$SingleLightNode));
-      $receiver.unaryPlus_wq3w46$(SingleLightNode$setup$lambda$lambda$lambda_1(this$SingleLightNode));
-      $receiver.onUpdate = SingleLightNode$setup$lambda$lambda$lambda_2(this$SingleLightNode);
-      return Unit;
-    };
-  }
-  SingleLightNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    LightNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.inShaodwFac);
-    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], SingleLightNode$setup$lambda$lambda(this));
-  };
-  SingleLightNode.prototype.encodeLightSetup_0 = function () {
-    var lgt = this.light;
-    if (lgt != null) {
-      this.uColor_0.value.set_czzhhz$(lgt.color);
-      this.uPosition_0.value.set_2qa7tb$(lgt.position, lgt.type.encoded);
-      var tmp$ = this.uDirection_0.value;
-      var tmp$_0 = lgt.direction;
-      var x = lgt.spotAngle / 2 * package$math.DEG_2_RAD;
-      tmp$.set_2qa7tb$(tmp$_0, Math_0.cos(x));
-    } else {
-      this.uColor_0.value.set_czzhhz$(Vec4f$Companion_getInstance().ZERO);
-    }
-  };
-  SingleLightNode.prototype.generateCode_626509$ = function (generator) {
-    var tmp$;
-    generator.appendFunction_puj7f4$(this.name + '_getFragToLight', '\n' + '            vec3 ' + this.name + '_getFragToLight(vec3 fragPos) {' + '\n' + '                if (' + this.uPosition_0.name + '.w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return -' + this.uDirection_0.name + '.xyz;' + '\n' + '                }' + '\n' + '                // same for point and spot lights' + '\n' + '                return ' + this.uPosition_0.name + '.xyz - fragPos;' + '\n' + '            }' + '\n' + '            ');
-    if (this.isReducedSoi) {
-      tmp$ = '\n                float powerSqrt = sqrt(power);\n                float strength = clamp(power / (1.0 + dist * dist) * (powerSqrt - dist) / powerSqrt, 0.0, power);\n            ';
-    } else {
-      tmp$ = 'float strength = power / (1.0 + dist * dist);';
-    }
-    var strength = tmp$;
-    generator.appendFunction_puj7f4$(this.name + '_getRadiance', '\n' + '            vec3 ' + this.name + '_getRadiance(vec3 fragToLight, float innerAngle) {' + '\n' + '                if (' + this.uPosition_0.name + '.w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return ' + this.uColor_0.name + '.rgb * ' + this.uColor_0.name + '.w;' + '\n' + '                }' + '\n' + '                float dist = length(fragToLight);' + '\n' + '                float power = ' + this.uColor_0.name + '.w;' + '\n' + '                ' + strength + '\n' + '                if (' + this.uPosition_0.name + '.w == float(' + Light$Type$POINT_getInstance().encoded + ')) {' + '\n' + '                    return ' + this.uColor_0.name + '.rgb * strength;' + '\n' + '                } else {' + '\n' + '                    // spot light' + '\n' + '                    vec3 lightDir = -normalize(fragToLight);' + '\n' + '                    float spotAng = ' + this.uDirection_0.name + '.w;' + '\n' + '                    float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);' + '\n' + '                    float ang = dot(lightDir, ' + this.uDirection_0.name + '.xyz);' + '\n' + '                    float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * ' + math.PI + ') * 0.5 + 0.5;' + '\n' + '                    return ' + this.uColor_0.name + '.rgb * strength * angVal;' + '\n' + '                }' + '\n' + '            }' + '\n' + '            ');
-  };
-  SingleLightNode.prototype.callVec3GetFragToLight_puj7f4$ = function (idx, fragPos) {
-    return this.name + '_getFragToLight(' + fragPos + ')';
-  };
-  SingleLightNode.prototype.callVec3GetRadiance_6hosri$ = function (idx, fragToLight, innerAngle) {
-    return '(' + this.name + '_getRadiance(' + fragToLight + ', ' + innerAngle + ') * ' + this.inShaodwFac.ref1f() + ')';
-  };
-  SingleLightNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SingleLightNode',
-    interfaces: [LightNode]
-  };
   function MultiLightNode(shaderGraph, maxLights) {
     if (maxLights === void 0)
       maxLights = 4;
@@ -11623,6 +11536,108 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'MultiLightNode',
     interfaces: [LightNode]
   };
+  function SingleLightUniformDataNode(shaderGraph) {
+    ShaderNode.call(this, 'lightUniformDataNd_' + shaderGraph.nextNodeId, shaderGraph);
+    this.light = null;
+    this.uPosition_0 = new Uniform4f('u' + this.name + '_pos');
+    this.uColor_0 = new Uniform4f('u' + this.name + '_color');
+    this.uDirection_0 = new Uniform4f('u' + this.name + '_dir');
+    this.outLightPos = new ShaderNodeIoVar(new ModelVar4f(this.uPosition_0.name), this);
+    this.outLightColor = new ShaderNodeIoVar(new ModelVar4f(this.uColor_0.name), this);
+    this.outLightDir = new ShaderNodeIoVar(new ModelVar4f(this.uDirection_0.name), this);
+  }
+  function SingleLightUniformDataNode$setup$lambda$lambda$lambda(this$SingleLightUniformDataNode) {
+    return function () {
+      return this$SingleLightUniformDataNode.uPosition_0;
+    };
+  }
+  function SingleLightUniformDataNode$setup$lambda$lambda$lambda_0(this$SingleLightUniformDataNode) {
+    return function () {
+      return this$SingleLightUniformDataNode.uColor_0;
+    };
+  }
+  function SingleLightUniformDataNode$setup$lambda$lambda$lambda_1(this$SingleLightUniformDataNode) {
+    return function () {
+      return this$SingleLightUniformDataNode.uDirection_0;
+    };
+  }
+  function SingleLightUniformDataNode$setup$lambda$lambda$lambda_2(this$SingleLightUniformDataNode) {
+    return function (f, f_0) {
+      this$SingleLightUniformDataNode.encodeLightSetup_0();
+      return Unit;
+    };
+  }
+  function SingleLightUniformDataNode$setup$lambda$lambda(this$SingleLightUniformDataNode) {
+    return function ($receiver) {
+      $receiver.unaryPlus_wq3w46$(SingleLightUniformDataNode$setup$lambda$lambda$lambda(this$SingleLightUniformDataNode));
+      $receiver.unaryPlus_wq3w46$(SingleLightUniformDataNode$setup$lambda$lambda$lambda_0(this$SingleLightUniformDataNode));
+      $receiver.unaryPlus_wq3w46$(SingleLightUniformDataNode$setup$lambda$lambda$lambda_1(this$SingleLightUniformDataNode));
+      $receiver.onUpdate = SingleLightUniformDataNode$setup$lambda$lambda$lambda_2(this$SingleLightUniformDataNode);
+      return Unit;
+    };
+  }
+  SingleLightUniformDataNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], SingleLightUniformDataNode$setup$lambda$lambda(this));
+  };
+  SingleLightUniformDataNode.prototype.encodeLightSetup_0 = function () {
+    var lgt = this.light;
+    if (lgt != null) {
+      this.uColor_0.value.set_czzhhz$(lgt.color);
+      this.uPosition_0.value.set_2qa7tb$(lgt.position, lgt.type.encoded);
+      var tmp$ = this.uDirection_0.value;
+      var tmp$_0 = lgt.direction;
+      var x = lgt.spotAngle / 2 * package$math.DEG_2_RAD;
+      tmp$.set_2qa7tb$(tmp$_0, Math_0.cos(x));
+    } else {
+      this.uColor_0.value.set_czzhhz$(Vec4f$Companion_getInstance().ZERO);
+    }
+  };
+  SingleLightUniformDataNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SingleLightUniformDataNode',
+    interfaces: [ShaderNode]
+  };
+  function SingleLightNode(shaderGraph) {
+    LightNode.call(this, 'lightNd_' + shaderGraph.nextNodeId, shaderGraph);
+    this.inLightPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightColor = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightDir = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inShaodwFac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    this.outLightCount_9pb9nm$_0 = new ShaderNodeIoVar(new ModelVar1iConst(1));
+    this.isReducedSoi = false;
+  }
+  Object.defineProperty(SingleLightNode.prototype, 'outLightCount', {
+    get: function () {
+      return this.outLightCount_9pb9nm$_0;
+    }
+  });
+  SingleLightNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    LightNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inShaodwFac, this.inLightPos, this.inLightDir, this.inLightColor]);
+  };
+  SingleLightNode.prototype.generateCode_626509$ = function (generator) {
+    var tmp$;
+    generator.appendFunction_puj7f4$(this.name + '_getFragToLight', '\n' + '            vec3 ' + this.name + '_getFragToLight(vec3 fragPos, vec4 lightPos, vec4 lightDir) {' + '\n' + '                if (lightPos.w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return -lightDir.xyz;' + '\n' + '                }' + '\n' + '                // same for point and spot lights' + '\n' + '                return lightPos.xyz - fragPos;' + '\n' + '            }' + '\n' + '            ');
+    if (this.isReducedSoi) {
+      tmp$ = '\n                float powerSqrt = sqrt(power);\n                float strength = clamp(power / (1.0 + dist * dist) * (powerSqrt - dist) / powerSqrt, 0.0, power);\n            ';
+    } else {
+      tmp$ = 'float strength = power / (1.0 + dist * dist);';
+    }
+    var strength = tmp$;
+    generator.appendFunction_puj7f4$(this.name + '_getRadiance', '\n' + '            vec3 ' + this.name + '_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {' + '\n' + '                if (lightPos.w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return lightColor.rgb * lightColor.w;' + '\n' + '                }' + '\n' + '                float dist = length(fragToLight);' + '\n' + '                float power = lightColor.w;' + '\n' + '                ' + strength + '\n' + '                if (lightPos.w == float(' + Light$Type$POINT_getInstance().encoded + ')) {' + '\n' + '                    return lightColor.rgb * strength;' + '\n' + '                } else {' + '\n' + '                    // spot light' + '\n' + '                    vec3 negFtl = -normalize(fragToLight);' + '\n' + '                    float spotAng = lightDir.w;' + '\n' + '                    float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);' + '\n' + '                    float ang = dot(negFtl, lightDir.xyz);' + '\n' + '                    float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * ' + math.PI + ') * 0.5 + 0.5;' + '\n' + '                    return lightColor.rgb * strength * angVal;' + '\n' + '                }' + '\n' + '            }' + '\n' + '            ');
+  };
+  SingleLightNode.prototype.callVec3GetFragToLight_puj7f4$ = function (idx, fragPos) {
+    return this.name + '_getFragToLight(' + fragPos + ', ' + this.inLightPos.ref4f() + ', ' + this.inLightDir.ref4f() + ')';
+  };
+  SingleLightNode.prototype.callVec3GetRadiance_6hosri$ = function (idx, fragToLight, innerAngle) {
+    return '(' + this.name + '_getRadiance(' + fragToLight + ', ' + this.inLightPos.ref4f() + ', ' + this.inLightColor.ref4f() + ', ' + this.inLightDir.ref4f() + ', ' + innerAngle + ') * ' + this.inShaodwFac.ref1f() + ')';
+  };
+  SingleLightNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SingleLightNode',
+    interfaces: [LightNode]
+  };
   function UnlitMaterialNode(graph) {
     ShaderNode.call(this, 'Unlit Material', graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
     this.inColor = new ShaderNodeIoVar(new ModelVar4fConst(Color$Companion_getInstance().MAGENTA));
@@ -11705,10 +11720,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   };
   PbrMaterialNode.prototype.generateFinalNonIbl_0 = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough); ' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.prototype.generateFinalIbl_0 = function (generator, reflectionMap, brdfLut) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            ' + '\n' + '            vec3 irradiance = ' + this.inIrradiance.ref3f() + ';' + '\n' + '            vec3 diffuse = irradiance * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -11740,7 +11755,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendFunction_puj7f4$('GeometrySchlickGGX', '\n            float GeometrySchlickGGX(float NdotV, float roughness) {\n                float r = (roughness + 1.0);\n                float k = (r*r) / 8.0;\n                \n                float num   = NdotV;\n                float denom = NdotV * (1.0 - k) + k;\n                \n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySmith', '\n            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {\n                float NdotV = max(dot(N, V), 0.0);\n                float NdotL = max(dot(N, L), 0.0);\n                float ggx2  = GeometrySchlickGGX(NdotV, roughness);\n                float ggx1  = GeometrySchlickGGX(NdotL, roughness);\n                \n                return ggx1 * ggx2;\n            }\n        ');
     var normalCheck = !this.flipBacksideNormals ? 'dot(fragToLight, ' + this.inNormal.ref3f() + ') > 0.0' : 'true';
-    generator.appendMain_61zpoe$('\n' + '            vec3 radiance = vec3(0.0);' + '\n' + '            vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '            bool normalOk = ' + normalCheck + ';' + '\n' + '            if (normalOk) {' + '\n' + '                radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '            }' + '\n' + '            ' + '\n' + '            ' + this.outColor.declare() + ' = vec4(0.0, 0.0, 0.0, 1.0);' + '\n' + '            if (normalOk && dot(radiance, radiance) > 0.0) {' + '\n' + '                vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '                vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '                vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '                float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '                ' + '\n' + '                vec3 F0 = vec3(0.04); ' + '\n' + '                F0 = mix(F0, albedo, metal);' + '\n' + '        ' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                ' + (this.flipBacksideNormals ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                ' + this.outColor.name + ' = vec4((kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL, 1.0);' + '\n' + '            }' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 radiance = vec3(0.0);' + '\n' + '            vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '            bool normalOk = ' + normalCheck + ';' + '\n' + '            if (normalOk) {' + '\n' + '                radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                //radiance = vec3(1.0);' + '\n' + '            }' + '\n' + '            ' + '\n' + '            ' + this.outColor.declare() + ' = vec4(0.0, 0.0, 0.0, 1.0);' + '\n' + '            if (normalOk && dot(radiance, radiance) > 0.0) {' + '\n' + '                vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '                vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '                vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '                float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '                ' + '\n' + '                vec3 F0 = vec3(0.04); ' + '\n' + '                F0 = mix(F0, albedo, metal);' + '\n' + '        ' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                ' + (this.flipBacksideNormals ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                ' + this.outColor.name + ' = vec4((kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL, 1.0);' + '\n' + '            }' + '\n' + '            ');
   };
   PbrLightNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -12194,11 +12209,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ShaderGenerator',
     interfaces: []
   };
-  function ShaderInterfaceIoVar(location, variable, locationInc) {
+  function ShaderInterfaceIoVar(location, variable, isFlat, locationInc) {
     if (locationInc === void 0)
       locationInc = 1;
     this.location = location;
     this.variable = variable;
+    this.isFlat = isFlat;
     this.locationInc = locationInc;
   }
   ShaderInterfaceIoVar.$metadata$ = {
@@ -12256,7 +12272,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return (tmp$ = firstOrNull$result) == null || isT(tmp$) ? tmp$ : throwCCE();
     };
   }));
-  ShaderGraph.prototype.addStageOutput_q8poeb$ = function (output, locationInc) {
+  ShaderGraph.prototype.addStageOutput_ca2n0y$ = function (output, isFlat, locationInc) {
     if (locationInc === void 0)
       locationInc = 1;
     var tmp$;
@@ -12267,7 +12283,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       sum = sum + element.locationInc | 0;
     }
     var location = sum;
-    var ifVar = new ShaderInterfaceIoVar(location, output, locationInc);
+    var ifVar = new ShaderInterfaceIoVar(location, output, isFlat, locationInc);
     this.mutOutputs_rh28ou$_0.add_11rb$(ifVar);
     return ifVar;
   };
@@ -12483,9 +12499,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (tmp$_0 == null) {
         throw new NoSuchElementException_init_0('Mesh does not include required vertex attribute: ' + element.name);
       }var off = tmp$_0;
-      var tmp$_1;
-      var element_0 = new VertexLayout$VertexAttribute((tmp$_1 = attribLocation.v, attribLocation.v = tmp$_1 + 1 | 0, tmp$_1), off, element);
+      var element_0 = new VertexLayout$VertexAttribute(attribLocation.v, off, element);
       vertLayoutAttribs.add_11rb$(element_0);
+      attribLocation.v = attribLocation.v + element.props.nSlots | 0;
     }
     var $receiver = buildCtx.vertexLayout.bindings;
     var element_1 = new VertexLayout$Binding(0, InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.strideBytesF);
@@ -12493,18 +12509,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var insts = mesh.instances;
     if (insts != null) {
       var instLayoutAttribs = ArrayList_init_0();
-      var tmp$_2;
-      tmp$_2 = this.vertexStageGraph.requiredInstanceAttributes.iterator();
-      while (tmp$_2.hasNext()) {
-        var element_2 = tmp$_2.next();
-        var tmp$_3;
-        tmp$_3 = insts.attributeOffsets.get_11rb$(element_2);
-        if (tmp$_3 == null) {
+      var tmp$_1;
+      tmp$_1 = this.vertexStageGraph.requiredInstanceAttributes.iterator();
+      while (tmp$_1.hasNext()) {
+        var element_2 = tmp$_1.next();
+        var tmp$_2;
+        tmp$_2 = insts.attributeOffsets.get_11rb$(element_2);
+        if (tmp$_2 == null) {
           throw new NoSuchElementException_init_0('Mesh does not include required instance attribute: ' + element_2.name);
-        }var off_0 = tmp$_3;
-        var tmp$_4;
-        var element_3 = new VertexLayout$VertexAttribute((tmp$_4 = attribLocation.v, attribLocation.v = tmp$_4 + 1 | 0, tmp$_4), off_0, element_2);
+        }var off_0 = tmp$_2;
+        var element_3 = new VertexLayout$VertexAttribute(attribLocation.v, off_0, element_2);
         instLayoutAttribs.add_11rb$(element_3);
+        attribLocation.v = attribLocation.v + element_2.props.nSlots | 0;
       }
       var $receiver_0 = buildCtx.vertexLayout.bindings;
       var element_4 = new VertexLayout$Binding(1, InputRate$INSTANCE_getInstance(), instLayoutAttribs, insts.strideBytesF);
@@ -12795,10 +12811,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderModel$VertexStageBuilder.prototype.instanceAttributeNode_nm2vx5$ = function (attribute) {
     return this.addNode_u9w9by$(new InstanceAttributeNode(attribute, this.stage));
   };
-  ShaderModel$VertexStageBuilder.prototype.stageInterfaceNode_wtmwsg$ = function (name, input) {
+  ShaderModel$VertexStageBuilder.prototype.stageInterfaceNode_iikjwn$ = function (name, input, isFlat) {
     if (input === void 0)
       input = null;
+    if (isFlat === void 0)
+      isFlat = false;
     var ifNode = new StageInterfaceNode(name, this.$outer.vertexStageGraph, this.$outer.fragmentStageGraph);
+    ifNode.isFlat = isFlat;
     if (input != null) {
       ifNode.input = input;
     }this.addNode_u9w9by$(ifNode.vertexNode);
@@ -12876,7 +12895,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       light = null;
     var lightNd = this.addNode_u9w9by$(new SingleLightNode(this.stage));
     if (light != null) {
-      lightNd.light = light;
+      var lightDataNd = this.addNode_u9w9by$(new SingleLightUniformDataNode(this.stage));
+      lightDataNd.light = light;
+      lightNd.inLightPos = lightDataNd.outLightPos;
+      lightNd.inLightDir = lightDataNd.outLightDir;
+      lightNd.inLightColor = lightDataNd.outLightColor;
     }return lightNd;
   };
   ShaderModel$FragmentStageBuilder.prototype.deferredSimpleShadoweMapNode_dhoqzq$ = function (shadowMap, depthMapName, worldPos) {
@@ -13269,10 +13292,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.lightIndex = this.shadowMap.lightIndex;
     vertexGraph.addNode_j0v1fw$(this.helperNd_0);
     var $receiver = fragmentGraph.inputs;
-    var element = vertexGraph.addStageOutput_q8poeb$(this.posLightSpace_0.variable, this.shadowMap.numCascades);
+    var element = vertexGraph.addStageOutput_ca2n0y$(this.posLightSpace_0.variable, false, this.shadowMap.numCascades);
     $receiver.add_11rb$(element);
     var $receiver_0 = fragmentGraph.inputs;
-    var element_0 = vertexGraph.addStageOutput_q8poeb$(this.ifViewZ_0.variable);
+    var element_0 = vertexGraph.addStageOutput_ca2n0y$(this.ifViewZ_0.variable, false);
     $receiver_0.add_11rb$(element_0);
     this.fragmentNode.inPosLightSpace = this.posLightSpace_0;
     this.fragmentNode.inViewZ = this.ifViewZ_0;
@@ -14140,6 +14163,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.name = name;
     this.input_h7hmfg$_0 = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
     this.output_ftovqj$_0 = new ShaderNodeIoVar(new ModelVar1f(this.name));
+    this.isFlat = false;
     this.ifVar_hcczpo$_0 = this.ifVar_hcczpo$_0;
     this.vertexNode = new StageInterfaceNode$vertexNode$ObjectLiteral(this, this.name, vertexGraph, ShaderStage$VERTEX_SHADER_getInstance().mask);
     this.fragmentNode = new StageInterfaceNode$fragmentNode$ObjectLiteral(this, this.name, fragmentGraph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
@@ -14178,7 +14202,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   StageInterfaceNode$vertexNode$ObjectLiteral.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_7qvs0d$(this.this$StageInterfaceNode.input);
-    this.this$StageInterfaceNode.ifVar_0 = shaderGraph.addStageOutput_q8poeb$(this.this$StageInterfaceNode.output.variable);
+    this.this$StageInterfaceNode.ifVar_0 = shaderGraph.addStageOutput_ca2n0y$(this.this$StageInterfaceNode.output.variable, this.this$StageInterfaceNode.isFlat);
   };
   StageInterfaceNode$vertexNode$ObjectLiteral.prototype.generateCode_626509$ = function (generator) {
     generator.appendMain_61zpoe$(this.this$StageInterfaceNode.output.name + ' = ' + this.this$StageInterfaceNode.input.refAsType_m7a9qd$(this.this$StageInterfaceNode.output.variable.type) + ';');
@@ -14635,7 +14659,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = new ShaderModel('ModeledShader.vertexColor()');
     var ifColors = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    ifColors.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+    ifColors.v = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     $receiver_1.colorOutput_a3v4si$($receiver_1.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor);
@@ -14645,7 +14669,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = new ShaderModel('ModeledShader.textureColor()');
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
@@ -14658,7 +14682,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var mvp = $receiver_0.mvpNode();
     var worldPos = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvp.outModelMat, 1.0);
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos.outVec4);
+    ifFragPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos.outVec4);
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvp.outMvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var nrmPos = $receiver_1.normalizeNode_r20yfm$(ifFragPos.v.output);
@@ -15539,9 +15563,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mvpMat = mvpNode.v.outMvpMat;
     }
     var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     if (cfg.requiresTexCoords()) {
-      tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     } else {
       tmp$ = null;
     }
@@ -15557,16 +15581,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var localPos = tmp$_0;
     var worldPos = $receiver_0.vec3TransformNode_vid4wo$(localPos, modelMat, 1.0).outVec3;
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
+    ifFragPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos);
     if (cfg.albedoSource === Albedo$VERTEX_ALBEDO_getInstance()) {
-      tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     } else {
       tmp$_1 = null;
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
       var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.outVec3);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
     } else {
       tmp$_2 = null;
     }
@@ -16089,28 +16113,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mvpMat = mvpNode.v.outMvpMat;
     }
     if (cfg.albedoSource === Albedo$VERTEX_ALBEDO_getInstance()) {
-      tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     } else {
       tmp$ = null;
     }
     ifColors.v = tmp$;
     if (cfg.requiresTexCoords()) {
-      tmp$_0 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+      tmp$_0 = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     } else {
       tmp$_0 = null;
     }
     ifTexCoords.v = tmp$_0;
     if (cfg.isNormalMapped) {
       var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
-      tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.outVec3);
+      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
     } else {
       tmp$_1 = null;
     }
     ifTangents.v = tmp$_1;
     var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.outVec3);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     var worldPos = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).outVec3;
-    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
+    ifFragPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos);
     var viewPos = $receiver_0.vec4TransformNode_9krp9t$(worldPos, mvpNode.v.outViewMat).outVec4;
     var tmp$_2, tmp$_0_0;
     var index = 0;
@@ -20042,7 +20066,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var mvp = $receiver_0.mvpNode();
     var worldPos = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrPositions().output, mvp.outModelMat, 1.0);
-    ifLocalPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifLocalPos', worldPos.outVec3);
+    ifLocalPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifLocalPos', worldPos.outVec3);
     $receiver_0.positionOutput = $receiver_0.addNode_u9w9by$(new Skybox$SkyboxPosNode(mvp, $receiver_0.attrPositions().output, $receiver_0.stage)).outPosition;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var sampler = $receiver_1.cubeMapSamplerNode_2z3a2t$($receiver_1.cubeMapNode_61zpoe$(texName), ifLocalPos.v.output, false);
@@ -22979,8 +23003,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var ifTexCoords = {v: null};
     var ifColors = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    ifColors.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    ifColors.v = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var alpha = $receiver_1.pushConstantNode1f_61zpoe$(this.U_ALPHA_0);
@@ -23686,7 +23710,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_1 = new ShaderModel('AoPass');
     var ifScreenPos = {v: null};
     var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifScreenPos.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_2.attrTexCoords().output);
+    ifScreenPos.v = $receiver_2.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_2.attrTexCoords().output);
     $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outVec4;
     var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
     var noiseTex = $receiver_3.textureNode_61zpoe$('noiseTex');
@@ -24317,7 +24341,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_1 = new ShaderModel('AoDenoisePass');
     var ifTexCoords = {v: null};
     var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifTexCoords.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_2.attrTexCoords().output);
+    ifTexCoords.v = $receiver_2.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_2.attrTexCoords().output);
     $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outVec4;
     var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
     var noisyAo = $receiver_3.textureNode_61zpoe$('noisyAo');
@@ -26329,6 +26353,321 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeltaTGraph',
     interfaces: [UiComponent]
   };
+  var ShaderModel$findNode$lambda_5 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
+  function DeferredLightShader(cfg) {
+    DeferredLightShader$Companion_getInstance();
+    ModeledShader.call(this, DeferredLightShader$Companion_getInstance().shaderModel_l5ebkw$(cfg));
+    this.deferredCameraNode_0 = null;
+    this.sceneCamera_f7edkp$_0 = cfg.sceneCamera;
+    this.positionAoSampler_0 = null;
+    this.normalRoughnessSampler_0 = null;
+    this.albedoMetalSampler_0 = null;
+    this.positionAo_ot9dej$_0 = cfg.positionAo;
+    this.normalRoughness_mouyfl$_0 = cfg.normalRoughness;
+    this.albedoMetal_35ktqu$_0 = cfg.albedoMetal;
+  }
+  Object.defineProperty(DeferredLightShader.prototype, 'sceneCamera', {
+    get: function () {
+      return this.sceneCamera_f7edkp$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.sceneCamera_f7edkp$_0 = value;
+      (tmp$ = this.deferredCameraNode_0) != null ? (tmp$.sceneCam = value) : null;
+    }
+  });
+  Object.defineProperty(DeferredLightShader.prototype, 'positionAo', {
+    get: function () {
+      return this.positionAo_ot9dej$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.positionAo_ot9dej$_0 = value;
+      (tmp$ = this.positionAoSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(DeferredLightShader.prototype, 'normalRoughness', {
+    get: function () {
+      return this.normalRoughness_mouyfl$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.normalRoughness_mouyfl$_0 = value;
+      (tmp$ = this.normalRoughnessSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(DeferredLightShader.prototype, 'albedoMetal', {
+    get: function () {
+      return this.albedoMetal_35ktqu$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.albedoMetal_35ktqu$_0 = value;
+      (tmp$ = this.albedoMetalSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  DeferredLightShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+    builder.blendMode = BlendMode$BLEND_ADDITIVE_getInstance();
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+    builder.depthTest = DepthCompareOp$DISABLED_getInstance();
+    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+  };
+  DeferredLightShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+    var $this = this.model;
+    var name = 'deferredCam';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$_6;
+      tmp$_6 = $this.stages.values.iterator();
+      while (tmp$_6.hasNext()) {
+        var element = tmp$_6.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_7;
+          var $receiver = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_8;
+            tmp$_8 = $receiver.iterator();
+            while (tmp$_8.hasNext()) {
+              var element_0 = tmp$_8.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, DeferredCameraNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_7 = firstOrNull$result) == null || Kotlin.isType(tmp$_7, DeferredCameraNode) ? tmp$_7 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    this.deferredCameraNode_0 = findNode_3klnlw$result;
+    if ((tmp$ = this.deferredCameraNode_0) != null) {
+      tmp$.sceneCam = this.sceneCamera;
+    }var $this_0 = this.model;
+    var name_0 = 'positionAo';
+    var stage_0;
+    var findNode_3klnlw$result_0;
+    findNode_3klnlw$break: do {
+      stage_0 = ShaderStage.ALL;
+      var tmp$_9;
+      tmp$_9 = $this_0.stages.values.iterator();
+      while (tmp$_9.hasNext()) {
+        var element_1 = tmp$_9.next();
+        if ((element_1.stage.mask & stage_0.mask) !== 0) {
+          var tmp$_10;
+          var $receiver_0 = element_1.nodes;
+          var firstOrNull$result_0;
+          firstOrNull$break: do {
+            var tmp$_11;
+            tmp$_11 = $receiver_0.iterator();
+            while (tmp$_11.hasNext()) {
+              var element_2 = tmp$_11.next();
+              if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
+                firstOrNull$result_0 = element_2;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_0 = null;
+          }
+           while (false);
+          var node_0 = (tmp$_10 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_10, TextureNode) ? tmp$_10 : throwCCE();
+          if (node_0 != null) {
+            findNode_3klnlw$result_0 = node_0;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_0 = null;
+    }
+     while (false);
+    this.positionAoSampler_0 = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
+    if ((tmp$_1 = this.positionAoSampler_0) != null) {
+      tmp$_1.texture = this.positionAo;
+    }var $this_1 = this.model;
+    var name_1 = 'normalRoughness';
+    var stage_1;
+    var findNode_3klnlw$result_1;
+    findNode_3klnlw$break: do {
+      stage_1 = ShaderStage.ALL;
+      var tmp$_12;
+      tmp$_12 = $this_1.stages.values.iterator();
+      while (tmp$_12.hasNext()) {
+        var element_3 = tmp$_12.next();
+        if ((element_3.stage.mask & stage_1.mask) !== 0) {
+          var tmp$_13;
+          var $receiver_1 = element_3.nodes;
+          var firstOrNull$result_1;
+          firstOrNull$break: do {
+            var tmp$_14;
+            tmp$_14 = $receiver_1.iterator();
+            while (tmp$_14.hasNext()) {
+              var element_4 = tmp$_14.next();
+              if (equals(element_4.name, name_1) && Kotlin.isType(element_4, TextureNode)) {
+                firstOrNull$result_1 = element_4;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_1 = null;
+          }
+           while (false);
+          var node_1 = (tmp$_13 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_13, TextureNode) ? tmp$_13 : throwCCE();
+          if (node_1 != null) {
+            findNode_3klnlw$result_1 = node_1;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_1 = null;
+    }
+     while (false);
+    this.normalRoughnessSampler_0 = (tmp$_2 = findNode_3klnlw$result_1) != null ? tmp$_2.sampler : null;
+    if ((tmp$_3 = this.normalRoughnessSampler_0) != null) {
+      tmp$_3.texture = this.normalRoughness;
+    }var $this_2 = this.model;
+    var name_2 = 'albedoMetal';
+    var stage_2;
+    var findNode_3klnlw$result_2;
+    findNode_3klnlw$break: do {
+      stage_2 = ShaderStage.ALL;
+      var tmp$_15;
+      tmp$_15 = $this_2.stages.values.iterator();
+      while (tmp$_15.hasNext()) {
+        var element_5 = tmp$_15.next();
+        if ((element_5.stage.mask & stage_2.mask) !== 0) {
+          var tmp$_16;
+          var $receiver_2 = element_5.nodes;
+          var firstOrNull$result_2;
+          firstOrNull$break: do {
+            var tmp$_17;
+            tmp$_17 = $receiver_2.iterator();
+            while (tmp$_17.hasNext()) {
+              var element_6 = tmp$_17.next();
+              if (equals(element_6.name, name_2) && Kotlin.isType(element_6, TextureNode)) {
+                firstOrNull$result_2 = element_6;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_2 = null;
+          }
+           while (false);
+          var node_2 = (tmp$_16 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_16, TextureNode) ? tmp$_16 : throwCCE();
+          if (node_2 != null) {
+            findNode_3klnlw$result_2 = node_2;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_2 = null;
+    }
+     while (false);
+    this.albedoMetalSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
+    if ((tmp$_5 = this.albedoMetalSampler_0) != null) {
+      tmp$_5.texture = this.albedoMetal;
+    }};
+  function DeferredLightShader$Companion() {
+    DeferredLightShader$Companion_instance = this;
+    this.LIGHT_POS = new Attribute('aLightPos', GlslType$VEC_4F_getInstance());
+  }
+  DeferredLightShader$Companion.prototype.shaderModel_l5ebkw$ = function (cfg) {
+    var $receiver = new ShaderModel('point light shader model');
+    var ifFragCoords = {v: null};
+    var ifLightColor = {v: null};
+    var ifLightPos = {v: null};
+    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
+    var instMvp = $receiver_0.instanceAttrModelMat().output;
+    var mvpMat = $receiver_0.multiplyNode_ze33is$($receiver_0.premultipliedMvpNode().outMvpMat, instMvp).output;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
+    ifFragCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragCoords', $receiver_0.positionOutput);
+    ifLightColor.v = $receiver_0.stageInterfaceNode_iikjwn$('ifLightColor', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute$Companion_getInstance().COLORS).output, true);
+    ifLightPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifLightPos', $receiver_0.instanceAttributeNode_nm2vx5$(this.LIGHT_POS).output, true);
+    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
+    var lightColor = ifLightColor.v.output;
+    var lightPos = ifLightPos.v.output;
+    var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
+    var texPos = $receiver_1.addNode_ze33is$($receiver_1.multiplyNode_tuikh5$(xyPos, 0.5).output, new ShaderNodeIoVar(new ModelVar1fConst(0.5))).output;
+    var coord = texPos;
+    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredMrtShader$MrtDeMultiplexNode($receiver_1.stage));
+    $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
+    $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
+    $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
+    var mrtDeMultiplex = $receiver_2;
+    $receiver_1.addNode_u9w9by$(new DiscardClearNode($receiver_1.stage)).inViewPos = mrtDeMultiplex.outViewPos;
+    var defCam = $receiver_1.addNode_u9w9by$(new DeferredCameraNode($receiver_1.stage));
+    var worldPos = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1.0).outVec3;
+    var worldNrm = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0.0).outVec3;
+    var $receiver_3 = $receiver_1.singleLightNode_ycjtt8$();
+    $receiver_3.isReducedSoi = true;
+    $receiver_3.inLightPos = lightPos;
+    $receiver_3.inLightColor = lightColor;
+    var lightNode = $receiver_3;
+    var $receiver_4 = $receiver_1.pbrLightNode_605fnh$(lightNode);
+    $receiver_4.flipBacksideNormals = cfg.flipBacksideNormals;
+    $receiver_4.inFragPos = worldPos;
+    $receiver_4.inNormal = worldNrm;
+    $receiver_4.inCamPos = defCam.outCamPos;
+    $receiver_4.inAlbedo = mrtDeMultiplex.outAlbedo;
+    $receiver_4.inMetallic = mrtDeMultiplex.outMetallic;
+    $receiver_4.inRoughness = mrtDeMultiplex.outRoughness;
+    var mat = $receiver_4;
+    $receiver_1.colorOutput_a3v4si$(mat.outColor);
+    return $receiver;
+  };
+  DeferredLightShader$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DeferredLightShader$Companion_instance = null;
+  function DeferredLightShader$Companion_getInstance() {
+    if (DeferredLightShader$Companion_instance === null) {
+      new DeferredLightShader$Companion();
+    }return DeferredLightShader$Companion_instance;
+  }
+  function DeferredLightShader$Config() {
+    this.sceneCamera = null;
+    this.flipBacksideNormals = false;
+    this.positionAo = null;
+    this.normalRoughness = null;
+    this.albedoMetal = null;
+  }
+  DeferredLightShader$Config.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Config',
+    interfaces: []
+  };
+  DeferredLightShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredLightShader',
+    interfaces: [ModeledShader]
+  };
   function DeferredMrtPass() {
     DeferredMrtPass$Companion_getInstance();
     OffscreenRenderPass2dMrt.call(this, new Group(), 1600, 900, DeferredMrtPass$Companion_getInstance().FMTS_DEFERRED);
@@ -26337,6 +26676,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.clearColors[0] = new Color(0.0, 0.0, 2.0, 0.0);
     this.clearColors[1] = null;
     this.clearColors[2] = null;
+    this.content.isFrustumChecked = false;
   }
   Object.defineProperty(DeferredMrtPass.prototype, 'positionAo', {
     get: function () {
@@ -26376,7 +26716,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredMrtPass',
     interfaces: [OffscreenRenderPass2dMrt]
   };
-  var ShaderModel$findNode$lambda_5 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_6 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -26931,9 +27271,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mvpMat = mvpNode.v.outMvpMat;
     }
     var worldNrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0).outVec3;
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', worldNrm);
+    ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', worldNrm);
     if (cfg.requiresTexCoords()) {
-      tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     } else {
       tmp$ = null;
     }
@@ -26949,16 +27289,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var worldPos = tmp$_0;
     var pos = $receiver_0.vec3TransformNode_vid4wo$(worldPos, modelViewMat, 1.0).outVec3;
-    ifViewPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifViewPos', pos);
+    ifViewPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifViewPos', pos);
     if (cfg.albedoSource === Albedo$VERTEX_ALBEDO_getInstance()) {
-      tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
     } else {
       tmp$_1 = null;
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
       var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelViewMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.outVec3);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
     } else {
       tmp$_2 = null;
     }
@@ -27114,71 +27454,199 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredMrtShader',
     interfaces: [ModeledShader]
   };
-  function DeferredPointLight(mrtPass) {
-    this.pointLight_0 = new Light();
-    this.position = MutableVec3f_init();
-    this.color = Color$Companion_getInstance().WHITE;
-    this.intensity = 1.0;
-    this.lightNode = new TransformGroup();
-    this.lightMesh = colorMesh(void 0, DeferredPointLight$lightMesh$lambda(mrtPass, this));
-    this.lightNode.plusAssign_f1kmr1$(this.lightMesh);
-    this.lightNode.onUpdate.add_11rb$(DeferredPointLight_init$lambda(this));
+  function DeferredPointLights(mrtPass) {
+    this.lightInstances_0 = ArrayList_init_0();
+    this.lightInstanceData_0 = new MeshInstanceList(listOf([MeshInstanceList$Companion_getInstance().MODEL_MAT, DeferredLightShader$Companion_getInstance().LIGHT_POS, Attribute$Companion_getInstance().COLORS]), 10000);
+    this.isDynamic = true;
+    this.modelMat_0 = new Mat4f();
+    this.encodedColor_0 = new Float32Array(4);
+    this.encodedPos_0 = new Float32Array(4);
+    var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
+    mesh.isFrustumChecked = false;
+    mesh.instances = this.lightInstanceData_0;
+    mesh.generate_v2sixm$(DeferredPointLights$mesh$lambda$lambda);
+    var $receiver = new DeferredLightShader$Config();
+    $receiver.sceneCamera = mrtPass.camera;
+    $receiver.positionAo = mrtPass.positionAo;
+    $receiver.normalRoughness = mrtPass.normalRoughness;
+    $receiver.albedoMetal = mrtPass.albedoMetal;
+    var lightCfg = $receiver;
+    mesh.pipelineLoader = new DeferredLightShader(lightCfg);
+    mesh.onUpdate.add_11rb$(DeferredPointLights$mesh$lambda$lambda_0(this));
+    this.mesh = mesh;
   }
-  function DeferredPointLight$lightMesh$lambda$lambda($receiver) {
+  DeferredPointLights.prototype.updateLightData = function () {
+    var tmp$;
+    this.lightInstanceData_0.clear();
+    var a = this.lightInstances_0.size;
+    var b = this.lightInstanceData_0.maxInstances;
+    tmp$ = Math_0.min(a, b);
+    for (var i = 0; i < tmp$; i++) {
+      var $this = this.lightInstanceData_0;
+      $this.checkBufferSize_za3lpa$();
+      var szBefore = $this.dataF.position;
+      var $receiver = $this.dataF;
+      this.encodeLight_0(this.lightInstances_0.get_za3lpa$(i));
+      $receiver.put_q3cr5i$(this.modelMat_0.matrix);
+      $receiver.put_q3cr5i$(this.encodedPos_0);
+      $receiver.put_q3cr5i$(this.encodedColor_0);
+      var growSz = $this.dataF.position - szBefore | 0;
+      if (growSz !== $this.instanceSizeF) {
+        throw IllegalStateException_init('Expected data to grow by ' + $this.instanceSizeF + ' elements, instead it grew by ' + growSz);
+      }$this.numInstances = $this.numInstances + 1 | 0;
+      $this.hasChanged = true;
+    }
+  };
+  DeferredPointLights.prototype.encodeLight_0 = function (light) {
+    this.modelMat_0.setIdentity();
+    this.modelMat_0.translate_czzhiu$(light.position);
+    var x = light.intensity;
+    var soi = Math_0.sqrt(x);
+    this.modelMat_0.scale_y2kzbl$(soi, soi, soi);
+    this.encodedColor_0[0] = light.color.r;
+    this.encodedColor_0[1] = light.color.g;
+    this.encodedColor_0[2] = light.color.b;
+    this.encodedColor_0[3] = light.intensity;
+    this.encodedPos_0[0] = light.position.x;
+    this.encodedPos_0[1] = light.position.y;
+    this.encodedPos_0[2] = light.position.z;
+    this.encodedPos_0[3] = Light$Type$POINT_getInstance().encoded;
+  };
+  DeferredPointLights.prototype.addPointLight_at6cwi$ = function (pointLight) {
+    this.lightInstances_0.add_11rb$(pointLight);
+  };
+  DeferredPointLights.prototype.addPointLight_v2bnrz$ = defineInlineFunction('kool.de.fabmax.kool.util.deferred.DeferredPointLights.addPointLight_v2bnrz$', wrapFunction(function () {
+    var DeferredPointLights$DeferredPointLights$PointLight_init = _.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
+    return function (block) {
+      var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
+      block(light);
+      this.addPointLight_at6cwi$(light);
+      return light;
+    };
+  }));
+  DeferredPointLights.prototype.removePointLight_at6cwi$ = function (light) {
+    this.lightInstances_0.remove_11rb$(light);
+  };
+  function DeferredPointLights$PointLight() {
+    this.position = MutableVec3f_init();
+    this.color = Color$Companion_getInstance().MD_PINK;
+    this.intensity = 1.0;
+  }
+  DeferredPointLights$PointLight.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PointLight',
+    interfaces: []
+  };
+  function DeferredPointLights$mesh$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.sphereProps.icoDefaults();
     $receiver_0.steps = 1;
     $receiver_0.radius = 1.1;
     $receiver.icoSphere_mojs8w$($receiver.sphereProps);
     return Unit;
   }
-  function DeferredPointLight$lightMesh$lambda(closure$mrtPass, this$DeferredPointLight) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(DeferredPointLight$lightMesh$lambda$lambda);
-      var $receiver_0 = new PbrLightShader$Config();
-      var closure$mrtPass_0 = closure$mrtPass;
-      var this$DeferredPointLight_0 = this$DeferredPointLight;
-      $receiver_0.sceneCamera = closure$mrtPass_0.camera;
-      $receiver_0.light = this$DeferredPointLight_0.pointLight_0;
-      $receiver_0.positionAo = closure$mrtPass_0.positionAo;
-      $receiver_0.normalRoughness = closure$mrtPass_0.normalRoughness;
-      $receiver_0.albedoMetal = closure$mrtPass_0.albedoMetal;
-      var cfg = $receiver_0;
-      $receiver.pipelineLoader = new PbrLightShader(cfg);
-      return Unit;
+  function DeferredPointLights$mesh$lambda$lambda_0(this$DeferredPointLights) {
+    return function ($receiver, f, f_0) {
+      if (this$DeferredPointLights.isDynamic) {
+        this$DeferredPointLights.updateLightData();
+      }return Unit;
     };
   }
-  function DeferredPointLight_init$lambda(this$DeferredPointLight) {
-    return function ($receiver, f, ctx) {
-      this$DeferredPointLight.lightNode.setIdentity();
-      this$DeferredPointLight.lightNode.translate_czzhiu$(this$DeferredPointLight.position);
-      var x = this$DeferredPointLight.intensity;
-      var soi = Math_0.sqrt(x);
-      this$DeferredPointLight.lightNode.scale_y2kzbl$(soi, soi, soi);
-      this$DeferredPointLight.pointLight_0.setPoint_czzhiu$(this$DeferredPointLight.position);
-      this$DeferredPointLight.pointLight_0.setColor_y83vuj$(this$DeferredPointLight.color, this$DeferredPointLight.intensity);
-      return Unit;
-    };
-  }
-  DeferredPointLight.$metadata$ = {
+  DeferredPointLights.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'DeferredPointLight',
+    simpleName: 'DeferredPointLights',
     interfaces: []
+  };
+  function DiscardClearNode(stage) {
+    ShaderNode.call(this, 'discardClear', stage);
+    this.inViewPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+  }
+  DiscardClearNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_7qvs0d$(this.inViewPos);
+  };
+  DiscardClearNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('if (' + this.inViewPos.name + '.z > 1.0) { discard; }');
+  };
+  DiscardClearNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DiscardClearNode',
+    interfaces: [ShaderNode]
+  };
+  function DeferredCameraNode(stage) {
+    ShaderNode.call(this, 'deferredCam', stage);
+    this.uInvViewMat_0 = new UniformMat4f('uInvViewMat');
+    this.uCamPos_0 = new Uniform4f('uCamPos');
+    this.uViewport_0 = new Uniform4f('uViewport');
+    this.outInvViewMat = new ShaderNodeIoVar(new ModelVarMat4f(this.uInvViewMat_0.name), this);
+    this.outCamPos = new ShaderNodeIoVar(new ModelVar4f(this.uCamPos_0.name), this);
+    this.outViewport = new ShaderNodeIoVar(new ModelVar4f(this.uViewport_0.name), this);
+    this.sceneCam = null;
+  }
+  function DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode) {
+    return function () {
+      return this$DeferredCameraNode.uInvViewMat_0;
+    };
+  }
+  function DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode) {
+    return function () {
+      return this$DeferredCameraNode.uCamPos_0;
+    };
+  }
+  function DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode) {
+    return function () {
+      return this$DeferredCameraNode.uViewport_0;
+    };
+  }
+  function DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode) {
+    return function (f, cmd) {
+      var cam = this$DeferredCameraNode.sceneCam;
+      if (cam != null) {
+        this$DeferredCameraNode.uInvViewMat_0.value.set_d4zu6l$(cam.invView);
+        this$DeferredCameraNode.uCamPos_0.value.set_2qa7tb$(cam.globalPos, 1.0);
+      }var $receiver = cmd.renderPass.viewport;
+      this$DeferredCameraNode.uViewport_0.value.set_7b5o5w$($receiver.x, $receiver.y, $receiver.width, $receiver.height);
+      return Unit;
+    };
+  }
+  function DeferredCameraNode$setup$lambda$lambda(this$DeferredCameraNode) {
+    return function ($receiver) {
+      $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode));
+      $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode));
+      $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode));
+      $receiver.onUpdate = DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode);
+      return Unit;
+    };
+  }
+  DeferredCameraNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], DeferredCameraNode$setup$lambda$lambda(this));
+  };
+  DeferredCameraNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredCameraNode',
+    interfaces: [ShaderNode]
   };
   function PbrLightingPass(scene, mrtPass, cfg) {
     if (cfg === void 0)
       cfg = new PbrSceneShader$DeferredPbrConfig();
     OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat$RGBA_F16_getInstance());
     this.mrtPass = mrtPass;
-    this.lights = ArrayList_init_0();
+    this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
+    this.staticPointLights = new DeferredPointLights(this.mrtPass);
+    this.dynamicPointLights.isDynamic = true;
+    this.staticPointLights.isDynamic = false;
     var tmp$, tmp$_0;
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
+    scene.addOffscreenPass_m1c2kf$(this);
     this.lighting = scene.lighting;
     this.clearColor = (tmp$ = this.clearColor) != null ? tmp$.toLinear() : null;
     this.dependsOn_yqp8fe$(this.mrtPass);
     this.camera = this.mrtPass.camera;
     var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var closure$cfg = cfg;
+    $receiver.isFrustumChecked = false;
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
+    mesh.isFrustumChecked = false;
     mesh.generate_v2sixm$(PbrLightingPass_init$lambda$lambda$lambda);
     if (closure$cfg.sceneCamera == null) {
       closure$cfg.sceneCamera = this.mrtPass.camera;
@@ -27190,25 +27658,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       closure$cfg.albedoMetal = this.mrtPass.albedoMetal;
     }mesh.pipelineLoader = new PbrSceneShader(closure$cfg);
     $receiver.unaryPlus_uv0sim$(mesh);
+    $receiver.unaryPlus_uv0sim$(this.dynamicPointLights.mesh);
+    $receiver.unaryPlus_uv0sim$(this.staticPointLights.mesh);
   }
-  PbrLightingPass.prototype.addPointLight_vst000$ = defineInlineFunction('kool.de.fabmax.kool.util.deferred.PbrLightingPass.addPointLight_vst000$', wrapFunction(function () {
-    var DeferredPointLight_init = _.de.fabmax.kool.util.deferred.DeferredPointLight;
-    var Group = _.de.fabmax.kool.scene.Group;
-    var throwCCE = Kotlin.throwCCE;
-    return function (block) {
-      var tmp$;
-      var light = new DeferredPointLight_init(this.mrtPass);
-      block(light);
-      this.lights.add_11rb$(light);
-      (Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE()).addNode_xtids1$(light.lightNode);
-      return light;
-    };
-  }));
-  PbrLightingPass.prototype.removePointLight_fjqfm7$ = function (light) {
-    var tmp$;
-    this.lights.remove_11rb$(light);
-    (Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE()).removeNode_f1kmr1$(light.lightNode);
-  };
   PbrLightingPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
@@ -27234,384 +27686,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'PbrLightingPass',
     interfaces: [OffscreenRenderPass2d]
-  };
-  var ShaderModel$findNode$lambda_6 = wrapFunction(function () {
-    var equals = Kotlin.equals;
-    var throwCCE = Kotlin.throwCCE;
-    return function (closure$stage, closure$name, typeClosure$T, isT) {
-      return function (it) {
-        if ((it.stage.mask & closure$stage.mask) !== 0) {
-          var isT_0 = isT;
-          var name = closure$name;
-          var tmp$;
-          var $receiver = it.nodes;
-          var firstOrNull$result;
-          firstOrNull$break: do {
-            var tmp$_0;
-            tmp$_0 = $receiver.iterator();
-            while (tmp$_0.hasNext()) {
-              var element = tmp$_0.next();
-              if (equals(element.name, name) && isT_0(element)) {
-                firstOrNull$result = element;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result = null;
-          }
-           while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
-          if (node != null) {
-            return node;
-          }}return Unit;
-      };
-    };
-  });
-  function PbrLightShader(cfg, model) {
-    PbrLightShader$Companion_getInstance();
-    if (model === void 0)
-      model = PbrLightShader$Companion_getInstance().defaultDeferredPbrModel_rrh9w7$(cfg);
-    ModeledShader.call(this, model);
-    this.deferredCameraNode_0 = null;
-    this.sceneCamera_58mmj4$_0 = cfg.sceneCamera;
-    this.positionAoSampler_0 = null;
-    this.normalRoughnessSampler_0 = null;
-    this.albedoMetalSampler_0 = null;
-    this.positionAo_q97h18$_0 = cfg.positionAo;
-    this.normalRoughness_bv3pmw$_0 = cfg.normalRoughness;
-    this.albedoMetal_hag6cz$_0 = cfg.albedoMetal;
-  }
-  Object.defineProperty(PbrLightShader.prototype, 'sceneCamera', {
-    get: function () {
-      return this.sceneCamera_58mmj4$_0;
-    },
-    set: function (value) {
-      var tmp$;
-      this.sceneCamera_58mmj4$_0 = value;
-      (tmp$ = this.deferredCameraNode_0) != null ? (tmp$.sceneCam = value) : null;
-    }
-  });
-  Object.defineProperty(PbrLightShader.prototype, 'positionAo', {
-    get: function () {
-      return this.positionAo_q97h18$_0;
-    },
-    set: function (value) {
-      var tmp$;
-      this.positionAo_q97h18$_0 = value;
-      (tmp$ = this.positionAoSampler_0) != null ? (tmp$.texture = value) : null;
-    }
-  });
-  Object.defineProperty(PbrLightShader.prototype, 'normalRoughness', {
-    get: function () {
-      return this.normalRoughness_bv3pmw$_0;
-    },
-    set: function (value) {
-      var tmp$;
-      this.normalRoughness_bv3pmw$_0 = value;
-      (tmp$ = this.normalRoughnessSampler_0) != null ? (tmp$.texture = value) : null;
-    }
-  });
-  Object.defineProperty(PbrLightShader.prototype, 'albedoMetal', {
-    get: function () {
-      return this.albedoMetal_hag6cz$_0;
-    },
-    set: function (value) {
-      var tmp$;
-      this.albedoMetal_hag6cz$_0 = value;
-      (tmp$ = this.albedoMetalSampler_0) != null ? (tmp$.texture = value) : null;
-    }
-  });
-  PbrLightShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
-    builder.blendMode = BlendMode$BLEND_ADDITIVE_getInstance();
-    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
-    builder.depthTest = DepthCompareOp$DISABLED_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
-  };
-  PbrLightShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-    var $this = this.model;
-    var name = 'deferredCam';
-    var stage;
-    var findNode_3klnlw$result;
-    findNode_3klnlw$break: do {
-      stage = ShaderStage.ALL;
-      var tmp$_6;
-      tmp$_6 = $this.stages.values.iterator();
-      while (tmp$_6.hasNext()) {
-        var element = tmp$_6.next();
-        if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_7;
-          var $receiver = element.nodes;
-          var firstOrNull$result;
-          firstOrNull$break: do {
-            var tmp$_8;
-            tmp$_8 = $receiver.iterator();
-            while (tmp$_8.hasNext()) {
-              var element_0 = tmp$_8.next();
-              if (equals(element_0.name, name) && Kotlin.isType(element_0, PbrLightShader$DeferredCameraNode)) {
-                firstOrNull$result = element_0;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result = null;
-          }
-           while (false);
-          var node = (tmp$_7 = firstOrNull$result) == null || Kotlin.isType(tmp$_7, PbrLightShader$DeferredCameraNode) ? tmp$_7 : throwCCE();
-          if (node != null) {
-            findNode_3klnlw$result = node;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result = null;
-    }
-     while (false);
-    this.deferredCameraNode_0 = findNode_3klnlw$result;
-    if ((tmp$ = this.deferredCameraNode_0) != null) {
-      tmp$.sceneCam = this.sceneCamera;
-    }var $this_0 = this.model;
-    var name_0 = 'positionAo';
-    var stage_0;
-    var findNode_3klnlw$result_0;
-    findNode_3klnlw$break: do {
-      stage_0 = ShaderStage.ALL;
-      var tmp$_9;
-      tmp$_9 = $this_0.stages.values.iterator();
-      while (tmp$_9.hasNext()) {
-        var element_1 = tmp$_9.next();
-        if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_10;
-          var $receiver_0 = element_1.nodes;
-          var firstOrNull$result_0;
-          firstOrNull$break: do {
-            var tmp$_11;
-            tmp$_11 = $receiver_0.iterator();
-            while (tmp$_11.hasNext()) {
-              var element_2 = tmp$_11.next();
-              if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
-                firstOrNull$result_0 = element_2;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result_0 = null;
-          }
-           while (false);
-          var node_0 = (tmp$_10 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_10, TextureNode) ? tmp$_10 : throwCCE();
-          if (node_0 != null) {
-            findNode_3klnlw$result_0 = node_0;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result_0 = null;
-    }
-     while (false);
-    this.positionAoSampler_0 = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
-    if ((tmp$_1 = this.positionAoSampler_0) != null) {
-      tmp$_1.texture = this.positionAo;
-    }var $this_1 = this.model;
-    var name_1 = 'normalRoughness';
-    var stage_1;
-    var findNode_3klnlw$result_1;
-    findNode_3klnlw$break: do {
-      stage_1 = ShaderStage.ALL;
-      var tmp$_12;
-      tmp$_12 = $this_1.stages.values.iterator();
-      while (tmp$_12.hasNext()) {
-        var element_3 = tmp$_12.next();
-        if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_13;
-          var $receiver_1 = element_3.nodes;
-          var firstOrNull$result_1;
-          firstOrNull$break: do {
-            var tmp$_14;
-            tmp$_14 = $receiver_1.iterator();
-            while (tmp$_14.hasNext()) {
-              var element_4 = tmp$_14.next();
-              if (equals(element_4.name, name_1) && Kotlin.isType(element_4, TextureNode)) {
-                firstOrNull$result_1 = element_4;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result_1 = null;
-          }
-           while (false);
-          var node_1 = (tmp$_13 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_13, TextureNode) ? tmp$_13 : throwCCE();
-          if (node_1 != null) {
-            findNode_3klnlw$result_1 = node_1;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result_1 = null;
-    }
-     while (false);
-    this.normalRoughnessSampler_0 = (tmp$_2 = findNode_3klnlw$result_1) != null ? tmp$_2.sampler : null;
-    if ((tmp$_3 = this.normalRoughnessSampler_0) != null) {
-      tmp$_3.texture = this.normalRoughness;
-    }var $this_2 = this.model;
-    var name_2 = 'albedoMetal';
-    var stage_2;
-    var findNode_3klnlw$result_2;
-    findNode_3klnlw$break: do {
-      stage_2 = ShaderStage.ALL;
-      var tmp$_15;
-      tmp$_15 = $this_2.stages.values.iterator();
-      while (tmp$_15.hasNext()) {
-        var element_5 = tmp$_15.next();
-        if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_16;
-          var $receiver_2 = element_5.nodes;
-          var firstOrNull$result_2;
-          firstOrNull$break: do {
-            var tmp$_17;
-            tmp$_17 = $receiver_2.iterator();
-            while (tmp$_17.hasNext()) {
-              var element_6 = tmp$_17.next();
-              if (equals(element_6.name, name_2) && Kotlin.isType(element_6, TextureNode)) {
-                firstOrNull$result_2 = element_6;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result_2 = null;
-          }
-           while (false);
-          var node_2 = (tmp$_16 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_16, TextureNode) ? tmp$_16 : throwCCE();
-          if (node_2 != null) {
-            findNode_3klnlw$result_2 = node_2;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result_2 = null;
-    }
-     while (false);
-    this.albedoMetalSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
-    if ((tmp$_5 = this.albedoMetalSampler_0) != null) {
-      tmp$_5.texture = this.albedoMetal;
-    }};
-  function PbrLightShader$Companion() {
-    PbrLightShader$Companion_instance = this;
-  }
-  PbrLightShader$Companion.prototype.defaultDeferredPbrModel_rrh9w7$ = function (cfg) {
-    var $receiver = new ShaderModel('defaultDeferredPbrModel()');
-    var ifFragCoords = {v: null};
-    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
-    ifFragCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.positionOutput);
-    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
-    var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
-    var texPos = $receiver_1.addNode_ze33is$($receiver_1.multiplyNode_tuikh5$(xyPos, 0.5).output, new ShaderNodeIoVar(new ModelVar1fConst(0.5))).output;
-    var coord = texPos;
-    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredMrtShader$MrtDeMultiplexNode($receiver_1.stage));
-    $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
-    $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
-    $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
-    var mrtDeMultiplex = $receiver_2;
-    $receiver_1.addNode_u9w9by$(new PbrLightShader$DiscardClearNode($receiver_1.stage)).inViewPos = mrtDeMultiplex.outViewPos;
-    var defCam = $receiver_1.addNode_u9w9by$(new PbrLightShader$DeferredCameraNode($receiver_1.stage));
-    var worldPos = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1.0).outVec3;
-    var worldNrm = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0.0).outVec3;
-    var $receiver_3 = $receiver_1.singleLightNode_ycjtt8$(cfg.light);
-    $receiver_3.isReducedSoi = true;
-    var lightNode = $receiver_3;
-    $receiver_1.colorOutput_a3v4si$(new ShaderNodeIoVar(new ModelVar4fConst(Color$Companion_getInstance().DARK_GRAY.toLinear())));
-    var $receiver_4 = $receiver_1.pbrLightNode_605fnh$(lightNode);
-    $receiver_4.flipBacksideNormals = cfg.flipBacksideNormals;
-    $receiver_4.inFragPos = worldPos;
-    $receiver_4.inCamPos = defCam.outCamPos;
-    $receiver_4.inAlbedo = $receiver_1.gammaNode_r20yfm$(mrtDeMultiplex.outAlbedo).outColor;
-    $receiver_4.inNormal = worldNrm;
-    $receiver_4.inMetallic = mrtDeMultiplex.outMetallic;
-    $receiver_4.inRoughness = mrtDeMultiplex.outRoughness;
-    var mat = $receiver_4;
-    $receiver_1.colorOutput_a3v4si$(mat.outColor);
-    return $receiver;
-  };
-  PbrLightShader$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var PbrLightShader$Companion_instance = null;
-  function PbrLightShader$Companion_getInstance() {
-    if (PbrLightShader$Companion_instance === null) {
-      new PbrLightShader$Companion();
-    }return PbrLightShader$Companion_instance;
-  }
-  function PbrLightShader$DiscardClearNode(stage) {
-    ShaderNode.call(this, 'discardClear', stage);
-    this.inViewPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
-  }
-  PbrLightShader$DiscardClearNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.inViewPos);
-  };
-  PbrLightShader$DiscardClearNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('if (' + this.inViewPos.name + '.z > 1.0) { discard; }');
-  };
-  PbrLightShader$DiscardClearNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DiscardClearNode',
-    interfaces: [ShaderNode]
-  };
-  function PbrLightShader$DeferredCameraNode(stage) {
-    ShaderNode.call(this, 'deferredCam', stage);
-    this.uInvViewMat_0 = new UniformMat4f('uInvViewMat');
-    this.uCamPos_0 = new Uniform4f('uCamPos');
-    this.uViewport_0 = new Uniform4f('uViewport');
-    this.outInvViewMat = new ShaderNodeIoVar(new ModelVarMat4f(this.uInvViewMat_0.name), this);
-    this.outCamPos = new ShaderNodeIoVar(new ModelVar4f(this.uCamPos_0.name), this);
-    this.outViewport = new ShaderNodeIoVar(new ModelVar4f(this.uViewport_0.name), this);
-    this.sceneCam = null;
-  }
-  function PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uInvViewMat_0;
-    };
-  }
-  function PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uCamPos_0;
-    };
-  }
-  function PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uViewport_0;
-    };
-  }
-  function PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode) {
-    return function (f, cmd) {
-      var cam = this$DeferredCameraNode.sceneCam;
-      if (cam != null) {
-        this$DeferredCameraNode.uInvViewMat_0.value.set_d4zu6l$(cam.invView);
-        this$DeferredCameraNode.uCamPos_0.value.set_2qa7tb$(cam.globalPos, 1.0);
-      }var $receiver = cmd.renderPass.viewport;
-      this$DeferredCameraNode.uViewport_0.value.set_7b5o5w$($receiver.x, $receiver.y, $receiver.width, $receiver.height);
-      return Unit;
-    };
-  }
-  function PbrLightShader$DeferredCameraNode$setup$lambda$lambda(this$DeferredCameraNode) {
-    return function ($receiver) {
-      $receiver.unaryPlus_wq3w46$(PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode));
-      $receiver.unaryPlus_wq3w46$(PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode));
-      $receiver.unaryPlus_wq3w46$(PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode));
-      $receiver.onUpdate = PbrLightShader$DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode);
-      return Unit;
-    };
-  }
-  PbrLightShader$DeferredCameraNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], PbrLightShader$DeferredCameraNode$setup$lambda$lambda(this));
-  };
-  PbrLightShader$DeferredCameraNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DeferredCameraNode',
-    interfaces: [ShaderNode]
-  };
-  function PbrLightShader$Config() {
-    this.sceneCamera = null;
-    this.light = null;
-    this.flipBacksideNormals = false;
-    this.positionAo = null;
-    this.normalRoughness = null;
-    this.albedoMetal = null;
-  }
-  PbrLightShader$Config.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Config',
-    interfaces: []
-  };
-  PbrLightShader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrLightShader',
-    interfaces: [ModeledShader]
   };
   var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
     var equals = Kotlin.equals;
@@ -27793,14 +27867,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             tmp$_20 = $receiver.iterator();
             while (tmp$_20.hasNext()) {
               var element_0 = tmp$_20.next();
-              if (equals(element_0.name, name) && Kotlin.isType(element_0, PbrSceneShader$DeferredCameraNode)) {
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, DeferredCameraNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
               }}
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_19 = firstOrNull$result) == null || Kotlin.isType(tmp$_19, PbrSceneShader$DeferredCameraNode) ? tmp$_19 : throwCCE();
+          var node = (tmp$_19 = firstOrNull$result) == null || Kotlin.isType(tmp$_19, DeferredCameraNode) ? tmp$_19 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -28154,7 +28228,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = new ShaderModel('defaultDeferredPbrModel()');
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var coord = ifTexCoords.v.output;
@@ -28163,8 +28237,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
     var mrtDeMultiplex = $receiver_2;
-    $receiver_1.addNode_u9w9by$(new PbrSceneShader$DiscardClearNode($receiver_1.stage)).inViewPos = mrtDeMultiplex.outViewPos;
-    var defCam = $receiver_1.addNode_u9w9by$(new PbrSceneShader$DeferredCameraNode($receiver_1.stage));
+    $receiver_1.addNode_u9w9by$(new DiscardClearNode($receiver_1.stage)).inViewPos = mrtDeMultiplex.outViewPos;
+    var defCam = $receiver_1.addNode_u9w9by$(new DeferredCameraNode($receiver_1.stage));
     var worldPos = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1.0).outVec3;
     var worldNrm = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0.0).outVec3;
     var lightNode = $receiver_1.multiLightNode_za3lpa$(cfg.maxLights);
@@ -28201,10 +28275,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$_2;
     $receiver_3.flipBacksideNormals = cfg.flipBacksideNormals;
     $receiver_3.inFragPos = worldPos;
+    $receiver_3.inNormal = worldNrm;
     $receiver_3.inCamPos = defCam.outCamPos;
     $receiver_3.inIrradiance = (tmp$_2 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_2 : $receiver_1.pushConstantNodeColor_61zpoe$('uAmbient').output;
-    $receiver_3.inAlbedo = $receiver_1.gammaNode_r20yfm$(mrtDeMultiplex.outAlbedo).outColor;
-    $receiver_3.inNormal = worldNrm;
+    $receiver_3.inAlbedo = mrtDeMultiplex.outAlbedo;
     $receiver_3.inMetallic = mrtDeMultiplex.outMetallic;
     $receiver_3.inRoughness = mrtDeMultiplex.outRoughness;
     var aoFactor = mrtDeMultiplex.outAo;
@@ -28229,76 +28303,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new PbrSceneShader$Companion();
     }return PbrSceneShader$Companion_instance;
   }
-  function PbrSceneShader$DiscardClearNode(stage) {
-    ShaderNode.call(this, 'discardClear', stage);
-    this.inViewPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
-  }
-  PbrSceneShader$DiscardClearNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.inViewPos);
-  };
-  PbrSceneShader$DiscardClearNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('if (' + this.inViewPos.name + '.z > 1.0) { discard; }');
-  };
-  PbrSceneShader$DiscardClearNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DiscardClearNode',
-    interfaces: [ShaderNode]
-  };
-  function PbrSceneShader$DeferredCameraNode(stage) {
-    ShaderNode.call(this, 'deferredCam', stage);
-    this.uInvViewMat_0 = new UniformMat4f('uInvViewMat');
-    this.uCamPos_0 = new Uniform4f('uCamPos');
-    this.uViewport_0 = new Uniform4f('uViewport');
-    this.outInvViewMat = new ShaderNodeIoVar(new ModelVarMat4f(this.uInvViewMat_0.name), this);
-    this.outCamPos = new ShaderNodeIoVar(new ModelVar4f(this.uCamPos_0.name), this);
-    this.outViewport = new ShaderNodeIoVar(new ModelVar4f(this.uViewport_0.name), this);
-    this.sceneCam = null;
-  }
-  function PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uInvViewMat_0;
-    };
-  }
-  function PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uCamPos_0;
-    };
-  }
-  function PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode) {
-    return function () {
-      return this$DeferredCameraNode.uViewport_0;
-    };
-  }
-  function PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode) {
-    return function (f, cmd) {
-      var cam = this$DeferredCameraNode.sceneCam;
-      if (cam != null) {
-        this$DeferredCameraNode.uInvViewMat_0.value.set_d4zu6l$(cam.invView);
-        this$DeferredCameraNode.uCamPos_0.value.set_2qa7tb$(cam.globalPos, 1.0);
-      }var $receiver = cmd.renderPass.viewport;
-      this$DeferredCameraNode.uViewport_0.value.set_7b5o5w$($receiver.x, $receiver.y, $receiver.width, $receiver.height);
-      return Unit;
-    };
-  }
-  function PbrSceneShader$DeferredCameraNode$setup$lambda$lambda(this$DeferredCameraNode) {
-    return function ($receiver) {
-      $receiver.unaryPlus_wq3w46$(PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode));
-      $receiver.unaryPlus_wq3w46$(PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode));
-      $receiver.unaryPlus_wq3w46$(PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode));
-      $receiver.onUpdate = PbrSceneShader$DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode);
-      return Unit;
-    };
-  }
-  PbrSceneShader$DeferredCameraNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], PbrSceneShader$DeferredCameraNode$setup$lambda$lambda(this));
-  };
-  PbrSceneShader$DeferredCameraNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DeferredCameraNode',
-    interfaces: [ShaderNode]
-  };
   function PbrSceneShader$DeferredPbrConfig() {
     this.sceneCamera = null;
     this.isImageBasedLighting = false;
@@ -28573,7 +28577,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_1 = new ShaderModel('BRDF LUT');
     var ifTexCoords = {v: null};
     var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifTexCoords.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_2.attrTexCoords().output);
+    ifTexCoords.v = $receiver_2.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_2.attrTexCoords().output);
     $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outVec4;
     var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
     var $receiver_4 = $receiver_3.addNode_u9w9by$(new BrdfLutPass$BrdfLutNode($receiver_3.stage));
@@ -28646,7 +28650,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = new ShaderModel('Irradiance Convolution Sampler');
     var ifLocalPos = {v: null};
     var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
-    ifLocalPos.v = $receiver_1.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_1.attrPositions().output);
+    ifLocalPos.v = $receiver_1.stageInterfaceNode_iikjwn$('ifLocalPos', $receiver_1.attrPositions().output);
     $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
     var tex = $receiver_2.textureNode_61zpoe$(texName);
@@ -28748,7 +28752,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = new ShaderModel('Reflectance Convolution Sampler');
     var ifLocalPos = {v: null};
     var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
-    ifLocalPos.v = $receiver_1.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_1.attrPositions().output);
+    ifLocalPos.v = $receiver_1.stageInterfaceNode_iikjwn$('ifLocalPos', $receiver_1.attrPositions().output);
     $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
     var roughness = $receiver_2.pushConstantNode1f_978i2u$(this.uRoughness_0);
@@ -31193,8 +31197,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function MeshInstanceList$Companion() {
     MeshInstanceList$Companion_instance = this;
-    this.INITIAL_SIZE_0 = 1000;
-    this.GROW_FACTOR_0 = 2.0;
     this.MODEL_MAT = new Attribute('attrib_model_mat', GlslType$MAT_4F_getInstance());
   }
   MeshInstanceList$Companion.$metadata$ = {
@@ -39670,11 +39672,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               if (insts == null) {
                 this.gl_0.drawElements(tmp$_5.primitiveType, tmp$_5.numIndices, tmp$_5.indexType, 0);
                 this.ctx.engineStats.addPrimitiveCount_za3lpa$(cmd.mesh.geometry.numPrimitives);
-              } else {
+              } else if (insts.numInstances > 0) {
                 this.gl_0.drawElementsInstanced(tmp$_5.primitiveType, tmp$_5.numIndices, tmp$_5.indexType, 0, insts.numInstances);
                 this.ctx.engineStats.addPrimitiveCount_za3lpa$(Kotlin.imul(cmd.mesh.geometry.numPrimitives, insts.numInstances));
-              }
-              this.ctx.engineStats.addDrawCommandCount_za3lpa$(1);
+              }this.ctx.engineStats.addDrawCommandCount_za3lpa$(1);
             }}}}}
   };
   function QueueRendererWebGl$GlAttribs($outer) {
@@ -39911,7 +39912,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$ = $receiver.inputs.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      this.appendln_0(srcBuilder, 'in ' + element.variable.glslType() + ' ' + element.variable.name + ';');
+      var flat = element.isFlat ? 'flat' : '';
+      this.appendln_0(srcBuilder, flat + ' in ' + element.variable.glslType() + ' ' + element.variable.name + ';');
     }
     return srcBuilder.toString();
   };
@@ -39921,7 +39923,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$ = $receiver.outputs.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      this.appendln_0(srcBuilder, 'out ' + element.variable.glslType() + ' ' + element.variable.name + ';');
+      var flat = element.isFlat ? 'flat' : '';
+      this.appendln_0(srcBuilder, flat + ' out ' + element.variable.glslType() + ' ' + element.variable.name + ';');
     }
     return srcBuilder.toString();
   };
@@ -41084,8 +41087,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.FragmentColorOutNode = FragmentColorOutNode;
   package$shadermodel.FragmentDepthOutNode = FragmentDepthOutNode;
   package$shadermodel.LightNode = LightNode;
-  package$shadermodel.SingleLightNode = SingleLightNode;
   package$shadermodel.MultiLightNode = MultiLightNode;
+  package$shadermodel.SingleLightUniformDataNode = SingleLightUniformDataNode;
+  package$shadermodel.SingleLightNode = SingleLightNode;
   package$shadermodel.UnlitMaterialNode = UnlitMaterialNode;
   package$shadermodel.PhongMaterialNode = PhongMaterialNode;
   package$shadermodel.PbrMaterialNode = PbrMaterialNode;
@@ -41576,10 +41580,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   DebugOverlay.Position = DebugOverlay$Position;
   package$util.DebugOverlay = DebugOverlay;
+  Object.defineProperty(DeferredLightShader, 'Companion', {
+    get: DeferredLightShader$Companion_getInstance
+  });
+  DeferredLightShader.Config = DeferredLightShader$Config;
+  var package$deferred = package$util.deferred || (package$util.deferred = {});
+  package$deferred.DeferredLightShader = DeferredLightShader;
   Object.defineProperty(DeferredMrtPass, 'Companion', {
     get: DeferredMrtPass$Companion_getInstance
   });
-  var package$deferred = package$util.deferred || (package$util.deferred = {});
   package$deferred.DeferredMrtPass = DeferredMrtPass;
   Object.defineProperty(DeferredMrtShader, 'Companion', {
     get: DeferredMrtShader$Companion_getInstance
@@ -41588,20 +41597,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredMrtShader.MrtMultiplexNode = DeferredMrtShader$MrtMultiplexNode;
   DeferredMrtShader.MrtDeMultiplexNode = DeferredMrtShader$MrtDeMultiplexNode;
   package$deferred.DeferredMrtShader = DeferredMrtShader;
-  package$deferred.DeferredPointLight = DeferredPointLight;
+  package$deferred.DeferredPointLights = DeferredPointLights;
+  DeferredPointLights.PointLight = DeferredPointLights$PointLight;
+  package$deferred.DiscardClearNode = DiscardClearNode;
+  package$deferred.DeferredCameraNode = DeferredCameraNode;
   package$deferred.PbrLightingPass = PbrLightingPass;
-  Object.defineProperty(PbrLightShader, 'Companion', {
-    get: PbrLightShader$Companion_getInstance
-  });
-  PbrLightShader.DiscardClearNode = PbrLightShader$DiscardClearNode;
-  PbrLightShader.DeferredCameraNode = PbrLightShader$DeferredCameraNode;
-  PbrLightShader.Config = PbrLightShader$Config;
-  package$deferred.PbrLightShader = PbrLightShader;
   Object.defineProperty(PbrSceneShader, 'Companion', {
     get: PbrSceneShader$Companion_getInstance
   });
-  PbrSceneShader.DiscardClearNode = PbrSceneShader$DiscardClearNode;
-  PbrSceneShader.DeferredCameraNode = PbrSceneShader$DeferredCameraNode;
   PbrSceneShader.DeferredPbrConfig = PbrSceneShader$DeferredPbrConfig;
   package$deferred.PbrSceneShader = PbrSceneShader;
   package$util.Disposable = Disposable;

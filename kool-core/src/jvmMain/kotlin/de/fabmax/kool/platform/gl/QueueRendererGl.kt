@@ -60,7 +60,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                             if (insts == null) {
                                 glDrawElements(it.primitiveType, it.numIndices, it.indexType, 0)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
-                            } else {
+                            } else if (insts.numInstances > 0) {
                                 glDrawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
                             }
@@ -152,7 +152,6 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
                     glEnable(GL_BLEND)
                 }
-                else -> TODO("Unimplemented blend mode: $blendMode")
             }
         }
     }

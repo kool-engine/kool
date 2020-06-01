@@ -131,7 +131,8 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     private fun ShaderGraph.generateStageInputs(): String {
         val srcBuilder = StringBuilder("\n")
         inputs.forEach {
-            srcBuilder.appendln("in ${it.variable.glslType()} ${it.variable.name};")
+            val flat = if (it.isFlat) "flat" else ""
+            srcBuilder.appendln("$flat in ${it.variable.glslType()} ${it.variable.name};")
         }
         return srcBuilder.toString()
     }
@@ -139,7 +140,8 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     private fun ShaderGraph.generateStageOutputs(): String {
         val srcBuilder = StringBuilder("\n")
         outputs.forEach {
-            srcBuilder.appendln("out ${it.variable.glslType()} ${it.variable.name};")
+            val flat = if (it.isFlat) "flat" else ""
+            srcBuilder.appendln("$flat out ${it.variable.glslType()} ${it.variable.name};")
         }
         return srcBuilder.toString()
     }

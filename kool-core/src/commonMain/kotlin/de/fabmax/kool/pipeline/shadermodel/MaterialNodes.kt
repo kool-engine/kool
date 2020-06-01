@@ -200,7 +200,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 
     private fun generateFinalNonIbl(generator: CodeGenerator) {
         generator.appendMain("""
-            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough); 
+            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
             vec3 kD = 1.0 - kS;
             vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
             vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
@@ -208,6 +208,18 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
+
+//        generator.appendMain("""
+//            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
+//            vec3 kD = 1.0 - kS;
+//            kD *= 1.0 - metal;
+//            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
+//
+//            vec3 specular = ${inIrradiance.ref3f()} * (kS * 0.5 + 0.5);
+//            vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
+//            vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
+//            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
+//        """)
     }
 
     private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: CubeMapNode, brdfLut: TextureNode) {
@@ -216,9 +228,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 kS = F;
             vec3 kD = 1.0 - kS;
             kD *= 1.0 - metal;
-            
-            vec3 irradiance = ${inIrradiance.ref3f()};
-            vec3 diffuse = irradiance * albedo;
+            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
 
             // sample reflection map
             vec3 R = reflect(-V, N);
@@ -315,6 +325,7 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
             bool normalOk = $normalCheck;
             if (normalOk) {
                 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+                //radiance = vec3(1.0);
             }
             
             ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);

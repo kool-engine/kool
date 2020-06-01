@@ -36,4 +36,6 @@ data class Attribute(val name: String, val type: GlslType) {
     }
 }
 
-expect class PlatformAttributeProps(attribute: Attribute)
+expect class PlatformAttributeProps(attribute: Attribute) {
+    val nSlots: Int
+}

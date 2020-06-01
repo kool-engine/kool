@@ -164,8 +164,8 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, vertexGraph: Shade
         this.lightIndex = shadowMap.lightIndex
         vertexGraph.addNode(helperNd)
 
-        fragmentGraph.inputs += vertexGraph.addStageOutput(posLightSpace.variable, shadowMap.numCascades)
-        fragmentGraph.inputs += vertexGraph.addStageOutput(ifViewZ.variable)
+        fragmentGraph.inputs += vertexGraph.addStageOutput(posLightSpace.variable, false, shadowMap.numCascades)
+        fragmentGraph.inputs += vertexGraph.addStageOutput(ifViewZ.variable, false)
 
         fragmentNode.inPosLightSpace = posLightSpace
         fragmentNode.inViewZ = ifViewZ

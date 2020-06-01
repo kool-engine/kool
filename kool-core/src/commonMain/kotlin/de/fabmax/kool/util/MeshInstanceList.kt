@@ -28,7 +28,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
     var usage = Usage.DYNAMIC
 
     /**
-     * Number of instances. Equal to [dataF.position] / [instanceSizeF].
+     * Number of instances.
      */
     var numInstances = 0
 
@@ -91,8 +91,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
     }
 
     companion object {
-        private const val INITIAL_SIZE = 1000
-        private const val GROW_FACTOR = 2.0f
+//        private const val INITIAL_SIZE = 1000
+//        private const val GROW_FACTOR = 2.0f
 
         val MODEL_MAT = Attribute("attrib_model_mat", GlslType.MAT_4F)
     }

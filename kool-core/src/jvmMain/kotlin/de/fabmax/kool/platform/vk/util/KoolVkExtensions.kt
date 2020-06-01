@@ -40,29 +40,3 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
     }
-
-//fun Mat4f.setPerspective2(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
-//    val s = 1f / tan(fovy * (PI / 360.0)).toFloat()
-//
-//    matrix[offset + 0] = s / aspect
-//    matrix[offset + 1] = 0.0f
-//    matrix[offset + 2] = 0.0f
-//    matrix[offset + 3] = 0.0f
-//
-//    matrix[offset + 4] = 0.0f
-//    matrix[offset + 5] = s
-//    matrix[offset + 6] = 0.0f
-//    matrix[offset + 7] = 0.0f
-//
-//    matrix[offset + 8] = 0.0f
-//    matrix[offset + 9] = 0.0f
-//    matrix[offset + 10] = -far / (far - near)
-//    matrix[offset + 11] = -1.0f
-//
-//    matrix[offset + 12] = 0.0f
-//    matrix[offset + 13] = 0.0f
-//    matrix[offset + 14] = -(far * near) / (far - near)
-//    matrix[offset + 15] = 0.0f
-//
-//    return this
-//}

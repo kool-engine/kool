@@ -163,7 +163,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun ShaderGraph.generateStageInputs(): String {
         val srcBuilder = StringBuilder("\n")
         inputs.forEach {
-            srcBuilder.appendln(8, "layout(location=${it.location}) in ${it.variable.glslType()} ${it.variable.name};")
+            val flat = if (it.isFlat) "flat" else ""
+            srcBuilder.appendln(8, "layout(location=${it.location}) $flat in ${it.variable.glslType()} ${it.variable.name};")
         }
         return srcBuilder.toString()
     }
@@ -171,7 +172,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun ShaderGraph.generateStageOutputs(): String {
         val srcBuilder = StringBuilder("\n")
         outputs.forEach {
-            srcBuilder.appendln(8, "layout(location=${it.location}) out ${it.variable.glslType()} ${it.variable.name};")
+            val flat = if (it.isFlat) "flat" else ""
+            srcBuilder.appendln(8, "layout(location=${it.location}) $flat out ${it.variable.glslType()} ${it.variable.name};")
         }
         return srcBuilder.toString()
     }

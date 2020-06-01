@@ -224,13 +224,15 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
     var output = ShaderNodeIoVar(ModelVar1f(name))
         private set
 
+    var isFlat = false
+
     private lateinit var ifVar: ShaderInterfaceIoVar
 
     val vertexNode = object : ShaderNode(name, vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(input)
-            ifVar = shaderGraph.addStageOutput(output.variable)
+            ifVar = shaderGraph.addStageOutput(output.variable, isFlat)
         }
 
         override fun generateCode(generator: CodeGenerator) {

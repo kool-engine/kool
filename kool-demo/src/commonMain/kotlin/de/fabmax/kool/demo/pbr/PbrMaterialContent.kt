@@ -147,10 +147,10 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
             pbrConfig.isMetallicMapped = true
             pbrConfig.isAmbientOcclusionMapped = true
             pbrConfig.isDisplacementMapped = true
+            pbrConfig.irradianceMap = irradianceMap
+            pbrConfig.reflectionMap = reflectionMap
+            pbrConfig.brdfLut = brdfLut
             val shader = PbrShader(pbrConfig).apply {
-                this.irradianceMap = irradianceMap
-                this.reflectionMap = reflectionMap
-                this.brdfLut = brdfLut
                 this.displacementStrength = 0.25f
             }
             pipelineLoader = shader

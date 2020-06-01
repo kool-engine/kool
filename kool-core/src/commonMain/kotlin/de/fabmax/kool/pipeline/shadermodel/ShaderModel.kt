@@ -75,7 +75,8 @@ class ShaderModel(val modelInfo: String = "") {
         vertexStageGraph.requiredVertexAttributes.forEach { attrib ->
             val off = verts.attributeOffsets[attrib] ?:
                     throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
-            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
+            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+            attribLocation += attrib.props.nSlots
         }
         buildCtx.vertexLayout.bindings += VertexLayout.Binding(0, InputRate.VERTEX, vertLayoutAttribs, verts.strideBytesF)
 
@@ -85,7 +86,8 @@ class ShaderModel(val modelInfo: String = "") {
             vertexStageGraph.requiredInstanceAttributes.forEach { attrib ->
                 val off = insts.attributeOffsets[attrib] ?:
                         throw NoSuchElementException("Mesh does not include required instance attribute: ${attrib.name}")
-                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
+                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+                attribLocation += attrib.props.nSlots
             }
             buildCtx.vertexLayout.bindings += VertexLayout.Binding(1, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
         } else if (vertexStageGraph.requiredInstanceAttributes.isNotEmpty()) {
@@ -253,8 +255,9 @@ class ShaderModel(val modelInfo: String = "") {
         fun instanceAttrModelMat() = instanceAttributeNode(MeshInstanceList.MODEL_MAT)
         fun instanceAttributeNode(attribute: Attribute) = addNode(InstanceAttributeNode(attribute, stage))
 
-        fun stageInterfaceNode(name: String, input: ShaderNodeIoVar? = null): StageInterfaceNode {
+        fun stageInterfaceNode(name: String, input: ShaderNodeIoVar? = null, isFlat: Boolean = false): StageInterfaceNode {
             val ifNode = StageInterfaceNode(name, vertexStageGraph, fragmentStageGraph)
+            ifNode.isFlat = isFlat
             input?.let { ifNode.input = it }
             addNode(ifNode.vertexNode)
             fragmentStageGraph.addNode(ifNode.fragmentNode)
@@ -313,7 +316,13 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun singleLightNode(light: Light? = null): SingleLightNode {
             val lightNd = addNode(SingleLightNode(stage))
-            light?.let { lightNd.light = it }
+            light?.let {
+                val lightDataNd = addNode(SingleLightUniformDataNode(stage))
+                lightDataNd.light = light
+                lightNd.inLightPos = lightDataNd.outLightPos
+                lightNd.inLightDir = lightDataNd.outLightDir
+                lightNd.inLightColor = lightDataNd.outLightColor
+            }
             return lightNd
         }
 

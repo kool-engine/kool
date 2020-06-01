@@ -11,7 +11,13 @@ import de.fabmax.kool.scene.mesh
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat.RGBA_F16) {
 
-    val lights = mutableListOf<DeferredPointLight>()
+    val dynamicPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
+    val staticPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
+
+    init {
+        dynamicPointLights.isDynamic = true
+        staticPointLights.isDynamic = false
+    }
 
     init {
         scene.onRenderScene += { ctx ->
@@ -22,6 +28,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                 mrtPass.resize(mapW, mapH, ctx)
             }
         }
+        scene.addOffscreenPass(this)
         lighting = scene.lighting
 
         clearColor = clearColor?.toLinear()
@@ -30,7 +37,9 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         camera = mrtPass.camera
 
         (drawNode as Group).apply {
+            isFrustumChecked = false
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+                isFrustumChecked = false
                 generate {
                     rect {
                         size.set(1f, 1f)
@@ -48,20 +57,10 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
                 pipelineLoader = PbrSceneShader(cfg)
             }
+
+            +dynamicPointLights.mesh
+            +staticPointLights.mesh
         }
-    }
-
-    inline fun addPointLight(block: DeferredPointLight.() -> Unit): DeferredPointLight {
-        val light = DeferredPointLight(mrtPass)
-        light.block()
-        lights += light
-        (drawNode as Group).addNode(light.lightNode)
-        return light
-    }
-
-    fun removePointLight(light: DeferredPointLight) {
-        lights -= light
-        (drawNode as Group).removeNode(light.lightNode)
     }
 
     override fun dispose(ctx: KoolContext) {
