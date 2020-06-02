@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
@@ -35,15 +34,6 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
     private val noiseTex = makeNoiseTexture()
 
     init {
-        camera = OrthographicCamera().apply {
-            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-            isKeepAspectRatio = false
-            left = 0f
-            right = 1f
-            top = 1f
-            bottom = 0f
-        }
-
         clearColor = Color.WHITE
 
         (drawNode as Group).apply {
@@ -59,7 +49,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     val ifScreenPos: StageInterfaceNode
                     vertexStage {
                         ifScreenPos = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
+                        positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                     }
                     fragmentStage {
                         val noiseTex = textureNode("noiseTex")

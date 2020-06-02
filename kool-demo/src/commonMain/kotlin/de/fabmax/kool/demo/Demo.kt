@@ -33,7 +33,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
             "pbrDemo" to DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
-            "multiLightDemo" to DemoEntry("Multi Light") { addAll(multiLightDemo(it)) },
+            "multiShadowDemo" to DemoEntry("Multi Shadow") { addAll(multiLightDemo(it)) },
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
             "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },

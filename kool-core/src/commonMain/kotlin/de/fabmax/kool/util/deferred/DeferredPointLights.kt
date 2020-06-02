@@ -28,7 +28,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
         generate {
             icoSphere {
                 steps = 0
-                radius = 1.2f
+                radius = 1.176f     // required radius to fully include unit sphere at 0 subdivisions
             }
         }
 

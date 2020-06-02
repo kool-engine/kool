@@ -14,7 +14,7 @@ them via the hamburger button in the upper left corner):
 - [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
-- [Multi Light Shadow Mapping](https://fabmax.github.io/kool/kool-js/?demo=multiLightDemo): A simple PBR shaded
+- [Multi Light Shadow Mapping](https://fabmax.github.io/kool/kool-js/?demo=multiShadowDemo): A simple PBR shaded
   model with up to four spot lights and dynamic shadows.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
   simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))

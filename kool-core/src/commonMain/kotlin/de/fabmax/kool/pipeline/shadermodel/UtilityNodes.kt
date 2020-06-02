@@ -250,7 +250,7 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
 
 class FullScreenQuadTexPosNode(graph: ShaderGraph) : ShaderNode("fullScreenQuad_${graph.nextNodeId}", graph) {
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
-    var inDepth = ShaderNodeIoVar(ModelVar1fConst(0.5f))
+    var inDepth = ShaderNodeIoVar(ModelVar1fConst(0.999f))
     val outQuadPos = ShaderNodeIoVar(ModelVar4f("${name}_outPos"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {

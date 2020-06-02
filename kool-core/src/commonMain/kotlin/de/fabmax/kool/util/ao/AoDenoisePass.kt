@@ -5,9 +5,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 
 class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtComponent: String) : OffscreenRenderPass2d(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
@@ -19,15 +17,6 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtCo
         set(value) { uRadius.value = value}
 
     init {
-        camera = OrthographicCamera().apply {
-            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-            isKeepAspectRatio = false
-            left = 0f
-            right = 1f
-            top = 1f
-            bottom = 0f
-        }
-
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
@@ -41,7 +30,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtCo
                     val ifTexCoords: StageInterfaceNode
                     vertexStage {
                         ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
+                        positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                     }
                     fragmentStage {
                         val noisyAo = textureNode("noisyAo")

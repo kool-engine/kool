@@ -14,6 +14,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
+    private val imageIoLock = Any()
+
     init {
         // inits http cache if not already happened
         HttpCache.initCache(File(".httpCache"))
@@ -48,7 +50,14 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
-                openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
+                openLocalStream(localTextureRef.url).use {
+                    //data = ImageTextureData(ImageIO.read(it))
+                    // ImageIO.read is not thread safe!
+                    val img = synchronized(imageIoLock) {
+                        ImageIO.read(it)
+                    }
+                    data = ImageTextureData(img)
+                }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${localTextureRef.url}: $e" }
             }
@@ -62,7 +71,12 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
             try {
                 val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
                 FileInputStream(f).use {
-                    data = ImageTextureData(ImageIO.read(it))
+                    //data = ImageTextureData(ImageIO.read(it))
+                    // ImageIO.read is not thread safe!
+                    val img = synchronized(imageIoLock) {
+                        ImageIO.read(it)
+                    }
+                    data = ImageTextureData(img)
                 }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${httpTextureRef.url}: $e" }
