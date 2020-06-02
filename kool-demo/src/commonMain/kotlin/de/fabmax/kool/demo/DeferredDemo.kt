@@ -27,6 +27,8 @@ class DeferredDemo(ctx: KoolContext) {
     private lateinit var aoPipeline: AoPipeline
     private lateinit var mrtPass: DeferredMrtPass
     private lateinit var pbrPass: PbrLightingPass
+
+    private lateinit var objects: Mesh
     private lateinit var objectShader: DeferredMrtShader
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
@@ -106,7 +108,7 @@ class DeferredDemo(ctx: KoolContext) {
                 }
             }
 
-            +colorMesh {
+            objects = colorMesh {
                 generate {
                     val sphereProtos = mutableListOf<IndexedVertexList>()
                     for (i in 0..10) {
@@ -144,6 +146,7 @@ class DeferredDemo(ctx: KoolContext) {
                 objectShader = DeferredMrtShader(mrtCfg)
                 pipelineLoader = objectShader
             }
+            +objects
 
             +textureMesh(isNormalMapped = true) {
                 generate {
@@ -183,21 +186,27 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun updateLights() {
+    private fun updateLights(forced: Boolean = false) {
         val rows = 41
         val travel = rows.toFloat()
         val start = travel / 2
 
+        val objOffset = if (objects.isVisible) 0.7f else 0f
         val lightGroups = listOf(
                 LightGroup(Vec3f(-start, 0.45f, -start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, 1f)),
-                LightGroup(Vec3f(-start + 0.5f, 1.15f, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f)),
+                LightGroup(Vec3f(-start + 0.5f, 0.45f + objOffset, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f)),
                 LightGroup(Vec3f(-start, 0.45f, -start), Vec3f(0f, 0f, 1f), Vec3f(1f, 0f, 0f)),
-                LightGroup(Vec3f(start, 1.15f, -start + 0.5f), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f))
+                LightGroup(Vec3f(start, 0.45f + objOffset, -start + 0.5f), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f))
         )
 
-        while (lights.size > lightCount) {
-            lights.removeAt(lights.lastIndex)
-            pbrPass.dynamicPointLights.lightInstances.removeAt(pbrPass.dynamicPointLights.lightInstances.lastIndex)
+        if (forced) {
+            lights.clear()
+            pbrPass.dynamicPointLights.lightInstances.clear()
+        } else {
+            while (lights.size > lightCount) {
+                lights.removeAt(lights.lastIndex)
+                pbrPass.dynamicPointLights.lightInstances.removeAt(pbrPass.dynamicPointLights.lightInstances.lastIndex)
+            }
         }
 
         while (lights.size < lightCount) {
@@ -237,8 +246,8 @@ class DeferredDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-495f), zero())
-            layoutSpec.setSize(dps(250f), dps(375f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-530f), zero())
+            layoutSpec.setSize(dps(250f), dps(410f), full())
 
             var y = -40f
             +label("Dynamic Lights") {
@@ -329,6 +338,16 @@ class DeferredDemo(ctx: KoolContext) {
                 isEnabled = autoRotate
                 onStateChange += {
                     autoRotate = isEnabled
+                }
+            }
+            y -= 35f
+            +toggleButton("Show Objects") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = objects.isVisible
+                onStateChange += {
+                    objects.isVisible = isEnabled
+                    updateLights(true)
                 }
             }
             y -= 35f

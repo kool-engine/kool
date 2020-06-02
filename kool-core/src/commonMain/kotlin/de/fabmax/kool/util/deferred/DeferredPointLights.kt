@@ -27,8 +27,8 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
 
         generate {
             icoSphere {
-                steps = 1
-                radius = 1.1f
+                steps = 0
+                radius = 1.2f
             }
         }
 
