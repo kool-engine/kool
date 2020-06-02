@@ -12,10 +12,10 @@ import kotlin.math.sqrt
 
 
 class DeferredPointLights(mrtPass: DeferredMrtPass) {
-    private val lightInstances = mutableListOf<PointLight>()
-    private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS, Attribute.COLORS), 10000)
-
+    val lightInstances = mutableListOf<PointLight>()
     var isDynamic = true
+
+    private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS, Attribute.COLORS), 10000)
 
     private val modelMat = Mat4f()
     private val encodedColor = FloatArray(4)

@@ -638,6 +638,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredMrtShader$MrtDeMultiplexNode.prototype.constructor = DeferredMrtShader$MrtDeMultiplexNode;
   DeferredMrtShader.prototype = Object.create(ModeledShader.prototype);
   DeferredMrtShader.prototype.constructor = DeferredMrtShader;
+  DeferredOutputShader.prototype = Object.create(ModeledShader.prototype);
+  DeferredOutputShader.prototype.constructor = DeferredOutputShader;
   DiscardClearNode.prototype = Object.create(ShaderNode.prototype);
   DiscardClearNode.prototype.constructor = DiscardClearNode;
   DeferredCameraNode.prototype = Object.create(ShaderNode.prototype);
@@ -27454,10 +27456,115 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredMrtShader',
     interfaces: [ModeledShader]
   };
+  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
+  function DeferredOutputShader(pbrOutput) {
+    DeferredOutputShader$Companion_getInstance();
+    ModeledShader.call(this, DeferredOutputShader$Companion_getInstance().outputModel_0());
+    this.pbrOutput_0 = pbrOutput;
+  }
+  DeferredOutputShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+    var tmp$;
+    var $this = this.model;
+    var name = 'deferredPbrOutput';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$_0;
+      tmp$_0 = $this.stages.values.iterator();
+      while (tmp$_0.hasNext()) {
+        var element = tmp$_0.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_1;
+          var $receiver = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_2;
+            tmp$_2 = $receiver.iterator();
+            while (tmp$_2.hasNext()) {
+              var element_0 = tmp$_2.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, TextureNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_1, TextureNode) ? tmp$_1 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
+    ensureNotNull(textureSampler).texture = this.pbrOutput_0;
+    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+  };
+  function DeferredOutputShader$Companion() {
+    DeferredOutputShader$Companion_instance = this;
+  }
+  DeferredOutputShader$Companion.prototype.outputModel_0 = function () {
+    var $receiver = new ShaderModel('DeferredOutputShader');
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
+    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
+    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('deferredPbrOutput'), ifTexCoords.v.output);
+    $receiver_1.colorOutput_a3v4si$($receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor).outColor);
+    return $receiver;
+  };
+  DeferredOutputShader$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DeferredOutputShader$Companion_instance = null;
+  function DeferredOutputShader$Companion_getInstance() {
+    if (DeferredOutputShader$Companion_instance === null) {
+      new DeferredOutputShader$Companion();
+    }return DeferredOutputShader$Companion_instance;
+  }
+  DeferredOutputShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredOutputShader',
+    interfaces: [ModeledShader]
+  };
   function DeferredPointLights(mrtPass) {
-    this.lightInstances_0 = ArrayList_init_0();
-    this.lightInstanceData_0 = new MeshInstanceList(listOf([MeshInstanceList$Companion_getInstance().MODEL_MAT, DeferredLightShader$Companion_getInstance().LIGHT_POS, Attribute$Companion_getInstance().COLORS]), 10000);
+    this.lightInstances = ArrayList_init_0();
     this.isDynamic = true;
+    this.lightInstanceData_0 = new MeshInstanceList(listOf([MeshInstanceList$Companion_getInstance().MODEL_MAT, DeferredLightShader$Companion_getInstance().LIGHT_POS, Attribute$Companion_getInstance().COLORS]), 10000);
     this.modelMat_0 = new Mat4f();
     this.encodedColor_0 = new Float32Array(4);
     this.encodedPos_0 = new Float32Array(4);
@@ -27478,7 +27585,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredPointLights.prototype.updateLightData = function () {
     var tmp$;
     this.lightInstanceData_0.clear();
-    var a = this.lightInstances_0.size;
+    var a = this.lightInstances.size;
     var b = this.lightInstanceData_0.maxInstances;
     tmp$ = Math_0.min(a, b);
     for (var i = 0; i < tmp$; i++) {
@@ -27486,7 +27593,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $this.checkBufferSize_za3lpa$();
       var szBefore = $this.dataF.position;
       var $receiver = $this.dataF;
-      this.encodeLight_0(this.lightInstances_0.get_za3lpa$(i));
+      this.encodeLight_0(this.lightInstances.get_za3lpa$(i));
       $receiver.put_q3cr5i$(this.modelMat_0.matrix);
       $receiver.put_q3cr5i$(this.encodedPos_0);
       $receiver.put_q3cr5i$(this.encodedColor_0);
@@ -27513,7 +27620,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.encodedPos_0[3] = Light$Type$POINT_getInstance().encoded;
   };
   DeferredPointLights.prototype.addPointLight_at6cwi$ = function (pointLight) {
-    this.lightInstances_0.add_11rb$(pointLight);
+    this.lightInstances.add_11rb$(pointLight);
   };
   DeferredPointLights.prototype.addPointLight_v2bnrz$ = defineInlineFunction('kool.de.fabmax.kool.util.deferred.DeferredPointLights.addPointLight_v2bnrz$', wrapFunction(function () {
     var DeferredPointLights$DeferredPointLights$PointLight_init = _.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
@@ -27525,7 +27632,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }));
   DeferredPointLights.prototype.removePointLight_at6cwi$ = function (light) {
-    this.lightInstances_0.remove_11rb$(light);
+    this.lightInstances.remove_11rb$(light);
   };
   function DeferredPointLights$PointLight() {
     this.position = MutableVec3f_init();
@@ -27631,14 +27738,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       cfg = new PbrSceneShader$DeferredPbrConfig();
     OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat$RGBA_F16_getInstance());
     this.mrtPass = mrtPass;
+    this.globalLighting = new Lighting();
     this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
     this.staticPointLights = new DeferredPointLights(this.mrtPass);
+    this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
     this.dynamicPointLights.isDynamic = true;
     this.staticPointLights.isDynamic = false;
+    this.lighting = this.globalLighting;
+    this.globalLighting.lights.clear();
     var tmp$, tmp$_0;
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
     scene.addOffscreenPass_m1c2kf$(this);
-    this.lighting = scene.lighting;
     this.clearColor = (tmp$ = this.clearColor) != null ? tmp$.toLinear() : null;
     this.dependsOn_yqp8fe$(this.mrtPass);
     this.camera = this.mrtPass.camera;
@@ -27656,11 +27766,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       closure$cfg.normalRoughness = this.mrtPass.normalRoughness;
     }if (closure$cfg.albedoMetal == null) {
       closure$cfg.albedoMetal = this.mrtPass.albedoMetal;
-    }mesh.pipelineLoader = new PbrSceneShader(closure$cfg);
+    }this.sceneShader = new PbrSceneShader(closure$cfg);
+    mesh.pipelineLoader = this.sceneShader;
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(this.dynamicPointLights.mesh);
     $receiver.unaryPlus_uv0sim$(this.staticPointLights.mesh);
   }
+  Object.defineProperty(PbrLightingPass.prototype, 'sceneShader', {
+    get: function () {
+      if (this.sceneShader_w4wym2$_0 == null)
+        return throwUPAE('sceneShader');
+      return this.sceneShader_w4wym2$_0;
+    },
+    set: function (sceneShader) {
+      this.sceneShader_w4wym2$_0 = sceneShader;
+    }
+  });
   PbrLightingPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
@@ -27687,7 +27808,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'PbrLightingPass',
     interfaces: [OffscreenRenderPass2d]
   };
-  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_8 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -39759,7 +39880,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.$outer.gl_0.blendFunc(WebGLRenderingContext.ONE, WebGLRenderingContext.ONE_MINUS_SRC_ALPHA);
         this.$outer.gl_0.enable(WebGLRenderingContext.BLEND);
         break;
-      default:throw new NotImplementedError_init('An operation is not implemented: ' + ('Unimplemented blend mode: ' + blendMode));
     }
   };
   QueueRendererWebGl$GlAttribs.$metadata$ = {
@@ -41597,8 +41717,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredMrtShader.MrtMultiplexNode = DeferredMrtShader$MrtMultiplexNode;
   DeferredMrtShader.MrtDeMultiplexNode = DeferredMrtShader$MrtDeMultiplexNode;
   package$deferred.DeferredMrtShader = DeferredMrtShader;
-  package$deferred.DeferredPointLights = DeferredPointLights;
+  Object.defineProperty(DeferredOutputShader, 'Companion', {
+    get: DeferredOutputShader$Companion_getInstance
+  });
+  package$deferred.DeferredOutputShader = DeferredOutputShader;
   DeferredPointLights.PointLight = DeferredPointLights$PointLight;
+  package$deferred.DeferredPointLights = DeferredPointLights;
   package$deferred.DiscardClearNode = DiscardClearNode;
   package$deferred.DeferredCameraNode = DeferredCameraNode;
   package$deferred.PbrLightingPass = PbrLightingPass;

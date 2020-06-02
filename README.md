@@ -6,6 +6,8 @@ WebGL2. Android support is currently suspended but it should be quite easy to ge
 
 This is my personal pet-project. I have a few demos in place (once loaded, you can also switch between
 them via the hamburger button in the upper left corner):
+- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
+  light sources - also includes PBR shading and ambient occlusion.
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
@@ -35,7 +37,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Node based dynamic shader generation
 - All new Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
-- Deferred shading (work in progress, no optimized lighting yet)
+- Deferred shading
 - Screen-space ambient occlusion
 - Normal, roughness, metallic, ambient occlusion and displacement mapping
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)

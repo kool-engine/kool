@@ -5,18 +5,27 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat.RGBA_F16) {
 
+    val globalLighting = Lighting()
+
     val dynamicPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
     val staticPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
+
+    lateinit var sceneShader: PbrSceneShader
+        private set
 
     init {
         dynamicPointLights.isDynamic = true
         staticPointLights.isDynamic = false
+
+        lighting = globalLighting
+        globalLighting.lights.clear()
     }
 
     init {
@@ -29,7 +38,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
             }
         }
         scene.addOffscreenPass(this)
-        lighting = scene.lighting
 
         clearColor = clearColor?.toLinear()
         dependsOn(mrtPass)
@@ -55,7 +63,8 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                     if (albedoMetal == null) { albedoMetal = mrtPass.albedoMetal }
                 }
 
-                pipelineLoader = PbrSceneShader(cfg)
+                sceneShader = PbrSceneShader(cfg)
+                pipelineLoader = sceneShader
             }
 
             +dynamicPointLights.mesh

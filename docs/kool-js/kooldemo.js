@@ -55,18 +55,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
-  var Random = $module$kool.de.fabmax.kool.math.Random;
   var DeferredMrtPass = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtPass;
+  var PbrSceneShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.PbrSceneShader.DeferredPbrConfig;
+  var PbrLightingPass = $module$kool.de.fabmax.kool.util.deferred.PbrLightingPass;
+  var DeferredOutputShader = $module$kool.de.fabmax.kool.util.deferred.DeferredOutputShader;
   var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
   var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
   var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
-  var PbrSceneShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.PbrSceneShader.DeferredPbrConfig;
-  var PbrLightingPass = $module$kool.de.fabmax.kool.util.deferred.PbrLightingPass;
-  var OrthographicCamera = $module$kool.de.fabmax.kool.scene.OrthographicCamera;
+  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
+  var numberToInt = Kotlin.numberToInt;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var Random = $module$kool.de.fabmax.kool.math.Random;
+  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var DeferredPointLights$DeferredPointLights$PointLight_init = $module$kool.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
@@ -86,7 +90,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
-  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
   var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
@@ -124,7 +127,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
-  var numberToInt = Kotlin.numberToInt;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
@@ -1106,37 +1108,138 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'AmbientOcclusionDemo',
     interfaces: []
   };
-  function deferredScene$lambda$lambda$lambda$lambda(closure$autoRotate, this$) {
+  function deferredScene(ctx) {
+    var deferredDemo = new DeferredDemo(ctx);
+    return listOf([deferredDemo.mainScene, deferredDemo.menu]);
+  }
+  function DeferredDemo(ctx) {
+    this.mainScene = null;
+    this.menu = null;
+    this.aoPipeline_gxwqo$_0 = this.aoPipeline_gxwqo$_0;
+    this.mrtPass_8d2jok$_0 = this.mrtPass_8d2jok$_0;
+    this.pbrPass_13qagj$_0 = this.pbrPass_13qagj$_0;
+    this.objectShader_kt711w$_0 = this.objectShader_kt711w$_0;
+    this.noAoMap_0 = new Texture(void 0, DeferredDemo$noAoMap$lambda);
+    this.autoRotate_0 = true;
+    this.rand_0 = new Random(1337);
+    this.lightCount_0 = 1000;
+    this.lights_0 = ArrayList_init();
+    this.colorMap_0 = new Cycler(listOf([new DeferredDemo$ColorMap('Colorful', listOf([Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME, Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE])), new DeferredDemo$ColorMap('Hot-Cold', listOf([Color.Companion.MD_PINK, Color.Companion.MD_CYAN])), new DeferredDemo$ColorMap('Summer', listOf([Color.Companion.MD_ORANGE, Color.Companion.MD_BLUE, Color.Companion.MD_GREEN])), new DeferredDemo$ColorMap('White', listOf_0(Color.Companion.WHITE))]));
+    this.mainScene = this.makeDeferredScene_0();
+    this.menu = this.makeMenu_0(ctx);
+    this.updateLights_0();
+  }
+  Object.defineProperty(DeferredDemo.prototype, 'aoPipeline_0', {
+    get: function () {
+      if (this.aoPipeline_gxwqo$_0 == null)
+        return throwUPAE('aoPipeline');
+      return this.aoPipeline_gxwqo$_0;
+    },
+    set: function (aoPipeline) {
+      this.aoPipeline_gxwqo$_0 = aoPipeline;
+    }
+  });
+  Object.defineProperty(DeferredDemo.prototype, 'mrtPass_0', {
+    get: function () {
+      if (this.mrtPass_8d2jok$_0 == null)
+        return throwUPAE('mrtPass');
+      return this.mrtPass_8d2jok$_0;
+    },
+    set: function (mrtPass) {
+      this.mrtPass_8d2jok$_0 = mrtPass;
+    }
+  });
+  Object.defineProperty(DeferredDemo.prototype, 'pbrPass_0', {
+    get: function () {
+      if (this.pbrPass_13qagj$_0 == null)
+        return throwUPAE('pbrPass');
+      return this.pbrPass_13qagj$_0;
+    },
+    set: function (pbrPass) {
+      this.pbrPass_13qagj$_0 = pbrPass;
+    }
+  });
+  Object.defineProperty(DeferredDemo.prototype, 'objectShader_0', {
+    get: function () {
+      if (this.objectShader_kt711w$_0 == null)
+        return throwUPAE('objectShader');
+      return this.objectShader_kt711w$_0;
+    },
+    set: function (objectShader) {
+      this.objectShader_kt711w$_0 = objectShader;
+    }
+  });
+  function DeferredDemo$makeDeferredScene$lambda$lambda$lambda($receiver) {
+    $receiver.rectProps.defaults().mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function DeferredDemo$makeDeferredScene$lambda$lambda(this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(DeferredDemo$makeDeferredScene$lambda$lambda$lambda);
+      $receiver.pipelineLoader = new DeferredOutputShader(this$DeferredDemo.pbrPass_0.colorTexture);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeDeferredScene$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver, f, ctx) {
-      if (closure$autoRotate) {
+      var tmp$;
+      tmp$ = this$DeferredDemo.lights_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.animate_mx4ult$(ctx.deltaT);
+      }
+      return Unit;
+    };
+  }
+  DeferredDemo.prototype.makeDeferredScene_0 = function () {
+    var $receiver = new Scene_init(null);
+    this.mrtPass_0 = new DeferredMrtPass();
+    $receiver.addOffscreenPass_m1c2kf$(this.mrtPass_0);
+    this.makeContent_0(this.mrtPass_0, $receiver);
+    this.aoPipeline_0 = AoPipeline.Companion.createDeferred_4lrvgg$($receiver, this.mrtPass_0);
+    this.aoPipeline_0.intensity = 1.2;
+    this.aoPipeline_0.kernelSz = 32;
+    var $receiver_0 = new PbrSceneShader$DeferredPbrConfig();
+    $receiver_0.isScrSpcAmbientOcclusion = true;
+    $receiver_0.scrSpcAmbientOcclusionMap = this.aoPipeline_0.aoMap;
+    var cfg = $receiver_0;
+    this.pbrPass_0 = new PbrLightingPass($receiver, this.mrtPass_0, cfg);
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, DeferredDemo$makeDeferredScene$lambda$lambda(this)));
+    $receiver.onUpdate.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_0(this));
+    return $receiver;
+  };
+  function DeferredDemo$makeContent$lambda$lambda$lambda(this$DeferredDemo, this$) {
+    return function ($receiver, f, ctx) {
+      if (this$DeferredDemo.autoRotate_0) {
         this$.verticalRotation += ctx.deltaT * 3.0;
       }return Unit;
     };
   }
-  function deferredScene$lambda$lambda$lambda(closure$mrtPass, closure$autoRotate) {
+  function DeferredDemo$makeContent$lambda$lambda(this$makeContent, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(0.0, -30.0);
-      $receiver.unaryPlus_uv0sim$(closure$mrtPass.camera);
+      $receiver.unaryPlus_uv0sim$(this$makeContent.camera);
       $receiver.zoom = 13.0;
       $receiver.maxZoom = 50.0;
       $receiver.translation.set_yvo9jy$(0.0, -3.0, 0.0);
       var $receiver_0 = $receiver.onUpdate;
-      var element = deferredScene$lambda$lambda$lambda$lambda(closure$autoRotate, $receiver);
+      var element = DeferredDemo$makeContent$lambda$lambda$lambda(this$DeferredDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function deferredScene$lambda$lambda$lambda$lambda_0(closure$rand) {
+  function DeferredDemo$makeContent$lambda$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver) {
       var sphereProtos = ArrayList_init();
       for (var i = 0; i <= 10; i++) {
         var builder = new MeshBuilder(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS]));
         var element = builder.geometry;
         sphereProtos.add_11rb$(element);
-        var closure$rand_0 = closure$rand;
+        var this$DeferredDemo_0 = this$DeferredDemo;
         var $receiver_0 = builder.sphereProps.icoDefaults();
         $receiver_0.steps = 3;
-        $receiver_0.radius = closure$rand_0.randomF_dleff0$(0.3, 0.4);
+        $receiver_0.radius = this$DeferredDemo_0.rand_0.randomF_dleff0$(0.3, 0.4);
         $receiver_0.center.set_y2kzbl$(0.0, 0.1 + $receiver_0.radius, 0.0);
         builder.icoSphere_mojs8w$(builder.sphereProps);
       }
@@ -1144,15 +1247,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         for (var y = -19; y <= 19; y++) {
           $receiver.color = Color.Companion.WHITE;
           $receiver.transform.push();
-          var closure$rand_1 = closure$rand;
+          var this$DeferredDemo_1 = this$DeferredDemo;
           $receiver.translate_y2kzbl$(x, 0.0, y);
           if ((x + 100 | 0) % 2 === (y + 100 | 0) % 2) {
             var $receiver_1 = $receiver.cubeProps.defaults();
-            $receiver_1.size.set_y2kzbl$(closure$rand_1.randomF_dleff0$(0.6, 0.8), closure$rand_1.randomF_dleff0$(0.6, 0.95), closure$rand_1.randomF_dleff0$(0.6, 0.8));
+            $receiver_1.size.set_y2kzbl$(this$DeferredDemo_1.rand_0.randomF_dleff0$(0.6, 0.8), this$DeferredDemo_1.rand_0.randomF_dleff0$(0.6, 0.95), this$DeferredDemo_1.rand_0.randomF_dleff0$(0.6, 0.8));
             $receiver_1.origin.set_y2kzbl$(-$receiver_1.size.x / 2, 0.1, -$receiver_1.size.z / 2);
             $receiver.cube_lhbb6w$($receiver.cubeProps);
           } else {
-            $receiver.geometry_ejqx55$(sphereProtos.get_za3lpa$(closure$rand_1.randomI_n8acyv$(get_indices(sphereProtos))));
+            $receiver.geometry_ejqx55$(sphereProtos.get_za3lpa$(this$DeferredDemo_1.rand_0.randomI_n8acyv$(get_indices(sphereProtos))));
           }
           $receiver.transform.pop();
         }
@@ -1160,17 +1263,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function deferredScene$lambda$lambda$lambda_0(closure$rand) {
+  function DeferredDemo$makeContent$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda$lambda_0(closure$rand));
+      $receiver.generate_v2sixm$(DeferredDemo$makeContent$lambda$lambda$lambda_0(this$DeferredDemo));
       var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
       $receiver_0.roughness = 0.15;
       var mrtCfg = $receiver_0;
-      $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
+      this$DeferredDemo.objectShader_0 = new DeferredMrtShader(mrtCfg);
+      $receiver.pipelineLoader = this$DeferredDemo.objectShader_0;
       return Unit;
     };
   }
-  function deferredScene$lambda$lambda$lambda$lambda_1($receiver) {
+  function DeferredDemo$makeContent$lambda$lambda$lambda_1($receiver) {
     $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
     $receiver.color = Color.Companion.WHITE;
     var $receiver_0 = $receiver.rectProps.defaults();
@@ -1180,20 +1284,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda.$metadata$ = {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda;
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda;
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1221,27 +1325,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function deferredScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0.$metadata$ = {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0;
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0;
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1269,27 +1373,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function deferredScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1.$metadata$ = {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1;
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1;
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1317,27 +1421,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function deferredScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2.$metadata$ = {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2;
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2;
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1365,27 +1469,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function deferredScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3.$metadata$ = {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3.prototype.constructor = Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3;
-  Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3.prototype.doResume = function () {
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3;
+  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1413,166 +1517,320 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function deferredScene$lambda$lambda$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$deferredScene$lambda$lambda$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
+  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function deferredScene$lambda$lambda$lambda_1($receiver) {
-    $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda$lambda_1);
+  function DeferredDemo$makeContent$lambda$lambda_1($receiver) {
+    $receiver.generate_v2sixm$(DeferredDemo$makeContent$lambda$lambda$lambda_1);
     var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
     $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
     $receiver_0.isNormalMapped = true;
     $receiver_0.isRoughnessMapped = true;
     $receiver_0.isMetallicMapped = true;
     $receiver_0.isAmbientOcclusionMapped = true;
-    $receiver_0.albedoMap = new Texture(void 0, deferredScene$lambda$lambda$lambda$lambda$lambda);
-    $receiver_0.normalMap = new Texture(void 0, deferredScene$lambda$lambda$lambda$lambda$lambda_0);
-    $receiver_0.roughnessMap = new Texture(void 0, deferredScene$lambda$lambda$lambda$lambda$lambda_1);
-    $receiver_0.metallicMap = new Texture(void 0, deferredScene$lambda$lambda$lambda$lambda$lambda_2);
-    $receiver_0.ambientOcclusionMap = new Texture(void 0, deferredScene$lambda$lambda$lambda$lambda$lambda_3);
+    $receiver_0.albedoMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda);
+    $receiver_0.normalMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0);
+    $receiver_0.roughnessMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1);
+    $receiver_0.metallicMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2);
+    $receiver_0.ambientOcclusionMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3);
     var mrtCfg = $receiver_0;
     $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
     return Unit;
   }
-  function deferredScene$lambda$lambda(closure$lights) {
-    return function ($receiver, f, ctx) {
-      var tmp$;
-      tmp$ = closure$lights.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.animate_mx4ult$(ctx.deltaT);
-      }
-      return Unit;
-    };
-  }
-  function deferredScene$lambda$lambda$lambda_2($receiver) {
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.origin.set_y2kzbl$(-0.5, -0.5, 0.0);
-    $receiver_0.mirrorTexCoordsY();
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
-  }
-  function deferredScene$lambda$lambda_0(closure$pbrPass) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(deferredScene$lambda$lambda$lambda_2);
-      $receiver.pipelineLoader = new ModeledShader$TextureColor(closure$pbrPass.colorTexture, void 0, textureColorModel('colorTex'));
-      return Unit;
-    };
-  }
-  function deferredScene() {
-    var $receiver = new Scene_init(null);
-    var autoRotate = false;
-    var rand = new Random(1337);
-    var colorMap = listOf([Color.Companion.MD_PINK, Color.Companion.MD_CYAN]);
-    $receiver.lighting.lights.clear();
-    var mrtPass = new DeferredMrtPass();
-    $receiver.addOffscreenPass_m1c2kf$(mrtPass);
-    var $receiver_0 = mrtPass.content;
-    $receiver_0.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, deferredScene$lambda$lambda$lambda(mrtPass, autoRotate)));
-    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, deferredScene$lambda$lambda$lambda_0(rand)));
-    $receiver_0.unaryPlus_uv0sim$(textureMesh(void 0, true, deferredScene$lambda$lambda$lambda_1));
-    var aoPipeline = AoPipeline.Companion.createDeferred_4lrvgg$($receiver, mrtPass);
-    aoPipeline.intensity = 1.2;
-    aoPipeline.kernelSz = 32;
-    var $receiver_1 = new PbrSceneShader$DeferredPbrConfig();
-    $receiver_1.isScrSpcAmbientOcclusion = true;
-    $receiver_1.scrSpcAmbientOcclusionMap = aoPipeline.aoMap;
-    var cfg = $receiver_1;
-    var pbrPass = new PbrLightingPass($receiver, mrtPass, cfg);
-    var lights = ArrayList_init();
-    var travel = 41.0;
+  DeferredDemo.prototype.makeContent_0 = function ($receiver, scene) {
+    var $receiver_0 = $receiver.content;
+    $receiver_0.unaryPlus_uv0sim$(orbitInputTransform(scene, void 0, DeferredDemo$makeContent$lambda$lambda($receiver, this)));
+    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, DeferredDemo$makeContent$lambda$lambda_0(this)));
+    $receiver_0.unaryPlus_uv0sim$(textureMesh(void 0, true, DeferredDemo$makeContent$lambda$lambda_1));
+  };
+  DeferredDemo.prototype.updateLights_0 = function () {
+    var rows = 41;
+    var travel = rows;
     var start = travel / 2;
-    var minSat = 1.0;
-    var maxSat = 1.0;
-    for (var x = 0; x <= 40; x++) {
-      var ro = rand.randomF();
-      for (var l = 0; l < 30; l++) {
-        var $this = pbrPass.dynamicPointLights;
-        var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
-        light.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
-        light.intensity = 1.0;
-        $this.addPointLight_at6cwi$(light);
-        var light_0 = light;
-        var $receiver_2 = new AnimatedLight(light_0);
-        $receiver_2.startPos.set_y2kzbl$(x - travel / 2, rand.randomF_dleff0$(0.3, 0.6), -start);
-        $receiver_2.dir.set_y2kzbl$(0.0, 0.0, 1.0);
-        $receiver_2.travelDist = travel;
-        $receiver_2.travelPos = l / 10.0 * $receiver_2.travelDist + ro;
-        $receiver_2.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
-        lights.add_11rb$($receiver_2);
-        var $this_0 = pbrPass.dynamicPointLights;
-        var light_1 = new DeferredPointLights$DeferredPointLights$PointLight_init();
-        light_1.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
-        light_1.intensity = 1.0;
-        $this_0.addPointLight_at6cwi$(light_1);
-        light_0 = light_1;
-        var $receiver_3 = new AnimatedLight(light_0);
-        $receiver_3.startPos.set_y2kzbl$(-start, rand.randomF_dleff0$(0.3, 0.6), x - travel / 2);
-        $receiver_3.dir.set_y2kzbl$(1.0, 0.0, 0.0);
-        $receiver_3.travelDist = travel;
-        $receiver_3.travelPos = l / 10.0 * $receiver_3.travelDist + ro;
-        $receiver_3.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
-        lights.add_11rb$($receiver_3);
-        var $this_1 = pbrPass.dynamicPointLights;
-        var light_2 = new DeferredPointLights$DeferredPointLights$PointLight_init();
-        light_2.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
-        light_2.intensity = 1.0;
-        $this_1.addPointLight_at6cwi$(light_2);
-        light_0 = light_2;
-        var $receiver_4 = new AnimatedLight(light_0);
-        $receiver_4.startPos.set_y2kzbl$(x - travel / 2 + 0.5, rand.randomF_dleff0$(1.0, 1.5), start);
-        $receiver_4.dir.set_y2kzbl$(0.0, 0.0, -1.0);
-        $receiver_4.travelDist = travel;
-        $receiver_4.travelPos = l / 10.0 * $receiver_4.travelDist + ro;
-        $receiver_4.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
-        lights.add_11rb$($receiver_4);
-        var $this_2 = pbrPass.dynamicPointLights;
-        var light_3 = new DeferredPointLights$DeferredPointLights$PointLight_init();
-        light_3.color = Color.Companion.WHITE.mix_y83vuj$(colorMap.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colorMap))).toLinear(), rand.randomF_dleff0$(minSat, maxSat));
-        light_3.intensity = 1.0;
-        $this_2.addPointLight_at6cwi$(light_3);
-        light_0 = light_3;
-        var $receiver_5 = new AnimatedLight(light_0);
-        $receiver_5.startPos.set_y2kzbl$(start, rand.randomF_dleff0$(1.0, 1.5), x - travel / 2 + 0.5);
-        $receiver_5.dir.set_y2kzbl$(-1.0, 0.0, 0.0);
-        $receiver_5.travelDist = travel;
-        $receiver_5.travelPos = l / 10.0 * $receiver_5.travelDist + ro;
-        $receiver_5.speed = rand.randomF_dleff0$(1.0, 3.0) * 0.25;
-        lights.add_11rb$($receiver_5);
-      }
+    var lightGroups = listOf([new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, 1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start + 0.5, 1.15, start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, -1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(1.0, 0.0, 0.0)), new DeferredDemo$LightGroup(this, new Vec3f(start, 1.15, -start + 0.5), new Vec3f(0.0, 0.0, 1.0), new Vec3f(-1.0, 0.0, 0.0))]);
+    while (this.lights_0.size > this.lightCount_0) {
+      this.lights_0.removeAt_za3lpa$(get_lastIndex(this.lights_0));
+      this.pbrPass_0.dynamicPointLights.lightInstances.removeAt_za3lpa$(get_lastIndex(this.pbrPass_0.dynamicPointLights.lightInstances));
     }
+    while (this.lights_0.size < this.lightCount_0) {
+      var x = this.rand_0.randomI_n8acyv$(until(0, rows));
+      var $this = this.pbrPass_0.dynamicPointLights;
+      var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
+      light.intensity = 1.0;
+      light.color = this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear();
+      $this.addPointLight_at6cwi$(light);
+      var light_0 = light;
+      var animLight = new DeferredDemo$AnimatedLight(light_0);
+      this.lights_0.add_11rb$(animLight);
+      lightGroups.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(lightGroups))).setupLight_u83zut$(animLight, x, travel, this.rand_0.randomF());
+    }
+  };
+  DeferredDemo.prototype.updateLightColors_0 = function () {
     var tmp$;
-    tmp$ = lights.iterator();
+    tmp$ = this.lights_0.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.light.intensity = 1.0;
+      element.light.color = this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear();
     }
-    $receiver.onUpdate.add_11rb$(deferredScene$lambda$lambda(lights));
-    var $receiver_6 = new OrthographicCamera();
-    $receiver_6.isKeepAspectRatio = false;
-    $receiver_6.left = -0.5;
-    $receiver_6.right = 0.5;
-    $receiver_6.top = 0.5;
-    $receiver_6.bottom = -0.5;
-    $receiver.camera = $receiver_6;
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, deferredScene$lambda$lambda_0(pbrPass)));
-    return $receiver;
+  };
+  DeferredDemo.prototype.setAoState_0 = function (enabled) {
+    this.aoPipeline_0.setEnabled_6taknv$(enabled);
+    if (enabled) {
+      this.pbrPass_0.sceneShader.scrSpcAmbientOcclusionMap = this.aoPipeline_0.aoMap;
+    } else {
+      this.pbrPass_0.sceneShader.scrSpcAmbientOcclusionMap = this.noAoMap_0;
+    }
+  };
+  function DeferredDemo$makeMenu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
   }
-  function textureColorModel(texName) {
-    var $receiver = new ShaderModel('ModeledShader.textureColor()');
-    var ifTexCoords = {v: null};
-    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
-    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
-    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$(texName), ifTexCoords.v.output);
-    $receiver_1.colorOutput_a3v4si$($receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor).outColor);
-    return $receiver;
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
   }
-  function AnimatedLight(light) {
+  function DeferredDemo$makeMenu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(DeferredDemo$makeMenu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(DeferredDemo$makeMenu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_2(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_3(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(this$DeferredDemo, closure$lightCntVal) {
+    return function ($receiver, it) {
+      this$DeferredDemo.lightCount_0 = numberToInt($receiver.value);
+      closure$lightCntVal.text = this$DeferredDemo.lightCount_0.toString();
+      this$DeferredDemo.updateLights_0();
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_4(closure$y, this$DeferredDemo, closure$lightCntVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(this$DeferredDemo, closure$lightCntVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_5(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      $receiver.text = this$DeferredDemo.colorMap_0.next().name;
+      this$DeferredDemo.updateLightColors_0();
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_6(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onClick;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$DeferredDemo.colorMap_0.prev();
+      this$DeferredDemo.updateLightColors_0();
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_7(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$DeferredDemo.colorMap_0.next();
+      this$DeferredDemo.updateLightColors_0();
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_8(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_9(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.setAoState_0($receiver.isEnabled);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_10(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.aoPipeline_0.aoPass.isEnabled;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_11(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_12(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo) {
+    return function ($receiver, it) {
+      this$DeferredDemo.objectShader_0.roughness = $receiver.value;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_13(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.value = this$DeferredDemo.objectShader_0.roughness;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda_0(closure$smallFont, this$, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-495.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(375.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Dynamic Lights', DeferredDemo$makeMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Light Count:', DeferredDemo$makeMenu$lambda$lambda$lambda_2(y)));
+      var lightCntVal = this$.label_tokfmu$(this$DeferredDemo.lightCount_0.toString(), DeferredDemo$makeMenu$lambda$lambda$lambda_3(y));
+      $receiver.unaryPlus_uv0sim$(lightCntVal);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('lightCntSlider', 100.0, 5000.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_4(y, this$DeferredDemo, lightCntVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color Map:', DeferredDemo$makeMenu$lambda$lambda$lambda_5(y)));
+      y.v -= 35.0;
+      var colorMapLabel = this$.button_9zrh0o$(this$DeferredDemo.colorMap_0.current.name, DeferredDemo$makeMenu$lambda$lambda$lambda_6(y, this$DeferredDemo));
+      $receiver.unaryPlus_uv0sim$(colorMapLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-left', DeferredDemo$makeMenu$lambda$lambda$lambda_7(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-right', DeferredDemo$makeMenu$lambda$lambda$lambda_8(y, this$DeferredDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', DeferredDemo$makeMenu$lambda$lambda$lambda_9(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', DeferredDemo$makeMenu$lambda$lambda$lambda_10(y, this$DeferredDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', DeferredDemo$makeMenu$lambda$lambda$lambda_11(y, this$DeferredDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Object Roughness:', DeferredDemo$makeMenu$lambda$lambda$lambda_12(y)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_13(y, this$DeferredDemo)));
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda(closure$ctx, this$DeferredDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, DeferredDemo$makeMenu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', DeferredDemo$makeMenu$lambda$lambda_0(smallFont, $receiver, this$DeferredDemo)));
+      return Unit;
+    };
+  }
+  DeferredDemo.prototype.makeMenu_0 = function (ctx) {
+    return uiScene(void 0, void 0, void 0, DeferredDemo$makeMenu$lambda(ctx, this));
+  };
+  function DeferredDemo$LightGroup($outer, startConst, startIt, travelDir) {
+    this.$outer = $outer;
+    this.startConst = startConst;
+    this.startIt = startIt;
+    this.travelDir = travelDir;
+  }
+  DeferredDemo$LightGroup.prototype.setupLight_u83zut$ = function (light, x, travelDist, travelPos) {
+    light.startPos.set_czzhiu$(this.startIt).scale_mx4ult$(x).add_czzhiu$(this.startConst);
+    light.dir.set_czzhiu$(this.travelDir);
+    light.travelDist = travelDist;
+    light.travelPos = travelPos * travelDist;
+    light.speed = this.$outer.rand_0.randomF_dleff0$(1.0, 3.0) * 0.25;
+  };
+  DeferredDemo$LightGroup.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LightGroup',
+    interfaces: []
+  };
+  function DeferredDemo$AnimatedLight(light) {
     this.light = light;
     this.startPos = MutableVec3f_init();
     this.dir = MutableVec3f_init();
@@ -1580,15 +1838,70 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.travelPos = 0.0;
     this.travelDist = 10.0;
   }
-  AnimatedLight.prototype.animate_mx4ult$ = function (deltaT) {
+  DeferredDemo$AnimatedLight.prototype.animate_mx4ult$ = function (deltaT) {
     this.travelPos += deltaT * this.speed;
     if (this.travelPos > this.travelDist) {
       this.travelPos -= this.travelDist;
     }this.light.position.set_czzhiu$(this.dir).scale_mx4ult$(this.travelPos).add_czzhiu$(this.startPos);
   };
-  AnimatedLight.$metadata$ = {
+  DeferredDemo$AnimatedLight.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AnimatedLight',
+    interfaces: []
+  };
+  function DeferredDemo$ColorMap(name, colors) {
+    this.name = name;
+    this.colors = colors;
+  }
+  DeferredDemo$ColorMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ColorMap',
+    interfaces: []
+  };
+  function Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+  }
+  Coroutine$DeferredDemo$noAoMap$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$DeferredDemo$noAoMap$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$DeferredDemo$noAoMap$lambda.prototype.constructor = Coroutine$DeferredDemo$noAoMap$lambda;
+  Coroutine$DeferredDemo$noAoMap$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            return BufferedTextureData.Companion.singleColor_d7aj7k$(Color.Companion.WHITE);
+          case 1:
+            throw this.exception_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function DeferredDemo$noAoMap$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  DeferredDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredDemo',
     interfaces: []
   };
   function demo(startScene, ctx) {
@@ -1612,7 +1925,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_2)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_3)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_4)), to('deferredDemo', new Demo$DemoEntry('Deferred Shading', true, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_2)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_3)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_4)), to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -1822,7 +2135,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
-    $receiver.add_11rb$(deferredScene());
+    $receiver.addAll_brywnq$(deferredScene(it));
     return Unit;
   }
   function Demo$demos$lambda_6($receiver, it) {
@@ -9264,8 +9577,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.aoDemo_aemszp$ = aoDemo;
   $$importsForInline$$.kool = $module$kool;
   package$demo.AmbientOcclusionDemo = AmbientOcclusionDemo;
-  package$demo.deferredScene = deferredScene;
-  package$demo.AnimatedLight = AnimatedLight;
+  package$demo.deferredScene_aemszp$ = deferredScene;
+  package$demo.DeferredDemo = DeferredDemo;
   $$importsForInline$$.kooldemo = _;
   package$demo.demo_tisexc$ = demo;
   Object.defineProperty(Demo, 'Companion', {
