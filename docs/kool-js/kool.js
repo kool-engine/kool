@@ -23696,6 +23696,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.kernelSz_cjciej$_0 = 32;
     this.aoUniforms_0 = null;
     this.aoNode_0 = null;
+    this.noiseTex_0 = this.makeNoiseTexture_0();
     var tmp$;
     var $receiver = new OrthographicCamera();
     $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
@@ -23868,6 +23869,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   AmbientOcclusionPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
+    this.noiseTex_0.dispose();
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
   };
   function AmbientOcclusionPass$AoUniforms($outer, cam, withInvProj, graph) {
@@ -24174,7 +24176,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         findNode_3klnlw$result_2 = null;
       }
        while (false);
-      ensureNotNull(findNode_3klnlw$result_2).sampler.texture = this$AmbientOcclusionPass.makeNoiseTexture_0();
+      ensureNotNull(findNode_3klnlw$result_2).sampler.texture = this$AmbientOcclusionPass.noiseTex_0;
       var tmp$_14 = this$AmbientOcclusionPass;
       var $this_3 = closure$model;
       var name_3 = 'aoUniforms';
@@ -26695,6 +26697,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.textures.get_za3lpa$(2);
     }
   });
+  DeferredMrtPass.prototype.dispose_aemszp$ = function (ctx) {
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPass2dMrt.prototype.dispose_aemszp$.call(this, ctx);
+  };
   function DeferredMrtPass$Companion() {
     DeferredMrtPass$Companion_instance = this;
     this.FMT_POSITION_AO = TexFormat$RGBA_F16_getInstance();
@@ -27742,11 +27748,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
     this.staticPointLights = new DeferredPointLights(this.mrtPass);
     this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
+    var tmp$, tmp$_0;
     this.dynamicPointLights.isDynamic = true;
     this.staticPointLights.isDynamic = false;
     this.lighting = this.globalLighting;
     this.globalLighting.lights.clear();
-    var tmp$, tmp$_0;
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
     scene.addOffscreenPass_m1c2kf$(this);
     this.clearColor = (tmp$ = this.clearColor) != null ? tmp$.toLinear() : null;

@@ -67,6 +67,10 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
         shadows.add(SimpleShadowMap(this, 0, 2048))
         aoPipeline = AoPipeline.createForward(this)
 
+        onDispose += {
+            noAoMap.dispose()
+        }
+
         val loadingAssets = LoadingAssets { teapotMesh, hdriMap ->
             val irrMapPass = IrradianceMapPass(this, hdriMap)
             val reflMapPass = ReflectionMapPass(this, hdriMap)
@@ -206,6 +210,16 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                     roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg") }
                 }
                 pipelineLoader = shader
+
+                onDispose += {
+                    shader.albedoMap?.dispose()
+                    shader.ambientOcclusionMap?.dispose()
+                    shader.normalMap?.dispose()
+                    shader.roughnessMap?.dispose()
+                    shader.metallicMap?.dispose()
+                    shader.displacementMap?.dispose()
+                    hdriMap.dispose()
+                }
 
                 onUpdate += { _, _ ->
                     if (aoPipeline.aoPass.isEnabled) {

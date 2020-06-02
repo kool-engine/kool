@@ -26,9 +26,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
         lighting = globalLighting
         globalLighting.lights.clear()
-    }
 
-    init {
         scene.onRenderScene += { ctx ->
             val mapW = mainRenderPass.viewport.width
             val mapH = mainRenderPass.viewport.height

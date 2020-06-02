@@ -83,6 +83,9 @@ class DeferredDemo(ctx: KoolContext) {
         onUpdate += { _, ctx ->
             lights.forEach { it.animate(ctx.deltaT) }
         }
+        onDispose += {
+            noAoMap.dispose()
+        }
     }
 
     private fun DeferredMrtPass.makeContent(scene: Scene) {
@@ -165,7 +168,17 @@ class DeferredDemo(ctx: KoolContext) {
                     metallicMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg") }
                     ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg") }
                 }
-                pipelineLoader = DeferredMrtShader(mrtCfg)
+                val groundShader = DeferredMrtShader(mrtCfg)
+                pipelineLoader = groundShader
+
+                onDispose += {
+                    groundShader.albedoMap?.dispose()
+                    groundShader.ambientOcclusionMap?.dispose()
+                    groundShader.normalMap?.dispose()
+                    groundShader.metallicMap?.dispose()
+                    groundShader.roughnessMap?.dispose()
+                    groundShader.displacementMap?.dispose()
+                }
             }
         }
     }

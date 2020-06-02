@@ -32,6 +32,8 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
     private var aoUniforms: AoUniforms? = null
     private var aoNode: AoNode? = null
 
+    private val noiseTex = makeNoiseTexture()
+
     init {
         camera = OrthographicCamera().apply {
             projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
@@ -67,11 +69,13 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         val depthComponent: String
                         val origin: ShaderNodeIoVar
                         val normal: ShaderNodeIoVar
+
                         if (aoSetup.isDeferred) {
                             depthTex = textureNode("positionTex")
                             depthComponent = "z"
                             origin = channelNode(textureSamplerNode(depthTex, ifScreenPos.output).outColor, "xyz").output
                             normal = channelNode(textureSamplerNode(textureNode("normalTex"), ifScreenPos.output).outColor, "xyz").output
+
                         } else {
                             depthTex = textureNode("normalDepthTex")
                             depthComponent = "a"
@@ -99,7 +103,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                             model.findNode<TextureNode>("positionTex")!!.sampler.texture = aoSetup.mrtPass?.positionAo
                             model.findNode<TextureNode>("normalTex")!!.sampler.texture = aoSetup.mrtPass?.normalRoughness
                         }
-                        model.findNode<TextureNode>("noiseTex")!!.sampler.texture = makeNoiseTexture()
+                        model.findNode<TextureNode>("noiseTex")!!.sampler.texture = noiseTex
                         aoUniforms = model.findNode("aoUniforms")
                         aoNode = model.findNode("aoNode")
                         setKernelSize(kernelSz)
@@ -172,6 +176,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
 
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
+        noiseTex.dispose()
         super.dispose(ctx)
     }
 

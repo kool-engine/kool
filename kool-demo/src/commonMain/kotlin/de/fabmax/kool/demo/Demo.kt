@@ -30,13 +30,13 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val defaultScene = DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) }
 
     private val demos = mutableMapOf(
+            "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
             "pbrDemo" to DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) },
-            "multiLightDemo" to DemoEntry("Multi Light") { addAll(multiLightDemo(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
+            "multiLightDemo" to DemoEntry("Multi Light") { addAll(multiLightDemo(it)) },
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
             "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
-            "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
     )
 

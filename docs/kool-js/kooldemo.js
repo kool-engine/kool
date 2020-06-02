@@ -214,6 +214,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_0(this$AmbientOcclusionDemo) {
+    return function ($receiver, it) {
+      this$AmbientOcclusionDemo.noAoMap_0.dispose();
+      return Unit;
+    };
+  }
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh) {
     return function ($receiver) {
       for (var x = -3; x <= 3; x++) {
@@ -548,7 +554,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AmbientOcclusionDemo, closure$shader) {
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(closure$shader, closure$hdriMap) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+      (tmp$ = closure$shader.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = closure$shader.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = closure$shader.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = closure$shader.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      (tmp$_3 = closure$shader.metallicMap) != null ? (tmp$_3.dispose(), Unit) : null;
+      (tmp$_4 = closure$shader.displacementMap) != null ? (tmp$_4.dispose(), Unit) : null;
+      closure$hdriMap.dispose();
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$shader) {
     return function ($receiver, f, f_0) {
       if (this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled) {
         closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
@@ -558,35 +577,38 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$hdriMap) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo));
       var shader = pbrShader(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
       $receiver.pipelineLoader = shader;
-      var $receiver_0 = $receiver.onUpdate;
-      var element = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AmbientOcclusionDemo, shader);
+      var $receiver_0 = $receiver.onDispose;
+      var element = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(shader, closure$hdriMap);
       $receiver_0.add_11rb$(element);
+      var $receiver_1 = $receiver.onUpdate;
+      var element_0 = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, shader);
+      $receiver_1.add_11rb$(element_0);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_0(this$, this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(this$, this$AmbientOcclusionDemo) {
     return function (teapotMesh, hdriMap) {
       var irrMapPass = new IrradianceMapPass(this$, hdriMap);
       var reflMapPass = new ReflectionMapPass(this$, hdriMap);
       var brdfLutPass = new BrdfLutPass(this$);
       this$.unaryPlus_uv0sim$(colorMesh('teapots', AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this$AmbientOcclusionDemo, irrMapPass, reflMapPass, brdfLutPass)));
-      this$.unaryPlus_uv0sim$(textureMesh('ground', true, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, irrMapPass, reflMapPass, brdfLutPass)));
+      this$.unaryPlus_uv0sim$(textureMesh('ground', true, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, irrMapPass, reflMapPass, brdfLutPass, hdriMap)));
       this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(closure$loadingAssets) {
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(closure$loadingAssets) {
     return function (tex) {
       closure$loadingAssets.hdriMap = tex;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(closure$loadingAssets) {
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
       closure$loadingAssets.teapotMesh = it;
       return Unit;
@@ -597,10 +619,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda($receiver, this, ctx)));
     this.shadows_0.add_11rb$(new SimpleShadowMap($receiver, 0, 2048));
     this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
-    var loadingAssets = new AmbientOcclusionDemo$LoadingAssets(AmbientOcclusionDemo$makeMainScene$lambda$lambda_0($receiver, this));
+    $receiver.onDispose.add_11rb$(AmbientOcclusionDemo$makeMainScene$lambda$lambda_0(this));
+    var loadingAssets = new AmbientOcclusionDemo$LoadingAssets(AmbientOcclusionDemo$makeMainScene$lambda$lambda_1($receiver, this));
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(loadingAssets));
-    this.loadModel_0(ctx, 'teapot.kmfz', AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(loadingAssets));
+    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(loadingAssets));
+    this.loadModel_0(ctx, 'teapot.kmfz', AmbientOcclusionDemo$makeMainScene$lambda$lambda_3(loadingAssets));
     return $receiver;
   };
   AmbientOcclusionDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
@@ -1192,6 +1215,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function DeferredDemo$makeDeferredScene$lambda$lambda_1(this$DeferredDemo) {
+    return function ($receiver, it) {
+      this$DeferredDemo.noAoMap_0.dispose();
+      return Unit;
+    };
+  }
   DeferredDemo.prototype.makeDeferredScene_0 = function () {
     var $receiver = new Scene_init(null);
     this.mrtPass_0 = new DeferredMrtPass();
@@ -1207,6 +1236,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.pbrPass_0 = new PbrLightingPass($receiver, this.mrtPass_0, cfg);
     $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, DeferredDemo$makeDeferredScene$lambda$lambda(this)));
     $receiver.onUpdate.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_0(this));
+    $receiver.onDispose.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_1(this));
     return $receiver;
   };
   function DeferredDemo$makeContent$lambda$lambda$lambda(this$DeferredDemo, this$) {
@@ -1524,6 +1554,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     else
       return instance.doResume(null);
   }
+  function DeferredDemo$makeContent$lambda$lambda$lambda_2(closure$groundShader) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+      (tmp$ = closure$groundShader.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = closure$groundShader.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = closure$groundShader.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = closure$groundShader.metallicMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      (tmp$_3 = closure$groundShader.roughnessMap) != null ? (tmp$_3.dispose(), Unit) : null;
+      (tmp$_4 = closure$groundShader.displacementMap) != null ? (tmp$_4.dispose(), Unit) : null;
+      return Unit;
+    };
+  }
   function DeferredDemo$makeContent$lambda$lambda_1($receiver) {
     $receiver.generate_v2sixm$(DeferredDemo$makeContent$lambda$lambda$lambda_1);
     var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
@@ -1538,7 +1580,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.metallicMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2);
     $receiver_0.ambientOcclusionMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3);
     var mrtCfg = $receiver_0;
-    $receiver.pipelineLoader = new DeferredMrtShader(mrtCfg);
+    var groundShader = new DeferredMrtShader(mrtCfg);
+    $receiver.pipelineLoader = groundShader;
+    $receiver.onDispose.add_11rb$(DeferredDemo$makeContent$lambda$lambda$lambda_2(groundShader));
     return Unit;
   }
   DeferredDemo.prototype.makeContent_0 = function ($receiver, scene) {
@@ -1925,7 +1969,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_2)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_3)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_4)), to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2111,11 +2155,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda($receiver, it) {
-    $receiver.addAll_brywnq$(pbrDemoScene(it));
+    $receiver.addAll_brywnq$(deferredScene(it));
     return Unit;
   }
   function Demo$demos$lambda_0($receiver, it) {
-    $receiver.addAll_brywnq$(multiLightDemo(it));
+    $receiver.addAll_brywnq$(pbrDemoScene(it));
     return Unit;
   }
   function Demo$demos$lambda_1($receiver, it) {
@@ -2123,19 +2167,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_2($receiver, it) {
-    $receiver.addAll_brywnq$(treeScene(it));
+    $receiver.addAll_brywnq$(multiLightDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
-    $receiver.addAll_brywnq$(simplificationDemo(it));
+    $receiver.addAll_brywnq$(treeScene(it));
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
-    $receiver.addAll_brywnq$(instanceDemo(it));
+    $receiver.addAll_brywnq$(simplificationDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
-    $receiver.addAll_brywnq$(deferredScene(it));
+    $receiver.addAll_brywnq$(instanceDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_6($receiver, it) {
