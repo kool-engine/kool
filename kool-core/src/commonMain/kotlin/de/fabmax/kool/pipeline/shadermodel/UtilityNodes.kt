@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ShaderStage
 
 class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = false) :
@@ -170,7 +171,7 @@ class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : Shader
     }
 }
 
-class ChannelNode(val outChannels: String, graph: ShaderGraph) : ShaderNode("channel_${graph.nextNodeId}", graph) {
+class SplitNode(val outChannels: String, graph: ShaderGraph) : ShaderNode("split_${graph.nextNodeId}", graph) {
     var input = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
     val output: ShaderNodeIoVar = when (outChannels.length) {
@@ -188,6 +189,34 @@ class ChannelNode(val outChannels: String, graph: ShaderGraph) : ShaderNode("cha
 
     override fun generateCode(generator: CodeGenerator) {
         generator.appendMain("${output.declare()} = ${input.name}.$outChannels;")
+    }
+}
+
+class CombineNode(outType: GlslType, graph: ShaderGraph) : ShaderNode("combine_${graph.nextNodeId}", graph) {
+    var inX = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inY = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inZ = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inW = ShaderNodeIoVar(ModelVar1fConst(0f))
+
+    var output = when (outType) {
+        GlslType.VEC_2F -> ShaderNodeIoVar(ModelVar2f("${name}_out"), this)
+        GlslType.VEC_3F -> ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
+        GlslType.VEC_4F -> ShaderNodeIoVar(ModelVar4f("${name}_out"), this)
+        else -> throw IllegalArgumentException("Only allowed out types are VEC_2F, VEC_3F and VEC_4F")
+    }
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inX, inY, inZ, inW)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        when (output.variable.type) {
+            GlslType.VEC_2F -> generator.appendMain("${output.declare()} = vec2(${inX.ref1f()}, ${inY.ref1f()});")
+            GlslType.VEC_3F -> generator.appendMain("${output.declare()} = vec3(${inX.ref1f()}, ${inY.ref1f()}, ${inZ.ref1f()});")
+            GlslType.VEC_4F -> generator.appendMain("${output.declare()} = vec4(${inX.ref1f()}, ${inY.ref1f()}, ${inZ.ref1f()}, ${inW.ref1f()});")
+            else -> throw IllegalArgumentException("Only allowed out types are VEC_2F, VEC_3F and VEC_4F")
+        }
     }
 }
 

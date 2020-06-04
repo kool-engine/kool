@@ -101,10 +101,15 @@ class ShaderModel(val modelInfo: String = "") {
             return node
         }
 
-        fun channelNode(input: ShaderNodeIoVar, channels: String): ChannelNode {
-            val chNode = addNode(ChannelNode(channels, stage))
-            chNode.input = input
-            return chNode
+        fun combineNode(type: GlslType): CombineNode {
+            val combNode = addNode(CombineNode(type, stage))
+            return combNode
+        }
+
+        fun splitNode(input: ShaderNodeIoVar, channels: String): SplitNode {
+            val splitNode = addNode(SplitNode(channels, stage))
+            splitNode.input = input
+            return splitNode
         }
 
         fun addNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): AddNode {
@@ -343,7 +348,7 @@ class ShaderModel(val modelInfo: String = "") {
             }
             val lightSpaceTf = addNode(CascadedShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
             return addNode(CascadedShadowMapFragmentNode(shadowMap, stage)).apply {
-                inViewZ = channelNode(viewPos, "z").output
+                inViewZ = splitNode(viewPos, "z").output
                 inPosLightSpace = lightSpaceTf.outPosLightSpace
                 depthMap = depthMapNd
             }

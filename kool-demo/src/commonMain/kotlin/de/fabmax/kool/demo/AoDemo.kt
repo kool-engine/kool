@@ -26,11 +26,11 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 fun aoDemo(ctx: KoolContext): List<Scene> {
-    val aoDemo = AmbientOcclusionDemo(ctx)
+    val aoDemo = AoDemo(ctx)
     return listOf(aoDemo.mainScene, aoDemo.menu)
 }
 
-class AmbientOcclusionDemo(ctx: KoolContext) {
+class AoDemo(ctx: KoolContext) {
 
     val mainScene: Scene
     val menu: Scene
@@ -487,30 +487,32 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
         }
     }
 
-    private fun aoMapColorModel() = ShaderModel("ModeledShader.textureColor()").apply {
-        val ifTexCoords: StageInterfaceNode
+    companion object {
+        fun aoMapColorModel() = ShaderModel("aoMap").apply {
+            val ifTexCoords: StageInterfaceNode
 
-        vertexStage {
-            ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-            positionOutput = simpleVertexPositionNode().outVec4
-        }
-        fragmentStage {
-            val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
-            val gray = addNode(Red2GrayNode(sampler.outColor, stage)).outGray
-            colorOutput(unlitMaterialNode(gray).outColor)
-        }
-    }
-
-    private class Red2GrayNode(val inRed: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("red2gray", graph) {
-        val outGray = ShaderNodeIoVar(ModelVar4f("outGray"), this)
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inRed)
+            vertexStage {
+                ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                positionOutput = simpleVertexPositionNode().outVec4
+            }
+            fragmentStage {
+                val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
+                val gray = addNode(Red2GrayNode(sampler.outColor, stage)).outGray
+                colorOutput(gray)
+            }
         }
 
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("${outGray.declare()} = vec4(${inRed.ref1f()}, ${inRed.ref1f()}, ${inRed.ref1f()}, 1.0);")
+        private class Red2GrayNode(val inRed: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("red2gray", graph) {
+            val outGray = ShaderNodeIoVar(ModelVar4f("outGray"), this)
+
+            override fun setup(shaderGraph: ShaderGraph) {
+                super.setup(shaderGraph)
+                dependsOn(inRed)
+            }
+
+            override fun generateCode(generator: CodeGenerator) {
+                generator.appendMain("${outGray.declare()} = vec4(${inRed.ref1f()}, ${inRed.ref1f()}, ${inRed.ref1f()}, 1.0);")
+            }
         }
     }
 }

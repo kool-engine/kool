@@ -428,8 +428,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   NormalMapNode.prototype.constructor = NormalMapNode;
   DisplacementMapNode.prototype = Object.create(ShaderNode.prototype);
   DisplacementMapNode.prototype.constructor = DisplacementMapNode;
-  ChannelNode.prototype = Object.create(ShaderNode.prototype);
-  ChannelNode.prototype.constructor = ChannelNode;
+  SplitNode.prototype = Object.create(ShaderNode.prototype);
+  SplitNode.prototype.constructor = SplitNode;
+  CombineNode.prototype = Object.create(ShaderNode.prototype);
+  CombineNode.prototype.constructor = CombineNode;
   AttributeNode.prototype = Object.create(ShaderNode.prototype);
   AttributeNode.prototype.constructor = AttributeNode;
   InstanceAttributeNode.prototype = Object.create(ShaderNode.prototype);
@@ -12540,10 +12542,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.stage.addNode_j0v1fw$(node);
     return node;
   };
-  ShaderModel$StageBuilder.prototype.channelNode_500t7j$ = function (input, channels) {
-    var chNode = this.addNode_u9w9by$(new ChannelNode(channels, this.stage));
-    chNode.input = input;
-    return chNode;
+  ShaderModel$StageBuilder.prototype.combineNode_m7a9qd$ = function (type) {
+    var combNode = this.addNode_u9w9by$(new CombineNode(type, this.stage));
+    return combNode;
+  };
+  ShaderModel$StageBuilder.prototype.splitNode_500t7j$ = function (input, channels) {
+    var splitNode = this.addNode_u9w9by$(new SplitNode(channels, this.stage));
+    splitNode.input = input;
+    return splitNode;
   };
   ShaderModel$StageBuilder.prototype.addNode_ze33is$ = function (left, right) {
     if (left === void 0)
@@ -12925,7 +12931,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_0.inWorldPos = worldPos;
     var lightSpaceTf = $receiver_0;
     var $receiver_1 = this.addNode_u9w9by$(new CascadedShadowMapFragmentNode(shadowMap, this.stage));
-    $receiver_1.inViewZ = this.channelNode_500t7j$(viewPos, 'z').output;
+    $receiver_1.inViewZ = this.splitNode_500t7j$(viewPos, 'z').output;
     $receiver_1.inPosLightSpace = lightSpaceTf.outPosLightSpace;
     $receiver_1.depthMap = depthMapNd;
     return $receiver_1;
@@ -14091,8 +14097,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DisplacementMapNode',
     interfaces: [ShaderNode]
   };
-  function ChannelNode(outChannels, graph) {
-    ShaderNode.call(this, 'channel_' + graph.nextNodeId, graph);
+  function SplitNode(outChannels, graph) {
+    ShaderNode.call(this, 'split_' + graph.nextNodeId, graph);
     this.outChannels = outChannels;
     this.input = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
     var tmp$;
@@ -14113,16 +14119,60 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.output = tmp$;
   }
-  ChannelNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+  SplitNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_7qvs0d$(this.input);
   };
-  ChannelNode.prototype.generateCode_626509$ = function (generator) {
+  SplitNode.prototype.generateCode_626509$ = function (generator) {
     generator.appendMain_61zpoe$(this.output.declare() + ' = ' + this.input.name + '.' + this.outChannels + ';');
   };
-  ChannelNode.$metadata$ = {
+  SplitNode.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'ChannelNode',
+    simpleName: 'SplitNode',
+    interfaces: [ShaderNode]
+  };
+  function CombineNode(outType, graph) {
+    ShaderNode.call(this, 'combine_' + graph.nextNodeId, graph);
+    this.inX = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.inY = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.inZ = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.inW = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    var tmp$;
+    switch (outType.name) {
+      case 'VEC_2F':
+        tmp$ = new ShaderNodeIoVar(new ModelVar2f(this.name + '_out'), this);
+        break;
+      case 'VEC_3F':
+        tmp$ = new ShaderNodeIoVar(new ModelVar3f(this.name + '_out'), this);
+        break;
+      case 'VEC_4F':
+        tmp$ = new ShaderNodeIoVar(new ModelVar4f(this.name + '_out'), this);
+        break;
+      default:throw IllegalArgumentException_init('Only allowed out types are VEC_2F, VEC_3F and VEC_4F');
+    }
+    this.output = tmp$;
+  }
+  CombineNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inX, this.inY, this.inZ, this.inW]);
+  };
+  CombineNode.prototype.generateCode_626509$ = function (generator) {
+    switch (this.output.variable.type.name) {
+      case 'VEC_2F':
+        generator.appendMain_61zpoe$(this.output.declare() + ' = vec2(' + this.inX.ref1f() + ', ' + this.inY.ref1f() + ');');
+        break;
+      case 'VEC_3F':
+        generator.appendMain_61zpoe$(this.output.declare() + ' = vec3(' + this.inX.ref1f() + ', ' + this.inY.ref1f() + ', ' + this.inZ.ref1f() + ');');
+        break;
+      case 'VEC_4F':
+        generator.appendMain_61zpoe$(this.output.declare() + ' = vec4(' + this.inX.ref1f() + ', ' + this.inY.ref1f() + ', ' + this.inZ.ref1f() + ', ' + this.inW.ref1f() + ');');
+        break;
+      default:throw IllegalArgumentException_init('Only allowed out types are VEC_2F, VEC_3F and VEC_4F');
+    }
+  };
+  CombineNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CombineNode',
     interfaces: [ShaderNode]
   };
   function AttributeNode(attribute, graph) {
@@ -14235,7 +14285,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function FullScreenQuadTexPosNode(graph) {
     ShaderNode.call(this, 'fullScreenQuad_' + graph.nextNodeId, graph);
     this.inTexCoord = new ShaderNodeIoVar(new ModelVar2fConst(Vec2f$Companion_getInstance().ZERO));
-    this.inDepth = new ShaderNodeIoVar(new ModelVar1fConst(0.5));
+    this.inDepth = new ShaderNodeIoVar(new ModelVar1fConst(0.999));
     this.outQuadPos = new ShaderNodeIoVar(new ModelVar4f(this.name + '_outPos'), this);
   }
   FullScreenQuadTexPosNode.prototype.setup_llmhyc$ = function (shaderGraph) {
@@ -23698,55 +23748,47 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.aoNode_0 = null;
     this.noiseTex_0 = this.makeNoiseTexture_0();
     var tmp$;
-    var $receiver = new OrthographicCamera();
-    $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
-    $receiver.isKeepAspectRatio = false;
-    $receiver.left = 0.0;
-    $receiver.right = 1.0;
-    $receiver.top = 1.0;
-    $receiver.bottom = 0.0;
-    this.camera = $receiver;
     this.clearColor = Color$Companion_getInstance().WHITE;
-    var $receiver_0 = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(AmbientOcclusionPass_init$lambda$lambda$lambda);
-    var $receiver_1 = new ShaderModel('AoPass');
+    var $receiver_0 = new ShaderModel('AoPass');
     var ifScreenPos = {v: null};
-    var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifScreenPos.v = $receiver_2.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_2.attrTexCoords().output);
-    $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outVec4;
-    var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
-    var noiseTex = $receiver_3.textureNode_61zpoe$('noiseTex');
-    var aoUnis = $receiver_3.addNode_u9w9by$(new AmbientOcclusionPass$AoUniforms(this, screenCam, true, $receiver_3.stage));
+    var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
+    ifScreenPos.v = $receiver_1.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_1.attrTexCoords().output);
+    $receiver_1.positionOutput = $receiver_1.fullScreenQuadPositionNode_r20yfm$($receiver_1.attrTexCoords().output).outQuadPos;
+    var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
+    var noiseTex = $receiver_2.textureNode_61zpoe$('noiseTex');
+    var aoUnis = $receiver_2.addNode_u9w9by$(new AmbientOcclusionPass$AoUniforms(this, screenCam, true, $receiver_2.stage));
     var depthTex;
     var depthComponent;
     var origin;
     var normal;
     if (this.aoSetup.isDeferred) {
-      depthTex = $receiver_3.textureNode_61zpoe$('positionTex');
+      depthTex = $receiver_2.textureNode_61zpoe$('positionTex');
       depthComponent = 'z';
-      origin = $receiver_3.channelNode_500t7j$($receiver_3.textureSamplerNode_ce41yx$(depthTex, ifScreenPos.v.output).outColor, 'xyz').output;
-      normal = $receiver_3.channelNode_500t7j$($receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('normalTex'), ifScreenPos.v.output).outColor, 'xyz').output;
+      origin = $receiver_2.splitNode_500t7j$($receiver_2.textureSamplerNode_ce41yx$(depthTex, ifScreenPos.v.output).outColor, 'xyz').output;
+      normal = $receiver_2.splitNode_500t7j$($receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('normalTex'), ifScreenPos.v.output).outColor, 'xyz').output;
     } else {
-      depthTex = $receiver_3.textureNode_61zpoe$('normalDepthTex');
+      depthTex = $receiver_2.textureNode_61zpoe$('normalDepthTex');
       depthComponent = 'a';
-      var normalDepth = $receiver_3.textureSamplerNode_ce41yx$(depthTex, ifScreenPos.v.output).outColor;
-      normal = $receiver_3.channelNode_500t7j$(normalDepth, 'xyz').output;
-      var unProj = $receiver_3.addNode_u9w9by$(new AmbientOcclusionPass$UnprojectPosNode(aoUnis, $receiver_3.stage));
-      unProj.inDepth = $receiver_3.channelNode_500t7j$(normalDepth, 'a').output;
+      var normalDepth = $receiver_2.textureSamplerNode_ce41yx$(depthTex, ifScreenPos.v.output).outColor;
+      normal = $receiver_2.splitNode_500t7j$(normalDepth, 'xyz').output;
+      var unProj = $receiver_2.addNode_u9w9by$(new AmbientOcclusionPass$UnprojectPosNode(aoUnis, $receiver_2.stage));
+      unProj.inDepth = $receiver_2.splitNode_500t7j$(normalDepth, 'a').output;
       unProj.inScreenPos = ifScreenPos.v.output;
       origin = unProj.outPosition;
     }
-    var aoNd = $receiver_3.addNode_u9w9by$(new AmbientOcclusionPass$AoNode(this, aoUnis, noiseTex, depthTex, depthComponent, $receiver_3.stage));
+    var aoNd = $receiver_2.addNode_u9w9by$(new AmbientOcclusionPass$AoNode(this, aoUnis, noiseTex, depthTex, depthComponent, $receiver_2.stage));
     aoNd.inScreenPos = ifScreenPos.v.output;
     aoNd.inOrigin = origin;
     aoNd.inNormal = normal;
-    $receiver_3.colorOutput_a3v4si$(aoNd.outColor);
-    var model = $receiver_1;
-    var $receiver_4 = new ModeledShader(model);
-    $receiver_4.onCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(this, model));
-    mesh.pipelineLoader = $receiver_4;
-    $receiver_0.unaryPlus_uv0sim$(mesh);
+    $receiver_2.colorOutput_a3v4si$(aoNd.outColor);
+    var model = $receiver_0;
+    var $receiver_3 = new ModeledShader(model);
+    $receiver_3.onCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(this, model));
+    mesh.pipelineLoader = $receiver_3;
+    $receiver.unaryPlus_uv0sim$(mesh);
   }
   Object.defineProperty(AmbientOcclusionPass.prototype, 'kernelSz', {
     get: function () {
@@ -24331,35 +24373,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     OffscreenRenderPass2d.call(this, new Group(), aoPass.texWidth, aoPass.texHeight, TexFormat$R_getInstance());
     this.uRadius_0 = Uniform1f_init(1.0, 'uRadius');
     var tmp$;
-    var $receiver = new OrthographicCamera();
-    $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
-    $receiver.isKeepAspectRatio = false;
-    $receiver.left = 0.0;
-    $receiver.right = 1.0;
-    $receiver.top = 1.0;
-    $receiver.bottom = 0.0;
-    this.camera = $receiver;
-    var $receiver_0 = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(AoDenoisePass_init$lambda$lambda$lambda);
-    var $receiver_1 = new ShaderModel('AoDenoisePass');
+    var $receiver_0 = new ShaderModel('AoDenoisePass');
     var ifTexCoords = {v: null};
-    var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifTexCoords.v = $receiver_2.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_2.attrTexCoords().output);
-    $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outVec4;
-    var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
-    var noisyAo = $receiver_3.textureNode_61zpoe$('noisyAo');
-    var depth = $receiver_3.textureNode_61zpoe$('depth');
-    var radius = $receiver_3.pushConstantNode1f_978i2u$(this.uRadius_0);
-    var blurNd = $receiver_3.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, depth, dephtComponent, $receiver_3.stage));
+    var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
+    ifTexCoords.v = $receiver_1.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_1.attrTexCoords().output);
+    $receiver_1.positionOutput = $receiver_1.fullScreenQuadPositionNode_r20yfm$($receiver_1.attrTexCoords().output).outQuadPos;
+    var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
+    var noisyAo = $receiver_2.textureNode_61zpoe$('noisyAo');
+    var depth = $receiver_2.textureNode_61zpoe$('depth');
+    var radius = $receiver_2.pushConstantNode1f_978i2u$(this.uRadius_0);
+    var blurNd = $receiver_2.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, depth, dephtComponent, $receiver_2.stage));
     blurNd.inScreenPos = ifTexCoords.v.output;
     blurNd.radius = radius.output;
-    $receiver_3.colorOutput_a3v4si$(blurNd.outColor);
-    var model = $receiver_1;
-    var $receiver_4 = new ModeledShader(model);
-    $receiver_4.onCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model, depthTexture));
-    mesh.pipelineLoader = $receiver_4;
-    $receiver_0.unaryPlus_uv0sim$(mesh);
+    $receiver_2.colorOutput_a3v4si$(blurNd.outColor);
+    var model = $receiver_0;
+    var $receiver_3 = new ModeledShader(model);
+    $receiver_3.onCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model, depthTexture));
+    mesh.pipelineLoader = $receiver_3;
+    $receiver.unaryPlus_uv0sim$(mesh);
   }
   Object.defineProperty(AoDenoisePass.prototype, 'radius', {
     get: function () {
@@ -26615,7 +26649,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var lightColor = ifLightColor.v.output;
     var lightPos = ifLightPos.v.output;
-    var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.channelNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
+    var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
     var texPos = $receiver_1.addNode_ze33is$($receiver_1.multiplyNode_tuikh5$(xyPos, 0.5).output, new ShaderNodeIoVar(new ModelVar1fConst(0.5))).output;
     var coord = texPos;
     var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredMrtShader$MrtDeMultiplexNode($receiver_1.stage));
@@ -27652,8 +27686,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function DeferredPointLights$mesh$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.sphereProps.icoDefaults();
-    $receiver_0.steps = 1;
-    $receiver_0.radius = 1.1;
+    $receiver_0.steps = 0;
+    $receiver_0.radius = 1.176;
     $receiver.icoSphere_mojs8w$($receiver.sphereProps);
     return Unit;
   }
@@ -41287,7 +41321,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.AoMapSampleNode = AoMapSampleNode;
   package$shadermodel.NormalMapNode = NormalMapNode;
   package$shadermodel.DisplacementMapNode = DisplacementMapNode;
-  package$shadermodel.ChannelNode = ChannelNode;
+  package$shadermodel.SplitNode = SplitNode;
+  package$shadermodel.CombineNode = CombineNode;
   package$shadermodel.AttributeNode = AttributeNode;
   package$shadermodel.InstanceAttributeNode = InstanceAttributeNode;
   package$shadermodel.StageInterfaceNode = StageInterfaceNode;

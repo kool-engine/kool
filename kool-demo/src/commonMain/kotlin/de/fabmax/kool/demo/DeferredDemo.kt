@@ -3,11 +3,12 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
@@ -35,7 +36,7 @@ class DeferredDemo(ctx: KoolContext) {
     private var autoRotate = true
     private val rand = Random(1337)
 
-    private var lightCount = 1000
+    private var lightCount = 2000
     private val lights = mutableListOf<AnimatedLight>()
 
     private val colorMap = Cycler(listOf(
@@ -45,7 +46,7 @@ class DeferredDemo(ctx: KoolContext) {
             ColorMap("Hot-Cold", listOf(Color.MD_PINK, Color.MD_CYAN)),
             ColorMap("Summer", listOf(Color.MD_ORANGE, Color.MD_BLUE, Color.MD_GREEN)),
             ColorMap("White", listOf(Color.WHITE))
-    ))
+    )).apply { index = 1 }
 
     init {
         mainScene = makeDeferredScene()
@@ -94,13 +95,13 @@ class DeferredDemo(ctx: KoolContext) {
         content.apply {
             +scene.orbitInputTransform {
                 // Set some initial rotation so that we look down on the scene
-                setMouseRotation(0f, -30f)
+                setMouseRotation(0f, -40f)
                 // Add camera to the transform group
                 +camera
-                zoom = 13.0
+                zoom = 28.0
                 maxZoom = 50.0
 
-                translation.set(0.0, -3.0, 0.0)
+                translation.set(0.0, -11.0, 0.0)
                 onUpdate += { _, ctx ->
                     if (autoRotate) {
                         verticalRotation += ctx.deltaT * 3f
@@ -244,10 +245,54 @@ class DeferredDemo(ctx: KoolContext) {
             containerUi { BlankComponentUi() }
         }
 
+        val mapGroup = transformGroup {
+            isVisible = false
+
+            val positions = listOf(
+                    Vec2f(0f, 0f),
+                    Vec2f(0f, 1.2f),
+                    Vec2f(0f, 2.4f),
+                    Vec2f(1.1f, 1.2f),
+                    Vec2f(1.1f, 2.4f))
+
+            positions.forEachIndexed { i, p ->
+                +textureMesh {
+                    generate {
+                        rect {
+                            origin.set(p.x, p.y, 0f)
+                            size.set(1f, 1f)
+                            mirrorTexCoordsY()
+                        }
+                    }
+
+                    pipelineLoader = when (i) {
+                        0 -> ModeledShader.TextureColor(mrtPass.albedoMetal, "colorTex", rgbMapColorModel(0f, 1f))
+                        1 -> ModeledShader.TextureColor(mrtPass.normalRoughness, "colorTex", rgbMapColorModel(1f, 0.5f))
+                        2 -> ModeledShader.TextureColor(mrtPass.positionAo, "colorTex", rgbMapColorModel(10f, 0.05f))
+                        3 -> ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", AoDemo.aoMapColorModel())
+                        4 -> MetalRoughAoTex(mrtPass)
+                        else -> ModeledShader.StaticColor(Color.MAGENTA)
+                    }
+                }
+            }
+
+            onUpdate += { rp, ctx ->
+                val mapSz = 0.26f
+                val scaleX = rp.viewport.width * mapSz
+                val scaleY = scaleX * (rp.viewport.height.toFloat() / rp.viewport.width.toFloat())
+                val margin = rp.viewport.height * 0.05f
+
+                setIdentity()
+                translate(margin, margin, 0f)
+                scale(scaleX, scaleY, 1f)
+            }
+        }
+        +mapGroup
+
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-530f), zero())
-            layoutSpec.setSize(dps(250f), dps(410f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-605f), zero())
+            layoutSpec.setSize(dps(250f), dps(485f), full())
 
             var y = -40f
             +label("Dynamic Lights") {
@@ -315,12 +360,21 @@ class DeferredDemo(ctx: KoolContext) {
             }
 
             y -= 40f
-            +label("Scene") {
+            +label("Deferred Shading") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+            }
+            y -= 35f
+            +toggleButton("Show Maps") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = mapGroup.isVisible
+                onStateChange += {
+                    mapGroup.isVisible = isEnabled
+                }
             }
             y -= 35f
             +toggleButton("Ambient Occlusion") {
@@ -330,6 +384,15 @@ class DeferredDemo(ctx: KoolContext) {
                 onStateChange += {
                     setAoState(isEnabled)
                 }
+            }
+
+            y -= 40f
+            +label("Scene") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                font.setCustom(smallFont)
+                textColor.setCustom(theme.accentColor)
+                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 35f
             +toggleButton("Auto Rotate") {
@@ -395,4 +458,53 @@ class DeferredDemo(ctx: KoolContext) {
     }
 
     private class ColorMap(val name: String, val colors: List<Color>)
+
+    private fun rgbMapColorModel(offset: Float, scale: Float) = ShaderModel("rgbMap").apply {
+        val ifTexCoords: StageInterfaceNode
+
+        vertexStage {
+            ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+            positionOutput = simpleVertexPositionNode().outVec4
+        }
+        fragmentStage {
+            val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
+            val rgb = splitNode(sampler.outColor, "rgb").output
+            val scaled = multiplyNode(addNode(rgb, ShaderNodeIoVar(ModelVar1fConst(offset))).output, scale)
+            colorOutput(scaled.output, alpha = ShaderNodeIoVar(ModelVar1fConst(1f)))
+        }
+    }
+
+    private class MetalRoughAoTex(val mrtPass: DeferredMrtPass) : ModeledShader(shaderModel()) {
+        override fun onPipelineCreated(pipeline: Pipeline) {
+            model.findNode<TextureNode>("positionAo")!!.sampler.texture = mrtPass.positionAo
+            model.findNode<TextureNode>("normalRough")!!.sampler.texture = mrtPass.normalRoughness
+            model.findNode<TextureNode>("albedoMetal")!!.sampler.texture = mrtPass.albedoMetal
+            super.onPipelineCreated(pipeline)
+        }
+
+        companion object {
+            fun shaderModel() = ShaderModel().apply {
+                val ifTexCoords: StageInterfaceNode
+
+                vertexStage {
+                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                    positionOutput = simpleVertexPositionNode().outVec4
+                }
+                fragmentStage {
+                    val aoSampler = textureSamplerNode(textureNode("positionAo"), ifTexCoords.output)
+                    val roughSampler = textureSamplerNode(textureNode("normalRough"), ifTexCoords.output)
+                    val metalSampler = textureSamplerNode(textureNode("albedoMetal"), ifTexCoords.output)
+                    val ao = splitNode(aoSampler.outColor, "a").output
+                    val rough = splitNode(roughSampler.outColor, "a").output
+                    val metal = splitNode(metalSampler.outColor, "a").output
+                    val outColor = combineNode(GlslType.VEC_3F).apply {
+                        inX = ao
+                        inY = rough
+                        inZ = metal
+                    }
+                    colorOutput(outColor.output, alpha = ShaderNodeIoVar(ModelVar1fConst(1f)))
+                }
+            }
+        }
+    }
 }

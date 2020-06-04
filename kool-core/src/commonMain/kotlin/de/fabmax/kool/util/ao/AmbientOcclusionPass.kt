@@ -63,17 +63,17 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         if (aoSetup.isDeferred) {
                             depthTex = textureNode("positionTex")
                             depthComponent = "z"
-                            origin = channelNode(textureSamplerNode(depthTex, ifScreenPos.output).outColor, "xyz").output
-                            normal = channelNode(textureSamplerNode(textureNode("normalTex"), ifScreenPos.output).outColor, "xyz").output
+                            origin = splitNode(textureSamplerNode(depthTex, ifScreenPos.output).outColor, "xyz").output
+                            normal = splitNode(textureSamplerNode(textureNode("normalTex"), ifScreenPos.output).outColor, "xyz").output
 
                         } else {
                             depthTex = textureNode("normalDepthTex")
                             depthComponent = "a"
                             val normalDepth = textureSamplerNode(depthTex, ifScreenPos.output).outColor
-                            normal = channelNode(normalDepth, "xyz").output
+                            normal = splitNode(normalDepth, "xyz").output
 
                             val unProj = addNode(UnprojectPosNode(aoUnis, stage))
-                            unProj.inDepth = channelNode(normalDepth, "a").output
+                            unProj.inDepth = splitNode(normalDepth, "a").output
                             unProj.inScreenPos = ifScreenPos.output
                             origin = unProj.outPosition
                         }

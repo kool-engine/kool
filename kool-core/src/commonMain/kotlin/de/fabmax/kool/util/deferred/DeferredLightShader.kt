@@ -81,7 +81,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val lightColor = ifLightColor.output
                 val lightPos = ifLightPos.output
 
-                val xyPos = divideNode(channelNode(ifFragCoords.output, "xy").output, channelNode(ifFragCoords.output, "w").output).output
+                val xyPos = divideNode(splitNode(ifFragCoords.output, "xy").output, splitNode(ifFragCoords.output, "w").output).output
                 val texPos = addNode(multiplyNode(xyPos, 0.5f).output, ShaderNodeIoVar(ModelVar1fConst(0.5f))).output
 
                 val coord = texPos

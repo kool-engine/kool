@@ -46,6 +46,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
   var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
   var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
+  var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var BufferedTextureData = $module$kool.de.fabmax.kool.pipeline.BufferedTextureData;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var Math_0 = Math;
@@ -67,24 +68,33 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
+  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
+  var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
+  var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var numberToInt = Kotlin.numberToInt;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
+  var TextureNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.TextureNode;
+  var ensureNotNull = Kotlin.ensureNotNull;
+  var GlslType = $module$kool.de.fabmax.kool.pipeline.GlslType;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var DeferredPointLights$DeferredPointLights$PointLight_init = $module$kool.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
+  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
+  var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
+  var wrapFunction = Kotlin.wrapFunction;
+  var equals = Kotlin.equals;
+  var throwCCE = Kotlin.throwCCE;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
   var defineInlineFunction = Kotlin.defineInlineFunction;
-  var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var DebugOverlay$Position = $module$kool.de.fabmax.kool.util.DebugOverlay.Position;
   var DebugOverlay = $module$kool.de.fabmax.kool.util.DebugOverlay;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
-  var throwCCE = Kotlin.throwCCE;
-  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -103,12 +113,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
-  var ensureNotNull = Kotlin.ensureNotNull;
   var math_0 = Kotlin.kotlin.math;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
-  var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
   var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
@@ -128,17 +136,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
-  var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
   var now = $module$kool.de.fabmax.kool.now;
-  var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
-  var wrapFunction = Kotlin.wrapFunction;
-  var equals = Kotlin.equals;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
@@ -150,8 +153,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_4gy91$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  AmbientOcclusionDemo$Red2GrayNode.prototype = Object.create(ShaderNode.prototype);
-  AmbientOcclusionDemo$Red2GrayNode.prototype.constructor = AmbientOcclusionDemo$Red2GrayNode;
+  AoDemo$Companion$Red2GrayNode.prototype = Object.create(ShaderNode.prototype);
+  AoDemo$Companion$Red2GrayNode.prototype.constructor = AoDemo$Companion$Red2GrayNode;
+  DeferredDemo$MetalRoughAoTex.prototype = Object.create(ModeledShader.prototype);
+  DeferredDemo$MetalRoughAoTex.prototype.constructor = DeferredDemo$MetalRoughAoTex;
   InstanceDemo$BunnyInstance.prototype = Object.create(InstancedLodController$Instance.prototype);
   InstanceDemo$BunnyInstance.prototype.constructor = InstanceDemo$BunnyInstance;
   MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
@@ -171,56 +176,57 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
   TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
   function aoDemo(ctx) {
-    var aoDemo = new AmbientOcclusionDemo(ctx);
+    var aoDemo = new AoDemo(ctx);
     return listOf([aoDemo.mainScene, aoDemo.menu]);
   }
-  function AmbientOcclusionDemo(ctx) {
+  function AoDemo(ctx) {
+    AoDemo$Companion_getInstance();
     this.mainScene = null;
     this.menu = null;
     this.autoRotate_0 = true;
     this.spotLight_0 = true;
-    this.noAoMap_0 = new Texture(void 0, AmbientOcclusionDemo$noAoMap$lambda);
-    this.aoPipeline_jgx896$_0 = this.aoPipeline_jgx896$_0;
+    this.noAoMap_0 = new Texture(void 0, AoDemo$noAoMap$lambda);
+    this.aoPipeline_953qvj$_0 = this.aoPipeline_953qvj$_0;
     this.shadows_0 = ArrayList_init();
     this.mainScene = this.makeMainScene_0(ctx);
     this.menu = this.menu_0(ctx);
     this.updateLighting_0();
   }
-  Object.defineProperty(AmbientOcclusionDemo.prototype, 'aoPipeline_0', {
+  Object.defineProperty(AoDemo.prototype, 'aoPipeline_0', {
     get: function () {
-      if (this.aoPipeline_jgx896$_0 == null)
+      if (this.aoPipeline_953qvj$_0 == null)
         return throwUPAE('aoPipeline');
-      return this.aoPipeline_jgx896$_0;
+      return this.aoPipeline_953qvj$_0;
     },
     set: function (aoPipeline) {
-      this.aoPipeline_jgx896$_0 = aoPipeline;
+      this.aoPipeline_953qvj$_0 = aoPipeline;
     }
   });
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda(this$AmbientOcclusionDemo, closure$ctx, this$) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda(this$AoDemo, closure$ctx, this$) {
     return function ($receiver, f, f_0) {
-      if (this$AmbientOcclusionDemo.autoRotate_0) {
+      if (this$AoDemo.autoRotate_0) {
         this$.verticalRotation += closure$ctx.deltaT * 3.0;
       }return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda(this$, this$AmbientOcclusionDemo, closure$ctx) {
+  function AoDemo$makeMainScene$lambda$lambda(this$, this$AoDemo, closure$ctx) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(0.0, -20.0);
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoom = 8.0;
       var $receiver_0 = $receiver.onUpdate;
-      var element = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda(this$AmbientOcclusionDemo, closure$ctx, $receiver);
+      var element = AoDemo$makeMainScene$lambda$lambda$lambda(this$AoDemo, closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_0(this$AmbientOcclusionDemo) {
+  function AoDemo$makeMainScene$lambda$lambda_0(this$AoDemo) {
     return function ($receiver, it) {
-      this$AmbientOcclusionDemo.noAoMap_0.dispose();
+      this$AoDemo.noAoMap_0.dispose();
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh) {
     return function ($receiver) {
       for (var x = -3; x <= 3; x++) {
         for (var y = -3; y <= 3; y++) {
@@ -241,13 +247,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
-      addAll($receiver.shadowMaps, this$AmbientOcclusionDemo.shadows_0);
+      addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
       $receiver.roughness = 0.1;
       $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
+      $receiver.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
       $receiver.isImageBasedLighting = true;
       $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
       $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
@@ -255,107 +261,107 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$shader) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AoDemo, closure$shader) {
     return function ($receiver, f, f_0) {
-      if (this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled) {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
+      if (this$AoDemo.aoPipeline_0.aoPass.isEnabled) {
+        closure$shader.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
       } else {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.noAoMap_0;
+        closure$shader.scrSpcAmbientOcclusionMap = this$AoDemo.noAoMap_0;
       }
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_0(closure$teapotMesh, this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda_0(closure$teapotMesh, this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh));
-      var shader = pbrShader(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh));
+      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
       $receiver.pipelineLoader = shader;
       var $receiver_0 = $receiver.onUpdate;
-      var element = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, shader);
+      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AoDemo, shader);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AoDemo) {
     return function ($receiver) {
       var texScale = 0.1955;
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_0 = this$AmbientOcclusionDemo;
+      var this$AoDemo_0 = this$AoDemo;
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
       var $receiver_0 = $receiver.rectProps.defaults();
       $receiver_0.size.set_dleff0$(12.0, 12.0);
       $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_0.setUvs_0($receiver_0, 0.06, 0.0, $receiver_0.size.x * texScale, $receiver_0.size.y * texScale);
+      this$AoDemo_0.setUvs_0($receiver_0, 0.06, 0.0, $receiver_0.size.x * texScale, $receiver_0.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_1 = this$AmbientOcclusionDemo;
+      var this$AoDemo_1 = this$AoDemo;
       $receiver.translate_y2kzbl$(0.0, -0.25, 0.0);
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
       var $receiver_1 = $receiver.rectProps.defaults();
       $receiver_1.size.set_dleff0$(12.0, 12.0);
       $receiver_1.origin.set_y2kzbl$($receiver_1.size.x, $receiver_1.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_1.setUvs_0($receiver_1, 0.06, 0.0, $receiver_1.size.x * texScale, $receiver_1.size.y * texScale);
+      this$AoDemo_1.setUvs_0($receiver_1, 0.06, 0.0, $receiver_1.size.x * texScale, $receiver_1.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_2 = this$AmbientOcclusionDemo;
+      var this$AoDemo_2 = this$AoDemo;
       $receiver.translate_y2kzbl$(-6.0, -0.125, 0.0);
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_Y_AXIS);
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
       var $receiver_2 = $receiver.rectProps.defaults();
       $receiver_2.size.set_dleff0$(0.25, 12.0);
       $receiver_2.origin.set_y2kzbl$($receiver_2.size.x, $receiver_2.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_2.setUvs_0($receiver_2, 0.06 - $receiver_2.size.x * texScale, 0.0, $receiver_2.size.x * texScale, $receiver_2.size.y * texScale);
+      this$AoDemo_2.setUvs_0($receiver_2, 0.06 - $receiver_2.size.x * texScale, 0.0, $receiver_2.size.x * texScale, $receiver_2.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_3 = this$AmbientOcclusionDemo;
+      var this$AoDemo_3 = this$AoDemo;
       $receiver.translate_y2kzbl$(6.0, -0.125, 0.0);
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Y_AXIS);
       $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.Z_AXIS);
       var $receiver_3 = $receiver.rectProps.defaults();
       $receiver_3.size.set_dleff0$(0.25, 12.0);
       $receiver_3.origin.set_y2kzbl$($receiver_3.size.x, $receiver_3.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_3.setUvs_0($receiver_3, 0.06 + 12 * texScale, 0.0, $receiver_3.size.x * texScale, $receiver_3.size.y * texScale);
+      this$AoDemo_3.setUvs_0($receiver_3, 0.06 + 12 * texScale, 0.0, $receiver_3.size.x * texScale, $receiver_3.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_4 = this$AmbientOcclusionDemo;
+      var this$AoDemo_4 = this$AoDemo;
       $receiver.translate_y2kzbl$(0.0, -0.125, 6.0);
       var $receiver_4 = $receiver.rectProps.defaults();
       $receiver_4.size.set_dleff0$(12.0, 0.25);
       $receiver_4.origin.set_y2kzbl$($receiver_4.size.x, $receiver_4.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_4.setUvs_0($receiver_4, 0.06, 12.0 * texScale, $receiver_4.size.x * texScale, $receiver_4.size.y * texScale);
+      this$AoDemo_4.setUvs_0($receiver_4, 0.06, 12.0 * texScale, $receiver_4.size.x * texScale, $receiver_4.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
-      var this$AmbientOcclusionDemo_5 = this$AmbientOcclusionDemo;
+      var this$AoDemo_5 = this$AoDemo;
       $receiver.translate_y2kzbl$(0.0, -0.125, -6.0);
       $receiver.rotate_ad55pp$(180.0, Vec3f.Companion.X_AXIS);
       var $receiver_5 = $receiver.rectProps.defaults();
       $receiver_5.size.set_dleff0$(12.0, 0.25);
       $receiver_5.origin.set_y2kzbl$($receiver_5.size.x, $receiver_5.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_5.setUvs_0($receiver_5, 0.06, -0.25 * texScale, $receiver_5.size.x * texScale, $receiver_5.size.y * texScale);
+      this$AoDemo_5.setUvs_0($receiver_5, 0.06, -0.25 * texScale, $receiver_5.size.x * texScale, $receiver_5.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       return Unit;
     };
   }
-  function Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.$metadata$ = {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda;
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -383,27 +389,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.$metadata$ = {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0;
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -431,27 +437,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.$metadata$ = {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1;
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -479,27 +485,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.$metadata$ = {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2;
-  Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -527,19 +533,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
-      addAll($receiver.shadowMaps, this$AmbientOcclusionDemo.shadows_0);
+      addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
       $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
+      $receiver.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
       $receiver.isImageBasedLighting = true;
       $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
       $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
@@ -547,14 +553,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
       $receiver.isAmbientOcclusionMapped = true;
-      $receiver.albedoMap = new Texture(void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda);
-      $receiver.ambientOcclusionMap = new Texture(void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0);
-      $receiver.normalMap = new Texture(void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1);
-      $receiver.roughnessMap = new Texture(void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2);
+      $receiver.albedoMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda);
+      $receiver.ambientOcclusionMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0);
+      $receiver.normalMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1);
+      $receiver.roughnessMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(closure$shader, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(closure$shader, closure$hdriMap) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
       (tmp$ = closure$shader.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
@@ -567,80 +573,80 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$shader) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AoDemo, closure$shader) {
     return function ($receiver, f, f_0) {
-      if (this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled) {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.aoPipeline_0.aoMap;
+      if (this$AoDemo.aoPipeline_0.aoPass.isEnabled) {
+        closure$shader.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
       } else {
-        closure$shader.scrSpcAmbientOcclusionMap = this$AmbientOcclusionDemo.noAoMap_0;
+        closure$shader.scrSpcAmbientOcclusionMap = this$AoDemo.noAoMap_0;
       }
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$hdriMap) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo));
-      var shader = pbrShader(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AoDemo));
+      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
       $receiver.pipelineLoader = shader;
       var $receiver_0 = $receiver.onDispose;
-      var element = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_4(shader, closure$hdriMap);
+      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(shader, closure$hdriMap);
       $receiver_0.add_11rb$(element);
       var $receiver_1 = $receiver.onUpdate;
-      var element_0 = AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, shader);
+      var element_0 = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AoDemo, shader);
       $receiver_1.add_11rb$(element_0);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(this$, this$AmbientOcclusionDemo) {
+  function AoDemo$makeMainScene$lambda$lambda_1(this$, this$AoDemo) {
     return function (teapotMesh, hdriMap) {
       var irrMapPass = new IrradianceMapPass(this$, hdriMap);
       var reflMapPass = new ReflectionMapPass(this$, hdriMap);
       var brdfLutPass = new BrdfLutPass(this$);
-      this$.unaryPlus_uv0sim$(colorMesh('teapots', AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this$AmbientOcclusionDemo, irrMapPass, reflMapPass, brdfLutPass)));
-      this$.unaryPlus_uv0sim$(textureMesh('ground', true, AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, irrMapPass, reflMapPass, brdfLutPass, hdriMap)));
+      this$.unaryPlus_uv0sim$(colorMesh('teapots', AoDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this$AoDemo, irrMapPass, reflMapPass, brdfLutPass)));
+      this$.unaryPlus_uv0sim$(textureMesh('ground', true, AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, irrMapPass, reflMapPass, brdfLutPass, hdriMap)));
       this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(closure$loadingAssets) {
+  function AoDemo$makeMainScene$lambda$lambda_2(closure$loadingAssets) {
     return function (tex) {
       closure$loadingAssets.hdriMap = tex;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
+  function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
       closure$loadingAssets.teapotMesh = it;
       return Unit;
     };
   }
-  AmbientOcclusionDemo.prototype.makeMainScene_0 = function (ctx) {
+  AoDemo.prototype.makeMainScene_0 = function (ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, AmbientOcclusionDemo$makeMainScene$lambda$lambda($receiver, this, ctx)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, AoDemo$makeMainScene$lambda$lambda($receiver, this, ctx)));
     this.shadows_0.add_11rb$(new SimpleShadowMap($receiver, 0, 2048));
     this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
-    $receiver.onDispose.add_11rb$(AmbientOcclusionDemo$makeMainScene$lambda$lambda_0(this));
-    var loadingAssets = new AmbientOcclusionDemo$LoadingAssets(AmbientOcclusionDemo$makeMainScene$lambda$lambda_1($receiver, this));
+    $receiver.onDispose.add_11rb$(AoDemo$makeMainScene$lambda$lambda_0(this));
+    var loadingAssets = new AoDemo$LoadingAssets(AoDemo$makeMainScene$lambda$lambda_1($receiver, this));
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(loadingAssets));
-    this.loadModel_0(ctx, 'teapot.kmfz', AmbientOcclusionDemo$makeMainScene$lambda$lambda_3(loadingAssets));
+    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AoDemo$makeMainScene$lambda$lambda_2(loadingAssets));
+    this.loadModel_0(ctx, 'teapot.kmfz', AoDemo$makeMainScene$lambda$lambda_3(loadingAssets));
     return $receiver;
   };
-  AmbientOcclusionDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
+  AoDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
     $receiver.texCoordUpperLeft.set_dleff0$(u, v);
     $receiver.texCoordUpperRight.set_dleff0$(u + width, v);
     $receiver.texCoordLowerLeft.set_dleff0$(u, v + height);
     $receiver.texCoordLowerRight.set_dleff0$(u + width, v + height);
   };
-  function AmbientOcclusionDemo$updateLighting$lambda($receiver) {
+  function AoDemo$updateLighting$lambda($receiver) {
     var p = new Vec3f(6.0, 10.0, -6.0);
     $receiver.setSpot_nve3wz$(p, scale(p, -1.0).norm(), 40.0);
     $receiver.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.2).toLinear(), 500.0);
     return Unit;
   }
-  AmbientOcclusionDemo.prototype.updateLighting_0 = function () {
+  AoDemo.prototype.updateLighting_0 = function () {
     if (this.spotLight_0) {
-      this.mainScene.lighting.singleLight_q9zcvo$(AmbientOcclusionDemo$updateLighting$lambda);
+      this.mainScene.lighting.singleLight_q9zcvo$(AoDemo$updateLighting$lambda);
     } else {
       this.mainScene.lighting.lights.clear();
     }
@@ -651,36 +657,36 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       element.isShadowMapEnabled = this.spotLight_0;
     }
   };
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda(it) {
+  function AoDemo$menu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_0(it) {
+  function AoDemo$menu$lambda$lambda$lambda_0(it) {
     return new BlankComponentUi();
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(AmbientOcclusionDemo$menu$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(AmbientOcclusionDemo$menu$lambda$lambda$lambda_0);
+  function AoDemo$menu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(AoDemo$menu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(AoDemo$menu$lambda$lambda$lambda_0);
     return Unit;
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda($receiver) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.rectProps.defaults();
     $receiver_0.size.set_dleff0$(1.0, 1.0);
     $receiver_0.mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_1(this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_1(this$AoDemo) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AmbientOcclusionDemo.aoPipeline_0.aoMap, 'colorTex', this$AmbientOcclusionDemo.aoMapColorModel_0());
+      $receiver.generate_v2sixm$(AoDemo$menu$lambda$lambda$lambda$lambda);
+      $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AoDemo.aoPipeline_0.aoMap, 'colorTex', AoDemo$Companion_getInstance().aoMapColorModel());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_2(this$AmbientOcclusionDemo, this$) {
+  function AoDemo$menu$lambda$lambda$lambda_2(this$AoDemo, this$) {
     return function ($receiver, rp, f) {
       var screenSz = 0.33;
       var scaleX = rp.viewport.width * screenSz;
-      var scaleY = scaleX * (this$AmbientOcclusionDemo.aoPipeline_0.denoisePass.texHeight / this$AmbientOcclusionDemo.aoPipeline_0.denoisePass.texWidth);
+      var scaleY = scaleX * (this$AoDemo.aoPipeline_0.denoisePass.texHeight / this$AoDemo.aoPipeline_0.denoisePass.texWidth);
       this$.setIdentity();
       var margin = rp.viewport.height * 0.05;
       this$.translate_y2kzbl$(margin, margin, 0.0);
@@ -688,17 +694,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda_0(this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda_0(this$AoDemo) {
     return function ($receiver) {
       $receiver.isVisible = false;
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, AmbientOcclusionDemo$menu$lambda$lambda$lambda_1(this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, AoDemo$menu$lambda$lambda$lambda_1(this$AoDemo)));
       var $receiver_0 = $receiver.onUpdate;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda_2(this$AmbientOcclusionDemo, $receiver);
+      var element = AoDemo$menu$lambda$lambda$lambda_2(this$AoDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_3(closure$y, closure$smallFont, this$) {
+  function AoDemo$menu$lambda$lambda$lambda_3(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -708,48 +714,48 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_0(this$AoDemo) {
     return function ($receiver) {
-      this$AmbientOcclusionDemo.aoPipeline_0.setEnabled_6taknv$($receiver.isEnabled);
+      this$AoDemo.aoPipeline_0.setEnabled_6taknv$($receiver.isEnabled);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_4(closure$y, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_4(closure$y, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$AmbientOcclusionDemo.aoPipeline_0.aoPass.isEnabled;
+      $receiver.isEnabled = this$AoDemo.aoPipeline_0.aoPass.isEnabled;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_0(this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_0(this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_1(closure$aoMap) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_1(closure$aoMap) {
     return function ($receiver) {
       closure$aoMap.isVisible = $receiver.isEnabled;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_5(closure$y, closure$aoMap) {
+  function AoDemo$menu$lambda$lambda$lambda_5(closure$y, closure$aoMap) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = closure$aoMap.isVisible;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_1(closure$aoMap);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_1(closure$aoMap);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_6(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_6(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_7(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_7(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -757,31 +763,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AoDemo) {
     return function ($receiver, it) {
       closure$radiusVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoPipeline_0.radius = $receiver.value;
+      this$AoDemo.aoPipeline_0.radius = $receiver.value;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_8(closure$y, closure$radiusVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_8(closure$y, closure$radiusVal, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_2(closure$radiusVal, this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_9(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_9(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_10(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_10(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -789,31 +795,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AoDemo) {
     return function ($receiver, it) {
       closure$intensityVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoPipeline_0.intensity = $receiver.value;
+      this$AoDemo.aoPipeline_0.intensity = $receiver.value;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_11(closure$y, closure$intensityVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_11(closure$y, closure$intensityVal, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_3(closure$intensityVal, this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_12(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_12(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_13(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_13(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -821,31 +827,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AoDemo) {
     return function ($receiver, it) {
       closure$biasVal.text = toString($receiver.value, 2);
-      this$AmbientOcclusionDemo.aoPipeline_0.bias = $receiver.value;
+      this$AoDemo.aoPipeline_0.bias = $receiver.value;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(closure$y, closure$biasVal, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_14(closure$y, closure$biasVal, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_4(closure$biasVal, this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_15(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_16(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -853,31 +859,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_5(this$AoDemo, closure$kernelSzVal) {
     return function ($receiver, it) {
-      this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz = roundToInt($receiver.value);
-      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoPipeline_0.kernelSz.toString();
+      this$AoDemo.aoPipeline_0.aoPass.kernelSz = roundToInt($receiver.value);
+      closure$kernelSzVal.text = this$AoDemo.aoPipeline_0.kernelSz.toString();
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(closure$y, this$AmbientOcclusionDemo, closure$kernelSzVal) {
+  function AoDemo$menu$lambda$lambda$lambda_17(closure$y, this$AoDemo, closure$kernelSzVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_5(this$AoDemo, closure$kernelSzVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_18(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(closure$y) {
+  function AoDemo$menu$lambda$lambda$lambda_19(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -885,24 +891,24 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo, closure$mapSzVal) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_6(this$AoDemo, closure$mapSzVal) {
     return function ($receiver, it) {
-      this$AmbientOcclusionDemo.aoPipeline_0.size = roundToInt($receiver.value) / 10.0;
-      closure$mapSzVal.text = toString(this$AmbientOcclusionDemo.aoPipeline_0.size, 1) + ' x';
+      this$AoDemo.aoPipeline_0.size = roundToInt($receiver.value) / 10.0;
+      closure$mapSzVal.text = toString(this$AoDemo.aoPipeline_0.size, 1) + ' x';
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(closure$y, this$AmbientOcclusionDemo, closure$mapSzVal) {
+  function AoDemo$menu$lambda$lambda$lambda_20(closure$y, this$AoDemo, closure$mapSzVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo, closure$mapSzVal);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_6(this$AoDemo, closure$mapSzVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_21(closure$y, closure$smallFont, this$) {
+  function AoDemo$menu$lambda$lambda$lambda_21(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -912,106 +918,106 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_7(this$AoDemo) {
     return function ($receiver) {
-      this$AmbientOcclusionDemo.autoRotate_0 = $receiver.isEnabled;
+      this$AoDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_22(closure$y, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_22(closure$y, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$AmbientOcclusionDemo.autoRotate_0;
+      $receiver.isEnabled = this$AoDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_7(this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_8(this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda$lambda_8(this$AoDemo) {
     return function ($receiver) {
-      this$AmbientOcclusionDemo.spotLight_0 = $receiver.isEnabled;
-      this$AmbientOcclusionDemo.updateLighting_0();
+      this$AoDemo.spotLight_0 = $receiver.isEnabled;
+      this$AoDemo.updateLighting_0();
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_23(closure$y, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda$lambda$lambda_23(closure$y, this$AoDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$AmbientOcclusionDemo.spotLight_0;
+      $receiver.isEnabled = this$AoDemo.spotLight_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_8(this$AmbientOcclusionDemo);
+      var element = AoDemo$menu$lambda$lambda$lambda$lambda_8(this$AoDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda_1(closure$smallFont, this$, this$AmbientOcclusionDemo, closure$aoMap) {
+  function AoDemo$menu$lambda$lambda_1(closure$smallFont, this$, this$AoDemo, closure$aoMap) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-705.0), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(585.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ambient Occulsion', AmbientOcclusionDemo$menu$lambda$lambda$lambda_3(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ambient Occulsion', AoDemo$menu$lambda$lambda$lambda_3(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Enabled', AmbientOcclusionDemo$menu$lambda$lambda$lambda_4(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Enabled', AoDemo$menu$lambda$lambda$lambda_4(y, this$AoDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show AO Map', AmbientOcclusionDemo$menu$lambda$lambda$lambda_5(y, closure$aoMap)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show AO Map', AoDemo$menu$lambda$lambda$lambda_5(y, closure$aoMap)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_6(y)));
-      var radiusVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.radius, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_7(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius:', AoDemo$menu$lambda$lambda$lambda_6(y)));
+      var radiusVal = this$.label_tokfmu$(toString(this$AoDemo.aoPipeline_0.aoPass.radius, 2), AoDemo$menu$lambda$lambda$lambda_7(y));
       $receiver.unaryPlus_uv0sim$(radiusVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('radiusSlider', 0.1, 3.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.radius, AmbientOcclusionDemo$menu$lambda$lambda$lambda_8(y, radiusVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('radiusSlider', 0.1, 3.0, this$AoDemo.aoPipeline_0.aoPass.radius, AoDemo$menu$lambda$lambda$lambda_8(y, radiusVal, this$AoDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Intensity:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_9(y)));
-      var intensityVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.intensity, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_10(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Intensity:', AoDemo$menu$lambda$lambda$lambda_9(y)));
+      var intensityVal = this$.label_tokfmu$(toString(this$AoDemo.aoPipeline_0.aoPass.intensity, 2), AoDemo$menu$lambda$lambda$lambda_10(y));
       $receiver.unaryPlus_uv0sim$(intensityVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('intensitySlider', 0.0, 5.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.intensity, AmbientOcclusionDemo$menu$lambda$lambda$lambda_11(y, intensityVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('intensitySlider', 0.0, 5.0, this$AoDemo.aoPipeline_0.aoPass.intensity, AoDemo$menu$lambda$lambda$lambda_11(y, intensityVal, this$AoDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Bias:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_12(y)));
-      var biasVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.bias, 2), AmbientOcclusionDemo$menu$lambda$lambda$lambda_13(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Bias:', AoDemo$menu$lambda$lambda$lambda_12(y)));
+      var biasVal = this$.label_tokfmu$(toString(this$AoDemo.aoPipeline_0.aoPass.bias, 2), AoDemo$menu$lambda$lambda$lambda_13(y));
       $receiver.unaryPlus_uv0sim$(biasVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.bias, AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AoDemo.aoPipeline_0.aoPass.bias, AoDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AoDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('AO Samples:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y)));
-      var kernelSzVal = this$.label_tokfmu$(this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz.toString(), AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('AO Samples:', AoDemo$menu$lambda$lambda$lambda_15(y)));
+      var kernelSzVal = this$.label_tokfmu$(this$AoDemo.aoPipeline_0.aoPass.kernelSz.toString(), AoDemo$menu$lambda$lambda$lambda_16(y));
       $receiver.unaryPlus_uv0sim$(kernelSzVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AmbientOcclusionDemo.aoPipeline_0.aoPass.kernelSz, AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo, kernelSzVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AoDemo.aoPipeline_0.aoPass.kernelSz, AoDemo$menu$lambda$lambda$lambda_17(y, this$AoDemo, kernelSzVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Map Size:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(y)));
-      var mapSzVal = this$.label_tokfmu$(toString(this$AmbientOcclusionDemo.aoPipeline_0.size, 1) + ' x', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Map Size:', AoDemo$menu$lambda$lambda$lambda_18(y)));
+      var mapSzVal = this$.label_tokfmu$(toString(this$AoDemo.aoPipeline_0.size, 1) + ' x', AoDemo$menu$lambda$lambda$lambda_19(y));
       $receiver.unaryPlus_uv0sim$(mapSzVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$AmbientOcclusionDemo.aoPipeline_0.size * 10, AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo, mapSzVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$AoDemo.aoPipeline_0.size * 10, AoDemo$menu$lambda$lambda$lambda_20(y, this$AoDemo, mapSzVal)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_21(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AoDemo$menu$lambda$lambda$lambda_21(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AmbientOcclusionDemo$menu$lambda$lambda$lambda_22(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AoDemo$menu$lambda$lambda$lambda_22(y, this$AoDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AmbientOcclusionDemo$menu$lambda$lambda$lambda_23(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AoDemo$menu$lambda$lambda$lambda_23(y, this$AoDemo)));
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda(closure$ctx, this$AmbientOcclusionDemo) {
+  function AoDemo$menu$lambda(closure$ctx, this$AoDemo) {
     return function ($receiver) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
-      $receiver.theme = theme(UiTheme.Companion.DARK, AmbientOcclusionDemo$menu$lambda$lambda);
-      var aoMap = transformGroup(void 0, AmbientOcclusionDemo$menu$lambda$lambda_0(this$AmbientOcclusionDemo));
+      $receiver.theme = theme(UiTheme.Companion.DARK, AoDemo$menu$lambda$lambda);
+      var aoMap = transformGroup(void 0, AoDemo$menu$lambda$lambda_0(this$AoDemo));
       $receiver.unaryPlus_uv0sim$(aoMap);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', AmbientOcclusionDemo$menu$lambda$lambda_1(smallFont, $receiver, this$AmbientOcclusionDemo, aoMap)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', AoDemo$menu$lambda$lambda_1(smallFont, $receiver, this$AoDemo, aoMap)));
       return Unit;
     };
   }
-  AmbientOcclusionDemo.prototype.menu_0 = function (ctx) {
-    return uiScene(void 0, void 0, void 0, AmbientOcclusionDemo$menu$lambda(ctx, this));
+  AoDemo.prototype.menu_0 = function (ctx) {
+    return uiScene(void 0, void 0, void 0, AoDemo$menu$lambda(ctx, this));
   };
-  function AmbientOcclusionDemo$loadModel$lambda(closure$recv) {
+  function AoDemo$loadModel$lambda(closure$recv) {
     return function (model) {
       if (model != null) {
         var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
@@ -1019,85 +1025,99 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  AmbientOcclusionDemo.prototype.loadModel_0 = function ($receiver, path, recv) {
-    $receiver.assetMgr.loadModel_v5uqdg$(path, AmbientOcclusionDemo$loadModel$lambda(recv));
+  AoDemo.prototype.loadModel_0 = function ($receiver, path, recv) {
+    $receiver.assetMgr.loadModel_v5uqdg$(path, AoDemo$loadModel$lambda(recv));
   };
-  function AmbientOcclusionDemo$LoadingAssets(block) {
+  function AoDemo$LoadingAssets(block) {
     this.block = block;
-    this.teapotMesh_3sen51$_0 = null;
-    this.hdriMap_mjhe1g$_0 = null;
+    this.teapotMesh_cuy05e$_0 = null;
+    this.hdriMap_1c7tuj$_0 = null;
   }
-  Object.defineProperty(AmbientOcclusionDemo$LoadingAssets.prototype, 'teapotMesh', {
+  Object.defineProperty(AoDemo$LoadingAssets.prototype, 'teapotMesh', {
     get: function () {
-      return this.teapotMesh_3sen51$_0;
+      return this.teapotMesh_cuy05e$_0;
     },
     set: function (value) {
-      this.teapotMesh_3sen51$_0 = value;
+      this.teapotMesh_cuy05e$_0 = value;
       this.check();
     }
   });
-  Object.defineProperty(AmbientOcclusionDemo$LoadingAssets.prototype, 'hdriMap', {
+  Object.defineProperty(AoDemo$LoadingAssets.prototype, 'hdriMap', {
     get: function () {
-      return this.hdriMap_mjhe1g$_0;
+      return this.hdriMap_1c7tuj$_0;
     },
     set: function (value) {
-      this.hdriMap_mjhe1g$_0 = value;
+      this.hdriMap_1c7tuj$_0 = value;
       this.check();
     }
   });
-  AmbientOcclusionDemo$LoadingAssets.prototype.check = function () {
+  AoDemo$LoadingAssets.prototype.check = function () {
     var mesh = this.teapotMesh;
     var hdri = this.hdriMap;
     if (mesh != null && hdri != null) {
       this.block(mesh, hdri);
     }};
-  AmbientOcclusionDemo$LoadingAssets.$metadata$ = {
+  AoDemo$LoadingAssets.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'LoadingAssets',
     interfaces: []
   };
-  AmbientOcclusionDemo.prototype.aoMapColorModel_0 = function () {
-    var $receiver = new ShaderModel('ModeledShader.textureColor()');
+  function AoDemo$Companion() {
+    AoDemo$Companion_instance = this;
+  }
+  AoDemo$Companion.prototype.aoMapColorModel = function () {
+    var $receiver = new ShaderModel('aoMap');
     var ifTexCoords = {v: null};
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
     ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
     $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('colorTex'), ifTexCoords.v.output);
-    var gray = $receiver_1.addNode_u9w9by$(new AmbientOcclusionDemo$Red2GrayNode(sampler.outColor, $receiver_1.stage)).outGray;
-    $receiver_1.colorOutput_a3v4si$($receiver_1.unlitMaterialNode_r20yfm$(gray).outColor);
+    var gray = $receiver_1.addNode_u9w9by$(new AoDemo$Companion$Red2GrayNode(sampler.outColor, $receiver_1.stage)).outGray;
+    $receiver_1.colorOutput_a3v4si$(gray);
     return $receiver;
   };
-  function AmbientOcclusionDemo$Red2GrayNode(inRed, graph) {
+  function AoDemo$Companion$Red2GrayNode(inRed, graph) {
     ShaderNode.call(this, 'red2gray', graph);
     this.inRed = inRed;
     this.outGray = new ShaderNodeIoVar(new ModelVar4f('outGray'), this);
   }
-  AmbientOcclusionDemo$Red2GrayNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+  AoDemo$Companion$Red2GrayNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_7qvs0d$(this.inRed);
   };
-  AmbientOcclusionDemo$Red2GrayNode.prototype.generateCode_626509$ = function (generator) {
+  AoDemo$Companion$Red2GrayNode.prototype.generateCode_626509$ = function (generator) {
     generator.appendMain_61zpoe$(this.outGray.declare() + ' = vec4(' + this.inRed.ref1f() + ', ' + this.inRed.ref1f() + ', ' + this.inRed.ref1f() + ', 1.0);');
   };
-  AmbientOcclusionDemo$Red2GrayNode.$metadata$ = {
+  AoDemo$Companion$Red2GrayNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Red2GrayNode',
     interfaces: [ShaderNode]
   };
-  function Coroutine$AmbientOcclusionDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
+  AoDemo$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var AoDemo$Companion_instance = null;
+  function AoDemo$Companion_getInstance() {
+    if (AoDemo$Companion_instance === null) {
+      new AoDemo$Companion();
+    }return AoDemo$Companion_instance;
+  }
+  function Coroutine$AoDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
   }
-  Coroutine$AmbientOcclusionDemo$noAoMap$lambda.$metadata$ = {
+  Coroutine$AoDemo$noAoMap$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AmbientOcclusionDemo$noAoMap$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AmbientOcclusionDemo$noAoMap$lambda.prototype.constructor = Coroutine$AmbientOcclusionDemo$noAoMap$lambda;
-  Coroutine$AmbientOcclusionDemo$noAoMap$lambda.prototype.doResume = function () {
+  Coroutine$AoDemo$noAoMap$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$noAoMap$lambda.prototype.constructor = Coroutine$AoDemo$noAoMap$lambda;
+  Coroutine$AoDemo$noAoMap$lambda.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -1119,18 +1139,48 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function AmbientOcclusionDemo$noAoMap$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AmbientOcclusionDemo$noAoMap$lambda($receiver_0, it_0, this, continuation_0);
+  function AoDemo$noAoMap$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$AoDemo$noAoMap$lambda($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  AmbientOcclusionDemo.$metadata$ = {
+  AoDemo.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'AmbientOcclusionDemo',
+    simpleName: 'AoDemo',
     interfaces: []
   };
+  var ShaderModel$findNode$lambda = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
   function deferredScene(ctx) {
     var deferredDemo = new DeferredDemo(ctx);
     return listOf([deferredDemo.mainScene, deferredDemo.menu]);
@@ -1141,13 +1191,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.aoPipeline_gxwqo$_0 = this.aoPipeline_gxwqo$_0;
     this.mrtPass_8d2jok$_0 = this.mrtPass_8d2jok$_0;
     this.pbrPass_13qagj$_0 = this.pbrPass_13qagj$_0;
+    this.objects_v6o6kw$_0 = this.objects_v6o6kw$_0;
     this.objectShader_kt711w$_0 = this.objectShader_kt711w$_0;
     this.noAoMap_0 = new Texture(void 0, DeferredDemo$noAoMap$lambda);
     this.autoRotate_0 = true;
     this.rand_0 = new Random(1337);
-    this.lightCount_0 = 1000;
+    this.lightCount_0 = 2000;
     this.lights_0 = ArrayList_init();
-    this.colorMap_0 = new Cycler(listOf([new DeferredDemo$ColorMap('Colorful', listOf([Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME, Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE])), new DeferredDemo$ColorMap('Hot-Cold', listOf([Color.Companion.MD_PINK, Color.Companion.MD_CYAN])), new DeferredDemo$ColorMap('Summer', listOf([Color.Companion.MD_ORANGE, Color.Companion.MD_BLUE, Color.Companion.MD_GREEN])), new DeferredDemo$ColorMap('White', listOf_0(Color.Companion.WHITE))]));
+    var $receiver = new Cycler(listOf([new DeferredDemo$ColorMap('Colorful', listOf([Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME, Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE])), new DeferredDemo$ColorMap('Hot-Cold', listOf([Color.Companion.MD_PINK, Color.Companion.MD_CYAN])), new DeferredDemo$ColorMap('Summer', listOf([Color.Companion.MD_ORANGE, Color.Companion.MD_BLUE, Color.Companion.MD_GREEN])), new DeferredDemo$ColorMap('White', listOf_0(Color.Companion.WHITE))]));
+    $receiver.index = 1;
+    this.colorMap_0 = $receiver;
     this.mainScene = this.makeDeferredScene_0();
     this.menu = this.makeMenu_0(ctx);
     this.updateLights_0();
@@ -1180,6 +1233,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     },
     set: function (pbrPass) {
       this.pbrPass_13qagj$_0 = pbrPass;
+    }
+  });
+  Object.defineProperty(DeferredDemo.prototype, 'objects_0', {
+    get: function () {
+      if (this.objects_v6o6kw$_0 == null)
+        return throwUPAE('objects');
+      return this.objects_v6o6kw$_0;
+    },
+    set: function (objects) {
+      this.objects_v6o6kw$_0 = objects;
     }
   });
   Object.defineProperty(DeferredDemo.prototype, 'objectShader_0', {
@@ -1248,11 +1311,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeContent$lambda$lambda(this$makeContent, this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
+      $receiver.setMouseRotation_dleff0$(0.0, -40.0);
       $receiver.unaryPlus_uv0sim$(this$makeContent.camera);
-      $receiver.zoom = 13.0;
+      $receiver.zoom = 28.0;
       $receiver.maxZoom = 50.0;
-      $receiver.translation.set_yvo9jy$(0.0, -3.0, 0.0);
+      $receiver.translation.set_yvo9jy$(0.0, -11.0, 0.0);
       var $receiver_0 = $receiver.onUpdate;
       var element = DeferredDemo$makeContent$lambda$lambda$lambda(this$DeferredDemo, $receiver);
       $receiver_0.add_11rb$(element);
@@ -1588,17 +1651,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   DeferredDemo.prototype.makeContent_0 = function ($receiver, scene) {
     var $receiver_0 = $receiver.content;
     $receiver_0.unaryPlus_uv0sim$(orbitInputTransform(scene, void 0, DeferredDemo$makeContent$lambda$lambda($receiver, this)));
-    $receiver_0.unaryPlus_uv0sim$(colorMesh(void 0, DeferredDemo$makeContent$lambda$lambda_0(this)));
+    this.objects_0 = colorMesh(void 0, DeferredDemo$makeContent$lambda$lambda_0(this));
+    $receiver_0.unaryPlus_uv0sim$(this.objects_0);
     $receiver_0.unaryPlus_uv0sim$(textureMesh(void 0, true, DeferredDemo$makeContent$lambda$lambda_1));
   };
-  DeferredDemo.prototype.updateLights_0 = function () {
+  DeferredDemo.prototype.updateLights_0 = function (forced) {
+    if (forced === void 0)
+      forced = false;
     var rows = 41;
     var travel = rows;
     var start = travel / 2;
-    var lightGroups = listOf([new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, 1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start + 0.5, 1.15, start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, -1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(1.0, 0.0, 0.0)), new DeferredDemo$LightGroup(this, new Vec3f(start, 1.15, -start + 0.5), new Vec3f(0.0, 0.0, 1.0), new Vec3f(-1.0, 0.0, 0.0))]);
-    while (this.lights_0.size > this.lightCount_0) {
-      this.lights_0.removeAt_za3lpa$(get_lastIndex(this.lights_0));
-      this.pbrPass_0.dynamicPointLights.lightInstances.removeAt_za3lpa$(get_lastIndex(this.pbrPass_0.dynamicPointLights.lightInstances));
+    var objOffset = this.objects_0.isVisible ? 0.7 : 0.0;
+    var lightGroups = listOf([new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, 1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start + 0.5, 0.45 + objOffset, start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, -1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(1.0, 0.0, 0.0)), new DeferredDemo$LightGroup(this, new Vec3f(start, 0.45 + objOffset, -start + 0.5), new Vec3f(0.0, 0.0, 1.0), new Vec3f(-1.0, 0.0, 0.0))]);
+    if (forced) {
+      this.lights_0.clear();
+      this.pbrPass_0.dynamicPointLights.lightInstances.clear();
+    } else {
+      while (this.lights_0.size > this.lightCount_0) {
+        this.lights_0.removeAt_za3lpa$(get_lastIndex(this.lights_0));
+        this.pbrPass_0.dynamicPointLights.lightInstances.removeAt_za3lpa$(get_lastIndex(this.pbrPass_0.dynamicPointLights.lightInstances));
+      }
     }
     while (this.lights_0.size < this.lightCount_0) {
       var x = this.rand_0.randomI_n8acyv$(until(0, rows));
@@ -1640,7 +1712,73 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.containerUi_2t3ptw$(DeferredDemo$makeMenu$lambda$lambda$lambda_0);
     return Unit;
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda$lambda(closure$p) {
+    return function ($receiver) {
+      var closure$p_0 = closure$p;
+      var $receiver_0 = $receiver.rectProps.defaults();
+      $receiver_0.origin.set_y2kzbl$(closure$p_0.x, closure$p_0.y, 0.0);
+      $receiver_0.size.set_dleff0$(1.0, 1.0);
+      $receiver_0.mirrorTexCoordsY();
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(closure$p, closure$i, this$DeferredDemo) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.generate_v2sixm$(DeferredDemo$makeMenu$lambda$lambda$lambda$lambda$lambda(closure$p));
+      switch (closure$i) {
+        case 0:
+          tmp$ = new ModeledShader$TextureColor(this$DeferredDemo.mrtPass_0.albedoMetal, 'colorTex', this$DeferredDemo.rgbMapColorModel_0(0.0, 1.0));
+          break;
+        case 1:
+          tmp$ = new ModeledShader$TextureColor(this$DeferredDemo.mrtPass_0.normalRoughness, 'colorTex', this$DeferredDemo.rgbMapColorModel_0(1.0, 0.5));
+          break;
+        case 2:
+          tmp$ = new ModeledShader$TextureColor(this$DeferredDemo.mrtPass_0.positionAo, 'colorTex', this$DeferredDemo.rgbMapColorModel_0(10.0, 0.05));
+          break;
+        case 3:
+          tmp$ = new ModeledShader$TextureColor(this$DeferredDemo.aoPipeline_0.aoMap, 'colorTex', AoDemo$Companion_getInstance().aoMapColorModel());
+          break;
+        case 4:
+          tmp$ = new DeferredDemo$MetalRoughAoTex(this$DeferredDemo.mrtPass_0);
+          break;
+        default:tmp$ = new ModeledShader$StaticColor(Color.Companion.MAGENTA);
+          break;
+      }
+      $receiver.pipelineLoader = tmp$;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_1(this$) {
+    return function ($receiver, rp, ctx) {
+      var mapSz = 0.26;
+      var scaleX = rp.viewport.width * mapSz;
+      var scaleY = scaleX * (rp.viewport.height / rp.viewport.width);
+      var margin = rp.viewport.height * 0.05;
+      this$.setIdentity();
+      this$.translate_y2kzbl$(margin, margin, 0.0);
+      this$.scale_y2kzbl$(scaleX, scaleY, 1.0);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda_0(this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      var positions = listOf([new Vec2f(0.0, 0.0), new Vec2f(0.0, 1.2), new Vec2f(0.0, 2.4), new Vec2f(1.1, 1.2), new Vec2f(1.1, 2.4)]);
+      var tmp$, tmp$_0;
+      var index = 0;
+      tmp$ = positions.iterator();
+      while (tmp$.hasNext()) {
+        var item = tmp$.next();
+        var this$DeferredDemo_0 = this$DeferredDemo;
+        $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(item, checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0)), this$DeferredDemo_0)));
+      }
+      $receiver.onUpdate.add_11rb$(DeferredDemo$makeMenu$lambda$lambda$lambda_1($receiver));
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_2(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -1650,14 +1788,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_2(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_3(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_3(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_4(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -1665,7 +1803,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(this$DeferredDemo, closure$lightCntVal) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo, closure$lightCntVal) {
     return function ($receiver, it) {
       this$DeferredDemo.lightCount_0 = numberToInt($receiver.value);
       closure$lightCntVal.text = this$DeferredDemo.lightCount_0.toString();
@@ -1673,52 +1811,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_4(closure$y, this$DeferredDemo, closure$lightCntVal) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_5(closure$y, this$DeferredDemo, closure$lightCntVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda(this$DeferredDemo, closure$lightCntVal);
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo, closure$lightCntVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_5(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_6(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo) {
     return function ($receiver, f, f_0, f_1) {
       $receiver.text = this$DeferredDemo.colorMap_0.next().name;
       this$DeferredDemo.updateLightColors_0();
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_6(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_7(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      var $receiver_0 = $receiver.onClick;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$DeferredDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$DeferredDemo.colorMap_0.prev();
-      this$DeferredDemo.updateLightColors_0();
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_7(closure$y, this$DeferredDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
@@ -1727,23 +1847,41 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo) {
     return function ($receiver, f, f_0, f_1) {
-      this$DeferredDemo.colorMap_0.next();
+      this$DeferredDemo.colorMap_0.prev();
       this$DeferredDemo.updateLightColors_0();
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda_8(closure$y, this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
+      $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_9(closure$y, closure$smallFont, this$) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$DeferredDemo.colorMap_0.next();
+      this$DeferredDemo.updateLightColors_0();
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_9(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_10(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -1753,94 +1891,145 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(closure$mapGroup) {
+    return function ($receiver) {
+      closure$mapGroup.isVisible = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_11(closure$y, closure$mapGroup) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = closure$mapGroup.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(closure$mapGroup);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo) {
     return function ($receiver) {
       this$DeferredDemo.setAoState_0($receiver.isEnabled);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_10(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_12(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$DeferredDemo.aoPipeline_0.aoPass.isEnabled;
       var $receiver_0 = $receiver.onStateChange;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo);
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_13(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(this$DeferredDemo) {
     return function ($receiver) {
       this$DeferredDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_11(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_14(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$DeferredDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo);
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_12(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_7(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.objects_0.isVisible = $receiver.isEnabled;
+      this$DeferredDemo.updateLights_0(true);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_15(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.objects_0.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_7(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_16(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_8(this$DeferredDemo) {
     return function ($receiver, it) {
       this$DeferredDemo.objectShader_0.roughness = $receiver.value;
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_13(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_17(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.value = this$DeferredDemo.objectShader_0.roughness;
       var $receiver_0 = $receiver.onValueChanged;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo);
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_8(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda_0(closure$smallFont, this$, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda_1(closure$smallFont, this$, this$DeferredDemo, closure$mapGroup) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-495.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(375.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-605.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(485.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Dynamic Lights', DeferredDemo$makeMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Dynamic Lights', DeferredDemo$makeMenu$lambda$lambda$lambda_2(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Light Count:', DeferredDemo$makeMenu$lambda$lambda$lambda_2(y)));
-      var lightCntVal = this$.label_tokfmu$(this$DeferredDemo.lightCount_0.toString(), DeferredDemo$makeMenu$lambda$lambda$lambda_3(y));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Light Count:', DeferredDemo$makeMenu$lambda$lambda$lambda_3(y)));
+      var lightCntVal = this$.label_tokfmu$(this$DeferredDemo.lightCount_0.toString(), DeferredDemo$makeMenu$lambda$lambda$lambda_4(y));
       $receiver.unaryPlus_uv0sim$(lightCntVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('lightCntSlider', 100.0, 5000.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_4(y, this$DeferredDemo, lightCntVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('lightCntSlider', 100.0, 5000.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_5(y, this$DeferredDemo, lightCntVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color Map:', DeferredDemo$makeMenu$lambda$lambda$lambda_5(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color Map:', DeferredDemo$makeMenu$lambda$lambda$lambda_6(y)));
       y.v -= 35.0;
-      var colorMapLabel = this$.button_9zrh0o$(this$DeferredDemo.colorMap_0.current.name, DeferredDemo$makeMenu$lambda$lambda$lambda_6(y, this$DeferredDemo));
+      var colorMapLabel = this$.button_9zrh0o$(this$DeferredDemo.colorMap_0.current.name, DeferredDemo$makeMenu$lambda$lambda$lambda_7(y, this$DeferredDemo));
       $receiver.unaryPlus_uv0sim$(colorMapLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-left', DeferredDemo$makeMenu$lambda$lambda$lambda_7(y, this$DeferredDemo)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-right', DeferredDemo$makeMenu$lambda$lambda$lambda_8(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-left', DeferredDemo$makeMenu$lambda$lambda$lambda_8(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-right', DeferredDemo$makeMenu$lambda$lambda$lambda_9(y, this$DeferredDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', DeferredDemo$makeMenu$lambda$lambda$lambda_9(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Deferred Shading', DeferredDemo$makeMenu$lambda$lambda$lambda_10(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', DeferredDemo$makeMenu$lambda$lambda$lambda_10(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Maps', DeferredDemo$makeMenu$lambda$lambda$lambda_11(y, closure$mapGroup)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', DeferredDemo$makeMenu$lambda$lambda$lambda_11(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', DeferredDemo$makeMenu$lambda$lambda$lambda_12(y, this$DeferredDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', DeferredDemo$makeMenu$lambda$lambda$lambda_13(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Object Roughness:', DeferredDemo$makeMenu$lambda$lambda$lambda_12(y)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', DeferredDemo$makeMenu$lambda$lambda$lambda_14(y, this$DeferredDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_13(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Objects', DeferredDemo$makeMenu$lambda$lambda$lambda_15(y, this$DeferredDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Object Roughness:', DeferredDemo$makeMenu$lambda$lambda$lambda_16(y)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_17(y, this$DeferredDemo)));
       return Unit;
     };
   }
@@ -1849,7 +2038,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
       $receiver.theme = theme(UiTheme.Companion.DARK, DeferredDemo$makeMenu$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', DeferredDemo$makeMenu$lambda$lambda_0(smallFont, $receiver, this$DeferredDemo)));
+      var mapGroup = transformGroup(void 0, DeferredDemo$makeMenu$lambda$lambda_0(this$DeferredDemo));
+      $receiver.unaryPlus_uv0sim$(mapGroup);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', DeferredDemo$makeMenu$lambda$lambda_1(smallFont, $receiver, this$DeferredDemo, mapGroup)));
       return Unit;
     };
   }
@@ -1901,6 +2092,172 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     kind: Kind_CLASS,
     simpleName: 'ColorMap',
     interfaces: []
+  };
+  DeferredDemo.prototype.rgbMapColorModel_0 = function (offset, scale) {
+    var $receiver = new ShaderModel('rgbMap');
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('colorTex'), ifTexCoords.v.output);
+    var rgb = $receiver_1.splitNode_500t7j$(sampler.outColor, 'rgb').output;
+    var scaled = $receiver_1.multiplyNode_tuikh5$($receiver_1.addNode_ze33is$(rgb, new ShaderNodeIoVar(new ModelVar1fConst(offset))).output, scale);
+    $receiver_1.colorOutput_a3v4si$(scaled.output, void 0, new ShaderNodeIoVar(new ModelVar1fConst(1.0)));
+    return $receiver;
+  };
+  function DeferredDemo$MetalRoughAoTex(mrtPass) {
+    DeferredDemo$MetalRoughAoTex$Companion_getInstance();
+    ModeledShader.call(this, DeferredDemo$MetalRoughAoTex$Companion_getInstance().shaderModel());
+    this.mrtPass = mrtPass;
+  }
+  DeferredDemo$MetalRoughAoTex.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+    var $this = this.model;
+    var name = 'positionAo';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$;
+      tmp$ = $this.stages.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_0;
+          var $receiver = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_1;
+            tmp$_1 = $receiver.iterator();
+            while (tmp$_1.hasNext()) {
+              var element_0 = tmp$_1.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, TextureNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0, TextureNode) ? tmp$_0 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    ensureNotNull(findNode_3klnlw$result).sampler.texture = this.mrtPass.positionAo;
+    var $this_0 = this.model;
+    var name_0 = 'normalRough';
+    var stage_0;
+    var findNode_3klnlw$result_0;
+    findNode_3klnlw$break: do {
+      stage_0 = ShaderStage.ALL;
+      var tmp$_2;
+      tmp$_2 = $this_0.stages.values.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_1 = tmp$_2.next();
+        if ((element_1.stage.mask & stage_0.mask) !== 0) {
+          var tmp$_0_0;
+          var $receiver_0 = element_1.nodes;
+          var firstOrNull$result_0;
+          firstOrNull$break: do {
+            var tmp$_1_0;
+            tmp$_1_0 = $receiver_0.iterator();
+            while (tmp$_1_0.hasNext()) {
+              var element_0_0 = tmp$_1_0.next();
+              if (equals(element_0_0.name, name_0) && Kotlin.isType(element_0_0, TextureNode)) {
+                firstOrNull$result_0 = element_0_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_0 = null;
+          }
+           while (false);
+          var node_0 = (tmp$_0_0 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_0, TextureNode) ? tmp$_0_0 : throwCCE();
+          if (node_0 != null) {
+            findNode_3klnlw$result_0 = node_0;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_0 = null;
+    }
+     while (false);
+    ensureNotNull(findNode_3klnlw$result_0).sampler.texture = this.mrtPass.normalRoughness;
+    var $this_1 = this.model;
+    var name_1 = 'albedoMetal';
+    var stage_1;
+    var findNode_3klnlw$result_1;
+    findNode_3klnlw$break: do {
+      stage_1 = ShaderStage.ALL;
+      var tmp$_3;
+      tmp$_3 = $this_1.stages.values.iterator();
+      while (tmp$_3.hasNext()) {
+        var element_2 = tmp$_3.next();
+        if ((element_2.stage.mask & stage_1.mask) !== 0) {
+          var tmp$_0_1;
+          var $receiver_1 = element_2.nodes;
+          var firstOrNull$result_1;
+          firstOrNull$break: do {
+            var tmp$_1_1;
+            tmp$_1_1 = $receiver_1.iterator();
+            while (tmp$_1_1.hasNext()) {
+              var element_0_1 = tmp$_1_1.next();
+              if (equals(element_0_1.name, name_1) && Kotlin.isType(element_0_1, TextureNode)) {
+                firstOrNull$result_1 = element_0_1;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_1 = null;
+          }
+           while (false);
+          var node_1 = (tmp$_0_1 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_0_1, TextureNode) ? tmp$_0_1 : throwCCE();
+          if (node_1 != null) {
+            findNode_3klnlw$result_1 = node_1;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_1 = null;
+    }
+     while (false);
+    ensureNotNull(findNode_3klnlw$result_1).sampler.texture = this.mrtPass.albedoMetal;
+    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+  };
+  function DeferredDemo$MetalRoughAoTex$Companion() {
+    DeferredDemo$MetalRoughAoTex$Companion_instance = this;
+  }
+  DeferredDemo$MetalRoughAoTex$Companion.prototype.shaderModel = function () {
+    var $receiver = new ShaderModel();
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var aoSampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), ifTexCoords.v.output);
+    var roughSampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRough'), ifTexCoords.v.output);
+    var metalSampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), ifTexCoords.v.output);
+    var ao = $receiver_1.splitNode_500t7j$(aoSampler.outColor, 'a').output;
+    var rough = $receiver_1.splitNode_500t7j$(roughSampler.outColor, 'a').output;
+    var metal = $receiver_1.splitNode_500t7j$(metalSampler.outColor, 'a').output;
+    var $receiver_2 = $receiver_1.combineNode_m7a9qd$(GlslType.VEC_3F);
+    $receiver_2.inX = ao;
+    $receiver_2.inY = rough;
+    $receiver_2.inZ = metal;
+    var outColor = $receiver_2;
+    $receiver_1.colorOutput_a3v4si$(outColor.output, void 0, new ShaderNodeIoVar(new ModelVar1fConst(1.0)));
+    return $receiver;
+  };
+  DeferredDemo$MetalRoughAoTex$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DeferredDemo$MetalRoughAoTex$Companion_instance = null;
+  function DeferredDemo$MetalRoughAoTex$Companion_getInstance() {
+    if (DeferredDemo$MetalRoughAoTex$Companion_instance === null) {
+      new DeferredDemo$MetalRoughAoTex$Companion();
+    }return DeferredDemo$MetalRoughAoTex$Companion_instance;
+  }
+  DeferredDemo$MetalRoughAoTex.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MetalRoughAoTex',
+    interfaces: [ModeledShader]
   };
   function Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -1969,7 +2326,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiLightDemo', new Demo$DemoEntry('Multi Light', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -7347,7 +7704,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'SimplificationDemo',
     interfaces: []
   };
-  var ShaderModel$findNode$lambda = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_0 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -9620,7 +9977,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var package$demo = package$kool.demo || (package$kool.demo = {});
   package$demo.aoDemo_aemszp$ = aoDemo;
   $$importsForInline$$.kool = $module$kool;
-  package$demo.AmbientOcclusionDemo = AmbientOcclusionDemo;
+  Object.defineProperty(AoDemo, 'Companion', {
+    get: AoDemo$Companion_getInstance
+  });
+  package$demo.AoDemo = AoDemo;
   package$demo.deferredScene_aemszp$ = deferredScene;
   package$demo.DeferredDemo = DeferredDemo;
   $$importsForInline$$.kooldemo = _;
