@@ -134,7 +134,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = vec3TransformNode(worldPos, mvpMat).outVec3
+                positionOutput = vec4TransformNode(worldPos, mvpMat).outVec4
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
