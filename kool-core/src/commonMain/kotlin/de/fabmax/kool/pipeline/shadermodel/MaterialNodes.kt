@@ -32,7 +32,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
 
     val outColor = ShaderNodeIoVar(ModelVar4f("phongMat_outColor"), this)
 
-    var flipBacksideNormals = false
+    var lightBacksides = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -53,7 +53,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
                 phongMat_l = normalize(phongMat_l);
                 
-                ${ if (flipBacksideNormals) "if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }" else "" }
+                ${ if (lightBacksides) "if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }" else "" }
         
                 float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);
                 vec3 phongMat_r = reflect(phongMat_l, phongMat_n);
@@ -90,7 +90,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
 
-    var flipBacksideNormals = false
+    var lightBacksides = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -170,7 +170,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
                 vec3 H = normalize(V + L);
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
         
-                ${ if (flipBacksideNormals) "N *= sign(dot(N, L));" else "" }
+                ${ if (lightBacksides) "N *= sign(dot(N, L));" else "" }
         
                 // cook-torrance BRDF
                 float NDF = DistributionGGX(N, H, rough); 
@@ -264,7 +264,7 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrLight_outColor"), this)
 
-    var flipBacksideNormals = false
+    var lightBacksides = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -317,7 +317,7 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
             }
         """)
 
-        val normalCheck = if (!flipBacksideNormals) "dot(fragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
+        val normalCheck = if (!lightBacksides) "dot(fragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
 
         generator.appendMain("""
             vec3 radiance = vec3(0.0);
@@ -325,7 +325,6 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
             bool normalOk = $normalCheck;
             if (normalOk) {
                 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
-                //radiance = vec3(1.0);
             }
             
             ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);
@@ -342,7 +341,7 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
         
                 vec3 L = normalize(fragToLight);
                 vec3 H = normalize(V + L);
-                ${ if (flipBacksideNormals) "N *= sign(dot(N, L));" else "" }
+                ${ if (lightBacksides) "N *= sign(dot(N, L));" else "" }
         
                 // cook-torrance BRDF
                 float NDF = DistributionGGX(N, H, rough); 

@@ -164,7 +164,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 }
 
                 val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
-                    flipBacksideNormals = cfg.flipBacksideNormals
+                    lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
                     inCamPos = defCam.outCamPos
@@ -198,7 +198,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
-        var flipBacksideNormals = false
+        var lightBacksides = false
 
         var positionAo: Texture? = null
         var normalRoughness: Texture? = null

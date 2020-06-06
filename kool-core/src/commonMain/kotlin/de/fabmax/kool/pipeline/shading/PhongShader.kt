@@ -159,7 +159,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 }
 
                 val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {
-                    flipBacksideNormals = cfg.flipBacksideNormals
+                    lightBacksides = cfg.lightBacksides
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
                 }
@@ -179,7 +179,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
-        var flipBacksideNormals = false
+        var lightBacksides = false
 
         var isInstanced = false
 

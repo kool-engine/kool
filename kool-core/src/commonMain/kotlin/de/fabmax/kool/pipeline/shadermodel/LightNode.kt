@@ -161,7 +161,7 @@ class SingleLightUniformDataNode(shaderGraph: ShaderGraph) : ShaderNode("lightUn
 class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGraph.nextNodeId}", shaderGraph) {
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
-    var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 0f, 0f, 60f)))
     var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
 
     override val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1))
@@ -223,6 +223,5 @@ class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGra
 
     override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
         return "(${name}_getRadiance($fragToLight, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $innerAngle) * ${inShaodwFac.ref1f()})"
-        //return "(${name}_getRadiance($fragToLight, vec4(19.5, 0.5572543, -20.5, 1.0), ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $innerAngle) * ${inShaodwFac.ref1f()})"
     }
 }

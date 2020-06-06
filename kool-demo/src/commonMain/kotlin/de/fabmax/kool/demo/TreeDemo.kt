@@ -117,7 +117,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 maxLights = lighting.lights.size
-                flipBacksideNormals = true
+                lightBacksides = true
                 this.shadowMaps.addAll(shadowMaps)
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
@@ -495,7 +495,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
         }
 
         val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
-            flipBacksideNormals = cfg.flipBacksideNormals
+            lightBacksides = cfg.lightBacksides
             inFragPos = ifFragPos.output
             inCamPos = mvpFrag.outCamPos
 

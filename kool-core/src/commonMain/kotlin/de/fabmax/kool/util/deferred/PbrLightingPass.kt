@@ -17,6 +17,10 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
     val dynamicPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
     val staticPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
 
+    private val mutSpotLights = mutableListOf<DeferredSpotLights>()
+    val spotLights: List<DeferredSpotLights>
+        get() = mutSpotLights
+
     lateinit var sceneShader: PbrSceneShader
         private set
 
@@ -68,6 +72,13 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
             +dynamicPointLights.mesh
             +staticPointLights.mesh
         }
+    }
+
+    fun addSpotLights(maxSpotAngle: Float): DeferredSpotLights {
+        val lights = DeferredSpotLights(maxSpotAngle, mrtPass)
+        (drawNode as Group) += lights.mesh
+        mutSpotLights += lights
+        return lights
     }
 
     override fun dispose(ctx: KoolContext) {

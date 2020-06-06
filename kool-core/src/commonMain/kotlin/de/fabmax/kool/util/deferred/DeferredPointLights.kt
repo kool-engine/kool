@@ -18,8 +18,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
     private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS, Attribute.COLORS), 10000)
 
     private val modelMat = Mat4f()
-    private val encodedColor = FloatArray(4)
-    private val encodedPos = FloatArray(4)
+    private val encodedLightData = FloatArray(8)
 
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
         isFrustumChecked = false
@@ -33,6 +32,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
         }
 
         val lightCfg = DeferredLightShader.Config().apply {
+            lightType = Light.Type.POINT
             sceneCamera = mrtPass.camera
             positionAo = mrtPass.positionAo
             normalRoughness = mrtPass.normalRoughness
@@ -53,8 +53,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
             lightInstanceData.addInstance {
                 encodeLight(lightInstances[i])
                 put(modelMat.matrix)
-                put(encodedPos)
-                put(encodedColor)
+                put(encodedLightData)
             }
         }
     }
@@ -65,15 +64,15 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
         val soi = sqrt(light.intensity)
         modelMat.scale(soi, soi, soi)
 
-        encodedColor[0] = light.color.r
-        encodedColor[1] = light.color.g
-        encodedColor[2] = light.color.b
-        encodedColor[3] = light.intensity
+        encodedLightData[0] = light.position.x
+        encodedLightData[1] = light.position.y
+        encodedLightData[2] = light.position.z
+        encodedLightData[3] = Light.Type.POINT.encoded
 
-        encodedPos[0] = light.position.x
-        encodedPos[1] = light.position.y
-        encodedPos[2] = light.position.z
-        encodedPos[3] = Light.Type.POINT.encoded
+        encodedLightData[4] = light.color.r
+        encodedLightData[5] = light.color.g
+        encodedLightData[6] = light.color.b
+        encodedLightData[7] = light.intensity
     }
 
     fun addPointLight(pointLight: PointLight) {
@@ -93,7 +92,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
 
     class PointLight {
         val position = MutableVec3f()
-        var color = Color.MD_PINK
+        var color = Color.WHITE
         var intensity = 1f
     }
 }

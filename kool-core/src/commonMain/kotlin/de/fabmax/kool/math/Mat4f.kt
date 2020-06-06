@@ -60,6 +60,13 @@ open class Mat4f {
 
     fun rotate(angleDeg: Float, axis: Vec3f, result: Mat4f) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
 
+    fun rotate(rotationMat: Mat3f) {
+        return lock(tmpMatLock) {
+            tmpMatA.setIdentity().setRotation(rotationMat)
+            set(mul(tmpMatA, tmpMatB))
+        }
+    }
+
     fun scale(sx: Float, sy: Float, sz: Float): Mat4f {
         for (i in 0..3) {
             val mi = offset + i
@@ -416,7 +423,8 @@ open class Mat4f {
                 this[row, col] = mat3[row, col]
             }
         }
-        val s = 1f / getCol(0, MutableVec4f()).length()
+        val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
+        val s = 1f / sqrt(l0)
         scale(s, s, s)
     }
 
@@ -426,7 +434,8 @@ open class Mat4f {
                 this[row, col] = mat4[row, col]
             }
         }
-        val s = 1f / getCol(0, MutableVec4f()).length()
+        val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
+        val s = 1f / sqrt(l0)
         scale(s, s, s)
     }
 

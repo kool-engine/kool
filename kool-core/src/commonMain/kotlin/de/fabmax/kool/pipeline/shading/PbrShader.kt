@@ -261,7 +261,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 }
 
                 val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
-                    flipBacksideNormals = cfg.flipBacksideNormals
+                    lightBacksides = cfg.lightBacksides
                     inFragPos = ifFragPos.output
                     inCamPos = mvpFrag.outCamPos
 
@@ -331,7 +331,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
-        var flipBacksideNormals = false
+        var lightBacksides = false
 
         var isInstanced = false
 

@@ -5,7 +5,9 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.logE
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -62,11 +64,13 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
     companion object {
         val LIGHT_POS = Attribute("aLightPos", GlslType.VEC_4F)
+        val LIGHT_DIR = Attribute("aLightDir", GlslType.VEC_4F)
 
         fun shaderModel(cfg: Config) = ShaderModel("point light shader model").apply {
             val ifFragCoords: StageInterfaceNode
             val ifLightColor: StageInterfaceNode
             val ifLightPos: StageInterfaceNode
+            val ifLightDir: StageInterfaceNode?
 
             vertexStage {
                 val instMvp = instanceAttrModelMat().output
@@ -76,11 +80,13 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
                 ifLightColor = stageInterfaceNode("ifLightColor", instanceAttributeNode(Attribute.COLORS).output, true)
                 ifLightPos = stageInterfaceNode("ifLightPos", instanceAttributeNode(LIGHT_POS).output, true)
+                ifLightDir = if (cfg.lightType == Light.Type.POINT) {
+                    null
+                } else {
+                    stageInterfaceNode("ifLightDir", instanceAttributeNode(LIGHT_DIR).output, true)
+                }
             }
             fragmentStage {
-                val lightColor = ifLightColor.output
-                val lightPos = ifLightPos.output
-
                 val xyPos = divideNode(splitNode(ifFragCoords.output, "xy").output, splitNode(ifFragCoords.output, "w").output).output
                 val texPos = addNode(multiplyNode(xyPos, 0.5f).output, ShaderNodeIoVar(ModelVar1fConst(0.5f))).output
 
@@ -99,12 +105,15 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
                 val lightNode = singleLightNode().apply {
                     isReducedSoi = true
-                    inLightPos = lightPos
-                    inLightColor = lightColor
+                    inLightPos = ifLightPos.output
+                    inLightColor = ifLightColor.output
+                    ifLightDir?.let {
+                        inLightDir = it.output
+                    }
                 }
 
                 val mat = pbrLightNode(lightNode).apply {
-                    flipBacksideNormals = cfg.flipBacksideNormals
+                    lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
                     inCamPos = defCam.outCamPos
@@ -120,9 +129,19 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
     }
 
     class Config {
+        var lightType = Light.Type.POINT
+            set(value) {
+                field = if (value == Light.Type.DIRECTIONAL) {
+                    logE { "Directional lights are not supported for deferred lights, use global lighting instead." }
+                    Light.Type.POINT
+                } else {
+                    value
+                }
+            }
+
         var sceneCamera: Camera? = null
 
-        var flipBacksideNormals = false
+        var lightBacksides = false
 
         var positionAo: Texture? = null
         var normalRoughness: Texture? = null
