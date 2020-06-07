@@ -199,7 +199,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                 }
 
                 yOri -= 18f
-                +label("lblNumPrimitives") {
+                +label("lblNumFaces") {
                     layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
                     layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
@@ -210,7 +210,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                         val numPrimitives = ctx.engineStats.numPrimitives
                         if (numPrimitives != lastPrimitives) {
                             lastPrimitives = numPrimitives
-                            text = "$numPrimitives Primitives"
+                            text = "$numPrimitives Faces"
                         }
                     }
                 }

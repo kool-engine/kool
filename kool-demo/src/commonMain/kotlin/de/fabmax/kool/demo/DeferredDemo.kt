@@ -96,7 +96,7 @@ class DeferredDemo(ctx: KoolContext) {
     private fun PbrLightingPass.makeLightOverlays() {
         content.apply {
             lightPositionMesh = colorMesh {
-                isVisible = false
+                isVisible = true
                 generate {
                     color = Color.RED
                     icoSphere {

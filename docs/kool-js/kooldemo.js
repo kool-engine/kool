@@ -1339,7 +1339,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeLightOverlays$lambda$lambda(this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.isVisible = false;
+      $receiver.isVisible = true;
       $receiver.generate_v2sixm$(DeferredDemo$makeLightOverlays$lambda$lambda$lambda);
       $receiver.pipelineLoader = new ModeledShader(this$DeferredDemo.instancedLightIndicatorModel_0());
       return Unit;
