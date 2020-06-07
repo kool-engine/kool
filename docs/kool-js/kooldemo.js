@@ -60,7 +60,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PbrSceneShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.PbrSceneShader.DeferredPbrConfig;
   var PbrLightingPass = $module$kool.de.fabmax.kool.util.deferred.PbrLightingPass;
   var DeferredOutputShader = $module$kool.de.fabmax.kool.util.deferred.DeferredOutputShader;
+  var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
+  var wireframeMesh = $module$kool.de.fabmax.kool.scene.wireframeMesh_hjnvxh$;
+  var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
   var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
+  var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
@@ -69,7 +73,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
-  var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var numberToInt = Kotlin.numberToInt;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
@@ -79,6 +82,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var GlslType = $module$kool.de.fabmax.kool.pipeline.GlslType;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
+  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var DeferredPointLights$DeferredPointLights$PointLight_init = $module$kool.de.fabmax.kool.util.deferred.DeferredPointLights.PointLight;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
@@ -101,7 +105,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
-  var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var InstancedLodController$Instance = $module$kool.de.fabmax.kool.util.InstancedLodController.Instance;
@@ -109,7 +112,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
@@ -1186,6 +1188,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return listOf([deferredDemo.mainScene, deferredDemo.menu]);
   }
   function DeferredDemo(ctx) {
+    DeferredDemo$Companion_getInstance();
     this.mainScene = null;
     this.menu = null;
     this.aoPipeline_gxwqo$_0 = this.aoPipeline_gxwqo$_0;
@@ -1194,6 +1197,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.objects_v6o6kw$_0 = this.objects_v6o6kw$_0;
     this.objectShader_kt711w$_0 = this.objectShader_kt711w$_0;
     this.noAoMap_0 = new Texture(void 0, DeferredDemo$noAoMap$lambda);
+    this.lightPositionMesh_cedig8$_0 = this.lightPositionMesh_cedig8$_0;
+    this.lightVolumeMesh_k6bbw9$_0 = this.lightVolumeMesh_k6bbw9$_0;
     this.autoRotate_0 = true;
     this.rand_0 = new Random(1337);
     this.lightCount_0 = 2000;
@@ -1255,6 +1260,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.objectShader_kt711w$_0 = objectShader;
     }
   });
+  Object.defineProperty(DeferredDemo.prototype, 'lightPositionMesh_0', {
+    get: function () {
+      if (this.lightPositionMesh_cedig8$_0 == null)
+        return throwUPAE('lightPositionMesh');
+      return this.lightPositionMesh_cedig8$_0;
+    },
+    set: function (lightPositionMesh) {
+      this.lightPositionMesh_cedig8$_0 = lightPositionMesh;
+    }
+  });
+  Object.defineProperty(DeferredDemo.prototype, 'lightVolumeMesh_0', {
+    get: function () {
+      if (this.lightVolumeMesh_k6bbw9$_0 == null)
+        return throwUPAE('lightVolumeMesh');
+      return this.lightVolumeMesh_k6bbw9$_0;
+    },
+    set: function (lightVolumeMesh) {
+      this.lightVolumeMesh_k6bbw9$_0 = lightVolumeMesh;
+    }
+  });
   function DeferredDemo$makeDeferredScene$lambda$lambda$lambda($receiver) {
     $receiver.rectProps.defaults().mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
@@ -1297,10 +1322,89 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.scrSpcAmbientOcclusionMap = this.aoPipeline_0.aoMap;
     var cfg = $receiver_0;
     this.pbrPass_0 = new PbrLightingPass($receiver, this.mrtPass_0, cfg);
+    this.makeLightOverlays_0(this.pbrPass_0);
     $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, DeferredDemo$makeDeferredScene$lambda$lambda(this)));
     $receiver.onUpdate.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_0(this));
     $receiver.onDispose.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_1(this));
     return $receiver;
+  };
+  function DeferredDemo$makeLightOverlays$lambda$lambda$lambda($receiver) {
+    $receiver.color = Color.Companion.RED;
+    var $receiver_0 = $receiver.sphereProps.icoDefaults();
+    $receiver_0.steps = 1;
+    $receiver_0.radius = 0.05;
+    $receiver_0.center.set_czzhiu$(Vec3f.Companion.ZERO);
+    $receiver.icoSphere_mojs8w$($receiver.sphereProps);
+    return Unit;
+  }
+  function DeferredDemo$makeLightOverlays$lambda$lambda(this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      $receiver.generate_v2sixm$(DeferredDemo$makeLightOverlays$lambda$lambda$lambda);
+      $receiver.pipelineLoader = new ModeledShader(this$DeferredDemo.instancedLightIndicatorModel_0());
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeLightOverlays$lambda$lambda_0(this$DeferredDemo, closure$lightPosInsts, closure$lightVolInsts, this$makeLightOverlays, closure$lightModelMat) {
+    return function ($receiver, f, f_0) {
+      if (this$DeferredDemo.lightPositionMesh_0.isVisible || this$DeferredDemo.lightVolumeMesh_0.isVisible) {
+        closure$lightPosInsts.clear();
+        closure$lightVolInsts.clear();
+        var $receiver_0 = this$makeLightOverlays.dynamicPointLights.lightInstances;
+        var tmp$;
+        tmp$ = $receiver_0.iterator();
+        while (tmp$.hasNext()) {
+          var element = tmp$.next();
+          var closure$lightModelMat_0 = closure$lightModelMat;
+          var this$DeferredDemo_0 = this$DeferredDemo;
+          var closure$lightPosInsts_0 = closure$lightPosInsts;
+          var closure$lightVolInsts_0 = closure$lightVolInsts;
+          closure$lightModelMat_0.setIdentity();
+          closure$lightModelMat_0.translate_czzhiu$(element.position);
+          if (this$DeferredDemo_0.lightPositionMesh_0.isVisible) {
+            closure$lightPosInsts_0.checkBufferSize_za3lpa$();
+            var szBefore = closure$lightPosInsts_0.dataF.position;
+            var $receiver_1 = closure$lightPosInsts_0.dataF;
+            $receiver_1.put_q3cr5i$(closure$lightModelMat_0.matrix);
+            $receiver_1.put_q3cr5i$(element.color.array);
+            var growSz = closure$lightPosInsts_0.dataF.position - szBefore | 0;
+            if (growSz !== closure$lightPosInsts_0.instanceSizeF) {
+              throw IllegalStateException_init('Expected data to grow by ' + closure$lightPosInsts_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
+            }closure$lightPosInsts_0.numInstances = closure$lightPosInsts_0.numInstances + 1 | 0;
+            closure$lightPosInsts_0.hasChanged = true;
+          }if (this$DeferredDemo_0.lightVolumeMesh_0.isVisible) {
+            var x = element.intensity;
+            var s = Math_0.sqrt(x);
+            closure$lightModelMat_0.scale_y2kzbl$(s, s, s);
+            closure$lightVolInsts_0.checkBufferSize_za3lpa$();
+            var szBefore_0 = closure$lightVolInsts_0.dataF.position;
+            var $receiver_2 = closure$lightVolInsts_0.dataF;
+            $receiver_2.put_q3cr5i$(closure$lightModelMat_0.matrix);
+            $receiver_2.put_q3cr5i$(element.color.array);
+            var growSz_0 = closure$lightVolInsts_0.dataF.position - szBefore_0 | 0;
+            if (growSz_0 !== closure$lightVolInsts_0.instanceSizeF) {
+              throw IllegalStateException_init('Expected data to grow by ' + closure$lightVolInsts_0.instanceSizeF + ' elements, instead it grew by ' + growSz_0);
+            }closure$lightVolInsts_0.numInstances = closure$lightVolInsts_0.numInstances + 1 | 0;
+            closure$lightVolInsts_0.hasChanged = true;
+          }}
+      }return Unit;
+    };
+  }
+  DeferredDemo.prototype.makeLightOverlays_0 = function ($receiver) {
+    var $receiver_0 = $receiver.content;
+    this.lightPositionMesh_0 = colorMesh(void 0, DeferredDemo$makeLightOverlays$lambda$lambda(this));
+    $receiver_0.unaryPlus_uv0sim$(this.lightPositionMesh_0);
+    var $receiver_1 = wireframeMesh($receiver.dynamicPointLights.mesh.geometry);
+    $receiver_1.isVisible = false;
+    $receiver_1.pipelineLoader = new ModeledShader(this.instancedLightIndicatorModel_0());
+    this.lightVolumeMesh_0 = $receiver_1;
+    $receiver_0.unaryPlus_uv0sim$(this.lightVolumeMesh_0);
+    var lightPosInsts = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), 5000);
+    var lightVolInsts = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), 5000);
+    this.lightPositionMesh_0.instances = lightPosInsts;
+    this.lightVolumeMesh_0.instances = lightVolInsts;
+    var lightModelMat = new Mat4f();
+    $receiver_0.onUpdate.add_11rb$(DeferredDemo$makeLightOverlays$lambda$lambda_0(this, lightPosInsts, lightVolInsts, $receiver, lightModelMat));
   };
   function DeferredDemo$makeContent$lambda$lambda$lambda(this$DeferredDemo, this$) {
     return function ($receiver, f, ctx) {
@@ -1444,7 +1548,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-normal-dx.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-normal.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -1662,7 +1766,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var travel = rows;
     var start = travel / 2;
     var objOffset = this.objects_0.isVisible ? 0.7 : 0.0;
-    var lightGroups = listOf([new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, 1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start + 0.5, 0.45 + objOffset, start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, -1.0)), new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, -start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(1.0, 0.0, 0.0)), new DeferredDemo$LightGroup(this, new Vec3f(start, 0.45 + objOffset, -start + 0.5), new Vec3f(0.0, 0.0, 1.0), new Vec3f(-1.0, 0.0, 0.0))]);
+    var lightGroups = listOf([new DeferredDemo$LightGroup(this, new Vec3f(1 - start, 0.45, -start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, 1.0), rows - 1 | 0), new DeferredDemo$LightGroup(this, new Vec3f(-start, 0.45, 1 - start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(1.0, 0.0, 0.0), rows - 1 | 0), new DeferredDemo$LightGroup(this, new Vec3f(1.5 - start, 0.45 + objOffset, start), new Vec3f(1.0, 0.0, 0.0), new Vec3f(0.0, 0.0, -1.0), rows - 2 | 0), new DeferredDemo$LightGroup(this, new Vec3f(start, 0.45 + objOffset, 1.5 - start), new Vec3f(0.0, 0.0, 1.0), new Vec3f(-1.0, 0.0, 0.0), rows - 2 | 0)]);
     if (forced) {
       this.lights_0.clear();
       this.pbrPass_0.dynamicPointLights.lightInstances.clear();
@@ -1673,16 +1777,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
     }
     while (this.lights_0.size < this.lightCount_0) {
-      var x = this.rand_0.randomI_n8acyv$(until(0, rows));
+      var grp = lightGroups.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(lightGroups)));
+      var x = this.rand_0.randomI_n8acyv$(until(0, grp.rows));
       var $this = this.pbrPass_0.dynamicPointLights;
       var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
       light.intensity = 1.0;
-      light.color = this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear();
+      light.color.set_d7aj7k$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
       $this.addPointLight_at6cwi$(light);
       var light_0 = light;
       var animLight = new DeferredDemo$AnimatedLight(light_0);
       this.lights_0.add_11rb$(animLight);
-      lightGroups.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(lightGroups))).setupLight_u83zut$(animLight, x, travel, this.rand_0.randomF());
+      grp.setupLight_u83zut$(animLight, x, travel, this.rand_0.randomF());
     }
   };
   DeferredDemo.prototype.updateLightColors_0 = function () {
@@ -1690,7 +1795,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = this.lights_0.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.light.color = this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear();
+      element.light.color.set_d7aj7k$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
     }
   };
   DeferredDemo.prototype.setAoState_0 = function (enabled) {
@@ -1821,111 +1926,101 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_6(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.lightPositionMesh_0.isVisible = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_6(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$DeferredDemo.colorMap_0.next().name;
-      this$DeferredDemo.updateLightColors_0();
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_7(closure$y, this$DeferredDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      var $receiver_0 = $receiver.onClick;
+      $receiver.isEnabled = this$DeferredDemo.lightPositionMesh_0.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$DeferredDemo.colorMap_0.prev();
-      this$DeferredDemo.updateLightColors_0();
+    return function ($receiver) {
+      this$DeferredDemo.lightVolumeMesh_0.isVisible = $receiver.isEnabled;
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_8(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_7(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.lightVolumeMesh_0.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_2(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_8(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      return Unit;
+    };
+  }
   function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo) {
     return function ($receiver, f, f_0, f_1) {
-      this$DeferredDemo.colorMap_0.next();
+      $receiver.text = this$DeferredDemo.colorMap_0.next().name;
       this$DeferredDemo.updateLightColors_0();
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda_9(closure$y, this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       var $receiver_0 = $receiver.onClick;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_3(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_10(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$DeferredDemo.colorMap_0.prev();
+      this$DeferredDemo.updateLightColors_0();
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(closure$mapGroup) {
-    return function ($receiver) {
-      closure$mapGroup.isVisible = $receiver.isEnabled;
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_11(closure$y, closure$mapGroup) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_10(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = closure$mapGroup.isVisible;
-      var $receiver_0 = $receiver.onStateChange;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(closure$mapGroup);
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_4(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo) {
-    return function ($receiver) {
-      this$DeferredDemo.setAoState_0($receiver.isEnabled);
+    return function ($receiver, f, f_0, f_1) {
+      this$DeferredDemo.colorMap_0.next();
+      this$DeferredDemo.updateLightColors_0();
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_12(closure$y, this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_11(closure$y, this$DeferredDemo) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$DeferredDemo.aoPipeline_0.aoPass.isEnabled;
-      var $receiver_0 = $receiver.onStateChange;
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_5(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_13(closure$y, closure$smallFont, this$) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_12(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -1935,9 +2030,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(this$DeferredDemo) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(closure$mapGroup) {
     return function ($receiver) {
-      this$DeferredDemo.autoRotate_0 = $receiver.isEnabled;
+      closure$mapGroup.isVisible = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_13(closure$y, closure$mapGroup) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = closure$mapGroup.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(closure$mapGroup);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_7(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.setAoState_0($receiver.isEnabled);
       return Unit;
     };
   }
@@ -1945,51 +2057,78 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$DeferredDemo.autoRotate_0;
-      var $receiver_0 = $receiver.onStateChange;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_6(this$DeferredDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_7(this$DeferredDemo) {
-    return function ($receiver) {
-      this$DeferredDemo.objects_0.isVisible = $receiver.isEnabled;
-      this$DeferredDemo.updateLights_0(true);
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_15(closure$y, this$DeferredDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$DeferredDemo.objects_0.isVisible;
+      $receiver.isEnabled = this$DeferredDemo.aoPipeline_0.aoPass.isEnabled;
       var $receiver_0 = $receiver.onStateChange;
       var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_7(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DeferredDemo$makeMenu$lambda$lambda$lambda_16(closure$y) {
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_15(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_8(this$DeferredDemo) {
-    return function ($receiver, it) {
-      this$DeferredDemo.objectShader_0.roughness = $receiver.value;
+    return function ($receiver) {
+      this$DeferredDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_16(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_8(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_9(this$DeferredDemo) {
+    return function ($receiver) {
+      this$DeferredDemo.objects_0.isVisible = $receiver.isEnabled;
+      this$DeferredDemo.updateLights_0(true);
       return Unit;
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda_17(closure$y, this$DeferredDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$DeferredDemo.objects_0.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_9(this$DeferredDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_18(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_10(this$DeferredDemo) {
+    return function ($receiver, it) {
+      this$DeferredDemo.objectShader_0.roughness = $receiver.value;
+      return Unit;
+    };
+  }
+  function DeferredDemo$makeMenu$lambda$lambda$lambda_19(closure$y, this$DeferredDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.value = this$DeferredDemo.objectShader_0.roughness;
       var $receiver_0 = $receiver.onValueChanged;
-      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_8(this$DeferredDemo);
+      var element = DeferredDemo$makeMenu$lambda$lambda$lambda$lambda_10(this$DeferredDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -1997,8 +2136,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function DeferredDemo$makeMenu$lambda$lambda_1(closure$smallFont, this$, this$DeferredDemo, closure$mapGroup) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-605.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(485.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-675.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(555.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Dynamic Lights', DeferredDemo$makeMenu$lambda$lambda$lambda_2(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -2006,30 +2145,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var lightCntVal = this$.label_tokfmu$(this$DeferredDemo.lightCount_0.toString(), DeferredDemo$makeMenu$lambda$lambda$lambda_4(y));
       $receiver.unaryPlus_uv0sim$(lightCntVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('lightCntSlider', 100.0, 5000.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_5(y, this$DeferredDemo, lightCntVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('lightCntSlider', 100.0, 5000, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_5(y, this$DeferredDemo, lightCntVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color Map:', DeferredDemo$makeMenu$lambda$lambda$lambda_6(y)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Positions', DeferredDemo$makeMenu$lambda$lambda$lambda_6(y, this$DeferredDemo)));
       y.v -= 35.0;
-      var colorMapLabel = this$.button_9zrh0o$(this$DeferredDemo.colorMap_0.current.name, DeferredDemo$makeMenu$lambda$lambda$lambda_7(y, this$DeferredDemo));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Volumes', DeferredDemo$makeMenu$lambda$lambda$lambda_7(y, this$DeferredDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color Map:', DeferredDemo$makeMenu$lambda$lambda$lambda_8(y)));
+      y.v -= 35.0;
+      var colorMapLabel = this$.button_9zrh0o$(this$DeferredDemo.colorMap_0.current.name, DeferredDemo$makeMenu$lambda$lambda$lambda_9(y, this$DeferredDemo));
       $receiver.unaryPlus_uv0sim$(colorMapLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-left', DeferredDemo$makeMenu$lambda$lambda$lambda_8(y, this$DeferredDemo)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-right', DeferredDemo$makeMenu$lambda$lambda$lambda_9(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-left', DeferredDemo$makeMenu$lambda$lambda$lambda_10(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('colors-right', DeferredDemo$makeMenu$lambda$lambda$lambda_11(y, this$DeferredDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Deferred Shading', DeferredDemo$makeMenu$lambda$lambda$lambda_10(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Deferred Shading', DeferredDemo$makeMenu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Maps', DeferredDemo$makeMenu$lambda$lambda$lambda_11(y, closure$mapGroup)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Maps', DeferredDemo$makeMenu$lambda$lambda$lambda_13(y, closure$mapGroup)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', DeferredDemo$makeMenu$lambda$lambda$lambda_12(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', DeferredDemo$makeMenu$lambda$lambda$lambda_14(y, this$DeferredDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', DeferredDemo$makeMenu$lambda$lambda$lambda_13(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', DeferredDemo$makeMenu$lambda$lambda$lambda_15(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', DeferredDemo$makeMenu$lambda$lambda$lambda_14(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', DeferredDemo$makeMenu$lambda$lambda$lambda_16(y, this$DeferredDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Objects', DeferredDemo$makeMenu$lambda$lambda$lambda_15(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show Objects', DeferredDemo$makeMenu$lambda$lambda$lambda_17(y, this$DeferredDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Object Roughness:', DeferredDemo$makeMenu$lambda$lambda$lambda_16(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Object Roughness:', DeferredDemo$makeMenu$lambda$lambda$lambda_18(y)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_17(y, this$DeferredDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$DeferredDemo.lightCount_0, DeferredDemo$makeMenu$lambda$lambda$lambda_19(y, this$DeferredDemo)));
       return Unit;
     };
   }
@@ -2047,11 +2190,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   DeferredDemo.prototype.makeMenu_0 = function (ctx) {
     return uiScene(void 0, void 0, void 0, DeferredDemo$makeMenu$lambda(ctx, this));
   };
-  function DeferredDemo$LightGroup($outer, startConst, startIt, travelDir) {
+  function DeferredDemo$LightGroup($outer, startConst, startIt, travelDir, rows) {
     this.$outer = $outer;
     this.startConst = startConst;
     this.startIt = startIt;
     this.travelDir = travelDir;
+    this.rows = rows;
   }
   DeferredDemo$LightGroup.prototype.setupLight_u83zut$ = function (light, x, travelDist, travelPos) {
     light.startPos.set_czzhiu$(this.startIt).scale_mx4ult$(x).add_czzhiu$(this.startConst);
@@ -2092,6 +2236,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     kind: Kind_CLASS,
     simpleName: 'ColorMap',
     interfaces: []
+  };
+  DeferredDemo.prototype.instancedLightIndicatorModel_0 = function () {
+    var $receiver = new ShaderModel('instancedLightIndicators');
+    var ifColors = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifColors.v = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
+    var modelMvp = $receiver_0.premultipliedMvpNode().outMvpMat;
+    var instMvp = $receiver_0.multiplyNode_ze33is$(modelMvp, $receiver_0.instanceAttrModelMat().output).output;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, instMvp).outVec4;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    $receiver_1.colorOutput_a3v4si$($receiver_1.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor);
+    return $receiver;
   };
   DeferredDemo.prototype.rgbMapColorModel_0 = function (offset, scale) {
     var $receiver = new ShaderModel('rgbMap');
@@ -2259,6 +2415,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'MetalRoughAoTex',
     interfaces: [ModeledShader]
   };
+  function DeferredDemo$Companion() {
+    DeferredDemo$Companion_instance = this;
+    this.MAX_LIGHTS = 5000;
+  }
+  DeferredDemo$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DeferredDemo$Companion_instance = null;
+  function DeferredDemo$Companion_getInstance() {
+    if (DeferredDemo$Companion_instance === null) {
+      new DeferredDemo$Companion();
+    }return DeferredDemo$Companion_instance;
+  }
   function Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
@@ -2326,7 +2497,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR / IBL', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -8234,7 +8405,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.maxLights = this$_0.lighting.lights.size;
-      $receiver_0.flipBacksideNormals = true;
+      $receiver_0.lightBacksides = true;
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
@@ -8810,7 +8981,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_4 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
     var tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9;
-    $receiver_4.flipBacksideNormals = cfg.flipBacksideNormals;
+    $receiver_4.lightBacksides = cfg.lightBacksides;
     $receiver_4.inFragPos = ifFragPos.v.output;
     $receiver_4.inCamPos = mvpFrag.outCamPos;
     $receiver_4.inIrradiance = (tmp$_5 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_5 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
@@ -9982,6 +10153,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   });
   package$demo.AoDemo = AoDemo;
   package$demo.deferredScene_aemszp$ = deferredScene;
+  Object.defineProperty(DeferredDemo, 'Companion', {
+    get: DeferredDemo$Companion_getInstance
+  });
   package$demo.DeferredDemo = DeferredDemo;
   $$importsForInline$$.kooldemo = _;
   package$demo.demo_tisexc$ = demo;

@@ -308,6 +308,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   SingleLightUniformDataNode.prototype.constructor = SingleLightUniformDataNode;
   SingleLightNode.prototype = Object.create(LightNode.prototype);
   SingleLightNode.prototype.constructor = SingleLightNode;
+  SinglePointLightNode.prototype = Object.create(LightNode.prototype);
+  SinglePointLightNode.prototype.constructor = SinglePointLightNode;
+  SingleSpotLightNode.prototype = Object.create(LightNode.prototype);
+  SingleSpotLightNode.prototype.constructor = SingleSpotLightNode;
   UnlitMaterialNode.prototype = Object.create(ShaderNode.prototype);
   UnlitMaterialNode.prototype.constructor = UnlitMaterialNode;
   PhongMaterialNode.prototype = Object.create(ShaderNode.prototype);
@@ -4069,6 +4073,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Mat4f.prototype.rotate_phvhhm$ = function (angleDeg, axis, result) {
     return this.rotate_c240mt$(angleDeg, axis.x, axis.y, axis.z, result);
   };
+  Mat4f.prototype.rotate_d4zu7e$ = function (rotationMat) {
+    Mat4f$Companion_getInstance().tmpMatLock_0;
+    Mat4f$Companion_getInstance().tmpMatA_0.setIdentity().setRotation_d4zu7e$(rotationMat);
+    this.set_d4zu6j$(this.mul_93v2ma$(Mat4f$Companion_getInstance().tmpMatA_0, Mat4f$Companion_getInstance().tmpMatB_0));
+    return Unit;
+  };
   Mat4f.prototype.scale_y2kzbl$ = function (sx, sy, sz) {
     for (var i = 0; i <= 3; i++) {
       var mi = this.offset + i | 0;
@@ -4389,7 +4399,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.set_n0b4r3$(row, col, mat3.get_vux9f0$(row, col));
       }
     }
-    var s = 1.0 / this.getCol_8irwu1$(0, MutableVec4f_init()).length();
+    var l0 = this.get_vux9f0$(0, 0) * this.get_vux9f0$(0, 0) + this.get_vux9f0$(1, 0) * this.get_vux9f0$(1, 0) + this.get_vux9f0$(2, 0) * this.get_vux9f0$(2, 0) + this.get_vux9f0$(3, 0) * this.get_vux9f0$(3, 0);
+    var s = 1.0 / Math_0.sqrt(l0);
     this.scale_y2kzbl$(s, s, s);
   };
   Mat4f.prototype.setRotation_d4zu6j$ = function (mat4) {
@@ -4398,7 +4409,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.set_n0b4r3$(row, col, mat4.get_vux9f0$(row, col));
       }
     }
-    var s = 1.0 / this.getCol_8irwu1$(0, MutableVec4f_init()).length();
+    var l0 = this.get_vux9f0$(0, 0) * this.get_vux9f0$(0, 0) + this.get_vux9f0$(1, 0) * this.get_vux9f0$(1, 0) + this.get_vux9f0$(2, 0) * this.get_vux9f0$(2, 0) + this.get_vux9f0$(3, 0) * this.get_vux9f0$(3, 0);
+    var s = 1.0 / Math_0.sqrt(l0);
     this.scale_y2kzbl$(s, s, s);
   };
   Mat4f.prototype.setLookAt_n440fu$ = function (position, lookAt, up) {
@@ -9813,12 +9825,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Attribute.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.type, other.type)))));
   };
-  function DepthMapPass(drawNode, width, height, colorFormat) {
+  function DepthMapPass(drawNode, width, height, setup) {
+    DepthMapPass$Companion_getInstance();
     if (height === void 0)
       height = width;
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$R_getInstance();
-    OffscreenRenderPass2d.call(this, drawNode, width, height, colorFormat);
+    if (setup === void 0)
+      setup = DepthMapPass$Companion_getInstance().defaultSetup_0();
+    OffscreenRenderPass2d.call(this, drawNode, width, height, setup);
     this.shadowPipelines_j0os6i$_0 = LinkedHashMap_init();
     this.cullMethod = null;
     this.type = RenderPass$Type$DEPTH_getInstance();
@@ -9861,6 +9874,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       ctx.disposePipeline_i7l2g2$(element);
     }
   };
+  function DepthMapPass$Companion() {
+    DepthMapPass$Companion_instance = this;
+  }
+  DepthMapPass$Companion.prototype.defaultSetup_0 = function () {
+    var $receiver = new OffscreenRenderPass2d$Setup();
+    $receiver.colorFormat = TexFormat$R_getInstance();
+    $receiver.colorRenderTarget = 2;
+    $receiver.depthRenderTarget = 1;
+    return $receiver;
+  };
+  DepthMapPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DepthMapPass$Companion_instance = null;
+  function DepthMapPass$Companion_getInstance() {
+    if (DepthMapPass$Companion_instance === null) {
+      new DepthMapPass$Companion();
+    }return DepthMapPass$Companion_instance;
+  }
   function DepthMapPass_init$lambda(this$DepthMapPass) {
     return function (ctx) {
       var $receiver = this$DepthMapPass.drawQueue.commands;
@@ -9879,9 +9913,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [OffscreenRenderPass2d]
   };
   function LinearDepthMapPass(drawNode, width, height) {
+    LinearDepthMapPass$Companion_getInstance();
     if (height === void 0)
       height = width;
-    DepthMapPass.call(this, drawNode, width, height, TexFormat$R_F16_getInstance());
+    DepthMapPass.call(this, drawNode, width, height, LinearDepthMapPass$Companion_getInstance().linearDepthSetup_0());
     this.onAfterCollectDrawCommands.add_11rb$(LinearDepthMapPass_init$lambda(this));
   }
   LinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
@@ -9910,6 +9945,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LinearDepthNode',
     interfaces: [ShaderNode]
   };
+  function LinearDepthMapPass$Companion() {
+    LinearDepthMapPass$Companion_instance = this;
+  }
+  LinearDepthMapPass$Companion.prototype.linearDepthSetup_0 = function () {
+    var $receiver = new OffscreenRenderPass2d$Setup();
+    $receiver.colorFormat = TexFormat$R_F16_getInstance();
+    $receiver.colorRenderTarget = 1;
+    $receiver.depthRenderTarget = 2;
+    return $receiver;
+  };
+  LinearDepthMapPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var LinearDepthMapPass$Companion_instance = null;
+  function LinearDepthMapPass$Companion_getInstance() {
+    if (LinearDepthMapPass$Companion_instance === null) {
+      new LinearDepthMapPass$Companion();
+    }return LinearDepthMapPass$Companion_instance;
+  }
   function LinearDepthMapPass_init$lambda(this$LinearDepthMapPass) {
     return function (it) {
       this$LinearDepthMapPass.clearColor = new Color(1.0, 0.0, 0.0, 1.0);
@@ -9922,9 +9978,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [DepthMapPass]
   };
   function NormalLinearDepthMapPass(drawNode, width, height) {
+    NormalLinearDepthMapPass$Companion_getInstance();
     if (height === void 0)
       height = width;
-    DepthMapPass.call(this, drawNode, width, height, TexFormat$RGBA_F16_getInstance());
+    DepthMapPass.call(this, drawNode, width, height, NormalLinearDepthMapPass$Companion_getInstance().normalLinearDepthSetup_0());
     this.name = 'NormalLinearDepthMapPass';
     this.onAfterCollectDrawCommands.add_11rb$(NormalLinearDepthMapPass_init$lambda(this));
   }
@@ -9962,6 +10019,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'NormalLinearDepthNode',
     interfaces: [ShaderNode]
   };
+  function NormalLinearDepthMapPass$Companion() {
+    NormalLinearDepthMapPass$Companion_instance = this;
+  }
+  NormalLinearDepthMapPass$Companion.prototype.normalLinearDepthSetup_0 = function () {
+    var $receiver = new OffscreenRenderPass2d$Setup();
+    $receiver.colorFormat = TexFormat$RGBA_F16_getInstance();
+    $receiver.colorRenderTarget = 1;
+    $receiver.depthRenderTarget = 2;
+    return $receiver;
+  };
+  NormalLinearDepthMapPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var NormalLinearDepthMapPass$Companion_instance = null;
+  function NormalLinearDepthMapPass$Companion_getInstance() {
+    if (NormalLinearDepthMapPass$Companion_instance === null) {
+      new NormalLinearDepthMapPass$Companion();
+    }return NormalLinearDepthMapPass$Companion_instance;
+  }
   function NormalLinearDepthMapPass_init$lambda(this$NormalLinearDepthMapPass) {
     return function (it) {
       this$NormalLinearDepthMapPass.clearColor = new Color(0.0, 1.0, 0.0, 1.0);
@@ -10394,23 +10472,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'OffscreenRenderPass',
     interfaces: [RenderPass]
   };
-  function OffscreenRenderPass2d(drawNode, texWidth, texHeight, colorFormat, mipLevels) {
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$RGBA_getInstance();
-    if (mipLevels === void 0)
-      mipLevels = 1;
-    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, mipLevels);
-    this.colorFormat = colorFormat;
+  function OffscreenRenderPass2d(drawNode, texWidth, texHeight, setup) {
+    OffscreenRenderPass2d$Companion_getInstance();
+    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, setup.mipLevels);
+    this.setup = setup;
     this.impl_8be2vx$ = new OffscreenPass2dImpl(this);
+    this.colorFormat = this.setup.colorFormat;
   }
   Object.defineProperty(OffscreenRenderPass2d.prototype, 'colorTexture', {
     get: function () {
-      return this.impl_8be2vx$.texture;
+      if (this.setup.colorRenderTarget === 2) {
+        var $this = package$util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, "Color render target is renderbuffer, colorTexture won't be usable");
+        }}return this.impl_8be2vx$.colorTexture;
     }
   });
   Object.defineProperty(OffscreenRenderPass2d.prototype, 'depthTexture', {
     get: function () {
-      return this.impl_8be2vx$.depthTexture;
+      if (this.setup.depthRenderTarget === 2) {
+        var $this = package$util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, "Depth render target is renderbuffer, depthTexture won't be usable");
+        }}return this.impl_8be2vx$.depthTexture;
     }
   });
   OffscreenRenderPass2d.prototype.dispose_aemszp$ = function (ctx) {
@@ -10421,11 +10509,52 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
     this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
   };
+  function OffscreenRenderPass2d$Setup() {
+    this.colorFormat = TexFormat$RGBA_getInstance();
+    this.mipLevels = 1;
+    this.colorRenderTarget = 1;
+    this.depthRenderTarget = 2;
+    this.extColorTexture = null;
+    this.extDepthTexture = null;
+  }
+  OffscreenRenderPass2d$Setup.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Setup',
+    interfaces: []
+  };
+  function OffscreenRenderPass2d$Companion() {
+    OffscreenRenderPass2d$Companion_instance = this;
+    this.RENDER_TARGET_TEXTURE = 1;
+    this.RENDER_TARGET_RENDERBUFFER = 2;
+  }
+  OffscreenRenderPass2d$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var OffscreenRenderPass2d$Companion_instance = null;
+  function OffscreenRenderPass2d$Companion_getInstance() {
+    if (OffscreenRenderPass2d$Companion_instance === null) {
+      new OffscreenRenderPass2d$Companion();
+    }return OffscreenRenderPass2d$Companion_instance;
+  }
   OffscreenRenderPass2d.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OffscreenRenderPass2d',
     interfaces: [OffscreenRenderPass]
   };
+  function OffscreenRenderPass2d_init(drawNode, texWidth, texHeight, colorFormat, mipLevels, $this) {
+    if (colorFormat === void 0)
+      colorFormat = TexFormat$RGBA_getInstance();
+    if (mipLevels === void 0)
+      mipLevels = 1;
+    $this = $this || Object.create(OffscreenRenderPass2d.prototype);
+    var $receiver = new OffscreenRenderPass2d$Setup();
+    $receiver.colorFormat = colorFormat;
+    $receiver.mipLevels = mipLevels;
+    OffscreenRenderPass2d.call($this, drawNode, texWidth, texHeight, $receiver);
+    return $this;
+  }
   function OffscreenRenderPass2dMrt(drawNode, texWidth, texHeight, texFormats) {
     OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, 1);
     this.texFormats = copy(texFormats);
@@ -10444,9 +10573,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.clearColors_673gz1$_0;
     }
   });
-  Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'textures', {
+  Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'colorTextures', {
     get: function () {
-      return this.impl_8be2vx$.textures;
+      return this.impl_8be2vx$.colorTextures;
     }
   });
   Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'depthTexture', {
@@ -11606,7 +11735,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     LightNode.call(this, 'lightNd_' + shaderGraph.nextNodeId, shaderGraph);
     this.inLightPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
     this.inLightColor = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
-    this.inLightDir = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightDir = new ShaderNodeIoVar(new ModelVar4fConst(new Vec4f(1.0, 0.0, 0.0, 60.0)));
     this.inShaodwFac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.outLightCount_9pb9nm$_0 = new ShaderNodeIoVar(new ModelVar1iConst(1));
     this.isReducedSoi = false;
@@ -11642,6 +11771,83 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'SingleLightNode',
     interfaces: [LightNode]
   };
+  function SinglePointLightNode(shaderGraph) {
+    LightNode.call(this, 'pointLightNd_' + shaderGraph.nextNodeId, shaderGraph);
+    this.inLightPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightColor = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inShaodwFac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    this.outLightCount_qc530c$_0 = new ShaderNodeIoVar(new ModelVar1iConst(1));
+    this.isReducedSoi = false;
+  }
+  Object.defineProperty(SinglePointLightNode.prototype, 'outLightCount', {
+    get: function () {
+      return this.outLightCount_qc530c$_0;
+    }
+  });
+  SinglePointLightNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    LightNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inShaodwFac, this.inLightPos, this.inLightColor]);
+  };
+  SinglePointLightNode.prototype.generateCode_626509$ = function (generator) {
+    var tmp$;
+    if (this.isReducedSoi) {
+      tmp$ = '\n                float powerSqrt = sqrt(power);\n                float strength = clamp(power / (1.0 + dist * dist) * (powerSqrt - dist) / powerSqrt, 0.0, power);\n            ';
+    } else {
+      tmp$ = 'float strength = power / (1.0 + dist * dist);';
+    }
+    var strength = tmp$;
+    generator.appendFunction_puj7f4$(this.name + '_getRadiance', '\n' + '            vec3 ' + this.name + '_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor) {' + '\n' + '                float dist = length(fragToLight);' + '\n' + '                float power = lightColor.w;' + '\n' + '                ' + strength + '\n' + '                return lightColor.rgb * strength;' + '\n' + '            }' + '\n' + '            ');
+  };
+  SinglePointLightNode.prototype.callVec3GetFragToLight_puj7f4$ = function (idx, fragPos) {
+    return '(' + this.inLightPos.ref3f() + ' - ' + fragPos + ')';
+  };
+  SinglePointLightNode.prototype.callVec3GetRadiance_6hosri$ = function (idx, fragToLight, innerAngle) {
+    return '(' + this.name + '_getRadiance(' + fragToLight + ', ' + this.inLightPos.ref4f() + ', ' + this.inLightColor.ref4f() + ') * ' + this.inShaodwFac.ref1f() + ')';
+  };
+  SinglePointLightNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SinglePointLightNode',
+    interfaces: [LightNode]
+  };
+  function SingleSpotLightNode(shaderGraph) {
+    LightNode.call(this, 'spotLightNd_' + shaderGraph.nextNodeId, shaderGraph);
+    this.inLightPos = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightColor = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inLightDir = new ShaderNodeIoVar(new ModelVar4fConst(new Vec4f(1.0, 0.0, 0.0, 60.0)));
+    this.inShaodwFac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    this.outLightCount_paxz40$_0 = new ShaderNodeIoVar(new ModelVar1iConst(1));
+    this.isReducedSoi = false;
+  }
+  Object.defineProperty(SingleSpotLightNode.prototype, 'outLightCount', {
+    get: function () {
+      return this.outLightCount_paxz40$_0;
+    }
+  });
+  SingleSpotLightNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    LightNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inShaodwFac, this.inLightPos, this.inLightDir, this.inLightColor]);
+  };
+  SingleSpotLightNode.prototype.generateCode_626509$ = function (generator) {
+    var tmp$;
+    if (this.isReducedSoi) {
+      tmp$ = '\n                float powerSqrt = sqrt(power);\n                float strength = clamp(power / (1.0 + dist * dist) * (powerSqrt - dist) / powerSqrt, 0.0, power);\n            ';
+    } else {
+      tmp$ = 'float strength = power / (1.0 + dist * dist);';
+    }
+    var strength = tmp$;
+    generator.appendFunction_puj7f4$(this.name + '_getRadiance', '\n' + '            vec3 ' + this.name + '_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {' + '\n' + '                float dist = length(fragToLight);' + '\n' + '                float power = lightColor.w;' + '\n' + '                ' + strength + '\n' + '                vec3 negFtl = -normalize(fragToLight);' + '\n' + '                float spotAng = lightDir.w;' + '\n' + '                float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);' + '\n' + '                float ang = dot(negFtl, lightDir.xyz);' + '\n' + '                float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * ' + math.PI + ') * 0.5 + 0.5;' + '\n' + '                return lightColor.rgb * strength * angVal;' + '\n' + '            }' + '\n' + '            ');
+  };
+  SingleSpotLightNode.prototype.callVec3GetFragToLight_puj7f4$ = function (idx, fragPos) {
+    return '(' + this.inLightPos.ref3f() + ' - ' + fragPos + ')';
+  };
+  SingleSpotLightNode.prototype.callVec3GetRadiance_6hosri$ = function (idx, fragToLight, innerAngle) {
+    return '(' + this.name + '_getRadiance(' + fragToLight + ', ' + this.inLightPos.ref4f() + ', ' + this.inLightColor.ref4f() + ', ' + this.inLightDir.ref4f() + ', ' + innerAngle + ') * ' + this.inShaodwFac.ref1f() + ')';
+  };
+  SingleSpotLightNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SingleSpotLightNode',
+    interfaces: [LightNode]
+  };
   function UnlitMaterialNode(graph) {
     ShaderNode.call(this, 'Unlit Material', graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
     this.inColor = new ShaderNodeIoVar(new ModelVar4fConst(Color$Companion_getInstance().MAGENTA));
@@ -11671,7 +11877,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inShininess = new ShaderNodeIoVar(new ModelVar1fConst(20.0));
     this.inSpecularIntensity = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('phongMat_outColor'), this);
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
   }
   PhongMaterialNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
@@ -11679,7 +11885,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_lhtstx$(this.lightNode);
   };
   PhongMaterialNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 phongMat_v = normalize(' + this.inFragPos.ref3f() + ' - ' + this.inCamPos.ref3f() + ');' + '\n' + '            vec3 phongMat_n = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            vec3 phongMat_ambient = ' + this.inAlbedo.ref3f() + ' * ' + this.inAmbient.ref3f() + ';' + '\n' + '            vec3 phongMat_diffuse = vec3(0);' + '\n' + '            vec3 phongMat_specular = vec3(0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount.name + '; i++) {' + '\n' + '                vec3 phongMat_l = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'phongMat_l', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                phongMat_l = normalize(phongMat_l);' + '\n' + '                ' + '\n' + '                ' + (this.flipBacksideNormals ? 'if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }' : '') + '\n' + '        ' + '\n' + '                float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);' + '\n' + '                vec3 phongMat_r = reflect(phongMat_l, phongMat_n);' + '\n' + '                float phongMat_cosAlpha = clamp(dot(phongMat_v, phongMat_r), 0.0, 1.0);' + '\n' + '                ' + '\n' + '                phongMat_diffuse += ' + this.inAlbedo.ref4f() + '.rgb * radiance * phongMat_cosTheta;' + '\n' + '                phongMat_specular += ' + this.inSpecularIntensity.ref1f() + ' * radiance *' + '\n' + '                        pow(phongMat_cosAlpha, ' + this.inShininess.ref1f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            } ' + '\n' + '            ' + '\n' + '            vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(phongMat_color * ' + this.inAlbedo.ref4f() + '.a, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 phongMat_v = normalize(' + this.inFragPos.ref3f() + ' - ' + this.inCamPos.ref3f() + ');' + '\n' + '            vec3 phongMat_n = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            vec3 phongMat_ambient = ' + this.inAlbedo.ref3f() + ' * ' + this.inAmbient.ref3f() + ';' + '\n' + '            vec3 phongMat_diffuse = vec3(0);' + '\n' + '            vec3 phongMat_specular = vec3(0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount.name + '; i++) {' + '\n' + '                vec3 phongMat_l = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'phongMat_l', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                phongMat_l = normalize(phongMat_l);' + '\n' + '                ' + '\n' + '                ' + (this.lightBacksides ? 'if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }' : '') + '\n' + '        ' + '\n' + '                float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);' + '\n' + '                vec3 phongMat_r = reflect(phongMat_l, phongMat_n);' + '\n' + '                float phongMat_cosAlpha = clamp(dot(phongMat_v, phongMat_r), 0.0, 1.0);' + '\n' + '                ' + '\n' + '                phongMat_diffuse += ' + this.inAlbedo.ref4f() + '.rgb * radiance * phongMat_cosTheta;' + '\n' + '                phongMat_specular += ' + this.inSpecularIntensity.ref1f() + ' * radiance *' + '\n' + '                        pow(phongMat_cosAlpha, ' + this.inShininess.ref1f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            } ' + '\n' + '            ' + '\n' + '            vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(phongMat_color * ' + this.inAlbedo.ref4f() + '.a, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '            ');
   };
   PhongMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -11701,7 +11907,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inAmbientOccl = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.inIrradiance = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.03)));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('pbrMat_outColor'), this);
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
   }
   PbrMaterialNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
@@ -11716,7 +11922,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendFunction_puj7f4$('DistributionGGX', '\n            float DistributionGGX(vec3 N, vec3 H, float roughness) {\n                float a = roughness*roughness;\n                float a2 = a*a;\n                float NdotH = max(dot(N, H), 0.0);\n                float NdotH2 = NdotH*NdotH;\n            \t\n                float num = a2;\n                float denom = (NdotH2 * (a2 - 1.0) + 1.0);\n                denom = 3.141592653589793 * denom * denom;\n            \t\n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySchlickGGX', '\n            float GeometrySchlickGGX(float NdotV, float roughness) {\n                float r = (roughness + 1.0);\n                float k = (r*r) / 8.0;\n                \n                float num   = NdotV;\n                float denom = NdotV * (1.0 - k) + k;\n                \n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySmith', '\n            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {\n                float NdotV = max(dot(N, V), 0.0);\n                float NdotL = max(dot(N, L), 0.0);\n                float ggx2  = GeometrySchlickGGX(NdotV, roughness);\n                float ggx1  = GeometrySchlickGGX(NdotL, roughness);\n                \n                return ggx1 * ggx2;\n            }\n        ');
-    generator.appendMain_61zpoe$('\n' + '            vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '            vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '            vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '            float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '            ' + '\n' + '            vec3 F0 = vec3(0.04); ' + '\n' + '            F0 = mix(F0, albedo, metal);' + '\n' + '    ' + '\n' + '            vec3 Lo = vec3(0.0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount + '; i++) {' + '\n' + '                // calculate per-light radiance' + '\n' + '                vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '        ' + '\n' + '                ' + (this.flipBacksideNormals ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                Lo += (kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL;' + '\n' + '            }' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '            vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '            vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '            float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '            ' + '\n' + '            vec3 F0 = vec3(0.04); ' + '\n' + '            F0 = mix(F0, albedo, metal);' + '\n' + '    ' + '\n' + '            vec3 Lo = vec3(0.0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount + '; i++) {' + '\n' + '                // calculate per-light radiance' + '\n' + '                vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '        ' + '\n' + '                ' + (this.lightBacksides ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                Lo += (kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL;' + '\n' + '            }' + '\n' + '            ');
     if (this.reflectionMap != null && this.brdfLut != null) {
       this.generateFinalIbl_0(generator, this.reflectionMap, this.brdfLut);
     } else {
@@ -11746,7 +11952,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.1));
     this.inIrradiance = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.03)));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('pbrLight_outColor'), this);
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
   }
   PbrLightNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
@@ -11758,8 +11964,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendFunction_puj7f4$('DistributionGGX', '\n            float DistributionGGX(vec3 N, vec3 H, float roughness) {\n                float a = roughness*roughness;\n                float a2 = a*a;\n                float NdotH = max(dot(N, H), 0.0);\n                float NdotH2 = NdotH*NdotH;\n            \t\n                float num = a2;\n                float denom = (NdotH2 * (a2 - 1.0) + 1.0);\n                denom = 3.141592653589793 * denom * denom;\n            \t\n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySchlickGGX', '\n            float GeometrySchlickGGX(float NdotV, float roughness) {\n                float r = (roughness + 1.0);\n                float k = (r*r) / 8.0;\n                \n                float num   = NdotV;\n                float denom = NdotV * (1.0 - k) + k;\n                \n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySmith', '\n            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {\n                float NdotV = max(dot(N, V), 0.0);\n                float NdotL = max(dot(N, L), 0.0);\n                float ggx2  = GeometrySchlickGGX(NdotV, roughness);\n                float ggx1  = GeometrySchlickGGX(NdotL, roughness);\n                \n                return ggx1 * ggx2;\n            }\n        ');
-    var normalCheck = !this.flipBacksideNormals ? 'dot(fragToLight, ' + this.inNormal.ref3f() + ') > 0.0' : 'true';
-    generator.appendMain_61zpoe$('\n' + '            vec3 radiance = vec3(0.0);' + '\n' + '            vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '            bool normalOk = ' + normalCheck + ';' + '\n' + '            if (normalOk) {' + '\n' + '                radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                //radiance = vec3(1.0);' + '\n' + '            }' + '\n' + '            ' + '\n' + '            ' + this.outColor.declare() + ' = vec4(0.0, 0.0, 0.0, 1.0);' + '\n' + '            if (normalOk && dot(radiance, radiance) > 0.0) {' + '\n' + '                vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '                vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '                vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '                float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '                ' + '\n' + '                vec3 F0 = vec3(0.04); ' + '\n' + '                F0 = mix(F0, albedo, metal);' + '\n' + '        ' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                ' + (this.flipBacksideNormals ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                ' + this.outColor.name + ' = vec4((kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL, 1.0);' + '\n' + '            }' + '\n' + '            ');
+    var normalCheck = !this.lightBacksides ? 'dot(fragToLight, ' + this.inNormal.ref3f() + ') > 0.0' : 'true';
+    generator.appendMain_61zpoe$('\n' + '            vec3 radiance = vec3(0.0);' + '\n' + '            vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('0', this.inFragPos.ref3f()) + ';' + '\n' + '            bool normalOk = ' + normalCheck + ';' + '\n' + '            if (normalOk) {' + '\n' + '                radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('0', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '            }' + '\n' + '            ' + '\n' + '            ' + this.outColor.declare() + ' = vec4(0.0, 0.0, 0.0, 1.0);' + '\n' + '            if (normalOk && dot(radiance, radiance) > 0.0) {' + '\n' + '                vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '                vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '                vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '                float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '                ' + '\n' + '                vec3 F0 = vec3(0.04); ' + '\n' + '                F0 = mix(F0, albedo, metal);' + '\n' + '        ' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                ' + (this.lightBacksides ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                ' + this.outColor.name + ' = vec4((kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL, 1.0);' + '\n' + '            }' + '\n' + '            ');
   };
   PbrLightNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -12988,7 +13194,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mat.inFragPos = fragPos;
     }return mat;
   };
-  ShaderModel$FragmentStageBuilder.prototype.pbrLightNode_605fnh$ = function (lightNode) {
+  ShaderModel$FragmentStageBuilder.prototype.pbrLightNode_mvnx9n$ = function (lightNode) {
     return this.addNode_u9w9by$(new PbrLightNode(lightNode, this.stage));
   };
   ShaderModel$FragmentStageBuilder.prototype.colorOutput_a3v4si$ = function (color0, channels, alpha) {
@@ -15687,7 +15893,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_3 = $receiver_2.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
     var tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
-    $receiver_3.flipBacksideNormals = cfg.flipBacksideNormals;
+    $receiver_3.lightBacksides = cfg.lightBacksides;
     $receiver_3.inFragPos = ifFragPos.v.output;
     $receiver_3.inCamPos = mvpFrag.outCamPos;
     $receiver_3.inIrradiance = (tmp$_5 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_5 : $receiver_2.pushConstantNodeColor_61zpoe$('uAmbient').output;
@@ -15768,7 +15974,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isScrSpcAmbientOcclusion = false;
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
     this.isInstanced = false;
     this.albedo = Color$Companion_getInstance().GRAY;
     this.roughness = 0.5;
@@ -16201,7 +16407,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var element_0 = $receiver_0.simpleShadowMapNode_7yd351$(item, 'depthMap_' + i, worldPos);
         shadowMapNodes.add_11rb$(element_0);
       }}
-    $receiver_0.positionOutput = $receiver_0.vec3TransformNode_vid4wo$(worldPos, mvpMat).outVec3;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(worldPos, mvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var tmp$_3, tmp$_4;
     var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
@@ -16234,7 +16440,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var normal = tmp$_4;
     var $receiver_2 = $receiver_1.phongMaterialNode_8rwtp1$(albedo, normal, ifFragPos.v.output, mvpFrag.outCamPos, lightNode);
-    $receiver_2.flipBacksideNormals = cfg.flipBacksideNormals;
+    $receiver_2.lightBacksides = cfg.lightBacksides;
     $receiver_2.inShininess = $receiver_1.pushConstantNode1f_61zpoe$('uShininess').output;
     $receiver_2.inSpecularIntensity = $receiver_1.pushConstantNode1f_61zpoe$('uSpecularIntensity').output;
     var phongMat = $receiver_2;
@@ -16260,7 +16466,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.specularIntensity = 1.0;
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
     this.isInstanced = false;
     this.albedoMap = null;
     this.normalMap = null;
@@ -23738,7 +23944,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   function AmbientOcclusionPass(screenCam, aoSetup, width, height) {
     AmbientOcclusionPass$Companion_getInstance();
-    OffscreenRenderPass2d.call(this, new Group(), width, height, TexFormat$R_getInstance());
+    OffscreenRenderPass2d_init(new Group(), width, height, TexFormat$R_getInstance(), void 0, this);
     this.aoSetup = aoSetup;
     this.radius = 1.0;
     this.intensity = 1.5;
@@ -24370,7 +24576,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   });
   function AoDenoisePass(aoPass, depthTexture, dephtComponent) {
-    OffscreenRenderPass2d.call(this, new Group(), aoPass.texWidth, aoPass.texHeight, TexFormat$R_getInstance());
+    OffscreenRenderPass2d_init(new Group(), aoPass.texWidth, aoPass.texHeight, TexFormat$R_getInstance(), void 0, this);
     this.uRadius_0 = Uniform1f_init(1.0, 'uRadius');
     var tmp$;
     var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
@@ -26633,22 +26839,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function DeferredLightShader$Companion() {
     DeferredLightShader$Companion_instance = this;
     this.LIGHT_POS = new Attribute('aLightPos', GlslType$VEC_4F_getInstance());
+    this.LIGHT_DIR = new Attribute('aLightDir', GlslType$VEC_4F_getInstance());
   }
   DeferredLightShader$Companion.prototype.shaderModel_l5ebkw$ = function (cfg) {
     var $receiver = new ShaderModel('point light shader model');
     var ifFragCoords = {v: null};
     var ifLightColor = {v: null};
     var ifLightPos = {v: null};
+    var ifLightDir = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
+    var tmp$;
     var instMvp = $receiver_0.instanceAttrModelMat().output;
     var mvpMat = $receiver_0.multiplyNode_ze33is$($receiver_0.premultipliedMvpNode().outMvpMat, instMvp).output;
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     ifFragCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifFragCoords', $receiver_0.positionOutput);
     ifLightColor.v = $receiver_0.stageInterfaceNode_iikjwn$('ifLightColor', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute$Companion_getInstance().COLORS).output, true);
     ifLightPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifLightPos', $receiver_0.instanceAttributeNode_nm2vx5$(this.LIGHT_POS).output, true);
+    if (cfg.lightType === Light$Type$POINT_getInstance()) {
+      tmp$ = null;
+    } else {
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifLightDir', $receiver_0.instanceAttributeNode_nm2vx5$(this.LIGHT_DIR).output, true);
+    }
+    ifLightDir.v = tmp$;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
-    var lightColor = ifLightColor.v.output;
-    var lightPos = ifLightPos.v.output;
+    var tmp$_0;
     var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
     var texPos = $receiver_1.addNode_ze33is$($receiver_1.multiplyNode_tuikh5$(xyPos, 0.5).output, new ShaderNodeIoVar(new ModelVar1fConst(0.5))).output;
     var coord = texPos;
@@ -26661,20 +26875,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var defCam = $receiver_1.addNode_u9w9by$(new DeferredCameraNode($receiver_1.stage));
     var worldPos = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1.0).outVec3;
     var worldNrm = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0.0).outVec3;
-    var $receiver_3 = $receiver_1.singleLightNode_ycjtt8$();
-    $receiver_3.isReducedSoi = true;
-    $receiver_3.inLightPos = lightPos;
-    $receiver_3.inLightColor = lightColor;
-    var lightNode = $receiver_3;
-    var $receiver_4 = $receiver_1.pbrLightNode_605fnh$(lightNode);
-    $receiver_4.flipBacksideNormals = cfg.flipBacksideNormals;
-    $receiver_4.inFragPos = worldPos;
-    $receiver_4.inNormal = worldNrm;
-    $receiver_4.inCamPos = defCam.outCamPos;
-    $receiver_4.inAlbedo = mrtDeMultiplex.outAlbedo;
-    $receiver_4.inMetallic = mrtDeMultiplex.outMetallic;
-    $receiver_4.inRoughness = mrtDeMultiplex.outRoughness;
-    var mat = $receiver_4;
+    if (cfg.lightType === Light$Type$SPOT_getInstance()) {
+      var $receiver_3 = $receiver_1.addNode_u9w9by$(new SingleSpotLightNode($receiver_1.stage));
+      $receiver_3.isReducedSoi = true;
+      $receiver_3.inLightPos = ifLightPos.v.output;
+      $receiver_3.inLightColor = ifLightColor.v.output;
+      $receiver_3.inLightDir = ensureNotNull(ifLightDir.v).output;
+      tmp$_0 = $receiver_3;
+    } else {
+      var $receiver_4 = $receiver_1.addNode_u9w9by$(new SinglePointLightNode($receiver_1.stage));
+      $receiver_4.isReducedSoi = true;
+      $receiver_4.inLightPos = ifLightPos.v.output;
+      $receiver_4.inLightColor = ifLightColor.v.output;
+      tmp$_0 = $receiver_4;
+    }
+    var lightNode = tmp$_0;
+    var $receiver_5 = $receiver_1.pbrLightNode_mvnx9n$(lightNode);
+    $receiver_5.lightBacksides = cfg.lightBacksides;
+    $receiver_5.inFragPos = worldPos;
+    $receiver_5.inNormal = worldNrm;
+    $receiver_5.inCamPos = defCam.outCamPos;
+    $receiver_5.inAlbedo = mrtDeMultiplex.outAlbedo;
+    $receiver_5.inMetallic = mrtDeMultiplex.outMetallic;
+    $receiver_5.inRoughness = mrtDeMultiplex.outRoughness;
+    var mat = $receiver_5;
     $receiver_1.colorOutput_a3v4si$(mat.outColor);
     return $receiver;
   };
@@ -26690,12 +26914,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }return DeferredLightShader$Companion_instance;
   }
   function DeferredLightShader$Config() {
+    this.lightType_vh4r6w$_0 = Light$Type$POINT_getInstance();
     this.sceneCamera = null;
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
     this.positionAo = null;
     this.normalRoughness = null;
     this.albedoMetal = null;
   }
+  Object.defineProperty(DeferredLightShader$Config.prototype, 'lightType', {
+    get: function () {
+      return this.lightType_vh4r6w$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      if (value === Light$Type$DIRECTIONAL_getInstance()) {
+        var $this = package$util.Log;
+        var level = Log$Level.ERROR;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Directional lights are not supported for deferred lights, use global lighting instead.');
+        }tmp$ = Light$Type$POINT_getInstance();
+      } else {
+        tmp$ = value;
+      }
+      this.lightType_vh4r6w$_0 = tmp$;
+    }
+  });
   DeferredLightShader$Config.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Config',
@@ -26718,17 +26962,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   Object.defineProperty(DeferredMrtPass.prototype, 'positionAo', {
     get: function () {
-      return this.textures.get_za3lpa$(0);
+      return this.colorTextures.get_za3lpa$(0);
     }
   });
   Object.defineProperty(DeferredMrtPass.prototype, 'normalRoughness', {
     get: function () {
-      return this.textures.get_za3lpa$(1);
+      return this.colorTextures.get_za3lpa$(1);
     }
   });
   Object.defineProperty(DeferredMrtPass.prototype, 'albedoMetal', {
     get: function () {
-      return this.textures.get_za3lpa$(2);
+      return this.colorTextures.get_za3lpa$(2);
     }
   });
   DeferredMrtPass.prototype.dispose_aemszp$ = function (ctx) {
@@ -27606,13 +27850,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isDynamic = true;
     this.lightInstanceData_0 = new MeshInstanceList(listOf([MeshInstanceList$Companion_getInstance().MODEL_MAT, DeferredLightShader$Companion_getInstance().LIGHT_POS, Attribute$Companion_getInstance().COLORS]), 10000);
     this.modelMat_0 = new Mat4f();
-    this.encodedColor_0 = new Float32Array(4);
-    this.encodedPos_0 = new Float32Array(4);
+    this.encodedLightData_0 = new Float32Array(8);
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.isFrustumChecked = false;
     mesh.instances = this.lightInstanceData_0;
     mesh.generate_v2sixm$(DeferredPointLights$mesh$lambda$lambda);
     var $receiver = new DeferredLightShader$Config();
+    $receiver.lightType = Light$Type$POINT_getInstance();
     $receiver.sceneCamera = mrtPass.camera;
     $receiver.positionAo = mrtPass.positionAo;
     $receiver.normalRoughness = mrtPass.normalRoughness;
@@ -27635,8 +27879,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var $receiver = $this.dataF;
       this.encodeLight_0(this.lightInstances.get_za3lpa$(i));
       $receiver.put_q3cr5i$(this.modelMat_0.matrix);
-      $receiver.put_q3cr5i$(this.encodedPos_0);
-      $receiver.put_q3cr5i$(this.encodedColor_0);
+      $receiver.put_q3cr5i$(this.encodedLightData_0);
       var growSz = $this.dataF.position - szBefore | 0;
       if (growSz !== $this.instanceSizeF) {
         throw IllegalStateException_init('Expected data to grow by ' + $this.instanceSizeF + ' elements, instead it grew by ' + growSz);
@@ -27650,14 +27893,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var x = light.intensity;
     var soi = Math_0.sqrt(x);
     this.modelMat_0.scale_y2kzbl$(soi, soi, soi);
-    this.encodedColor_0[0] = light.color.r;
-    this.encodedColor_0[1] = light.color.g;
-    this.encodedColor_0[2] = light.color.b;
-    this.encodedColor_0[3] = light.intensity;
-    this.encodedPos_0[0] = light.position.x;
-    this.encodedPos_0[1] = light.position.y;
-    this.encodedPos_0[2] = light.position.z;
-    this.encodedPos_0[3] = Light$Type$POINT_getInstance().encoded;
+    this.encodedLightData_0[0] = light.position.x;
+    this.encodedLightData_0[1] = light.position.y;
+    this.encodedLightData_0[2] = light.position.z;
+    this.encodedLightData_0[3] = Light$Type$POINT_getInstance().encoded;
+    this.encodedLightData_0[4] = light.color.r;
+    this.encodedLightData_0[5] = light.color.g;
+    this.encodedLightData_0[6] = light.color.b;
+    this.encodedLightData_0[7] = light.intensity;
   };
   DeferredPointLights.prototype.addPointLight_at6cwi$ = function (pointLight) {
     this.lightInstances.add_11rb$(pointLight);
@@ -27676,7 +27919,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function DeferredPointLights$PointLight() {
     this.position = MutableVec3f_init();
-    this.color = Color$Companion_getInstance().MD_PINK;
+    this.color = MutableColor_init_0(Color$Companion_getInstance().WHITE);
     this.intensity = 1.0;
   }
   DeferredPointLights$PointLight.$metadata$ = {
@@ -27773,26 +28016,224 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredCameraNode',
     interfaces: [ShaderNode]
   };
+  function DeferredSpotLights(maxSpotAngle, mrtPass) {
+    this.maxSpotAngle = maxSpotAngle;
+    this.lightInstances = ArrayList_init_0();
+    this.isDynamic = true;
+    this.lightInstanceData_0 = new MeshInstanceList(listOf([MeshInstanceList$Companion_getInstance().MODEL_MAT, DeferredLightShader$Companion_getInstance().LIGHT_POS, DeferredLightShader$Companion_getInstance().LIGHT_DIR, Attribute$Companion_getInstance().COLORS]), 10000);
+    this.modelMat_0 = new Mat4f();
+    this.encodedLightData_0 = new Float32Array(12);
+    this.tmpLightDir_0 = MutableVec3f_init();
+    var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
+    mesh.isFrustumChecked = false;
+    mesh.instances = this.lightInstanceData_0;
+    mesh.generate_v2sixm$(DeferredSpotLights$mesh$lambda$lambda(this));
+    var $receiver = new DeferredLightShader$Config();
+    $receiver.lightType = Light$Type$SPOT_getInstance();
+    $receiver.sceneCamera = mrtPass.camera;
+    $receiver.positionAo = mrtPass.positionAo;
+    $receiver.normalRoughness = mrtPass.normalRoughness;
+    $receiver.albedoMetal = mrtPass.albedoMetal;
+    var lightCfg = $receiver;
+    mesh.pipelineLoader = new DeferredLightShader(lightCfg);
+    mesh.onUpdate.add_11rb$(DeferredSpotLights$mesh$lambda$lambda_0(this));
+    this.mesh = mesh;
+  }
+  DeferredSpotLights.prototype.updateLightData = function () {
+    var tmp$;
+    this.lightInstanceData_0.clear();
+    var a = this.lightInstances.size;
+    var b = this.lightInstanceData_0.maxInstances;
+    tmp$ = Math_0.min(a, b);
+    for (var i = 0; i < tmp$; i++) {
+      var $this = this.lightInstanceData_0;
+      $this.checkBufferSize_za3lpa$();
+      var szBefore = $this.dataF.position;
+      var $receiver = $this.dataF;
+      this.encodeLight_0(this.lightInstances.get_za3lpa$(i));
+      $receiver.put_q3cr5i$(this.modelMat_0.matrix);
+      $receiver.put_q3cr5i$(this.encodedLightData_0);
+      var growSz = $this.dataF.position - szBefore | 0;
+      if (growSz !== $this.instanceSizeF) {
+        throw IllegalStateException_init('Expected data to grow by ' + $this.instanceSizeF + ' elements, instead it grew by ' + growSz);
+      }$this.numInstances = $this.numInstances + 1 | 0;
+      $this.hasChanged = true;
+    }
+  };
+  DeferredSpotLights.prototype.encodeLight_0 = function (light) {
+    this.modelMat_0.setIdentity();
+    this.modelMat_0.translate_czzhiu$(light.position);
+    var x = light.intensity;
+    var soi = Math_0.sqrt(x);
+    this.modelMat_0.scale_y2kzbl$(soi, soi, soi);
+    this.modelMat_0.rotate_d4zu7e$(light.orientation);
+    this.tmpLightDir_0.set_czzhiu$(Vec3f$Companion_getInstance().X_AXIS);
+    light.orientation.transform_5s4mqq$(this.tmpLightDir_0);
+    this.encodedLightData_0[0] = light.position.x;
+    this.encodedLightData_0[1] = light.position.y;
+    this.encodedLightData_0[2] = light.position.z;
+    this.encodedLightData_0[3] = Light$Type$SPOT_getInstance().encoded;
+    this.encodedLightData_0[4] = this.tmpLightDir_0.x;
+    this.encodedLightData_0[5] = this.tmpLightDir_0.y;
+    this.encodedLightData_0[6] = this.tmpLightDir_0.z;
+    var tmp$ = this.encodedLightData_0;
+    var a = this.maxSpotAngle;
+    var b = light.spotAngle;
+    var x_0 = Math_0.min(a, b) / 2 * package$math.DEG_2_RAD;
+    tmp$[7] = Math_0.cos(x_0);
+    this.encodedLightData_0[8] = light.color.r;
+    this.encodedLightData_0[9] = light.color.g;
+    this.encodedLightData_0[10] = light.color.b;
+    this.encodedLightData_0[11] = light.intensity;
+  };
+  DeferredSpotLights.prototype.addSpotLight_sdnkeo$ = function (spotLight) {
+    this.lightInstances.add_11rb$(spotLight);
+  };
+  DeferredSpotLights.prototype.addSpotLight_g3dtq9$ = defineInlineFunction('kool.de.fabmax.kool.util.deferred.DeferredSpotLights.addSpotLight_g3dtq9$', wrapFunction(function () {
+    var DeferredSpotLights$DeferredSpotLights$SpotLight_init = _.de.fabmax.kool.util.deferred.DeferredSpotLights.SpotLight;
+    return function (block) {
+      var light = new DeferredSpotLights$DeferredSpotLights$SpotLight_init();
+      block(light);
+      this.addSpotLight_sdnkeo$(light);
+      return light;
+    };
+  }));
+  DeferredSpotLights.prototype.removeSpotLight_sdnkeo$ = function (light) {
+    this.lightInstances.remove_11rb$(light);
+  };
+  function DeferredSpotLights$SpotLight() {
+    this.position = MutableVec3f_init();
+    this.orientation = new Mat3f();
+    this.spotAngle = 60.0;
+    this.color = MutableColor_init_0(Color$Companion_getInstance().WHITE);
+    this.intensity = 1.0;
+  }
+  DeferredSpotLights$SpotLight.prototype.setDirection_czzhiu$ = function (direction) {
+    var tmp$;
+    var x = direction.dot_czzhiu$(Vec3f$Companion_getInstance().Y_AXIS);
+    if (Math_0.abs(x) > 0.9) {
+      tmp$ = Vec3f$Companion_getInstance().X_AXIS;
+    } else {
+      tmp$ = Vec3f$Companion_getInstance().Y_AXIS;
+    }
+    var v = tmp$;
+    var b = direction.cross_2gj7b4$(v, MutableVec3f_init());
+    var c = direction.cross_2gj7b4$(b, MutableVec3f_init());
+    this.orientation.setColVec_ky00qo$(0, direction);
+    this.orientation.setColVec_ky00qo$(1, b);
+    this.orientation.setColVec_ky00qo$(2, c);
+  };
+  DeferredSpotLights$SpotLight.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SpotLight',
+    interfaces: []
+  };
+  DeferredSpotLights.prototype.makeHalfSphereCone_0 = function ($receiver, angle, radius) {
+    var tmp$;
+    var clamp$result;
+    if (angle < 0.0) {
+      clamp$result = 0.0;
+    } else if (angle > 360.0) {
+      clamp$result = 360.0;
+    } else {
+      clamp$result = angle;
+    }
+    var cAng = clamp$result / 2.0;
+    var steps = 8;
+    var belts = numberToInt((steps / 2 | 0) * cAng / 180);
+    var iCenter = $receiver.vertex_n440gp$(new Vec3f(radius, 0.0, 0.0), Vec3f$Companion_getInstance().X_AXIS);
+    for (var i = 0; i < steps; i++) {
+      var tmp$_0 = 360.0 / steps * package$math.DEG_2_RAD;
+      var b = cAng * package$math.DEG_2_RAD;
+      var a = Math_0.min(tmp$_0, b);
+      var x = Math_0.cos(a) * radius;
+      var r = Math_0.sin(a) * radius;
+      var x_0 = 2 * math.PI * i / steps;
+      var y = Math_0.sin(x_0) * r;
+      var x_1 = 2 * math.PI * i / steps;
+      var z = Math_0.cos(x_1) * r;
+      var vp = new Vec3f(x, y, z);
+      var iv = $receiver.vertex_n440gp$(vp, vp);
+      if (i > 0) {
+        $receiver.geometry.addTriIndices_qt1dr2$(iCenter, iv, iv - 1 | 0);
+      }if (i === (steps - 1 | 0)) {
+        $receiver.geometry.addTriIndices_qt1dr2$(iCenter, iv - steps + 1 | 0, iv);
+      }}
+    for (var b_0 = 0; b_0 < belts; b_0++) {
+      if (b_0 < (belts - 1 | 0)) {
+        tmp$ = 360.0 / steps * (b_0 + 2 | 0) * package$math.DEG_2_RAD;
+      } else {
+        tmp$ = cAng * package$math.DEG_2_RAD;
+      }
+      var a_0 = tmp$;
+      for (var i_0 = 0; i_0 < steps; i_0++) {
+        var x_2 = Math_0.cos(a_0) * radius;
+        var r_0 = Math_0.sin(a_0) * radius;
+        var x_3 = 2 * math.PI * i_0 / steps;
+        var y_0 = Math_0.sin(x_3) * r_0;
+        var x_4 = 2 * math.PI * i_0 / steps;
+        var z_0 = Math_0.cos(x_4) * r_0;
+        var vp_0 = new Vec3f(x_2, y_0, z_0);
+        var iv_0 = $receiver.vertex_n440gp$(vp_0, vp_0);
+        if (i_0 > 0) {
+          $receiver.geometry.addTriIndices_qt1dr2$(iv_0, iv_0 - 1 | 0, iv_0 - steps | 0);
+          $receiver.geometry.addTriIndices_qt1dr2$(iv_0 - 1 | 0, iv_0 - steps - 1 | 0, iv_0 - steps | 0);
+        }if (i_0 === (steps - 1 | 0)) {
+          $receiver.geometry.addTriIndices_qt1dr2$(iv_0, iv_0 - steps | 0, iv_0 - (steps * 2 | 0) + 1 | 0);
+          $receiver.geometry.addTriIndices_qt1dr2$(iv_0 - steps + 1 | 0, iv_0, iv_0 - (steps * 2 | 0) + 1 | 0);
+        }}
+    }
+    var iOri = $receiver.vertex_n440gp$(new Vec3f(-0.1, 0.0, 0.0), Vec3f$Companion_getInstance().NEG_X_AXIS);
+    for (var i_1 = 0; i_1 < steps; i_1++) {
+      if (i_1 < (steps - 1 | 0)) {
+        $receiver.geometry.addTriIndices_qt1dr2$(iOri, iOri - steps + i_1 | 0, iOri - steps + i_1 + 1 | 0);
+      } else {
+        $receiver.geometry.addTriIndices_qt1dr2$(iOri, iOri - 1 | 0, iOri - steps | 0);
+      }
+    }
+  };
+  function DeferredSpotLights$mesh$lambda$lambda(this$DeferredSpotLights) {
+    return function ($receiver) {
+      this$DeferredSpotLights.makeHalfSphereCone_0($receiver, this$DeferredSpotLights.maxSpotAngle, 1.17);
+      return Unit;
+    };
+  }
+  function DeferredSpotLights$mesh$lambda$lambda_0(this$DeferredSpotLights) {
+    return function ($receiver, f, f_0) {
+      if (this$DeferredSpotLights.isDynamic) {
+        this$DeferredSpotLights.updateLightData();
+      }return Unit;
+    };
+  }
+  DeferredSpotLights.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredSpotLights',
+    interfaces: []
+  };
   function PbrLightingPass(scene, mrtPass, cfg) {
+    PbrLightingPass$Companion_getInstance();
     if (cfg === void 0)
       cfg = new PbrSceneShader$DeferredPbrConfig();
-    OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat$RGBA_F16_getInstance());
+    OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, PbrLightingPass$Companion_getInstance().pbrLightingSetup_0(mrtPass));
     this.mrtPass = mrtPass;
     this.globalLighting = new Lighting();
     this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
     this.staticPointLights = new DeferredPointLights(this.mrtPass);
-    this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
+    this.mutSpotLights_0 = ArrayList_init_0();
     var tmp$, tmp$_0;
+    this.content = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
     this.dynamicPointLights.isDynamic = true;
     this.staticPointLights.isDynamic = false;
     this.lighting = this.globalLighting;
     this.globalLighting.lights.clear();
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
     scene.addOffscreenPass_m1c2kf$(this);
-    this.clearColor = (tmp$ = this.clearColor) != null ? tmp$.toLinear() : null;
     this.dependsOn_yqp8fe$(this.mrtPass);
+    this.clearColor = (tmp$_0 = this.clearColor) != null ? tmp$_0.toLinear() : null;
+    this.clearDepth = false;
     this.camera = this.mrtPass.camera;
-    var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
+    var $receiver = this.content;
     var closure$cfg = cfg;
     $receiver.isFrustumChecked = false;
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
@@ -27812,6 +28253,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.unaryPlus_uv0sim$(this.dynamicPointLights.mesh);
     $receiver.unaryPlus_uv0sim$(this.staticPointLights.mesh);
   }
+  Object.defineProperty(PbrLightingPass.prototype, 'spotLights', {
+    get: function () {
+      return this.mutSpotLights_0;
+    }
+  });
   Object.defineProperty(PbrLightingPass.prototype, 'sceneShader', {
     get: function () {
       if (this.sceneShader_w4wym2$_0 == null)
@@ -27822,17 +28268,45 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.sceneShader_w4wym2$_0 = sceneShader;
     }
   });
+  PbrLightingPass.prototype.addSpotLights_mx4ult$ = function (maxSpotAngle) {
+    var lights = new DeferredSpotLights(maxSpotAngle, this.mrtPass);
+    this.content.plusAssign_f1kmr1$(lights.mesh);
+    this.mutSpotLights_0.add_11rb$(lights);
+    return lights;
+  };
   PbrLightingPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
   };
+  function PbrLightingPass$Companion() {
+    PbrLightingPass$Companion_instance = this;
+  }
+  PbrLightingPass$Companion.prototype.pbrLightingSetup_0 = function (mrtPass) {
+    var $receiver = new OffscreenRenderPass2d$Setup();
+    $receiver.colorFormat = TexFormat$RGBA_F16_getInstance();
+    $receiver.colorRenderTarget = 1;
+    $receiver.depthRenderTarget = 1;
+    $receiver.extDepthTexture = mrtPass.depthTexture;
+    return $receiver;
+  };
+  PbrLightingPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var PbrLightingPass$Companion_instance = null;
+  function PbrLightingPass$Companion_getInstance() {
+    if (PbrLightingPass$Companion_instance === null) {
+      new PbrLightingPass$Companion();
+    }return PbrLightingPass$Companion_instance;
+  }
   function PbrLightingPass_init$lambda(this$PbrLightingPass) {
     return function ($receiver, ctx) {
       var mapW = $receiver.mainRenderPass.viewport.width;
       var mapH = $receiver.mainRenderPass.viewport.height;
       if (mapW > 0 && mapH > 0 && (mapW !== this$PbrLightingPass.texWidth || mapH !== this$PbrLightingPass.texHeight)) {
-        this$PbrLightingPass.resize_w70mbp$(mapW, mapH, ctx);
         this$PbrLightingPass.mrtPass.resize_w70mbp$(mapW, mapH, ctx);
+        this$PbrLightingPass.resize_w70mbp$(mapW, mapH, ctx);
       }return Unit;
     };
   }
@@ -28007,6 +28481,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.ssaoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
+  PbrSceneShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+    builder.depthTest = DepthCompareOp$DISABLED_getInstance();
+    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+  };
   PbrSceneShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17;
     var $this = this.model;
@@ -28434,7 +28912,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_3 = $receiver_1.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
     var tmp$_2;
-    $receiver_3.flipBacksideNormals = cfg.flipBacksideNormals;
+    $receiver_3.lightBacksides = cfg.lightBacksides;
     $receiver_3.inFragPos = worldPos;
     $receiver_3.inNormal = worldNrm;
     $receiver_3.inCamPos = defCam.outCamPos;
@@ -28470,7 +28948,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isScrSpcAmbientOcclusion = false;
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
-    this.flipBacksideNormals = false;
+    this.lightBacksides = false;
     this.positionAo = null;
     this.normalRoughness = null;
     this.albedoMetal = null;
@@ -28721,7 +29199,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [Map]
   };
   function BrdfLutPass(parentScene) {
-    OffscreenRenderPass2d.call(this, new Group(), 512, 512, TexFormat$RG_F16_getInstance(), 1);
+    OffscreenRenderPass2d_init(new Group(), 512, 512, TexFormat$RG_F16_getInstance(), 1, this);
     var tmp$;
     this.clearColor = null;
     var $receiver = new OrthographicCamera();
@@ -37106,26 +37584,61 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function OffscreenPass2dImpl(offscreenPass) {
     this.offscreenPass = offscreenPass;
-    this.texture = new OffscreenPass2dImpl$OffscreenTexture(this);
-    this.depthTexture = new OffscreenPass2dImpl$OffscreenDepthTexture(this);
+    var tmp$, tmp$_0;
+    this.colorTexture = (tmp$ = this.offscreenPass.setup.extColorTexture) != null ? tmp$ : new OffscreenPass2dImpl$OffscreenTexture(this);
+    this.depthTexture = (tmp$_0 = this.offscreenPass.setup.extDepthTexture) != null ? tmp$_0 : new OffscreenPass2dImpl$OffscreenDepthTexture(this);
+    this.isExtColorTexture = this.offscreenPass.setup.extColorTexture != null;
+    this.isExtDepthTexture = this.offscreenPass.setup.extDepthTexture != null;
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
     this.isCreated_0 = false;
+    this.colorTex_0 = null;
+    this.depthTex_0 = null;
   }
   OffscreenPass2dImpl.prototype.create_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     var gl = ctx.gl_8be2vx$;
-    Kotlin.isType(tmp$ = this.texture, OffscreenPass2dImpl$OffscreenTexture) ? tmp$ : throwCCE();
-    this.texture.create_44a5h0$(ctx);
-    Kotlin.isType(tmp$_0 = this.depthTexture, OffscreenPass2dImpl$OffscreenDepthTexture) ? tmp$_0 : throwCCE();
-    this.depthTexture.create_44a5h0$(ctx);
-    tmp$_1 = this.offscreenPass.mipLevels;
-    for (var i = 0; i < tmp$_1; i++) {
+    if (this.offscreenPass.setup.colorRenderTarget === 1) {
+      if (!this.isExtColorTexture && this.colorTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
+        (Kotlin.isType(tmp$ = this.colorTexture, OffscreenPass2dImpl$OffscreenTexture) ? tmp$ : throwCCE()).create_44a5h0$(ctx);
+      } else if (this.isExtColorTexture) {
+        tmp$_0 = this.colorTexture.loadedTexture;
+        if (tmp$_0 == null) {
+          return;
+        }var extColorTex = tmp$_0;
+        this.colorTex_0 = (Kotlin.isType(tmp$_1 = extColorTex, LoadedTextureWebGl) ? tmp$_1 : throwCCE()).texture;
+      }}if (this.offscreenPass.setup.depthRenderTarget === 1) {
+      if (!this.isExtDepthTexture && this.depthTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
+        (Kotlin.isType(tmp$_2 = this.depthTexture, OffscreenPass2dImpl$OffscreenDepthTexture) ? tmp$_2 : throwCCE()).create_44a5h0$(ctx);
+      } else if (this.isExtDepthTexture) {
+        tmp$_3 = this.depthTexture.loadedTexture;
+        if (tmp$_3 == null) {
+          return;
+        }var extDepthTex = tmp$_3;
+        this.depthTex_0 = (Kotlin.isType(tmp$_4 = extDepthTex, LoadedTextureWebGl) ? tmp$_4 : throwCCE()).texture;
+      }}tmp$_5 = this.offscreenPass.mipLevels;
+    for (var i = 0; i < tmp$_5; i++) {
       var fbo = gl.createFramebuffer();
-      gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
-      gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.texture.offscreenTex, i);
-      gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTexture.offscreenDepthTex, i);
       this.fbos_0.add_11rb$(fbo);
+      gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
+      if (this.offscreenPass.setup.colorRenderTarget === 1) {
+        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.colorTex_0, i);
+      } else {
+        var rbo = gl.createRenderbuffer();
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, get_glInternalFormat(this.offscreenPass.colorFormat), this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.RENDERBUFFER, rbo);
+        this.rbos_0.add_11rb$(rbo);
+      }
+      if (this.offscreenPass.setup.depthRenderTarget === 1) {
+        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTex_0, i);
+      } else {
+        var rbo_0 = gl.createRenderbuffer();
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo_0);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo_0);
+        this.rbos_0.add_11rb$(rbo_0);
+      }
     }
     this.isCreated_0 = true;
   };
@@ -37146,8 +37659,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.fbos_0.clear();
     this.rbos_0.clear();
-    this.texture.dispose();
-    this.depthTexture.dispose();
+    if (!this.isExtColorTexture) {
+      this.colorTexture.dispose();
+    }if (!this.isExtDepthTexture) {
+      this.depthTexture.dispose();
+    }this.colorTex_0 = null;
+    this.depthTex_0 = null;
     this.isCreated_0 = false;
   };
   OffscreenPass2dImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
@@ -37158,31 +37675,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
     if (!this.isCreated_0) {
       this.create_0(ctx);
-    }var mipLevel = this.offscreenPass.targetMipLevel;
-    var fboIdx = mipLevel < 0 ? 0 : mipLevel;
-    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
-    ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
-    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
-  };
+    }if (this.isCreated_0) {
+      var mipLevel = this.offscreenPass.targetMipLevel;
+      var fboIdx = mipLevel < 0 ? 0 : mipLevel;
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
+      ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+    }};
   function OffscreenPass2dImpl$OffscreenTexture($outer) {
     this.$outer = $outer;
     Texture.call(this, void 0, null);
-    this.offscreenTex = null;
   }
   OffscreenPass2dImpl$OffscreenTexture.prototype.create_44a5h0$ = function (ctx) {
     var gl = ctx.gl_8be2vx$;
     var intFormat = get_glInternalFormat(this.$outer.offscreenPass.colorFormat);
     var width = this.$outer.offscreenPass.texWidth;
     var height = this.$outer.offscreenPass.texHeight;
-    this.offscreenTex = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.offscreenTex);
+    this.$outer.colorTex_0 = gl.createTexture();
+    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.$outer.colorTex_0);
     gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.$outer.offscreenPass.mipLevels, intFormat, width, height);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR);
     var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.$outer.offscreenPass.colorFormat), 1, this.$outer.offscreenPass.mipLevels);
-    this.loadedTexture = new LoadedTextureWebGl(ctx, this.offscreenTex, estSize);
+    this.loadedTexture = new LoadedTextureWebGl(ctx, this.$outer.colorTex_0, estSize);
     this.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPass2dImpl$OffscreenTexture.$metadata$ = {
@@ -37193,15 +37710,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function OffscreenPass2dImpl$OffscreenDepthTexture($outer) {
     this.$outer = $outer;
     Texture.call(this, void 0, null);
-    this.offscreenDepthTex = null;
   }
   OffscreenPass2dImpl$OffscreenDepthTexture.prototype.create_44a5h0$ = function (ctx) {
     var gl = ctx.gl_8be2vx$;
     var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
     var width = this.$outer.offscreenPass.texWidth;
     var height = this.$outer.offscreenPass.texHeight;
-    this.offscreenDepthTex = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.offscreenDepthTex);
+    this.$outer.depthTex_0 = gl.createTexture();
+    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.$outer.depthTex_0);
     gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.$outer.offscreenPass.mipLevels, intFormat, width, height);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
@@ -37210,7 +37726,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
     gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, WebGLRenderingContext.LESS);
     var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.$outer.offscreenPass.mipLevels);
-    this.loadedTexture = new LoadedTextureWebGl(ctx, this.offscreenDepthTex, estSize);
+    this.loadedTexture = new LoadedTextureWebGl(ctx, this.$outer.depthTex_0, estSize);
     this.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPass2dImpl$OffscreenDepthTexture.$metadata$ = {
@@ -37230,7 +37746,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     for (var index = 0; index < size; index++) {
       list.add_11rb$(new Texture(void 0, null));
     }
-    this.textures = list;
+    this.colorTextures = list;
     this.depthTexture = new Texture(void 0, null);
     this.isCreated_0 = false;
     this.fbo_0 = null;
@@ -37249,7 +37765,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ctx.gl_8be2vx$.deleteFramebuffer(this.fbo_0);
     this.fbo_0 = null;
     var tmp$_1;
-    tmp$_1 = this.textures.iterator();
+    tmp$_1 = this.colorTextures.iterator();
     while (tmp$_1.hasNext()) {
       var element = tmp$_1.next();
       element.dispose();
@@ -37313,8 +37829,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.NEAREST);
       gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.NEAREST);
       var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(colorFormat), 1, this.offscreenPass.mipLevels);
-      this.textures.get_za3lpa$(i).loadedTexture = new LoadedTextureWebGl(ctx, this.glColorTexs_0[i], estSize);
-      this.textures.get_za3lpa$(i).loadingState = Texture$LoadingState$LOADED_getInstance();
+      this.colorTextures.get_za3lpa$(i).loadedTexture = new LoadedTextureWebGl(ctx, this.glColorTexs_0[i], estSize);
+      this.colorTextures.get_za3lpa$(i).loadingState = Texture$LoadingState$LOADED_getInstance();
     }
   };
   OffscreenPass2dMrtImpl.prototype.createDepthTex_0 = function (ctx) {
@@ -39841,6 +40357,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function QueueRendererWebGl$GlAttribs($outer) {
     this.$outer = $outer;
+    this.actIsWriteDepth = true;
     this.depthTest = null;
     this.cullMethod = null;
     this.lineWidth = 0.0;
@@ -39848,6 +40365,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   QueueRendererWebGl$GlAttribs.prototype.setupPipelineAttribs_lfrgcb$ = function (pipeline) {
     this.setBlendMode_0(pipeline.blendMode);
     this.setDepthTest_0(pipeline.depthCompareOp);
+    this.setWriteDepth_0(pipeline.isWriteDepth);
     this.setCullMethod_0(pipeline.cullMethod);
     if (this.lineWidth !== pipeline.lineWidth) {
       this.lineWidth = pipeline.lineWidth;
@@ -39873,6 +40391,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           this.$outer.gl_0.disable(WebGLRenderingContext.CULL_FACE);
           break;
       }
+    }};
+  QueueRendererWebGl$GlAttribs.prototype.setWriteDepth_0 = function (enabled) {
+    if (this.actIsWriteDepth !== enabled) {
+      this.actIsWriteDepth = enabled;
+      this.$outer.gl_0.depthMask(enabled);
     }};
   QueueRendererWebGl$GlAttribs.prototype.setDepthTest_0 = function (depthCompareOp) {
     if (!equals(this.depthTest, depthCompareOp)) {
@@ -41121,8 +41644,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: Attribute$Companion_getInstance
   });
   package$pipeline.Attribute = Attribute;
+  Object.defineProperty(DepthMapPass, 'Companion', {
+    get: DepthMapPass$Companion_getInstance
+  });
   package$pipeline.DepthMapPass = DepthMapPass;
+  Object.defineProperty(LinearDepthMapPass, 'Companion', {
+    get: LinearDepthMapPass$Companion_getInstance
+  });
   package$pipeline.LinearDepthMapPass = LinearDepthMapPass;
+  Object.defineProperty(NormalLinearDepthMapPass, 'Companion', {
+    get: NormalLinearDepthMapPass$Companion_getInstance
+  });
   package$pipeline.NormalLinearDepthMapPass = NormalLinearDepthMapPass;
   DescriptorSetLayout.Builder = DescriptorSetLayout$Builder;
   package$pipeline.DescriptorSetLayout = DescriptorSetLayout;
@@ -41146,6 +41678,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.DescriptorType = DescriptorType;
   package$pipeline.LoadedTexture = LoadedTexture;
   package$pipeline.OffscreenRenderPass = OffscreenRenderPass;
+  OffscreenRenderPass2d.Setup = OffscreenRenderPass2d$Setup;
+  Object.defineProperty(OffscreenRenderPass2d, 'Companion', {
+    get: OffscreenRenderPass2d$Companion_getInstance
+  });
+  package$pipeline.OffscreenRenderPass2d_init_9tkt76$ = OffscreenRenderPass2d_init;
   package$pipeline.OffscreenRenderPass2d = OffscreenRenderPass2d;
   package$pipeline.OffscreenRenderPass2dMrt = OffscreenRenderPass2dMrt;
   Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'FRONT', {
@@ -41250,6 +41787,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.MultiLightNode = MultiLightNode;
   package$shadermodel.SingleLightUniformDataNode = SingleLightUniformDataNode;
   package$shadermodel.SingleLightNode = SingleLightNode;
+  package$shadermodel.SinglePointLightNode = SinglePointLightNode;
+  package$shadermodel.SingleSpotLightNode = SingleSpotLightNode;
   package$shadermodel.UnlitMaterialNode = UnlitMaterialNode;
   package$shadermodel.PhongMaterialNode = PhongMaterialNode;
   package$shadermodel.PbrMaterialNode = PbrMaterialNode;
@@ -41766,6 +42305,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$deferred.DeferredPointLights = DeferredPointLights;
   package$deferred.DiscardClearNode = DiscardClearNode;
   package$deferred.DeferredCameraNode = DeferredCameraNode;
+  DeferredSpotLights.SpotLight = DeferredSpotLights$SpotLight;
+  package$deferred.DeferredSpotLights = DeferredSpotLights;
+  Object.defineProperty(PbrLightingPass, 'Companion', {
+    get: PbrLightingPass$Companion_getInstance
+  });
   package$deferred.PbrLightingPass = PbrLightingPass;
   Object.defineProperty(PbrSceneShader, 'Companion', {
     get: PbrSceneShader$Companion_getInstance

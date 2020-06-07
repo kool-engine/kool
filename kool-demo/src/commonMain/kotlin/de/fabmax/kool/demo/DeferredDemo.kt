@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
@@ -14,6 +11,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.*
+import kotlin.math.sqrt
 
 fun deferredScene(ctx: KoolContext): List<Scene> {
     val deferredDemo = DeferredDemo(ctx)
@@ -32,6 +30,9 @@ class DeferredDemo(ctx: KoolContext) {
     private lateinit var objects: Mesh
     private lateinit var objectShader: DeferredMrtShader
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
+
+    private lateinit var lightPositionMesh: Mesh
+    private lateinit var lightVolumeMesh: LineMesh
 
     private var autoRotate = true
     private val rand = Random(1337)
@@ -72,6 +73,7 @@ class DeferredDemo(ctx: KoolContext) {
             scrSpcAmbientOcclusionMap = aoPipeline.aoMap
         }
         pbrPass = PbrLightingPass(this, mrtPass, cfg)
+        pbrPass.makeLightOverlays()
 
         // main scene only contains a quad used to draw the deferred shading output
         +textureMesh {
@@ -88,6 +90,62 @@ class DeferredDemo(ctx: KoolContext) {
         }
         onDispose += {
             noAoMap.dispose()
+        }
+    }
+
+    private fun PbrLightingPass.makeLightOverlays() {
+        content.apply {
+            lightPositionMesh = colorMesh {
+                isVisible = false
+                generate {
+                    color = Color.RED
+                    icoSphere {
+                        steps = 1
+                        radius = 0.05f
+                        center.set(Vec3f.ZERO)
+                    }
+                }
+                pipelineLoader = ModeledShader(instancedLightIndicatorModel())
+            }
+            +lightPositionMesh
+
+            lightVolumeMesh = wireframeMesh(dynamicPointLights.mesh.geometry).apply {
+                isVisible = false
+                pipelineLoader = ModeledShader(instancedLightIndicatorModel())
+            }
+            +lightVolumeMesh
+
+            val lightPosInsts = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+            val lightVolInsts = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+            lightPositionMesh.instances = lightPosInsts
+            lightVolumeMesh.instances = lightVolInsts
+
+            val lightModelMat = Mat4f()
+            onUpdate += { _, _ ->
+                if (lightPositionMesh.isVisible || lightVolumeMesh.isVisible) {
+                    lightPosInsts.clear()
+                    lightVolInsts.clear()
+                    dynamicPointLights.lightInstances.forEach { light ->
+                        lightModelMat.setIdentity()
+                        lightModelMat.translate(light.position)
+
+                        if (lightPositionMesh.isVisible) {
+                            lightPosInsts.addInstance {
+                                put(lightModelMat.matrix)
+                                put(light.color.array)
+                            }
+                        }
+                        if (lightVolumeMesh.isVisible) {
+                            val s = sqrt(light.intensity)
+                            lightModelMat.scale(s, s, s)
+                            lightVolInsts.addInstance {
+                                put(lightModelMat.matrix)
+                                put(light.color.array)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -194,10 +252,11 @@ class DeferredDemo(ctx: KoolContext) {
 
         val objOffset = if (objects.isVisible) 0.7f else 0f
         val lightGroups = listOf(
-                LightGroup(Vec3f(-start, 0.45f, -start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, 1f)),
-                LightGroup(Vec3f(-start + 0.5f, 0.45f + objOffset, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f)),
-                LightGroup(Vec3f(-start, 0.45f, -start), Vec3f(0f, 0f, 1f), Vec3f(1f, 0f, 0f)),
-                LightGroup(Vec3f(start, 0.45f + objOffset, -start + 0.5f), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f))
+                LightGroup(Vec3f(1 - start, 0.45f, -start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, 1f), rows - 1),
+                LightGroup(Vec3f(-start, 0.45f, 1 - start), Vec3f(0f, 0f, 1f), Vec3f(1f, 0f, 0f), rows - 1),
+
+                LightGroup(Vec3f(1.5f - start, 0.45f + objOffset, start), Vec3f(1f, 0f, 0f), Vec3f(0f, 0f, -1f), rows - 2),
+                LightGroup(Vec3f(start, 0.45f + objOffset, 1.5f - start), Vec3f(0f, 0f, 1f), Vec3f(-1f, 0f, 0f), rows - 2)
         )
 
         if (forced) {
@@ -211,20 +270,21 @@ class DeferredDemo(ctx: KoolContext) {
         }
 
         while (lights.size < lightCount) {
-            val x = rand.randomI(0 until rows)
+            val grp = lightGroups[rand.randomI(lightGroups.indices)]
+            val x = rand.randomI(0 until grp.rows)
             val light = pbrPass.dynamicPointLights.addPointLight {
                 intensity = 1.0f
-                color = colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear()
+                color.set(colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear())
             }
             val animLight = AnimatedLight(light)
             lights += animLight
-            lightGroups[rand.randomI(lightGroups.indices)].setupLight(animLight, x, travel, rand.randomF())
+            grp.setupLight(animLight, x, travel, rand.randomF())
         }
     }
 
     private fun updateLightColors() {
         lights.forEach {
-            it.light.color = colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear()
+            it.light.color.set(colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear())
         }
     }
 
@@ -291,8 +351,8 @@ class DeferredDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-605f), zero())
-            layoutSpec.setSize(dps(250f), dps(485f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-675f), zero())
+            layoutSpec.setSize(dps(250f), dps(555f), full())
 
             var y = -40f
             +label("Dynamic Lights") {
@@ -314,13 +374,31 @@ class DeferredDemo(ctx: KoolContext) {
             }
             +lightCntVal
             y -= 35f
-            +slider("lightCntSlider", 100f, 5000f, lightCount.toFloat()) {
+            +slider("lightCntSlider", 100f, MAX_LIGHTS.toFloat(), lightCount.toFloat()) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     lightCount = value.toInt()
                     lightCntVal.text = "$lightCount"
                     updateLights()
+                }
+            }
+            y -= 35f
+            +toggleButton("Light Positions") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = lightPositionMesh.isVisible
+                onStateChange += {
+                    lightPositionMesh.isVisible = isEnabled
+                }
+            }
+            y -= 35f
+            +toggleButton("Light Volumes") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = lightVolumeMesh.isVisible
+                onStateChange += {
+                    lightVolumeMesh.isVisible = isEnabled
                 }
             }
             y -= 35f
@@ -430,7 +508,7 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private inner class LightGroup(val startConst: Vec3f, val startIt: Vec3f, val travelDir: Vec3f) {
+    private inner class LightGroup(val startConst: Vec3f, val startIt: Vec3f, val travelDir: Vec3f, val rows: Int) {
         fun setupLight(light: AnimatedLight, x: Int, travelDist: Float, travelPos: Float) {
             light.startPos.set(startIt).scale(x.toFloat()).add(startConst)
             light.dir.set(travelDir)
@@ -458,6 +536,19 @@ class DeferredDemo(ctx: KoolContext) {
     }
 
     private class ColorMap(val name: String, val colors: List<Color>)
+
+    private fun instancedLightIndicatorModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
+        val ifColors: StageInterfaceNode
+        vertexStage {
+            ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
+            val modelMvp = premultipliedMvpNode().outMvpMat
+            val instMvp = multiplyNode(modelMvp, instanceAttrModelMat().output).output
+            positionOutput = vec4TransformNode(attrPositions().output, instMvp).outVec4
+        }
+        fragmentStage {
+            colorOutput(unlitMaterialNode(ifColors.output).outColor)
+        }
+    }
 
     private fun rgbMapColorModel(offset: Float, scale: Float) = ShaderModel("rgbMap").apply {
         val ifTexCoords: StageInterfaceNode
@@ -506,5 +597,9 @@ class DeferredDemo(ctx: KoolContext) {
                 }
             }
         }
+    }
+
+    companion object {
+        const val MAX_LIGHTS = 5000
     }
 }

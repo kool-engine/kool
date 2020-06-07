@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.MeshInstanceList
+import de.fabmax.kool.util.MutableColor
 import kotlin.math.*
 
 
@@ -101,7 +102,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         val position = MutableVec3f()
         val orientation = Mat3f()
         var spotAngle = 60f
-        var color = Color.WHITE
+        val color = MutableColor(Color.WHITE)
         var intensity = 1f
 
         fun setDirection(direction: Vec3f) {

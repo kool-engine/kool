@@ -190,7 +190,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                                 dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
                                 alphaBlendOp(VK_BLEND_OP_ADD)
                             }
-                            else -> TODO("Unimplemented blend mode: ${pipeline.blendMode}")
                         }
                     }
                 }

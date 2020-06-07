@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshInstanceList
+import de.fabmax.kool.util.MutableColor
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -92,7 +93,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
 
     class PointLight {
         val position = MutableVec3f()
-        var color = Color.WHITE
+        val color = MutableColor(Color.WHITE)
         var intensity = 1f
     }
 }
