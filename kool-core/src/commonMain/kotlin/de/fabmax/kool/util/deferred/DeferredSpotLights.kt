@@ -103,6 +103,20 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         var spotAngle = 60f
         var color = Color.WHITE
         var intensity = 1f
+
+        fun setDirection(direction: Vec3f) {
+            val v = if (abs(direction.dot(Vec3f.Y_AXIS)) > 0.9f) {
+                Vec3f.X_AXIS
+            } else {
+                Vec3f.Y_AXIS
+            }
+
+            val b = direction.cross(v, MutableVec3f())
+            val c = direction.cross(b, MutableVec3f())
+            orientation.setColVec(0, direction)
+            orientation.setColVec(1, b)
+            orientation.setColVec(2, c)
+        }
     }
 
     private fun MeshBuilder.makeHalfSphereCone(angle: Float, radius: Float) {
@@ -152,7 +166,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         }
 
         // cone
-        val iOri = vertex(Vec3f.ZERO, Vec3f.NEG_X_AXIS)
+        val iOri = vertex(Vec3f(-0.1f, 0f, 0f), Vec3f.NEG_X_AXIS)
         for (i in 0 until steps) {
             if (i < steps - 1) {
                 geometry.addTriIndices(iOri, iOri - steps + i, iOri - steps + i + 1)

@@ -385,7 +385,7 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun pbrLightNode(lightNode: SingleLightNode): PbrLightNode {
+        fun pbrLightNode(lightNode: LightNode): PbrLightNode {
             return addNode(PbrLightNode(lightNode, stage))
         }
 

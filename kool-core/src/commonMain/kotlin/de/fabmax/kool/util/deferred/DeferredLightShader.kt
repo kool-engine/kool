@@ -103,12 +103,19 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val defCam = addNode(DeferredCameraNode(stage))
                 val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
-                val lightNode = singleLightNode().apply {
-                    isReducedSoi = true
-                    inLightPos = ifLightPos.output
-                    inLightColor = ifLightColor.output
-                    ifLightDir?.let {
-                        inLightDir = it.output
+
+                val lightNode = if (cfg.lightType == Light.Type.SPOT) {
+                    addNode(SingleSpotLightNode(stage)).apply {
+                        isReducedSoi = true
+                        inLightPos = ifLightPos.output
+                        inLightColor = ifLightColor.output
+                        inLightDir = ifLightDir!!.output
+                    }
+                } else {
+                    addNode(SinglePointLightNode(stage)).apply {
+                        isReducedSoi = true
+                        inLightPos = ifLightPos.output
+                        inLightColor = ifLightColor.output
                     }
                 }
 

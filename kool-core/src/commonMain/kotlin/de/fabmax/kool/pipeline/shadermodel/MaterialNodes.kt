@@ -248,7 +248,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 /**
  * Physical Based Rendering Light Shader. Only computes color contribution of a single light for deferred lighting.
  */
-class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
+class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
         ShaderNode("pbrLightNode", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -321,10 +321,10 @@ class PbrLightNode(val lightNode: SingleLightNode, graph: ShaderGraph) :
 
         generator.appendMain("""
             vec3 radiance = vec3(0.0);
-            vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
+            vec3 fragToLight = ${lightNode.callVec3GetFragToLight("0", inFragPos.ref3f())};
             bool normalOk = $normalCheck;
             if (normalOk) {
-                radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+                radiance = ${lightNode.callVec3GetRadiance("0", "fragToLight", inSpotInnerAngle.ref1f())};
             }
             
             ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);
