@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3Context
 
 actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: OffscreenRenderPass2dMrt) {
-    actual val textures = List(offscreenPass.nAttachments) { Texture(loader = null) }
+    actual val colorTextures = List(offscreenPass.nAttachments) { Texture(loader = null) }
     actual val depthTexture = Texture(loader = null)
 
     internal var backendImpl: BackendImpl? = null

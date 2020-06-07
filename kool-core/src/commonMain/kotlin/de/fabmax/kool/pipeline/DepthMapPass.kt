@@ -9,7 +9,8 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 
 
-open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFormat: TexFormat = TexFormat.R) : OffscreenRenderPass2d(drawNode, width, height, colorFormat = colorFormat) {
+open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: Setup = defaultSetup()) :
+        OffscreenRenderPass2d(drawNode, width, height, setup) {
     private val shadowPipelines = mutableMapOf<Long, Pipeline?>()
 
     /**
@@ -49,9 +50,19 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, colorFo
         super.dispose(ctx)
         shadowPipelines.values.filterNotNull().forEach { ctx.disposePipeline(it) }
     }
+
+    companion object {
+        private fun defaultSetup(): Setup {
+            return Setup().apply {
+                colorFormat = TexFormat.R
+                colorRenderTarget = RENDER_TARGET_RENDERBUFFER
+                depthRenderTarget = RENDER_TARGET_TEXTURE
+            }
+        }
+    }
 }
 
-class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, TexFormat.R_F16) {
+class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, linearDepthSetup()) {
 
     init {
         onAfterCollectDrawCommands += {
@@ -84,9 +95,19 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
             """)
         }
     }
+
+    companion object {
+        private fun linearDepthSetup(): Setup {
+            return Setup().apply {
+                colorFormat = TexFormat.R_F16
+                colorRenderTarget = RENDER_TARGET_TEXTURE
+                depthRenderTarget = RENDER_TARGET_RENDERBUFFER
+            }
+        }
+    }
 }
 
-class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, TexFormat.RGBA_F16) {
+class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, normalLinearDepthSetup()) {
 
     init {
         name = "NormalLinearDepthMapPass"
@@ -132,6 +153,16 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                 float d = gl_FragCoord.z / gl_FragCoord.w;
                 ${outColor.declare()} = vec4(normalize(${inNormals.ref3f()}), -d);
             """)
+        }
+    }
+
+    companion object {
+        private fun normalLinearDepthSetup(): Setup {
+            return Setup().apply {
+                colorFormat = TexFormat.RGBA_F16
+                colorRenderTarget = RENDER_TARGET_TEXTURE
+                depthRenderTarget = RENDER_TARGET_RENDERBUFFER
+            }
         }
     }
 }

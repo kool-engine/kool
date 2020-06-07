@@ -90,6 +90,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
     }
 
     private inner class GlAttribs {
+        var actIsWriteDepth = true
         var depthTest: DepthCompareOp? = null
         var cullMethod: CullMethod? = null
         var lineWidth = 0f
@@ -97,6 +98,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
         fun setupPipelineAttribs(pipeline: Pipeline) {
             setBlendMode(pipeline.blendMode)
             setDepthTest(pipeline.depthCompareOp)
+            setWriteDepth(pipeline.isWriteDepth)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
                 lineWidth = pipeline.lineWidth
@@ -122,6 +124,13 @@ class QueueRendererWebGl(val ctx: JsContext) {
                     }
                     CullMethod.NO_CULLING -> gl.disable(CULL_FACE)
                 }
+            }
+        }
+
+        private fun setWriteDepth(enabled: Boolean) {
+            if (actIsWriteDepth != enabled) {
+                actIsWriteDepth = enabled
+                gl.depthMask(enabled)
             }
         }
 

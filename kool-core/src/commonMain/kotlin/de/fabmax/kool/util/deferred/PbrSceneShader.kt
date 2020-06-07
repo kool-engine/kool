@@ -1,9 +1,11 @@
 package de.fabmax.kool.util.deferred
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -84,6 +86,11 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
+
+    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.depthTest = DepthCompareOp.DISABLED
+        return super.createPipeline(mesh, builder, ctx)
+    }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
         deferredCameraNode = model.findNode("deferredCam")

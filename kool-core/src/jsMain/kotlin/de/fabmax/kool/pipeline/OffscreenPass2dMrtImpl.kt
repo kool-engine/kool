@@ -25,7 +25,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_T
 import org.khronos.webgl.WebGLTexture
 
 actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: OffscreenRenderPass2dMrt) {
-    actual val textures = List(offscreenPass.nAttachments) { Texture(loader = null) }
+    actual val colorTextures = List(offscreenPass.nAttachments) { Texture(loader = null) }
     actual val depthTexture = Texture(loader = null)
 
     private var isCreated = false
@@ -38,7 +38,7 @@ actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: Offscr
         ctx as JsContext
         ctx.gl.deleteFramebuffer(fbo)
         fbo = null
-        textures.forEach { it.dispose() }
+        colorTextures.forEach { it.dispose() }
         depthTexture.dispose()
         for (i in glColorTexs.indices) { glColorTexs[i] = null }
         glDepthTex = null
@@ -96,8 +96,8 @@ actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: Offscr
             gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST)
 
             val estSize = Texture.estimatedTexSize(width, height, colorFormat.pxSize, 1, offscreenPass.mipLevels)
-            textures[i].loadedTexture = LoadedTextureWebGl(ctx, glColorTexs[i], estSize)
-            textures[i].loadingState = Texture.LoadingState.LOADED
+            colorTextures[i].loadedTexture = LoadedTextureWebGl(ctx, glColorTexs[i], estSize)
+            colorTextures[i].loadingState = Texture.LoadingState.LOADED
         }
     }
 

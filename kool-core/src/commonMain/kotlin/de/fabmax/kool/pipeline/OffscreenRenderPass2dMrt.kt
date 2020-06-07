@@ -15,8 +15,8 @@ open class OffscreenRenderPass2dMrt(drawNode: Node, texWidth: Int, texHeight: In
 
     internal val impl = OffscreenPass2dMrtImpl(this)
 
-    val textures: List<Texture>
-        get() = impl.textures
+    val colorTextures: List<Texture>
+        get() = impl.colorTextures
     val depthTexture: Texture
         get() = impl.depthTexture
 
@@ -32,7 +32,7 @@ open class OffscreenRenderPass2dMrt(drawNode: Node, texWidth: Int, texHeight: In
 }
 
 expect class OffscreenPass2dMrtImpl(offscreenPass: OffscreenRenderPass2dMrt) {
-    val textures: List<Texture>
+    val colorTextures: List<Texture>
     val depthTexture: Texture
 
     fun resize(width: Int, height: Int, ctx: KoolContext)

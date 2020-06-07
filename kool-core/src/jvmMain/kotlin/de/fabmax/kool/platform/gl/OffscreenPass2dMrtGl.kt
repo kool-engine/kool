@@ -31,7 +31,7 @@ class OffscreenPass2dMrtGl(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
             glDeleteFramebuffers(fbo)
         }
         fbo = 0
-        parentPass.textures.forEach { it.dispose() }
+        parentPass.colorTextures.forEach { it.dispose() }
         parentPass.depthTexture.dispose()
         for (i in glColorTexs.indices) { glColorTexs[i] = 0 }
         glDepthTex = 0
@@ -77,8 +77,8 @@ class OffscreenPass2dMrtGl(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
             val estSize = Texture.estimatedTexSize(width, height, colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
-            parentPass.textures[i].loadedTexture = LoadedTextureGl(ctx, glColorTexs[i], estSize)
-            parentPass.textures[i].loadingState = Texture.LoadingState.LOADED
+            parentPass.colorTextures[i].loadedTexture = LoadedTextureGl(ctx, glColorTexs[i], estSize)
+            parentPass.colorTextures[i].loadingState = Texture.LoadingState.LOADED
         }
     }
 

@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
-        OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, TexFormat.RGBA_F16) {
+        OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, pbrLightingSetup(mrtPass)) {
 
     val globalLighting = Lighting()
 
@@ -20,6 +20,8 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
     private val mutSpotLights = mutableListOf<DeferredSpotLights>()
     val spotLights: List<DeferredSpotLights>
         get() = mutSpotLights
+
+    val content = drawNode as Group
 
     lateinit var sceneShader: PbrSceneShader
         private set
@@ -35,18 +37,18 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
             val mapW = mainRenderPass.viewport.width
             val mapH = mainRenderPass.viewport.height
             if (mapW > 0 && mapH > 0 && (mapW != texWidth || mapH != texHeight)) {
-                resize(mapW, mapH, ctx)
                 mrtPass.resize(mapW, mapH, ctx)
+                resize(mapW, mapH, ctx)
             }
         }
         scene.addOffscreenPass(this)
-
-        clearColor = clearColor?.toLinear()
         dependsOn(mrtPass)
 
+        clearColor = clearColor?.toLinear()
+        clearDepth = false
         camera = mrtPass.camera
 
-        (drawNode as Group).apply {
+        content.apply {
             isFrustumChecked = false
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 isFrustumChecked = false
@@ -76,7 +78,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
     fun addSpotLights(maxSpotAngle: Float): DeferredSpotLights {
         val lights = DeferredSpotLights(maxSpotAngle, mrtPass)
-        (drawNode as Group) += lights.mesh
+        content += lights.mesh
         mutSpotLights += lights
         return lights
     }
@@ -84,5 +86,15 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
         super.dispose(ctx)
+    }
+
+    companion object {
+        private fun pbrLightingSetup(mrtPass: DeferredMrtPass) = Setup().apply {
+            colorFormat = TexFormat.RGBA_F16
+            colorRenderTarget = RENDER_TARGET_TEXTURE
+            depthRenderTarget = RENDER_TARGET_TEXTURE
+
+            extDepthTexture = mrtPass.depthTexture
+        }
     }
 }

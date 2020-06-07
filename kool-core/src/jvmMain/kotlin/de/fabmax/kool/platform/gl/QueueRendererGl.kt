@@ -73,6 +73,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     }
 
     private inner class GlAttribs {
+        var actIsWriteDepth = true
         var actDepthTest: DepthCompareOp? = null
         var actCullMethod: CullMethod? = null
         var lineWidth = 0f
@@ -80,6 +81,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         fun setupPipelineAttribs(pipeline: Pipeline) {
             setBlendMode(pipeline.blendMode)
             setDepthTest(pipeline.depthCompareOp)
+            setWriteDepth(pipeline.isWriteDepth)
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
                 lineWidth = pipeline.lineWidth
@@ -105,6 +107,13 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                     }
                     CullMethod.NO_CULLING -> glDisable(GL_CULL_FACE)
                 }
+            }
+        }
+
+        private fun setWriteDepth(enabled: Boolean) {
+            if (actIsWriteDepth != enabled) {
+                actIsWriteDepth = enabled
+                glDepthMask(enabled)
             }
         }
 

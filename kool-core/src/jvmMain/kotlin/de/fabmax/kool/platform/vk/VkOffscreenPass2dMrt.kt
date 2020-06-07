@@ -20,12 +20,12 @@ class VkOffscreenPass2dMrt(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
 
     override fun dispose(ctx: Lwjgl3Context) {
         val rp = renderPass
-        val loadedColorTexs = parentPass.textures.map { it.loadedTexture }
+        val loadedColorTexs = parentPass.colorTextures.map { it.loadedTexture }
         val loadedDepthTex = parentPass.depthTexture.loadedTexture
 
         isCreated = false
         renderPass = null
-        parentPass.textures.forEach { it.clear() }
+        parentPass.colorTextures.forEach { it.clear() }
         parentPass.depthTexture.clear()
 
         ctx.runDelayed(3) {
@@ -50,8 +50,8 @@ class VkOffscreenPass2dMrt(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
         parentPass.apply {
             val colorFormats = offscreenPass.texFormats.map { it.vkFormat }
             val rp = VkOffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, colorFormats)
-            for (i in textures.indices) {
-                createTex(textures[i], i, true, rp, sys)
+            for (i in colorTextures.indices) {
+                createTex(colorTextures[i], i, true, rp, sys)
             }
             createTex(depthTexture, 0, false, rp, sys)
             renderPass = rp

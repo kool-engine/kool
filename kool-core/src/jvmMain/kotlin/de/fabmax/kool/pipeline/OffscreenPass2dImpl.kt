@@ -4,8 +4,11 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3Context
 
 actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2d) {
-    actual val texture: Texture = Texture(loader = null)
-    actual val depthTexture: Texture = Texture(loader = null)
+    actual val colorTexture: Texture = offscreenPass.setup.extColorTexture ?: Texture(loader = null)
+    actual val depthTexture: Texture = offscreenPass.setup.extDepthTexture ?: Texture(loader = null)
+
+    val isExtColorTexture = offscreenPass.setup.extColorTexture != null
+    val isExtDepthTexture = offscreenPass.setup.extDepthTexture != null
 
     internal var backendImpl: BackendImpl? = null
 
@@ -30,4 +33,3 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         fun resize(width: Int, height: Int, ctx: Lwjgl3Context)
     }
 }
-

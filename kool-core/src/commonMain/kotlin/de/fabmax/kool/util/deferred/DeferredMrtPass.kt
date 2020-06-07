@@ -12,11 +12,11 @@ class DeferredMrtPass() : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFE
     val content = drawNode as Group
 
     val positionAo: Texture
-        get() = textures[0]
+        get() = colorTextures[0]
     val normalRoughness: Texture
-        get() = textures[1]
+        get() = colorTextures[1]
     val albedoMetal: Texture
-        get() = textures[2]
+        get() = colorTextures[2]
 
     init {
         clearColors[0] = Color(0f, 0f, 2f, 0f)
