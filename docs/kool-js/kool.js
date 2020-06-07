@@ -26453,7 +26453,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var numPrimitives = ctx.engineStats.numPrimitives;
       if (numPrimitives !== closure$lastPrimitives.v) {
         closure$lastPrimitives.v = numPrimitives;
-        this$.text = numPrimitives.toString() + ' Primitives';
+        this$.text = numPrimitives.toString() + ' Faces';
       }return Unit;
     };
   }
@@ -26511,7 +26511,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       yOri.v -= 18.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumShaders', DebugOverlay_init$lambda$lambda$lambda_7(yOri, width)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumPrimitives', DebugOverlay_init$lambda$lambda$lambda_8(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumFaces', DebugOverlay_init$lambda$lambda$lambda_8(yOri, width)));
       return Unit;
     };
   }

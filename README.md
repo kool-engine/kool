@@ -88,7 +88,7 @@ resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=he
 
 ## A Simple Custom Shader
 
-As mentioned above shaders can also be composed from a set of predefined nodes (and even additional custom nodes).
+As mentioned above shaders can also be composed of a set of predefined nodes (and even additional custom nodes).
 Shader nodes are combined to a ```ShaderModel``` which is then used to generate the shader code for the
 rendering backend (currently Vulkan or WebGL2). A very simple shader model could look like this:
 ```kotlin
@@ -101,10 +101,10 @@ val superSimpleModel = ShaderModel().apply {
 
         ifColors = stageInterfaceNode("ifColors", vertexColor)
 
-        positionOutput = vertexPositionNode(vertexPos, mvpMat).outPosition
+        positionOutput = vec4TransformNode(vertexPos, mvpMat).outVec4
     }
     fragmentStage {
-        colorOutput = unlitMaterialNode(ifColors.output).outColor
+        colorOutput(unlitMaterialNode(ifColors.output).outColor)
     }
 }
 mesh.pipelineLoader = ModeledShader(superSimpleModel)
@@ -121,7 +121,7 @@ which more or less directly feeds that color into the fragment shader output.
 
 Finally the shader model can be used to create a ```ModeledShader``` which can then be assigned to a mesh.
 
-This example is obviously very simple but it shows the working principle: Nodes contain basic building blocks
+This example is obviously very simple, but it shows the working principle: Nodes contain basic building blocks
 which can be composed to complete shaders. Nodes have inputs and outputs which are used to connect them.
 The shader generator uses the connectivity information to build a dependency graph and call the code generator
 functions of the individual nodes in the correct order.
@@ -143,7 +143,7 @@ repositories {
 
 // JVM dependencies
 dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.2.0"
+    implementation "de.fabmax.kool:kool-core-jvm:0.3.0"
 
     // On JVM, lwjgl runtime dependencies have to be included as well
     def lwjglVersion = "3.2.3"
@@ -160,7 +160,7 @@ dependencies {
 
 // or alternatively for javascript
 dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.2.0"
+    implementation "de.fabmax.kool:kool-core-js:0.3.0"
 }
 ```
 
