@@ -46,6 +46,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var normalSampler: TextureSampler? = null
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
+    private var metallicRoughnessSampler: TextureSampler? = null
     private var ambientOcclusionSampler: TextureSampler? = null
     private var displacementSampler: TextureSampler? = null
     private var uDispStrength: PushConstantNode1f? = null
@@ -69,6 +70,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         set(value) {
             field = value
             roughnessSampler?.texture = value
+        }
+    var metallicRoughnessMap: Texture? = cfg.metallicRoughnessMap
+        set(value) {
+            field = value
+            metallicRoughnessSampler?.texture = value
         }
     var ambientOcclusionMap: Texture? = cfg.ambientOcclusionMap
         set(value) {
@@ -162,6 +168,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         metallicSampler?.let { it.texture = metallicMap }
         roughnessSampler = model.findNode<TextureNode>("tRoughness")?.sampler
         roughnessSampler?.let { it.texture = roughnessMap }
+        metallicRoughnessSampler = model.findNode<TextureNode>("tMetalRough")?.sampler
+        metallicRoughnessSampler?.let { it.texture = metallicRoughnessMap }
         ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
         ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
         displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
@@ -283,15 +291,24 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     } else {
                         ifNormals.output
                     }
-                    inMetallic = if (cfg.isMetallicMapped) {
-                        textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
+
+                    if (cfg.isMetallicRoughnessMapped) {
+                        // combined metallic / roughness texture
+                        val metalRoughTex = textureSamplerNode(textureNode("tMetalRough"), ifTexCoords!!.output).outColor
+                        inMetallic = splitNode(metalRoughTex, "b").output
+                        inRoughness = splitNode(metalRoughTex, "g").output
+
                     } else {
-                        pushConstantNode1f("uMetallic").output
-                    }
-                    inRoughness = if (cfg.isRoughnessMapped) {
-                        textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
-                    } else {
-                        pushConstantNode1f("uRoughness").output
+                        inMetallic = if (cfg.isMetallicMapped) {
+                            textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
+                        } else {
+                            pushConstantNode1f("uMetallic").output
+                        }
+                        inRoughness = if (cfg.isRoughnessMapped) {
+                            textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
+                        } else {
+                            pushConstantNode1f("uRoughness").output
+                        }
                     }
 
                     var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -321,6 +338,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isNormalMapped = false
         var isRoughnessMapped = false
         var isMetallicMapped = false
+        var isMetallicRoughnessMapped = false
         var isAmbientOcclusionMapped = false
         var isDisplacementMapped = false
 
@@ -344,6 +362,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var normalMap: Texture? = null
         var roughnessMap: Texture? = null
         var metallicMap: Texture? = null
+        var metallicRoughnessMap: Texture? = null
         var ambientOcclusionMap: Texture? = null
         var displacementMap: Texture? = null
 

@@ -140,10 +140,26 @@ data class GltfFile(
             val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(), "${name}_$index")
             grp += mesh
             mesh.pipelineLoader = pbrShader {
-                if (p.materialRef?.pbrMetallicRoughness?.baseColorTexture != null) {
-                    val tex = textures[p.materialRef?.pbrMetallicRoughness?.baseColorTexture!!.index]
-                    albedoMap = tex.makeTexture()
-                    albedoSource = Albedo.TEXTURE_ALBEDO
+                val pbrMat = p.materialRef?.pbrMetallicRoughness
+                if (pbrMat != null) {
+                    if (pbrMat.baseColorTexture != null) {
+                        val tex = textures[pbrMat.baseColorTexture.index]
+                        albedoMap = tex.makeTexture()
+                        albedoSource = Albedo.TEXTURE_ALBEDO
+                    } else {
+                        albedo = Color(pbrMat.baseColorFactor[0], pbrMat.baseColorFactor[1], pbrMat.baseColorFactor[2], pbrMat.baseColorFactor[3])
+                        albedoSource = Albedo.STATIC_ALBEDO
+                    }
+
+                    if (pbrMat.metallicRoughnessTexture != null) {
+                        val tex = textures[pbrMat.metallicRoughnessTexture.index]
+                        metallicRoughnessMap = tex.makeTexture()
+                        isMetallicRoughnessMapped = true
+                    } else {
+                        metallic = pbrMat.metallicFactor
+                        roughness = pbrMat.roughnessFactor
+                    }
+
                 } else {
                     albedo = Color.GRAY
                     albedoSource = Albedo.STATIC_ALBEDO
@@ -225,7 +241,7 @@ data class GltfFile(
         const val GLB_CHUNK_MAGIC_JSON = 0x4e4f534a
         const val GLB_CHUNK_MAGIC_BIN = 0x004e4942
 
-        @UnstableDefault
+        @OptIn(UnstableDefault::class)
         fun fromJson(json: String): GltfFile {
             return Json(JsonConfiguration(
                     isLenient = true,
