@@ -2,11 +2,11 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
+import java.awt.image.BufferedImage
 import java.io.*
+import java.util.*
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
@@ -22,10 +22,10 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
-        var data: ByteArray? = null
+        var data: Uint8BufferImpl? = null
         withContext(Dispatchers.IO) {
             try {
-                openLocalStream(localRawRef.url).use { data = it.readBytes() }
+                openLocalStream(localRawRef.url).use { data = Uint8BufferImpl(it.readBytes()) }
             } catch (e: Exception) {
                 logE { "Failed loading asset ${localRawRef.url}: $e" }
             }
@@ -34,16 +34,27 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
-        var data: ByteArray? = null
-        withContext(Dispatchers.IO) {
-            try {
-                val f = HttpCache.loadHttpResource(httpRawRef.url) ?: throw IOException("Failed downloading ${httpRawRef.url}")
-                FileInputStream(f).use { data = it.readBytes() }
-            } catch (e: Exception) {
-                logE { "Failed loading asset ${httpRawRef.url}: $e" }
+        var data: Uint8BufferImpl? = null
+
+        if (httpRawRef.url.startsWith("data:", true)) {
+            data = decodeDataUrl(httpRawRef.url)
+        } else {
+            withContext(Dispatchers.IO) {
+                try {
+                    val f = HttpCache.loadHttpResource(httpRawRef.url)
+                            ?: throw IOException("Failed downloading ${httpRawRef.url}")
+                    FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
+                } catch (e: Exception) {
+                    logE { "Failed loading asset ${httpRawRef.url}: $e" }
+                }
             }
         }
         return LoadedRawAsset(httpRawRef, data)
+    }
+
+    private fun decodeDataUrl(dataUrl: String): Uint8BufferImpl {
+        val dataIdx = dataUrl.indexOf(";base64,") + 8
+        return Uint8BufferImpl(Base64.getDecoder().decode(dataUrl.substring(dataIdx)))
     }
 
     override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
@@ -96,11 +107,18 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
-    override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
+    override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
 
-    /**
-     * fixme: this belongs in the not yet existing all new texture manager which should check if the texture was already loaded before
-     */
+    override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
+        var img: BufferedImage? = null
+        withContext(Dispatchers.IO) {
+            img = synchronized(imageIoLock) {
+                ImageIO.read(ByteArrayInputStream(texData.toArray()))
+            }
+        }
+        return ImageTextureData(img!!)
+    }
+
     override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {
         val tex = Texture(props) { it.loadTextureData(assetPath) }
         launch {

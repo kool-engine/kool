@@ -106,6 +106,7 @@ kotlin {
                 useExperimentalAnnotation('kotlinx.coroutines.ExperimentalCoroutinesApi')
                 useExperimentalAnnotation('kotlin.contracts.ExperimentalContracts')
                 useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+                useExperimentalAnnotation('kotlin.ExperimentalStdlibApi')
             }
         }
     }

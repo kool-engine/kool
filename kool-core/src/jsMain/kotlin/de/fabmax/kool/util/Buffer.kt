@@ -6,10 +6,8 @@ import org.khronos.webgl.*
 /**
  * @author fabmax
  */
-internal abstract class GenericBuffer<out B: ArrayBufferView>(capacity: Int, create: () -> B) : Buffer {
+internal abstract class GenericBuffer<out B: ArrayBufferView>(override val capacity: Int, create: () -> B) : Buffer {
     val buffer = create()
-
-    override val capacity = capacity
 
     override var limit = capacity
         set(value) {
@@ -41,9 +39,10 @@ internal abstract class GenericBuffer<out B: ArrayBufferView>(capacity: Int, cre
 /**
  * ByteBuffer buffer implementation
  */
-internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8Array>(capacity, {
-    Uint8Array(capacity)
-}) {
+internal class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<Uint8Array>(array.length, { array }) {
+
+    constructor(capacity: Int) : this(Uint8Array(capacity))
+
     override fun get(i: Int): Byte {
         return buffer[i]
     }
@@ -53,7 +52,7 @@ internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8
     }
 
     override fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer {
-        for (i in offset..(offset + len - 1)) {
+        for (i in offset until offset + len) {
             buffer[position++] = data[i]
         }
         return this

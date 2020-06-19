@@ -6,14 +6,10 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.webgl.TextureLoader
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.get
-import org.khronos.webgl.set
 import org.w3c.dom.Image
 import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
@@ -32,17 +28,13 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
 
     override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef) = LoadedTextureAsset(localTextureRef, loadImage(localTextureRef.url))
 
-    private suspend fun loadRaw(url: String): ByteArray? {
-        val data = CompletableDeferred<ByteArray?>(job)
+    private suspend fun loadRaw(url: String): Uint8Buffer? {
+        val data = CompletableDeferred<Uint8Buffer?>(job)
         val req = XMLHttpRequest()
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
         req.onload = {
             val array = Uint8Array(req.response as ArrayBuffer)
-            val bytes = ByteArray(array.length)
-            for (i in 0 until array.length) {
-                bytes[i] = array[i]
-            }
-            data.complete(bytes)
+            data.complete(Uint8BufferImpl(array))
         }
         req.onerror = {
             data.complete(null)
@@ -61,7 +53,11 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
             deferred.complete(img)
         }
         img.onerror = { _, _, _, _, _ ->
-            deferred.completeExceptionally(KoolException("Failed loading tex from $url"))
+            if (url.startsWith("data:")) {
+                deferred.completeExceptionally(KoolException("Failed loading tex from data URL"))
+            } else {
+                deferred.completeExceptionally(KoolException("Failed loading tex from $url"))
+            }
         }
         img.crossOrigin = ""
         js("if ('decoding' in img) { img.decoding = 'async'; }")
@@ -75,13 +71,26 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
-    override fun inflate(zipData: ByteArray): ByteArray {
-        val uint8Data = Uint8Array(zipData.size)
-        for (i in zipData.indices) {
-            uint8Data[i] = zipData[i]
-        }
-        val inflated = pako.inflate(uint8Data) as Uint8Array
-        return ByteArray(inflated.length) { inflated[it] }
+    override fun inflate(zipData: Uint8Buffer): Uint8Buffer {
+        val uint8Data = (zipData as Uint8BufferImpl).buffer
+        return Uint8BufferImpl(pako.inflate(uint8Data) as Uint8Array)
+    }
+
+    override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
+        // super cumbersome / ugly method to convert Uint8Array into a base64 string
+        // todo: is there really no better way in JS?
+        val uint8Data = (texData as Uint8BufferImpl).buffer
+        var binary = ""
+        js("""
+            var chunkSize = 0x8000;
+            var c = [];
+            for (var i = 0; i < uint8Data.length; i += chunkSize) {
+                c.push(String.fromCharCode.apply(null, uint8Data.subarray(i, i+chunkSize)));
+            }
+            binary = c.join("");
+        """)
+        val base64 = js("window.btoa(binary);") as String
+        return loadImage("data:$mimeType;base64,$base64")
     }
 
     override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {

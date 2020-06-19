@@ -54,6 +54,7 @@ kotlin {
             languageSettings {
                 progressiveMode = true
                 useExperimentalAnnotation('kotlinx.serialization.ImplicitReflectionSerializer')
+                useExperimentalAnnotation('kotlin.ExperimentalStdlibApi')
             }
         }
     }

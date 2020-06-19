@@ -8,7 +8,7 @@ class ImageTextureData(image: HTMLImageElement) : TextureData() {
 
     init {
         if (!image.complete) {
-            throw IllegalStateException("Image must be compülete")
+            throw IllegalStateException("Image must be complete")
         }
         width = image.width
         height = image.height

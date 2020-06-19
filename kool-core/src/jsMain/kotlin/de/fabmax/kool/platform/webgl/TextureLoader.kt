@@ -10,6 +10,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.MIRRORED_REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST_MIPMAP_NEAREST
+import org.khronos.webgl.WebGLRenderingContext.Companion.NONE
 import org.khronos.webgl.WebGLRenderingContext.Companion.REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.RGBA
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
@@ -24,6 +25,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MAG_FILTER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MIN_FILTER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_S
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_T
+import org.khronos.webgl.WebGLRenderingContext.Companion.UNPACK_COLORSPACE_CONVERSION_WEBGL
 import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_BYTE
 import kotlin.math.floor
 import kotlin.math.log2
@@ -109,6 +111,7 @@ object TextureLoader {
     }
 
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {
+        gl.pixelStorei(UNPACK_COLORSPACE_CONVERSION_WEBGL, NONE)
         when (data) {
             is BufferedTextureData -> {
                 gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)

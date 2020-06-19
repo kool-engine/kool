@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -73,8 +74,8 @@ data class ModelData(
     companion object {
         const val VERSION = 2
 
-        fun load(data: ByteArray): ModelData {
-            val model = ProtoBuf.load<ModelData>(data)
+        fun load(data: Uint8Buffer): ModelData {
+            val model = ProtoBuf.load<ModelData>(data.toArray())
             if (model.version != VERSION) {
                 logW { "Unsupported model version: ${model.version} (should be $VERSION)" }
             }

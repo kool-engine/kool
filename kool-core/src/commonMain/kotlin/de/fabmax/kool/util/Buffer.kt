@@ -44,6 +44,14 @@ interface Uint8Buffer : Buffer {
     fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer
     fun put(data: Uint8Buffer): Uint8Buffer
 
+    fun toArray(): ByteArray {
+        val array = ByteArray(capacity)
+        for (i in 0 until capacity) {
+            array[i] = get(i)
+        }
+        return array
+    }
+
     override fun removeAt(index: Int) {
         for (i in index until position) {
             this[i] = this[i+1]

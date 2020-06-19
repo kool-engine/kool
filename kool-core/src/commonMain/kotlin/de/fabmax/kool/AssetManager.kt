@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.serialization.ModelData
 import kotlinx.coroutines.CompletableDeferred
@@ -82,25 +83,30 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
-    abstract fun inflate(zipData: ByteArray): ByteArray
+    abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer
 
     protected open fun isHttpAsset(assetPath: String): Boolean =
             // maybe use something less naive here?
             assetPath.startsWith("http://", true) ||
-            assetPath.startsWith("https://", true)
+            assetPath.startsWith("https://", true) ||
+            assetPath.startsWith("data:", true)
 
-    fun loadAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
+    fun loadAsset(assetPath: String, onLoad: (Uint8Buffer?) -> Unit) {
         launch {
-            val ref = if (isHttpAsset(assetPath)) {
-                HttpRawAssetRef(assetPath)
-            } else {
-                LocalRawAssetRef("$assetsBaseDir/$assetPath")
-            }
-            val awaitedAsset = AwaitedAsset(ref)
-            awaitedAssetsChannel.send(awaitedAsset)
-            val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset
-            onLoad(loaded.data)
+            onLoad(loadAsset(assetPath))
         }
+    }
+
+    suspend fun loadAsset(assetPath: String): Uint8Buffer? {
+        val ref = if (isHttpAsset(assetPath)) {
+            HttpRawAssetRef(assetPath)
+        } else {
+            LocalRawAssetRef("$assetsBaseDir/$assetPath")
+        }
+        val awaitedAsset = AwaitedAsset(ref)
+        awaitedAssetsChannel.send(awaitedAsset)
+        val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset
+        return loaded.data
     }
 
     fun loadModel(modelPath: String, onLoad: (ModelData?) -> Unit) {
@@ -127,6 +133,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
+
+    abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
 
     open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
         val ftd = loadTextureData(ft)
@@ -157,5 +165,5 @@ data class LocalTextureAssetRef(val url: String) : AssetRef()
 data class HttpTextureAssetRef(val url: String) : AssetRef()
 
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
-class LoadedRawAsset(ref: AssetRef, val data: ByteArray?) : LoadedAsset(ref, data != null)
+class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
