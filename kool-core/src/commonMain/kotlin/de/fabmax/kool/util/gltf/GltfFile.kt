@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.toString
@@ -105,16 +106,16 @@ data class GltfFile(
         val extensionsRequired: List<String> = emptyList()
 ) {
 
-    fun makeModel(scene: Int = this.scene): TransformGroup {
+    fun makeModel(scene: Int = this.scene, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): TransformGroup {
         val scn = scenes[scene]
         val grp = TransformGroup(scn.name)
         scn.nodeRefs.forEach { nd ->
-            grp += nd.makeNode()
+            grp += nd.makeNode(pbrBlock)
         }
         return grp
     }
 
-    private fun Node.makeNode(): TransformGroup {
+    private fun Node.makeNode(pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?): TransformGroup {
         val grp = TransformGroup(name)
 
         if (matrix != null) {
@@ -133,7 +134,7 @@ data class GltfFile(
         }
 
         childRefs.forEach {
-            grp += it.makeNode()
+            grp += it.makeNode(pbrBlock)
         }
 
         meshRef?.primitives?.forEachIndexed { index, p ->
@@ -170,6 +171,8 @@ data class GltfFile(
                     normalMap = nrmTex.makeTexture()
                     isNormalMapped = true
                 }
+
+                pbrBlock?.invoke(this, p)
             }
         }
 
@@ -358,6 +361,7 @@ data class MeshPrimitive(
             if (generateTangents) {
                 verts.generateTangents()
             }
+            verts.generateNormals()
         }
         return verts
     }

@@ -33,7 +33,7 @@ class Light {
 
     fun setDirectional(dir: Vec3f): Light {
         type = Type.DIRECTIONAL
-        direction.set(dir)
+        direction.set(dir).norm()
 
         position.set(Vec3f.ZERO)
         spotAngle = 0f
@@ -52,7 +52,7 @@ class Light {
     fun setSpot(pos: Vec3f, dir: Vec3f, angle: Float): Light {
         type = Type.SPOT
         position.set(pos)
-        direction.set(dir)
+        direction.set(dir).norm()
         spotAngle = angle
         return this
     }

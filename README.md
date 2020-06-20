@@ -8,6 +8,8 @@ This is my personal pet-project. I have a few demos in place (once loaded, you c
 them via the hamburger button in the upper left corner):
 - [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
   light sources - also includes PBR shading and ambient occlusion.
+- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Basic support for 
+  [glTF](https://github.com/KhronosGroup/glTF) model format (no animations, skins, morph targets yet...)
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
@@ -168,7 +170,6 @@ dependencies {
 
 I have a few features on my wishlist, which I may (or may not) implement in the future (in no particular order):
 - Screen-space reflections
-- Loading of glTF models
 - Shadow mapping for point lights
 - A vertex shader node for skeletal animations
 - Rendering backend for WebGPU

@@ -76,9 +76,6 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         content.ui.setCustom(BlankComponentUi())
 
         +drawerMenu("menu", "Demos") {
-            // no nice layouting functions yet, choose start y such that menu items start somewhere below the title
-            // negative value means it's measured from top
-
             +container("demos") {
                 ui.setCustom(BlankComponentUi())
                 layoutSpec.setOrigin(zero(), dps(45f, true), zero())
@@ -110,10 +107,6 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
                 onClick += { _,_,_ -> dbgOverlay.ui.isVisible = isEnabled }
             }
-
-//            onPreRender += {
-//                dbgOverlay.xOffset = animationPos * width
-//            }
         }
     }
 
@@ -127,6 +120,9 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
         val pbrBasePath: String
             get() = getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
+
+        val modelBasePath: String
+            get() = getProperty("pbrDemo.models", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/models")
 
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value

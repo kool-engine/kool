@@ -100,6 +100,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
@@ -2497,7 +2498,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_4)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_5)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_6))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('gltfDemo', new Demo$DemoEntry('glTF Model', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2660,6 +2661,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return (tmp$_0 = typeof (tmp$ = this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
     }
   });
+  Object.defineProperty(Demo$Companion.prototype, 'modelBasePath', {
+    get: function () {
+      var key = 'pbrDemo.models';
+      var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/models';
+      var tmp$, tmp$_0;
+      return (tmp$_0 = typeof (tmp$ = this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    }
+  });
   Demo$Companion.prototype.setProperty_bm4g0d$ = function (key, value) {
     this.demoProps.put_xwzc9p$(key, value);
   };
@@ -2703,14 +2712,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
-    $receiver.addAll_brywnq$(simplificationDemo(it));
+    $receiver.add_11rb$(gltfTest(it));
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
-    $receiver.addAll_brywnq$(instanceDemo(it));
+    $receiver.addAll_brywnq$(simplificationDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_6($receiver, it) {
+    $receiver.addAll_brywnq$(instanceDemo(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_7($receiver, it) {
     $receiver.add_11rb$(helloWorldScene());
     return Unit;
   }
@@ -2776,6 +2789,111 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'Cycler',
     interfaces: [List]
   };
+  function gltfTest$lambda$lambda$lambda(closure$ctx, this$) {
+    return function ($receiver, f, f_0) {
+      this$.verticalRotation += closure$ctx.deltaT * 3.0;
+      return Unit;
+    };
+  }
+  function gltfTest$lambda$lambda(this$, closure$ctx) {
+    return function ($receiver) {
+      $receiver.setMouseRotation_dleff0$(0.0, -35.0);
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.zoom = 8.0;
+      $receiver.translation.set_yvo9jy$(0.0, 1.0, 0.0);
+      var $receiver_0 = $receiver.onUpdate;
+      var element = gltfTest$lambda$lambda$lambda(closure$ctx, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function gltfTest$lambda$lambda_0($receiver) {
+    var pos = new Vec3f(7.0, 10.0, 8.0);
+    var lookAt = Vec3f.Companion.ZERO;
+    $receiver.setSpot_nve3wz$(pos, lookAt.subtract_2gj7b4$(pos, MutableVec3f_init()).norm(), 60.0);
+    $receiver.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
+    return Unit;
+  }
+  function gltfTest$lambda$lambda_1(closure$ctx, this$) {
+    return function (tex) {
+      makeScene(this$, tex, closure$ctx);
+      return Unit;
+    };
+  }
+  function gltfTest(ctx) {
+    var $receiver = new Scene_init(null);
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, gltfTest$lambda$lambda($receiver, ctx)));
+    $receiver.lighting.singleLight_q9zcvo$(gltfTest$lambda$lambda_0);
+    var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
+    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, gltfTest$lambda$lambda_1(ctx, $receiver));
+    return $receiver;
+  }
+  function makeScene$lambda$lambda($receiver) {
+    $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
+    $receiver.color = Color.Companion.WHITE;
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(20.0, 20.0);
+    $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+    return function ($receiver) {
+      addAll($receiver.shadowMaps, closure$shadows);
+      $receiver.isScrSpcAmbientOcclusion = true;
+      $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
+      $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
+      $receiver.isImageBasedLighting = true;
+      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
+      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
+      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
+      return Unit;
+    };
+  }
+  function makeScene$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(makeScene$lambda$lambda);
+      $receiver.pipelineLoader = pbrShader(makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      return Unit;
+    };
+  }
+  function makeScene$lambda$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+    return function ($receiver, it) {
+      addAll($receiver.shadowMaps, closure$shadows);
+      $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
+      $receiver.isScrSpcAmbientOcclusion = true;
+      $receiver.isImageBasedLighting = true;
+      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
+      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
+      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
+      return Unit;
+    };
+  }
+  function makeScene$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$makeScene) {
+    return function (gltf) {
+      if (gltf != null) {
+        var closure$shadows_0 = closure$shadows;
+        var closure$aoPipeline_0 = closure$aoPipeline;
+        var closure$irrMapPass_0 = closure$irrMapPass;
+        var closure$reflMapPass_0 = closure$reflMapPass;
+        var closure$brdfLutPass_0 = closure$brdfLutPass;
+        var this$makeScene_0 = this$makeScene;
+        var model = gltf.makeModel_9ux8e$(void 0, makeScene$lambda$lambda$lambda(closure$shadows_0, closure$aoPipeline_0, closure$irrMapPass_0, closure$reflMapPass_0, closure$brdfLutPass_0));
+        model.scale_y2kzbl$(40.0, 40.0, 40.0);
+        this$makeScene_0.unaryPlus_uv0sim$(model);
+      }return Unit;
+    };
+  }
+  function makeScene($receiver, hdri, ctx) {
+    var irrMapPass = new IrradianceMapPass($receiver, hdri);
+    var reflMapPass = new ReflectionMapPass($receiver, hdri);
+    var brdfLutPass = new BrdfLutPass($receiver);
+    var shadows = listOf_0(new SimpleShadowMap($receiver, 0, 2048));
+    var aoPipeline = AoPipeline.Companion.createForward_ushge7$($receiver);
+    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, makeScene$lambda(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass)));
+    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/camera.glb', makeScene$lambda_0(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass, $receiver));
+    $receiver.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
+  }
   function helloWorldScene$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
     $receiver_0.colored_6taknv$();
@@ -10164,6 +10282,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   });
   package$demo.Demo = Demo;
   package$demo.Cycler = Cycler;
+  package$demo.gltfTest_aemszp$ = gltfTest;
   package$demo.helloWorldScene = helloWorldScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.InstanceDemo = InstanceDemo;
