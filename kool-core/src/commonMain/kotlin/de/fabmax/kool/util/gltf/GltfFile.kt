@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TransformGroup
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -34,6 +33,7 @@ fun AssetManager.loadGltfModel(assetPath: String, onLoad: (GltfFile?) -> Unit) {
                 val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
                 it.data = loadAsset(bufferPath)!!
             }
+            m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
             m.makeReferences()
         }
 
@@ -84,8 +84,6 @@ private suspend fun AssetManager.loadGlb(assetPath: String): GltfFile? {
         }
         iChunk++
     }
-
-    logD { "Loaded glTF model $assetPath (${(fileLength / 1024.0 / 1024.0).toString(1)} mb)" }
 
     return model
 }
@@ -143,32 +141,13 @@ data class GltfFile(
             val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(generateNormals), "${name}_$index")
             nodeGrp += mesh
             mesh.pipelineLoader = pbrShader {
-                val pbrMat = p.materialRef?.pbrMetallicRoughness
-                if (pbrMat != null) {
-                    if (pbrMat.baseColorTexture != null) {
-                        albedoMap = getModelTex(model, pbrMat.baseColorTexture.index)
-                        albedoSource = Albedo.TEXTURE_ALBEDO
-                    } else {
-                        albedo = Color(pbrMat.baseColorFactor[0], pbrMat.baseColorFactor[1], pbrMat.baseColorFactor[2], pbrMat.baseColorFactor[3])
-                        albedoSource = Albedo.STATIC_ALBEDO
-                    }
-
-                    if (pbrMat.metallicRoughnessTexture != null) {
-                        metallicRoughnessMap = getModelTex(model, pbrMat.metallicRoughnessTexture.index)
-                        isMetallicRoughnessMapped = true
-                    } else {
-                        metallic = pbrMat.metallicFactor
-                        roughness = pbrMat.roughnessFactor
-                    }
+                val material = p.materialRef
+                if (material != null) {
+                    applyMaterial(model, material)
 
                 } else {
                     albedo = Color.GRAY
                     albedoSource = Albedo.STATIC_ALBEDO
-                }
-
-                p.materialRef?.normalTexture?.let { tex ->
-                    normalMap = getModelTex(model, tex.index)
-                    isNormalMapped = true
                 }
 
                 pbrBlock?.invoke(this, p)
@@ -176,6 +155,52 @@ data class GltfFile(
         }
 
         return nodeGrp
+    }
+
+    private fun PbrShader.PbrConfig.applyMaterial(model: Model, material: Material) {
+        val pbr = material.pbrMetallicRoughness
+        if (pbr.baseColorTexture != null) {
+            albedoMap = getModelTex(model, pbr.baseColorTexture.index)
+            albedoSource = Albedo.TEXTURE_ALBEDO
+        } else {
+            albedo = Color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2], pbr.baseColorFactor[3])
+            albedoSource = Albedo.STATIC_ALBEDO
+        }
+
+        material.normalTexture?.let { tex ->
+            normalMap = getModelTex(model, tex.index)
+            isNormalMapped = true
+        }
+
+        if (pbr.metallicRoughnessTexture != null) {
+            val rmTex = getModelTex(model, pbr.metallicRoughnessTexture.index)
+            isMetallicMapped = true
+            metallicMap = rmTex
+            metallicChannel = "b"
+            metallicTexName = "tMetalRough"
+
+            isRoughnessMapped = true
+            roughnessMap = rmTex
+            roughnessChannel = "g"
+            roughnessTexName = "tMetalRough"
+
+            if (material.occlusionTexture != null && material.occlusionTexture.index == pbr.metallicRoughnessTexture.index) {
+                isAmbientOcclusionMapped = true
+                ambientOcclusionMap = rmTex
+                ambientOcclusionChannel = "r"
+                ambientOcclusionTexName = "tMetalRough"
+            }
+
+        } else {
+            metallic = pbr.metallicFactor
+            roughness = pbr.roughnessFactor
+
+            if (material.occlusionTexture != null) {
+                isAmbientOcclusionMapped = true
+                ambientOcclusionMap = getModelTex(model, material.occlusionTexture.index)
+                ambientOcclusionChannel = "r"
+            }
+        }
     }
 
     private fun getModelTex(model: Model, iTex: Int): de.fabmax.kool.pipeline.Texture {
@@ -212,7 +237,7 @@ data class GltfFile(
             }
         }
         textures.forEach { it.imageRef = images[it.source] }
-        images.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
+        images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
     }
 
     companion object {
@@ -341,7 +366,7 @@ data class MeshPrimitive(
         if (positionAcc != null) {
             val poss = Vec3fAccessor(positionAcc)
             val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
-            val tans = if (tangentAcc != null) Vec3fAccessor(tangentAcc) else null
+            val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null
             val texs = if (texCoordAcc != null) Vec2fAccessor(texCoordAcc) else null
             val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
 
@@ -349,7 +374,7 @@ data class MeshPrimitive(
                 verts.addVertex {
                     poss.next(position)
                     nrms?.next(normal)
-                    tans?.next(tangent)
+                    tans?.next()?.let { tan -> tangent.set(tan.x, tan.y, tan.z) }
                     texs?.next(texCoord)
                     cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
                 }
@@ -403,7 +428,7 @@ data class PbrMetallicRoughness(
 @Serializable
 data class MaterialMap(
         val index: Int,
-        val texCoord: Int,
+        val texCoord: Int = 0,
         val scale: Float = 1f
 )
 
@@ -421,7 +446,11 @@ data class Texture(
     fun makeTexture(): de.fabmax.kool.pipeline.Texture {
         if (createdTex == null) {
             createdTex = de.fabmax.kool.pipeline.Texture { assetMgr ->
-                assetMgr.createTextureData(imageRef.bufferViewRef.getData(), imageRef.mimeType ?: "image/png")
+                if (imageRef.uri != null) {
+                    assetMgr.loadTextureData(imageRef.uri!!)
+                } else {
+                    assetMgr.createTextureData(imageRef.bufferViewRef!!.getData(), imageRef.mimeType ?: "image/png")
+                }
             }
         }
         return createdTex!!
@@ -430,12 +459,13 @@ data class Texture(
 
 @Serializable
 data class Image(
-        val bufferView: Int,
+        var uri: String? = null,
+        val bufferView: Int = -1,
         val mimeType: String? = null,
         val name: String? = null
 ) {
     @Transient
-    lateinit var bufferViewRef: BufferView
+    var bufferViewRef: BufferView? = null
 }
 
 @Serializable

@@ -8,8 +8,9 @@ This is my personal pet-project. I have a few demos in place (once loaded, you c
 them via the hamburger button in the upper left corner):
 - [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
   light sources - also includes PBR shading and ambient occlusion.
-- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Basic support for 
-  [glTF](https://github.com/KhronosGroup/glTF) model format (no animations, skins, morph targets yet...)
+- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): [Camera Model](https://3dmodelhaven.com/model/?m=Camera_01)
+  from 3dModeHaven and [Flight Helmet](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
+  from glTF sample model repository
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
@@ -37,8 +38,9 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 ## Features / Noticeable Stuff:
 
 - Node based dynamic shader generation
-- All new Vulkan rendering backend (on JVM)
+- Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
+- Basic support for [glTF](https://github.com/KhronosGroup/glTF) model format (no animations, skins, morph targets yet...)
 - Deferred shading
 - Screen-space ambient occlusion
 - Normal, roughness, metallic, ambient occlusion and displacement mapping

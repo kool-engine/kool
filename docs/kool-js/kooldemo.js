@@ -100,11 +100,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var MutableVec3d_init = $module$kool.de.fabmax.kool.math.MutableVec3d_init_czzhiw$;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
-  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
   var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
+  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
+  var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
@@ -120,7 +122,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
-  var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -2499,7 +2500,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_0)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_1)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_3)), to('gltfDemo', new Demo$DemoEntry('glTF Model', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Model', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2697,23 +2698,23 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_0($receiver, it) {
-    $receiver.addAll_brywnq$(pbrDemoScene(it));
+    $receiver.addAll_brywnq$(gltfDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_1($receiver, it) {
-    $receiver.addAll_brywnq$(aoDemo(it));
+    $receiver.addAll_brywnq$(pbrDemoScene(it));
     return Unit;
   }
   function Demo$demos$lambda_2($receiver, it) {
-    $receiver.addAll_brywnq$(multiLightDemo(it));
+    $receiver.addAll_brywnq$(aoDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
-    $receiver.addAll_brywnq$(treeScene(it));
+    $receiver.addAll_brywnq$(multiLightDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
-    $receiver.add_11rb$(gltfTest(it));
+    $receiver.addAll_brywnq$(treeScene(it));
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
@@ -2790,33 +2791,98 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'Cycler',
     interfaces: [List]
   };
-  function gltfTest$lambda$lambda$lambda(closure$ctx, this$) {
+  function Cycler_init(elements, $this) {
+    $this = $this || Object.create(Cycler.prototype);
+    Cycler.call($this, listOf(elements.slice()));
+    return $this;
+  }
+  function gltfDemo(ctx) {
+    var demo = new GltfDemo(ctx);
+    return listOf([demo.mainScene, demo.menu]);
+  }
+  function GltfDemo(ctx) {
+    this.mainScene = null;
+    this.menu = null;
+    this.autoRotate_0 = true;
+    this.camTranslationTarget_0 = null;
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
+    this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
+    this.contentGroup_0 = new TransformGroup();
+    this.irrMapPass_0 = null;
+    this.reflMapPass_0 = null;
+    this.brdfLutPass_0 = null;
+    this.shadows_0 = ArrayList_init();
+    this.aoPipeline_0 = null;
+    this.models_0.current.isVisible = true;
+    this.mainScene = this.makeMainScene_0(ctx);
+    this.menu = this.menu_0(ctx);
+  }
+  Object.defineProperty(GltfDemo.prototype, 'orbitTransform_0', {
+    get: function () {
+      if (this.orbitTransform_w8joii$_0 == null)
+        return throwUPAE('orbitTransform');
+      return this.orbitTransform_w8joii$_0;
+    },
+    set: function (orbitTransform) {
+      this.orbitTransform_w8joii$_0 = orbitTransform;
+    }
+  });
+  function GltfDemo$makeMainScene$lambda$lambda$lambda(this$GltfDemo, closure$ctx, this$) {
     return function ($receiver, f, f_0) {
-      this$.verticalRotation -= closure$ctx.deltaT * 3.0;
-      return Unit;
+      var tmp$;
+      if (this$GltfDemo.autoRotate_0) {
+        this$.verticalRotation -= closure$ctx.deltaT * 3.0;
+      }if ((tmp$ = this$GltfDemo.camTranslationTarget_0) != null) {
+        var this$_0 = this$;
+        var this$GltfDemo_0 = this$GltfDemo;
+        var v = MutableVec3d_init(this$_0.translation).scale_14dthe$(0.9).add_czzhiw$(MutableVec3d_init(tmp$).scale_14dthe$(0.1));
+        this$_0.translation.set_czzhiw$(v);
+        if (v.distance_czzhiw$(tmp$) < 0.01) {
+          this$GltfDemo_0.camTranslationTarget_0 = null;
+        }}return Unit;
     };
   }
-  function gltfTest$lambda$lambda(this$, closure$ctx) {
+  function GltfDemo$makeMainScene$lambda$lambda(this$, this$GltfDemo, closure$ctx) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(0.0, -30.0);
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoom = 5.0;
       $receiver.translation.set_yvo9jy$(0.0, 0.5, 0.0);
       var $receiver_0 = $receiver.onUpdate;
-      var element = gltfTest$lambda$lambda$lambda(closure$ctx, $receiver);
+      var element = GltfDemo$makeMainScene$lambda$lambda$lambda(this$GltfDemo, closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function gltfTest$lambda$lambda_0(closure$ctx, this$) {
-    return function (tex) {
-      makeScene(this$, tex, closure$ctx);
+  function GltfDemo$makeMainScene$lambda$lambda$lambda_0(closure$hdri) {
+    return function ($receiver, it) {
+      closure$hdri.dispose();
       return Unit;
     };
   }
-  function gltfTest(ctx) {
+  function GltfDemo$makeMainScene$lambda$lambda_0(this$, this$GltfDemo, closure$ctx) {
+    return function (hdri) {
+      this$GltfDemo.irrMapPass_0 = new IrradianceMapPass(this$, hdri);
+      this$GltfDemo.reflMapPass_0 = new ReflectionMapPass(this$, hdri);
+      this$GltfDemo.brdfLutPass_0 = new BrdfLutPass(this$);
+      this$.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda$lambda_0(hdri));
+      this$GltfDemo.setupContentGroup_0();
+      var $receiver = this$GltfDemo.models_0;
+      var tmp$;
+      tmp$ = $receiver.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.load_aemszp$(closure$ctx);
+      }
+      this$.unaryPlus_uv0sim$(this$GltfDemo.contentGroup_0);
+      this$.unaryPlus_uv0sim$(new Skybox(ensureNotNull(this$GltfDemo.reflMapPass_0).colorTextureCube, 1.0));
+      return Unit;
+    };
+  }
+  GltfDemo.prototype.makeMainScene_0 = function (ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, gltfTest$lambda$lambda($receiver, ctx)));
+    this.orbitTransform_0 = orbitInputTransform($receiver, void 0, GltfDemo$makeMainScene$lambda$lambda($receiver, this, ctx));
+    $receiver.unaryPlus_uv0sim$(this.orbitTransform_0);
     $receiver.lighting.lights.clear();
     var tmp$ = $receiver.lighting.lights;
     var $receiver_0 = new Light();
@@ -2832,34 +2898,39 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.setSpot_nve3wz$(pos_0, lookAt_0.subtract_2gj7b4$(pos_0, MutableVec3f_init()).norm(), 25.0);
     $receiver_1.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
     tmp$_0.add_11rb$($receiver_1);
+    addAll(this.shadows_0, listOf([new SimpleShadowMap($receiver, 0, 2048), new SimpleShadowMap($receiver, 1, 2048)]));
+    this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, gltfTest$lambda$lambda_0(ctx, $receiver));
+    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, GltfDemo$makeMainScene$lambda$lambda_0($receiver, this, ctx));
     return $receiver;
+  };
+  function GltfDemo$setupContentGroup$lambda$lambda(this$GltfDemo, this$) {
+    return function ($receiver, f, ctx) {
+      if (this$GltfDemo.autoRotate_0) {
+        this$.rotate_5820x2$(ctx.deltaT * 3, Vec3d.Companion.Y_AXIS);
+      }return Unit;
+    };
   }
-  function makeScene$lambda(closure$hdri) {
-    return function ($receiver, it) {
-      closure$hdri.dispose();
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda(this$GltfDemo) {
+    return function ($receiver) {
+      this$GltfDemo.roundCylinder_0($receiver, 4.1, 0.2);
       return Unit;
     };
   }
-  function makeScene$lambda$lambda$lambda($receiver) {
-    roundCylinder($receiver, 4.1, 0.2);
-    return Unit;
-  }
-  function Coroutine$makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$makeScene$lambda$lambda$lambda$lambda.$metadata$ = {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda;
-  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda;
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -2887,27 +2958,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_0;
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0;
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -2935,27 +3006,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_1;
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1;
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -2983,27 +3054,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function Coroutine$makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.$metadata$ = {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_2;
-  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2;
+  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -3031,14 +3102,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function makeScene$lambda$lambda$lambda$lambda_3(this$) {
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_3(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
@@ -3048,87 +3119,177 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function makeScene$lambda$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$) {
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda_0(this$GltfDemo, this$) {
     return function ($receiver) {
-      addAll($receiver.shadowMaps, closure$shadows);
+      var tmp$, tmp$_0, tmp$_1, tmp$_2;
+      addAll($receiver.shadowMaps, this$GltfDemo.shadows_0);
       $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
+      $receiver.scrSpcAmbientOcclusionMap = (tmp$ = this$GltfDemo.aoPipeline_0) != null ? tmp$.aoMap : null;
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isAmbientOcclusionMapped = true;
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
-      $receiver.albedoMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_0);
-      $receiver.roughnessMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_1);
-      $receiver.ambientOcclusionMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_2);
-      $receiver.isImageBasedLighting = true;
-      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
-      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
-      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
-      this$.onDispose.add_11rb$(makeScene$lambda$lambda$lambda$lambda_3($receiver));
+      $receiver.albedoMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0);
+      $receiver.roughnessMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1);
+      $receiver.ambientOcclusionMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2);
+      $receiver.setImageBasedLighting_5m8fyp$((tmp$_0 = this$GltfDemo.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this$GltfDemo.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
+      this$.onDispose.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_3($receiver));
       return Unit;
     };
   }
-  function makeScene$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function GltfDemo$setupContentGroup$lambda$lambda_0(this$GltfDemo) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(makeScene$lambda$lambda$lambda);
-      $receiver.pipelineLoader = pbrShader(makeScene$lambda$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver));
+      $receiver.generate_v2sixm$(GltfDemo$setupContentGroup$lambda$lambda$lambda(this$GltfDemo));
+      $receiver.pipelineLoader = pbrShader(GltfDemo$setupContentGroup$lambda$lambda$lambda_0(this$GltfDemo, $receiver));
       return Unit;
     };
   }
-  function makeScene$lambda$lambda$lambda$lambda_4(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
-    return function ($receiver, it) {
-      addAll($receiver.shadowMaps, closure$shadows);
-      $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
-      $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.isImageBasedLighting = true;
-      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
-      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
-      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
-      return Unit;
-    };
+  GltfDemo.prototype.setupContentGroup_0 = function () {
+    var $receiver = this.contentGroup_0;
+    $receiver.rotate_5820x2$(-60.0, Vec3d.Companion.Y_AXIS);
+    $receiver.onUpdate.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda(this, $receiver));
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, GltfDemo$setupContentGroup$lambda$lambda_0(this)));
+  };
+  function GltfDemo$menu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
   }
-  function makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$) {
-    return function (gltf) {
-      if (gltf != null) {
-        var closure$shadows_0 = closure$shadows;
-        var closure$aoPipeline_0 = closure$aoPipeline;
-        var closure$irrMapPass_0 = closure$irrMapPass;
-        var closure$reflMapPass_0 = closure$reflMapPass;
-        var closure$brdfLutPass_0 = closure$brdfLutPass;
-        var this$_0 = this$;
-        var model = gltf.makeModel_wqoxlt$(void 0, true, makeScene$lambda$lambda$lambda$lambda_4(closure$shadows_0, closure$aoPipeline_0, closure$irrMapPass_0, closure$reflMapPass_0, closure$brdfLutPass_0));
-        model.scale_y2kzbl$(20.0, 20.0, 20.0);
-        this$_0.unaryPlus_uv0sim$(model);
-      }return Unit;
-    };
+  function GltfDemo$menu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
   }
-  function makeScene$lambda$lambda_1(this$) {
-    return function ($receiver, f, ctx) {
-      this$.setIdentity();
-      this$.rotate_5820x2$(ctx.time * 3 - 45, Vec3d.Companion.Y_AXIS);
-      return Unit;
-    };
+  function GltfDemo$menu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(GltfDemo$menu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(GltfDemo$menu$lambda$lambda$lambda_0);
+    return Unit;
   }
-  function makeScene$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$ctx) {
+  function GltfDemo$menu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, makeScene$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass)));
-      loadGltfModel(closure$ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/camera.glb', makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver));
-      $receiver.onUpdate.add_11rb$(makeScene$lambda$lambda_1($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
-  function makeScene($receiver, hdri, ctx) {
-    var irrMapPass = new IrradianceMapPass($receiver, hdri);
-    var reflMapPass = new ReflectionMapPass($receiver, hdri);
-    var brdfLutPass = new BrdfLutPass($receiver);
-    var shadows = listOf([new SimpleShadowMap($receiver, 0, 2048), new SimpleShadowMap($receiver, 1, 2048)]);
-    var aoPipeline = AoPipeline.Companion.createForward_ushge7$($receiver);
-    $receiver.onDispose.add_11rb$(makeScene$lambda(hdri));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, makeScene$lambda_0(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass, ctx)));
-    $receiver.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
+  function GltfDemo$menu$lambda$lambda$lambda_2(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      return Unit;
+    };
   }
-  function roundCylinder($receiver, radius, height) {
+  function GltfDemo$menu$lambda$lambda$lambda$lambda(this$GltfDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$GltfDemo.models_0.current.isVisible = false;
+      $receiver.text = this$GltfDemo.models_0.next().name;
+      this$GltfDemo.models_0.current.isVisible = true;
+      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
+      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_3(closure$y, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onClick;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda(this$GltfDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_0(this$GltfDemo, closure$modelName) {
+    return function ($receiver, f, f_0, f_1) {
+      this$GltfDemo.models_0.current.isVisible = false;
+      closure$modelName.text = this$GltfDemo.models_0.prev().name;
+      this$GltfDemo.models_0.current.isVisible = true;
+      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
+      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_4(closure$y, this$GltfDemo, closure$modelName) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_0(this$GltfDemo, closure$modelName);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_1(this$GltfDemo, closure$modelName) {
+    return function ($receiver, f, f_0, f_1) {
+      this$GltfDemo.models_0.current.isVisible = false;
+      closure$modelName.text = this$GltfDemo.models_0.next().name;
+      this$GltfDemo.models_0.current.isVisible = true;
+      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
+      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_5(closure$y, this$GltfDemo, closure$modelName) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_1(this$GltfDemo, closure$modelName);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_2(this$GltfDemo) {
+    return function ($receiver) {
+      this$GltfDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_6(closure$y, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$GltfDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_2(this$GltfDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-280.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(160.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('glTF Models', GltfDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Model:', GltfDemo$menu$lambda$lambda$lambda_2(y)));
+      y.v -= 35.0;
+      var modelName = this$.button_9zrh0o$(this$GltfDemo.models_0.current.name, GltfDemo$menu$lambda$lambda$lambda_3(y, this$GltfDemo));
+      $receiver.unaryPlus_uv0sim$(modelName);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('prevModel', GltfDemo$menu$lambda$lambda$lambda_4(y, this$GltfDemo, modelName)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('nextModel', GltfDemo$menu$lambda$lambda$lambda_5(y, this$GltfDemo, modelName)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_6(y, this$GltfDemo)));
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda(closure$ctx, this$GltfDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, GltfDemo$menu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', GltfDemo$menu$lambda$lambda_0(smallFont, $receiver, this$GltfDemo)));
+      return Unit;
+    };
+  }
+  GltfDemo.prototype.menu_0 = function (ctx) {
+    return uiScene(void 0, void 0, void 0, GltfDemo$menu$lambda(ctx, this));
+  };
+  GltfDemo.prototype.roundCylinder_0 = function ($receiver, radius, height) {
     var nCorner = 20;
     var cornerR = height / 2;
     var cornerPts = ArrayList_init();
@@ -3168,7 +3329,66 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.geometry.addTriIndices_qt1dr2$(firstIBot, firstIBot + Kotlin.imul(i_1, cornerPts.size) | 0, firstIBot + Kotlin.imul(i_1 - 1 | 0, cornerPts.size) | 0);
     }
     $receiver.geometry.generateNormals();
+  };
+  function GltfDemo$GltfModel($outer, name, assetPath, scale, translation, generateNormals, lookAt, zoom) {
+    this.$outer = $outer;
+    this.name = name;
+    this.assetPath = assetPath;
+    this.scale = scale;
+    this.translation = translation;
+    this.generateNormals = generateNormals;
+    this.lookAt = lookAt;
+    this.zoom = zoom;
+    this.model = null;
+    this.isVisible_eht3mo$_0 = false;
   }
+  Object.defineProperty(GltfDemo$GltfModel.prototype, 'isVisible', {
+    get: function () {
+      return this.isVisible_eht3mo$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.isVisible_eht3mo$_0 = value;
+      (tmp$ = this.model) != null ? (tmp$.isVisible = value) : null;
+    }
+  });
+  function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2;
+      addAll($receiver.shadowMaps, this$GltfDemo.shadows_0);
+      $receiver.scrSpcAmbientOcclusionMap = (tmp$ = this$GltfDemo.aoPipeline_0) != null ? tmp$.aoMap : null;
+      $receiver.isScrSpcAmbientOcclusion = true;
+      $receiver.setImageBasedLighting_5m8fyp$((tmp$_0 = this$GltfDemo.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this$GltfDemo.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
+      return Unit;
+    };
+  }
+  function GltfDemo$GltfModel$load$lambda(this$GltfModel, this$GltfDemo) {
+    return function (gltf) {
+      if (gltf != null) {
+        var this$GltfModel_0 = this$GltfModel;
+        var this$GltfDemo_0 = this$GltfDemo;
+        var $receiver = gltf.makeModel_wqoxlt$(void 0, this$GltfModel_0.generateNormals, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
+        $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
+        $receiver.translate_czzhiu$(this$GltfModel_0.translation);
+        $receiver.isVisible = this$GltfModel_0.isVisible;
+        this$GltfDemo_0.contentGroup_0.plusAssign_f1kmr1$($receiver);
+        this$GltfModel_0.model = $receiver;
+      }return Unit;
+    };
+  }
+  GltfDemo$GltfModel.prototype.load_aemszp$ = function (ctx) {
+    loadGltfModel(ctx.assetMgr, this.assetPath, GltfDemo$GltfModel$load$lambda(this, this.$outer));
+  };
+  GltfDemo$GltfModel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GltfModel',
+    interfaces: []
+  };
+  GltfDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GltfDemo',
+    interfaces: []
+  };
   function helloWorldScene$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
     $receiver_0.colored_6taknv$();
@@ -10556,8 +10776,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     get: Demo$Companion_getInstance
   });
   package$demo.Demo = Demo;
+  package$demo.Cycler_init_i5x0yv$ = Cycler_init;
   package$demo.Cycler = Cycler;
-  package$demo.gltfTest_aemszp$ = gltfTest;
+  package$demo.gltfDemo_aemszp$ = gltfDemo;
+  package$demo.GltfDemo = GltfDemo;
   package$demo.helloWorldScene = helloWorldScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.InstanceDemo = InstanceDemo;

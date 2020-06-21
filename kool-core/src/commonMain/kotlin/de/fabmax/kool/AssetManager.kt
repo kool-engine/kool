@@ -3,10 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.pipeline.CubeMapTextureData
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.serialization.ModelData
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -106,6 +103,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset
+        loaded.data?.let {
+            logD { "Loaded $assetPath (${(it.capacity / 1024.0 / 1024.0).toString(1)} mb)" }
+        }
         return loaded.data
     }
 
@@ -131,6 +131,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+        loaded.data?.let {
+            logD { "Loaded $assetPath (${it.format}, ${it.width}x${it.height})" }
+        }
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 

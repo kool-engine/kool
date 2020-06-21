@@ -46,10 +46,13 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var normalSampler: TextureSampler? = null
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
-    private var metallicRoughnessSampler: TextureSampler? = null
-    private var ambientOcclusionSampler: TextureSampler? = null
+    private var occlusionSampler: TextureSampler? = null
     private var displacementSampler: TextureSampler? = null
     private var uDispStrength: PushConstantNode1f? = null
+
+    private val metallicTexName = cfg.metallicTexName
+    private val roughnessTexName = cfg.roughnessTexName
+    private val occlusionTexName = cfg.ambientOcclusionTexName
 
     var albedoMap: Texture? = cfg.albedoMap
         set(value) {
@@ -71,15 +74,10 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             field = value
             roughnessSampler?.texture = value
         }
-    var metallicRoughnessMap: Texture? = cfg.metallicRoughnessMap
-        set(value) {
-            field = value
-            metallicRoughnessSampler?.texture = value
-        }
     var ambientOcclusionMap: Texture? = cfg.ambientOcclusionMap
         set(value) {
             field = value
-            ambientOcclusionSampler?.texture = value
+            occlusionSampler?.texture = value
         }
     var displacementMap: Texture? = cfg.displacementMap
         set(value) {
@@ -164,14 +162,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         albedoSampler?.let { it.texture = albedoMap }
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
-        metallicSampler = model.findNode<TextureNode>("tMetallic")?.sampler
+        metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
         metallicSampler?.let { it.texture = metallicMap }
-        roughnessSampler = model.findNode<TextureNode>("tRoughness")?.sampler
+        roughnessSampler = model.findNode<TextureNode>(roughnessTexName)?.sampler
         roughnessSampler?.let { it.texture = roughnessMap }
-        metallicRoughnessSampler = model.findNode<TextureNode>("tMetalRough")?.sampler
-        metallicRoughnessSampler?.let { it.texture = metallicRoughnessMap }
-        ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
-        ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
+        occlusionSampler = model.findNode<TextureNode>(occlusionTexName)?.sampler
+        occlusionSampler?.let { it.texture = ambientOcclusionMap }
         displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
         displacementSampler?.let { it.texture = displacementMap }
         uDispStrength = model.findNode("uDispStrength")
@@ -292,29 +288,46 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         ifNormals.output
                     }
 
-                    if (cfg.isMetallicRoughnessMapped) {
-                        // combined metallic / roughness texture
-                        val metalRoughTex = textureSamplerNode(textureNode("tMetalRough"), ifTexCoords!!.output).outColor
-                        inMetallic = splitNode(metalRoughTex, "b").output
-                        inRoughness = splitNode(metalRoughTex, "g").output
-
-                    } else {
-                        inMetallic = if (cfg.isMetallicMapped) {
-                            textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
-                        } else {
-                            pushConstantNode1f("uMetallic").output
-                        }
-                        inRoughness = if (cfg.isRoughnessMapped) {
-                            textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
-                        } else {
-                            pushConstantNode1f("uRoughness").output
-                        }
+                    val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
+                    if (cfg.isRoughnessMapped) {
+                        val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
+                        rmoSamplers[cfg.roughnessTexName] = roughness
+                        inRoughness = splitNode(roughness, cfg.roughnessChannel).output
                     }
-
+                    if (cfg.isMetallicMapped) {
+                        val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                        rmoSamplers[cfg.metallicTexName] = metallic
+                        inMetallic = splitNode(metallic, cfg.metallicChannel).output
+                    }
                     var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
                     if (cfg.isAmbientOcclusionMapped) {
-                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output).outColor
+                        val occlusion = rmoSamplers.getOrPut(cfg.ambientOcclusionTexName) { textureSamplerNode(textureNode(cfg.ambientOcclusionTexName), ifTexCoords!!.output).outColor }
+                        rmoSamplers[cfg.ambientOcclusionTexName] = occlusion
+                        aoFactor = splitNode(occlusion, cfg.ambientOcclusionChannel).output
                     }
+
+//                    if (cfg.isMetallicRoughnessMapped) {
+//                        // combined metallic / roughness texture
+//                        val metalRoughTex = textureSamplerNode(textureNode("tMetalRough"), ifTexCoords!!.output).outColor
+//                        inMetallic = splitNode(metalRoughTex, "b").output
+//                        inRoughness = splitNode(metalRoughTex, "g").output
+//
+//                    } else {
+//                        inMetallic = if (cfg.isMetallicMapped) {
+//                            textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
+//                        } else {
+//                            pushConstantNode1f("uMetallic").output
+//                        }
+//                        inRoughness = if (cfg.isRoughnessMapped) {
+//                            textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
+//                        } else {
+//                            pushConstantNode1f("uRoughness").output
+//                        }
+//                    }
+//                    if (cfg.isAmbientOcclusionMapped) {
+//                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output).outColor
+//                    }
+
                     if (cfg.isScrSpcAmbientOcclusion) {
                         val aoMap = textureNode("ssaoMap")
                         val aoNode = addNode(AoMapSampleNode(aoMap, graph))
@@ -338,7 +351,6 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isNormalMapped = false
         var isRoughnessMapped = false
         var isMetallicMapped = false
-        var isMetallicRoughnessMapped = false
         var isAmbientOcclusionMapped = false
         var isDisplacementMapped = false
 
@@ -360,17 +372,32 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         var albedoMap: Texture? = null
         var normalMap: Texture? = null
-        var roughnessMap: Texture? = null
-        var metallicMap: Texture? = null
-        var metallicRoughnessMap: Texture? = null
-        var ambientOcclusionMap: Texture? = null
         var displacementMap: Texture? = null
+
+        var roughnessMap: Texture? = null
+        var roughnessChannel = "r"
+        var roughnessTexName = "tRoughness"
+
+        var metallicMap: Texture? = null
+        var metallicChannel = "r"
+        var metallicTexName = "tMetallic"
+
+        var ambientOcclusionMap: Texture? = null
+        var ambientOcclusionChannel = "r"
+        var ambientOcclusionTexName = "tOcclusion"
 
         var irradianceMap: CubeMapTexture? = null
         var reflectionMap: CubeMapTexture? = null
         var brdfLut: Texture? = null
 
         var scrSpcAmbientOcclusionMap: Texture? = null
+
+        fun setImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {
+            this.irradianceMap = irradianceMap
+            this.reflectionMap = reflectionMap
+            this.brdfLut = brdfLut
+            isImageBasedLighting = irradianceMap != null && reflectionMap != null && brdfLut != null
+        }
 
         fun requiresTexCoords(): Boolean {
             return albedoSource == Albedo.TEXTURE_ALBEDO ||

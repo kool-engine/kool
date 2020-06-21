@@ -31,11 +31,11 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
     private val demos = mutableMapOf(
             "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
+            "gltfDemo" to DemoEntry("glTF Model") { addAll(gltfDemo(it)) },
             "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
             "multiShadowDemo" to DemoEntry("Multi Shadow") { addAll(multiLightDemo(it)) },
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
-            "gltfDemo" to DemoEntry("glTF Model") { add(gltfTest(it)) },
             "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
@@ -135,6 +135,9 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 }
 
 class Cycler<T>(elements: List<T>) : List<T> by elements {
+
+    constructor(vararg elements: T) : this(listOf(*elements))
+
     var index = 0
 
     val current: T
