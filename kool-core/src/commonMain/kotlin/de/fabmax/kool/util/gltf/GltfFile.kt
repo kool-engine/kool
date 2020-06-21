@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -106,46 +107,46 @@ data class GltfFile(
         val extensionsRequired: List<String> = emptyList()
 ) {
 
-    fun makeModel(scene: Int = this.scene, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): TransformGroup {
+    fun makeModel(scene: Int = this.scene, generateNormals: Boolean = false, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): Model {
         val scn = scenes[scene]
-        val grp = TransformGroup(scn.name)
+        val model = Model(scn.name)
         scn.nodeRefs.forEach { nd ->
-            grp += nd.makeNode(pbrBlock)
+            model += nd.makeNode(model, generateNormals, pbrBlock)
         }
-        return grp
+        return model
     }
 
-    private fun Node.makeNode(pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?): TransformGroup {
-        val grp = TransformGroup(name)
+    private fun Node.makeNode(model: Model, generateNormals: Boolean, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?): TransformGroup {
+        val nodeGrp = TransformGroup(name)
+        model.nodes[name] = nodeGrp
 
         if (matrix != null) {
-            grp.transform.set(matrix.map { it.toDouble() })
+            nodeGrp.transform.set(matrix.map { it.toDouble() })
         } else {
             if (translation != null) {
-                grp.translate(translation[0], translation[1], translation[2])
+                nodeGrp.translate(translation[0], translation[1], translation[2])
             }
             if (rotation != null) {
                 val rotMat = Mat4d().setRotate(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
-                grp.transform.mul(rotMat)
+                nodeGrp.transform.mul(rotMat)
             }
             if (scale != null) {
-                grp.scale(scale[0], scale[1], scale[2])
+                nodeGrp.scale(scale[0], scale[1], scale[2])
             }
         }
 
         childRefs.forEach {
-            grp += it.makeNode(pbrBlock)
+            nodeGrp += it.makeNode(model, generateNormals, pbrBlock)
         }
 
         meshRef?.primitives?.forEachIndexed { index, p ->
-            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(), "${name}_$index")
-            grp += mesh
+            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(generateNormals), "${name}_$index")
+            nodeGrp += mesh
             mesh.pipelineLoader = pbrShader {
                 val pbrMat = p.materialRef?.pbrMetallicRoughness
                 if (pbrMat != null) {
                     if (pbrMat.baseColorTexture != null) {
-                        val tex = textures[pbrMat.baseColorTexture.index]
-                        albedoMap = tex.makeTexture()
+                        albedoMap = getModelTex(model, pbrMat.baseColorTexture.index)
                         albedoSource = Albedo.TEXTURE_ALBEDO
                     } else {
                         albedo = Color(pbrMat.baseColorFactor[0], pbrMat.baseColorFactor[1], pbrMat.baseColorFactor[2], pbrMat.baseColorFactor[3])
@@ -153,8 +154,7 @@ data class GltfFile(
                     }
 
                     if (pbrMat.metallicRoughnessTexture != null) {
-                        val tex = textures[pbrMat.metallicRoughnessTexture.index]
-                        metallicRoughnessMap = tex.makeTexture()
+                        metallicRoughnessMap = getModelTex(model, pbrMat.metallicRoughnessTexture.index)
                         isMetallicRoughnessMapped = true
                     } else {
                         metallic = pbrMat.metallicFactor
@@ -166,9 +166,8 @@ data class GltfFile(
                     albedoSource = Albedo.STATIC_ALBEDO
                 }
 
-                if (p.materialRef?.normalTexture != null) {
-                    val nrmTex = textures[p.materialRef?.normalTexture!!.index]
-                    normalMap = nrmTex.makeTexture()
+                p.materialRef?.normalTexture?.let { tex ->
+                    normalMap = getModelTex(model, tex.index)
                     isNormalMapped = true
                 }
 
@@ -176,7 +175,17 @@ data class GltfFile(
             }
         }
 
-        return grp
+        return nodeGrp
+    }
+
+    private fun getModelTex(model: Model, iTex: Int): de.fabmax.kool.pipeline.Texture {
+        val name = makeTexName(iTex)
+        return model.textures.getOrPut(name) { textures[iTex].makeTexture() }
+    }
+
+    private fun makeTexName(iTex: Int): String {
+        val tex = textures[iTex]
+        return tex.name ?: "model_tex_#$iTex"
     }
 
     fun makeReferences() {
@@ -307,7 +316,7 @@ data class MeshPrimitive(
     @Transient
     val attribAccessorRefs = mutableMapOf<String, Accessor>()
 
-    fun toGeometry(): IndexedVertexList {
+    fun toGeometry(generateNormals: Boolean): IndexedVertexList {
         val positionAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_POSITION]
         val normalAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_NORMAL]
         val tangentAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_TANGENT]
@@ -361,7 +370,9 @@ data class MeshPrimitive(
             if (generateTangents) {
                 verts.generateTangents()
             }
-            verts.generateNormals()
+            if (generateNormals) {
+                verts.generateNormals()
+            }
         }
         return verts
     }

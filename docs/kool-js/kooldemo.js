@@ -100,7 +100,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var Light = $module$kool.de.fabmax.kool.scene.Light;
   var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
+  var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
+  var math_0 = Kotlin.kotlin.math;
+  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
@@ -116,9 +120,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
-  var math_0 = Kotlin.kotlin.math;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
-  var Light = $module$kool.de.fabmax.kool.scene.Light;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -149,7 +151,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
-  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
@@ -2791,30 +2792,23 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function gltfTest$lambda$lambda$lambda(closure$ctx, this$) {
     return function ($receiver, f, f_0) {
-      this$.verticalRotation += closure$ctx.deltaT * 3.0;
+      this$.verticalRotation -= closure$ctx.deltaT * 3.0;
       return Unit;
     };
   }
   function gltfTest$lambda$lambda(this$, closure$ctx) {
     return function ($receiver) {
-      $receiver.setMouseRotation_dleff0$(0.0, -35.0);
+      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
       $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.zoom = 8.0;
-      $receiver.translation.set_yvo9jy$(0.0, 1.0, 0.0);
+      $receiver.zoom = 5.0;
+      $receiver.translation.set_yvo9jy$(0.0, 0.5, 0.0);
       var $receiver_0 = $receiver.onUpdate;
       var element = gltfTest$lambda$lambda$lambda(closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function gltfTest$lambda$lambda_0($receiver) {
-    var pos = new Vec3f(7.0, 10.0, 8.0);
-    var lookAt = Vec3f.Companion.ZERO;
-    $receiver.setSpot_nve3wz$(pos, lookAt.subtract_2gj7b4$(pos, MutableVec3f_init()).norm(), 60.0);
-    $receiver.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
-    return Unit;
-  }
-  function gltfTest$lambda$lambda_1(closure$ctx, this$) {
+  function gltfTest$lambda$lambda_0(closure$ctx, this$) {
     return function (tex) {
       makeScene(this$, tex, closure$ctx);
       return Unit;
@@ -2823,41 +2817,266 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function gltfTest(ctx) {
     var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, gltfTest$lambda$lambda($receiver, ctx)));
-    $receiver.lighting.singleLight_q9zcvo$(gltfTest$lambda$lambda_0);
+    $receiver.lighting.lights.clear();
+    var tmp$ = $receiver.lighting.lights;
+    var $receiver_0 = new Light();
+    var pos = new Vec3f(7.0, 8.0, 8.0);
+    var lookAt = Vec3f.Companion.ZERO;
+    $receiver_0.setSpot_nve3wz$(pos, lookAt.subtract_2gj7b4$(pos, MutableVec3f_init()).norm(), 25.0);
+    $receiver_0.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
+    tmp$.add_11rb$($receiver_0);
+    var tmp$_0 = $receiver.lighting.lights;
+    var $receiver_1 = new Light();
+    var pos_0 = new Vec3f(-7.0, 8.0, 8.0);
+    var lookAt_0 = Vec3f.Companion.ZERO;
+    $receiver_1.setSpot_nve3wz$(pos_0, lookAt_0.subtract_2gj7b4$(pos_0, MutableVec3f_init()).norm(), 25.0);
+    $receiver_1.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
+    tmp$_0.add_11rb$($receiver_1);
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, gltfTest$lambda$lambda_1(ctx, $receiver));
+    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, gltfTest$lambda$lambda_0(ctx, $receiver));
     return $receiver;
   }
-  function makeScene$lambda$lambda($receiver) {
-    $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-    $receiver.color = Color.Companion.WHITE;
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.size.set_dleff0$(20.0, 20.0);
-    $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
+  function makeScene$lambda(closure$hdri) {
+    return function ($receiver, it) {
+      closure$hdri.dispose();
+      return Unit;
+    };
+  }
+  function makeScene$lambda$lambda$lambda($receiver) {
+    roundCylinder($receiver, 4.1, 0.2);
     return Unit;
   }
-  function makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function Coroutine$makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeScene$lambda$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda;
+  Coroutine$makeScene$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Color2.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_0;
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Normal.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_1;
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Roughness.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$makeScene$lambda$lambda$lambda$lambda_2;
+  Coroutine$makeScene$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_AmbientOcclusion.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function makeScene$lambda$lambda$lambda$lambda_3(this$) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2;
+      (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = this$.ambientOcclusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      return Unit;
+    };
+  }
+  function makeScene$lambda$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$) {
     return function ($receiver) {
       addAll($receiver.shadowMaps, closure$shadows);
       $receiver.isScrSpcAmbientOcclusion = true;
       $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
-      $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
+      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver.isAmbientOcclusionMapped = true;
+      $receiver.isNormalMapped = true;
+      $receiver.isRoughnessMapped = true;
+      $receiver.albedoMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_0);
+      $receiver.roughnessMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_1);
+      $receiver.ambientOcclusionMap = new Texture(void 0, makeScene$lambda$lambda$lambda$lambda_2);
       $receiver.isImageBasedLighting = true;
       $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
       $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
       $receiver.brdfLut = closure$brdfLutPass.colorTexture;
+      this$.onDispose.add_11rb$(makeScene$lambda$lambda$lambda$lambda_3($receiver));
       return Unit;
     };
   }
-  function makeScene$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function makeScene$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(makeScene$lambda$lambda);
-      $receiver.pipelineLoader = pbrShader(makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      $receiver.generate_v2sixm$(makeScene$lambda$lambda$lambda);
+      $receiver.pipelineLoader = pbrShader(makeScene$lambda$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver));
       return Unit;
     };
   }
-  function makeScene$lambda$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function makeScene$lambda$lambda$lambda$lambda_4(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver, it) {
       addAll($receiver.shadowMaps, closure$shadows);
       $receiver.scrSpcAmbientOcclusionMap = closure$aoPipeline.aoMap;
@@ -2869,7 +3088,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function makeScene$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$makeScene) {
+  function makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$) {
     return function (gltf) {
       if (gltf != null) {
         var closure$shadows_0 = closure$shadows;
@@ -2877,22 +3096,78 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var closure$irrMapPass_0 = closure$irrMapPass;
         var closure$reflMapPass_0 = closure$reflMapPass;
         var closure$brdfLutPass_0 = closure$brdfLutPass;
-        var this$makeScene_0 = this$makeScene;
-        var model = gltf.makeModel_9ux8e$(void 0, makeScene$lambda$lambda$lambda(closure$shadows_0, closure$aoPipeline_0, closure$irrMapPass_0, closure$reflMapPass_0, closure$brdfLutPass_0));
-        model.scale_y2kzbl$(40.0, 40.0, 40.0);
-        this$makeScene_0.unaryPlus_uv0sim$(model);
+        var this$_0 = this$;
+        var model = gltf.makeModel_wqoxlt$(void 0, true, makeScene$lambda$lambda$lambda$lambda_4(closure$shadows_0, closure$aoPipeline_0, closure$irrMapPass_0, closure$reflMapPass_0, closure$brdfLutPass_0));
+        model.scale_y2kzbl$(20.0, 20.0, 20.0);
+        this$_0.unaryPlus_uv0sim$(model);
       }return Unit;
+    };
+  }
+  function makeScene$lambda$lambda_1(this$) {
+    return function ($receiver, f, ctx) {
+      this$.setIdentity();
+      this$.rotate_5820x2$(ctx.time * 3 - 45, Vec3d.Companion.Y_AXIS);
+      return Unit;
+    };
+  }
+  function makeScene$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$ctx) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, makeScene$lambda$lambda(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass)));
+      loadGltfModel(closure$ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/camera.glb', makeScene$lambda$lambda_0(closure$shadows, closure$aoPipeline, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver));
+      $receiver.onUpdate.add_11rb$(makeScene$lambda$lambda_1($receiver));
+      return Unit;
     };
   }
   function makeScene($receiver, hdri, ctx) {
     var irrMapPass = new IrradianceMapPass($receiver, hdri);
     var reflMapPass = new ReflectionMapPass($receiver, hdri);
     var brdfLutPass = new BrdfLutPass($receiver);
-    var shadows = listOf_0(new SimpleShadowMap($receiver, 0, 2048));
+    var shadows = listOf([new SimpleShadowMap($receiver, 0, 2048), new SimpleShadowMap($receiver, 1, 2048)]);
     var aoPipeline = AoPipeline.Companion.createForward_ushge7$($receiver);
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, makeScene$lambda(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass)));
-    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/camera.glb', makeScene$lambda_0(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass, $receiver));
+    $receiver.onDispose.add_11rb$(makeScene$lambda(hdri));
+    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, makeScene$lambda_0(shadows, aoPipeline, irrMapPass, reflMapPass, brdfLutPass, ctx)));
     $receiver.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
+  }
+  function roundCylinder($receiver, radius, height) {
+    var nCorner = 20;
+    var cornerR = height / 2;
+    var cornerPts = ArrayList_init();
+    for (var i = 0; i <= nCorner; i++) {
+      var a = math_0.PI / nCorner * i;
+      var x = Math_0.sin(a) * cornerR + radius;
+      var y = Math_0.cos(a) * cornerR - cornerR;
+      var element = new Vec3f(x, y, 0.0);
+      cornerPts.add_11rb$(element);
+    }
+    var uvScale = 0.3;
+    var nCyl = 100;
+    var firstI = {v: 0};
+    for (var i_0 = 0; i_0 <= nCyl; i_0++) {
+      var a_0 = math_0.PI / nCyl * i_0 * 2;
+      var tmp$, tmp$_0;
+      var index = 0;
+      tmp$ = cornerPts.iterator();
+      while (tmp$.hasNext()) {
+        var item = tmp$.next();
+        var ci = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
+        var uv = new MutableVec2f(radius + ci / cornerPts.size * math_0.PI * cornerR, 0.0);
+        uv.scale_mx4ult$(uvScale);
+        uv.rotate_mx4ult$(a_0 * math.RAD_2_DEG);
+        var pt = item.rotate_vqa64j$(a_0 * math.RAD_2_DEG, Vec3f.Companion.Y_AXIS, MutableVec3f_init());
+        var iv = $receiver.vertex_n440gp$(pt, Vec3f.Companion.ZERO, uv);
+        if (i_0 > 0 && ci > 0) {
+          $receiver.geometry.addTriIndices_qt1dr2$(iv - 1 | 0, iv - cornerPts.size - 1 | 0, iv - cornerPts.size | 0);
+          $receiver.geometry.addTriIndices_qt1dr2$(iv, iv - 1 | 0, iv - cornerPts.size | 0);
+        }if (i_0 === 0 && ci === 0) {
+          firstI.v = iv;
+        }}
+    }
+    var firstIBot = firstI.v + cornerPts.size - 1 | 0;
+    for (var i_1 = 2; i_1 <= nCyl; i_1++) {
+      $receiver.geometry.addTriIndices_qt1dr2$(firstI.v, firstI.v + Kotlin.imul(i_1 - 1 | 0, cornerPts.size) | 0, firstI.v + Kotlin.imul(i_1, cornerPts.size) | 0);
+      $receiver.geometry.addTriIndices_qt1dr2$(firstIBot, firstIBot + Kotlin.imul(i_1, cornerPts.size) | 0, firstIBot + Kotlin.imul(i_1 - 1 | 0, cornerPts.size) | 0);
+    }
+    $receiver.geometry.generateNormals();
   }
   function helloWorldScene$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();

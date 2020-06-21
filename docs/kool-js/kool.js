@@ -539,12 +539,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Light$Type.prototype.constructor = Light$Type;
   LineMesh.prototype = Object.create(Mesh.prototype);
   LineMesh.prototype.constructor = LineMesh;
+  TransformGroup.prototype = Object.create(Group.prototype);
+  TransformGroup.prototype.constructor = TransformGroup;
+  Model.prototype = Object.create(TransformGroup.prototype);
+  Model.prototype.constructor = Model;
   OrbitInputTransform$DragMethod.prototype = Object.create(Enum.prototype);
   OrbitInputTransform$DragMethod.prototype.constructor = OrbitInputTransform$DragMethod;
   OrbitInputTransform$ZoomMethod.prototype = Object.create(Enum.prototype);
   OrbitInputTransform$ZoomMethod.prototype.constructor = OrbitInputTransform$ZoomMethod;
-  TransformGroup.prototype = Object.create(Group.prototype);
-  TransformGroup.prototype.constructor = TransformGroup;
   OrbitInputTransform.prototype = Object.create(TransformGroup.prototype);
   OrbitInputTransform.prototype.constructor = OrbitInputTransform;
   CameraOrthogonalPan.prototype = Object.create(PanBase.prototype);
@@ -19586,6 +19588,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'MeshRayTest',
     interfaces: []
   };
+  function Model(name) {
+    if (name === void 0)
+      name = null;
+    TransformGroup.call(this, name);
+    this.nodes = LinkedHashMap_init();
+    this.textures = LinkedHashMap_init();
+  }
+  Model.prototype.dispose_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.textures.values.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.dispose();
+    }
+    TransformGroup.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  Model.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Model',
+    interfaces: [TransformGroup]
+  };
   function Node(name) {
     Node$Companion_getInstance();
     if (name === void 0)
@@ -29713,37 +29736,37 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.extensionsUsed = extensionsUsed;
     this.extensionsRequired = extensionsRequired;
   }
-  GltfFile.prototype.makeModel_9ux8e$ = function (scene, pbrBlock) {
+  GltfFile.prototype.makeModel_wqoxlt$ = function (scene, generateNormals, pbrBlock) {
     if (scene === void 0)
       scene = this.scene;
+    if (generateNormals === void 0)
+      generateNormals = false;
     if (pbrBlock === void 0)
       pbrBlock = null;
     var scn = this.scenes.get_za3lpa$(scene);
-    var grp = new TransformGroup(scn.name);
+    var model = new Model(scn.name);
     var tmp$;
     tmp$ = scn.nodeRefs.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      grp.plusAssign_f1kmr1$(this.makeNode_0(element, pbrBlock));
+      model.plusAssign_f1kmr1$(this.makeNode_0(element, model, generateNormals, pbrBlock));
     }
-    return grp;
+    return model;
   };
-  function GltfFile$makeNode$lambda$lambda(closure$p, this$GltfFile, closure$pbrBlock) {
+  function GltfFile$makeNode$lambda$lambda(closure$p, closure$model, this$GltfFile, closure$pbrBlock) {
     return function ($receiver) {
       var tmp$, tmp$_0, tmp$_1;
       var pbrMat = (tmp$ = closure$p.materialRef) != null ? tmp$.pbrMetallicRoughness : null;
       if (pbrMat != null) {
         if (pbrMat.baseColorTexture != null) {
-          var tex = this$GltfFile.textures.get_za3lpa$(pbrMat.baseColorTexture.index);
-          $receiver.albedoMap = tex.makeTexture();
+          $receiver.albedoMap = this$GltfFile.getModelTex_0(closure$model, pbrMat.baseColorTexture.index);
           $receiver.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
         } else {
           $receiver.albedo = new Color(pbrMat.baseColorFactor.get_za3lpa$(0), pbrMat.baseColorFactor.get_za3lpa$(1), pbrMat.baseColorFactor.get_za3lpa$(2), pbrMat.baseColorFactor.get_za3lpa$(3));
           $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
         }
         if (pbrMat.metallicRoughnessTexture != null) {
-          var tex_0 = this$GltfFile.textures.get_za3lpa$(pbrMat.metallicRoughnessTexture.index);
-          $receiver.metallicRoughnessMap = tex_0.makeTexture();
+          $receiver.metallicRoughnessMap = this$GltfFile.getModelTex_0(closure$model, pbrMat.metallicRoughnessTexture.index);
           $receiver.isMetallicRoughnessMapped = true;
         } else {
           $receiver.metallic = pbrMat.metallicFactor;
@@ -29753,23 +29776,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         $receiver.albedo = Color$Companion_getInstance().GRAY;
         $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
       }
-      if (((tmp$_0 = closure$p.materialRef) != null ? tmp$_0.normalTexture : null) != null) {
-        var nrmTex = this$GltfFile.textures.get_za3lpa$(ensureNotNull((tmp$_1 = closure$p.materialRef) != null ? tmp$_1.normalTexture : null).index);
-        $receiver.normalMap = nrmTex.makeTexture();
+      if ((tmp$_1 = (tmp$_0 = closure$p.materialRef) != null ? tmp$_0.normalTexture : null) != null) {
+        var closure$model_0 = closure$model;
+        $receiver.normalMap = this$GltfFile.getModelTex_0(closure$model_0, tmp$_1.index);
         $receiver.isNormalMapped = true;
       }closure$pbrBlock != null ? closure$pbrBlock($receiver, closure$p) : null;
       return Unit;
     };
   }
-  GltfFile.prototype.makeNode_0 = function ($receiver, pbrBlock) {
+  GltfFile.prototype.makeNode_0 = function ($receiver, model, generateNormals, pbrBlock) {
     var tmp$, tmp$_0;
-    var grp = new TransformGroup($receiver.name);
+    var nodeGrp = new TransformGroup($receiver.name);
+    var $receiver_0 = model.nodes;
+    var key = $receiver.name;
+    $receiver_0.put_xwzc9p$(key, nodeGrp);
     if ($receiver.matrix != null) {
-      var tmp$_1 = grp.transform;
-      var $receiver_0 = $receiver.matrix;
-      var destination = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+      var tmp$_1 = nodeGrp.transform;
+      var $receiver_1 = $receiver.matrix;
+      var destination = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
       var tmp$_2;
-      tmp$_2 = $receiver_0.iterator();
+      tmp$_2 = $receiver_1.iterator();
       while (tmp$_2.hasNext()) {
         var item = tmp$_2.next();
         destination.add_11rb$(item);
@@ -29777,18 +29803,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_1.set_d3e2cz$(destination);
     } else {
       if ($receiver.translation != null) {
-        grp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
+        nodeGrp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
       }if ($receiver.rotation != null) {
         var rotMat = (new Mat4d()).setRotate_czzhi1$(new Vec4d($receiver.rotation.get_za3lpa$(0), $receiver.rotation.get_za3lpa$(1), $receiver.rotation.get_za3lpa$(2), $receiver.rotation.get_za3lpa$(3)));
-        grp.transform.mul_d4zu6l$(rotMat);
+        nodeGrp.transform.mul_d4zu6l$(rotMat);
       }if ($receiver.scale != null) {
-        grp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
+        nodeGrp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
       }}
     var tmp$_3;
     tmp$_3 = $receiver.childRefs.iterator();
     while (tmp$_3.hasNext()) {
       var element = tmp$_3.next();
-      grp.plusAssign_f1kmr1$(this.makeNode_0(element, pbrBlock));
+      nodeGrp.plusAssign_f1kmr1$(this.makeNode_0(element, model, generateNormals, pbrBlock));
     }
     if ((tmp$_0 = (tmp$ = $receiver.meshRef) != null ? tmp$.primitives : null) != null) {
       var tmp$_4, tmp$_0_0;
@@ -29797,11 +29823,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       while (tmp$_4.hasNext()) {
         var item_0 = tmp$_4.next();
         var index_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-        var mesh = new Mesh(item_0.toGeometry(), $receiver.name + '_' + index_0);
-        grp.plusAssign_f1kmr1$(mesh);
-        mesh.pipelineLoader = pbrShader(GltfFile$makeNode$lambda$lambda(item_0, this, pbrBlock));
+        var mesh = new Mesh(item_0.toGeometry_6taknv$(generateNormals), $receiver.name + '_' + index_0);
+        nodeGrp.plusAssign_f1kmr1$(mesh);
+        mesh.pipelineLoader = pbrShader(GltfFile$makeNode$lambda$lambda(item_0, model, this, pbrBlock));
       }
-    }return grp;
+    }return nodeGrp;
+  };
+  GltfFile.prototype.getModelTex_0 = function (model, iTex) {
+    var name = this.makeTexName_0(iTex);
+    var $receiver = model.textures;
+    var tmp$;
+    var value = $receiver.get_11rb$(name);
+    if (value == null) {
+      var answer = this.textures.get_za3lpa$(iTex).makeTexture();
+      $receiver.put_xwzc9p$(name, answer);
+      tmp$ = answer;
+    } else {
+      tmp$ = value;
+    }
+    return tmp$;
+  };
+  GltfFile.prototype.makeTexName_0 = function (iTex) {
+    var tmp$;
+    var tex = this.textures.get_za3lpa$(iTex);
+    return (tmp$ = tex.name) != null ? tmp$ : 'model_tex_#' + iTex;
   };
   GltfFile.prototype.makeReferences = function () {
     var tmp$;
@@ -30821,7 +30866,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.indexAccessorRef = null;
     this.attribAccessorRefs = LinkedHashMap_init();
   }
-  MeshPrimitive.prototype.toGeometry = function () {
+  MeshPrimitive.prototype.toGeometry_6taknv$ = function (generateNormals) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var positionAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_POSITION);
     var normalAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_NORMAL);
@@ -30896,8 +30941,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
       if (generateTangents) {
         verts.generateTangents();
-      }verts.generateNormals();
-    }return verts;
+      }if (generateNormals) {
+        verts.generateNormals();
+      }}return verts;
   };
   function MeshPrimitive$Companion() {
     MeshPrimitive$Companion_instance = this;
@@ -45556,6 +45602,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: MeshRayTest$Companion_getInstance
   });
   package$scene.MeshRayTest = MeshRayTest;
+  package$scene.Model = Model;
   Object.defineProperty(Node, 'Companion', {
     get: Node$Companion_getInstance
   });
