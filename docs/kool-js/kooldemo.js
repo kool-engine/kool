@@ -9593,7 +9593,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     var $receiver_4 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
-    var tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9;
+    var tmp$_5, tmp$_6, tmp$_7;
     $receiver_4.lightBacksides = cfg.lightBacksides;
     $receiver_4.inFragPos = ifFragPos.v.output;
     $receiver_4.inCamPos = mvpFrag.outCamPos;
@@ -9622,20 +9622,48 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$_7 = ifNormals.v.output;
     }
     $receiver_4.inNormal = tmp$_7;
-    if (cfg.isMetallicMapped) {
-      tmp$_8 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
-    } else {
-      tmp$_8 = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
-    }
-    $receiver_4.inMetallic = tmp$_8;
+    var rmoSamplers = LinkedHashMap_init();
     if (cfg.isRoughnessMapped) {
-      tmp$_9 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+      var roughness = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.roughnessTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+      var key = cfg.roughnessTexName;
+      rmoSamplers.put_xwzc9p$(key, roughness);
+      $receiver_4.inRoughness = $receiver_3.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
     } else {
-      tmp$_9 = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
+      $receiver_4.inRoughness = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
-    $receiver_4.inRoughness = tmp$_9;
+    if (cfg.isMetallicMapped) {
+      var key_0 = cfg.metallicTexName;
+      var tmp$_8;
+      var value = rmoSamplers.get_11rb$(key_0);
+      if (value == null) {
+        var answer = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        rmoSamplers.put_xwzc9p$(key_0, answer);
+        tmp$_8 = answer;
+      } else {
+        tmp$_8 = value;
+      }
+      var metallic = tmp$_8;
+      var key_1 = cfg.metallicTexName;
+      rmoSamplers.put_xwzc9p$(key_1, metallic);
+      $receiver_4.inMetallic = $receiver_3.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
+    } else {
+      $receiver_4.inMetallic = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
+    }
     if (cfg.isAmbientOcclusionMapped) {
-      $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+      var key_2 = cfg.ambientOcclusionTexName;
+      var tmp$_9;
+      var value_0 = rmoSamplers.get_11rb$(key_2);
+      if (value_0 == null) {
+        var answer_0 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.ambientOcclusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        rmoSamplers.put_xwzc9p$(key_2, answer_0);
+        tmp$_9 = answer_0;
+      } else {
+        tmp$_9 = value_0;
+      }
+      var occlusion = tmp$_9;
+      var key_3 = cfg.ambientOcclusionTexName;
+      rmoSamplers.put_xwzc9p$(key_3, occlusion);
+      $receiver_4.inAmbientOccl = $receiver_3.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
     }var mat = $receiver_4;
     var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
     $receiver_3.colorOutput_a3v4si$(hdrToLdr.outColor);

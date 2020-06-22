@@ -293,11 +293,15 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
                         rmoSamplers[cfg.roughnessTexName] = roughness
                         inRoughness = splitNode(roughness, cfg.roughnessChannel).output
+                    } else {
+                        inRoughness = pushConstantNode1f("uRoughness").output
                     }
                     if (cfg.isMetallicMapped) {
                         val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
                         rmoSamplers[cfg.metallicTexName] = metallic
                         inMetallic = splitNode(metallic, cfg.metallicChannel).output
+                    } else {
+                        inMetallic = pushConstantNode1f("uMetallic").output
                     }
                     var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
                     if (cfg.isAmbientOcclusionMapped) {
@@ -305,28 +309,6 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         rmoSamplers[cfg.ambientOcclusionTexName] = occlusion
                         aoFactor = splitNode(occlusion, cfg.ambientOcclusionChannel).output
                     }
-
-//                    if (cfg.isMetallicRoughnessMapped) {
-//                        // combined metallic / roughness texture
-//                        val metalRoughTex = textureSamplerNode(textureNode("tMetalRough"), ifTexCoords!!.output).outColor
-//                        inMetallic = splitNode(metalRoughTex, "b").output
-//                        inRoughness = splitNode(metalRoughTex, "g").output
-//
-//                    } else {
-//                        inMetallic = if (cfg.isMetallicMapped) {
-//                            textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output).outColor
-//                        } else {
-//                            pushConstantNode1f("uMetallic").output
-//                        }
-//                        inRoughness = if (cfg.isRoughnessMapped) {
-//                            textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output).outColor
-//                        } else {
-//                            pushConstantNode1f("uRoughness").output
-//                        }
-//                    }
-//                    if (cfg.isAmbientOcclusionMapped) {
-//                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output).outColor
-//                    }
 
                     if (cfg.isScrSpcAmbientOcclusion) {
                         val aoMap = textureNode("ssaoMap")

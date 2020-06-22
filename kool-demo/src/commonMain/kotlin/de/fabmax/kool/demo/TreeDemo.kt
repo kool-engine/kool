@@ -517,18 +517,27 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             } else {
                 ifNormals.output
             }
-            inMetallic = if (cfg.isMetallicMapped) {
-                textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor
+
+
+            val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
+            if (cfg.isRoughnessMapped) {
+                val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
+                rmoSamplers[cfg.roughnessTexName] = roughness
+                inRoughness = splitNode(roughness, cfg.roughnessChannel).output
             } else {
-                pushConstantNode1f("uMetallic").output
+                inRoughness = pushConstantNode1f("uRoughness").output
             }
-            inRoughness = if (cfg.isRoughnessMapped) {
-                textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output, false).outColor
+            if (cfg.isMetallicMapped) {
+                val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                rmoSamplers[cfg.metallicTexName] = metallic
+                inMetallic = splitNode(metallic, cfg.metallicChannel).output
             } else {
-                pushConstantNode1f("uRoughness").output
+                inMetallic = pushConstantNode1f("uMetallic").output
             }
             if (cfg.isAmbientOcclusionMapped) {
-                inAmbientOccl = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
+                val occlusion = rmoSamplers.getOrPut(cfg.ambientOcclusionTexName) { textureSamplerNode(textureNode(cfg.ambientOcclusionTexName), ifTexCoords!!.output).outColor }
+                rmoSamplers[cfg.ambientOcclusionTexName] = occlusion
+                inAmbientOccl = splitNode(occlusion, cfg.ambientOcclusionChannel).output
             }
         }
         val hdrToLdr = hdrToLdrNode(mat.outColor)

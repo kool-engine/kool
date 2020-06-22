@@ -15999,7 +15999,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var key = cfg.roughnessTexName;
       rmoSamplers.put_xwzc9p$(key, roughness);
       $receiver_3.inRoughness = $receiver_2.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
-    }if (cfg.isMetallicMapped) {
+    } else {
+      $receiver_3.inRoughness = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
+    }
+    if (cfg.isMetallicMapped) {
       var key_0 = cfg.metallicTexName;
       var tmp$_9;
       var value = rmoSamplers.get_11rb$(key_0);
@@ -16014,7 +16017,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var key_1 = cfg.metallicTexName;
       rmoSamplers.put_xwzc9p$(key_1, metallic);
       $receiver_3.inMetallic = $receiver_2.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
-    }var aoFactor = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    } else {
+      $receiver_3.inMetallic = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
+    }
+    var aoFactor = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     if (cfg.isAmbientOcclusionMapped) {
       var key_2 = cfg.ambientOcclusionTexName;
       var tmp$_10;
