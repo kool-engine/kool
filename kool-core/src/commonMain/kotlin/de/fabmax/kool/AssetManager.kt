@@ -3,8 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.pipeline.CubeMapTextureData
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.serialization.ModelData
+import de.fabmax.kool.util.CharMap
+import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.logD
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -104,22 +106,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset
         loaded.data?.let {
-            logD { "Loaded $assetPath (${(it.capacity / 1024.0 / 1024.0).toString(1)} mb)" }
+            logD { "Loaded ${getLogAssetPath(assetPath)} (${(it.capacity / 1024.0 / 1024.0).toString(1)} mb)" }
         }
         return loaded.data
-    }
-
-    fun loadModel(modelPath: String, onLoad: (ModelData?) -> Unit) {
-        loadAsset(modelPath) { loadedData ->
-            val model: ModelData? = if (loadedData == null) {
-                logE { "Failed loading model $modelPath" }
-                null
-            } else {
-                val data = if (modelPath.endsWith(".kmfz", true)) inflate(loadedData) else loadedData
-                ModelData.load(data)
-            }
-            onLoad(model)
-        }
     }
 
     suspend fun loadTextureData(assetPath: String): TextureData {
@@ -132,9 +121,18 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         loaded.data?.let {
-            logD { "Loaded $assetPath (${it.format}, ${it.width}x${it.height})" }
+            logD { "Loaded ${getLogAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
         }
         return loaded.data ?: throw KoolException("Failed loading texture")
+    }
+
+    private fun getLogAssetPath(assetPath: String): String {
+        if (assetPath.startsWith("data:", true)) {
+            val idx = assetPath.indexOf(';')
+            return assetPath.substring(0 until idx)
+        } else {
+            return assetPath
+        }
     }
 
     abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData

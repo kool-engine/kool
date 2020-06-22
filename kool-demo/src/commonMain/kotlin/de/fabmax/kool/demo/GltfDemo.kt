@@ -32,10 +32,10 @@ class GltfDemo(ctx: KoolContext) {
     private var camTranslationTarget: Vec3d? = null
 
     private val models = Cycler(
-            GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
-                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5f),
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
-                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5f)
+                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5f),
+            GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
+                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5f)
 //            ,GltfModel("Sci-Fi Helmet", "${Demo.modelBasePath}/scifi_helmet/SciFiHelmet.gltf",
 //                    0.75f, Vec3f(0f, 1.5f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5f)
     )

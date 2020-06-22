@@ -21,12 +21,14 @@ import kotlinx.serialization.parse
 fun AssetManager.loadGltfModel(assetPath: String, onLoad: (GltfFile?) -> Unit) {
     launch {
         val model = when {
-            assetPath.endsWith(".gltf", true) -> loadGltf(assetPath)
-            assetPath.endsWith(".glb", true) -> loadGlb(assetPath)
+            assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true) -> loadGltf(assetPath)
+            assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)-> loadGlb(assetPath)
             else -> null
         }
 
-        val modelBasePath = assetPath.substring(0, assetPath.lastIndexOf('/'))
+        val modelBasePath = if (assetPath.contains('/')) {
+            assetPath.substring(0, assetPath.lastIndexOf('/'))
+        } else { "." }
         model?.let { m ->
             m.buffers.filter { it.uri != null }.forEach {
                 val uri = it.uri!!
@@ -42,18 +44,25 @@ fun AssetManager.loadGltfModel(assetPath: String, onLoad: (GltfFile?) -> Unit) {
 }
 
 private suspend fun AssetManager.loadGltf(assetPath: String): GltfFile? {
-    val data = loadAsset(assetPath)
+    var data = loadAsset(assetPath)
+    if (data != null && assetPath.endsWith(".gz", true)) {
+        data = inflate(data)
+    }
     return if (data != null) { GltfFile.fromJson(data.toArray().decodeToString()) } else { null }
 }
 
 private suspend fun AssetManager.loadGlb(assetPath: String): GltfFile? {
-    val data = loadAsset(assetPath) ?: return null
+    var data = loadAsset(assetPath) ?: return null
+    if (assetPath.endsWith(".gz", true)) {
+        data = inflate(data)
+    }
     val str = DataStream(data)
 
     // file header
     val magic = str.readUInt()
     val version = str.readUInt()
-    val fileLength = str.readUInt()
+    //val fileLength = str.readUInt()
+    str.readUInt()
     if (magic != GltfFile.GLB_FILE_MAGIC) {
         throw KoolException("Unexpected glTF magic number: $magic (should be ${GltfFile.GLB_FILE_MAGIC} / 'glTF')")
     }
@@ -138,7 +147,8 @@ data class GltfFile(
         }
 
         meshRef?.primitives?.forEachIndexed { index, p ->
-            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(generateNormals), "${name}_$index")
+            val name = "${meshRef?.name ?: name}_$index"
+            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(generateNormals), name)
             nodeGrp += mesh
             mesh.pipelineLoader = pbrShader {
                 val material = p.materialRef
@@ -152,6 +162,7 @@ data class GltfFile(
 
                 pbrBlock?.invoke(this, p)
             }
+            model.meshes[name] = mesh
         }
 
         return nodeGrp
@@ -352,7 +363,7 @@ data class MeshPrimitive(
 
         val attribs = mutableListOf<Attribute>()
         if (positionAcc != null) { attribs += Attribute.POSITIONS }
-        if (normalAcc != null) { attribs += Attribute.NORMALS }
+        if (normalAcc != null || generateNormals) { attribs += Attribute.NORMALS }
         if (colorAcc != null) { attribs += Attribute.COLORS }
         if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS }
         if (tangentAcc != null) {

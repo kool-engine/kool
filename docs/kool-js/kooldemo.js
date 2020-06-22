@@ -23,6 +23,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Skybox = $module$kool.de.fabmax.kool.scene.Skybox;
   var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
+  var first = Kotlin.kotlin.collections.first_7wnvza$;
+  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
   var scale = $module$kool.de.fabmax.kool.math.scale_2qa7tb$;
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
@@ -105,7 +107,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
-  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -134,6 +135,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
   var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
   var toString_0 = $module$kool.de.fabmax.kool.toString_j6vyb1$;
+  var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
+  var lastIndexOf_0 = Kotlin.kotlin.text.lastIndexOf_l5u8uk$;
+  var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var toString_1 = Kotlin.toString;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var util = $module$kool.de.fabmax.kool.util;
@@ -621,7 +625,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
-      closure$loadingAssets.teapotMesh = it;
+      var tmp$, tmp$_0, tmp$_1;
+      closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_wqoxlt$(void 0, true) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
       return Unit;
     };
   }
@@ -634,7 +639,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var loadingAssets = new AoDemo$LoadingAssets(AoDemo$makeMainScene$lambda$lambda_1($receiver, this));
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
     ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AoDemo$makeMainScene$lambda$lambda_2(loadingAssets));
-    this.loadModel_0(ctx, 'teapot.kmfz', AoDemo$makeMainScene$lambda$lambda_3(loadingAssets));
+    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', AoDemo$makeMainScene$lambda$lambda_3(loadingAssets));
     return $receiver;
   };
   AoDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
@@ -1021,17 +1026,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   AoDemo.prototype.menu_0 = function (ctx) {
     return uiScene(void 0, void 0, void 0, AoDemo$menu$lambda(ctx, this));
-  };
-  function AoDemo$loadModel$lambda(closure$recv) {
-    return function (model) {
-      if (model != null) {
-        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
-        closure$recv(mesh);
-      }return Unit;
-    };
-  }
-  AoDemo.prototype.loadModel_0 = function ($receiver, path, recv) {
-    $receiver.assetMgr.loadModel_v5uqdg$(path, AoDemo$loadModel$lambda(recv));
   };
   function AoDemo$LoadingAssets(block) {
     this.block = block;
@@ -2500,7 +2494,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Model', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2805,7 +2799,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.menu = null;
     this.autoRotate_0 = true;
     this.camTranslationTarget_0 = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0)]);
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
     this.contentGroup_0 = new TransformGroup();
     this.irrMapPass_0 = null;
@@ -3470,9 +3464,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function InstanceDemo$mainScene$lambda$lambda_1(this$InstanceDemo) {
-    return function (it) {
-      if (it != null) {
-        this$InstanceDemo.addLods_0(it);
+    return function (gltf) {
+      if (gltf != null) {
+        this$InstanceDemo.addLods_0(gltf);
       }return Unit;
     };
   }
@@ -3481,30 +3475,30 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, InstanceDemo$mainScene$lambda$lambda($receiver, this)));
     $receiver.lighting.singleLight_q9zcvo$(InstanceDemo$mainScene$lambda$lambda_0);
     $receiver.unaryPlus_uv0sim$(this.lodController_0);
-    ctx.assetMgr.loadModel_v5uqdg$('bunny.kmfz', InstanceDemo$mainScene$lambda$lambda_1(this));
+    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', InstanceDemo$mainScene$lambda$lambda_1(this));
     return $receiver;
   };
   InstanceDemo.prototype.addLods_0 = function (model) {
     var tmp$;
-    tmp$ = get_lastIndex(model.lodRootNodes);
-    for (var i = 0; i <= tmp$; i++) {
-      var $receiver = model.meshes.get_za3lpa$(model.lodRootNodes.get_za3lpa$(i).meshes.get_za3lpa$(0)).toMesh_8p8ifh$();
-      var $this = $receiver.geometry;
+    tmp$ = model.scenes;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var mesh = ensureNotNull(model.makeModel_wqoxlt$(i, true).meshes.get_11rb$('bunny_0'));
+      var $this = mesh.geometry;
       var tmp$_0;
       tmp$_0 = $this.numVertices;
       for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
         $this.vertexIt.index = i_0;
         $this.vertexIt.position.scale_mx4ult$(0.3).add_czzhiu$(new Vec3f(0.0, -1.0, 0.0));
       }
-      $receiver.geometry.rebuildBounds();
+      mesh.geometry.rebuildBounds();
       if (i === 0) {
-        this.modelCenter_0.set_czzhiu$($receiver.geometry.bounds.center);
-        this.modelRadius_0 = $receiver.geometry.bounds.max.distance_czzhiu$($receiver.geometry.bounds.center);
-      }$receiver.pipelineLoader = new PhongShader(void 0, this.instanceColorPhongModel_0());
-      $receiver.isFrustumChecked = false;
-      this.lods_0.get_za3lpa$(i).mesh = $receiver;
-      $receiver.instances = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), this.lods_0.get_za3lpa$(i).maxInsts);
-      this.lodController_0.addLod_od45r7$($receiver, this.lods_0.get_za3lpa$(i).maxDist);
+        this.modelCenter_0.set_czzhiu$(mesh.geometry.bounds.center);
+        this.modelRadius_0 = mesh.geometry.bounds.max.distance_czzhiu$(mesh.geometry.bounds.center);
+      }mesh.pipelineLoader = new PhongShader(void 0, this.instanceColorPhongModel_0());
+      mesh.isFrustumChecked = false;
+      this.lods_0.get_za3lpa$(i).mesh = mesh;
+      mesh.instances = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), this.lods_0.get_za3lpa$(i).maxInsts);
+      this.lodController_0.addLod_od45r7$(mesh, this.lods_0.get_za3lpa$(i).maxDist);
     }
     this.setupInstances_0(this.lodController_0);
   };
@@ -3876,11 +3870,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function MultiLightDemo$initMainScene$lambda$lambda_0(this$MultiLightDemo, this$) {
-    return function (it) {
-      this$MultiLightDemo.bunnyMesh_0 = it;
-      this$MultiLightDemo.applyShaders_0();
-      this$.unaryPlus_uv0sim$(it);
-      return Unit;
+    return function (gltf) {
+      if (gltf != null) {
+        var this$MultiLightDemo_0 = this$MultiLightDemo;
+        var this$_0 = this$;
+        var model = gltf.makeModel_wqoxlt$(void 0, true);
+        this$MultiLightDemo_0.bunnyMesh_0 = first(model.meshes.values);
+        this$MultiLightDemo_0.applyShaders_0();
+        this$_0.unaryPlus_uv0sim$(model);
+      }return Unit;
     };
   }
   function MultiLightDemo$initMainScene$lambda$lambda$lambda_0($receiver) {
@@ -3912,7 +3910,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(element);
     }
     this.updateLighting_0();
-    this.loadModel_0(ctx, 'bunny.kmfz', 1.0, Vec3f.Companion.ZERO, MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
+    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
     $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$initMainScene$lambda$lambda_1(this)));
   };
   MultiLightDemo.prototype.applyShaders_0 = function () {
@@ -4834,26 +4832,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     kind: Kind_CLASS,
     simpleName: 'LightMesh',
     interfaces: [TransformGroup]
-  };
-  function MultiLightDemo$loadModel$lambda(closure$scale, closure$translation, closure$recv) {
-    return function (model) {
-      if (model != null) {
-        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
-        var $this = mesh.geometry;
-        var tmp$;
-        tmp$ = $this.numVertices;
-        for (var i = 0; i < tmp$; i++) {
-          $this.vertexIt.index = i;
-          var closure$scale_0 = closure$scale;
-          var closure$translation_0 = closure$translation;
-          $this.vertexIt.position.scale_mx4ult$(closure$scale_0).add_czzhiu$(closure$translation_0);
-        }
-        closure$recv(mesh);
-      }return Unit;
-    };
-  }
-  MultiLightDemo.prototype.loadModel_0 = function ($receiver, path, scale, translation, recv) {
-    $receiver.assetMgr.loadModel_v5uqdg$(path, MultiLightDemo$loadModel$lambda(scale, translation, recv));
   };
   function MultiLightDemo$MatColor(name, linColor) {
     this.name = name;
@@ -7984,9 +7962,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var value = this.srcModel;
     $receiver_1.put_xwzc9p$('cos', value);
     this.heMesh = new HalfEdgeMesh(this.srcModel);
-    this.loadModel_0('bunny.kmfz', 1.0, new Vec3f(0.0, -3.0, 0.0), ctx);
-    this.loadModel_0('cow.kmfz', 1.0, Vec3f.Companion.ZERO, ctx);
-    this.loadModel_0('teapot.kmfz', 1.0, new Vec3f(0.0, -1.5, 0.0), ctx);
+    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', 1.0, new Vec3f(0.0, -3.0, 0.0), ctx);
+    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/cow.gltf.gz', 1.0, Vec3f.Companion.ZERO, ctx);
+    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', 1.0, new Vec3f(0.0, -1.5, 0.0), ctx);
     this.simplificationScene = this.mainScene_0(ctx);
     var $receiver_2 = this.scenes;
     var element = this.simplificationScene;
@@ -8093,27 +8071,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     if (false) {
       $this.rebuildBounds();
     }};
-  function SimplificationDemo$loadModel$lambda(closure$scale, closure$offset, this$SimplificationDemo, closure$name) {
+  function SimplificationDemo$loadModel$lambda(closure$scale, closure$offset, closure$name, this$SimplificationDemo) {
     return function (model) {
       var tmp$;
       if (model != null) {
-        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
+        var mesh = first(model.makeModel_wqoxlt$(void 0, true).meshes.values);
         var geometry = mesh.geometry;
         tmp$ = geometry.numVertices;
         for (var i = 0; i < tmp$; i++) {
           geometry.vertexIt.index = i;
           geometry.vertexIt.position.scale_mx4ult$(closure$scale).add_czzhiu$(closure$offset);
         }
-        var $receiver = this$SimplificationDemo.models;
-        var key = closure$name;
-        $receiver.put_xwzc9p$(key, geometry);
-        var $receiver_0 = this$SimplificationDemo.loadingModels;
+        var modelKey = substring(closure$name, until(lastIndexOf(closure$name, 47) + 1 | 0, lastIndexOf_0(closure$name, '.gltf.gz')));
+        this$SimplificationDemo.models.put_xwzc9p$(modelKey, geometry);
+        var $receiver = this$SimplificationDemo.loadingModels;
         var element = closure$name;
-        $receiver_0.remove_11rb$(element);
-        var $receiver_1 = this$SimplificationDemo;
+        $receiver.remove_11rb$(element);
+        var $receiver_0 = this$SimplificationDemo;
         var $this = util.Log;
         var level = Log$Level.DEBUG;
-        var tag = Kotlin.getKClassFromExpression($receiver_1).simpleName;
+        var tag = Kotlin.getKClassFromExpression($receiver_0).simpleName;
         if (level.level >= $this.level.level) {
           var tmp$_0 = $this.printer;
           var closure$name_0 = closure$name;
@@ -8124,7 +8101,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   SimplificationDemo.prototype.loadModel_0 = function (name, scale, offset, ctx) {
     this.loadingModels.add_11rb$(name);
-    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, offset, this, name));
+    loadGltfModel(ctx.assetMgr, name, SimplificationDemo$loadModel$lambda(scale, offset, name, this));
   };
   function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
     return function (x, y) {
@@ -8172,7 +8149,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function SimplificationDemo$menu$lambda$lambda$lambda$lambda(this$SimplificationDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
-      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('cow.kmfz')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('cow')) != null ? tmp$ : this$SimplificationDemo.srcModel;
       this$SimplificationDemo.simplify();
       return Unit;
     };
@@ -8191,7 +8168,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function SimplificationDemo$menu$lambda$lambda$lambda$lambda_0(this$SimplificationDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
-      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('teapot.kmfz')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('teapot')) != null ? tmp$ : this$SimplificationDemo.srcModel;
       this$SimplificationDemo.simplify();
       return Unit;
     };
@@ -8210,7 +8187,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function SimplificationDemo$menu$lambda$lambda$lambda$lambda_1(this$SimplificationDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
-      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('bunny.kmfz')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('bunny')) != null ? tmp$ : this$SimplificationDemo.srcModel;
       this$SimplificationDemo.simplify();
       return Unit;
     };
@@ -8883,7 +8860,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('leaf.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/leaf.png', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -10762,7 +10739,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return $receiver;
   }
   function main() {
-    Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
     demo(getParams().get_11rb$('demo'));
   }
   function getParams() {

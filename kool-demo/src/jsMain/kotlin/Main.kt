@@ -1,4 +1,3 @@
-import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.demo
 import kotlin.browser.window
 import kotlin.collections.set
@@ -7,11 +6,13 @@ import kotlin.collections.set
  * @author fabmax
  */
 fun main() {
-    Demo.setProperty("assetsBaseDir", "../assets")
+    // optional local directory to load assets from (by default they are loaded from web)
+    //Demo.setProperty("assetsBaseDir", "../assets")
 
-    // uncomment this to use PBR and HDRI textures in docs/assets/local/
-//    Demo.setProperty("pbrDemo.envMaps", "local/hdri")
-//    Demo.setProperty("pbrDemo.materials", "local/pbr")
+    // sub directories for individual asset classes within asset base dir
+    //Demo.setProperty("pbrDemo.envMaps", "hdri")
+    //Demo.setProperty("pbrDemo.materials", "materials")
+    //Demo.setProperty("pbrDemo.models", "models")
 
     // launch demo
     demo(getParams()["demo"])

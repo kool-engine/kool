@@ -7,7 +7,13 @@ import de.fabmax.kool.platform.Lwjgl3Context
  * @author fabmax
  */
 fun main() {
-    Demo.setProperty("assetsBaseDir", "./docs/assets")
+    // optional local directory to load assets from (by default they are loaded from web)
+    //Demo.setProperty("assetsBaseDir", "./docs/assets")
+
+    // sub directories for individual asset classes within asset base dir
+    //Demo.setProperty("pbrDemo.envMaps", "hdri")
+    //Demo.setProperty("pbrDemo.materials", "materials")
+    //Demo.setProperty("pbrDemo.models", "models")
 
     val ctx = createContext {
         renderBackend = Lwjgl3Context.Backend.OPEN_GL
@@ -15,5 +21,5 @@ fun main() {
     }
 
     // launch demo
-    demo("aoDemo", ctx)
+    demo("gltfDemo", ctx)
 }

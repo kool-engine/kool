@@ -11,7 +11,8 @@ import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.serialization.ModelData
+import de.fabmax.kool.util.gltf.GltfFile
+import de.fabmax.kool.util.gltf.loadGltfModel
 
 fun instanceDemo(ctx: KoolContext) : List<Scene> {
     return InstanceDemo(ctx).scenes
@@ -70,14 +71,15 @@ class InstanceDemo(ctx: KoolContext) {
 
         +lodController
 
-        ctx.assetMgr.loadModel("bunny.kmfz") {
-            it?.let { model -> addLods(model) }
+        ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz") { gltf ->
+            gltf?.let { addLods(it) }
         }
     }
 
-    private fun addLods(model: ModelData) {
-        for (i in 0 .. model.lodRootNodes.lastIndex) {
-            model.meshes[model.lodRootNodes[i].meshes[0]].toMesh().apply {
+    private fun addLods(model: GltfFile) {
+        for (i in model.scenes.indices) {
+            val mesh = model.makeModel(i, true).meshes["bunny_0"]!!
+            mesh.apply {
                 geometry.forEach { v ->
                     v.position.scale(0.3f).add(Vec3f(0f, -1f, 0f))
                 }

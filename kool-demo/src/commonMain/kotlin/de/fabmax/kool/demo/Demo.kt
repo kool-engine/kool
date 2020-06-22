@@ -31,7 +31,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
     private val demos = mutableMapOf(
             "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
-            "gltfDemo" to DemoEntry("glTF Model") { addAll(gltfDemo(it)) },
+            "gltfDemo" to DemoEntry("glTF Models") { addAll(gltfDemo(it)) },
             "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
             "multiShadowDemo" to DemoEntry("Multi Shadow") { addAll(multiLightDemo(it)) },

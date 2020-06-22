@@ -13,6 +13,7 @@ import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.gltf.loadGltfModel
 import kotlin.math.*
 
 fun multiLightDemo(ctx: KoolContext): List<Scene> {
@@ -76,10 +77,13 @@ class MultiLightDemo(ctx: KoolContext) {
             lights.forEach { +it }
             updateLighting()
 
-            ctx.loadModel("bunny.kmfz", 1f, Vec3f.ZERO) {
-                bunnyMesh = it
-                applyShaders()
-                +it
+            ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz") { gltf ->
+                gltf?.let {
+                    val model = gltf.makeModel(generateNormals = true)
+                    bunnyMesh = model.meshes.values.first()
+                    applyShaders()
+                    +model
+                }
             }
 
             +textureMesh(isNormalMapped = true) {
@@ -577,18 +581,6 @@ class MultiLightDemo(ctx: KoolContext) {
 
         fun updateVisibility() {
             isVisible = isEnabled && showLightIndicators
-        }
-    }
-
-    private fun KoolContext.loadModel(path: String, scale: Float, translation: Vec3f, recv: (Mesh) -> Unit) {
-        assetMgr.loadModel(path) { model ->
-            if (model != null) {
-                val mesh = model.meshes[0].toMesh()
-                mesh.geometry.forEach {
-                    it.position.scale(scale).add(translation)
-                }
-                recv(mesh)
-            }
         }
     }
 

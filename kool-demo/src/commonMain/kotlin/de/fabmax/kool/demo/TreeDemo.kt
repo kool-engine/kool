@@ -121,7 +121,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 this.shadowMaps.addAll(shadowMaps)
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
-                albedoMap = Texture { it.loadTextureData("leaf.png") }
+                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/leaf.png") }
                 roughness = 0.5f
 
                 onDispose += {

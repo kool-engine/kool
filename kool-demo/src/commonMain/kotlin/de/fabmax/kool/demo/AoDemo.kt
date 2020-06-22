@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.BrdfLutPass
 import de.fabmax.kool.util.ibl.IrradianceMapPass
 import de.fabmax.kool.util.ibl.ReflectionMapPass
@@ -237,7 +238,9 @@ class AoDemo(ctx: KoolContext) {
         ctx.assetMgr.loadAndPrepareTexture("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", hdriTexProps) { tex ->
             loadingAssets.hdriMap = tex
         }
-        ctx.loadModel("teapot.kmfz") { loadingAssets.teapotMesh = it }
+        ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz") {
+            loadingAssets.teapotMesh = it?.makeModel(generateNormals = true)?.meshes?.values?.first()
+        }
     }
 
     private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {
@@ -452,15 +455,6 @@ class AoDemo(ctx: KoolContext) {
                     spotLight = isEnabled
                     updateLighting()
                 }
-            }
-        }
-    }
-
-    private fun KoolContext.loadModel(path: String, recv: (Mesh) -> Unit) {
-        assetMgr.loadModel(path) { model ->
-            if (model != null) {
-                val mesh = model.meshes[0].toMesh()
-                recv(mesh)
             }
         }
     }

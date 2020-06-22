@@ -13,6 +13,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.gltf.loadGltfModel
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -50,9 +51,9 @@ class SimplificationDemo(ctx: KoolContext) {
         models["cos"] = srcModel
         heMesh = HalfEdgeMesh(srcModel)
 
-        loadModel("bunny.kmfz", 1f, Vec3f(0f, -3f, 0f), ctx)
-        loadModel("cow.kmfz", 1f, Vec3f.ZERO, ctx)
-        loadModel("teapot.kmfz", 1f, Vec3f(0f, -1.5f, 0f), ctx)
+        loadModel("${Demo.modelBasePath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f), ctx)
+        loadModel("${Demo.modelBasePath}/cow.gltf.gz", 1f, Vec3f.ZERO, ctx)
+        loadModel("${Demo.modelBasePath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f), ctx)
 
 
         simplificationScene = mainScene(ctx)
@@ -111,15 +112,16 @@ class SimplificationDemo(ctx: KoolContext) {
 
     private fun loadModel(name: String, scale: Float, offset: Vec3f, ctx: KoolContext) {
         loadingModels += name
-        ctx.assetMgr.loadModel(name) { model ->
+        ctx.assetMgr.loadGltfModel(name) { model ->
             if (model != null) {
-                val mesh = model.meshes[0].toMesh()
+                val mesh = model.makeModel(generateNormals = true).meshes.values.first()
                 val geometry = mesh.geometry
                 for (i in 0 until geometry.numVertices) {
                     geometry.vertexIt.index = i
                     geometry.vertexIt.position.scale(scale).add(offset)
                 }
-                models[name] = geometry
+                val modelKey = name.substring(name.lastIndexOf('/') + 1 until name.lastIndexOf(".gltf.gz"))
+                models[modelKey] = geometry
                 loadingModels -= name
                 logD { "loaded: $name, bounds: ${models[name]?.bounds}" }
             }
@@ -173,7 +175,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                 onClick += { _,_,_ ->
-                    srcModel = models["cow.kmfz"] ?: srcModel
+                    srcModel = models["cow"] ?: srcModel
                     simplify()
                 }
             }
@@ -184,7 +186,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                 onClick += { _,_,_ ->
-                    srcModel = models["teapot.kmfz"] ?: srcModel
+                    srcModel = models["teapot"] ?: srcModel
                     simplify()
                 }
             }
@@ -195,7 +197,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                 onClick += { _,_,_ ->
-                    srcModel = models["bunny.kmfz"] ?: srcModel
+                    srcModel = models["bunny"] ?: srcModel
                     simplify()
                 }
             }
