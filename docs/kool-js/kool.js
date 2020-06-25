@@ -84,6 +84,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var substringBefore = Kotlin.kotlin.text.substringBefore_8cymmc$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var getCallableRef = Kotlin.getCallableRef;
+  var toString = Kotlin.toString;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
   var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
@@ -91,7 +92,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
   var toInt = Kotlin.kotlin.text.toInt_pdl1vz$;
   var toDouble = Kotlin.kotlin.text.toDouble_pdl1vz$;
-  var toString = Kotlin.toString;
   var joinTo = Kotlin.kotlin.collections.joinTo_gcc71v$;
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
@@ -114,23 +114,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var get_indices_1 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
-  var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
-  var contains = Kotlin.kotlin.text.contains_sgbm27$;
-  var decodeToString = Kotlin.kotlin.text.decodeToString_964n91$;
-  var JsonConfiguration = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.JsonConfiguration;
-  var Json = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.Json;
-  var getKClass = Kotlin.getKClass;
   var NullableSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.NullableSerializer;
   var SerialClassDescImpl = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.SerialClassDescImpl;
-  var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var internal = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal;
+  var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
   var UnknownFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.UnknownFieldException;
   var GeneratedSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.GeneratedSerializer;
   var MissingFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.MissingFieldException;
-  var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
+  var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
+  var contains = Kotlin.kotlin.text.contains_sgbm27$;
+  var decodeToString = Kotlin.kotlin.text.decodeToString_964n91$;
+  var getKClass = Kotlin.getKClass;
+  var contains_0 = Kotlin.kotlin.collections.contains_2ws7j4$;
+  var JsonConfiguration = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.JsonConfiguration;
+  var Json = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.Json;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
+  var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var isNaN_0 = Kotlin.kotlin.isNaN_81szk$;
   var toList = Kotlin.kotlin.collections.toList_us0mfu$;
   var MutableList = Kotlin.kotlin.collections.MutableList;
@@ -1074,7 +1075,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               var level = Log$Level.DEBUG;
               var tag = Kotlin.getKClassFromExpression(this.$this).simpleName;
               if (level.level >= $this.level.level) {
-                $this.printer(level, tag, 'Loaded ' + this.$this.getLogAssetPath_vaomkd$_0(this.local$assetPath) + ' (' + toString_1(tmp$_1.capacity / 1024.0 / 1024.0, 1) + ' mb)');
+                $this.printer(level, tag, 'Loaded ' + this.$this.assetPathToName_61zpoe$(this.local$assetPath) + ' (' + toString_1(tmp$_1.capacity / 1024.0 / 1024.0, 1) + ' mb)');
               }}
             return loaded.data;
           default:this.state_0 = 1;
@@ -1146,7 +1147,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               var level = Log$Level.DEBUG;
               var tag = Kotlin.getKClassFromExpression(this.$this).simpleName;
               if (level.level >= $this.level.level) {
-                $this.printer(level, tag, 'Loaded ' + this.$this.getLogAssetPath_vaomkd$_0(this.local$assetPath) + ' (' + tmp$_1.format + ', ' + tmp$_1.width + 'x' + tmp$_1.height + ')');
+                $this.printer(level, tag, 'Loaded ' + this.$this.assetPathToName_61zpoe$(this.local$assetPath) + ' (' + tmp$_1.format + ', ' + tmp$_1.width + 'x' + tmp$_1.height + ')');
               }}
             tmp$_2 = loaded.data;
             if (tmp$_2 == null) {
@@ -1174,13 +1175,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       return instance.doResume(null);
   };
-  AssetManager.prototype.getLogAssetPath_vaomkd$_0 = function (assetPath) {
+  AssetManager.prototype.assetPathToName_61zpoe$ = function (assetPath) {
+    var tmp$;
     if (startsWith(assetPath, 'data:', true)) {
       var idx = indexOf(assetPath, 59);
-      return substring(assetPath, until(0, idx));
+      tmp$ = substring(assetPath, until(0, idx));
     } else {
-      return assetPath;
+      tmp$ = assetPath;
     }
+    return tmp$;
+  };
+  AssetManager.prototype.cubeMapAssetPathToName_r3y0ew$ = function (ft, bk, lt, rt, up, dn) {
+    return 'cubeMap(ft:' + this.assetPathToName_61zpoe$(ft) + ', bk:' + this.assetPathToName_61zpoe$(bk) + ', lt:' + this.assetPathToName_61zpoe$(lt) + ', rt:' + this.assetPathToName_61zpoe$(rt) + ', up:' + this.assetPathToName_61zpoe$(up) + ', dn:' + this.assetPathToName_61zpoe$(dn) + ')';
   };
   function Coroutine$loadCubeMapTextureData_r3y0ew$($this, ft_0, bk_0, lt_0, rt_0, up_0, dn_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -16740,10 +16746,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   TexFormat.valueOf_61zpoe$ = TexFormat$valueOf;
-  function Texture(props, loader) {
+  function Texture(name, props, loader) {
     Texture$Companion_getInstance();
+    if (name === void 0)
+      name = null;
     if (props === void 0)
       props = new TextureProps();
+    this.name = name;
     this.props = props;
     this.loader = loader;
     this.loadedTexture = null;
@@ -16754,6 +16763,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     (tmp$ = this.loadedTexture) != null ? (tmp$.dispose(), Unit) : null;
     this.loadedTexture = null;
     this.loadingState = Texture$LoadingState$NOT_LOADED_getInstance();
+  };
+  Texture.prototype.toString = function () {
+    return 'Texture(name: ' + toString(this.name) + ')';
   };
   function Texture$LoadingState(name, ordinal) {
     Enum.call(this);
@@ -16841,7 +16853,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function SingleColorTexture(color) {
     SingleColorTexture$Companion_getInstance();
-    Texture.call(this, new TextureProps(void 0, void 0, void 0, void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1), SingleColorTexture_init$lambda(color));
+    Texture.call(this, color.toString(), new TextureProps(void 0, void 0, void 0, void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1), SingleColorTexture_init$lambda(color));
   }
   function SingleColorTexture$Companion() {
     SingleColorTexture$Companion_instance = this;
@@ -16920,10 +16932,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'SingleColorTexture',
     interfaces: [Texture]
   };
-  function CubeMapTexture(props, loader) {
+  function CubeMapTexture(name, props, loader) {
+    if (name === void 0)
+      name = null;
     if (props === void 0)
       props = new TextureProps();
-    Texture.call(this, props, loader);
+    Texture.call(this, name, props, loader);
   }
   CubeMapTexture.$metadata$ = {
     kind: Kind_CLASS,
@@ -19578,6 +19592,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.meshes = LinkedHashMap_init();
     this.textures = LinkedHashMap_init();
   }
+  Model.prototype.printHierarchy = function () {
+    this.printHierarchy_0(this, '');
+  };
+  Model.prototype.printHierarchy_0 = function ($receiver, indent) {
+    println_0(indent + toString($receiver.name));
+    var tmp$;
+    tmp$ = $receiver.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (Kotlin.isType(element, TransformGroup)) {
+        this.printHierarchy_0(element, indent + '    ');
+      } else {
+        println_0(indent + '    ' + toString(element.name));
+      }
+    }
+  };
   Model.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.textures.values.iterator();
@@ -20496,7 +20526,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function Skybox_init(ft, bk, lt, rt, up, dn, $this) {
     $this = $this || Object.create(Skybox.prototype);
-    Skybox.call($this, new CubeMapTexture(void 0, Skybox_init$lambda_0(ft, bk, lt, rt, up, dn)));
+    Skybox.call($this, new CubeMapTexture(void 0, void 0, Skybox_init$lambda_0(ft, bk, lt, rt, up, dn)));
     return $this;
   }
   function Coroutine$Skybox_init$lambda(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, $receiver_0, it_0, controller, continuation_0) {
@@ -24229,7 +24259,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var data = new BufferedTextureData(buf, 4, 4, TexFormat$RGBA_getInstance());
     var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance());
-    return new Texture(texProps, AmbientOcclusionPass$makeNoiseTexture$lambda(data));
+    return new Texture('ao_noise_tex', texProps, AmbientOcclusionPass$makeNoiseTexture$lambda(data));
   };
   AmbientOcclusionPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
@@ -29117,6 +29147,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.style = style;
     this.chars = chars;
   }
+  FontProps.prototype.toString = function () {
+    return 'FontProps(' + this.family + ', ' + this.sizePts + 'pts, ' + this.style + ')';
+  };
   FontProps.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'FontProps',
@@ -29137,9 +29170,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   FontProps.prototype.copy_aw0137$ = function (family, sizePts, style, chars) {
     return new FontProps(family === void 0 ? this.family : family, sizePts === void 0 ? this.sizePts : sizePts, style === void 0 ? this.style : style, chars === void 0 ? this.chars : chars);
   };
-  FontProps.prototype.toString = function () {
-    return 'FontProps(family=' + Kotlin.toString(this.family) + (', sizePts=' + Kotlin.toString(this.sizePts)) + (', style=' + Kotlin.toString(this.style)) + (', chars=' + Kotlin.toString(this.chars)) + ')';
-  };
   FontProps.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.family) | 0;
@@ -29153,7 +29183,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function Font(charMap) {
     Font$Companion_getInstance();
-    Texture.call(this, new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance()), Font_init$lambda(charMap));
+    Texture.call(this, charMap.toString(), new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance()), Font_init$lambda(charMap));
     this.charMap = charMap;
     this.lineSpace = this.charMap.fontProps.sizePts * 1.2;
     this.normHeight = this.charMap.fontProps.sizePts * 0.7;
@@ -29181,7 +29211,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return (tmp$_0 = (tmp$ = this.charMap.get_11rb$(toBoxedChar(char))) != null ? tmp$.advance : null) != null ? tmp$_0 : 0.0;
   };
   Font.prototype.toString = function () {
-    return 'Font(' + this.charMap.fontProps.family + ', ' + this.charMap.fontProps.sizePts + 'pts, ' + this.charMap.fontProps.style + ')';
+    return 'Font(' + this.charMap.fontProps + ')';
   };
   function Font$Companion() {
     Font$Companion_instance = this;
@@ -29322,3057 +29352,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'CharMap',
     interfaces: [Map]
-  };
-  function DataStream(data, byteOffset) {
-    if (byteOffset === void 0)
-      byteOffset = 0;
-    this.data = data;
-    this.byteOffset = byteOffset;
-    this.index = 0;
-  }
-  DataStream.prototype.hasRemaining = function () {
-    return this.index < this.data.capacity;
-  };
-  DataStream.prototype.readByte = function () {
-    var tmp$;
-    return this.data.get_za3lpa$(this.byteOffset + (tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$) | 0);
-  };
-  DataStream.prototype.readUByte = function () {
-    var tmp$;
-    return this.data.get_za3lpa$(this.byteOffset + (tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$) | 0) & 255;
-  };
-  DataStream.prototype.readShort = function () {
-    var s = this.readUShort();
-    if (s > 32767) {
-      s = s - 65536 | 0;
-    }return s;
-  };
-  DataStream.prototype.readUShort = function () {
-    var d = 0;
-    for (var i = 0; i <= 1; i++) {
-      d = d | this.readUByte() << (i * 8 | 0);
-    }
-    return d;
-  };
-  DataStream.prototype.readInt = function () {
-    return this.readUInt();
-  };
-  DataStream.prototype.readUInt = function () {
-    var d = 0;
-    for (var i = 0; i <= 3; i++) {
-      d = d | this.readUByte() << (i * 8 | 0);
-    }
-    return d;
-  };
-  DataStream.prototype.readFloat = function () {
-    var bits = this.readUInt();
-    return Kotlin.floatFromBits(bits);
-  };
-  DataStream.prototype.readData_za3lpa$ = function (len) {
-    var tmp$;
-    var buf = createUint8Buffer(len);
-    for (var i = 0; i < len; i++) {
-      buf.set_6t1wet$(i, this.data.get_za3lpa$((tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$)));
-    }
-    return buf;
-  };
-  DataStream.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DataStream',
-    interfaces: []
-  };
-  function Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$closure$assetPath = closure$assetPath_0;
-    this.local$this$loadGltfModel = this$loadGltfModel_0;
-    this.local$closure$onLoad = closure$onLoad_0;
-    this.local$tmp$ = void 0;
-    this.local$model = void 0;
-    this.local$modelBasePath = void 0;
-    this.local$this$loadGltfModel_0 = void 0;
-    this.local$tmp$_1 = void 0;
-    this.local$element = void 0;
-  }
-  Coroutine$loadGltfModel$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$loadGltfModel$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$loadGltfModel$lambda.prototype.constructor = Coroutine$loadGltfModel$lambda;
-  Coroutine$loadGltfModel$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            var tmp$;
-            if (endsWith(this.local$closure$assetPath, '.gltf', true) || endsWith(this.local$closure$assetPath, '.gltf.gz', true)) {
-              this.state_0 = 4;
-              this.result_0 = loadGltf(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
-              if (this.result_0 === COROUTINE_SUSPENDED)
-                return COROUTINE_SUSPENDED;
-              continue;
-            } else {
-              if (endsWith(this.local$closure$assetPath, '.glb', true) || endsWith(this.local$closure$assetPath, '.glb.gz', true)) {
-                this.state_0 = 2;
-                this.result_0 = loadGlb(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
-                if (this.result_0 === COROUTINE_SUSPENDED)
-                  return COROUTINE_SUSPENDED;
-                continue;
-              } else {
-                this.local$tmp$ = null;
-                this.state_0 = 3;
-                continue;
-              }
-            }
-
-          case 1:
-            throw this.exception_0;
-          case 2:
-            this.local$tmp$ = this.result_0;
-            this.state_0 = 3;
-            continue;
-          case 3:
-            this.state_0 = 5;
-            continue;
-          case 4:
-            this.local$tmp$ = this.result_0;
-            this.state_0 = 5;
-            continue;
-          case 5:
-            this.local$model = this.local$tmp$;
-            if (contains(this.local$closure$assetPath, 47)) {
-              var $receiver = this.local$closure$assetPath;
-              var endIndex = lastIndexOf(this.local$closure$assetPath, 47);
-              tmp$ = $receiver.substring(0, endIndex);
-            } else {
-              tmp$ = '.';
-            }
-
-            this.local$modelBasePath = tmp$;
-            if (this.local$model != null) {
-              this.local$this$loadGltfModel_0 = this.local$this$loadGltfModel;
-              var $receiver_0 = this.local$model.buffers;
-              var destination = ArrayList_init_0();
-              var tmp$_0;
-              tmp$_0 = $receiver_0.iterator();
-              while (tmp$_0.hasNext()) {
-                var element = tmp$_0.next();
-                if (element.uri != null)
-                  destination.add_11rb$(element);
-              }
-              this.local$tmp$_1 = destination.iterator();
-              this.state_0 = 6;
-              continue;
-            } else {
-              this.state_0 = 9;
-              continue;
-            }
-
-          case 6:
-            if (!this.local$tmp$_1.hasNext()) {
-              this.state_0 = 8;
-              continue;
-            }
-            this.local$element = this.local$tmp$_1.next();
-            var tmp$_1;
-            var uri = ensureNotNull(this.local$element.uri);
-            if (startsWith(uri, 'data:', true)) {
-              tmp$_1 = uri;
-            } else {
-              tmp$_1 = this.local$modelBasePath + '/' + uri;
-            }
-
-            var bufferPath = tmp$_1;
-            this.state_0 = 7;
-            this.result_0 = this.local$this$loadGltfModel_0.loadAsset_61zpoe$(bufferPath, this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 7:
-            this.local$element.data = ensureNotNull(this.result_0);
-            this.state_0 = 6;
-            continue;
-          case 8:
-            var $receiver_1 = this.local$model.images;
-            var destination_0 = ArrayList_init_0();
-            var tmp$_2;
-            tmp$_2 = $receiver_1.iterator();
-            while (tmp$_2.hasNext()) {
-              var element_0 = tmp$_2.next();
-              if (element_0.uri != null)
-                destination_0.add_11rb$(element_0);
-            }
-
-            var tmp$_3;
-            tmp$_3 = destination_0.iterator();
-            while (tmp$_3.hasNext()) {
-              var element_1 = tmp$_3.next();
-              element_1.uri = this.local$modelBasePath + '/' + toString(element_1.uri);
-            }
-
-            this.local$model.makeReferences();
-            this.state_0 = 9;
-            continue;
-          case 9:
-            return this.local$closure$onLoad(this.local$model);
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function loadGltfModel($receiver, assetPath, onLoad) {
-    launch($receiver, void 0, void 0, loadGltfModel$lambda(assetPath, $receiver, onLoad));
-  }
-  function Coroutine$loadGltf($receiver_0, assetPath_0, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.exceptionState_0 = 1;
-    this.local$$receiver = $receiver_0;
-    this.local$assetPath = assetPath_0;
-  }
-  Coroutine$loadGltf.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$loadGltf.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$loadGltf.prototype.constructor = Coroutine$loadGltf;
-  Coroutine$loadGltf.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            var tmp$;
-            this.state_0 = 2;
-            this.result_0 = this.local$$receiver.loadAsset_61zpoe$(this.local$assetPath, this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            var data = this.result_0;
-            if (data != null && endsWith(this.local$assetPath, '.gz', true)) {
-              data = this.local$$receiver.inflate_ay2i3f$(data);
-            }
-            if (data != null) {
-              tmp$ = GltfFile$Companion_getInstance().fromJson_61zpoe$(decodeToString(data.toArray()));
-            } else {
-              tmp$ = null;
-            }
-
-            return tmp$;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function loadGltf($receiver_0, assetPath_0, continuation_0, suspended) {
-    var instance = new Coroutine$loadGltf($receiver_0, assetPath_0, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$loadGlb($receiver_0, assetPath_0, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.exceptionState_0 = 1;
-    this.local$tmp$ = void 0;
-    this.local$$receiver = $receiver_0;
-    this.local$assetPath = assetPath_0;
-  }
-  Coroutine$loadGlb.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$loadGlb.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$loadGlb.prototype.constructor = Coroutine$loadGlb;
-  Coroutine$loadGlb.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$$receiver.loadAsset_61zpoe$(this.local$assetPath, this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            this.local$tmp$ = this.result_0;
-            if (this.local$tmp$ == null) {
-              return null;
-            } else {
-              this.state_0 = 3;
-              continue;
-            }
-
-          case 3:
-            var data = this.local$tmp$;
-            if (endsWith(this.local$assetPath, '.gz', true)) {
-              data = this.local$$receiver.inflate_ay2i3f$(data);
-            }
-            var str = new DataStream(data);
-            var magic = str.readUInt();
-            var version = str.readUInt();
-            str.readUInt();
-            if (magic !== 1179937895) {
-              throw KoolException_init('Unexpected glTF magic number: ' + magic + ' (should be ' + '1179937895' + " / 'glTF')");
-            }
-            if (version !== 2) {
-              var $this = package$util.Log;
-              var level = Log$Level.WARN;
-              var tag = Kotlin.getKClassFromExpression(this.local$$receiver).simpleName;
-              if (level.level >= $this.level.level) {
-                $this.printer(level, tag, 'Unexpected glTF version: ' + version + ' (should be 2) - stuff might not work as expected');
-              }}
-            var chunkLen = str.readUInt();
-            var chunkType = {v: str.readUInt()};
-            if (chunkType.v !== 1313821514) {
-              throw KoolException_init('Unexpected chunk type for chunk 0: ' + chunkType.v + ' (should be ' + '1313821514' + " / 'JSON')");
-            }
-            var jsonData = str.readData_za3lpa$(chunkLen).toArray();
-            var model = GltfFile$Companion_getInstance().fromJson_61zpoe$(decodeToString(jsonData));
-            var iChunk = {v: 1};
-            while (str.hasRemaining()) {
-              chunkLen = str.readUInt();
-              chunkType.v = str.readUInt();
-              if (chunkType.v === 5130562) {
-                model.buffers.get_za3lpa$(iChunk.v - 1 | 0).data = str.readData_za3lpa$(chunkLen);
-              } else {
-                var $this_0 = package$util.Log;
-                var level_0 = Log$Level.WARN;
-                var tag_0 = Kotlin.getKClassFromExpression(this.local$$receiver).simpleName;
-                if (level_0.level >= $this_0.level.level) {
-                  $this_0.printer(level_0, tag_0, 'Unexpected chunk type for chunk ' + iChunk.v + ': ' + chunkType.v + ' (should be ' + '5130562' + " / ' BIN')");
-                }str.index = str.index + chunkLen | 0;
-              }
-              iChunk.v = iChunk.v + 1 | 0;
-            }
-
-            return model;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function loadGlb($receiver_0, assetPath_0, continuation_0, suspended) {
-    var instance = new Coroutine$loadGlb($receiver_0, assetPath_0, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function GltfFile(asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired) {
-    GltfFile$Companion_getInstance();
-    if (scene === void 0)
-      scene = 0;
-    if (scenes === void 0)
-      scenes = emptyList();
-    if (nodes === void 0)
-      nodes = emptyList();
-    if (meshes === void 0)
-      meshes = emptyList();
-    if (materials === void 0)
-      materials = emptyList();
-    if (textures === void 0)
-      textures = emptyList();
-    if (images === void 0)
-      images = emptyList();
-    if (buffers === void 0)
-      buffers = emptyList();
-    if (bufferViews === void 0)
-      bufferViews = emptyList();
-    if (accessors === void 0)
-      accessors = emptyList();
-    if (extensionsUsed === void 0)
-      extensionsUsed = emptyList();
-    if (extensionsRequired === void 0)
-      extensionsRequired = emptyList();
-    this.asset = asset;
-    this.scene = scene;
-    this.scenes = scenes;
-    this.nodes = nodes;
-    this.meshes = meshes;
-    this.materials = materials;
-    this.textures = textures;
-    this.images = images;
-    this.buffers = buffers;
-    this.bufferViews = bufferViews;
-    this.accessors = accessors;
-    this.extensionsUsed = extensionsUsed;
-    this.extensionsRequired = extensionsRequired;
-  }
-  GltfFile.prototype.makeModel_wqoxlt$ = function (scene, generateNormals, pbrBlock) {
-    if (scene === void 0)
-      scene = this.scene;
-    if (generateNormals === void 0)
-      generateNormals = false;
-    if (pbrBlock === void 0)
-      pbrBlock = null;
-    var scn = this.scenes.get_za3lpa$(scene);
-    var model = new Model(scn.name);
-    var tmp$;
-    tmp$ = scn.nodeRefs.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      model.plusAssign_f1kmr1$(this.makeNode_0(element, model, generateNormals, pbrBlock));
-    }
-    return model;
-  };
-  function GltfFile$makeNode$lambda$lambda(closure$p, closure$model, this$GltfFile, closure$pbrBlock) {
-    return function ($receiver) {
-      var material = closure$p.materialRef;
-      if (material != null) {
-        this$GltfFile.applyMaterial_0($receiver, closure$model, material);
-      } else {
-        $receiver.albedo = Color$Companion_getInstance().GRAY;
-        $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
-      }
-      closure$pbrBlock != null ? closure$pbrBlock($receiver, closure$p) : null;
-      return Unit;
-    };
-  }
-  GltfFile.prototype.makeNode_0 = function ($receiver, model, generateNormals, pbrBlock) {
-    var tmp$, tmp$_0;
-    var nodeGrp = new TransformGroup($receiver.name);
-    var $receiver_0 = model.nodes;
-    var key = $receiver.name;
-    $receiver_0.put_xwzc9p$(key, nodeGrp);
-    if ($receiver.matrix != null) {
-      var tmp$_1 = nodeGrp.transform;
-      var $receiver_1 = $receiver.matrix;
-      var destination = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
-      var tmp$_2;
-      tmp$_2 = $receiver_1.iterator();
-      while (tmp$_2.hasNext()) {
-        var item = tmp$_2.next();
-        destination.add_11rb$(item);
-      }
-      tmp$_1.set_d3e2cz$(destination);
-    } else {
-      if ($receiver.translation != null) {
-        nodeGrp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
-      }if ($receiver.rotation != null) {
-        var rotMat = (new Mat4d()).setRotate_czzhi1$(new Vec4d($receiver.rotation.get_za3lpa$(0), $receiver.rotation.get_za3lpa$(1), $receiver.rotation.get_za3lpa$(2), $receiver.rotation.get_za3lpa$(3)));
-        nodeGrp.transform.mul_d4zu6l$(rotMat);
-      }if ($receiver.scale != null) {
-        nodeGrp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
-      }}
-    var tmp$_3;
-    tmp$_3 = $receiver.childRefs.iterator();
-    while (tmp$_3.hasNext()) {
-      var element = tmp$_3.next();
-      nodeGrp.plusAssign_f1kmr1$(this.makeNode_0(element, model, generateNormals, pbrBlock));
-    }
-    if ((tmp$_0 = (tmp$ = $receiver.meshRef) != null ? tmp$.primitives : null) != null) {
-      var tmp$_4, tmp$_0_0;
-      var index = 0;
-      tmp$_4 = tmp$_0.iterator();
-      while (tmp$_4.hasNext()) {
-        var item_0 = tmp$_4.next();
-        var index_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-        var tmp$_5, tmp$_6;
-        var name = ((tmp$_6 = (tmp$_5 = $receiver.meshRef) != null ? tmp$_5.name : null) != null ? tmp$_6 : $receiver.name) + '_' + index_0;
-        var mesh = new Mesh(item_0.toGeometry_6taknv$(generateNormals), name);
-        nodeGrp.plusAssign_f1kmr1$(mesh);
-        mesh.pipelineLoader = pbrShader(GltfFile$makeNode$lambda$lambda(item_0, model, this, pbrBlock));
-        model.meshes.put_xwzc9p$(name, mesh);
-      }
-    }return nodeGrp;
-  };
-  GltfFile.prototype.applyMaterial_0 = function ($receiver, model, material) {
-    var tmp$;
-    var pbr = material.pbrMetallicRoughness;
-    if (pbr.baseColorTexture != null) {
-      $receiver.albedoMap = this.getModelTex_0(model, pbr.baseColorTexture.index);
-      $receiver.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
-    } else {
-      $receiver.albedo = new Color(pbr.baseColorFactor.get_za3lpa$(0), pbr.baseColorFactor.get_za3lpa$(1), pbr.baseColorFactor.get_za3lpa$(2), pbr.baseColorFactor.get_za3lpa$(3));
-      $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
-    }
-    if ((tmp$ = material.normalTexture) != null) {
-      $receiver.normalMap = this.getModelTex_0(model, tmp$.index);
-      $receiver.isNormalMapped = true;
-    }if (pbr.metallicRoughnessTexture != null) {
-      var rmTex = this.getModelTex_0(model, pbr.metallicRoughnessTexture.index);
-      $receiver.isMetallicMapped = true;
-      $receiver.metallicMap = rmTex;
-      $receiver.metallicChannel = 'b';
-      $receiver.metallicTexName = 'tMetalRough';
-      $receiver.isRoughnessMapped = true;
-      $receiver.roughnessMap = rmTex;
-      $receiver.roughnessChannel = 'g';
-      $receiver.roughnessTexName = 'tMetalRough';
-      if (material.occlusionTexture != null && material.occlusionTexture.index === pbr.metallicRoughnessTexture.index) {
-        $receiver.isAmbientOcclusionMapped = true;
-        $receiver.ambientOcclusionMap = rmTex;
-        $receiver.ambientOcclusionChannel = 'r';
-        $receiver.ambientOcclusionTexName = 'tMetalRough';
-      }} else {
-      $receiver.metallic = pbr.metallicFactor;
-      $receiver.roughness = pbr.roughnessFactor;
-      if (material.occlusionTexture != null) {
-        $receiver.isAmbientOcclusionMapped = true;
-        $receiver.ambientOcclusionMap = this.getModelTex_0(model, material.occlusionTexture.index);
-        $receiver.ambientOcclusionChannel = 'r';
-      }}
-  };
-  GltfFile.prototype.getModelTex_0 = function (model, iTex) {
-    var name = this.makeTexName_0(iTex);
-    var $receiver = model.textures;
-    var tmp$;
-    var value = $receiver.get_11rb$(name);
-    if (value == null) {
-      var answer = this.textures.get_za3lpa$(iTex).makeTexture();
-      $receiver.put_xwzc9p$(name, answer);
-      tmp$ = answer;
-    } else {
-      tmp$ = value;
-    }
-    return tmp$;
-  };
-  GltfFile.prototype.makeTexName_0 = function (iTex) {
-    var tmp$;
-    var tex = this.textures.get_za3lpa$(iTex);
-    return (tmp$ = tex.name) != null ? tmp$ : 'model_tex_#' + iTex;
-  };
-  GltfFile.prototype.makeReferences = function () {
-    var tmp$;
-    tmp$ = this.accessors.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.bufferViewRef = this.bufferViews.get_za3lpa$(element.bufferView);
-    }
-    var tmp$_0;
-    tmp$_0 = this.bufferViews.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      element_0.bufferRef = this.buffers.get_za3lpa$(element_0.buffer);
-    }
-    var tmp$_1;
-    tmp$_1 = this.meshes.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_1 = tmp$_1.next();
-      var tmp$_2;
-      tmp$_2 = element_1.primitives.iterator();
-      while (tmp$_2.hasNext()) {
-        var element_2 = tmp$_2.next();
-        if (element_2.material >= 0) {
-          element_2.materialRef = this.materials.get_za3lpa$(element_2.material);
-        }if (element_2.indices >= 0) {
-          element_2.indexAccessorRef = this.accessors.get_za3lpa$(element_2.indices);
-        }var tmp$_3;
-        tmp$_3 = element_2.attributes.entries.iterator();
-        while (tmp$_3.hasNext()) {
-          var element_3 = tmp$_3.next();
-          var attrib = element_3.key;
-          var iAcc = element_3.value;
-          var $receiver = element_2.attribAccessorRefs;
-          var value = this.accessors.get_za3lpa$(iAcc);
-          $receiver.put_xwzc9p$(attrib, value);
-        }
-      }
-    }
-    var tmp$_4;
-    tmp$_4 = this.scenes.iterator();
-    while (tmp$_4.hasNext()) {
-      var element_4 = tmp$_4.next();
-      var $receiver_0 = element_4.nodes;
-      var destination = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
-      var tmp$_5;
-      tmp$_5 = $receiver_0.iterator();
-      while (tmp$_5.hasNext()) {
-        var item = tmp$_5.next();
-        destination.add_11rb$(this.nodes.get_za3lpa$(item));
-      }
-      element_4.nodeRefs = destination;
-    }
-    var tmp$_6;
-    tmp$_6 = this.nodes.iterator();
-    while (tmp$_6.hasNext()) {
-      var element_5 = tmp$_6.next();
-      var $receiver_1 = element_5.children;
-      var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
-      var tmp$_7;
-      tmp$_7 = $receiver_1.iterator();
-      while (tmp$_7.hasNext()) {
-        var item_0 = tmp$_7.next();
-        destination_0.add_11rb$(this.nodes.get_za3lpa$(item_0));
-      }
-      element_5.childRefs = destination_0;
-      if (element_5.mesh >= 0) {
-        element_5.meshRef = this.meshes.get_za3lpa$(element_5.mesh);
-      }}
-    var tmp$_8;
-    tmp$_8 = this.textures.iterator();
-    while (tmp$_8.hasNext()) {
-      var element_6 = tmp$_8.next();
-      element_6.imageRef = this.images.get_za3lpa$(element_6.source);
-    }
-    var $receiver_2 = this.images;
-    var destination_1 = ArrayList_init_0();
-    var tmp$_9;
-    tmp$_9 = $receiver_2.iterator();
-    while (tmp$_9.hasNext()) {
-      var element_7 = tmp$_9.next();
-      if (element_7.bufferView >= 0)
-        destination_1.add_11rb$(element_7);
-    }
-    var tmp$_10;
-    tmp$_10 = destination_1.iterator();
-    while (tmp$_10.hasNext()) {
-      var element_8 = tmp$_10.next();
-      element_8.bufferViewRef = this.bufferViews.get_za3lpa$(element_8.bufferView);
-    }
-  };
-  function GltfFile$Companion() {
-    GltfFile$Companion_instance = this;
-    this.ACCESSOR_TYPE_SCALAR = 'SCALAR';
-    this.ACCESSOR_TYPE_VEC2 = 'VEC2';
-    this.ACCESSOR_TYPE_VEC3 = 'VEC3';
-    this.ACCESSOR_TYPE_VEC4 = 'VEC4';
-    this.COMP_TYPE_BYTE = 5120;
-    this.COMP_TYPE_UNSIGNED_BYTE = 5121;
-    this.COMP_TYPE_SHORT = 5122;
-    this.COMP_TYPE_UNSIGNED_SHORT = 5123;
-    this.COMP_TYPE_INT = 5124;
-    this.COMP_TYPE_UNSIGNED_INT = 5125;
-    this.COMP_TYPE_FLOAT = 5126;
-    this.MODE_POINTS = 0;
-    this.MODE_LINES = 1;
-    this.MODE_LINE_LOOP = 2;
-    this.MODE_LINE_STRIP = 3;
-    this.MODE_TRIANGLES = 4;
-    this.MODE_TRIANGLE_STRIP = 5;
-    this.MODE_TRIANGLE_FAN = 6;
-    this.MODE_QUADS = 7;
-    this.MODE_QUAD_STRIP = 8;
-    this.MODE_POLYGON = 9;
-    this.MESH_ATTRIBUTE_POSITION = 'POSITION';
-    this.MESH_ATTRIBUTE_NORMAL = 'NORMAL';
-    this.MESH_ATTRIBUTE_TANGENT = 'TANGENT';
-    this.MESH_ATTRIBUTE_TEXCOORD_0 = 'TEXCOORD_0';
-    this.MESH_ATTRIBUTE_TEXCOORD_1 = 'TEXCOORD_1';
-    this.MESH_ATTRIBUTE_COLOR_0 = 'COLOR_0';
-    this.MESH_ATTRIBUTE_JOINTS_0 = 'JOINTS_0';
-    this.MESH_ATTRIBUTE_WEIGHTS_0 = 'WEIGHTS_0';
-    this.GLB_FILE_MAGIC = 1179937895;
-    this.GLB_CHUNK_MAGIC_JSON = 1313821514;
-    this.GLB_CHUNK_MAGIC_BIN = 5130562;
-  }
-  GltfFile$Companion.prototype.fromJson_61zpoe$ = function (json) {
-    var $receiver = new Json(new JsonConfiguration(void 0, true, true, true, void 0, void 0, void 0, void 0, true));
-    return $receiver.parse_awif5v$(getContextualOrDefault($receiver.context, getKClass(GltfFile)), json);
-  };
-  GltfFile$Companion.prototype.serializer = function () {
-    return GltfFile$$serializer_getInstance();
-  };
-  GltfFile$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var GltfFile$Companion_instance = null;
-  function GltfFile$Companion_getInstance() {
-    if (GltfFile$Companion_instance === null) {
-      new GltfFile$Companion();
-    }return GltfFile$Companion_instance;
-  }
-  function GltfFile$$serializer() {
-    this.descriptor_sl1tf8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.GltfFile', this, 13);
-    this.descriptor.addElement_ivxn3r$('asset', false);
-    this.descriptor.addElement_ivxn3r$('scene', true);
-    this.descriptor.addElement_ivxn3r$('scenes', true);
-    this.descriptor.addElement_ivxn3r$('nodes', true);
-    this.descriptor.addElement_ivxn3r$('meshes', true);
-    this.descriptor.addElement_ivxn3r$('materials', true);
-    this.descriptor.addElement_ivxn3r$('textures', true);
-    this.descriptor.addElement_ivxn3r$('images', true);
-    this.descriptor.addElement_ivxn3r$('buffers', true);
-    this.descriptor.addElement_ivxn3r$('bufferViews', true);
-    this.descriptor.addElement_ivxn3r$('accessors', true);
-    this.descriptor.addElement_ivxn3r$('extensionsUsed', true);
-    this.descriptor.addElement_ivxn3r$('extensionsRequired', true);
-    GltfFile$$serializer_instance = this;
-  }
-  Object.defineProperty(GltfFile$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_sl1tf8$_0;
-    }
-  });
-  GltfFile$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeSerializableElement_blecud$(this.descriptor, 0, Asset$$serializer_getInstance(), value.asset);
-    if (!equals(value.scene, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.scene);
-    if (!equals(value.scenes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance()), value.scenes);
-    if (!equals(value.nodes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance()), value.nodes);
-    if (!equals(value.meshes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
-      output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance()), value.meshes);
-    if (!equals(value.materials, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
-      output.encodeSerializableElement_blecud$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance()), value.materials);
-    if (!equals(value.textures, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
-      output.encodeSerializableElement_blecud$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance()), value.textures);
-    if (!equals(value.images, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
-      output.encodeSerializableElement_blecud$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance()), value.images);
-    if (!equals(value.buffers, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
-      output.encodeSerializableElement_blecud$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance()), value.buffers);
-    if (!equals(value.bufferViews, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 9))
-      output.encodeSerializableElement_blecud$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance()), value.bufferViews);
-    if (!equals(value.accessors, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 10))
-      output.encodeSerializableElement_blecud$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance()), value.accessors);
-    if (!equals(value.extensionsUsed, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 11))
-      output.encodeSerializableElement_blecud$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer), value.extensionsUsed);
-    if (!equals(value.extensionsRequired, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 12))
-      output.encodeSerializableElement_blecud$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer), value.extensionsRequired);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  GltfFile$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3
-    , local4
-    , local5
-    , local6
-    , local7
-    , local8
-    , local9
-    , local10
-    , local11
-    , local12;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, Asset$$serializer_getInstance()) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, Asset$$serializer_getInstance(), local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance()), local2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance()), local3);
-          bitMask0 |= 8;
-          break;
-        case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance()), local4);
-          bitMask0 |= 16;
-          break;
-        case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance()), local5);
-          bitMask0 |= 32;
-          break;
-        case 6:
-          local6 = (bitMask0 & 64) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance()), local6);
-          bitMask0 |= 64;
-          break;
-        case 7:
-          local7 = (bitMask0 & 128) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance()), local7);
-          bitMask0 |= 128;
-          break;
-        case 8:
-          local8 = (bitMask0 & 256) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance()), local8);
-          bitMask0 |= 256;
-          break;
-        case 9:
-          local9 = (bitMask0 & 512) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance()), local9);
-          bitMask0 |= 512;
-          break;
-        case 10:
-          local10 = (bitMask0 & 1024) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance()), local10);
-          bitMask0 |= 1024;
-          break;
-        case 11:
-          local11 = (bitMask0 & 2048) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer), local11);
-          bitMask0 |= 2048;
-          break;
-        case 12:
-          local12 = (bitMask0 & 4096) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer), local12);
-          bitMask0 |= 4096;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return GltfFile_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, null);
-  };
-  GltfFile$$serializer.prototype.childSerializers = function () {
-    return [Asset$$serializer_getInstance(), internal.IntSerializer, new ArrayListSerializer(Scene$$serializer_getInstance()), new ArrayListSerializer(Node$$serializer_getInstance()), new ArrayListSerializer(Mesh$$serializer_getInstance()), new ArrayListSerializer(Material$$serializer_getInstance()), new ArrayListSerializer(Texture$$serializer_getInstance()), new ArrayListSerializer(Image$$serializer_getInstance()), new ArrayListSerializer(Buffer$$serializer_getInstance()), new ArrayListSerializer(BufferView$$serializer_getInstance()), new ArrayListSerializer(Accessor$$serializer_getInstance()), new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(internal.StringSerializer)];
-  };
-  GltfFile$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var GltfFile$$serializer_instance = null;
-  function GltfFile$$serializer_getInstance() {
-    if (GltfFile$$serializer_instance === null) {
-      new GltfFile$$serializer();
-    }return GltfFile$$serializer_instance;
-  }
-  function GltfFile_init(seen1, asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(GltfFile.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('asset');
-    else
-      $this.asset = asset;
-    if ((seen1 & 2) === 0)
-      $this.scene = 0;
-    else
-      $this.scene = scene;
-    if ((seen1 & 4) === 0)
-      $this.scenes = emptyList();
-    else
-      $this.scenes = scenes;
-    if ((seen1 & 8) === 0)
-      $this.nodes = emptyList();
-    else
-      $this.nodes = nodes;
-    if ((seen1 & 16) === 0)
-      $this.meshes = emptyList();
-    else
-      $this.meshes = meshes;
-    if ((seen1 & 32) === 0)
-      $this.materials = emptyList();
-    else
-      $this.materials = materials;
-    if ((seen1 & 64) === 0)
-      $this.textures = emptyList();
-    else
-      $this.textures = textures;
-    if ((seen1 & 128) === 0)
-      $this.images = emptyList();
-    else
-      $this.images = images;
-    if ((seen1 & 256) === 0)
-      $this.buffers = emptyList();
-    else
-      $this.buffers = buffers;
-    if ((seen1 & 512) === 0)
-      $this.bufferViews = emptyList();
-    else
-      $this.bufferViews = bufferViews;
-    if ((seen1 & 1024) === 0)
-      $this.accessors = emptyList();
-    else
-      $this.accessors = accessors;
-    if ((seen1 & 2048) === 0)
-      $this.extensionsUsed = emptyList();
-    else
-      $this.extensionsUsed = extensionsUsed;
-    if ((seen1 & 4096) === 0)
-      $this.extensionsRequired = emptyList();
-    else
-      $this.extensionsRequired = extensionsRequired;
-    return $this;
-  }
-  GltfFile.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GltfFile',
-    interfaces: []
-  };
-  GltfFile.prototype.component1 = function () {
-    return this.asset;
-  };
-  GltfFile.prototype.component2 = function () {
-    return this.scene;
-  };
-  GltfFile.prototype.component3 = function () {
-    return this.scenes;
-  };
-  GltfFile.prototype.component4 = function () {
-    return this.nodes;
-  };
-  GltfFile.prototype.component5 = function () {
-    return this.meshes;
-  };
-  GltfFile.prototype.component6 = function () {
-    return this.materials;
-  };
-  GltfFile.prototype.component7 = function () {
-    return this.textures;
-  };
-  GltfFile.prototype.component8 = function () {
-    return this.images;
-  };
-  GltfFile.prototype.component9 = function () {
-    return this.buffers;
-  };
-  GltfFile.prototype.component10 = function () {
-    return this.bufferViews;
-  };
-  GltfFile.prototype.component11 = function () {
-    return this.accessors;
-  };
-  GltfFile.prototype.component12 = function () {
-    return this.extensionsUsed;
-  };
-  GltfFile.prototype.component13 = function () {
-    return this.extensionsRequired;
-  };
-  GltfFile.prototype.copy_p2eni9$ = function (asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired) {
-    return new GltfFile(asset === void 0 ? this.asset : asset, scene === void 0 ? this.scene : scene, scenes === void 0 ? this.scenes : scenes, nodes === void 0 ? this.nodes : nodes, meshes === void 0 ? this.meshes : meshes, materials === void 0 ? this.materials : materials, textures === void 0 ? this.textures : textures, images === void 0 ? this.images : images, buffers === void 0 ? this.buffers : buffers, bufferViews === void 0 ? this.bufferViews : bufferViews, accessors === void 0 ? this.accessors : accessors, extensionsUsed === void 0 ? this.extensionsUsed : extensionsUsed, extensionsRequired === void 0 ? this.extensionsRequired : extensionsRequired);
-  };
-  GltfFile.prototype.toString = function () {
-    return 'GltfFile(asset=' + Kotlin.toString(this.asset) + (', scene=' + Kotlin.toString(this.scene)) + (', scenes=' + Kotlin.toString(this.scenes)) + (', nodes=' + Kotlin.toString(this.nodes)) + (', meshes=' + Kotlin.toString(this.meshes)) + (', materials=' + Kotlin.toString(this.materials)) + (', textures=' + Kotlin.toString(this.textures)) + (', images=' + Kotlin.toString(this.images)) + (', buffers=' + Kotlin.toString(this.buffers)) + (', bufferViews=' + Kotlin.toString(this.bufferViews)) + (', accessors=' + Kotlin.toString(this.accessors)) + (', extensionsUsed=' + Kotlin.toString(this.extensionsUsed)) + (', extensionsRequired=' + Kotlin.toString(this.extensionsRequired)) + ')';
-  };
-  GltfFile.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.asset) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scene) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scenes) | 0;
-    result = result * 31 + Kotlin.hashCode(this.nodes) | 0;
-    result = result * 31 + Kotlin.hashCode(this.meshes) | 0;
-    result = result * 31 + Kotlin.hashCode(this.materials) | 0;
-    result = result * 31 + Kotlin.hashCode(this.textures) | 0;
-    result = result * 31 + Kotlin.hashCode(this.images) | 0;
-    result = result * 31 + Kotlin.hashCode(this.buffers) | 0;
-    result = result * 31 + Kotlin.hashCode(this.bufferViews) | 0;
-    result = result * 31 + Kotlin.hashCode(this.accessors) | 0;
-    result = result * 31 + Kotlin.hashCode(this.extensionsUsed) | 0;
-    result = result * 31 + Kotlin.hashCode(this.extensionsRequired) | 0;
-    return result;
-  };
-  GltfFile.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.asset, other.asset) && Kotlin.equals(this.scene, other.scene) && Kotlin.equals(this.scenes, other.scenes) && Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.materials, other.materials) && Kotlin.equals(this.textures, other.textures) && Kotlin.equals(this.images, other.images) && Kotlin.equals(this.buffers, other.buffers) && Kotlin.equals(this.bufferViews, other.bufferViews) && Kotlin.equals(this.accessors, other.accessors) && Kotlin.equals(this.extensionsUsed, other.extensionsUsed) && Kotlin.equals(this.extensionsRequired, other.extensionsRequired)))));
-  };
-  function Asset(version, generator) {
-    Asset$Companion_getInstance();
-    if (generator === void 0)
-      generator = null;
-    this.version = version;
-    this.generator = generator;
-  }
-  function Asset$Companion() {
-    Asset$Companion_instance = this;
-  }
-  Asset$Companion.prototype.serializer = function () {
-    return Asset$$serializer_getInstance();
-  };
-  Asset$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Asset$Companion_instance = null;
-  function Asset$Companion_getInstance() {
-    if (Asset$Companion_instance === null) {
-      new Asset$Companion();
-    }return Asset$Companion_instance;
-  }
-  function Asset$$serializer() {
-    this.descriptor_u2f4f3$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Asset', this, 2);
-    this.descriptor.addElement_ivxn3r$('version', false);
-    this.descriptor.addElement_ivxn3r$('generator', true);
-    Asset$$serializer_instance = this;
-  }
-  Object.defineProperty(Asset$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_u2f4f3$_0;
-    }
-  });
-  Asset$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeStringElement_bgm7zs$(this.descriptor, 0, value.version);
-    if (!equals(value.generator, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.generator);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Asset$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Asset_init(bitMask0, local0, local1, null);
-  };
-  Asset$$serializer.prototype.childSerializers = function () {
-    return [internal.StringSerializer, new NullableSerializer(internal.StringSerializer)];
-  };
-  Asset$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Asset$$serializer_instance = null;
-  function Asset$$serializer_getInstance() {
-    if (Asset$$serializer_instance === null) {
-      new Asset$$serializer();
-    }return Asset$$serializer_instance;
-  }
-  function Asset_init(seen1, version, generator, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Asset.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('version');
-    else
-      $this.version = version;
-    if ((seen1 & 2) === 0)
-      $this.generator = null;
-    else
-      $this.generator = generator;
-    return $this;
-  }
-  Asset.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Asset',
-    interfaces: []
-  };
-  Asset.prototype.component1 = function () {
-    return this.version;
-  };
-  Asset.prototype.component2 = function () {
-    return this.generator;
-  };
-  Asset.prototype.copy_jyasbz$ = function (version, generator) {
-    return new Asset(version === void 0 ? this.version : version, generator === void 0 ? this.generator : generator);
-  };
-  Asset.prototype.toString = function () {
-    return 'Asset(version=' + Kotlin.toString(this.version) + (', generator=' + Kotlin.toString(this.generator)) + ')';
-  };
-  Asset.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.version) | 0;
-    result = result * 31 + Kotlin.hashCode(this.generator) | 0;
-    return result;
-  };
-  Asset.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.generator, other.generator)))));
-  };
-  function Scene_0(nodes, name) {
-    Scene$Companion_getInstance();
-    if (name === void 0)
-      name = null;
-    this.nodes = nodes;
-    this.name = name;
-    this.nodeRefs_8gf49q$_0 = this.nodeRefs_8gf49q$_0;
-  }
-  Object.defineProperty(Scene_0.prototype, 'nodeRefs', {
-    get: function () {
-      if (this.nodeRefs_8gf49q$_0 == null)
-        return throwUPAE('nodeRefs');
-      return this.nodeRefs_8gf49q$_0;
-    },
-    set: function (nodeRefs) {
-      this.nodeRefs_8gf49q$_0 = nodeRefs;
-    }
-  });
-  function Scene$Companion() {
-    Scene$Companion_instance = this;
-  }
-  Scene$Companion.prototype.serializer = function () {
-    return Scene$$serializer_getInstance();
-  };
-  Scene$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Scene$Companion_instance = null;
-  function Scene$Companion_getInstance() {
-    if (Scene$Companion_instance === null) {
-      new Scene$Companion();
-    }return Scene$Companion_instance;
-  }
-  function Scene$$serializer() {
-    this.descriptor_rb8br7$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Scene', this, 2);
-    this.descriptor.addElement_ivxn3r$('nodes', false);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    Scene$$serializer_instance = this;
-  }
-  Object.defineProperty(Scene$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_rb8br7$_0;
-    }
-  });
-  Scene$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer), value.nodes);
-    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Scene$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer), local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Scene_init(bitMask0, local0, local1, null);
-  };
-  Scene$$serializer.prototype.childSerializers = function () {
-    return [new ArrayListSerializer(internal.IntSerializer), new NullableSerializer(internal.StringSerializer)];
-  };
-  Scene$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Scene$$serializer_instance = null;
-  function Scene$$serializer_getInstance() {
-    if (Scene$$serializer_instance === null) {
-      new Scene$$serializer();
-    }return Scene$$serializer_instance;
-  }
-  function Scene_init(seen1, nodes, name, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Scene_0.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('nodes');
-    else
-      $this.nodes = nodes;
-    if ((seen1 & 2) === 0)
-      $this.name = null;
-    else
-      $this.name = name;
-    return $this;
-  }
-  Scene_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Scene',
-    interfaces: []
-  };
-  Scene_0.prototype.component1 = function () {
-    return this.nodes;
-  };
-  Scene_0.prototype.component2 = function () {
-    return this.name;
-  };
-  Scene_0.prototype.copy_jfrl1g$ = function (nodes, name) {
-    return new Scene_0(nodes === void 0 ? this.nodes : nodes, name === void 0 ? this.name : name);
-  };
-  Scene_0.prototype.toString = function () {
-    return 'Scene(nodes=' + Kotlin.toString(this.nodes) + (', name=' + Kotlin.toString(this.name)) + ')';
-  };
-  Scene_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.nodes) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    return result;
-  };
-  Scene_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.name, other.name)))));
-  };
-  function Node_0(mesh, name, children, translation, rotation, scale, matrix) {
-    Node$Companion_getInstance_0();
-    if (mesh === void 0)
-      mesh = -1;
-    if (name === void 0)
-      name = '';
-    if (children === void 0)
-      children = emptyList();
-    if (translation === void 0)
-      translation = null;
-    if (rotation === void 0)
-      rotation = null;
-    if (scale === void 0)
-      scale = null;
-    if (matrix === void 0)
-      matrix = null;
-    this.mesh = mesh;
-    this.name = name;
-    this.children = children;
-    this.translation = translation;
-    this.rotation = rotation;
-    this.scale = scale;
-    this.matrix = matrix;
-    this.childRefs_brz562$_0 = this.childRefs_brz562$_0;
-    this.meshRef = null;
-  }
-  Object.defineProperty(Node_0.prototype, 'childRefs', {
-    get: function () {
-      if (this.childRefs_brz562$_0 == null)
-        return throwUPAE('childRefs');
-      return this.childRefs_brz562$_0;
-    },
-    set: function (childRefs) {
-      this.childRefs_brz562$_0 = childRefs;
-    }
-  });
-  function Node$Companion_0() {
-    Node$Companion_instance_0 = this;
-  }
-  Node$Companion_0.prototype.serializer = function () {
-    return Node$$serializer_getInstance();
-  };
-  Node$Companion_0.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Node$Companion_instance_0 = null;
-  function Node$Companion_getInstance_0() {
-    if (Node$Companion_instance_0 === null) {
-      new Node$Companion_0();
-    }return Node$Companion_instance_0;
-  }
-  function Node$$serializer() {
-    this.descriptor_98jp0l$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Node', this, 7);
-    this.descriptor.addElement_ivxn3r$('mesh', true);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    this.descriptor.addElement_ivxn3r$('children', true);
-    this.descriptor.addElement_ivxn3r$('translation', true);
-    this.descriptor.addElement_ivxn3r$('rotation', true);
-    this.descriptor.addElement_ivxn3r$('scale', true);
-    this.descriptor.addElement_ivxn3r$('matrix', true);
-    Node$$serializer_instance = this;
-  }
-  Object.defineProperty(Node$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_98jp0l$_0;
-    }
-  });
-  Node$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    if (!equals(value.mesh, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
-      output.encodeIntElement_4wpqag$(this.descriptor, 0, value.mesh);
-    if (!equals(value.name, '') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeStringElement_bgm7zs$(this.descriptor, 1, value.name);
-    if (!equals(value.children, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), value.children);
-    if (!equals(value.translation, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), value.translation);
-    if (!equals(value.rotation, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), value.rotation);
-    if (!equals(value.scale, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), value.scale);
-    if (!equals(value.matrix, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer), value.matrix);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Node$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3
-    , local4
-    , local5
-    , local6;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeStringElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), local2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
-          bitMask0 |= 8;
-          break;
-        case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), local4);
-          bitMask0 |= 16;
-          break;
-        case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
-          bitMask0 |= 32;
-          break;
-        case 6:
-          local6 = (bitMask0 & 64) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer), local6);
-          bitMask0 |= 64;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Node_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, null);
-  };
-  Node$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, internal.StringSerializer, new ArrayListSerializer(internal.IntSerializer), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer))];
-  };
-  Node$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Node$$serializer_instance = null;
-  function Node$$serializer_getInstance() {
-    if (Node$$serializer_instance === null) {
-      new Node$$serializer();
-    }return Node$$serializer_instance;
-  }
-  function Node_init(seen1, mesh, name, children, translation, rotation, scale, matrix, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Node_0.prototype);
-    if ((seen1 & 1) === 0)
-      $this.mesh = -1;
-    else
-      $this.mesh = mesh;
-    if ((seen1 & 2) === 0)
-      $this.name = '';
-    else
-      $this.name = name;
-    if ((seen1 & 4) === 0)
-      $this.children = emptyList();
-    else
-      $this.children = children;
-    if ((seen1 & 8) === 0)
-      $this.translation = null;
-    else
-      $this.translation = translation;
-    if ((seen1 & 16) === 0)
-      $this.rotation = null;
-    else
-      $this.rotation = rotation;
-    if ((seen1 & 32) === 0)
-      $this.scale = null;
-    else
-      $this.scale = scale;
-    if ((seen1 & 64) === 0)
-      $this.matrix = null;
-    else
-      $this.matrix = matrix;
-    $this.meshRef = null;
-    return $this;
-  }
-  Node_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Node',
-    interfaces: []
-  };
-  Node_0.prototype.component1 = function () {
-    return this.mesh;
-  };
-  Node_0.prototype.component2 = function () {
-    return this.name;
-  };
-  Node_0.prototype.component3 = function () {
-    return this.children;
-  };
-  Node_0.prototype.component4 = function () {
-    return this.translation;
-  };
-  Node_0.prototype.component5 = function () {
-    return this.rotation;
-  };
-  Node_0.prototype.component6 = function () {
-    return this.scale;
-  };
-  Node_0.prototype.component7 = function () {
-    return this.matrix;
-  };
-  Node_0.prototype.copy_tw1hjx$ = function (mesh, name, children, translation, rotation, scale, matrix) {
-    return new Node_0(mesh === void 0 ? this.mesh : mesh, name === void 0 ? this.name : name, children === void 0 ? this.children : children, translation === void 0 ? this.translation : translation, rotation === void 0 ? this.rotation : rotation, scale === void 0 ? this.scale : scale, matrix === void 0 ? this.matrix : matrix);
-  };
-  Node_0.prototype.toString = function () {
-    return 'Node(mesh=' + Kotlin.toString(this.mesh) + (', name=' + Kotlin.toString(this.name)) + (', children=' + Kotlin.toString(this.children)) + (', translation=' + Kotlin.toString(this.translation)) + (', rotation=' + Kotlin.toString(this.rotation)) + (', scale=' + Kotlin.toString(this.scale)) + (', matrix=' + Kotlin.toString(this.matrix)) + ')';
-  };
-  Node_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.mesh) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.children) | 0;
-    result = result * 31 + Kotlin.hashCode(this.translation) | 0;
-    result = result * 31 + Kotlin.hashCode(this.rotation) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scale) | 0;
-    result = result * 31 + Kotlin.hashCode(this.matrix) | 0;
-    return result;
-  };
-  Node_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.mesh, other.mesh) && Kotlin.equals(this.name, other.name) && Kotlin.equals(this.children, other.children) && Kotlin.equals(this.translation, other.translation) && Kotlin.equals(this.rotation, other.rotation) && Kotlin.equals(this.scale, other.scale) && Kotlin.equals(this.matrix, other.matrix)))));
-  };
-  function Mesh_0(primitives, name) {
-    Mesh$Companion_getInstance_0();
-    if (name === void 0)
-      name = null;
-    this.primitives = primitives;
-    this.name = name;
-  }
-  function Mesh$Companion_0() {
-    Mesh$Companion_instance_0 = this;
-  }
-  Mesh$Companion_0.prototype.serializer = function () {
-    return Mesh$$serializer_getInstance();
-  };
-  Mesh$Companion_0.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Mesh$Companion_instance_0 = null;
-  function Mesh$Companion_getInstance_0() {
-    if (Mesh$Companion_instance_0 === null) {
-      new Mesh$Companion_0();
-    }return Mesh$Companion_instance_0;
-  }
-  function Mesh$$serializer() {
-    this.descriptor_op8o7a$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Mesh', this, 2);
-    this.descriptor.addElement_ivxn3r$('primitives', false);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    Mesh$$serializer_instance = this;
-  }
-  Object.defineProperty(Mesh$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_op8o7a$_0;
-    }
-  });
-  Mesh$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), value.primitives);
-    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Mesh$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Mesh_init(bitMask0, local0, local1, null);
-  };
-  Mesh$$serializer.prototype.childSerializers = function () {
-    return [new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), new NullableSerializer(internal.StringSerializer)];
-  };
-  Mesh$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Mesh$$serializer_instance = null;
-  function Mesh$$serializer_getInstance() {
-    if (Mesh$$serializer_instance === null) {
-      new Mesh$$serializer();
-    }return Mesh$$serializer_instance;
-  }
-  function Mesh_init(seen1, primitives, name, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Mesh_0.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('primitives');
-    else
-      $this.primitives = primitives;
-    if ((seen1 & 2) === 0)
-      $this.name = null;
-    else
-      $this.name = name;
-    return $this;
-  }
-  Mesh_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Mesh',
-    interfaces: []
-  };
-  Mesh_0.prototype.component1 = function () {
-    return this.primitives;
-  };
-  Mesh_0.prototype.component2 = function () {
-    return this.name;
-  };
-  Mesh_0.prototype.copy_7h32o8$ = function (primitives, name) {
-    return new Mesh_0(primitives === void 0 ? this.primitives : primitives, name === void 0 ? this.name : name);
-  };
-  Mesh_0.prototype.toString = function () {
-    return 'Mesh(primitives=' + Kotlin.toString(this.primitives) + (', name=' + Kotlin.toString(this.name)) + ')';
-  };
-  Mesh_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.primitives) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    return result;
-  };
-  Mesh_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.primitives, other.primitives) && Kotlin.equals(this.name, other.name)))));
-  };
-  function MeshPrimitive(attributes, indices, material, mode) {
-    MeshPrimitive$Companion_getInstance();
-    if (indices === void 0)
-      indices = -1;
-    if (material === void 0)
-      material = -1;
-    if (mode === void 0)
-      mode = 4;
-    this.attributes = attributes;
-    this.indices = indices;
-    this.material = material;
-    this.mode = mode;
-    this.materialRef = null;
-    this.indexAccessorRef = null;
-    this.attribAccessorRefs = LinkedHashMap_init();
-  }
-  MeshPrimitive.prototype.toGeometry_6taknv$ = function (generateNormals) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var positionAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_POSITION);
-    var normalAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_NORMAL);
-    var tangentAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_TANGENT);
-    var texCoordAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_TEXCOORD_0);
-    var colorAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_COLOR_0);
-    var generateTangents = false;
-    var attribs = ArrayList_init_0();
-    if (positionAcc != null) {
-      var element = Attribute$Companion_getInstance().POSITIONS;
-      attribs.add_11rb$(element);
-    }if (normalAcc != null || generateNormals) {
-      var element_0 = Attribute$Companion_getInstance().NORMALS;
-      attribs.add_11rb$(element_0);
-    }if (colorAcc != null) {
-      var element_1 = Attribute$Companion_getInstance().COLORS;
-      attribs.add_11rb$(element_1);
-    }if (texCoordAcc != null) {
-      var element_2 = Attribute$Companion_getInstance().TEXTURE_COORDS;
-      attribs.add_11rb$(element_2);
-    }if (tangentAcc != null) {
-      var element_3 = Attribute$Companion_getInstance().TANGENTS;
-      attribs.add_11rb$(element_3);
-    } else if (((tmp$ = this.materialRef) != null ? tmp$.normalTexture : null) != null) {
-      var element_4 = Attribute$Companion_getInstance().TANGENTS;
-      attribs.add_11rb$(element_4);
-      generateTangents = true;
-    }var verts = new IndexedVertexList(attribs);
-    if (positionAcc != null) {
-      var poss = new Vec3fAccessor(positionAcc);
-      var nrms = normalAcc != null ? new Vec3fAccessor(normalAcc) : null;
-      var tans = tangentAcc != null ? new Vec4fAccessor(tangentAcc) : null;
-      var texs = texCoordAcc != null ? new Vec2fAccessor(texCoordAcc) : null;
-      var cols = colorAcc != null ? new Vec4fAccessor(colorAcc) : null;
-      tmp$_0 = positionAcc.count;
-      for (var i = 0; i < tmp$_0; i++) {
-        var tmp$_3, tmp$_4, tmp$_5;
-        verts.checkBufferSizes_za3lpa$();
-        tmp$_3 = verts.vertexSizeF;
-        for (var i_0 = 1; i_0 <= tmp$_3; i_0++) {
-          verts.dataF.plusAssign_mx4ult$(0.0);
-        }
-        tmp$_4 = verts.vertexSizeI;
-        for (var i_1 = 1; i_1 <= tmp$_4; i_1++) {
-          verts.dataI.plusAssign_za3lpa$(0);
-        }
-        verts.vertexIt.index = (tmp$_5 = verts.numVertices, verts.numVertices = tmp$_5 + 1 | 0, tmp$_5);
-        var $receiver = verts.vertexIt;
-        var tmp$_6, tmp$_7;
-        poss.next_5s4mqq$($receiver.position);
-        nrms != null ? nrms.next_5s4mqq$($receiver.normal) : null;
-        if ((tmp$_6 = tans != null ? tans.next() : null) != null) {
-          $receiver.tangent.set_y2kzbl$(tmp$_6.x, tmp$_6.y, tmp$_6.z);
-        }texs != null ? texs.next_5s4mrl$($receiver.texCoord) : null;
-        if ((tmp$_7 = cols != null ? cols.next() : null) != null) {
-          $receiver.color.set_7b5o5w$(tmp$_7.x, tmp$_7.y, tmp$_7.z, tmp$_7.w);
-        }verts.bounds.add_czzhiu$(verts.vertexIt.position);
-        verts.hasChanged = true;
-        verts.numVertices - 1 | 0;
-      }
-      var indexAcc = this.indexAccessorRef;
-      if (indexAcc != null) {
-        var inds = new IntAccessor(indexAcc);
-        tmp$_1 = indexAcc.count;
-        for (var i_2 = 0; i_2 < tmp$_1; i_2++) {
-          verts.addIndex_za3lpa$(inds.next());
-        }
-      } else {
-        tmp$_2 = positionAcc.count;
-        for (var i_3 = 0; i_3 < tmp$_2; i_3++) {
-          verts.addIndex_za3lpa$(i_3);
-        }
-      }
-      if (generateTangents) {
-        verts.generateTangents();
-      }if (generateNormals) {
-        verts.generateNormals();
-      }}return verts;
-  };
-  function MeshPrimitive$Companion() {
-    MeshPrimitive$Companion_instance = this;
-  }
-  MeshPrimitive$Companion.prototype.serializer = function () {
-    return MeshPrimitive$$serializer_getInstance();
-  };
-  MeshPrimitive$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var MeshPrimitive$Companion_instance = null;
-  function MeshPrimitive$Companion_getInstance() {
-    if (MeshPrimitive$Companion_instance === null) {
-      new MeshPrimitive$Companion();
-    }return MeshPrimitive$Companion_instance;
-  }
-  function MeshPrimitive$$serializer() {
-    this.descriptor_9nu1kb$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.MeshPrimitive', this, 4);
-    this.descriptor.addElement_ivxn3r$('attributes', false);
-    this.descriptor.addElement_ivxn3r$('indices', true);
-    this.descriptor.addElement_ivxn3r$('material', true);
-    this.descriptor.addElement_ivxn3r$('mode', true);
-    MeshPrimitive$$serializer_instance = this;
-  }
-  Object.defineProperty(MeshPrimitive$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_9nu1kb$_0;
-    }
-  });
-  MeshPrimitive$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeSerializableElement_blecud$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), value.attributes);
-    if (!equals(value.indices, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.indices);
-    if (!equals(value.material, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeIntElement_4wpqag$(this.descriptor, 2, value.material);
-    if (!equals(value.mode, 4) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeIntElement_4wpqag$(this.descriptor, 3, value.mode);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  MeshPrimitive$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = input.decodeIntElement_3zr2iy$(this.descriptor, 2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
-          bitMask0 |= 8;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return MeshPrimitive_init(bitMask0, local0, local1, local2, local3, null);
-  };
-  MeshPrimitive$$serializer.prototype.childSerializers = function () {
-    return [new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), internal.IntSerializer, internal.IntSerializer, internal.IntSerializer];
-  };
-  MeshPrimitive$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var MeshPrimitive$$serializer_instance = null;
-  function MeshPrimitive$$serializer_getInstance() {
-    if (MeshPrimitive$$serializer_instance === null) {
-      new MeshPrimitive$$serializer();
-    }return MeshPrimitive$$serializer_instance;
-  }
-  function MeshPrimitive_init(seen1, attributes, indices, material, mode, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(MeshPrimitive.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('attributes');
-    else
-      $this.attributes = attributes;
-    if ((seen1 & 2) === 0)
-      $this.indices = -1;
-    else
-      $this.indices = indices;
-    if ((seen1 & 4) === 0)
-      $this.material = -1;
-    else
-      $this.material = material;
-    if ((seen1 & 8) === 0)
-      $this.mode = 4;
-    else
-      $this.mode = mode;
-    $this.materialRef = null;
-    $this.indexAccessorRef = null;
-    $this.attribAccessorRefs = LinkedHashMap_init();
-    return $this;
-  }
-  MeshPrimitive.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MeshPrimitive',
-    interfaces: []
-  };
-  MeshPrimitive.prototype.component1 = function () {
-    return this.attributes;
-  };
-  MeshPrimitive.prototype.component2 = function () {
-    return this.indices;
-  };
-  MeshPrimitive.prototype.component3 = function () {
-    return this.material;
-  };
-  MeshPrimitive.prototype.component4 = function () {
-    return this.mode;
-  };
-  MeshPrimitive.prototype.copy_ge2dsn$ = function (attributes, indices, material, mode) {
-    return new MeshPrimitive(attributes === void 0 ? this.attributes : attributes, indices === void 0 ? this.indices : indices, material === void 0 ? this.material : material, mode === void 0 ? this.mode : mode);
-  };
-  MeshPrimitive.prototype.toString = function () {
-    return 'MeshPrimitive(attributes=' + Kotlin.toString(this.attributes) + (', indices=' + Kotlin.toString(this.indices)) + (', material=' + Kotlin.toString(this.material)) + (', mode=' + Kotlin.toString(this.mode)) + ')';
-  };
-  MeshPrimitive.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.attributes) | 0;
-    result = result * 31 + Kotlin.hashCode(this.indices) | 0;
-    result = result * 31 + Kotlin.hashCode(this.material) | 0;
-    result = result * 31 + Kotlin.hashCode(this.mode) | 0;
-    return result;
-  };
-  MeshPrimitive.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.material, other.material) && Kotlin.equals(this.mode, other.mode)))));
-  };
-  function Material(doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff) {
-    Material$Companion_getInstance();
-    if (doubleSided === void 0)
-      doubleSided = false;
-    if (name === void 0)
-      name = null;
-    if (pbrMetallicRoughness === void 0)
-      pbrMetallicRoughness = new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]));
-    if (normalTexture === void 0)
-      normalTexture = null;
-    if (occlusionTexture === void 0)
-      occlusionTexture = null;
-    if (emissiveFactor === void 0)
-      emissiveFactor = null;
-    if (emissiveTexture === void 0)
-      emissiveTexture = null;
-    if (alphaMode === void 0)
-      alphaMode = 'OPAQUE';
-    if (alphaCutoff === void 0)
-      alphaCutoff = 0.5;
-    this.doubleSided = doubleSided;
-    this.name = name;
-    this.pbrMetallicRoughness = pbrMetallicRoughness;
-    this.normalTexture = normalTexture;
-    this.occlusionTexture = occlusionTexture;
-    this.emissiveFactor = emissiveFactor;
-    this.emissiveTexture = emissiveTexture;
-    this.alphaMode = alphaMode;
-    this.alphaCutoff = alphaCutoff;
-  }
-  function Material$Companion() {
-    Material$Companion_instance = this;
-  }
-  Material$Companion.prototype.serializer = function () {
-    return Material$$serializer_getInstance();
-  };
-  Material$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Material$Companion_instance = null;
-  function Material$Companion_getInstance() {
-    if (Material$Companion_instance === null) {
-      new Material$Companion();
-    }return Material$Companion_instance;
-  }
-  function Material$$serializer() {
-    this.descriptor_ohyiio$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Material', this, 9);
-    this.descriptor.addElement_ivxn3r$('doubleSided', true);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    this.descriptor.addElement_ivxn3r$('pbrMetallicRoughness', true);
-    this.descriptor.addElement_ivxn3r$('normalTexture', true);
-    this.descriptor.addElement_ivxn3r$('occlusionTexture', true);
-    this.descriptor.addElement_ivxn3r$('emissiveFactor', true);
-    this.descriptor.addElement_ivxn3r$('emissiveTexture', true);
-    this.descriptor.addElement_ivxn3r$('alphaMode', true);
-    this.descriptor.addElement_ivxn3r$('alphaCutoff', true);
-    Material$$serializer_instance = this;
-  }
-  Object.defineProperty(Material$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_ohyiio$_0;
-    }
-  });
-  Material$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    if (!equals(value.doubleSided, false) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
-      output.encodeBooleanElement_w1b0nl$(this.descriptor, 0, value.doubleSided);
-    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
-    if (!equals(value.pbrMetallicRoughness, new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]))) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeSerializableElement_blecud$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance(), value.pbrMetallicRoughness);
-    if (!equals(value.normalTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, MaterialMap$$serializer_getInstance(), value.normalTexture);
-    if (!equals(value.occlusionTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), value.occlusionTexture);
-    if (!equals(value.emissiveFactor, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), value.emissiveFactor);
-    if (!equals(value.emissiveTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 6, MaterialMap$$serializer_getInstance(), value.emissiveTexture);
-    if (!equals(value.alphaMode, 'OPAQUE') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
-      output.encodeStringElement_bgm7zs$(this.descriptor, 7, value.alphaMode);
-    if (!equals(value.alphaCutoff, 0.5) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
-      output.encodeFloatElement_t7qhdx$(this.descriptor, 8, value.alphaCutoff);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Material$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3
-    , local4
-    , local5
-    , local6
-    , local7
-    , local8;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeBooleanElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance()) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance(), local2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, MaterialMap$$serializer_getInstance(), local3);
-          bitMask0 |= 8;
-          break;
-        case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), local4);
-          bitMask0 |= 16;
-          break;
-        case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
-          bitMask0 |= 32;
-          break;
-        case 6:
-          local6 = (bitMask0 & 64) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 6, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 6, MaterialMap$$serializer_getInstance(), local6);
-          bitMask0 |= 64;
-          break;
-        case 7:
-          local7 = input.decodeStringElement_3zr2iy$(this.descriptor, 7);
-          bitMask0 |= 128;
-          break;
-        case 8:
-          local8 = input.decodeFloatElement_3zr2iy$(this.descriptor, 8);
-          bitMask0 |= 256;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Material_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, null);
-  };
-  Material$$serializer.prototype.childSerializers = function () {
-    return [internal.BooleanSerializer, new NullableSerializer(internal.StringSerializer), PbrMetallicRoughness$$serializer_getInstance(), new NullableSerializer(MaterialMap$$serializer_getInstance()), new NullableSerializer(MaterialMap$$serializer_getInstance()), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(MaterialMap$$serializer_getInstance()), internal.StringSerializer, internal.FloatSerializer];
-  };
-  Material$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Material$$serializer_instance = null;
-  function Material$$serializer_getInstance() {
-    if (Material$$serializer_instance === null) {
-      new Material$$serializer();
-    }return Material$$serializer_instance;
-  }
-  function Material_init(seen1, doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Material.prototype);
-    if ((seen1 & 1) === 0)
-      $this.doubleSided = false;
-    else
-      $this.doubleSided = doubleSided;
-    if ((seen1 & 2) === 0)
-      $this.name = null;
-    else
-      $this.name = name;
-    if ((seen1 & 4) === 0)
-      $this.pbrMetallicRoughness = new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]));
-    else
-      $this.pbrMetallicRoughness = pbrMetallicRoughness;
-    if ((seen1 & 8) === 0)
-      $this.normalTexture = null;
-    else
-      $this.normalTexture = normalTexture;
-    if ((seen1 & 16) === 0)
-      $this.occlusionTexture = null;
-    else
-      $this.occlusionTexture = occlusionTexture;
-    if ((seen1 & 32) === 0)
-      $this.emissiveFactor = null;
-    else
-      $this.emissiveFactor = emissiveFactor;
-    if ((seen1 & 64) === 0)
-      $this.emissiveTexture = null;
-    else
-      $this.emissiveTexture = emissiveTexture;
-    if ((seen1 & 128) === 0)
-      $this.alphaMode = 'OPAQUE';
-    else
-      $this.alphaMode = alphaMode;
-    if ((seen1 & 256) === 0)
-      $this.alphaCutoff = 0.5;
-    else
-      $this.alphaCutoff = alphaCutoff;
-    return $this;
-  }
-  Material.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Material',
-    interfaces: []
-  };
-  Material.prototype.component1 = function () {
-    return this.doubleSided;
-  };
-  Material.prototype.component2 = function () {
-    return this.name;
-  };
-  Material.prototype.component3 = function () {
-    return this.pbrMetallicRoughness;
-  };
-  Material.prototype.component4 = function () {
-    return this.normalTexture;
-  };
-  Material.prototype.component5 = function () {
-    return this.occlusionTexture;
-  };
-  Material.prototype.component6 = function () {
-    return this.emissiveFactor;
-  };
-  Material.prototype.component7 = function () {
-    return this.emissiveTexture;
-  };
-  Material.prototype.component8 = function () {
-    return this.alphaMode;
-  };
-  Material.prototype.component9 = function () {
-    return this.alphaCutoff;
-  };
-  Material.prototype.copy_w55z1t$ = function (doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff) {
-    return new Material(doubleSided === void 0 ? this.doubleSided : doubleSided, name === void 0 ? this.name : name, pbrMetallicRoughness === void 0 ? this.pbrMetallicRoughness : pbrMetallicRoughness, normalTexture === void 0 ? this.normalTexture : normalTexture, occlusionTexture === void 0 ? this.occlusionTexture : occlusionTexture, emissiveFactor === void 0 ? this.emissiveFactor : emissiveFactor, emissiveTexture === void 0 ? this.emissiveTexture : emissiveTexture, alphaMode === void 0 ? this.alphaMode : alphaMode, alphaCutoff === void 0 ? this.alphaCutoff : alphaCutoff);
-  };
-  Material.prototype.toString = function () {
-    return 'Material(doubleSided=' + Kotlin.toString(this.doubleSided) + (', name=' + Kotlin.toString(this.name)) + (', pbrMetallicRoughness=' + Kotlin.toString(this.pbrMetallicRoughness)) + (', normalTexture=' + Kotlin.toString(this.normalTexture)) + (', occlusionTexture=' + Kotlin.toString(this.occlusionTexture)) + (', emissiveFactor=' + Kotlin.toString(this.emissiveFactor)) + (', emissiveTexture=' + Kotlin.toString(this.emissiveTexture)) + (', alphaMode=' + Kotlin.toString(this.alphaMode)) + (', alphaCutoff=' + Kotlin.toString(this.alphaCutoff)) + ')';
-  };
-  Material.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.doubleSided) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.pbrMetallicRoughness) | 0;
-    result = result * 31 + Kotlin.hashCode(this.normalTexture) | 0;
-    result = result * 31 + Kotlin.hashCode(this.occlusionTexture) | 0;
-    result = result * 31 + Kotlin.hashCode(this.emissiveFactor) | 0;
-    result = result * 31 + Kotlin.hashCode(this.emissiveTexture) | 0;
-    result = result * 31 + Kotlin.hashCode(this.alphaMode) | 0;
-    result = result * 31 + Kotlin.hashCode(this.alphaCutoff) | 0;
-    return result;
-  };
-  Material.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.doubleSided, other.doubleSided) && Kotlin.equals(this.name, other.name) && Kotlin.equals(this.pbrMetallicRoughness, other.pbrMetallicRoughness) && Kotlin.equals(this.normalTexture, other.normalTexture) && Kotlin.equals(this.occlusionTexture, other.occlusionTexture) && Kotlin.equals(this.emissiveFactor, other.emissiveFactor) && Kotlin.equals(this.emissiveTexture, other.emissiveTexture) && Kotlin.equals(this.alphaMode, other.alphaMode) && Kotlin.equals(this.alphaCutoff, other.alphaCutoff)))));
-  };
-  function PbrMetallicRoughness(baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture) {
-    PbrMetallicRoughness$Companion_getInstance();
-    if (baseColorFactor === void 0)
-      baseColorFactor = listOf([1.0, 1.0, 1.0, 1.0]);
-    if (baseColorTexture === void 0)
-      baseColorTexture = null;
-    if (metallicFactor === void 0)
-      metallicFactor = 1.0;
-    if (roughnessFactor === void 0)
-      roughnessFactor = 1.0;
-    if (metallicRoughnessTexture === void 0)
-      metallicRoughnessTexture = null;
-    this.baseColorFactor = baseColorFactor;
-    this.baseColorTexture = baseColorTexture;
-    this.metallicFactor = metallicFactor;
-    this.roughnessFactor = roughnessFactor;
-    this.metallicRoughnessTexture = metallicRoughnessTexture;
-  }
-  function PbrMetallicRoughness$Companion() {
-    PbrMetallicRoughness$Companion_instance = this;
-  }
-  PbrMetallicRoughness$Companion.prototype.serializer = function () {
-    return PbrMetallicRoughness$$serializer_getInstance();
-  };
-  PbrMetallicRoughness$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var PbrMetallicRoughness$Companion_instance = null;
-  function PbrMetallicRoughness$Companion_getInstance() {
-    if (PbrMetallicRoughness$Companion_instance === null) {
-      new PbrMetallicRoughness$Companion();
-    }return PbrMetallicRoughness$Companion_instance;
-  }
-  function PbrMetallicRoughness$$serializer() {
-    this.descriptor_au0mxi$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.PbrMetallicRoughness', this, 5);
-    this.descriptor.addElement_ivxn3r$('baseColorFactor', true);
-    this.descriptor.addElement_ivxn3r$('baseColorTexture', true);
-    this.descriptor.addElement_ivxn3r$('metallicFactor', true);
-    this.descriptor.addElement_ivxn3r$('roughnessFactor', true);
-    this.descriptor.addElement_ivxn3r$('metallicRoughnessTexture', true);
-    PbrMetallicRoughness$$serializer_instance = this;
-  }
-  Object.defineProperty(PbrMetallicRoughness$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_au0mxi$_0;
-    }
-  });
-  PbrMetallicRoughness$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    if (!equals(value.baseColorFactor, listOf([1.0, 1.0, 1.0, 1.0])) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
-      output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer), value.baseColorFactor);
-    if (!equals(value.baseColorTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, MaterialMap$$serializer_getInstance(), value.baseColorTexture);
-    if (!equals(value.metallicFactor, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeFloatElement_t7qhdx$(this.descriptor, 2, value.metallicFactor);
-    if (!equals(value.roughnessFactor, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeFloatElement_t7qhdx$(this.descriptor, 3, value.roughnessFactor);
-    if (!equals(value.metallicRoughnessTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), value.metallicRoughnessTexture);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  PbrMetallicRoughness$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3
-    , local4;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer), local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, MaterialMap$$serializer_getInstance(), local1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = input.decodeFloatElement_3zr2iy$(this.descriptor, 3);
-          bitMask0 |= 8;
-          break;
-        case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), local4);
-          bitMask0 |= 16;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return PbrMetallicRoughness_init(bitMask0, local0, local1, local2, local3, local4, null);
-  };
-  PbrMetallicRoughness$$serializer.prototype.childSerializers = function () {
-    return [new ArrayListSerializer(internal.FloatSerializer), new NullableSerializer(MaterialMap$$serializer_getInstance()), internal.FloatSerializer, internal.FloatSerializer, new NullableSerializer(MaterialMap$$serializer_getInstance())];
-  };
-  PbrMetallicRoughness$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var PbrMetallicRoughness$$serializer_instance = null;
-  function PbrMetallicRoughness$$serializer_getInstance() {
-    if (PbrMetallicRoughness$$serializer_instance === null) {
-      new PbrMetallicRoughness$$serializer();
-    }return PbrMetallicRoughness$$serializer_instance;
-  }
-  function PbrMetallicRoughness_init(seen1, baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(PbrMetallicRoughness.prototype);
-    if ((seen1 & 1) === 0)
-      $this.baseColorFactor = listOf([1.0, 1.0, 1.0, 1.0]);
-    else
-      $this.baseColorFactor = baseColorFactor;
-    if ((seen1 & 2) === 0)
-      $this.baseColorTexture = null;
-    else
-      $this.baseColorTexture = baseColorTexture;
-    if ((seen1 & 4) === 0)
-      $this.metallicFactor = 1.0;
-    else
-      $this.metallicFactor = metallicFactor;
-    if ((seen1 & 8) === 0)
-      $this.roughnessFactor = 1.0;
-    else
-      $this.roughnessFactor = roughnessFactor;
-    if ((seen1 & 16) === 0)
-      $this.metallicRoughnessTexture = null;
-    else
-      $this.metallicRoughnessTexture = metallicRoughnessTexture;
-    return $this;
-  }
-  PbrMetallicRoughness.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrMetallicRoughness',
-    interfaces: []
-  };
-  PbrMetallicRoughness.prototype.component1 = function () {
-    return this.baseColorFactor;
-  };
-  PbrMetallicRoughness.prototype.component2 = function () {
-    return this.baseColorTexture;
-  };
-  PbrMetallicRoughness.prototype.component3 = function () {
-    return this.metallicFactor;
-  };
-  PbrMetallicRoughness.prototype.component4 = function () {
-    return this.roughnessFactor;
-  };
-  PbrMetallicRoughness.prototype.component5 = function () {
-    return this.metallicRoughnessTexture;
-  };
-  PbrMetallicRoughness.prototype.copy_7kaaf4$ = function (baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture) {
-    return new PbrMetallicRoughness(baseColorFactor === void 0 ? this.baseColorFactor : baseColorFactor, baseColorTexture === void 0 ? this.baseColorTexture : baseColorTexture, metallicFactor === void 0 ? this.metallicFactor : metallicFactor, roughnessFactor === void 0 ? this.roughnessFactor : roughnessFactor, metallicRoughnessTexture === void 0 ? this.metallicRoughnessTexture : metallicRoughnessTexture);
-  };
-  PbrMetallicRoughness.prototype.toString = function () {
-    return 'PbrMetallicRoughness(baseColorFactor=' + Kotlin.toString(this.baseColorFactor) + (', baseColorTexture=' + Kotlin.toString(this.baseColorTexture)) + (', metallicFactor=' + Kotlin.toString(this.metallicFactor)) + (', roughnessFactor=' + Kotlin.toString(this.roughnessFactor)) + (', metallicRoughnessTexture=' + Kotlin.toString(this.metallicRoughnessTexture)) + ')';
-  };
-  PbrMetallicRoughness.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.baseColorFactor) | 0;
-    result = result * 31 + Kotlin.hashCode(this.baseColorTexture) | 0;
-    result = result * 31 + Kotlin.hashCode(this.metallicFactor) | 0;
-    result = result * 31 + Kotlin.hashCode(this.roughnessFactor) | 0;
-    result = result * 31 + Kotlin.hashCode(this.metallicRoughnessTexture) | 0;
-    return result;
-  };
-  PbrMetallicRoughness.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.baseColorFactor, other.baseColorFactor) && Kotlin.equals(this.baseColorTexture, other.baseColorTexture) && Kotlin.equals(this.metallicFactor, other.metallicFactor) && Kotlin.equals(this.roughnessFactor, other.roughnessFactor) && Kotlin.equals(this.metallicRoughnessTexture, other.metallicRoughnessTexture)))));
-  };
-  function MaterialMap(index, texCoord, scale) {
-    MaterialMap$Companion_getInstance();
-    if (texCoord === void 0)
-      texCoord = 0;
-    if (scale === void 0)
-      scale = 1.0;
-    this.index = index;
-    this.texCoord = texCoord;
-    this.scale = scale;
-  }
-  function MaterialMap$Companion() {
-    MaterialMap$Companion_instance = this;
-  }
-  MaterialMap$Companion.prototype.serializer = function () {
-    return MaterialMap$$serializer_getInstance();
-  };
-  MaterialMap$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var MaterialMap$Companion_instance = null;
-  function MaterialMap$Companion_getInstance() {
-    if (MaterialMap$Companion_instance === null) {
-      new MaterialMap$Companion();
-    }return MaterialMap$Companion_instance;
-  }
-  function MaterialMap$$serializer() {
-    this.descriptor_b9vp7e$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.MaterialMap', this, 3);
-    this.descriptor.addElement_ivxn3r$('index', false);
-    this.descriptor.addElement_ivxn3r$('texCoord', true);
-    this.descriptor.addElement_ivxn3r$('scale', true);
-    MaterialMap$$serializer_instance = this;
-  }
-  Object.defineProperty(MaterialMap$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_b9vp7e$_0;
-    }
-  });
-  MaterialMap$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.index);
-    if (!equals(value.texCoord, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.texCoord);
-    if (!equals(value.scale, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeFloatElement_t7qhdx$(this.descriptor, 2, value.scale);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  MaterialMap$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
-          bitMask0 |= 4;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return MaterialMap_init(bitMask0, local0, local1, local2, null);
-  };
-  MaterialMap$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, internal.IntSerializer, internal.FloatSerializer];
-  };
-  MaterialMap$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var MaterialMap$$serializer_instance = null;
-  function MaterialMap$$serializer_getInstance() {
-    if (MaterialMap$$serializer_instance === null) {
-      new MaterialMap$$serializer();
-    }return MaterialMap$$serializer_instance;
-  }
-  function MaterialMap_init(seen1, index, texCoord, scale, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(MaterialMap.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('index');
-    else
-      $this.index = index;
-    if ((seen1 & 2) === 0)
-      $this.texCoord = 0;
-    else
-      $this.texCoord = texCoord;
-    if ((seen1 & 4) === 0)
-      $this.scale = 1.0;
-    else
-      $this.scale = scale;
-    return $this;
-  }
-  MaterialMap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MaterialMap',
-    interfaces: []
-  };
-  MaterialMap.prototype.component1 = function () {
-    return this.index;
-  };
-  MaterialMap.prototype.component2 = function () {
-    return this.texCoord;
-  };
-  MaterialMap.prototype.component3 = function () {
-    return this.scale;
-  };
-  MaterialMap.prototype.copy_n0b4r3$ = function (index, texCoord, scale) {
-    return new MaterialMap(index === void 0 ? this.index : index, texCoord === void 0 ? this.texCoord : texCoord, scale === void 0 ? this.scale : scale);
-  };
-  MaterialMap.prototype.toString = function () {
-    return 'MaterialMap(index=' + Kotlin.toString(this.index) + (', texCoord=' + Kotlin.toString(this.texCoord)) + (', scale=' + Kotlin.toString(this.scale)) + ')';
-  };
-  MaterialMap.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.index) | 0;
-    result = result * 31 + Kotlin.hashCode(this.texCoord) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scale) | 0;
-    return result;
-  };
-  MaterialMap.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.index, other.index) && Kotlin.equals(this.texCoord, other.texCoord) && Kotlin.equals(this.scale, other.scale)))));
-  };
-  function Texture_0(source, name) {
-    Texture$Companion_getInstance_0();
-    if (source === void 0)
-      source = 0;
-    if (name === void 0)
-      name = null;
-    this.source = source;
-    this.name = name;
-    this.imageRef_tvaqhx$_0 = this.imageRef_tvaqhx$_0;
-    this.createdTex_0 = null;
-  }
-  Object.defineProperty(Texture_0.prototype, 'imageRef', {
-    get: function () {
-      if (this.imageRef_tvaqhx$_0 == null)
-        return throwUPAE('imageRef');
-      return this.imageRef_tvaqhx$_0;
-    },
-    set: function (imageRef) {
-      this.imageRef_tvaqhx$_0 = imageRef;
-    }
-  });
-  function Coroutine$Texture$makeTexture$lambda(this$Texture_0, $receiver_0, assetMgr_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$Texture = this$Texture_0;
-    this.local$assetMgr = assetMgr_0;
-  }
-  Coroutine$Texture$makeTexture$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$Texture$makeTexture$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$Texture$makeTexture$lambda.prototype.constructor = Coroutine$Texture$makeTexture$lambda;
-  Coroutine$Texture$makeTexture$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            var tmp$;
-            if (this.local$this$Texture.imageRef.uri != null) {
-              this.state_0 = 3;
-              this.result_0 = this.local$assetMgr.loadTextureData_61zpoe$(ensureNotNull(this.local$this$Texture.imageRef.uri), this);
-              if (this.result_0 === COROUTINE_SUSPENDED)
-                return COROUTINE_SUSPENDED;
-              continue;
-            } else {
-              this.state_0 = 2;
-              this.result_0 = this.local$assetMgr.createTextureData_asds6l$(ensureNotNull(this.local$this$Texture.imageRef.bufferViewRef).getData(), (tmp$ = this.local$this$Texture.imageRef.mimeType) != null ? tmp$ : 'image/png', this);
-              if (this.result_0 === COROUTINE_SUSPENDED)
-                return COROUTINE_SUSPENDED;
-              continue;
-            }
-
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          case 3:
-            return this.result_0;
-          case 4:
-            return;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function Texture$makeTexture$lambda(this$Texture_0) {
-    return function ($receiver_0, assetMgr_0, continuation_0, suspended) {
-      var instance = new Coroutine$Texture$makeTexture$lambda(this$Texture_0, $receiver_0, assetMgr_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  Texture_0.prototype.makeTexture = function () {
-    if (this.createdTex_0 == null) {
-      this.createdTex_0 = new Texture(void 0, Texture$makeTexture$lambda(this));
-    }return ensureNotNull(this.createdTex_0);
-  };
-  function Texture$Companion_0() {
-    Texture$Companion_instance_0 = this;
-  }
-  Texture$Companion_0.prototype.serializer = function () {
-    return Texture$$serializer_getInstance();
-  };
-  Texture$Companion_0.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Texture$Companion_instance_0 = null;
-  function Texture$Companion_getInstance_0() {
-    if (Texture$Companion_instance_0 === null) {
-      new Texture$Companion_0();
-    }return Texture$Companion_instance_0;
-  }
-  function Texture$$serializer() {
-    this.descriptor_chnfn8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Texture', this, 2);
-    this.descriptor.addElement_ivxn3r$('source', true);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    Texture$$serializer_instance = this;
-  }
-  Object.defineProperty(Texture$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_chnfn8$_0;
-    }
-  });
-  Texture$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    if (!equals(value.source, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
-      output.encodeIntElement_4wpqag$(this.descriptor, 0, value.source);
-    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Texture$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Texture_init(bitMask0, local0, local1, null);
-  };
-  Texture$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, new NullableSerializer(internal.StringSerializer)];
-  };
-  Texture$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Texture$$serializer_instance = null;
-  function Texture$$serializer_getInstance() {
-    if (Texture$$serializer_instance === null) {
-      new Texture$$serializer();
-    }return Texture$$serializer_instance;
-  }
-  function Texture_init(seen1, source, name, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Texture_0.prototype);
-    if ((seen1 & 1) === 0)
-      $this.source = 0;
-    else
-      $this.source = source;
-    if ((seen1 & 2) === 0)
-      $this.name = null;
-    else
-      $this.name = name;
-    $this.createdTex_0 = null;
-    return $this;
-  }
-  Texture_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Texture',
-    interfaces: []
-  };
-  Texture_0.prototype.component1 = function () {
-    return this.source;
-  };
-  Texture_0.prototype.component2 = function () {
-    return this.name;
-  };
-  Texture_0.prototype.copy_vqvrqt$ = function (source, name) {
-    return new Texture_0(source === void 0 ? this.source : source, name === void 0 ? this.name : name);
-  };
-  Texture_0.prototype.toString = function () {
-    return 'Texture(source=' + Kotlin.toString(this.source) + (', name=' + Kotlin.toString(this.name)) + ')';
-  };
-  Texture_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.source) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    return result;
-  };
-  Texture_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.source, other.source) && Kotlin.equals(this.name, other.name)))));
-  };
-  function Image_0(uri, bufferView, mimeType, name) {
-    Image$Companion_getInstance();
-    if (uri === void 0)
-      uri = null;
-    if (bufferView === void 0)
-      bufferView = -1;
-    if (mimeType === void 0)
-      mimeType = null;
-    if (name === void 0)
-      name = null;
-    this.uri = uri;
-    this.bufferView = bufferView;
-    this.mimeType = mimeType;
-    this.name = name;
-    this.bufferViewRef = null;
-  }
-  function Image$Companion() {
-    Image$Companion_instance = this;
-  }
-  Image$Companion.prototype.serializer = function () {
-    return Image$$serializer_getInstance();
-  };
-  Image$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Image$Companion_instance = null;
-  function Image$Companion_getInstance() {
-    if (Image$Companion_instance === null) {
-      new Image$Companion();
-    }return Image$Companion_instance;
-  }
-  function Image$$serializer() {
-    this.descriptor_wuobpo$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Image', this, 4);
-    this.descriptor.addElement_ivxn3r$('uri', true);
-    this.descriptor.addElement_ivxn3r$('bufferView', true);
-    this.descriptor.addElement_ivxn3r$('mimeType', true);
-    this.descriptor.addElement_ivxn3r$('name', true);
-    Image$$serializer_instance = this;
-  }
-  Object.defineProperty(Image$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_wuobpo$_0;
-    }
-  });
-  Image$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    if (!equals(value.uri, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 0, internal.StringSerializer, value.uri);
-    if (!equals(value.bufferView, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.bufferView);
-    if (!equals(value.mimeType, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 2, internal.StringSerializer, value.mimeType);
-    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, internal.StringSerializer, value.name);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Image$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 0, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 0, internal.StringSerializer, local0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 2, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 2, internal.StringSerializer, local2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, internal.StringSerializer, local3);
-          bitMask0 |= 8;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Image_init(bitMask0, local0, local1, local2, local3, null);
-  };
-  Image$$serializer.prototype.childSerializers = function () {
-    return [new NullableSerializer(internal.StringSerializer), internal.IntSerializer, new NullableSerializer(internal.StringSerializer), new NullableSerializer(internal.StringSerializer)];
-  };
-  Image$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Image$$serializer_instance = null;
-  function Image$$serializer_getInstance() {
-    if (Image$$serializer_instance === null) {
-      new Image$$serializer();
-    }return Image$$serializer_instance;
-  }
-  function Image_init(seen1, uri, bufferView, mimeType, name, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Image_0.prototype);
-    if ((seen1 & 1) === 0)
-      $this.uri = null;
-    else
-      $this.uri = uri;
-    if ((seen1 & 2) === 0)
-      $this.bufferView = -1;
-    else
-      $this.bufferView = bufferView;
-    if ((seen1 & 4) === 0)
-      $this.mimeType = null;
-    else
-      $this.mimeType = mimeType;
-    if ((seen1 & 8) === 0)
-      $this.name = null;
-    else
-      $this.name = name;
-    $this.bufferViewRef = null;
-    return $this;
-  }
-  Image_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Image',
-    interfaces: []
-  };
-  Image_0.prototype.component1 = function () {
-    return this.uri;
-  };
-  Image_0.prototype.component2 = function () {
-    return this.bufferView;
-  };
-  Image_0.prototype.component3 = function () {
-    return this.mimeType;
-  };
-  Image_0.prototype.component4 = function () {
-    return this.name;
-  };
-  Image_0.prototype.copy_fznb1v$ = function (uri, bufferView, mimeType, name) {
-    return new Image_0(uri === void 0 ? this.uri : uri, bufferView === void 0 ? this.bufferView : bufferView, mimeType === void 0 ? this.mimeType : mimeType, name === void 0 ? this.name : name);
-  };
-  Image_0.prototype.toString = function () {
-    return 'Image(uri=' + Kotlin.toString(this.uri) + (', bufferView=' + Kotlin.toString(this.bufferView)) + (', mimeType=' + Kotlin.toString(this.mimeType)) + (', name=' + Kotlin.toString(this.name)) + ')';
-  };
-  Image_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.uri) | 0;
-    result = result * 31 + Kotlin.hashCode(this.bufferView) | 0;
-    result = result * 31 + Kotlin.hashCode(this.mimeType) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    return result;
-  };
-  Image_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uri, other.uri) && Kotlin.equals(this.bufferView, other.bufferView) && Kotlin.equals(this.mimeType, other.mimeType) && Kotlin.equals(this.name, other.name)))));
-  };
-  function Buffer_0(byteLength, uri) {
-    Buffer$Companion_getInstance();
-    if (uri === void 0)
-      uri = null;
-    this.byteLength = byteLength;
-    this.uri = uri;
-    this.data_yemm5y$_0 = this.data_yemm5y$_0;
-  }
-  Object.defineProperty(Buffer_0.prototype, 'data', {
-    get: function () {
-      if (this.data_yemm5y$_0 == null)
-        return throwUPAE('data');
-      return this.data_yemm5y$_0;
-    },
-    set: function (data) {
-      this.data_yemm5y$_0 = data;
-    }
-  });
-  function Buffer$Companion() {
-    Buffer$Companion_instance = this;
-  }
-  Buffer$Companion.prototype.serializer = function () {
-    return Buffer$$serializer_getInstance();
-  };
-  Buffer$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Buffer$Companion_instance = null;
-  function Buffer$Companion_getInstance() {
-    if (Buffer$Companion_instance === null) {
-      new Buffer$Companion();
-    }return Buffer$Companion_instance;
-  }
-  function Buffer$$serializer() {
-    this.descriptor_pfm5uv$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Buffer', this, 2);
-    this.descriptor.addElement_ivxn3r$('byteLength', false);
-    this.descriptor.addElement_ivxn3r$('uri', true);
-    Buffer$$serializer_instance = this;
-  }
-  Object.defineProperty(Buffer$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_pfm5uv$_0;
-    }
-  });
-  Buffer$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.byteLength);
-    if (!equals(value.uri, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
-      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.uri);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  Buffer$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
-          bitMask0 |= 2;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return Buffer_init(bitMask0, local0, local1, null);
-  };
-  Buffer$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, new NullableSerializer(internal.StringSerializer)];
-  };
-  Buffer$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var Buffer$$serializer_instance = null;
-  function Buffer$$serializer_getInstance() {
-    if (Buffer$$serializer_instance === null) {
-      new Buffer$$serializer();
-    }return Buffer$$serializer_instance;
-  }
-  function Buffer_init(seen1, byteLength, uri, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(Buffer_0.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('byteLength');
-    else
-      $this.byteLength = byteLength;
-    if ((seen1 & 2) === 0)
-      $this.uri = null;
-    else
-      $this.uri = uri;
-    return $this;
-  }
-  Buffer_0.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Buffer',
-    interfaces: []
-  };
-  Buffer_0.prototype.component1 = function () {
-    return this.byteLength;
-  };
-  Buffer_0.prototype.component2 = function () {
-    return this.uri;
-  };
-  Buffer_0.prototype.copy_vqvrqt$ = function (byteLength, uri) {
-    return new Buffer_0(byteLength === void 0 ? this.byteLength : byteLength, uri === void 0 ? this.uri : uri);
-  };
-  Buffer_0.prototype.toString = function () {
-    return 'Buffer(byteLength=' + Kotlin.toString(this.byteLength) + (', uri=' + Kotlin.toString(this.uri)) + ')';
-  };
-  Buffer_0.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.byteLength) | 0;
-    result = result * 31 + Kotlin.hashCode(this.uri) | 0;
-    return result;
-  };
-  Buffer_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.byteLength, other.byteLength) && Kotlin.equals(this.uri, other.uri)))));
-  };
-  function BufferView(buffer, byteLength, byteOffset, target) {
-    BufferView$Companion_getInstance();
-    if (byteOffset === void 0)
-      byteOffset = 0;
-    if (target === void 0)
-      target = 0;
-    this.buffer = buffer;
-    this.byteLength = byteLength;
-    this.byteOffset = byteOffset;
-    this.target = target;
-    this.bufferRef_snsmuc$_0 = this.bufferRef_snsmuc$_0;
-  }
-  Object.defineProperty(BufferView.prototype, 'bufferRef', {
-    get: function () {
-      if (this.bufferRef_snsmuc$_0 == null)
-        return throwUPAE('bufferRef');
-      return this.bufferRef_snsmuc$_0;
-    },
-    set: function (bufferRef) {
-      this.bufferRef_snsmuc$_0 = bufferRef;
-    }
-  });
-  BufferView.prototype.getData = function () {
-    var tmp$;
-    var array = createUint8Buffer(this.byteLength);
-    tmp$ = this.byteLength;
-    for (var i = 0; i < tmp$; i++) {
-      array.set_6t1wet$(i, this.bufferRef.data.get_za3lpa$(this.byteOffset + i | 0));
-    }
-    return array;
-  };
-  function BufferView$Companion() {
-    BufferView$Companion_instance = this;
-  }
-  BufferView$Companion.prototype.serializer = function () {
-    return BufferView$$serializer_getInstance();
-  };
-  BufferView$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var BufferView$Companion_instance = null;
-  function BufferView$Companion_getInstance() {
-    if (BufferView$Companion_instance === null) {
-      new BufferView$Companion();
-    }return BufferView$Companion_instance;
-  }
-  function BufferView$$serializer() {
-    this.descriptor_42f42q$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.BufferView', this, 4);
-    this.descriptor.addElement_ivxn3r$('buffer', false);
-    this.descriptor.addElement_ivxn3r$('byteLength', false);
-    this.descriptor.addElement_ivxn3r$('byteOffset', true);
-    this.descriptor.addElement_ivxn3r$('target', true);
-    BufferView$$serializer_instance = this;
-  }
-  Object.defineProperty(BufferView$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_42f42q$_0;
-    }
-  });
-  BufferView$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.buffer);
-    output.encodeIntElement_4wpqag$(this.descriptor, 1, value.byteLength);
-    if (!equals(value.byteOffset, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
-      output.encodeIntElement_4wpqag$(this.descriptor, 2, value.byteOffset);
-    if (!equals(value.target, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
-      output.encodeIntElement_4wpqag$(this.descriptor, 3, value.target);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  BufferView$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = input.decodeIntElement_3zr2iy$(this.descriptor, 2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
-          bitMask0 |= 8;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return BufferView_init(bitMask0, local0, local1, local2, local3, null);
-  };
-  BufferView$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, internal.IntSerializer, internal.IntSerializer, internal.IntSerializer];
-  };
-  BufferView$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var BufferView$$serializer_instance = null;
-  function BufferView$$serializer_getInstance() {
-    if (BufferView$$serializer_instance === null) {
-      new BufferView$$serializer();
-    }return BufferView$$serializer_instance;
-  }
-  function BufferView_init(seen1, buffer, byteLength, byteOffset, target, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(BufferView.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('buffer');
-    else
-      $this.buffer = buffer;
-    if ((seen1 & 2) === 0)
-      throw new MissingFieldException('byteLength');
-    else
-      $this.byteLength = byteLength;
-    if ((seen1 & 4) === 0)
-      $this.byteOffset = 0;
-    else
-      $this.byteOffset = byteOffset;
-    if ((seen1 & 8) === 0)
-      $this.target = 0;
-    else
-      $this.target = target;
-    return $this;
-  }
-  BufferView.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'BufferView',
-    interfaces: []
-  };
-  BufferView.prototype.component1 = function () {
-    return this.buffer;
-  };
-  BufferView.prototype.component2 = function () {
-    return this.byteLength;
-  };
-  BufferView.prototype.component3 = function () {
-    return this.byteOffset;
-  };
-  BufferView.prototype.component4 = function () {
-    return this.target;
-  };
-  BufferView.prototype.copy_tjonv8$ = function (buffer, byteLength, byteOffset, target) {
-    return new BufferView(buffer === void 0 ? this.buffer : buffer, byteLength === void 0 ? this.byteLength : byteLength, byteOffset === void 0 ? this.byteOffset : byteOffset, target === void 0 ? this.target : target);
-  };
-  BufferView.prototype.toString = function () {
-    return 'BufferView(buffer=' + Kotlin.toString(this.buffer) + (', byteLength=' + Kotlin.toString(this.byteLength)) + (', byteOffset=' + Kotlin.toString(this.byteOffset)) + (', target=' + Kotlin.toString(this.target)) + ')';
-  };
-  BufferView.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.buffer) | 0;
-    result = result * 31 + Kotlin.hashCode(this.byteLength) | 0;
-    result = result * 31 + Kotlin.hashCode(this.byteOffset) | 0;
-    result = result * 31 + Kotlin.hashCode(this.target) | 0;
-    return result;
-  };
-  BufferView.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.buffer, other.buffer) && Kotlin.equals(this.byteLength, other.byteLength) && Kotlin.equals(this.byteOffset, other.byteOffset) && Kotlin.equals(this.target, other.target)))));
   };
   function Accessor(bufferView, componentType, count, type, byteOffset, min, max) {
     Accessor$Companion_getInstance();
@@ -32775,6 +29754,3306 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'Vec4fAccessor',
     interfaces: []
+  };
+  function Asset(version, generator) {
+    Asset$Companion_getInstance();
+    if (generator === void 0)
+      generator = null;
+    this.version = version;
+    this.generator = generator;
+  }
+  function Asset$Companion() {
+    Asset$Companion_instance = this;
+  }
+  Asset$Companion.prototype.serializer = function () {
+    return Asset$$serializer_getInstance();
+  };
+  Asset$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Asset$Companion_instance = null;
+  function Asset$Companion_getInstance() {
+    if (Asset$Companion_instance === null) {
+      new Asset$Companion();
+    }return Asset$Companion_instance;
+  }
+  function Asset$$serializer() {
+    this.descriptor_u2f4f3$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Asset', this, 2);
+    this.descriptor.addElement_ivxn3r$('version', false);
+    this.descriptor.addElement_ivxn3r$('generator', true);
+    Asset$$serializer_instance = this;
+  }
+  Object.defineProperty(Asset$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_u2f4f3$_0;
+    }
+  });
+  Asset$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, value.version);
+    if (!equals(value.generator, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.generator);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Asset$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Asset_init(bitMask0, local0, local1, null);
+  };
+  Asset$$serializer.prototype.childSerializers = function () {
+    return [internal.StringSerializer, new NullableSerializer(internal.StringSerializer)];
+  };
+  Asset$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Asset$$serializer_instance = null;
+  function Asset$$serializer_getInstance() {
+    if (Asset$$serializer_instance === null) {
+      new Asset$$serializer();
+    }return Asset$$serializer_instance;
+  }
+  function Asset_init(seen1, version, generator, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Asset.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('version');
+    else
+      $this.version = version;
+    if ((seen1 & 2) === 0)
+      $this.generator = null;
+    else
+      $this.generator = generator;
+    return $this;
+  }
+  Asset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Asset',
+    interfaces: []
+  };
+  Asset.prototype.component1 = function () {
+    return this.version;
+  };
+  Asset.prototype.component2 = function () {
+    return this.generator;
+  };
+  Asset.prototype.copy_jyasbz$ = function (version, generator) {
+    return new Asset(version === void 0 ? this.version : version, generator === void 0 ? this.generator : generator);
+  };
+  Asset.prototype.toString = function () {
+    return 'Asset(version=' + Kotlin.toString(this.version) + (', generator=' + Kotlin.toString(this.generator)) + ')';
+  };
+  Asset.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.version) | 0;
+    result = result * 31 + Kotlin.hashCode(this.generator) | 0;
+    return result;
+  };
+  Asset.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.generator, other.generator)))));
+  };
+  function Buffer_0(byteLength, uri) {
+    Buffer$Companion_getInstance();
+    if (uri === void 0)
+      uri = null;
+    this.byteLength = byteLength;
+    this.uri = uri;
+    this.data_yemm5y$_0 = this.data_yemm5y$_0;
+  }
+  Object.defineProperty(Buffer_0.prototype, 'data', {
+    get: function () {
+      if (this.data_yemm5y$_0 == null)
+        return throwUPAE('data');
+      return this.data_yemm5y$_0;
+    },
+    set: function (data) {
+      this.data_yemm5y$_0 = data;
+    }
+  });
+  function Buffer$Companion() {
+    Buffer$Companion_instance = this;
+  }
+  Buffer$Companion.prototype.serializer = function () {
+    return Buffer$$serializer_getInstance();
+  };
+  Buffer$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Buffer$Companion_instance = null;
+  function Buffer$Companion_getInstance() {
+    if (Buffer$Companion_instance === null) {
+      new Buffer$Companion();
+    }return Buffer$Companion_instance;
+  }
+  function Buffer$$serializer() {
+    this.descriptor_pfm5uv$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Buffer', this, 2);
+    this.descriptor.addElement_ivxn3r$('byteLength', false);
+    this.descriptor.addElement_ivxn3r$('uri', true);
+    Buffer$$serializer_instance = this;
+  }
+  Object.defineProperty(Buffer$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_pfm5uv$_0;
+    }
+  });
+  Buffer$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.byteLength);
+    if (!equals(value.uri, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.uri);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Buffer$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Buffer_init(bitMask0, local0, local1, null);
+  };
+  Buffer$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, new NullableSerializer(internal.StringSerializer)];
+  };
+  Buffer$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Buffer$$serializer_instance = null;
+  function Buffer$$serializer_getInstance() {
+    if (Buffer$$serializer_instance === null) {
+      new Buffer$$serializer();
+    }return Buffer$$serializer_instance;
+  }
+  function Buffer_init(seen1, byteLength, uri, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Buffer_0.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('byteLength');
+    else
+      $this.byteLength = byteLength;
+    if ((seen1 & 2) === 0)
+      $this.uri = null;
+    else
+      $this.uri = uri;
+    return $this;
+  }
+  Buffer_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Buffer',
+    interfaces: []
+  };
+  Buffer_0.prototype.component1 = function () {
+    return this.byteLength;
+  };
+  Buffer_0.prototype.component2 = function () {
+    return this.uri;
+  };
+  Buffer_0.prototype.copy_vqvrqt$ = function (byteLength, uri) {
+    return new Buffer_0(byteLength === void 0 ? this.byteLength : byteLength, uri === void 0 ? this.uri : uri);
+  };
+  Buffer_0.prototype.toString = function () {
+    return 'Buffer(byteLength=' + Kotlin.toString(this.byteLength) + (', uri=' + Kotlin.toString(this.uri)) + ')';
+  };
+  Buffer_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.byteLength) | 0;
+    result = result * 31 + Kotlin.hashCode(this.uri) | 0;
+    return result;
+  };
+  Buffer_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.byteLength, other.byteLength) && Kotlin.equals(this.uri, other.uri)))));
+  };
+  function BufferView(buffer, byteLength, byteOffset, target) {
+    BufferView$Companion_getInstance();
+    if (byteOffset === void 0)
+      byteOffset = 0;
+    if (target === void 0)
+      target = 0;
+    this.buffer = buffer;
+    this.byteLength = byteLength;
+    this.byteOffset = byteOffset;
+    this.target = target;
+    this.bufferRef_snsmuc$_0 = this.bufferRef_snsmuc$_0;
+  }
+  Object.defineProperty(BufferView.prototype, 'bufferRef', {
+    get: function () {
+      if (this.bufferRef_snsmuc$_0 == null)
+        return throwUPAE('bufferRef');
+      return this.bufferRef_snsmuc$_0;
+    },
+    set: function (bufferRef) {
+      this.bufferRef_snsmuc$_0 = bufferRef;
+    }
+  });
+  BufferView.prototype.getData = function () {
+    var tmp$;
+    var array = createUint8Buffer(this.byteLength);
+    tmp$ = this.byteLength;
+    for (var i = 0; i < tmp$; i++) {
+      array.set_6t1wet$(i, this.bufferRef.data.get_za3lpa$(this.byteOffset + i | 0));
+    }
+    return array;
+  };
+  function BufferView$Companion() {
+    BufferView$Companion_instance = this;
+  }
+  BufferView$Companion.prototype.serializer = function () {
+    return BufferView$$serializer_getInstance();
+  };
+  BufferView$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var BufferView$Companion_instance = null;
+  function BufferView$Companion_getInstance() {
+    if (BufferView$Companion_instance === null) {
+      new BufferView$Companion();
+    }return BufferView$Companion_instance;
+  }
+  function BufferView$$serializer() {
+    this.descriptor_42f42q$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.BufferView', this, 4);
+    this.descriptor.addElement_ivxn3r$('buffer', false);
+    this.descriptor.addElement_ivxn3r$('byteLength', false);
+    this.descriptor.addElement_ivxn3r$('byteOffset', true);
+    this.descriptor.addElement_ivxn3r$('target', true);
+    BufferView$$serializer_instance = this;
+  }
+  Object.defineProperty(BufferView$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_42f42q$_0;
+    }
+  });
+  BufferView$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.buffer);
+    output.encodeIntElement_4wpqag$(this.descriptor, 1, value.byteLength);
+    if (!equals(value.byteOffset, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeIntElement_4wpqag$(this.descriptor, 2, value.byteOffset);
+    if (!equals(value.target, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeIntElement_4wpqag$(this.descriptor, 3, value.target);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  BufferView$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = input.decodeIntElement_3zr2iy$(this.descriptor, 2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
+          bitMask0 |= 8;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return BufferView_init(bitMask0, local0, local1, local2, local3, null);
+  };
+  BufferView$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, internal.IntSerializer, internal.IntSerializer, internal.IntSerializer];
+  };
+  BufferView$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var BufferView$$serializer_instance = null;
+  function BufferView$$serializer_getInstance() {
+    if (BufferView$$serializer_instance === null) {
+      new BufferView$$serializer();
+    }return BufferView$$serializer_instance;
+  }
+  function BufferView_init(seen1, buffer, byteLength, byteOffset, target, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(BufferView.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('buffer');
+    else
+      $this.buffer = buffer;
+    if ((seen1 & 2) === 0)
+      throw new MissingFieldException('byteLength');
+    else
+      $this.byteLength = byteLength;
+    if ((seen1 & 4) === 0)
+      $this.byteOffset = 0;
+    else
+      $this.byteOffset = byteOffset;
+    if ((seen1 & 8) === 0)
+      $this.target = 0;
+    else
+      $this.target = target;
+    return $this;
+  }
+  BufferView.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BufferView',
+    interfaces: []
+  };
+  BufferView.prototype.component1 = function () {
+    return this.buffer;
+  };
+  BufferView.prototype.component2 = function () {
+    return this.byteLength;
+  };
+  BufferView.prototype.component3 = function () {
+    return this.byteOffset;
+  };
+  BufferView.prototype.component4 = function () {
+    return this.target;
+  };
+  BufferView.prototype.copy_tjonv8$ = function (buffer, byteLength, byteOffset, target) {
+    return new BufferView(buffer === void 0 ? this.buffer : buffer, byteLength === void 0 ? this.byteLength : byteLength, byteOffset === void 0 ? this.byteOffset : byteOffset, target === void 0 ? this.target : target);
+  };
+  BufferView.prototype.toString = function () {
+    return 'BufferView(buffer=' + Kotlin.toString(this.buffer) + (', byteLength=' + Kotlin.toString(this.byteLength)) + (', byteOffset=' + Kotlin.toString(this.byteOffset)) + (', target=' + Kotlin.toString(this.target)) + ')';
+  };
+  BufferView.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.buffer) | 0;
+    result = result * 31 + Kotlin.hashCode(this.byteLength) | 0;
+    result = result * 31 + Kotlin.hashCode(this.byteOffset) | 0;
+    result = result * 31 + Kotlin.hashCode(this.target) | 0;
+    return result;
+  };
+  BufferView.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.buffer, other.buffer) && Kotlin.equals(this.byteLength, other.byteLength) && Kotlin.equals(this.byteOffset, other.byteOffset) && Kotlin.equals(this.target, other.target)))));
+  };
+  function DataStream(data, byteOffset) {
+    if (byteOffset === void 0)
+      byteOffset = 0;
+    this.data = data;
+    this.byteOffset = byteOffset;
+    this.index = 0;
+  }
+  DataStream.prototype.hasRemaining = function () {
+    return this.index < this.data.capacity;
+  };
+  DataStream.prototype.readByte = function () {
+    var tmp$;
+    return this.data.get_za3lpa$(this.byteOffset + (tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$) | 0);
+  };
+  DataStream.prototype.readUByte = function () {
+    var tmp$;
+    return this.data.get_za3lpa$(this.byteOffset + (tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$) | 0) & 255;
+  };
+  DataStream.prototype.readShort = function () {
+    var s = this.readUShort();
+    if (s > 32767) {
+      s = s - 65536 | 0;
+    }return s;
+  };
+  DataStream.prototype.readUShort = function () {
+    var d = 0;
+    for (var i = 0; i <= 1; i++) {
+      d = d | this.readUByte() << (i * 8 | 0);
+    }
+    return d;
+  };
+  DataStream.prototype.readInt = function () {
+    return this.readUInt();
+  };
+  DataStream.prototype.readUInt = function () {
+    var d = 0;
+    for (var i = 0; i <= 3; i++) {
+      d = d | this.readUByte() << (i * 8 | 0);
+    }
+    return d;
+  };
+  DataStream.prototype.readFloat = function () {
+    var bits = this.readUInt();
+    return Kotlin.floatFromBits(bits);
+  };
+  DataStream.prototype.readData_za3lpa$ = function (len) {
+    var tmp$;
+    var buf = createUint8Buffer(len);
+    for (var i = 0; i < len; i++) {
+      buf.set_6t1wet$(i, this.data.get_za3lpa$((tmp$ = this.index, this.index = tmp$ + 1 | 0, tmp$)));
+    }
+    return buf;
+  };
+  DataStream.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DataStream',
+    interfaces: []
+  };
+  function Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$assetPath = closure$assetPath_0;
+    this.local$this$loadGltfModel = this$loadGltfModel_0;
+    this.local$closure$onLoad = closure$onLoad_0;
+    this.local$tmp$ = void 0;
+    this.local$model = void 0;
+    this.local$modelBasePath = void 0;
+    this.local$this$loadGltfModel_0 = void 0;
+    this.local$tmp$_1 = void 0;
+    this.local$element = void 0;
+  }
+  Coroutine$loadGltfModel$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadGltfModel$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGltfModel$lambda.prototype.constructor = Coroutine$loadGltfModel$lambda;
+  Coroutine$loadGltfModel$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            if (endsWith(this.local$closure$assetPath, '.gltf', true) || endsWith(this.local$closure$assetPath, '.gltf.gz', true)) {
+              this.state_0 = 4;
+              this.result_0 = loadGltf(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
+              if (this.result_0 === COROUTINE_SUSPENDED)
+                return COROUTINE_SUSPENDED;
+              continue;
+            } else {
+              if (endsWith(this.local$closure$assetPath, '.glb', true) || endsWith(this.local$closure$assetPath, '.glb.gz', true)) {
+                this.state_0 = 2;
+                this.result_0 = loadGlb(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
+                if (this.result_0 === COROUTINE_SUSPENDED)
+                  return COROUTINE_SUSPENDED;
+                continue;
+              } else {
+                this.local$tmp$ = null;
+                this.state_0 = 3;
+                continue;
+              }
+            }
+
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 3;
+            continue;
+          case 3:
+            this.state_0 = 5;
+            continue;
+          case 4:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 5;
+            continue;
+          case 5:
+            this.local$model = this.local$tmp$;
+            if (contains(this.local$closure$assetPath, 47)) {
+              var $receiver = this.local$closure$assetPath;
+              var endIndex = lastIndexOf(this.local$closure$assetPath, 47);
+              tmp$ = $receiver.substring(0, endIndex);
+            } else {
+              tmp$ = '.';
+            }
+
+            this.local$modelBasePath = tmp$;
+            if (this.local$model != null) {
+              this.local$this$loadGltfModel_0 = this.local$this$loadGltfModel;
+              var $receiver_0 = this.local$model.buffers;
+              var destination = ArrayList_init_0();
+              var tmp$_0;
+              tmp$_0 = $receiver_0.iterator();
+              while (tmp$_0.hasNext()) {
+                var element = tmp$_0.next();
+                if (element.uri != null)
+                  destination.add_11rb$(element);
+              }
+              this.local$tmp$_1 = destination.iterator();
+              this.state_0 = 6;
+              continue;
+            } else {
+              this.state_0 = 9;
+              continue;
+            }
+
+          case 6:
+            if (!this.local$tmp$_1.hasNext()) {
+              this.state_0 = 8;
+              continue;
+            }
+            this.local$element = this.local$tmp$_1.next();
+            var tmp$_1;
+            var uri = ensureNotNull(this.local$element.uri);
+            if (startsWith(uri, 'data:', true)) {
+              tmp$_1 = uri;
+            } else {
+              tmp$_1 = this.local$modelBasePath + '/' + uri;
+            }
+
+            var bufferPath = tmp$_1;
+            this.state_0 = 7;
+            this.result_0 = this.local$this$loadGltfModel_0.loadAsset_61zpoe$(bufferPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 7:
+            this.local$element.data = ensureNotNull(this.result_0);
+            this.state_0 = 6;
+            continue;
+          case 8:
+            var $receiver_1 = this.local$model.images;
+            var destination_0 = ArrayList_init_0();
+            var tmp$_2;
+            tmp$_2 = $receiver_1.iterator();
+            while (tmp$_2.hasNext()) {
+              var element_0 = tmp$_2.next();
+              if (element_0.uri != null)
+                destination_0.add_11rb$(element_0);
+            }
+
+            var tmp$_3;
+            tmp$_3 = destination_0.iterator();
+            while (tmp$_3.hasNext()) {
+              var element_1 = tmp$_3.next();
+              element_1.uri = this.local$modelBasePath + '/' + toString(element_1.uri);
+            }
+
+            this.local$model.updateReferences_8be2vx$();
+            this.state_0 = 9;
+            continue;
+          case 9:
+            return this.local$closure$onLoad(this.local$model);
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function loadGltfModel($receiver, assetPath, onLoad) {
+    launch($receiver, void 0, void 0, loadGltfModel$lambda(assetPath, $receiver, onLoad));
+  }
+  function Coroutine$loadGltf($receiver_0, assetPath_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$$receiver = $receiver_0;
+    this.local$assetPath = assetPath_0;
+  }
+  Coroutine$loadGltf.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadGltf.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGltf.prototype.constructor = Coroutine$loadGltf;
+  Coroutine$loadGltf.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = this.local$$receiver.loadAsset_61zpoe$(this.local$assetPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var data = this.result_0;
+            if (data != null && endsWith(this.local$assetPath, '.gz', true)) {
+              data = this.local$$receiver.inflate_ay2i3f$(data);
+            }
+            if (data != null) {
+              tmp$ = GltfFile$Companion_getInstance().fromJson_61zpoe$(decodeToString(data.toArray()));
+            } else {
+              tmp$ = null;
+            }
+
+            return tmp$;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function loadGltf($receiver_0, assetPath_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadGltf($receiver_0, assetPath_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$loadGlb($receiver_0, assetPath_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$tmp$ = void 0;
+    this.local$$receiver = $receiver_0;
+    this.local$assetPath = assetPath_0;
+  }
+  Coroutine$loadGlb.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadGlb.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGlb.prototype.constructor = Coroutine$loadGlb;
+  Coroutine$loadGlb.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$$receiver.loadAsset_61zpoe$(this.local$assetPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.local$tmp$ = this.result_0;
+            if (this.local$tmp$ == null) {
+              return null;
+            } else {
+              this.state_0 = 3;
+              continue;
+            }
+
+          case 3:
+            var data = this.local$tmp$;
+            if (endsWith(this.local$assetPath, '.gz', true)) {
+              data = this.local$$receiver.inflate_ay2i3f$(data);
+            }
+            var str = new DataStream(data);
+            var magic = str.readUInt();
+            var version = str.readUInt();
+            str.readUInt();
+            if (magic !== 1179937895) {
+              throw KoolException_init('Unexpected glTF magic number: ' + magic + ' (should be ' + '1179937895' + " / 'glTF')");
+            }
+            if (version !== 2) {
+              var $this = package$util.Log;
+              var level = Log$Level.WARN;
+              var tag = Kotlin.getKClassFromExpression(this.local$$receiver).simpleName;
+              if (level.level >= $this.level.level) {
+                $this.printer(level, tag, 'Unexpected glTF version: ' + version + ' (should be 2) - stuff might not work as expected');
+              }}
+            var chunkLen = str.readUInt();
+            var chunkType = {v: str.readUInt()};
+            if (chunkType.v !== 1313821514) {
+              throw KoolException_init('Unexpected chunk type for chunk 0: ' + chunkType.v + ' (should be ' + '1313821514' + " / 'JSON')");
+            }
+            var jsonData = str.readData_za3lpa$(chunkLen).toArray();
+            var model = GltfFile$Companion_getInstance().fromJson_61zpoe$(decodeToString(jsonData));
+            var iChunk = {v: 1};
+            while (str.hasRemaining()) {
+              chunkLen = str.readUInt();
+              chunkType.v = str.readUInt();
+              if (chunkType.v === 5130562) {
+                model.buffers.get_za3lpa$(iChunk.v - 1 | 0).data = str.readData_za3lpa$(chunkLen);
+              } else {
+                var $this_0 = package$util.Log;
+                var level_0 = Log$Level.WARN;
+                var tag_0 = Kotlin.getKClassFromExpression(this.local$$receiver).simpleName;
+                if (level_0.level >= $this_0.level.level) {
+                  $this_0.printer(level_0, tag_0, 'Unexpected chunk type for chunk ' + iChunk.v + ': ' + chunkType.v + ' (should be ' + '5130562' + " / ' BIN')");
+                }str.index = str.index + chunkLen | 0;
+              }
+              iChunk.v = iChunk.v + 1 | 0;
+            }
+
+            return model;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function loadGlb($receiver_0, assetPath_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadGlb($receiver_0, assetPath_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function GltfFile(asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired) {
+    GltfFile$Companion_getInstance();
+    if (scene === void 0)
+      scene = 0;
+    if (scenes === void 0)
+      scenes = emptyList();
+    if (nodes === void 0)
+      nodes = emptyList();
+    if (meshes === void 0)
+      meshes = emptyList();
+    if (materials === void 0)
+      materials = emptyList();
+    if (textures === void 0)
+      textures = emptyList();
+    if (images === void 0)
+      images = emptyList();
+    if (buffers === void 0)
+      buffers = emptyList();
+    if (bufferViews === void 0)
+      bufferViews = emptyList();
+    if (accessors === void 0)
+      accessors = emptyList();
+    if (extensionsUsed === void 0)
+      extensionsUsed = emptyList();
+    if (extensionsRequired === void 0)
+      extensionsRequired = emptyList();
+    this.asset = asset;
+    this.scene = scene;
+    this.scenes = scenes;
+    this.nodes = nodes;
+    this.meshes = meshes;
+    this.materials = materials;
+    this.textures = textures;
+    this.images = images;
+    this.buffers = buffers;
+    this.bufferViews = bufferViews;
+    this.accessors = accessors;
+    this.extensionsUsed = extensionsUsed;
+    this.extensionsRequired = extensionsRequired;
+  }
+  GltfFile.prototype.makeModel_m0hq3v$ = function (modelCfg, scene) {
+    if (modelCfg === void 0)
+      modelCfg = new GltfFile$ModelGenerateConfig();
+    if (scene === void 0)
+      scene = this.scene;
+    return (new GltfFile$ModelGenerator(this, modelCfg)).makeModel_314x6g$(this.scenes.get_za3lpa$(scene));
+  };
+  GltfFile.prototype.updateReferences_8be2vx$ = function () {
+    var tmp$;
+    tmp$ = this.accessors.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.bufferViewRef = this.bufferViews.get_za3lpa$(element.bufferView);
+    }
+    var tmp$_0;
+    tmp$_0 = this.bufferViews.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.bufferRef = this.buffers.get_za3lpa$(element_0.buffer);
+    }
+    var tmp$_1;
+    tmp$_1 = this.meshes.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      var tmp$_2;
+      tmp$_2 = element_1.primitives.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_2 = tmp$_2.next();
+        if (element_2.material >= 0) {
+          element_2.materialRef = this.materials.get_za3lpa$(element_2.material);
+        }if (element_2.indices >= 0) {
+          element_2.indexAccessorRef = this.accessors.get_za3lpa$(element_2.indices);
+        }var tmp$_3;
+        tmp$_3 = element_2.attributes.entries.iterator();
+        while (tmp$_3.hasNext()) {
+          var element_3 = tmp$_3.next();
+          var attrib = element_3.key;
+          var iAcc = element_3.value;
+          var $receiver = element_2.attribAccessorRefs;
+          var value = this.accessors.get_za3lpa$(iAcc);
+          $receiver.put_xwzc9p$(attrib, value);
+        }
+      }
+    }
+    var tmp$_4;
+    tmp$_4 = this.scenes.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_4 = tmp$_4.next();
+      var $receiver_0 = element_4.nodes;
+      var destination = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+      var tmp$_5;
+      tmp$_5 = $receiver_0.iterator();
+      while (tmp$_5.hasNext()) {
+        var item = tmp$_5.next();
+        destination.add_11rb$(this.nodes.get_za3lpa$(item));
+      }
+      element_4.nodeRefs = destination;
+    }
+    var tmp$_6;
+    tmp$_6 = this.nodes.iterator();
+    while (tmp$_6.hasNext()) {
+      var element_5 = tmp$_6.next();
+      var $receiver_1 = element_5.children;
+      var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
+      var tmp$_7;
+      tmp$_7 = $receiver_1.iterator();
+      while (tmp$_7.hasNext()) {
+        var item_0 = tmp$_7.next();
+        destination_0.add_11rb$(this.nodes.get_za3lpa$(item_0));
+      }
+      element_5.childRefs = destination_0;
+      if (element_5.mesh >= 0) {
+        element_5.meshRef = this.meshes.get_za3lpa$(element_5.mesh);
+      }}
+    var tmp$_8;
+    tmp$_8 = this.textures.iterator();
+    while (tmp$_8.hasNext()) {
+      var element_6 = tmp$_8.next();
+      element_6.imageRef = this.images.get_za3lpa$(element_6.source);
+    }
+    var $receiver_2 = this.images;
+    var destination_1 = ArrayList_init_0();
+    var tmp$_9;
+    tmp$_9 = $receiver_2.iterator();
+    while (tmp$_9.hasNext()) {
+      var element_7 = tmp$_9.next();
+      if (element_7.bufferView >= 0)
+        destination_1.add_11rb$(element_7);
+    }
+    var tmp$_10;
+    tmp$_10 = destination_1.iterator();
+    while (tmp$_10.hasNext()) {
+      var element_8 = tmp$_10.next();
+      element_8.bufferViewRef = this.bufferViews.get_za3lpa$(element_8.bufferView);
+    }
+  };
+  function GltfFile$ModelGenerateConfig(generateNormals, applyTransforms, mergeMeshesByMaterial, applyMaterials, pbrBlock) {
+    if (generateNormals === void 0)
+      generateNormals = false;
+    if (applyTransforms === void 0)
+      applyTransforms = false;
+    if (mergeMeshesByMaterial === void 0)
+      mergeMeshesByMaterial = false;
+    if (applyMaterials === void 0)
+      applyMaterials = true;
+    if (pbrBlock === void 0)
+      pbrBlock = null;
+    this.generateNormals = generateNormals;
+    this.applyTransforms = applyTransforms;
+    this.mergeMeshesByMaterial = mergeMeshesByMaterial;
+    this.applyMaterials = applyMaterials;
+    this.pbrBlock = pbrBlock;
+  }
+  GltfFile$ModelGenerateConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ModelGenerateConfig',
+    interfaces: []
+  };
+  function GltfFile$ModelGenerator($outer, cfg) {
+    this.$outer = $outer;
+    this.cfg = cfg;
+    this.meshesByMaterial = LinkedHashMap_init();
+  }
+  GltfFile$ModelGenerator.prototype.makeModel_314x6g$ = function (scene) {
+    var model = new Model(scene.name);
+    var tmp$;
+    tmp$ = scene.nodeRefs.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      model.plusAssign_f1kmr1$(this.makeNode_0(element, model, this.cfg));
+    }
+    if (this.cfg.applyTransforms) {
+      this.applyTransforms_0(model);
+    }if (this.cfg.mergeMeshesByMaterial) {
+      this.mergeMeshesByMaterial_0(model);
+    }return model;
+  };
+  GltfFile$ModelGenerator.prototype.mergeMeshesByMaterial_0 = function (model) {
+    this.mergeMeshesByMaterial_1(model);
+  };
+  GltfFile$ModelGenerator.prototype.mergeMeshesByMaterial_1 = function ($receiver) {
+    var $receiver_0 = $receiver.children;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (Kotlin.isType(element, TransformGroup))
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      this.mergeMeshesByMaterial_1(element_0);
+    }
+    var tmp$_1;
+    tmp$_1 = this.meshesByMaterial.values.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      var tmp$_2;
+      var $receiver_1 = $receiver.children;
+      var destination_0 = ArrayList_init_0();
+      var tmp$_3;
+      tmp$_3 = $receiver_1.iterator();
+      while (tmp$_3.hasNext()) {
+        var element_2 = tmp$_3.next();
+        if (contains_0(element_1, element_2))
+          destination_0.add_11rb$(element_2);
+      }
+      var destination_1 = ArrayList_init(collectionSizeOrDefault(destination_0, 10));
+      var tmp$_4;
+      tmp$_4 = destination_0.iterator();
+      while (tmp$_4.hasNext()) {
+        var item = tmp$_4.next();
+        var tmp$_5;
+        destination_1.add_11rb$(Kotlin.isType(tmp$_5 = item, Mesh) ? tmp$_5 : throwCCE());
+      }
+      var mergeMeshes = destination_1;
+      if (mergeMeshes.size > 1) {
+        var r = mergeMeshes.get_za3lpa$(0);
+        tmp$_2 = mergeMeshes.size;
+        for (var i = 1; i < tmp$_2; i++) {
+          var m = mergeMeshes.get_za3lpa$(i);
+          r.geometry.addGeometry_r7nl2o$(m.geometry);
+          $receiver.removeNode_f1kmr1$(m);
+        }
+      }}
+  };
+  GltfFile$ModelGenerator.prototype.applyTransforms_0 = function (model) {
+    var transform = new Mat4dStack();
+    transform.setIdentity();
+    this.applyTransforms_1(model, transform, model);
+  };
+  function GltfFile$ModelGenerator$applyTransforms$lambda$lambda(closure$transform) {
+    return function ($receiver) {
+      var tmp$;
+      tmp$ = $receiver.numVertices;
+      for (var i = 0; i < tmp$; i++) {
+        $receiver.vertexIt.index = i;
+        var closure$transform_0 = closure$transform;
+        var v = $receiver.vertexIt;
+        closure$transform_0.transform_w1lst9$(v.position, 1.0);
+        closure$transform_0.transform_w1lst9$(v.normal, 0.0);
+        closure$transform_0.transform_w1lst9$(v.tangent, 0.0);
+      }
+      return Unit;
+    };
+  }
+  GltfFile$ModelGenerator.prototype.applyTransforms_1 = function ($receiver, transform, rootGroup) {
+    transform.push();
+    transform.mul_d4zu6l$($receiver.transform);
+    var $receiver_0 = $receiver.children;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (Kotlin.isType(element, Mesh))
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      var $this = element_0.geometry;
+      var wasBatchUpdate = $this.isBatchUpdate;
+      $this.isBatchUpdate = true;
+      GltfFile$ModelGenerator$applyTransforms$lambda$lambda(transform)($this);
+      $this.hasChanged = true;
+      $this.isBatchUpdate = wasBatchUpdate;
+      if (true) {
+        $this.rebuildBounds();
+      }if (!equals(rootGroup, $receiver)) {
+        rootGroup.plusAssign_f1kmr1$(element_0);
+      }}
+    var $receiver_1 = $receiver.children;
+    var destination_0 = ArrayList_init_0();
+    var tmp$_1;
+    tmp$_1 = $receiver_1.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      if (Kotlin.isType(element_1, TransformGroup))
+        destination_0.add_11rb$(element_1);
+    }
+    var childGroups = destination_0;
+    var tmp$_2;
+    tmp$_2 = childGroups.iterator();
+    while (tmp$_2.hasNext()) {
+      var element_2 = tmp$_2.next();
+      this.applyTransforms_1(element_2, transform, rootGroup);
+      $receiver.removeNode_f1kmr1$(element_2);
+    }
+    transform.pop();
+  };
+  function GltfFile$ModelGenerator$makeNode$lambda$lambda(closure$p, closure$useVertexColor, this$GltfFile, closure$cfg, closure$model) {
+    return function ($receiver) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+      var material = closure$p.materialRef;
+      if (material != null) {
+        material.applyTo_luqtlc$($receiver, closure$useVertexColor, this$GltfFile);
+      } else {
+        $receiver.albedo = Color$Companion_getInstance().GRAY;
+        $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
+      }
+      (tmp$ = closure$cfg.pbrBlock) != null ? tmp$($receiver, closure$p) : null;
+      if ((tmp$_0 = $receiver.albedoMap) != null) {
+        var closure$model_0 = closure$model;
+        var tmp$_6, tmp$_7;
+        tmp$_7 = closure$model_0.textures;
+        var key = (tmp$_6 = tmp$_0.name) != null ? tmp$_6 : 'tex_' + closure$model_0.textures.size;
+        tmp$_7.put_xwzc9p$(key, tmp$_0);
+      }if ((tmp$_1 = $receiver.normalMap) != null) {
+        var closure$model_1 = closure$model;
+        var tmp$_8, tmp$_9;
+        tmp$_9 = closure$model_1.textures;
+        var key_0 = (tmp$_8 = tmp$_1.name) != null ? tmp$_8 : 'tex_' + closure$model_1.textures.size;
+        tmp$_9.put_xwzc9p$(key_0, tmp$_1);
+      }if ((tmp$_2 = $receiver.roughnessMap) != null) {
+        var closure$model_2 = closure$model;
+        var tmp$_10, tmp$_11;
+        tmp$_11 = closure$model_2.textures;
+        var key_1 = (tmp$_10 = tmp$_2.name) != null ? tmp$_10 : 'tex_' + closure$model_2.textures.size;
+        tmp$_11.put_xwzc9p$(key_1, tmp$_2);
+      }if ((tmp$_3 = $receiver.metallicMap) != null) {
+        var closure$model_3 = closure$model;
+        var tmp$_12, tmp$_13;
+        tmp$_13 = closure$model_3.textures;
+        var key_2 = (tmp$_12 = tmp$_3.name) != null ? tmp$_12 : 'tex_' + closure$model_3.textures.size;
+        tmp$_13.put_xwzc9p$(key_2, tmp$_3);
+      }if ((tmp$_4 = $receiver.ambientOcclusionMap) != null) {
+        var closure$model_4 = closure$model;
+        var tmp$_14, tmp$_15;
+        tmp$_15 = closure$model_4.textures;
+        var key_3 = (tmp$_14 = tmp$_4.name) != null ? tmp$_14 : 'tex_' + closure$model_4.textures.size;
+        tmp$_15.put_xwzc9p$(key_3, tmp$_4);
+      }if ((tmp$_5 = $receiver.displacementMap) != null) {
+        var closure$model_5 = closure$model;
+        var tmp$_16, tmp$_17;
+        tmp$_17 = closure$model_5.textures;
+        var key_4 = (tmp$_16 = tmp$_5.name) != null ? tmp$_16 : 'tex_' + closure$model_5.textures.size;
+        tmp$_17.put_xwzc9p$(key_4, tmp$_5);
+      }return Unit;
+    };
+  }
+  GltfFile$ModelGenerator.prototype.makeNode_0 = function ($receiver, model, cfg) {
+    var tmp$, tmp$_0;
+    var nodeGrp = new TransformGroup($receiver.name);
+    var $receiver_0 = model.nodes;
+    var key = $receiver.name;
+    $receiver_0.put_xwzc9p$(key, nodeGrp);
+    if ($receiver.matrix != null) {
+      var tmp$_1 = nodeGrp.transform;
+      var $receiver_1 = $receiver.matrix;
+      var destination = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
+      var tmp$_2;
+      tmp$_2 = $receiver_1.iterator();
+      while (tmp$_2.hasNext()) {
+        var item = tmp$_2.next();
+        destination.add_11rb$(item);
+      }
+      tmp$_1.set_d3e2cz$(destination);
+    } else {
+      if ($receiver.translation != null) {
+        nodeGrp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
+      }if ($receiver.rotation != null) {
+        var rotMat = (new Mat4d()).setRotate_czzhi1$(new Vec4d($receiver.rotation.get_za3lpa$(0), $receiver.rotation.get_za3lpa$(1), $receiver.rotation.get_za3lpa$(2), $receiver.rotation.get_za3lpa$(3)));
+        nodeGrp.transform.mul_d4zu6l$(rotMat);
+      }if ($receiver.scale != null) {
+        nodeGrp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
+      }}
+    var tmp$_3;
+    tmp$_3 = $receiver.childRefs.iterator();
+    while (tmp$_3.hasNext()) {
+      var element = tmp$_3.next();
+      nodeGrp.plusAssign_f1kmr1$(this.makeNode_0(element, model, cfg));
+    }
+    if ((tmp$_0 = (tmp$ = $receiver.meshRef) != null ? tmp$.primitives : null) != null) {
+      this.$outer;
+      var tmp$_4, tmp$_0_0;
+      var index = 0;
+      tmp$_4 = tmp$_0.iterator();
+      while (tmp$_4.hasNext()) {
+        var item_0 = tmp$_4.next();
+        var this$GltfFile = this.$outer;
+        var index_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+        var tmp$_5, tmp$_6;
+        var name = ((tmp$_6 = (tmp$_5 = $receiver.meshRef) != null ? tmp$_5.name : null) != null ? tmp$_6 : $receiver.name) + '_' + index_0;
+        var mesh = new Mesh(item_0.toGeometry_6taknv$(cfg.generateNormals), name);
+        nodeGrp.plusAssign_f1kmr1$(mesh);
+        var $receiver_2 = this.meshesByMaterial;
+        var key_0 = item_0.material;
+        var tmp$_7;
+        var value = $receiver_2.get_11rb$(key_0);
+        if (value == null) {
+          var answer = LinkedHashSet_init();
+          $receiver_2.put_xwzc9p$(key_0, answer);
+          tmp$_7 = answer;
+        } else {
+          tmp$_7 = value;
+        }
+        tmp$_7.add_11rb$(mesh);
+        if (cfg.applyMaterials) {
+          var useVertexColor = item_0.attributes.containsKey_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_COLOR_0);
+          mesh.pipelineLoader = pbrShader(GltfFile$ModelGenerator$makeNode$lambda$lambda(item_0, useVertexColor, this$GltfFile, cfg, model));
+        }model.meshes.put_xwzc9p$(name, mesh);
+      }
+    }return nodeGrp;
+  };
+  GltfFile$ModelGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ModelGenerator',
+    interfaces: []
+  };
+  function GltfFile$Companion() {
+    GltfFile$Companion_instance = this;
+    this.ACCESSOR_TYPE_SCALAR = 'SCALAR';
+    this.ACCESSOR_TYPE_VEC2 = 'VEC2';
+    this.ACCESSOR_TYPE_VEC3 = 'VEC3';
+    this.ACCESSOR_TYPE_VEC4 = 'VEC4';
+    this.COMP_TYPE_BYTE = 5120;
+    this.COMP_TYPE_UNSIGNED_BYTE = 5121;
+    this.COMP_TYPE_SHORT = 5122;
+    this.COMP_TYPE_UNSIGNED_SHORT = 5123;
+    this.COMP_TYPE_INT = 5124;
+    this.COMP_TYPE_UNSIGNED_INT = 5125;
+    this.COMP_TYPE_FLOAT = 5126;
+    this.MODE_POINTS = 0;
+    this.MODE_LINES = 1;
+    this.MODE_LINE_LOOP = 2;
+    this.MODE_LINE_STRIP = 3;
+    this.MODE_TRIANGLES = 4;
+    this.MODE_TRIANGLE_STRIP = 5;
+    this.MODE_TRIANGLE_FAN = 6;
+    this.MODE_QUADS = 7;
+    this.MODE_QUAD_STRIP = 8;
+    this.MODE_POLYGON = 9;
+    this.MESH_ATTRIBUTE_POSITION = 'POSITION';
+    this.MESH_ATTRIBUTE_NORMAL = 'NORMAL';
+    this.MESH_ATTRIBUTE_TANGENT = 'TANGENT';
+    this.MESH_ATTRIBUTE_TEXCOORD_0 = 'TEXCOORD_0';
+    this.MESH_ATTRIBUTE_TEXCOORD_1 = 'TEXCOORD_1';
+    this.MESH_ATTRIBUTE_COLOR_0 = 'COLOR_0';
+    this.MESH_ATTRIBUTE_JOINTS_0 = 'JOINTS_0';
+    this.MESH_ATTRIBUTE_WEIGHTS_0 = 'WEIGHTS_0';
+    this.GLB_FILE_MAGIC = 1179937895;
+    this.GLB_CHUNK_MAGIC_JSON = 1313821514;
+    this.GLB_CHUNK_MAGIC_BIN = 5130562;
+  }
+  GltfFile$Companion.prototype.fromJson_61zpoe$ = function (json) {
+    var $receiver = new Json(new JsonConfiguration(void 0, true, true, true, void 0, void 0, void 0, void 0, true));
+    return $receiver.parse_awif5v$(getContextualOrDefault($receiver.context, getKClass(GltfFile)), json);
+  };
+  GltfFile$Companion.prototype.serializer = function () {
+    return GltfFile$$serializer_getInstance();
+  };
+  GltfFile$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var GltfFile$Companion_instance = null;
+  function GltfFile$Companion_getInstance() {
+    if (GltfFile$Companion_instance === null) {
+      new GltfFile$Companion();
+    }return GltfFile$Companion_instance;
+  }
+  function GltfFile$$serializer() {
+    this.descriptor_sl1tf8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.GltfFile', this, 13);
+    this.descriptor.addElement_ivxn3r$('asset', false);
+    this.descriptor.addElement_ivxn3r$('scene', true);
+    this.descriptor.addElement_ivxn3r$('scenes', true);
+    this.descriptor.addElement_ivxn3r$('nodes', true);
+    this.descriptor.addElement_ivxn3r$('meshes', true);
+    this.descriptor.addElement_ivxn3r$('materials', true);
+    this.descriptor.addElement_ivxn3r$('textures', true);
+    this.descriptor.addElement_ivxn3r$('images', true);
+    this.descriptor.addElement_ivxn3r$('buffers', true);
+    this.descriptor.addElement_ivxn3r$('bufferViews', true);
+    this.descriptor.addElement_ivxn3r$('accessors', true);
+    this.descriptor.addElement_ivxn3r$('extensionsUsed', true);
+    this.descriptor.addElement_ivxn3r$('extensionsRequired', true);
+    GltfFile$$serializer_instance = this;
+  }
+  Object.defineProperty(GltfFile$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_sl1tf8$_0;
+    }
+  });
+  GltfFile$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, Asset$$serializer_getInstance(), value.asset);
+    if (!equals(value.scene, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.scene);
+    if (!equals(value.scenes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance()), value.scenes);
+    if (!equals(value.nodes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance()), value.nodes);
+    if (!equals(value.meshes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
+      output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance()), value.meshes);
+    if (!equals(value.materials, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
+      output.encodeSerializableElement_blecud$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance()), value.materials);
+    if (!equals(value.textures, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
+      output.encodeSerializableElement_blecud$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance()), value.textures);
+    if (!equals(value.images, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
+      output.encodeSerializableElement_blecud$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance()), value.images);
+    if (!equals(value.buffers, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
+      output.encodeSerializableElement_blecud$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance()), value.buffers);
+    if (!equals(value.bufferViews, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 9))
+      output.encodeSerializableElement_blecud$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance()), value.bufferViews);
+    if (!equals(value.accessors, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 10))
+      output.encodeSerializableElement_blecud$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance()), value.accessors);
+    if (!equals(value.extensionsUsed, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 11))
+      output.encodeSerializableElement_blecud$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer), value.extensionsUsed);
+    if (!equals(value.extensionsRequired, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 12))
+      output.encodeSerializableElement_blecud$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer), value.extensionsRequired);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  GltfFile$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5
+    , local6
+    , local7
+    , local8
+    , local9
+    , local10
+    , local11
+    , local12;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, Asset$$serializer_getInstance()) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, Asset$$serializer_getInstance(), local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(Scene$$serializer_getInstance()), local2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(Node$$serializer_getInstance()), local3);
+          bitMask0 |= 8;
+          break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(Mesh$$serializer_getInstance()), local4);
+          bitMask0 |= 16;
+          break;
+        case 5:
+          local5 = (bitMask0 & 32) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 5, new ArrayListSerializer(Material$$serializer_getInstance()), local5);
+          bitMask0 |= 32;
+          break;
+        case 6:
+          local6 = (bitMask0 & 64) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 6, new ArrayListSerializer(Texture$$serializer_getInstance()), local6);
+          bitMask0 |= 64;
+          break;
+        case 7:
+          local7 = (bitMask0 & 128) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 7, new ArrayListSerializer(Image$$serializer_getInstance()), local7);
+          bitMask0 |= 128;
+          break;
+        case 8:
+          local8 = (bitMask0 & 256) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 8, new ArrayListSerializer(Buffer$$serializer_getInstance()), local8);
+          bitMask0 |= 256;
+          break;
+        case 9:
+          local9 = (bitMask0 & 512) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 9, new ArrayListSerializer(BufferView$$serializer_getInstance()), local9);
+          bitMask0 |= 512;
+          break;
+        case 10:
+          local10 = (bitMask0 & 1024) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 10, new ArrayListSerializer(Accessor$$serializer_getInstance()), local10);
+          bitMask0 |= 1024;
+          break;
+        case 11:
+          local11 = (bitMask0 & 2048) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 11, new ArrayListSerializer(internal.StringSerializer), local11);
+          bitMask0 |= 2048;
+          break;
+        case 12:
+          local12 = (bitMask0 & 4096) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 12, new ArrayListSerializer(internal.StringSerializer), local12);
+          bitMask0 |= 4096;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return GltfFile_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, null);
+  };
+  GltfFile$$serializer.prototype.childSerializers = function () {
+    return [Asset$$serializer_getInstance(), internal.IntSerializer, new ArrayListSerializer(Scene$$serializer_getInstance()), new ArrayListSerializer(Node$$serializer_getInstance()), new ArrayListSerializer(Mesh$$serializer_getInstance()), new ArrayListSerializer(Material$$serializer_getInstance()), new ArrayListSerializer(Texture$$serializer_getInstance()), new ArrayListSerializer(Image$$serializer_getInstance()), new ArrayListSerializer(Buffer$$serializer_getInstance()), new ArrayListSerializer(BufferView$$serializer_getInstance()), new ArrayListSerializer(Accessor$$serializer_getInstance()), new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(internal.StringSerializer)];
+  };
+  GltfFile$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var GltfFile$$serializer_instance = null;
+  function GltfFile$$serializer_getInstance() {
+    if (GltfFile$$serializer_instance === null) {
+      new GltfFile$$serializer();
+    }return GltfFile$$serializer_instance;
+  }
+  function GltfFile_init(seen1, asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(GltfFile.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('asset');
+    else
+      $this.asset = asset;
+    if ((seen1 & 2) === 0)
+      $this.scene = 0;
+    else
+      $this.scene = scene;
+    if ((seen1 & 4) === 0)
+      $this.scenes = emptyList();
+    else
+      $this.scenes = scenes;
+    if ((seen1 & 8) === 0)
+      $this.nodes = emptyList();
+    else
+      $this.nodes = nodes;
+    if ((seen1 & 16) === 0)
+      $this.meshes = emptyList();
+    else
+      $this.meshes = meshes;
+    if ((seen1 & 32) === 0)
+      $this.materials = emptyList();
+    else
+      $this.materials = materials;
+    if ((seen1 & 64) === 0)
+      $this.textures = emptyList();
+    else
+      $this.textures = textures;
+    if ((seen1 & 128) === 0)
+      $this.images = emptyList();
+    else
+      $this.images = images;
+    if ((seen1 & 256) === 0)
+      $this.buffers = emptyList();
+    else
+      $this.buffers = buffers;
+    if ((seen1 & 512) === 0)
+      $this.bufferViews = emptyList();
+    else
+      $this.bufferViews = bufferViews;
+    if ((seen1 & 1024) === 0)
+      $this.accessors = emptyList();
+    else
+      $this.accessors = accessors;
+    if ((seen1 & 2048) === 0)
+      $this.extensionsUsed = emptyList();
+    else
+      $this.extensionsUsed = extensionsUsed;
+    if ((seen1 & 4096) === 0)
+      $this.extensionsRequired = emptyList();
+    else
+      $this.extensionsRequired = extensionsRequired;
+    return $this;
+  }
+  GltfFile.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GltfFile',
+    interfaces: []
+  };
+  GltfFile.prototype.component1 = function () {
+    return this.asset;
+  };
+  GltfFile.prototype.component2 = function () {
+    return this.scene;
+  };
+  GltfFile.prototype.component3 = function () {
+    return this.scenes;
+  };
+  GltfFile.prototype.component4 = function () {
+    return this.nodes;
+  };
+  GltfFile.prototype.component5 = function () {
+    return this.meshes;
+  };
+  GltfFile.prototype.component6 = function () {
+    return this.materials;
+  };
+  GltfFile.prototype.component7 = function () {
+    return this.textures;
+  };
+  GltfFile.prototype.component8 = function () {
+    return this.images;
+  };
+  GltfFile.prototype.component9 = function () {
+    return this.buffers;
+  };
+  GltfFile.prototype.component10 = function () {
+    return this.bufferViews;
+  };
+  GltfFile.prototype.component11 = function () {
+    return this.accessors;
+  };
+  GltfFile.prototype.component12 = function () {
+    return this.extensionsUsed;
+  };
+  GltfFile.prototype.component13 = function () {
+    return this.extensionsRequired;
+  };
+  GltfFile.prototype.copy_p2eni9$ = function (asset, scene, scenes, nodes, meshes, materials, textures, images, buffers, bufferViews, accessors, extensionsUsed, extensionsRequired) {
+    return new GltfFile(asset === void 0 ? this.asset : asset, scene === void 0 ? this.scene : scene, scenes === void 0 ? this.scenes : scenes, nodes === void 0 ? this.nodes : nodes, meshes === void 0 ? this.meshes : meshes, materials === void 0 ? this.materials : materials, textures === void 0 ? this.textures : textures, images === void 0 ? this.images : images, buffers === void 0 ? this.buffers : buffers, bufferViews === void 0 ? this.bufferViews : bufferViews, accessors === void 0 ? this.accessors : accessors, extensionsUsed === void 0 ? this.extensionsUsed : extensionsUsed, extensionsRequired === void 0 ? this.extensionsRequired : extensionsRequired);
+  };
+  GltfFile.prototype.toString = function () {
+    return 'GltfFile(asset=' + Kotlin.toString(this.asset) + (', scene=' + Kotlin.toString(this.scene)) + (', scenes=' + Kotlin.toString(this.scenes)) + (', nodes=' + Kotlin.toString(this.nodes)) + (', meshes=' + Kotlin.toString(this.meshes)) + (', materials=' + Kotlin.toString(this.materials)) + (', textures=' + Kotlin.toString(this.textures)) + (', images=' + Kotlin.toString(this.images)) + (', buffers=' + Kotlin.toString(this.buffers)) + (', bufferViews=' + Kotlin.toString(this.bufferViews)) + (', accessors=' + Kotlin.toString(this.accessors)) + (', extensionsUsed=' + Kotlin.toString(this.extensionsUsed)) + (', extensionsRequired=' + Kotlin.toString(this.extensionsRequired)) + ')';
+  };
+  GltfFile.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.asset) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scene) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scenes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.nodes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.meshes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.materials) | 0;
+    result = result * 31 + Kotlin.hashCode(this.textures) | 0;
+    result = result * 31 + Kotlin.hashCode(this.images) | 0;
+    result = result * 31 + Kotlin.hashCode(this.buffers) | 0;
+    result = result * 31 + Kotlin.hashCode(this.bufferViews) | 0;
+    result = result * 31 + Kotlin.hashCode(this.accessors) | 0;
+    result = result * 31 + Kotlin.hashCode(this.extensionsUsed) | 0;
+    result = result * 31 + Kotlin.hashCode(this.extensionsRequired) | 0;
+    return result;
+  };
+  GltfFile.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.asset, other.asset) && Kotlin.equals(this.scene, other.scene) && Kotlin.equals(this.scenes, other.scenes) && Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.materials, other.materials) && Kotlin.equals(this.textures, other.textures) && Kotlin.equals(this.images, other.images) && Kotlin.equals(this.buffers, other.buffers) && Kotlin.equals(this.bufferViews, other.bufferViews) && Kotlin.equals(this.accessors, other.accessors) && Kotlin.equals(this.extensionsUsed, other.extensionsUsed) && Kotlin.equals(this.extensionsRequired, other.extensionsRequired)))));
+  };
+  function Image_0(uri, bufferView, mimeType, name) {
+    Image$Companion_getInstance();
+    if (uri === void 0)
+      uri = null;
+    if (bufferView === void 0)
+      bufferView = -1;
+    if (mimeType === void 0)
+      mimeType = null;
+    if (name === void 0)
+      name = null;
+    this.uri = uri;
+    this.bufferView = bufferView;
+    this.mimeType = mimeType;
+    this.name = name;
+    this.bufferViewRef = null;
+  }
+  function Image$Companion() {
+    Image$Companion_instance = this;
+  }
+  Image$Companion.prototype.serializer = function () {
+    return Image$$serializer_getInstance();
+  };
+  Image$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Image$Companion_instance = null;
+  function Image$Companion_getInstance() {
+    if (Image$Companion_instance === null) {
+      new Image$Companion();
+    }return Image$Companion_instance;
+  }
+  function Image$$serializer() {
+    this.descriptor_wuobpo$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Image', this, 4);
+    this.descriptor.addElement_ivxn3r$('uri', true);
+    this.descriptor.addElement_ivxn3r$('bufferView', true);
+    this.descriptor.addElement_ivxn3r$('mimeType', true);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    Image$$serializer_instance = this;
+  }
+  Object.defineProperty(Image$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_wuobpo$_0;
+    }
+  });
+  Image$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.uri, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 0, internal.StringSerializer, value.uri);
+    if (!equals(value.bufferView, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.bufferView);
+    if (!equals(value.mimeType, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 2, internal.StringSerializer, value.mimeType);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, internal.StringSerializer, value.name);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Image$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 0, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 0, internal.StringSerializer, local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 2, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 2, internal.StringSerializer, local2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, internal.StringSerializer, local3);
+          bitMask0 |= 8;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Image_init(bitMask0, local0, local1, local2, local3, null);
+  };
+  Image$$serializer.prototype.childSerializers = function () {
+    return [new NullableSerializer(internal.StringSerializer), internal.IntSerializer, new NullableSerializer(internal.StringSerializer), new NullableSerializer(internal.StringSerializer)];
+  };
+  Image$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Image$$serializer_instance = null;
+  function Image$$serializer_getInstance() {
+    if (Image$$serializer_instance === null) {
+      new Image$$serializer();
+    }return Image$$serializer_instance;
+  }
+  function Image_init(seen1, uri, bufferView, mimeType, name, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Image_0.prototype);
+    if ((seen1 & 1) === 0)
+      $this.uri = null;
+    else
+      $this.uri = uri;
+    if ((seen1 & 2) === 0)
+      $this.bufferView = -1;
+    else
+      $this.bufferView = bufferView;
+    if ((seen1 & 4) === 0)
+      $this.mimeType = null;
+    else
+      $this.mimeType = mimeType;
+    if ((seen1 & 8) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    $this.bufferViewRef = null;
+    return $this;
+  }
+  Image_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Image',
+    interfaces: []
+  };
+  Image_0.prototype.component1 = function () {
+    return this.uri;
+  };
+  Image_0.prototype.component2 = function () {
+    return this.bufferView;
+  };
+  Image_0.prototype.component3 = function () {
+    return this.mimeType;
+  };
+  Image_0.prototype.component4 = function () {
+    return this.name;
+  };
+  Image_0.prototype.copy_fznb1v$ = function (uri, bufferView, mimeType, name) {
+    return new Image_0(uri === void 0 ? this.uri : uri, bufferView === void 0 ? this.bufferView : bufferView, mimeType === void 0 ? this.mimeType : mimeType, name === void 0 ? this.name : name);
+  };
+  Image_0.prototype.toString = function () {
+    return 'Image(uri=' + Kotlin.toString(this.uri) + (', bufferView=' + Kotlin.toString(this.bufferView)) + (', mimeType=' + Kotlin.toString(this.mimeType)) + (', name=' + Kotlin.toString(this.name)) + ')';
+  };
+  Image_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.uri) | 0;
+    result = result * 31 + Kotlin.hashCode(this.bufferView) | 0;
+    result = result * 31 + Kotlin.hashCode(this.mimeType) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    return result;
+  };
+  Image_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uri, other.uri) && Kotlin.equals(this.bufferView, other.bufferView) && Kotlin.equals(this.mimeType, other.mimeType) && Kotlin.equals(this.name, other.name)))));
+  };
+  function Material(doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff) {
+    Material$Companion_getInstance();
+    if (doubleSided === void 0)
+      doubleSided = false;
+    if (name === void 0)
+      name = null;
+    if (pbrMetallicRoughness === void 0)
+      pbrMetallicRoughness = new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]));
+    if (normalTexture === void 0)
+      normalTexture = null;
+    if (occlusionTexture === void 0)
+      occlusionTexture = null;
+    if (emissiveFactor === void 0)
+      emissiveFactor = null;
+    if (emissiveTexture === void 0)
+      emissiveTexture = null;
+    if (alphaMode === void 0)
+      alphaMode = 'OPAQUE';
+    if (alphaCutoff === void 0)
+      alphaCutoff = 0.5;
+    this.doubleSided = doubleSided;
+    this.name = name;
+    this.pbrMetallicRoughness = pbrMetallicRoughness;
+    this.normalTexture = normalTexture;
+    this.occlusionTexture = occlusionTexture;
+    this.emissiveFactor = emissiveFactor;
+    this.emissiveTexture = emissiveTexture;
+    this.alphaMode = alphaMode;
+    this.alphaCutoff = alphaCutoff;
+  }
+  Material.prototype.applyTo_luqtlc$ = function (cfg, useVertexColor, gltfFile) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var albedoTexture = (tmp$ = this.pbrMetallicRoughness.baseColorTexture) != null ? tmp$.getTexture_vd9sc9$(gltfFile) : null;
+    var normalTexture = (tmp$_0 = this.normalTexture) != null ? tmp$_0.getTexture_vd9sc9$(gltfFile) : null;
+    var metallicTexture = (tmp$_1 = this.pbrMetallicRoughness.metallicRoughnessTexture) != null ? tmp$_1.getTexture_vd9sc9$(gltfFile) : null;
+    var roughnessTexture = (tmp$_2 = this.pbrMetallicRoughness.metallicRoughnessTexture) != null ? tmp$_2.getTexture_vd9sc9$(gltfFile) : null;
+    var occlusionTexture = (tmp$_3 = this.occlusionTexture) != null ? tmp$_3.getTexture_vd9sc9$(gltfFile) : null;
+    var colorFac = this.pbrMetallicRoughness.baseColorFactor;
+    if (useVertexColor)
+      cfg.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
+    else if (albedoTexture != null) {
+      cfg.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
+      cfg.albedoMap = albedoTexture;
+    } else {
+      cfg.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
+      var a = colorFac.size > 3 ? colorFac.get_za3lpa$(3) : 1.0;
+      cfg.albedo = new Color(colorFac.get_za3lpa$(0), colorFac.get_za3lpa$(1), colorFac.get_za3lpa$(2), a);
+    }
+    if (normalTexture != null) {
+      cfg.isNormalMapped = true;
+      cfg.normalMap = normalTexture;
+    } else {
+      cfg.isNormalMapped = false;
+    }
+    if (roughnessTexture != null) {
+      cfg.isRoughnessMapped = true;
+      cfg.roughnessMap = roughnessTexture;
+    } else {
+      cfg.isRoughnessMapped = false;
+      cfg.roughness = this.pbrMetallicRoughness.roughnessFactor;
+    }
+    if (metallicTexture != null) {
+      cfg.isMetallicMapped = true;
+      cfg.metallicMap = metallicTexture;
+    } else {
+      cfg.isMetallicMapped = false;
+      cfg.metallic = this.pbrMetallicRoughness.metallicFactor;
+    }
+    if (occlusionTexture != null) {
+      cfg.isAmbientOcclusionMapped = true;
+      cfg.ambientOcclusionMap = occlusionTexture;
+    } else {
+      cfg.isAmbientOcclusionMapped = false;
+    }
+    if (cfg.isRoughnessMapped) {
+      if (roughnessTexture !== metallicTexture && roughnessTexture !== occlusionTexture) {
+        cfg.roughnessChannel = 'r';
+        cfg.roughnessTexName = 'tRoughness';
+      } else {
+        cfg.roughnessChannel = 'g';
+        if (roughnessTexture === metallicTexture && roughnessTexture === occlusionTexture) {
+          cfg.roughnessTexName = 'tOcclRoughMetal';
+        } else if (roughnessTexture === metallicTexture) {
+          cfg.roughnessTexName = 'tRoughMetal';
+        } else {
+          cfg.roughnessTexName = 'tOcclRough';
+        }
+      }
+    }if (cfg.isMetallicMapped) {
+      if (metallicTexture !== roughnessTexture && metallicTexture !== occlusionTexture) {
+        cfg.metallicChannel = 'r';
+        cfg.metallicTexName = 'tMetallic';
+      } else {
+        cfg.metallicChannel = 'b';
+        if (metallicTexture === roughnessTexture && metallicTexture === occlusionTexture) {
+          cfg.metallicTexName = 'tOcclRoughMetal';
+        } else if (metallicTexture === roughnessTexture) {
+          cfg.metallicTexName = 'tRoughMetal';
+        } else {
+          cfg.roughnessTexName = 'tOcclMetal';
+        }
+      }
+    }if (cfg.isAmbientOcclusionMapped) {
+      if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
+        cfg.ambientOcclusionChannel = 'r';
+        cfg.ambientOcclusionTexName = 'tOcclusion';
+      } else {
+        cfg.ambientOcclusionChannel = 'r';
+        if (occlusionTexture === roughnessTexture && occlusionTexture === metallicTexture) {
+          cfg.ambientOcclusionTexName = 'tOcclRoughMetal';
+        } else if (occlusionTexture === roughnessTexture) {
+          cfg.roughnessTexName = 'tOcclRough';
+        } else {
+          cfg.roughnessTexName = 'tOcclMetal';
+        }
+      }
+    }};
+  function Material$Companion() {
+    Material$Companion_instance = this;
+  }
+  Material$Companion.prototype.serializer = function () {
+    return Material$$serializer_getInstance();
+  };
+  Material$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Material$Companion_instance = null;
+  function Material$Companion_getInstance() {
+    if (Material$Companion_instance === null) {
+      new Material$Companion();
+    }return Material$Companion_instance;
+  }
+  function Material$$serializer() {
+    this.descriptor_ohyiio$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Material', this, 9);
+    this.descriptor.addElement_ivxn3r$('doubleSided', true);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    this.descriptor.addElement_ivxn3r$('pbrMetallicRoughness', true);
+    this.descriptor.addElement_ivxn3r$('normalTexture', true);
+    this.descriptor.addElement_ivxn3r$('occlusionTexture', true);
+    this.descriptor.addElement_ivxn3r$('emissiveFactor', true);
+    this.descriptor.addElement_ivxn3r$('emissiveTexture', true);
+    this.descriptor.addElement_ivxn3r$('alphaMode', true);
+    this.descriptor.addElement_ivxn3r$('alphaCutoff', true);
+    Material$$serializer_instance = this;
+  }
+  Object.defineProperty(Material$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_ohyiio$_0;
+    }
+  });
+  Material$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.doubleSided, false) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeBooleanElement_w1b0nl$(this.descriptor, 0, value.doubleSided);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
+    if (!equals(value.pbrMetallicRoughness, new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]))) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeSerializableElement_blecud$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance(), value.pbrMetallicRoughness);
+    if (!equals(value.normalTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, MaterialMap$$serializer_getInstance(), value.normalTexture);
+    if (!equals(value.occlusionTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), value.occlusionTexture);
+    if (!equals(value.emissiveFactor, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), value.emissiveFactor);
+    if (!equals(value.emissiveTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 6, MaterialMap$$serializer_getInstance(), value.emissiveTexture);
+    if (!equals(value.alphaMode, 'OPAQUE') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
+      output.encodeStringElement_bgm7zs$(this.descriptor, 7, value.alphaMode);
+    if (!equals(value.alphaCutoff, 0.5) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
+      output.encodeFloatElement_t7qhdx$(this.descriptor, 8, value.alphaCutoff);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Material$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5
+    , local6
+    , local7
+    , local8;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeBooleanElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance()) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, PbrMetallicRoughness$$serializer_getInstance(), local2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, MaterialMap$$serializer_getInstance(), local3);
+          bitMask0 |= 8;
+          break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), local4);
+          bitMask0 |= 16;
+          break;
+        case 5:
+          local5 = (bitMask0 & 32) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
+          bitMask0 |= 32;
+          break;
+        case 6:
+          local6 = (bitMask0 & 64) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 6, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 6, MaterialMap$$serializer_getInstance(), local6);
+          bitMask0 |= 64;
+          break;
+        case 7:
+          local7 = input.decodeStringElement_3zr2iy$(this.descriptor, 7);
+          bitMask0 |= 128;
+          break;
+        case 8:
+          local8 = input.decodeFloatElement_3zr2iy$(this.descriptor, 8);
+          bitMask0 |= 256;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Material_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, null);
+  };
+  Material$$serializer.prototype.childSerializers = function () {
+    return [internal.BooleanSerializer, new NullableSerializer(internal.StringSerializer), PbrMetallicRoughness$$serializer_getInstance(), new NullableSerializer(MaterialMap$$serializer_getInstance()), new NullableSerializer(MaterialMap$$serializer_getInstance()), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(MaterialMap$$serializer_getInstance()), internal.StringSerializer, internal.FloatSerializer];
+  };
+  Material$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Material$$serializer_instance = null;
+  function Material$$serializer_getInstance() {
+    if (Material$$serializer_instance === null) {
+      new Material$$serializer();
+    }return Material$$serializer_instance;
+  }
+  function Material_init(seen1, doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Material.prototype);
+    if ((seen1 & 1) === 0)
+      $this.doubleSided = false;
+    else
+      $this.doubleSided = doubleSided;
+    if ((seen1 & 2) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    if ((seen1 & 4) === 0)
+      $this.pbrMetallicRoughness = new PbrMetallicRoughness(listOf([0.5, 0.5, 0.5, 1.0]));
+    else
+      $this.pbrMetallicRoughness = pbrMetallicRoughness;
+    if ((seen1 & 8) === 0)
+      $this.normalTexture = null;
+    else
+      $this.normalTexture = normalTexture;
+    if ((seen1 & 16) === 0)
+      $this.occlusionTexture = null;
+    else
+      $this.occlusionTexture = occlusionTexture;
+    if ((seen1 & 32) === 0)
+      $this.emissiveFactor = null;
+    else
+      $this.emissiveFactor = emissiveFactor;
+    if ((seen1 & 64) === 0)
+      $this.emissiveTexture = null;
+    else
+      $this.emissiveTexture = emissiveTexture;
+    if ((seen1 & 128) === 0)
+      $this.alphaMode = 'OPAQUE';
+    else
+      $this.alphaMode = alphaMode;
+    if ((seen1 & 256) === 0)
+      $this.alphaCutoff = 0.5;
+    else
+      $this.alphaCutoff = alphaCutoff;
+    return $this;
+  }
+  Material.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Material',
+    interfaces: []
+  };
+  Material.prototype.component1 = function () {
+    return this.doubleSided;
+  };
+  Material.prototype.component2 = function () {
+    return this.name;
+  };
+  Material.prototype.component3 = function () {
+    return this.pbrMetallicRoughness;
+  };
+  Material.prototype.component4 = function () {
+    return this.normalTexture;
+  };
+  Material.prototype.component5 = function () {
+    return this.occlusionTexture;
+  };
+  Material.prototype.component6 = function () {
+    return this.emissiveFactor;
+  };
+  Material.prototype.component7 = function () {
+    return this.emissiveTexture;
+  };
+  Material.prototype.component8 = function () {
+    return this.alphaMode;
+  };
+  Material.prototype.component9 = function () {
+    return this.alphaCutoff;
+  };
+  Material.prototype.copy_w55z1t$ = function (doubleSided, name, pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveFactor, emissiveTexture, alphaMode, alphaCutoff) {
+    return new Material(doubleSided === void 0 ? this.doubleSided : doubleSided, name === void 0 ? this.name : name, pbrMetallicRoughness === void 0 ? this.pbrMetallicRoughness : pbrMetallicRoughness, normalTexture === void 0 ? this.normalTexture : normalTexture, occlusionTexture === void 0 ? this.occlusionTexture : occlusionTexture, emissiveFactor === void 0 ? this.emissiveFactor : emissiveFactor, emissiveTexture === void 0 ? this.emissiveTexture : emissiveTexture, alphaMode === void 0 ? this.alphaMode : alphaMode, alphaCutoff === void 0 ? this.alphaCutoff : alphaCutoff);
+  };
+  Material.prototype.toString = function () {
+    return 'Material(doubleSided=' + Kotlin.toString(this.doubleSided) + (', name=' + Kotlin.toString(this.name)) + (', pbrMetallicRoughness=' + Kotlin.toString(this.pbrMetallicRoughness)) + (', normalTexture=' + Kotlin.toString(this.normalTexture)) + (', occlusionTexture=' + Kotlin.toString(this.occlusionTexture)) + (', emissiveFactor=' + Kotlin.toString(this.emissiveFactor)) + (', emissiveTexture=' + Kotlin.toString(this.emissiveTexture)) + (', alphaMode=' + Kotlin.toString(this.alphaMode)) + (', alphaCutoff=' + Kotlin.toString(this.alphaCutoff)) + ')';
+  };
+  Material.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.doubleSided) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.pbrMetallicRoughness) | 0;
+    result = result * 31 + Kotlin.hashCode(this.normalTexture) | 0;
+    result = result * 31 + Kotlin.hashCode(this.occlusionTexture) | 0;
+    result = result * 31 + Kotlin.hashCode(this.emissiveFactor) | 0;
+    result = result * 31 + Kotlin.hashCode(this.emissiveTexture) | 0;
+    result = result * 31 + Kotlin.hashCode(this.alphaMode) | 0;
+    result = result * 31 + Kotlin.hashCode(this.alphaCutoff) | 0;
+    return result;
+  };
+  Material.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.doubleSided, other.doubleSided) && Kotlin.equals(this.name, other.name) && Kotlin.equals(this.pbrMetallicRoughness, other.pbrMetallicRoughness) && Kotlin.equals(this.normalTexture, other.normalTexture) && Kotlin.equals(this.occlusionTexture, other.occlusionTexture) && Kotlin.equals(this.emissiveFactor, other.emissiveFactor) && Kotlin.equals(this.emissiveTexture, other.emissiveTexture) && Kotlin.equals(this.alphaMode, other.alphaMode) && Kotlin.equals(this.alphaCutoff, other.alphaCutoff)))));
+  };
+  function MaterialMap(index, texCoord, scale) {
+    MaterialMap$Companion_getInstance();
+    if (texCoord === void 0)
+      texCoord = 0;
+    if (scale === void 0)
+      scale = 1.0;
+    this.index = index;
+    this.texCoord = texCoord;
+    this.scale = scale;
+  }
+  MaterialMap.prototype.getTexture_vd9sc9$ = function (gltfFile) {
+    return gltfFile.textures.get_za3lpa$(this.index).makeTexture();
+  };
+  function MaterialMap$Companion() {
+    MaterialMap$Companion_instance = this;
+  }
+  MaterialMap$Companion.prototype.serializer = function () {
+    return MaterialMap$$serializer_getInstance();
+  };
+  MaterialMap$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MaterialMap$Companion_instance = null;
+  function MaterialMap$Companion_getInstance() {
+    if (MaterialMap$Companion_instance === null) {
+      new MaterialMap$Companion();
+    }return MaterialMap$Companion_instance;
+  }
+  function MaterialMap$$serializer() {
+    this.descriptor_b9vp7e$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.MaterialMap', this, 3);
+    this.descriptor.addElement_ivxn3r$('index', false);
+    this.descriptor.addElement_ivxn3r$('texCoord', true);
+    this.descriptor.addElement_ivxn3r$('scale', true);
+    MaterialMap$$serializer_instance = this;
+  }
+  Object.defineProperty(MaterialMap$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_b9vp7e$_0;
+    }
+  });
+  MaterialMap$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeIntElement_4wpqag$(this.descriptor, 0, value.index);
+    if (!equals(value.texCoord, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.texCoord);
+    if (!equals(value.scale, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeFloatElement_t7qhdx$(this.descriptor, 2, value.scale);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  MaterialMap$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
+          bitMask0 |= 4;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return MaterialMap_init(bitMask0, local0, local1, local2, null);
+  };
+  MaterialMap$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, internal.IntSerializer, internal.FloatSerializer];
+  };
+  MaterialMap$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var MaterialMap$$serializer_instance = null;
+  function MaterialMap$$serializer_getInstance() {
+    if (MaterialMap$$serializer_instance === null) {
+      new MaterialMap$$serializer();
+    }return MaterialMap$$serializer_instance;
+  }
+  function MaterialMap_init(seen1, index, texCoord, scale, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(MaterialMap.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('index');
+    else
+      $this.index = index;
+    if ((seen1 & 2) === 0)
+      $this.texCoord = 0;
+    else
+      $this.texCoord = texCoord;
+    if ((seen1 & 4) === 0)
+      $this.scale = 1.0;
+    else
+      $this.scale = scale;
+    return $this;
+  }
+  MaterialMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MaterialMap',
+    interfaces: []
+  };
+  MaterialMap.prototype.component1 = function () {
+    return this.index;
+  };
+  MaterialMap.prototype.component2 = function () {
+    return this.texCoord;
+  };
+  MaterialMap.prototype.component3 = function () {
+    return this.scale;
+  };
+  MaterialMap.prototype.copy_n0b4r3$ = function (index, texCoord, scale) {
+    return new MaterialMap(index === void 0 ? this.index : index, texCoord === void 0 ? this.texCoord : texCoord, scale === void 0 ? this.scale : scale);
+  };
+  MaterialMap.prototype.toString = function () {
+    return 'MaterialMap(index=' + Kotlin.toString(this.index) + (', texCoord=' + Kotlin.toString(this.texCoord)) + (', scale=' + Kotlin.toString(this.scale)) + ')';
+  };
+  MaterialMap.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.index) | 0;
+    result = result * 31 + Kotlin.hashCode(this.texCoord) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scale) | 0;
+    return result;
+  };
+  MaterialMap.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.index, other.index) && Kotlin.equals(this.texCoord, other.texCoord) && Kotlin.equals(this.scale, other.scale)))));
+  };
+  function Mesh_0(primitives, name) {
+    Mesh$Companion_getInstance_0();
+    if (name === void 0)
+      name = null;
+    this.primitives = primitives;
+    this.name = name;
+  }
+  function Mesh$Companion_0() {
+    Mesh$Companion_instance_0 = this;
+  }
+  Mesh$Companion_0.prototype.serializer = function () {
+    return Mesh$$serializer_getInstance();
+  };
+  Mesh$Companion_0.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Mesh$Companion_instance_0 = null;
+  function Mesh$Companion_getInstance_0() {
+    if (Mesh$Companion_instance_0 === null) {
+      new Mesh$Companion_0();
+    }return Mesh$Companion_instance_0;
+  }
+  function Mesh$$serializer() {
+    this.descriptor_op8o7a$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Mesh', this, 2);
+    this.descriptor.addElement_ivxn3r$('primitives', false);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    Mesh$$serializer_instance = this;
+  }
+  Object.defineProperty(Mesh$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_op8o7a$_0;
+    }
+  });
+  Mesh$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), value.primitives);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Mesh$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Mesh_init(bitMask0, local0, local1, null);
+  };
+  Mesh$$serializer.prototype.childSerializers = function () {
+    return [new ArrayListSerializer(MeshPrimitive$$serializer_getInstance()), new NullableSerializer(internal.StringSerializer)];
+  };
+  Mesh$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Mesh$$serializer_instance = null;
+  function Mesh$$serializer_getInstance() {
+    if (Mesh$$serializer_instance === null) {
+      new Mesh$$serializer();
+    }return Mesh$$serializer_instance;
+  }
+  function Mesh_init(seen1, primitives, name, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Mesh_0.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('primitives');
+    else
+      $this.primitives = primitives;
+    if ((seen1 & 2) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    return $this;
+  }
+  Mesh_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Mesh',
+    interfaces: []
+  };
+  Mesh_0.prototype.component1 = function () {
+    return this.primitives;
+  };
+  Mesh_0.prototype.component2 = function () {
+    return this.name;
+  };
+  Mesh_0.prototype.copy_7h32o8$ = function (primitives, name) {
+    return new Mesh_0(primitives === void 0 ? this.primitives : primitives, name === void 0 ? this.name : name);
+  };
+  Mesh_0.prototype.toString = function () {
+    return 'Mesh(primitives=' + Kotlin.toString(this.primitives) + (', name=' + Kotlin.toString(this.name)) + ')';
+  };
+  Mesh_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.primitives) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    return result;
+  };
+  Mesh_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.primitives, other.primitives) && Kotlin.equals(this.name, other.name)))));
+  };
+  function MeshPrimitive(attributes, indices, material, mode) {
+    MeshPrimitive$Companion_getInstance();
+    if (indices === void 0)
+      indices = -1;
+    if (material === void 0)
+      material = -1;
+    if (mode === void 0)
+      mode = 4;
+    this.attributes = attributes;
+    this.indices = indices;
+    this.material = material;
+    this.mode = mode;
+    this.materialRef = null;
+    this.indexAccessorRef = null;
+    this.attribAccessorRefs = LinkedHashMap_init();
+  }
+  MeshPrimitive.prototype.toGeometry_6taknv$ = function (generateNormals) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var positionAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_POSITION);
+    var normalAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_NORMAL);
+    var tangentAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_TANGENT);
+    var texCoordAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_TEXCOORD_0);
+    var colorAcc = this.attribAccessorRefs.get_11rb$(GltfFile$Companion_getInstance().MESH_ATTRIBUTE_COLOR_0);
+    var generateTangents = false;
+    var attribs = ArrayList_init_0();
+    if (positionAcc != null) {
+      var element = Attribute$Companion_getInstance().POSITIONS;
+      attribs.add_11rb$(element);
+    }if (normalAcc != null || generateNormals) {
+      var element_0 = Attribute$Companion_getInstance().NORMALS;
+      attribs.add_11rb$(element_0);
+    }if (colorAcc != null) {
+      var element_1 = Attribute$Companion_getInstance().COLORS;
+      attribs.add_11rb$(element_1);
+    }if (texCoordAcc != null) {
+      var element_2 = Attribute$Companion_getInstance().TEXTURE_COORDS;
+      attribs.add_11rb$(element_2);
+    }if (tangentAcc != null) {
+      var element_3 = Attribute$Companion_getInstance().TANGENTS;
+      attribs.add_11rb$(element_3);
+    } else if (((tmp$ = this.materialRef) != null ? tmp$.normalTexture : null) != null) {
+      var element_4 = Attribute$Companion_getInstance().TANGENTS;
+      attribs.add_11rb$(element_4);
+      generateTangents = true;
+    }var verts = new IndexedVertexList(attribs);
+    if (positionAcc != null) {
+      var poss = new Vec3fAccessor(positionAcc);
+      var nrms = normalAcc != null ? new Vec3fAccessor(normalAcc) : null;
+      var tans = tangentAcc != null ? new Vec4fAccessor(tangentAcc) : null;
+      var texs = texCoordAcc != null ? new Vec2fAccessor(texCoordAcc) : null;
+      var cols = colorAcc != null ? new Vec4fAccessor(colorAcc) : null;
+      tmp$_0 = positionAcc.count;
+      for (var i = 0; i < tmp$_0; i++) {
+        var tmp$_3, tmp$_4, tmp$_5;
+        verts.checkBufferSizes_za3lpa$();
+        tmp$_3 = verts.vertexSizeF;
+        for (var i_0 = 1; i_0 <= tmp$_3; i_0++) {
+          verts.dataF.plusAssign_mx4ult$(0.0);
+        }
+        tmp$_4 = verts.vertexSizeI;
+        for (var i_1 = 1; i_1 <= tmp$_4; i_1++) {
+          verts.dataI.plusAssign_za3lpa$(0);
+        }
+        verts.vertexIt.index = (tmp$_5 = verts.numVertices, verts.numVertices = tmp$_5 + 1 | 0, tmp$_5);
+        var $receiver = verts.vertexIt;
+        var tmp$_6, tmp$_7;
+        poss.next_5s4mqq$($receiver.position);
+        nrms != null ? nrms.next_5s4mqq$($receiver.normal) : null;
+        if ((tmp$_6 = tans != null ? tans.next() : null) != null) {
+          $receiver.tangent.set_y2kzbl$(tmp$_6.x, tmp$_6.y, tmp$_6.z);
+        }texs != null ? texs.next_5s4mrl$($receiver.texCoord) : null;
+        if ((tmp$_7 = cols != null ? cols.next() : null) != null) {
+          $receiver.color.set_7b5o5w$(tmp$_7.x, tmp$_7.y, tmp$_7.z, tmp$_7.w);
+        }verts.bounds.add_czzhiu$(verts.vertexIt.position);
+        verts.hasChanged = true;
+        verts.numVertices - 1 | 0;
+      }
+      var indexAcc = this.indexAccessorRef;
+      if (indexAcc != null) {
+        var inds = new IntAccessor(indexAcc);
+        tmp$_1 = indexAcc.count;
+        for (var i_2 = 0; i_2 < tmp$_1; i_2++) {
+          verts.addIndex_za3lpa$(inds.next());
+        }
+      } else {
+        tmp$_2 = positionAcc.count;
+        for (var i_3 = 0; i_3 < tmp$_2; i_3++) {
+          verts.addIndex_za3lpa$(i_3);
+        }
+      }
+      if (generateTangents) {
+        verts.generateTangents();
+      }if (generateNormals) {
+        verts.generateNormals();
+      }}return verts;
+  };
+  function MeshPrimitive$Companion() {
+    MeshPrimitive$Companion_instance = this;
+  }
+  MeshPrimitive$Companion.prototype.serializer = function () {
+    return MeshPrimitive$$serializer_getInstance();
+  };
+  MeshPrimitive$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MeshPrimitive$Companion_instance = null;
+  function MeshPrimitive$Companion_getInstance() {
+    if (MeshPrimitive$Companion_instance === null) {
+      new MeshPrimitive$Companion();
+    }return MeshPrimitive$Companion_instance;
+  }
+  function MeshPrimitive$$serializer() {
+    this.descriptor_9nu1kb$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.MeshPrimitive', this, 4);
+    this.descriptor.addElement_ivxn3r$('attributes', false);
+    this.descriptor.addElement_ivxn3r$('indices', true);
+    this.descriptor.addElement_ivxn3r$('material', true);
+    this.descriptor.addElement_ivxn3r$('mode', true);
+    MeshPrimitive$$serializer_instance = this;
+  }
+  Object.defineProperty(MeshPrimitive$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_9nu1kb$_0;
+    }
+  });
+  MeshPrimitive$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), value.attributes);
+    if (!equals(value.indices, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.indices);
+    if (!equals(value.material, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeIntElement_4wpqag$(this.descriptor, 2, value.material);
+    if (!equals(value.mode, 4) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeIntElement_4wpqag$(this.descriptor, 3, value.mode);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  MeshPrimitive$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = input.decodeIntElement_3zr2iy$(this.descriptor, 2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
+          bitMask0 |= 8;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return MeshPrimitive_init(bitMask0, local0, local1, local2, local3, null);
+  };
+  MeshPrimitive$$serializer.prototype.childSerializers = function () {
+    return [new LinkedHashMapSerializer(internal.StringSerializer, internal.IntSerializer), internal.IntSerializer, internal.IntSerializer, internal.IntSerializer];
+  };
+  MeshPrimitive$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var MeshPrimitive$$serializer_instance = null;
+  function MeshPrimitive$$serializer_getInstance() {
+    if (MeshPrimitive$$serializer_instance === null) {
+      new MeshPrimitive$$serializer();
+    }return MeshPrimitive$$serializer_instance;
+  }
+  function MeshPrimitive_init(seen1, attributes, indices, material, mode, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(MeshPrimitive.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('attributes');
+    else
+      $this.attributes = attributes;
+    if ((seen1 & 2) === 0)
+      $this.indices = -1;
+    else
+      $this.indices = indices;
+    if ((seen1 & 4) === 0)
+      $this.material = -1;
+    else
+      $this.material = material;
+    if ((seen1 & 8) === 0)
+      $this.mode = 4;
+    else
+      $this.mode = mode;
+    $this.materialRef = null;
+    $this.indexAccessorRef = null;
+    $this.attribAccessorRefs = LinkedHashMap_init();
+    return $this;
+  }
+  MeshPrimitive.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MeshPrimitive',
+    interfaces: []
+  };
+  MeshPrimitive.prototype.component1 = function () {
+    return this.attributes;
+  };
+  MeshPrimitive.prototype.component2 = function () {
+    return this.indices;
+  };
+  MeshPrimitive.prototype.component3 = function () {
+    return this.material;
+  };
+  MeshPrimitive.prototype.component4 = function () {
+    return this.mode;
+  };
+  MeshPrimitive.prototype.copy_ge2dsn$ = function (attributes, indices, material, mode) {
+    return new MeshPrimitive(attributes === void 0 ? this.attributes : attributes, indices === void 0 ? this.indices : indices, material === void 0 ? this.material : material, mode === void 0 ? this.mode : mode);
+  };
+  MeshPrimitive.prototype.toString = function () {
+    return 'MeshPrimitive(attributes=' + Kotlin.toString(this.attributes) + (', indices=' + Kotlin.toString(this.indices)) + (', material=' + Kotlin.toString(this.material)) + (', mode=' + Kotlin.toString(this.mode)) + ')';
+  };
+  MeshPrimitive.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.attributes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.indices) | 0;
+    result = result * 31 + Kotlin.hashCode(this.material) | 0;
+    result = result * 31 + Kotlin.hashCode(this.mode) | 0;
+    return result;
+  };
+  MeshPrimitive.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.material, other.material) && Kotlin.equals(this.mode, other.mode)))));
+  };
+  function Node_0(mesh, name, children, translation, rotation, scale, matrix) {
+    Node$Companion_getInstance_0();
+    if (mesh === void 0)
+      mesh = -1;
+    if (name === void 0)
+      name = '';
+    if (children === void 0)
+      children = emptyList();
+    if (translation === void 0)
+      translation = null;
+    if (rotation === void 0)
+      rotation = null;
+    if (scale === void 0)
+      scale = null;
+    if (matrix === void 0)
+      matrix = null;
+    this.mesh = mesh;
+    this.name = name;
+    this.children = children;
+    this.translation = translation;
+    this.rotation = rotation;
+    this.scale = scale;
+    this.matrix = matrix;
+    this.childRefs_brz562$_0 = this.childRefs_brz562$_0;
+    this.meshRef = null;
+  }
+  Object.defineProperty(Node_0.prototype, 'childRefs', {
+    get: function () {
+      if (this.childRefs_brz562$_0 == null)
+        return throwUPAE('childRefs');
+      return this.childRefs_brz562$_0;
+    },
+    set: function (childRefs) {
+      this.childRefs_brz562$_0 = childRefs;
+    }
+  });
+  function Node$Companion_0() {
+    Node$Companion_instance_0 = this;
+  }
+  Node$Companion_0.prototype.serializer = function () {
+    return Node$$serializer_getInstance();
+  };
+  Node$Companion_0.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Node$Companion_instance_0 = null;
+  function Node$Companion_getInstance_0() {
+    if (Node$Companion_instance_0 === null) {
+      new Node$Companion_0();
+    }return Node$Companion_instance_0;
+  }
+  function Node$$serializer() {
+    this.descriptor_98jp0l$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Node', this, 7);
+    this.descriptor.addElement_ivxn3r$('mesh', true);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    this.descriptor.addElement_ivxn3r$('children', true);
+    this.descriptor.addElement_ivxn3r$('translation', true);
+    this.descriptor.addElement_ivxn3r$('rotation', true);
+    this.descriptor.addElement_ivxn3r$('scale', true);
+    this.descriptor.addElement_ivxn3r$('matrix', true);
+    Node$$serializer_instance = this;
+  }
+  Object.defineProperty(Node$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_98jp0l$_0;
+    }
+  });
+  Node$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.mesh, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeIntElement_4wpqag$(this.descriptor, 0, value.mesh);
+    if (!equals(value.name, '') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeStringElement_bgm7zs$(this.descriptor, 1, value.name);
+    if (!equals(value.children, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), value.children);
+    if (!equals(value.translation, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), value.translation);
+    if (!equals(value.rotation, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), value.rotation);
+    if (!equals(value.scale, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), value.scale);
+    if (!equals(value.matrix, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer), value.matrix);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Node$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5
+    , local6;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeStringElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), local2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
+          bitMask0 |= 8;
+          break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), local4);
+          bitMask0 |= 16;
+          break;
+        case 5:
+          local5 = (bitMask0 & 32) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
+          bitMask0 |= 32;
+          break;
+        case 6:
+          local6 = (bitMask0 & 64) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer)) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 6, new ArrayListSerializer(internal.FloatSerializer), local6);
+          bitMask0 |= 64;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Node_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, null);
+  };
+  Node$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, internal.StringSerializer, new ArrayListSerializer(internal.IntSerializer), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer))];
+  };
+  Node$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Node$$serializer_instance = null;
+  function Node$$serializer_getInstance() {
+    if (Node$$serializer_instance === null) {
+      new Node$$serializer();
+    }return Node$$serializer_instance;
+  }
+  function Node_init(seen1, mesh, name, children, translation, rotation, scale, matrix, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Node_0.prototype);
+    if ((seen1 & 1) === 0)
+      $this.mesh = -1;
+    else
+      $this.mesh = mesh;
+    if ((seen1 & 2) === 0)
+      $this.name = '';
+    else
+      $this.name = name;
+    if ((seen1 & 4) === 0)
+      $this.children = emptyList();
+    else
+      $this.children = children;
+    if ((seen1 & 8) === 0)
+      $this.translation = null;
+    else
+      $this.translation = translation;
+    if ((seen1 & 16) === 0)
+      $this.rotation = null;
+    else
+      $this.rotation = rotation;
+    if ((seen1 & 32) === 0)
+      $this.scale = null;
+    else
+      $this.scale = scale;
+    if ((seen1 & 64) === 0)
+      $this.matrix = null;
+    else
+      $this.matrix = matrix;
+    $this.meshRef = null;
+    return $this;
+  }
+  Node_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Node',
+    interfaces: []
+  };
+  Node_0.prototype.component1 = function () {
+    return this.mesh;
+  };
+  Node_0.prototype.component2 = function () {
+    return this.name;
+  };
+  Node_0.prototype.component3 = function () {
+    return this.children;
+  };
+  Node_0.prototype.component4 = function () {
+    return this.translation;
+  };
+  Node_0.prototype.component5 = function () {
+    return this.rotation;
+  };
+  Node_0.prototype.component6 = function () {
+    return this.scale;
+  };
+  Node_0.prototype.component7 = function () {
+    return this.matrix;
+  };
+  Node_0.prototype.copy_tw1hjx$ = function (mesh, name, children, translation, rotation, scale, matrix) {
+    return new Node_0(mesh === void 0 ? this.mesh : mesh, name === void 0 ? this.name : name, children === void 0 ? this.children : children, translation === void 0 ? this.translation : translation, rotation === void 0 ? this.rotation : rotation, scale === void 0 ? this.scale : scale, matrix === void 0 ? this.matrix : matrix);
+  };
+  Node_0.prototype.toString = function () {
+    return 'Node(mesh=' + Kotlin.toString(this.mesh) + (', name=' + Kotlin.toString(this.name)) + (', children=' + Kotlin.toString(this.children)) + (', translation=' + Kotlin.toString(this.translation)) + (', rotation=' + Kotlin.toString(this.rotation)) + (', scale=' + Kotlin.toString(this.scale)) + (', matrix=' + Kotlin.toString(this.matrix)) + ')';
+  };
+  Node_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.mesh) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.children) | 0;
+    result = result * 31 + Kotlin.hashCode(this.translation) | 0;
+    result = result * 31 + Kotlin.hashCode(this.rotation) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scale) | 0;
+    result = result * 31 + Kotlin.hashCode(this.matrix) | 0;
+    return result;
+  };
+  Node_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.mesh, other.mesh) && Kotlin.equals(this.name, other.name) && Kotlin.equals(this.children, other.children) && Kotlin.equals(this.translation, other.translation) && Kotlin.equals(this.rotation, other.rotation) && Kotlin.equals(this.scale, other.scale) && Kotlin.equals(this.matrix, other.matrix)))));
+  };
+  function PbrMetallicRoughness(baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture) {
+    PbrMetallicRoughness$Companion_getInstance();
+    if (baseColorFactor === void 0)
+      baseColorFactor = listOf([1.0, 1.0, 1.0, 1.0]);
+    if (baseColorTexture === void 0)
+      baseColorTexture = null;
+    if (metallicFactor === void 0)
+      metallicFactor = 1.0;
+    if (roughnessFactor === void 0)
+      roughnessFactor = 1.0;
+    if (metallicRoughnessTexture === void 0)
+      metallicRoughnessTexture = null;
+    this.baseColorFactor = baseColorFactor;
+    this.baseColorTexture = baseColorTexture;
+    this.metallicFactor = metallicFactor;
+    this.roughnessFactor = roughnessFactor;
+    this.metallicRoughnessTexture = metallicRoughnessTexture;
+  }
+  function PbrMetallicRoughness$Companion() {
+    PbrMetallicRoughness$Companion_instance = this;
+  }
+  PbrMetallicRoughness$Companion.prototype.serializer = function () {
+    return PbrMetallicRoughness$$serializer_getInstance();
+  };
+  PbrMetallicRoughness$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var PbrMetallicRoughness$Companion_instance = null;
+  function PbrMetallicRoughness$Companion_getInstance() {
+    if (PbrMetallicRoughness$Companion_instance === null) {
+      new PbrMetallicRoughness$Companion();
+    }return PbrMetallicRoughness$Companion_instance;
+  }
+  function PbrMetallicRoughness$$serializer() {
+    this.descriptor_au0mxi$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.PbrMetallicRoughness', this, 5);
+    this.descriptor.addElement_ivxn3r$('baseColorFactor', true);
+    this.descriptor.addElement_ivxn3r$('baseColorTexture', true);
+    this.descriptor.addElement_ivxn3r$('metallicFactor', true);
+    this.descriptor.addElement_ivxn3r$('roughnessFactor', true);
+    this.descriptor.addElement_ivxn3r$('metallicRoughnessTexture', true);
+    PbrMetallicRoughness$$serializer_instance = this;
+  }
+  Object.defineProperty(PbrMetallicRoughness$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_au0mxi$_0;
+    }
+  });
+  PbrMetallicRoughness$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.baseColorFactor, listOf([1.0, 1.0, 1.0, 1.0])) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer), value.baseColorFactor);
+    if (!equals(value.baseColorTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, MaterialMap$$serializer_getInstance(), value.baseColorTexture);
+    if (!equals(value.metallicFactor, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 2))
+      output.encodeFloatElement_t7qhdx$(this.descriptor, 2, value.metallicFactor);
+    if (!equals(value.roughnessFactor, 1.0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeFloatElement_t7qhdx$(this.descriptor, 3, value.roughnessFactor);
+    if (!equals(value.metallicRoughnessTexture, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), value.metallicRoughnessTexture);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  PbrMetallicRoughness$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(internal.FloatSerializer), local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, MaterialMap$$serializer_getInstance(), local1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = input.decodeFloatElement_3zr2iy$(this.descriptor, 3);
+          bitMask0 |= 8;
+          break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 4, MaterialMap$$serializer_getInstance()) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 4, MaterialMap$$serializer_getInstance(), local4);
+          bitMask0 |= 16;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return PbrMetallicRoughness_init(bitMask0, local0, local1, local2, local3, local4, null);
+  };
+  PbrMetallicRoughness$$serializer.prototype.childSerializers = function () {
+    return [new ArrayListSerializer(internal.FloatSerializer), new NullableSerializer(MaterialMap$$serializer_getInstance()), internal.FloatSerializer, internal.FloatSerializer, new NullableSerializer(MaterialMap$$serializer_getInstance())];
+  };
+  PbrMetallicRoughness$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var PbrMetallicRoughness$$serializer_instance = null;
+  function PbrMetallicRoughness$$serializer_getInstance() {
+    if (PbrMetallicRoughness$$serializer_instance === null) {
+      new PbrMetallicRoughness$$serializer();
+    }return PbrMetallicRoughness$$serializer_instance;
+  }
+  function PbrMetallicRoughness_init(seen1, baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(PbrMetallicRoughness.prototype);
+    if ((seen1 & 1) === 0)
+      $this.baseColorFactor = listOf([1.0, 1.0, 1.0, 1.0]);
+    else
+      $this.baseColorFactor = baseColorFactor;
+    if ((seen1 & 2) === 0)
+      $this.baseColorTexture = null;
+    else
+      $this.baseColorTexture = baseColorTexture;
+    if ((seen1 & 4) === 0)
+      $this.metallicFactor = 1.0;
+    else
+      $this.metallicFactor = metallicFactor;
+    if ((seen1 & 8) === 0)
+      $this.roughnessFactor = 1.0;
+    else
+      $this.roughnessFactor = roughnessFactor;
+    if ((seen1 & 16) === 0)
+      $this.metallicRoughnessTexture = null;
+    else
+      $this.metallicRoughnessTexture = metallicRoughnessTexture;
+    return $this;
+  }
+  PbrMetallicRoughness.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PbrMetallicRoughness',
+    interfaces: []
+  };
+  PbrMetallicRoughness.prototype.component1 = function () {
+    return this.baseColorFactor;
+  };
+  PbrMetallicRoughness.prototype.component2 = function () {
+    return this.baseColorTexture;
+  };
+  PbrMetallicRoughness.prototype.component3 = function () {
+    return this.metallicFactor;
+  };
+  PbrMetallicRoughness.prototype.component4 = function () {
+    return this.roughnessFactor;
+  };
+  PbrMetallicRoughness.prototype.component5 = function () {
+    return this.metallicRoughnessTexture;
+  };
+  PbrMetallicRoughness.prototype.copy_7kaaf4$ = function (baseColorFactor, baseColorTexture, metallicFactor, roughnessFactor, metallicRoughnessTexture) {
+    return new PbrMetallicRoughness(baseColorFactor === void 0 ? this.baseColorFactor : baseColorFactor, baseColorTexture === void 0 ? this.baseColorTexture : baseColorTexture, metallicFactor === void 0 ? this.metallicFactor : metallicFactor, roughnessFactor === void 0 ? this.roughnessFactor : roughnessFactor, metallicRoughnessTexture === void 0 ? this.metallicRoughnessTexture : metallicRoughnessTexture);
+  };
+  PbrMetallicRoughness.prototype.toString = function () {
+    return 'PbrMetallicRoughness(baseColorFactor=' + Kotlin.toString(this.baseColorFactor) + (', baseColorTexture=' + Kotlin.toString(this.baseColorTexture)) + (', metallicFactor=' + Kotlin.toString(this.metallicFactor)) + (', roughnessFactor=' + Kotlin.toString(this.roughnessFactor)) + (', metallicRoughnessTexture=' + Kotlin.toString(this.metallicRoughnessTexture)) + ')';
+  };
+  PbrMetallicRoughness.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.baseColorFactor) | 0;
+    result = result * 31 + Kotlin.hashCode(this.baseColorTexture) | 0;
+    result = result * 31 + Kotlin.hashCode(this.metallicFactor) | 0;
+    result = result * 31 + Kotlin.hashCode(this.roughnessFactor) | 0;
+    result = result * 31 + Kotlin.hashCode(this.metallicRoughnessTexture) | 0;
+    return result;
+  };
+  PbrMetallicRoughness.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.baseColorFactor, other.baseColorFactor) && Kotlin.equals(this.baseColorTexture, other.baseColorTexture) && Kotlin.equals(this.metallicFactor, other.metallicFactor) && Kotlin.equals(this.roughnessFactor, other.roughnessFactor) && Kotlin.equals(this.metallicRoughnessTexture, other.metallicRoughnessTexture)))));
+  };
+  function Scene_0(nodes, name) {
+    Scene$Companion_getInstance();
+    if (name === void 0)
+      name = null;
+    this.nodes = nodes;
+    this.name = name;
+    this.nodeRefs_8gf49q$_0 = this.nodeRefs_8gf49q$_0;
+  }
+  Object.defineProperty(Scene_0.prototype, 'nodeRefs', {
+    get: function () {
+      if (this.nodeRefs_8gf49q$_0 == null)
+        return throwUPAE('nodeRefs');
+      return this.nodeRefs_8gf49q$_0;
+    },
+    set: function (nodeRefs) {
+      this.nodeRefs_8gf49q$_0 = nodeRefs;
+    }
+  });
+  function Scene$Companion() {
+    Scene$Companion_instance = this;
+  }
+  Scene$Companion.prototype.serializer = function () {
+    return Scene$$serializer_getInstance();
+  };
+  Scene$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Scene$Companion_instance = null;
+  function Scene$Companion_getInstance() {
+    if (Scene$Companion_instance === null) {
+      new Scene$Companion();
+    }return Scene$Companion_instance;
+  }
+  function Scene$$serializer() {
+    this.descriptor_rb8br7$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Scene', this, 2);
+    this.descriptor.addElement_ivxn3r$('nodes', false);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    Scene$$serializer_instance = this;
+  }
+  Object.defineProperty(Scene$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_rb8br7$_0;
+    }
+  });
+  Scene$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer), value.nodes);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Scene$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new ArrayListSerializer(internal.IntSerializer), local0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Scene_init(bitMask0, local0, local1, null);
+  };
+  Scene$$serializer.prototype.childSerializers = function () {
+    return [new ArrayListSerializer(internal.IntSerializer), new NullableSerializer(internal.StringSerializer)];
+  };
+  Scene$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Scene$$serializer_instance = null;
+  function Scene$$serializer_getInstance() {
+    if (Scene$$serializer_instance === null) {
+      new Scene$$serializer();
+    }return Scene$$serializer_instance;
+  }
+  function Scene_init(seen1, nodes, name, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Scene_0.prototype);
+    if ((seen1 & 1) === 0)
+      throw new MissingFieldException('nodes');
+    else
+      $this.nodes = nodes;
+    if ((seen1 & 2) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    return $this;
+  }
+  Scene_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Scene',
+    interfaces: []
+  };
+  Scene_0.prototype.component1 = function () {
+    return this.nodes;
+  };
+  Scene_0.prototype.component2 = function () {
+    return this.name;
+  };
+  Scene_0.prototype.copy_jfrl1g$ = function (nodes, name) {
+    return new Scene_0(nodes === void 0 ? this.nodes : nodes, name === void 0 ? this.name : name);
+  };
+  Scene_0.prototype.toString = function () {
+    return 'Scene(nodes=' + Kotlin.toString(this.nodes) + (', name=' + Kotlin.toString(this.name)) + ')';
+  };
+  Scene_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.nodes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    return result;
+  };
+  Scene_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.name, other.name)))));
+  };
+  function Texture_0(source, name) {
+    Texture$Companion_getInstance_0();
+    if (source === void 0)
+      source = 0;
+    if (name === void 0)
+      name = null;
+    this.source = source;
+    this.name = name;
+    this.imageRef_tvaqhx$_0 = this.imageRef_tvaqhx$_0;
+    this.createdTex_0 = null;
+  }
+  Object.defineProperty(Texture_0.prototype, 'imageRef', {
+    get: function () {
+      if (this.imageRef_tvaqhx$_0 == null)
+        return throwUPAE('imageRef');
+      return this.imageRef_tvaqhx$_0;
+    },
+    set: function (imageRef) {
+      this.imageRef_tvaqhx$_0 = imageRef;
+    }
+  });
+  function Coroutine$Texture$makeTexture$lambda(closure$uri_0, this$Texture_0, $receiver_0, assetMgr_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$uri = closure$uri_0;
+    this.local$this$Texture = this$Texture_0;
+    this.local$assetMgr = assetMgr_0;
+  }
+  Coroutine$Texture$makeTexture$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$Texture$makeTexture$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$Texture$makeTexture$lambda.prototype.constructor = Coroutine$Texture$makeTexture$lambda;
+  Coroutine$Texture$makeTexture$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            if (this.local$closure$uri != null) {
+              this.state_0 = 3;
+              this.result_0 = this.local$assetMgr.loadTextureData_61zpoe$(this.local$closure$uri, this);
+              if (this.result_0 === COROUTINE_SUSPENDED)
+                return COROUTINE_SUSPENDED;
+              continue;
+            } else {
+              this.state_0 = 2;
+              this.result_0 = this.local$assetMgr.createTextureData_asds6l$(ensureNotNull(this.local$this$Texture.imageRef.bufferViewRef).getData(), ensureNotNull(this.local$this$Texture.imageRef.mimeType), this);
+              if (this.result_0 === COROUTINE_SUSPENDED)
+                return COROUTINE_SUSPENDED;
+              continue;
+            }
+
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          case 3:
+            return this.result_0;
+          case 4:
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function Texture$makeTexture$lambda(closure$uri_0, this$Texture_0) {
+    return function ($receiver_0, assetMgr_0, continuation_0, suspended) {
+      var instance = new Coroutine$Texture$makeTexture$lambda(closure$uri_0, this$Texture_0, $receiver_0, assetMgr_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  Texture_0.prototype.makeTexture = function () {
+    var tmp$;
+    if (this.createdTex_0 == null) {
+      var uri = this.imageRef.uri;
+      if (uri != null && !startsWith(uri, 'data:', true)) {
+        tmp$ = uri;
+      } else {
+        tmp$ = 'gltf_tex_' + this.source;
+      }
+      var name = tmp$;
+      this.createdTex_0 = new Texture(name, void 0, Texture$makeTexture$lambda(uri, this));
+    }return ensureNotNull(this.createdTex_0);
+  };
+  function Texture$Companion_0() {
+    Texture$Companion_instance_0 = this;
+  }
+  Texture$Companion_0.prototype.serializer = function () {
+    return Texture$$serializer_getInstance();
+  };
+  Texture$Companion_0.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Texture$Companion_instance_0 = null;
+  function Texture$Companion_getInstance_0() {
+    if (Texture$Companion_instance_0 === null) {
+      new Texture$Companion_0();
+    }return Texture$Companion_instance_0;
+  }
+  function Texture$$serializer() {
+    this.descriptor_chnfn8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Texture', this, 2);
+    this.descriptor.addElement_ivxn3r$('source', true);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    Texture$$serializer_instance = this;
+  }
+  Object.defineProperty(Texture$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_chnfn8$_0;
+    }
+  });
+  Texture$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.source, 0) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeIntElement_4wpqag$(this.descriptor, 0, value.source);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 1, internal.StringSerializer, value.name);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Texture$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 1, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 1, internal.StringSerializer, local1);
+          bitMask0 |= 2;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Texture_init(bitMask0, local0, local1, null);
+  };
+  Texture$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, new NullableSerializer(internal.StringSerializer)];
+  };
+  Texture$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Texture$$serializer_instance = null;
+  function Texture$$serializer_getInstance() {
+    if (Texture$$serializer_instance === null) {
+      new Texture$$serializer();
+    }return Texture$$serializer_instance;
+  }
+  function Texture_init(seen1, source, name, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Texture_0.prototype);
+    if ((seen1 & 1) === 0)
+      $this.source = 0;
+    else
+      $this.source = source;
+    if ((seen1 & 2) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    $this.createdTex_0 = null;
+    return $this;
+  }
+  Texture_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Texture',
+    interfaces: []
+  };
+  Texture_0.prototype.component1 = function () {
+    return this.source;
+  };
+  Texture_0.prototype.component2 = function () {
+    return this.name;
+  };
+  Texture_0.prototype.copy_vqvrqt$ = function (source, name) {
+    return new Texture_0(source === void 0 ? this.source : source, name === void 0 ? this.name : name);
+  };
+  Texture_0.prototype.toString = function () {
+    return 'Texture(source=' + Kotlin.toString(this.source) + (', name=' + Kotlin.toString(this.name)) + ')';
+  };
+  Texture_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.source) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    return result;
+  };
+  Texture_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.source, other.source) && Kotlin.equals(this.name, other.name)))));
   };
   function BrdfLutPass(parentScene) {
     OffscreenRenderPass2d_init(new Group(), 512, 512, TexFormat$RG_F16_getInstance(), 1, this);
@@ -38893,7 +39172,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }};
   function OffscreenPass2dImpl$OffscreenTexture($outer) {
     this.$outer = $outer;
-    Texture.call(this, void 0, null);
+    Texture.call(this, void 0, void 0, null);
   }
   OffscreenPass2dImpl$OffscreenTexture.prototype.create_44a5h0$ = function (ctx) {
     var gl = ctx.gl_8be2vx$;
@@ -38918,7 +39197,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function OffscreenPass2dImpl$OffscreenDepthTexture($outer) {
     this.$outer = $outer;
-    Texture.call(this, void 0, null);
+    Texture.call(this, void 0, void 0, null);
   }
   OffscreenPass2dImpl$OffscreenDepthTexture.prototype.create_44a5h0$ = function (ctx) {
     var gl = ctx.gl_8be2vx$;
@@ -38953,10 +39232,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var size = this.offscreenPass.nAttachments;
     var list = ArrayList_init(size);
     for (var index = 0; index < size; index++) {
-      list.add_11rb$(new Texture(void 0, null));
+      list.add_11rb$(new Texture(void 0, void 0, null));
     }
     this.colorTextures = list;
-    this.depthTexture = new Texture(void 0, null);
+    this.depthTexture = new Texture(void 0, void 0, null);
     this.isCreated_0 = false;
     this.fbo_0 = null;
     var array = Array_0(this.offscreenPass.nAttachments);
@@ -39181,7 +39460,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function OffscreenPassCubeImpl$OffscreenTextureCube($outer) {
     this.$outer = $outer;
-    CubeMapTexture.call(this, new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance()), null);
+    CubeMapTexture.call(this, 'offscreen_cube_tex', new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance()), null);
     this.offscreenTex = null;
   }
   OffscreenPassCubeImpl$OffscreenTextureCube.prototype.create_44a5h0$ = function (ctx) {
@@ -39875,7 +40154,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   JsAssetManager.prototype.loadAndPrepareTexture_hd4f6p$$default = function (assetPath, props, recv) {
-    var tex = new Texture(props, JsAssetManager$loadAndPrepareTexture$lambda(assetPath));
+    var tex = new Texture(this.assetPathToName_61zpoe$(assetPath), props, JsAssetManager$loadAndPrepareTexture$lambda(assetPath));
     launch(this, void 0, void 0, JsAssetManager$loadAndPrepareTexture$lambda_0(assetPath, this, props, tex, recv));
   };
   function Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, $receiver_0, it_0, controller, continuation_0) {
@@ -39997,7 +40276,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   JsAssetManager.prototype.loadAndPrepareCubeMap_y2tg0w$$default = function (ft, bk, lt, rt, up, dn, props, recv) {
-    var tex = new CubeMapTexture(props, JsAssetManager$loadAndPrepareCubeMap$lambda(ft, bk, lt, rt, up, dn));
+    var name = this.cubeMapAssetPathToName_r3y0ew$(ft, bk, lt, rt, up, dn);
+    var tex = new CubeMapTexture(name, props, JsAssetManager$loadAndPrepareCubeMap$lambda(ft, bk, lt, rt, up, dn));
     launch(this, void 0, void 0, JsAssetManager$loadAndPrepareCubeMap$lambda_0(ft, bk, lt, rt, up, dn, this, props, tex, recv));
   };
   function JsAssetManager$Companion() {
@@ -43544,18 +43824,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.Font = Font;
   package$util.CharMetrics = CharMetrics;
   package$util.CharMap = CharMap;
+  Object.defineProperty(Accessor, 'Companion', {
+    get: Accessor$Companion_getInstance
+  });
+  Object.defineProperty(Accessor, '$serializer', {
+    get: Accessor$$serializer_getInstance
+  });
   var package$gltf = package$util.gltf || (package$util.gltf = {});
-  package$gltf.DataStream = DataStream;
-  package$gltf.loadGltfModel_4v1054$ = loadGltfModel;
-  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
-  Object.defineProperty(GltfFile, 'Companion', {
-    get: GltfFile$Companion_getInstance
-  });
-  Object.defineProperty(GltfFile, '$serializer', {
-    get: GltfFile$$serializer_getInstance
-  });
-  package$gltf.GltfFile_init_hhbdxz$ = GltfFile_init;
-  package$gltf.GltfFile = GltfFile;
+  package$gltf.Accessor_init_3l2m2z$ = Accessor_init;
+  package$gltf.Accessor = Accessor;
+  package$gltf.IntAccessor = IntAccessor;
+  package$gltf.Vec2fAccessor = Vec2fAccessor;
+  package$gltf.Vec3fAccessor = Vec3fAccessor;
+  package$gltf.Vec4fAccessor = Vec4fAccessor;
   Object.defineProperty(Asset, 'Companion', {
     get: Asset$Companion_getInstance
   });
@@ -43564,78 +43845,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$gltf.Asset_init_2u6d5w$ = Asset_init;
   package$gltf.Asset = Asset;
-  Object.defineProperty(Scene_0, 'Companion', {
-    get: Scene$Companion_getInstance
-  });
-  Object.defineProperty(Scene_0, '$serializer', {
-    get: Scene$$serializer_getInstance
-  });
-  package$gltf.Scene_init_i54khn$ = Scene_init;
-  package$gltf.Scene = Scene_0;
-  Object.defineProperty(Node_0, 'Companion', {
-    get: Node$Companion_getInstance_0
-  });
-  Object.defineProperty(Node_0, '$serializer', {
-    get: Node$$serializer_getInstance
-  });
-  package$gltf.Node_init_xm4ye9$ = Node_init;
-  package$gltf.Node = Node_0;
-  Object.defineProperty(Mesh_0, 'Companion', {
-    get: Mesh$Companion_getInstance_0
-  });
-  Object.defineProperty(Mesh_0, '$serializer', {
-    get: Mesh$$serializer_getInstance
-  });
-  package$gltf.Mesh_init_khmls9$ = Mesh_init;
-  package$gltf.Mesh = Mesh_0;
-  Object.defineProperty(MeshPrimitive, 'Companion', {
-    get: MeshPrimitive$Companion_getInstance
-  });
-  Object.defineProperty(MeshPrimitive, '$serializer', {
-    get: MeshPrimitive$$serializer_getInstance
-  });
-  package$gltf.MeshPrimitive_init_dnzqgs$ = MeshPrimitive_init;
-  package$gltf.MeshPrimitive = MeshPrimitive;
-  Object.defineProperty(Material, 'Companion', {
-    get: Material$Companion_getInstance
-  });
-  Object.defineProperty(Material, '$serializer', {
-    get: Material$$serializer_getInstance
-  });
-  package$gltf.Material_init_utqej7$ = Material_init;
-  package$gltf.Material = Material;
-  Object.defineProperty(PbrMetallicRoughness, 'Companion', {
-    get: PbrMetallicRoughness$Companion_getInstance
-  });
-  Object.defineProperty(PbrMetallicRoughness, '$serializer', {
-    get: PbrMetallicRoughness$$serializer_getInstance
-  });
-  package$gltf.PbrMetallicRoughness_init_pashwp$ = PbrMetallicRoughness_init;
-  package$gltf.PbrMetallicRoughness = PbrMetallicRoughness;
-  Object.defineProperty(MaterialMap, 'Companion', {
-    get: MaterialMap$Companion_getInstance
-  });
-  Object.defineProperty(MaterialMap, '$serializer', {
-    get: MaterialMap$$serializer_getInstance
-  });
-  package$gltf.MaterialMap_init_1y74qb$ = MaterialMap_init;
-  package$gltf.MaterialMap = MaterialMap;
-  Object.defineProperty(Texture_0, 'Companion', {
-    get: Texture$Companion_getInstance_0
-  });
-  Object.defineProperty(Texture_0, '$serializer', {
-    get: Texture$$serializer_getInstance
-  });
-  package$gltf.Texture_init_9hvpzv$ = Texture_init;
-  package$gltf.Texture = Texture_0;
-  Object.defineProperty(Image_0, 'Companion', {
-    get: Image$Companion_getInstance
-  });
-  Object.defineProperty(Image_0, '$serializer', {
-    get: Image$$serializer_getInstance
-  });
-  package$gltf.Image_init_9odt0j$ = Image_init;
-  package$gltf.Image = Image_0;
   Object.defineProperty(Buffer_0, 'Companion', {
     get: Buffer$Companion_getInstance
   });
@@ -43652,14 +43861,90 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$gltf.BufferView_init_qbyruk$ = BufferView_init;
   package$gltf.BufferView = BufferView;
-  Object.defineProperty(Accessor, 'Companion', {
-    get: Accessor$Companion_getInstance
+  package$gltf.DataStream = DataStream;
+  package$gltf.loadGltfModel_4v1054$ = loadGltfModel;
+  GltfFile.ModelGenerateConfig = GltfFile$ModelGenerateConfig;
+  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
+  Object.defineProperty(GltfFile, 'Companion', {
+    get: GltfFile$Companion_getInstance
   });
-  Object.defineProperty(Accessor, '$serializer', {
-    get: Accessor$$serializer_getInstance
+  Object.defineProperty(GltfFile, '$serializer', {
+    get: GltfFile$$serializer_getInstance
   });
-  package$gltf.Accessor_init_3l2m2z$ = Accessor_init;
-  package$gltf.Accessor = Accessor;
+  package$gltf.GltfFile_init_hhbdxz$ = GltfFile_init;
+  package$gltf.GltfFile = GltfFile;
+  Object.defineProperty(Image_0, 'Companion', {
+    get: Image$Companion_getInstance
+  });
+  Object.defineProperty(Image_0, '$serializer', {
+    get: Image$$serializer_getInstance
+  });
+  package$gltf.Image_init_9odt0j$ = Image_init;
+  package$gltf.Image = Image_0;
+  Object.defineProperty(Material, 'Companion', {
+    get: Material$Companion_getInstance
+  });
+  Object.defineProperty(Material, '$serializer', {
+    get: Material$$serializer_getInstance
+  });
+  package$gltf.Material_init_utqej7$ = Material_init;
+  package$gltf.Material = Material;
+  Object.defineProperty(MaterialMap, 'Companion', {
+    get: MaterialMap$Companion_getInstance
+  });
+  Object.defineProperty(MaterialMap, '$serializer', {
+    get: MaterialMap$$serializer_getInstance
+  });
+  package$gltf.MaterialMap_init_1y74qb$ = MaterialMap_init;
+  package$gltf.MaterialMap = MaterialMap;
+  Object.defineProperty(Mesh_0, 'Companion', {
+    get: Mesh$Companion_getInstance_0
+  });
+  Object.defineProperty(Mesh_0, '$serializer', {
+    get: Mesh$$serializer_getInstance
+  });
+  package$gltf.Mesh_init_khmls9$ = Mesh_init;
+  package$gltf.Mesh = Mesh_0;
+  Object.defineProperty(MeshPrimitive, 'Companion', {
+    get: MeshPrimitive$Companion_getInstance
+  });
+  Object.defineProperty(MeshPrimitive, '$serializer', {
+    get: MeshPrimitive$$serializer_getInstance
+  });
+  package$gltf.MeshPrimitive_init_dnzqgs$ = MeshPrimitive_init;
+  package$gltf.MeshPrimitive = MeshPrimitive;
+  Object.defineProperty(Node_0, 'Companion', {
+    get: Node$Companion_getInstance_0
+  });
+  Object.defineProperty(Node_0, '$serializer', {
+    get: Node$$serializer_getInstance
+  });
+  package$gltf.Node_init_xm4ye9$ = Node_init;
+  package$gltf.Node = Node_0;
+  Object.defineProperty(PbrMetallicRoughness, 'Companion', {
+    get: PbrMetallicRoughness$Companion_getInstance
+  });
+  Object.defineProperty(PbrMetallicRoughness, '$serializer', {
+    get: PbrMetallicRoughness$$serializer_getInstance
+  });
+  package$gltf.PbrMetallicRoughness_init_pashwp$ = PbrMetallicRoughness_init;
+  package$gltf.PbrMetallicRoughness = PbrMetallicRoughness;
+  Object.defineProperty(Scene_0, 'Companion', {
+    get: Scene$Companion_getInstance
+  });
+  Object.defineProperty(Scene_0, '$serializer', {
+    get: Scene$$serializer_getInstance
+  });
+  package$gltf.Scene_init_i54khn$ = Scene_init;
+  package$gltf.Scene = Scene_0;
+  Object.defineProperty(Texture_0, 'Companion', {
+    get: Texture$Companion_getInstance_0
+  });
+  Object.defineProperty(Texture_0, '$serializer', {
+    get: Texture$$serializer_getInstance
+  });
+  package$gltf.Texture_init_9hvpzv$ = Texture_init;
+  package$gltf.Texture = Texture_0;
   var package$ibl = package$util.ibl || (package$util.ibl = {});
   package$ibl.BrdfLutPass = BrdfLutPass;
   package$ibl.IrradianceMapPass = IrradianceMapPass;
@@ -43922,20 +44207,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
   BlankComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
   BlankComponentUi.prototype.dispose_aemszp$ = ComponentUi.prototype.dispose_aemszp$;
-  GltfFile$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Accessor$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Asset$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Scene$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Node$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Mesh$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  MeshPrimitive$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Material$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  PbrMetallicRoughness$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  MaterialMap$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Texture$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Image$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Buffer$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   BufferView$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Accessor$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  GltfFile$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Image$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Material$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  MaterialMap$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Mesh$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  MeshPrimitive$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Node$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  PbrMetallicRoughness$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Scene$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Texture$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
   EdgeAdapter.prototype.getCenterX_trkh7z$ = ItemAdapter.prototype.getCenterX_trkh7z$;
   EdgeAdapter.prototype.getCenterY_trkh7z$ = ItemAdapter.prototype.getCenterY_trkh7z$;

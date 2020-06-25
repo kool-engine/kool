@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
@@ -31,72 +32,8 @@ data class GltfFile(
         val extensionsRequired: List<String> = emptyList()
 ) {
 
-    fun makeModel(scene: Int = this.scene,
-                  generateNormals: Boolean = false,
-                  applyMaterials: Boolean = true,
-                  pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): Model {
-
-        val scn = scenes[scene]
-        val cfg = ModelGenerateConfig(generateNormals, applyMaterials, pbrBlock)
-        val model = Model(scn.name)
-        scn.nodeRefs.forEach { nd ->
-            model += nd.makeNode(model, cfg)
-        }
-        return model
-    }
-
-    private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
-        val nodeGrp = TransformGroup(name)
-        model.nodes[name] = nodeGrp
-
-        if (matrix != null) {
-            nodeGrp.transform.set(matrix.map { it.toDouble() })
-        } else {
-            if (translation != null) {
-                nodeGrp.translate(translation[0], translation[1], translation[2])
-            }
-            if (rotation != null) {
-                val rotMat = Mat4d().setRotate(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
-                nodeGrp.transform.mul(rotMat)
-            }
-            if (scale != null) {
-                nodeGrp.scale(scale[0], scale[1], scale[2])
-            }
-        }
-
-        childRefs.forEach {
-            nodeGrp += it.makeNode(model, cfg)
-        }
-
-        meshRef?.primitives?.forEachIndexed { index, p ->
-            val name = "${meshRef?.name ?: name}_$index"
-            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(cfg.generateNormals), name)
-            nodeGrp += mesh
-
-            if (cfg.applyMaterials) {
-                val useVertexColor = p.attributes.containsKey(MESH_ATTRIBUTE_COLOR_0)
-                mesh.pipelineLoader = pbrShader {
-                    val material = p.materialRef
-                    if (material != null) {
-                        material.applyTo(this, useVertexColor, this@GltfFile)
-                    } else {
-                        albedo = Color.GRAY
-                        albedoSource = Albedo.STATIC_ALBEDO
-                    }
-                    cfg.pbrBlock?.invoke(this, p)
-
-                    albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                    normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                    roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                    metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                    ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                    displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                }
-            }
-            model.meshes[name] = mesh
-        }
-
-        return nodeGrp
+    fun makeModel(modelCfg: ModelGenerateConfig = ModelGenerateConfig(), scene: Int = this.scene): Model {
+        return ModelGenerator(modelCfg).makeModel(scenes[scene])
     }
 
     internal fun updateReferences() {
@@ -126,11 +63,139 @@ data class GltfFile(
         images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
     }
 
-    private class ModelGenerateConfig(
-            val generateNormals: Boolean,
-            val applyMaterials: Boolean,
-            val pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?
+    class ModelGenerateConfig(
+            val generateNormals: Boolean = false,
+            val applyTransforms: Boolean = false,
+            val mergeMeshesByMaterial: Boolean = false,
+            val applyMaterials: Boolean = true,
+            val pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null
     )
+
+    private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
+        val meshesByMaterial = mutableMapOf<Int, MutableSet<de.fabmax.kool.scene.Mesh>>()
+
+        fun makeModel(scene: Scene): Model {
+            val model = Model(scene.name)
+            scene.nodeRefs.forEach { nd ->
+                model += nd.makeNode(model, cfg)
+            }
+            if (cfg.applyTransforms) {
+                applyTransforms(model)
+            }
+            if (cfg.mergeMeshesByMaterial) {
+                mergeMeshesByMaterial(model)
+            }
+            return model
+        }
+
+        private fun mergeMeshesByMaterial(model: Model) {
+            model.mergeMeshesByMaterial()
+        }
+
+        private fun TransformGroup.mergeMeshesByMaterial() {
+            children.filterIsInstance<TransformGroup>().forEach { it.mergeMeshesByMaterial() }
+
+            meshesByMaterial.values.forEach { sameMatMeshes ->
+                val mergeMeshes = children.filter { it in sameMatMeshes }.map { it as de.fabmax.kool.scene.Mesh }
+                if (mergeMeshes.size > 1) {
+                    val r = mergeMeshes[0]
+                    for (i in 1 until mergeMeshes.size) {
+                        val m = mergeMeshes[i]
+                        r.geometry.addGeometry(m.geometry)
+                        removeNode(m)
+                    }
+                }
+            }
+        }
+
+        private fun applyTransforms(model: Model) {
+            val transform = Mat4dStack()
+            transform.setIdentity()
+            model.applyTransforms(transform, model)
+        }
+
+        private fun TransformGroup.applyTransforms(transform: Mat4dStack, rootGroup: TransformGroup) {
+            transform.push()
+            transform.mul(this.transform)
+
+            children.filterIsInstance<de.fabmax.kool.scene.Mesh>().forEach {
+                it.geometry.batchUpdate(true) {
+                    forEach { v ->
+                        transform.transform(v.position, 1f)
+                        transform.transform(v.normal, 0f)
+                        transform.transform(v.tangent, 0f)
+                    }
+                }
+                if (rootGroup != this) {
+                    rootGroup += it
+                }
+            }
+
+            val childGroups = children.filterIsInstance<TransformGroup>()
+            childGroups.forEach {
+                it.applyTransforms(transform, rootGroup)
+                removeNode(it)
+            }
+
+            transform.pop()
+        }
+
+        private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
+            val nodeGrp = TransformGroup(name)
+            model.nodes[name] = nodeGrp
+
+            if (matrix != null) {
+                nodeGrp.transform.set(matrix.map { it.toDouble() })
+            } else {
+                if (translation != null) {
+                    nodeGrp.translate(translation[0], translation[1], translation[2])
+                }
+                if (rotation != null) {
+                    val rotMat = Mat4d().setRotate(Vec4d(rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble(), rotation[3].toDouble()))
+                    nodeGrp.transform.mul(rotMat)
+                }
+                if (scale != null) {
+                    nodeGrp.scale(scale[0], scale[1], scale[2])
+                }
+            }
+
+            childRefs.forEach {
+                nodeGrp += it.makeNode(model, cfg)
+            }
+
+            meshRef?.primitives?.forEachIndexed { index, p ->
+                val name = "${meshRef?.name ?: name}_$index"
+                val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(cfg.generateNormals), name)
+                nodeGrp += mesh
+
+                meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
+
+                if (cfg.applyMaterials) {
+                    val useVertexColor = p.attributes.containsKey(MESH_ATTRIBUTE_COLOR_0)
+                    mesh.pipelineLoader = pbrShader {
+                        val material = p.materialRef
+                        if (material != null) {
+                            material.applyTo(this, useVertexColor, this@GltfFile)
+                        } else {
+                            albedo = Color.GRAY
+                            albedoSource = Albedo.STATIC_ALBEDO
+                        }
+                        cfg.pbrBlock?.invoke(this, p)
+
+                        albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    }
+                }
+                model.meshes[name] = mesh
+            }
+
+            return nodeGrp
+        }
+    }
 
     companion object {
         const val ACCESSOR_TYPE_SCALAR = "SCALAR"

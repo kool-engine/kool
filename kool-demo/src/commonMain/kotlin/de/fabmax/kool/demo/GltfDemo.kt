@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.BrdfLutPass
 import de.fabmax.kool.util.ibl.IrradianceMapPass
@@ -299,13 +300,13 @@ class GltfDemo(ctx: KoolContext) {
         fun load(ctx: KoolContext) {
             ctx.assetMgr.loadGltfModel(assetPath) { gltf ->
                 gltf?.let {
-                    model = it.makeModel(generateNormals = generateNormals) {
+                    val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = generateNormals, applyTransforms = true, mergeMeshesByMaterial = true) {
                         shadowMaps += shadows
                         scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
                         isScrSpcAmbientOcclusion = true
-
                         setImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
-                    }.apply {
+                    }
+                    model = it.makeModel(modelCfg).apply {
                         scale(scale, scale, scale)
                         translate(translation)
                         isVisible = this@GltfModel.isVisible

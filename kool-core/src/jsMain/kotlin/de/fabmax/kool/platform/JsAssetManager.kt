@@ -76,6 +76,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return Uint8BufferImpl(pako.inflate(uint8Data) as Uint8Array)
     }
 
+    @Suppress("UNUSED_VARIABLE")
     override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
         // super cumbersome / ugly method to convert Uint8Array into a base64 string
         // todo: is there really no better way in JS?

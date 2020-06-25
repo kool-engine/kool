@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.BrdfLutPass
 import de.fabmax.kool.util.ibl.IrradianceMapPass
@@ -239,7 +240,8 @@ class AoDemo(ctx: KoolContext) {
             loadingAssets.hdriMap = tex
         }
         ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz") {
-            loadingAssets.teapotMesh = it?.makeModel(generateNormals = true, applyMaterials = false)?.meshes?.values?.first()
+            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+            loadingAssets.teapotMesh = it?.makeModel(modelCfg)?.meshes?.values?.first()
         }
     }
 

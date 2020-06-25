@@ -13,6 +13,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import kotlin.math.cos
 import kotlin.math.sqrt
@@ -114,7 +115,8 @@ class SimplificationDemo(ctx: KoolContext) {
         loadingModels += name
         ctx.assetMgr.loadGltfModel(name) { model ->
             if (model != null) {
-                val mesh = model.makeModel(generateNormals = true, applyMaterials = false).meshes.values.first()
+                val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+                val mesh = model.makeModel(modelCfg).meshes.values.first()
                 val geometry = mesh.geometry
                 for (i in 0 until geometry.numVertices) {
                     geometry.vertexIt.index = i

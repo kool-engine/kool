@@ -23,6 +23,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Skybox = $module$kool.de.fabmax.kool.scene.Skybox;
   var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
+  var GltfFile$ModelGenerateConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelGenerateConfig;
   var first = Kotlin.kotlin.collections.first_7wnvza$;
   var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
   var scale = $module$kool.de.fabmax.kool.math.scale_2qa7tb$;
@@ -194,7 +195,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.menu = null;
     this.autoRotate_0 = true;
     this.spotLight_0 = true;
-    this.noAoMap_0 = new Texture(void 0, AoDemo$noAoMap$lambda);
+    this.noAoMap_0 = new Texture(void 0, void 0, AoDemo$noAoMap$lambda);
     this.aoPipeline_953qvj$_0 = this.aoPipeline_953qvj$_0;
     this.shadows_0 = ArrayList_init();
     this.mainScene = this.makeMainScene_0(ctx);
@@ -562,10 +563,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
       $receiver.isAmbientOcclusionMapped = true;
-      $receiver.albedoMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda);
-      $receiver.ambientOcclusionMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0);
-      $receiver.normalMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1);
-      $receiver.roughnessMap = new Texture(void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2);
+      $receiver.albedoMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda);
+      $receiver.ambientOcclusionMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0);
+      $receiver.normalMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1);
+      $receiver.roughnessMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2);
       return Unit;
     };
   }
@@ -626,7 +627,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
       var tmp$, tmp$_0, tmp$_1;
-      closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_wqoxlt$(void 0, true) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+      closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_m0hq3v$(modelCfg) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
       return Unit;
     };
   }
@@ -1193,7 +1195,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.pbrPass_13qagj$_0 = this.pbrPass_13qagj$_0;
     this.objects_v6o6kw$_0 = this.objects_v6o6kw$_0;
     this.objectShader_kt711w$_0 = this.objectShader_kt711w$_0;
-    this.noAoMap_0 = new Texture(void 0, DeferredDemo$noAoMap$lambda);
+    this.noAoMap_0 = new Texture(void 0, void 0, DeferredDemo$noAoMap$lambda);
     this.lightPositionMesh_cedig8$_0 = this.lightPositionMesh_cedig8$_0;
     this.lightVolumeMesh_k6bbw9$_0 = this.lightVolumeMesh_k6bbw9$_0;
     this.autoRotate_0 = true;
@@ -1738,11 +1740,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.isRoughnessMapped = true;
     $receiver_0.isMetallicMapped = true;
     $receiver_0.isAmbientOcclusionMapped = true;
-    $receiver_0.albedoMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda);
-    $receiver_0.normalMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0);
-    $receiver_0.roughnessMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1);
-    $receiver_0.metallicMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2);
-    $receiver_0.ambientOcclusionMap = new Texture(void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3);
+    $receiver_0.albedoMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda);
+    $receiver_0.normalMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0);
+    $receiver_0.roughnessMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1);
+    $receiver_0.metallicMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2);
+    $receiver_0.ambientOcclusionMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3);
     var mrtCfg = $receiver_0;
     var groundShader = new DeferredMrtShader(mrtCfg);
     $receiver.pipelineLoader = groundShader;
@@ -2493,7 +2495,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.dbgOverlay_0 = new DebugOverlay(ctx, DebugOverlay$Position.LOWER_RIGHT);
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
-    this.defaultScene_0 = new Demo$DemoEntry('PBR / IBL', void 0, Demo$defaultScene$lambda);
+    this.defaultScene_0 = new Demo$DemoEntry('glTF Models', void 0, Demo$defaultScene$lambda);
     this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
     var tmp$;
     var $receiver = ctx.scenes;
@@ -2684,7 +2686,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }return Demo$Companion_instance;
   }
   function Demo$defaultScene$lambda($receiver, it) {
-    $receiver.addAll_brywnq$(pbrDemoScene(it));
+    $receiver.addAll_brywnq$(gltfDemo(it));
     return Unit;
   }
   function Demo$demos$lambda($receiver, it) {
@@ -2840,8 +2842,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(0.0, -30.0);
       $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.zoom = 5.0;
-      $receiver.translation.set_yvo9jy$(0.0, 0.5, 0.0);
+      $receiver.zoom = this$GltfDemo.models_0.current.zoom;
+      $receiver.translation.set_czzhiw$(this$GltfDemo.models_0.current.lookAt);
       var $receiver_0 = $receiver.onUpdate;
       var element = GltfDemo$makeMainScene$lambda$lambda$lambda(this$GltfDemo, closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
@@ -3123,10 +3125,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isAmbientOcclusionMapped = true;
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
-      $receiver.albedoMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0);
-      $receiver.roughnessMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1);
-      $receiver.ambientOcclusionMap = new Texture(void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2);
+      $receiver.albedoMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0);
+      $receiver.roughnessMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1);
+      $receiver.ambientOcclusionMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2);
       $receiver.setImageBasedLighting_5m8fyp$((tmp$_0 = this$GltfDemo.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this$GltfDemo.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
       this$.onDispose.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_3($receiver));
       return Unit;
@@ -3361,7 +3363,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (gltf != null) {
         var this$GltfModel_0 = this$GltfModel;
         var this$GltfDemo_0 = this$GltfDemo;
-        var $receiver = gltf.makeModel_wqoxlt$(void 0, this$GltfModel_0.generateNormals, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
+        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, true, true, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
+        var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
         $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
         $receiver.translate_czzhiu$(this$GltfModel_0.translation);
         $receiver.isVisible = this$GltfModel_0.isVisible;
@@ -3482,7 +3485,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     tmp$ = model.scenes;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var mesh = ensureNotNull(model.makeModel_wqoxlt$(i, true).meshes.get_11rb$('bunny_0'));
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+      var mesh = first(model.makeModel_m0hq3v$(modelCfg, i).meshes.values);
       var $this = mesh.geometry;
       var tmp$_0;
       tmp$_0 = $this.numVertices;
@@ -3874,7 +3878,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (gltf != null) {
         var this$MultiLightDemo_0 = this$MultiLightDemo;
         var this$_0 = this$;
-        var model = gltf.makeModel_wqoxlt$(void 0, true);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+        var model = gltf.makeModel_m0hq3v$(modelCfg);
         this$MultiLightDemo_0.bunnyMesh_0 = first(model.meshes.values);
         this$MultiLightDemo_0.applyShaders_0();
         this$_0.unaryPlus_uv0sim$(model);
@@ -4107,9 +4112,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
       addAll($receiver.shadowMaps, this.shadowMaps_0);
-      $receiver.albedoMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0);
-      $receiver.roughnessMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1);
+      $receiver.albedoMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0);
+      $receiver.roughnessMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1);
       $receiver.metallic = 0.0;
       var cfg = $receiver;
       var $receiver_0 = new PbrShader(cfg);
@@ -4226,8 +4231,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isNormalMapped = true;
       addAll($receiver.shadowMaps, this.shadowMaps_0);
-      $receiver.albedoMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0);
+      $receiver.albedoMap = new Texture(void 0, void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0);
       $receiver.shininess = 100.0;
       var cfg = $receiver;
       var $receiver_0 = new PhongShader(cfg);
@@ -5944,7 +5949,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.defaultAoTex_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.defaultDispTex_0 = new SingleColorTexture(Color.Companion.BLACK);
     this.assetPath_0 = Demo$Companion_getInstance().pbrBasePath;
-    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31(this)), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32(this)))]);
+    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), null, new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_22(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), null, new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_25(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_31(this)), null, null, new Texture(void 0, void 0, PbrMaterialContent$Companion$materials$lambda_32(this)))]);
   }
   function Coroutine$PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -8075,7 +8080,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function (model) {
       var tmp$;
       if (model != null) {
-        var mesh = first(model.makeModel_wqoxlt$(void 0, true).meshes.values);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+        var mesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
         var geometry = mesh.geometry;
         tmp$ = geometry.numVertices;
         for (var i = 0; i < tmp$; i++) {
@@ -8814,10 +8820,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda);
-      $receiver_1.ambientOcclusionMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
-      $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_1);
-      $receiver_1.roughnessMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_2);
+      $receiver_1.albedoMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda);
+      $receiver_1.ambientOcclusionMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_0);
+      $receiver_1.normalMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_1);
+      $receiver_1.roughnessMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_2);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
       $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
@@ -8999,7 +9005,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_5);
+      $receiver_1.albedoMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
       $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
@@ -9943,11 +9949,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg);
-      $receiver_1.albedoMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda);
-      $receiver_1.normalMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
-      $receiver_1.roughnessMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_1);
-      $receiver_1.ambientOcclusionMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_2);
-      $receiver_1.displacementMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_3);
+      $receiver_1.albedoMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda);
+      $receiver_1.normalMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
+      $receiver_1.roughnessMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_1);
+      $receiver_1.ambientOcclusionMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_2);
+      $receiver_1.displacementMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_3);
       $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_4($receiver_1));
       $receiver.pipelineLoader = $receiver_1;
       return Unit;

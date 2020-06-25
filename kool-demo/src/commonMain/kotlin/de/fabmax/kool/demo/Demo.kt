@@ -27,7 +27,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) }
+    private val defaultScene = DemoEntry("glTF Models") { addAll(gltfDemo(it)) }
 
     private val demos = mutableMapOf(
             "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },

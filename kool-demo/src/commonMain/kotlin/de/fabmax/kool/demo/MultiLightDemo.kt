@@ -13,6 +13,7 @@ import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import kotlin.math.*
 
@@ -79,7 +80,8 @@ class MultiLightDemo(ctx: KoolContext) {
 
             ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz") { gltf ->
                 gltf?.let {
-                    val model = gltf.makeModel(generateNormals = true, applyMaterials = false)
+                    val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+                    val model = gltf.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()
                     applyShaders()
                     +model
