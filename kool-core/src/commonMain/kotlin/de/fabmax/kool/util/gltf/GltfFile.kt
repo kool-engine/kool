@@ -85,10 +85,22 @@ data class GltfFile(
             if (cfg.mergeMeshesByMaterial) {
                 mergeMeshesByMaterial(model)
             }
+            model.sortByAlpha()
             return model
         }
 
-        private fun mergeMeshesByMaterial(model: Model) {
+        private fun TransformGroup.sortByAlpha() {
+            children.filterIsInstance<TransformGroup>().forEach { it.sortByAlpha() }
+            sortChildrenBy {
+                var a = 1.1f
+                if (it is de.fabmax.kool.scene.Mesh) {
+                    a = (it.pipelineLoader as? PbrShader)?.albedo?.a ?: 0f
+                }
+                -a
+            }
+        }
+
+            private fun mergeMeshesByMaterial(model: Model) {
             model.mergeMeshesByMaterial()
         }
 

@@ -30733,7 +30733,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.applyTransforms_0(model);
     }if (this.cfg.mergeMeshesByMaterial) {
       this.mergeMeshesByMaterial_0(model);
-    }return model;
+    }this.sortByAlpha_0(model);
+    return model;
+  };
+  function GltfFile$ModelGenerator$sortByAlpha$lambda(it) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var a = 1.1;
+    if (Kotlin.isType(it, Mesh)) {
+      a = (tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = it.pipelineLoader, PbrShader) ? tmp$ : null) != null ? tmp$_0.albedo : null) != null ? tmp$_1.a : null) != null ? tmp$_2 : 0.0;
+    }return -a;
+  }
+  GltfFile$ModelGenerator.prototype.sortByAlpha_0 = function ($receiver) {
+    var $receiver_0 = $receiver.children;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (Kotlin.isType(element, TransformGroup))
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      this.sortByAlpha_0(element_0);
+    }
+    $receiver.sortChildrenBy_mq7kdd$(GltfFile$ModelGenerator$sortByAlpha$lambda);
   };
   GltfFile$ModelGenerator.prototype.mergeMeshesByMaterial_0 = function (model) {
     this.mergeMeshesByMaterial_1(model);
