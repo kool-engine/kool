@@ -4,8 +4,11 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3Context
 
 actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
-    actual val texture = CubeMapTexture(TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE, addressModeW = AddressMode.CLAMP_TO_EDGE),
+    actual val texture = CubeMapTexture(
+            "offscreen_cube_tex",
+            TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE,
+                         addressModeV = AddressMode.CLAMP_TO_EDGE,
+                         addressModeW = AddressMode.CLAMP_TO_EDGE),
             loader = null)
 
     internal var backendImpl: BackendImpl? = null

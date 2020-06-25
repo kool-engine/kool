@@ -78,7 +78,7 @@ class InstanceDemo(ctx: KoolContext) {
 
     private fun addLods(model: GltfFile) {
         for (i in model.scenes.indices) {
-            val mesh = model.makeModel(i, true).meshes["bunny_0"]!!
+            val mesh = model.makeModel(i, generateNormals = true, applyMaterials = false).meshes.values.first()
             mesh.apply {
                 geometry.forEach { v ->
                     v.position.scale(0.3f).add(Vec3f(0f, -1f, 0f))

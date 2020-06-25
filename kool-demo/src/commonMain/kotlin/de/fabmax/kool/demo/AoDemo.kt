@@ -239,7 +239,7 @@ class AoDemo(ctx: KoolContext) {
             loadingAssets.hdriMap = tex
         }
         ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz") {
-            loadingAssets.teapotMesh = it?.makeModel(generateNormals = true)?.meshes?.values?.first()
+            loadingAssets.teapotMesh = it?.makeModel(generateNormals = true, applyMaterials = false)?.meshes?.values?.first()
         }
     }
 

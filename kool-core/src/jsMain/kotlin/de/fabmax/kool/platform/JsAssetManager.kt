@@ -94,7 +94,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
     }
 
     override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {
-        val tex = Texture(props) { it.loadTextureData(assetPath) }
+        val tex = Texture(assetPathToName(assetPath), props) { it.loadTextureData(assetPath) }
         launch {
             val data = loadTextureData(assetPath)
             tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
@@ -105,7 +105,8 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
 
     override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps, recv: (CubeMapTexture) -> Unit) {
-        val tex = CubeMapTexture(props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
+        val tex = CubeMapTexture(name, props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         launch {
             val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
             tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)

@@ -93,6 +93,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     }
 
     private inner class OffscreenTextureCube : CubeMapTexture(
+            "offscreen_cube_tex",
             TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE),
             loader = null) {
 

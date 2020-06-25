@@ -114,7 +114,7 @@ class SimplificationDemo(ctx: KoolContext) {
         loadingModels += name
         ctx.assetMgr.loadGltfModel(name) { model ->
             if (model != null) {
-                val mesh = model.makeModel(generateNormals = true).meshes.values.first()
+                val mesh = model.makeModel(generateNormals = true, applyMaterials = false).meshes.values.first()
                 val geometry = mesh.geometry
                 for (i in 0 until geometry.numVertices) {
                     geometry.vertexIt.index = i

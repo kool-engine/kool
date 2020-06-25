@@ -161,7 +161,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
 
         val data = BufferedTextureData(buf, 4, 4, TexFormat.RGBA)
         val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT, minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
-        return Texture(texProps) { data }
+        return Texture("ao_noise_tex", texProps) { data }
     }
 
     override fun dispose(ctx: KoolContext) {

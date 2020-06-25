@@ -1,101 +1,18 @@
 package de.fabmax.kool.util.gltf
 
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TransformGroup
-import de.fabmax.kool.util.*
-import kotlinx.coroutines.launch
+import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.parse
-
-fun AssetManager.loadGltfModel(assetPath: String, onLoad: (GltfFile?) -> Unit) {
-    launch {
-        val model = when {
-            assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true) -> loadGltf(assetPath)
-            assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)-> loadGlb(assetPath)
-            else -> null
-        }
-
-        val modelBasePath = if (assetPath.contains('/')) {
-            assetPath.substring(0, assetPath.lastIndexOf('/'))
-        } else { "." }
-        model?.let { m ->
-            m.buffers.filter { it.uri != null }.forEach {
-                val uri = it.uri!!
-                val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-                it.data = loadAsset(bufferPath)!!
-            }
-            m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
-            m.makeReferences()
-        }
-
-        onLoad(model)
-    }
-}
-
-private suspend fun AssetManager.loadGltf(assetPath: String): GltfFile? {
-    var data = loadAsset(assetPath)
-    if (data != null && assetPath.endsWith(".gz", true)) {
-        data = inflate(data)
-    }
-    return if (data != null) { GltfFile.fromJson(data.toArray().decodeToString()) } else { null }
-}
-
-private suspend fun AssetManager.loadGlb(assetPath: String): GltfFile? {
-    var data = loadAsset(assetPath) ?: return null
-    if (assetPath.endsWith(".gz", true)) {
-        data = inflate(data)
-    }
-    val str = DataStream(data)
-
-    // file header
-    val magic = str.readUInt()
-    val version = str.readUInt()
-    //val fileLength = str.readUInt()
-    str.readUInt()
-    if (magic != GltfFile.GLB_FILE_MAGIC) {
-        throw KoolException("Unexpected glTF magic number: $magic (should be ${GltfFile.GLB_FILE_MAGIC} / 'glTF')")
-    }
-    if (version != 2) {
-        logW { "Unexpected glTF version: $version (should be 2) - stuff might not work as expected" }
-    }
-
-    // chunk 0 - JSON content
-    var chunkLen = str.readUInt()
-    var chunkType = str.readUInt()
-    if (chunkType != GltfFile.GLB_CHUNK_MAGIC_JSON) {
-        throw KoolException("Unexpected chunk type for chunk 0: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_JSON} / 'JSON')")
-    }
-    val jsonData = str.readData(chunkLen).toArray()
-    val model = GltfFile.fromJson(jsonData.decodeToString())
-
-    // remaining data chunks
-    var iChunk = 1
-    while (str.hasRemaining()) {
-        chunkLen = str.readUInt()
-        chunkType = str.readUInt()
-        if (chunkType == GltfFile.GLB_CHUNK_MAGIC_BIN) {
-            model.buffers[iChunk-1].data = str.readData(chunkLen)
-
-        } else {
-            logW { "Unexpected chunk type for chunk $iChunk: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_BIN} / ' BIN')" }
-            str.index += chunkLen
-        }
-        iChunk++
-    }
-
-    return model
-}
 
 @Serializable
 data class GltfFile(
@@ -114,16 +31,21 @@ data class GltfFile(
         val extensionsRequired: List<String> = emptyList()
 ) {
 
-    fun makeModel(scene: Int = this.scene, generateNormals: Boolean = false, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): Model {
+    fun makeModel(scene: Int = this.scene,
+                  generateNormals: Boolean = false,
+                  applyMaterials: Boolean = true,
+                  pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null): Model {
+
         val scn = scenes[scene]
+        val cfg = ModelGenerateConfig(generateNormals, applyMaterials, pbrBlock)
         val model = Model(scn.name)
         scn.nodeRefs.forEach { nd ->
-            model += nd.makeNode(model, generateNormals, pbrBlock)
+            model += nd.makeNode(model, cfg)
         }
         return model
     }
 
-    private fun Node.makeNode(model: Model, generateNormals: Boolean, pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?): TransformGroup {
+    private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
         val nodeGrp = TransformGroup(name)
         model.nodes[name] = nodeGrp
 
@@ -143,24 +65,33 @@ data class GltfFile(
         }
 
         childRefs.forEach {
-            nodeGrp += it.makeNode(model, generateNormals, pbrBlock)
+            nodeGrp += it.makeNode(model, cfg)
         }
 
         meshRef?.primitives?.forEachIndexed { index, p ->
             val name = "${meshRef?.name ?: name}_$index"
-            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(generateNormals), name)
+            val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(cfg.generateNormals), name)
             nodeGrp += mesh
-            mesh.pipelineLoader = pbrShader {
-                val material = p.materialRef
-                if (material != null) {
-                    applyMaterial(model, material)
 
-                } else {
-                    albedo = Color.GRAY
-                    albedoSource = Albedo.STATIC_ALBEDO
+            if (cfg.applyMaterials) {
+                val useVertexColor = p.attributes.containsKey(MESH_ATTRIBUTE_COLOR_0)
+                mesh.pipelineLoader = pbrShader {
+                    val material = p.materialRef
+                    if (material != null) {
+                        material.applyTo(this, useVertexColor, this@GltfFile)
+                    } else {
+                        albedo = Color.GRAY
+                        albedoSource = Albedo.STATIC_ALBEDO
+                    }
+                    cfg.pbrBlock?.invoke(this, p)
+
+                    albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                    displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                 }
-
-                pbrBlock?.invoke(this, p)
             }
             model.meshes[name] = mesh
         }
@@ -168,63 +99,7 @@ data class GltfFile(
         return nodeGrp
     }
 
-    private fun PbrShader.PbrConfig.applyMaterial(model: Model, material: Material) {
-        val pbr = material.pbrMetallicRoughness
-        if (pbr.baseColorTexture != null) {
-            albedoMap = getModelTex(model, pbr.baseColorTexture.index)
-            albedoSource = Albedo.TEXTURE_ALBEDO
-        } else {
-            albedo = Color(pbr.baseColorFactor[0], pbr.baseColorFactor[1], pbr.baseColorFactor[2], pbr.baseColorFactor[3])
-            albedoSource = Albedo.STATIC_ALBEDO
-        }
-
-        material.normalTexture?.let { tex ->
-            normalMap = getModelTex(model, tex.index)
-            isNormalMapped = true
-        }
-
-        if (pbr.metallicRoughnessTexture != null) {
-            val rmTex = getModelTex(model, pbr.metallicRoughnessTexture.index)
-            isMetallicMapped = true
-            metallicMap = rmTex
-            metallicChannel = "b"
-            metallicTexName = "tMetalRough"
-
-            isRoughnessMapped = true
-            roughnessMap = rmTex
-            roughnessChannel = "g"
-            roughnessTexName = "tMetalRough"
-
-            if (material.occlusionTexture != null && material.occlusionTexture.index == pbr.metallicRoughnessTexture.index) {
-                isAmbientOcclusionMapped = true
-                ambientOcclusionMap = rmTex
-                ambientOcclusionChannel = "r"
-                ambientOcclusionTexName = "tMetalRough"
-            }
-
-        } else {
-            metallic = pbr.metallicFactor
-            roughness = pbr.roughnessFactor
-
-            if (material.occlusionTexture != null) {
-                isAmbientOcclusionMapped = true
-                ambientOcclusionMap = getModelTex(model, material.occlusionTexture.index)
-                ambientOcclusionChannel = "r"
-            }
-        }
-    }
-
-    private fun getModelTex(model: Model, iTex: Int): de.fabmax.kool.pipeline.Texture {
-        val name = makeTexName(iTex)
-        return model.textures.getOrPut(name) { textures[iTex].makeTexture() }
-    }
-
-    private fun makeTexName(iTex: Int): String {
-        val tex = textures[iTex]
-        return tex.name ?: "model_tex_#$iTex"
-    }
-
-    fun makeReferences() {
+    internal fun updateReferences() {
         accessors.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
         bufferViews.forEach { it.bufferRef = buffers[it.buffer] }
         meshes.forEach { mesh ->
@@ -250,6 +125,12 @@ data class GltfFile(
         textures.forEach { it.imageRef = images[it.source] }
         images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
     }
+
+    private class ModelGenerateConfig(
+            val generateNormals: Boolean,
+            val applyMaterials: Boolean,
+            val pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)?
+    )
 
     companion object {
         const val ACCESSOR_TYPE_SCALAR = "SCALAR"
@@ -301,367 +182,3 @@ data class GltfFile(
     }
 }
 
-@Serializable
-data class Asset(
-        val version: String,
-        val generator: String? = null
-)
-
-@Serializable
-data class Scene(
-        val nodes: List<Int>,
-        val name: String? = null
-) {
-    @Transient
-    lateinit var nodeRefs: List<Node>
-}
-
-@Serializable
-data class Node(
-        val mesh: Int = -1,
-        val name: String = "",
-        val children: List<Int> = emptyList(),
-        val translation: List<Float>? = null,
-        val rotation: List<Float>? = null,
-        val scale: List<Float>? = null,
-        val matrix: List<Float>? = null
-) {
-    @Transient
-    lateinit var childRefs: List<Node>
-    @Transient
-    var meshRef: Mesh? = null
-}
-
-@Serializable
-data class Mesh(
-        val primitives: List<MeshPrimitive>,
-        val name: String? = null
-)
-
-@Serializable
-data class MeshPrimitive(
-        val attributes: Map<String, Int>,
-        val indices: Int = -1,
-        val material: Int = -1,
-        val mode: Int = GltfFile.MODE_TRIANGLES
-) {
-    @Transient
-    var materialRef: Material? = null
-    @Transient
-    var indexAccessorRef: Accessor? = null
-    @Transient
-    val attribAccessorRefs = mutableMapOf<String, Accessor>()
-
-    fun toGeometry(generateNormals: Boolean): IndexedVertexList {
-        val positionAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_POSITION]
-        val normalAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_NORMAL]
-        val tangentAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_TANGENT]
-        val texCoordAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_TEXCOORD_0]
-        val colorAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_COLOR_0]
-
-        var generateTangents = false
-
-        val attribs = mutableListOf<Attribute>()
-        if (positionAcc != null) { attribs += Attribute.POSITIONS }
-        if (normalAcc != null || generateNormals) { attribs += Attribute.NORMALS }
-        if (colorAcc != null) { attribs += Attribute.COLORS }
-        if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS }
-        if (tangentAcc != null) {
-            attribs += Attribute.TANGENTS
-        } else if(materialRef?.normalTexture != null) {
-            attribs += Attribute.TANGENTS
-            generateTangents = true
-        }
-
-        val verts = IndexedVertexList(attribs)
-        if (positionAcc != null) {
-            val poss = Vec3fAccessor(positionAcc)
-            val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
-            val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null
-            val texs = if (texCoordAcc != null) Vec2fAccessor(texCoordAcc) else null
-            val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
-
-            for (i in 0 until positionAcc.count) {
-                verts.addVertex {
-                    poss.next(position)
-                    nrms?.next(normal)
-                    tans?.next()?.let { tan -> tangent.set(tan.x, tan.y, tan.z) }
-                    texs?.next(texCoord)
-                    cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
-                }
-            }
-
-            val indexAcc = indexAccessorRef
-            if (indexAcc != null) {
-                val inds = IntAccessor(indexAcc)
-                for (i in 0 until indexAcc.count) {
-                    verts.addIndex(inds.next())
-                }
-            } else {
-                for (i in 0 until positionAcc.count) {
-                    verts.addIndex(i)
-                }
-            }
-
-            if (generateTangents) {
-                verts.generateTangents()
-            }
-            if (generateNormals) {
-                verts.generateNormals()
-            }
-        }
-        return verts
-    }
-}
-
-@Serializable
-data class Material(
-        val doubleSided: Boolean = false,
-        val name: String? = null,
-        val pbrMetallicRoughness: PbrMetallicRoughness = PbrMetallicRoughness(baseColorFactor = listOf(0.5f, 0.5f, 0.5f, 1f)),
-        val normalTexture: MaterialMap? = null,
-        val occlusionTexture: MaterialMap? = null,
-        val emissiveFactor: List<Float>? = null,
-        val emissiveTexture: MaterialMap? = null,
-        val alphaMode: String = "OPAQUE",
-        val alphaCutoff: Float = 0.5f
-)
-
-@Serializable
-data class PbrMetallicRoughness(
-        val baseColorFactor: List<Float> = listOf(1f, 1f, 1f, 1f),
-        val baseColorTexture: MaterialMap? = null,
-        val metallicFactor: Float = 1f,
-        val roughnessFactor: Float = 1f,
-        val metallicRoughnessTexture: MaterialMap? = null
-)
-
-@Serializable
-data class MaterialMap(
-        val index: Int,
-        val texCoord: Int = 0,
-        val scale: Float = 1f
-)
-
-@Serializable
-data class Texture(
-        val source: Int = 0,
-        val name: String? = null
-) {
-    @Transient
-    lateinit var imageRef: Image
-
-    @Transient
-    private var createdTex: de.fabmax.kool.pipeline.Texture? = null
-
-    fun makeTexture(): de.fabmax.kool.pipeline.Texture {
-        if (createdTex == null) {
-            createdTex = de.fabmax.kool.pipeline.Texture { assetMgr ->
-                if (imageRef.uri != null) {
-                    assetMgr.loadTextureData(imageRef.uri!!)
-                } else {
-                    assetMgr.createTextureData(imageRef.bufferViewRef!!.getData(), imageRef.mimeType ?: "image/png")
-                }
-            }
-        }
-        return createdTex!!
-    }
-}
-
-@Serializable
-data class Image(
-        var uri: String? = null,
-        val bufferView: Int = -1,
-        val mimeType: String? = null,
-        val name: String? = null
-) {
-    @Transient
-    var bufferViewRef: BufferView? = null
-}
-
-@Serializable
-data class Buffer(
-        val byteLength: Int,
-        val uri: String? = null
-) {
-    @Transient
-    lateinit var data: Uint8Buffer
-}
-
-@Serializable
-data class BufferView(
-        val buffer: Int,
-        val byteLength: Int,
-        val byteOffset: Int = 0,
-        val target: Int = 0
-) {
-    @Transient
-    lateinit var bufferRef: Buffer
-
-    fun getData(): Uint8Buffer {
-        val array = createUint8Buffer(byteLength)
-        for (i in 0 until byteLength) {
-            array[i] = bufferRef.data[byteOffset + i]
-        }
-        return array
-    }
-}
-
-@Serializable
-data class Accessor(
-        val bufferView: Int,
-        val componentType: Int,
-        val count: Int,
-        val type: String,
-        val byteOffset: Int = 0,
-        val min: List<Float>? = null,
-        val max: List<Float>? = null
-) {
-    @Transient
-    lateinit var bufferViewRef: BufferView
-}
-
-private class IntAccessor(val accessor: Accessor) {
-    private val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
-
-    private val elemSize: Int = when (accessor.componentType) {
-        GltfFile.COMP_TYPE_BYTE -> 1
-        GltfFile.COMP_TYPE_UNSIGNED_BYTE -> 1
-        GltfFile.COMP_TYPE_SHORT -> 2
-        GltfFile.COMP_TYPE_UNSIGNED_SHORT -> 2
-        GltfFile.COMP_TYPE_INT -> 4
-        GltfFile.COMP_TYPE_UNSIGNED_INT -> 4
-        else -> throw IllegalArgumentException("Provided accessor does not have integer component type")
-    }
-
-    var index: Int
-        get() = stream.index / elemSize
-        set(value) {
-            stream.index = value * elemSize
-        }
-
-    init {
-        if (accessor.type != GltfFile.ACCESSOR_TYPE_SCALAR) {
-            throw IllegalArgumentException("IntAccessor requires accessor type ${GltfFile.ACCESSOR_TYPE_SCALAR}, provided was ${accessor.type}")
-        }
-    }
-
-    fun next(): Int {
-        return if (index < accessor.count) {
-            when (accessor.componentType) {
-                GltfFile.COMP_TYPE_BYTE -> stream.readByte()
-                GltfFile.COMP_TYPE_UNSIGNED_BYTE -> stream.readUByte()
-                GltfFile.COMP_TYPE_SHORT -> stream.readShort()
-                GltfFile.COMP_TYPE_UNSIGNED_SHORT -> stream.readUShort()
-                GltfFile.COMP_TYPE_INT -> stream.readInt()
-                GltfFile.COMP_TYPE_UNSIGNED_INT -> stream.readUInt()
-                else -> 0
-            }
-
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
-    }
-}
-
-private class Vec2fAccessor(val accessor: Accessor) {
-    private val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
-
-    private val elemSize: Int = when (accessor.componentType) {
-        GltfFile.COMP_TYPE_FLOAT -> 4 * 2
-        else -> throw IllegalArgumentException("Provided accessor does not have float component type")
-    }
-
-    var index: Int
-        get() = stream.index / elemSize
-        set(value) {
-            stream.index = value * elemSize
-        }
-
-    init {
-        if (accessor.type != GltfFile.ACCESSOR_TYPE_VEC2) {
-            throw IllegalArgumentException("Vec2fAccessor requires accessor type ${GltfFile.ACCESSOR_TYPE_VEC2}, provided was ${accessor.type}")
-        }
-    }
-
-    fun next(): MutableVec2f = next(MutableVec2f())
-
-    fun next(result: MutableVec2f): MutableVec2f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
-        return result
-    }
-}
-
-private class Vec3fAccessor(val accessor: Accessor) {
-    private val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
-
-    private val elemSize: Int = when (accessor.componentType) {
-        GltfFile.COMP_TYPE_FLOAT -> 4 * 3
-        else -> throw IllegalArgumentException("Provided accessor does not have float component type")
-    }
-
-    var index: Int
-        get() = stream.index / elemSize
-        set(value) {
-            stream.index = value * elemSize
-        }
-
-    init {
-        if (accessor.type != GltfFile.ACCESSOR_TYPE_VEC3) {
-            throw IllegalArgumentException("Vec3fAccessor requires accessor type ${GltfFile.ACCESSOR_TYPE_VEC3}, provided was ${accessor.type}")
-        }
-    }
-
-    fun next(): MutableVec3f = next(MutableVec3f())
-
-    fun next(result: MutableVec3f): MutableVec3f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-            result.z = stream.readFloat()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
-        return result
-    }
-}
-
-private class Vec4fAccessor(val accessor: Accessor) {
-    private val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
-
-    private val elemSize: Int = when (accessor.componentType) {
-        GltfFile.COMP_TYPE_FLOAT -> 4 * 4
-        else -> throw IllegalArgumentException("Provided accessor does not have float component type")
-    }
-
-    var index: Int
-        get() = stream.index / elemSize
-        set(value) {
-            stream.index = value * elemSize
-        }
-
-    init {
-        if (accessor.type != GltfFile.ACCESSOR_TYPE_VEC4) {
-            throw IllegalArgumentException("Vec3fAccessor requires accessor type ${GltfFile.ACCESSOR_TYPE_VEC4}, provided was ${accessor.type}")
-        }
-    }
-
-    fun next(): MutableVec4f = next(MutableVec4f())
-
-    fun next(result: MutableVec4f): MutableVec4f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-            result.z = stream.readFloat()
-            result.w = stream.readFloat()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
-        return result
-    }
-}

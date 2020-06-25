@@ -120,7 +120,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {
-        val tex = Texture(props) { it.loadTextureData(assetPath) }
+        val tex = Texture(assetPathToName(assetPath), props) { it.loadTextureData(assetPath) }
         launch {
             val data = loadTextureData(assetPath) as BufferedTextureData
             (ctx as Lwjgl3Context).renderBackend.loadTex2d(tex, data, recv)
@@ -129,7 +129,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps, recv: (CubeMapTexture) -> Unit) {
-        val tex = CubeMapTexture(props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
+        val tex = CubeMapTexture(name, props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         launch {
             val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
             (ctx as Lwjgl3Context).renderBackend.loadTexCube(tex, data, recv)

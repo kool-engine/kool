@@ -106,7 +106,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset
         loaded.data?.let {
-            logD { "Loaded ${getLogAssetPath(assetPath)} (${(it.capacity / 1024.0 / 1024.0).toString(1)} mb)" }
+            logD { "Loaded ${assetPathToName(assetPath)} (${(it.capacity / 1024.0 / 1024.0).toString(1)} mb)" }
         }
         return loaded.data
     }
@@ -121,18 +121,22 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         loaded.data?.let {
-            logD { "Loaded ${getLogAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+            logD { "Loaded ${assetPathToName(assetPath)} (${it.format}, ${it.width}x${it.height})" }
         }
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 
-    private fun getLogAssetPath(assetPath: String): String {
-        if (assetPath.startsWith("data:", true)) {
+    fun assetPathToName(assetPath: String): String {
+        return if (assetPath.startsWith("data:", true)) {
             val idx = assetPath.indexOf(';')
-            return assetPath.substring(0 until idx)
+            assetPath.substring(0 until idx)
         } else {
-            return assetPath
+            assetPath
         }
+    }
+
+    fun cubeMapAssetPathToName(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): String {
+        return "cubeMap(ft:${assetPathToName(ft)}, bk:${assetPathToName(bk)}, lt:${assetPathToName(lt)}, rt:${assetPathToName(rt)}, up:${assetPathToName(up)}, dn:${assetPathToName(dn)})"
     }
 
     abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData

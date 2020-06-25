@@ -33,9 +33,9 @@ class GltfDemo(ctx: KoolContext) {
 
     private val models = Cycler(
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
-                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5f),
+                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5),
             GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
-                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5f)
+                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5.0)
 //            ,GltfModel("Sci-Fi Helmet", "${Demo.modelBasePath}/scifi_helmet/SciFiHelmet.gltf",
 //                    0.75f, Vec3f(0f, 1.5f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5f)
     )
@@ -63,10 +63,10 @@ class GltfDemo(ctx: KoolContext) {
             setMouseRotation(0f, -30f)
             // Add camera to the transform group
             +camera
-            zoom = 5.0
+            zoom = models.current.zoom
 
 
-            translation.set(0.0, 0.5, 0.0)
+            translation.set(models.current.lookAt)
             onUpdate += { _, _ ->
                 if (autoRotate) {
                     verticalRotation -= ctx.deltaT * 3f
@@ -198,7 +198,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = false
                     text = models.next().name
                     models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom.toDouble()
+                    orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
                 }
             }
@@ -212,7 +212,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = false
                     modelName.text = models.prev().name
                     models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom.toDouble()
+                    orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
                 }
             }
@@ -225,7 +225,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = false
                     modelName.text = models.next().name
                     models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom.toDouble()
+                    orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
                 }
             }
@@ -287,7 +287,7 @@ class GltfDemo(ctx: KoolContext) {
             val translation: Vec3f,
             val generateNormals: Boolean,
             val lookAt: Vec3d,
-            val zoom: Float) {
+            val zoom: Double) {
 
         var model: Model? = null
         var isVisible: Boolean = false

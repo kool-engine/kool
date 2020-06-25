@@ -20,12 +20,20 @@ data class FontProps(
         val family: String,
         val sizePts: Float,
         val style: Int = Font.PLAIN,
-        val chars: String = Font.STD_CHARS)
+        val chars: String = Font.STD_CHARS) {
 
-class Font(val charMap: CharMap) : Texture(TextureProps(
-        addressModeU = AddressMode.CLAMP_TO_EDGE,
-        addressModeV = AddressMode.CLAMP_TO_EDGE
-), loader = { charMap.textureData }) {
+    override fun toString(): String {
+        return "FontProps($family, ${sizePts}pts, $style)"
+    }
+}
+
+class Font(val charMap: CharMap) : Texture(
+        charMap.toString(),
+        TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE,
+                addressModeV = AddressMode.CLAMP_TO_EDGE
+        ),
+        loader = { charMap.textureData }) {
 
     val lineSpace = charMap.fontProps.sizePts * 1.2f
     val normHeight = charMap.fontProps.sizePts * 0.7f
@@ -54,7 +62,7 @@ class Font(val charMap: CharMap) : Texture(TextureProps(
     }
 
     override fun toString(): String {
-        return "Font(${charMap.fontProps.family}, ${charMap.fontProps.sizePts}pts, ${charMap.fontProps.style})"
+        return "Font(${charMap.fontProps})"
     }
 
     companion object {
