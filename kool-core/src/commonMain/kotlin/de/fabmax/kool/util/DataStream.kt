@@ -1,8 +1,8 @@
-package de.fabmax.kool.util.gltf
+package de.fabmax.kool.util
 
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.createUint8Buffer
-
+/**
+ * Utility class to read arbitrary numbers from a Uint8Buffer. Buffer is expected to be low byte first.
+ */
 class DataStream(val data: Uint8Buffer, val byteOffset: Int = 0) {
     var index = 0
 

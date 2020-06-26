@@ -5,12 +5,21 @@ import de.fabmax.kool.util.IndexedVertexList
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
+/**
+ * Geometry to be rendered with the given material.
+ *
+ * @param attributes A dictionary object, where each key corresponds to mesh attribute semantic and each value is the
+ *                   index of the accessor containing attribute's data.
+ * @param indices    The index of the accessor that contains the indices.
+ * @param material   The index of the material to apply to this primitive when rendering.
+ * @param mode       The type of primitives to render.
+ */
 @Serializable
 data class MeshPrimitive(
         val attributes: Map<String, Int>,
         val indices: Int = -1,
         val material: Int = -1,
-        val mode: Int = GltfFile.MODE_TRIANGLES
+        val mode: Int = MODE_TRIANGLES
 ) {
     @Transient
     var materialRef: Material? = null
@@ -20,11 +29,11 @@ data class MeshPrimitive(
     val attribAccessorRefs = mutableMapOf<String, Accessor>()
 
     fun toGeometry(generateNormals: Boolean): IndexedVertexList {
-        val positionAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_POSITION]
-        val normalAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_NORMAL]
-        val tangentAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_TANGENT]
-        val texCoordAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_TEXCOORD_0]
-        val colorAcc = attribAccessorRefs[GltfFile.MESH_ATTRIBUTE_COLOR_0]
+        val positionAcc = attribAccessorRefs[ATTRIBUTE_POSITION]
+        val normalAcc = attribAccessorRefs[ATTRIBUTE_NORMAL]
+        val tangentAcc = attribAccessorRefs[ATTRIBUTE_TANGENT]
+        val texCoordAcc = attribAccessorRefs[ATTRIBUTE_TEXCOORD_0]
+        val colorAcc = attribAccessorRefs[ATTRIBUTE_COLOR_0]
 
         var generateTangents = false
 
@@ -82,5 +91,27 @@ data class MeshPrimitive(
             }
         }
         return verts
+    }
+
+    companion object {
+        const val MODE_POINTS = 0
+        const val MODE_LINES = 1
+        const val MODE_LINE_LOOP = 2
+        const val MODE_LINE_STRIP = 3
+        const val MODE_TRIANGLES = 4
+        const val MODE_TRIANGLE_STRIP = 5
+        const val MODE_TRIANGLE_FAN = 6
+        const val MODE_QUADS = 7
+        const val MODE_QUAD_STRIP = 8
+        const val MODE_POLYGON = 9
+
+        const val ATTRIBUTE_POSITION = "POSITION"
+        const val ATTRIBUTE_NORMAL = "NORMAL"
+        const val ATTRIBUTE_TANGENT = "TANGENT"
+        const val ATTRIBUTE_TEXCOORD_0 = "TEXCOORD_0"
+        const val ATTRIBUTE_TEXCOORD_1 = "TEXCOORD_1"
+        const val ATTRIBUTE_COLOR_0 = "COLOR_0"
+        const val ATTRIBUTE_JOINTS_0 = "JOINTS_0"
+        const val ATTRIBUTE_WEIGHTS_0 = "WEIGHTS_0"
     }
 }

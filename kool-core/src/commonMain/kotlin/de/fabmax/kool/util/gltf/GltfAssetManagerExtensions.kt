@@ -2,6 +2,7 @@ package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.util.DataStream
 import de.fabmax.kool.util.logW
 import kotlinx.coroutines.launch
 

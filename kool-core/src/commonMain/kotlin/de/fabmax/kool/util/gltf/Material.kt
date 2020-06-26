@@ -5,17 +5,32 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
 
+/**
+ * The material appearance of a primitive.
+ *
+ * @param name                 The user-defined name of this object.
+ * @param pbrMetallicRoughness A set of parameter values that are used to define the metallic-roughness material model
+ *                             from Physically-Based Rendering (PBR) methodology. When not specified, all the default
+ *                             values of pbrMetallicRoughness apply.
+ * @param normalTexture        The normal map texture.
+ * @param occlusionTexture     The occlusion map texture.
+ * @param emissiveTexture      The emissive map texture.
+ * @param emissiveFactor       The emissive color of the material.
+ * @param alphaMode            The alpha rendering mode of the material.
+ * @param alphaCutoff          The alpha cutoff value of the material.
+ * @param doubleSided          Specifies whether the material is double sided.
+ */
 @Serializable
 data class Material(
-        val doubleSided: Boolean = false,
         val name: String? = null,
         val pbrMetallicRoughness: PbrMetallicRoughness = PbrMetallicRoughness(baseColorFactor = listOf(0.5f, 0.5f, 0.5f, 1f)),
-        val normalTexture: MaterialMap? = null,
-        val occlusionTexture: MaterialMap? = null,
+        val normalTexture: TextureInfo? = null,
+        val occlusionTexture: TextureInfo? = null,
+        val emissiveTexture: TextureInfo? = null,
         val emissiveFactor: List<Float>? = null,
-        val emissiveTexture: MaterialMap? = null,
         val alphaMode: String = "OPAQUE",
-        val alphaCutoff: Float = 0.5f
+        val alphaCutoff: Float = 0.5f,
+        val doubleSided: Boolean = false
 ) {
 
     fun applyTo(cfg: PbrShader.PbrConfig, useVertexColor: Boolean, gltfFile: GltfFile) {

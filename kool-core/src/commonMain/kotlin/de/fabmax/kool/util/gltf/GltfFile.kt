@@ -15,21 +15,43 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.parse
 
+/**
+ * The root object for a glTF asset.
+ *
+ * @param extensionsUsed     Names of glTF extensions used somewhere in this asset.
+ * @param extensionsRequired Names of glTF extensions required to properly load this asset.
+ * @param accessors          An array of accessors.
+ * @param animations         An array of keyframe animations.
+ * @param asset              Metadata about the glTF asset.
+ * @param buffers            An array of buffers.
+ * @param bufferViews        An array of bufferViews.
+ * @param images             An array of images.
+ * @param materials          An array of materials.
+ * @param meshes             An array of meshes.
+ * @param nodes              An array of nodes.
+ * @param scene              The index of the default scene
+ * @param scenes             An array of scenes.
+ * @param textures           An array of textures.
+ */
 @Serializable
 data class GltfFile(
+        val extensionsUsed: List<String> = emptyList(),
+        val extensionsRequired: List<String> = emptyList(),
+        val accessors: List<Accessor> = emptyList(),
+        val animations: List<Animation> = emptyList(),
         val asset: Asset,
-        val scene: Int = 0,
-        val scenes: List<Scene> = emptyList(),
-        val nodes: List<Node> = emptyList(),
-        val meshes: List<Mesh> = emptyList(),
-        val materials: List<Material> = emptyList(),
-        val textures: List<Texture> = emptyList(),
-        val images: List<Image> = emptyList(),
         val buffers: List<Buffer> = emptyList(),
         val bufferViews: List<BufferView> = emptyList(),
-        val accessors: List<Accessor> = emptyList(),
-        val extensionsUsed: List<String> = emptyList(),
-        val extensionsRequired: List<String> = emptyList()
+        //val cameras List<Camera> = emptyList(),
+        val images: List<Image> = emptyList(),
+        val materials: List<Material> = emptyList(),
+        val meshes: List<Mesh> = emptyList(),
+        val nodes: List<Node> = emptyList(),
+        //val samplers: List<Sampler> = emptyList(),
+        val scene: Int = 0,
+        val scenes: List<Scene> = emptyList(),
+        //val skins: List<Skin> = emptyList(),
+        val textures: List<Texture> = emptyList()
 ) {
 
     fun makeModel(modelCfg: ModelGenerateConfig = ModelGenerateConfig(), scene: Int = this.scene): Model {
@@ -38,7 +60,20 @@ data class GltfFile(
 
     internal fun updateReferences() {
         accessors.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
+        animations.forEach { anim ->
+            anim.samplers.forEach {
+                it.inputAccessorRef = accessors[it.input]
+                it.outputAccessorRef = accessors[it.output]
+            }
+            anim.channels.forEach {
+                it.samplerRef = anim.samplers[it.sampler]
+                if (it.target.node >= 0) {
+                    it.target.nodeRef = nodes[it.target.node]
+                }
+            }
+        }
         bufferViews.forEach { it.bufferRef = buffers[it.buffer] }
+        images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
         meshes.forEach { mesh ->
             mesh.primitives.forEach {
                 if (it.material >= 0) {
@@ -52,21 +87,21 @@ data class GltfFile(
                 }
             }
         }
-        scenes.forEach { it.nodeRefs = it.nodes.map { iNd -> nodes[iNd] } }
         nodes.forEach {
             it.childRefs = it.children.map { iNd -> nodes[iNd] }
             if (it.mesh >= 0) {
                 it.meshRef = meshes[it.mesh]
             }
         }
+        scenes.forEach { it.nodeRefs = it.nodes.map { iNd -> nodes[iNd] } }
         textures.forEach { it.imageRef = images[it.source] }
-        images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
     }
 
     class ModelGenerateConfig(
             val generateNormals: Boolean = false,
             val applyTransforms: Boolean = false,
             val mergeMeshesByMaterial: Boolean = false,
+            val sortNodesByAlpha: Boolean = true,
             val applyMaterials: Boolean = true,
             val pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null
     )
@@ -85,12 +120,14 @@ data class GltfFile(
             if (cfg.mergeMeshesByMaterial) {
                 mergeMeshesByMaterial(model)
             }
-            model.sortByAlpha()
+            if (cfg.sortNodesByAlpha) {
+                model.sortNodesByAlpha()
+            }
             return model
         }
 
-        private fun TransformGroup.sortByAlpha() {
-            children.filterIsInstance<TransformGroup>().forEach { it.sortByAlpha() }
+        private fun TransformGroup.sortNodesByAlpha() {
+            children.filterIsInstance<TransformGroup>().forEach { it.sortNodesByAlpha() }
             sortChildrenBy {
                 var a = 1.1f
                 if (it is de.fabmax.kool.scene.Mesh) {
@@ -183,7 +220,7 @@ data class GltfFile(
                 meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
 
                 if (cfg.applyMaterials) {
-                    val useVertexColor = p.attributes.containsKey(MESH_ATTRIBUTE_COLOR_0)
+                    val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)
                     mesh.pipelineLoader = pbrShader {
                         val material = p.materialRef
                         if (material != null) {
@@ -210,39 +247,6 @@ data class GltfFile(
     }
 
     companion object {
-        const val ACCESSOR_TYPE_SCALAR = "SCALAR"
-        const val ACCESSOR_TYPE_VEC2 = "VEC2"
-        const val ACCESSOR_TYPE_VEC3 = "VEC3"
-        const val ACCESSOR_TYPE_VEC4 = "VEC4"
-
-        const val COMP_TYPE_BYTE = 5120
-        const val COMP_TYPE_UNSIGNED_BYTE = 5121
-        const val COMP_TYPE_SHORT = 5122
-        const val COMP_TYPE_UNSIGNED_SHORT = 5123
-        const val COMP_TYPE_INT = 5124
-        const val COMP_TYPE_UNSIGNED_INT = 5125
-        const val COMP_TYPE_FLOAT = 5126
-
-        const val MODE_POINTS = 0
-        const val MODE_LINES = 1
-        const val MODE_LINE_LOOP = 2
-        const val MODE_LINE_STRIP = 3
-        const val MODE_TRIANGLES = 4
-        const val MODE_TRIANGLE_STRIP = 5
-        const val MODE_TRIANGLE_FAN = 6
-        const val MODE_QUADS = 7
-        const val MODE_QUAD_STRIP = 8
-        const val MODE_POLYGON = 9
-
-        const val MESH_ATTRIBUTE_POSITION = "POSITION"
-        const val MESH_ATTRIBUTE_NORMAL = "NORMAL"
-        const val MESH_ATTRIBUTE_TANGENT = "TANGENT"
-        const val MESH_ATTRIBUTE_TEXCOORD_0 = "TEXCOORD_0"
-        const val MESH_ATTRIBUTE_TEXCOORD_1 = "TEXCOORD_1"
-        const val MESH_ATTRIBUTE_COLOR_0 = "COLOR_0"
-        const val MESH_ATTRIBUTE_JOINTS_0 = "JOINTS_0"
-        const val MESH_ATTRIBUTE_WEIGHTS_0 = "WEIGHTS_0"
-
         const val GLB_FILE_MAGIC = 0x46546c67
         const val GLB_CHUNK_MAGIC_JSON = 0x4e4f534a
         const val GLB_CHUNK_MAGIC_BIN = 0x004e4942
