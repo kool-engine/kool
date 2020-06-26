@@ -1,10 +1,5 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.lock
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.sin
-
 /**
  * @author fabmax
  */
@@ -40,67 +35,3 @@ fun cross(a: Vec3d, b: Vec3d): MutableVec3d = a.cross(b, MutableVec3d())
 
 fun Vec3f.xy(): Vec2f = Vec2f(x, y)
 fun MutableVec3f.xy(): MutableVec2f = MutableVec2f(x, y)
-
-private val slerpTmpAf = MutableVec4f()
-private val slerpTmpBf = MutableVec4f()
-private val slerpTmpCf = MutableVec4f()
-fun slerp(quatA: Vec4f, quatB: Vec4f, f: Float, result: MutableVec4f): MutableVec4f {
-    lock(slerpTmpAf) {
-        quatA.norm(slerpTmpAf)
-        quatB.norm(slerpTmpBf)
-
-        val t = f.clamp(0f, 1f)
-
-        var dot = slerpTmpAf.dot(slerpTmpBf).clamp(-1f, 1f)
-        if (dot < 0) {
-            slerpTmpAf.scale(-1f)
-            dot = -dot
-        }
-
-        if (dot > 0.9995f) {
-            slerpTmpBf.subtract(slerpTmpAf, result).scale(t).add(slerpTmpAf).norm()
-        } else {
-            val theta0 = acos(dot)
-            val theta = theta0 * t
-
-            slerpTmpAf.scale(-dot, slerpTmpCf).add(slerpTmpBf).norm()
-
-            slerpTmpAf.scale(cos(theta))
-            slerpTmpCf.scale(sin(theta))
-            result.set(slerpTmpAf).add(slerpTmpCf)
-        }
-    }
-    return result
-}
-
-private val slerpTmpAd = MutableVec4d()
-private val slerpTmpBd = MutableVec4d()
-private val slerpTmpCd = MutableVec4d()
-fun slerp(quatA: Vec4d, quatB: Vec4d, f: Double, result: MutableVec4d): MutableVec4d {
-    lock(slerpTmpAd) {
-        quatA.norm(slerpTmpAd)
-        quatB.norm(slerpTmpBd)
-
-        val t = f.clamp(0.0, 1.0)
-
-        var dot = slerpTmpAd.dot(slerpTmpBd).clamp(-1.0, 1.0)
-        if (dot < 0) {
-            slerpTmpAd.scale(-1.0)
-            dot = -dot
-        }
-
-        if (dot > 0.9999995) {
-            slerpTmpBd.subtract(slerpTmpAd, result).scale(t).add(slerpTmpAd).norm()
-        } else {
-            val theta0 = acos(dot)
-            val theta = theta0 * t
-
-            slerpTmpAd.scale(-dot, slerpTmpCd).add(slerpTmpBd).norm()
-
-            slerpTmpAd.scale(cos(theta))
-            slerpTmpCd.scale(sin(theta))
-            result.set(slerpTmpAd).add(slerpTmpCd)
-        }
-    }
-    return result
-}

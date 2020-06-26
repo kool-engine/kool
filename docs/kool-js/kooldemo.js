@@ -627,7 +627,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
       var tmp$, tmp$_0, tmp$_1;
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
       closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_m0hq3v$(modelCfg) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
       return Unit;
     };
@@ -2799,10 +2799,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 2.5, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0)]);
     this.autoRotate_0 = true;
-    this.camTranslationTarget_0 = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0)]);
+    this.animationSpeed_0 = 0.5;
+    this.animationTime_0 = 0.0;
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
+    this.camTranslationTarget_0 = null;
     this.contentGroup_0 = new TransformGroup();
     this.irrMapPass_0 = null;
     this.reflMapPass_0 = null;
@@ -2875,6 +2877,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function GltfDemo$makeMainScene$lambda$lambda_1(this$GltfDemo) {
+    return function ($receiver, f, ctx) {
+      this$GltfDemo.animationTime_0 += ctx.deltaT * this$GltfDemo.animationSpeed_0;
+      return Unit;
+    };
+  }
   GltfDemo.prototype.makeMainScene_0 = function (ctx) {
     var $receiver = new Scene_init(null);
     this.orbitTransform_0 = orbitInputTransform($receiver, void 0, GltfDemo$makeMainScene$lambda$lambda($receiver, this, ctx));
@@ -2898,6 +2906,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
     var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
     ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, GltfDemo$makeMainScene$lambda$lambda_0($receiver, this, ctx));
+    $receiver.onUpdate.add_11rb$(GltfDemo$makeMainScene$lambda$lambda_1(this));
     return $receiver;
   };
   function GltfDemo$setupContentGroup$lambda$lambda(this$GltfDemo, this$) {
@@ -3237,19 +3246,51 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda$lambda_2(this$GltfDemo) {
+  function GltfDemo$menu$lambda$lambda$lambda_6(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_7(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_2(closure$speedVal, this$GltfDemo) {
+    return function ($receiver, it) {
+      closure$speedVal.text = toString($receiver.value, 2);
+      this$GltfDemo.animationSpeed_0 = $receiver.value;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_8(closure$y, closure$speedVal, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_2(closure$speedVal, this$GltfDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo) {
     return function ($receiver) {
       this$GltfDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_6(closure$y, this$GltfDemo) {
+  function GltfDemo$menu$lambda$lambda$lambda_9(closure$y, this$GltfDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$GltfDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_2(this$GltfDemo);
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -3257,8 +3298,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-280.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(160.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-350.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(230.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('glTF Models', GltfDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -3269,7 +3310,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('prevModel', GltfDemo$menu$lambda$lambda$lambda_4(y, this$GltfDemo, modelName)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('nextModel', GltfDemo$menu$lambda$lambda$lambda_5(y, this$GltfDemo, modelName)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_6(y, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Animation Speed:', GltfDemo$menu$lambda$lambda$lambda_6(y)));
+      var speedVal = this$.label_tokfmu$(toString(this$GltfDemo.animationSpeed_0, 2), GltfDemo$menu$lambda$lambda$lambda_7(y));
+      $receiver.unaryPlus_uv0sim$(speedVal);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('speedSlider', 0.05, 2.0, this$GltfDemo.animationSpeed_0, GltfDemo$menu$lambda$lambda$lambda_8(y, speedVal, this$GltfDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
       return Unit;
     };
   }
@@ -3358,18 +3405,32 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$, this$GltfDemo) {
+    return function ($receiver, f, f_0) {
+      var $receiver_0 = this$.animations;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.apply_14dthe$(this$GltfDemo.animationTime_0);
+      }
+      return Unit;
+    };
+  }
   function GltfDemo$GltfModel$load$lambda(this$GltfModel, this$GltfDemo) {
     return function (gltf) {
       if (gltf != null) {
         var this$GltfModel_0 = this$GltfModel;
         var this$GltfDemo_0 = this$GltfDemo;
-        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, true, true, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
+        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
         var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
         $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
         $receiver.translate_czzhiu$(this$GltfModel_0.translation);
         $receiver.isVisible = this$GltfModel_0.isVisible;
         this$GltfDemo_0.contentGroup_0.plusAssign_f1kmr1$($receiver);
-        this$GltfModel_0.model = $receiver;
+        if (!$receiver.animations.isEmpty()) {
+          $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda($receiver, this$GltfDemo_0));
+        }this$GltfModel_0.model = $receiver;
       }return Unit;
     };
   }
@@ -3485,7 +3546,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     tmp$ = model.scenes;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
       var mesh = first(model.makeModel_m0hq3v$(modelCfg, i).meshes.values);
       var $this = mesh.geometry;
       var tmp$_0;
@@ -3878,7 +3939,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (gltf != null) {
         var this$MultiLightDemo_0 = this$MultiLightDemo;
         var this$_0 = this$;
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
         var model = gltf.makeModel_m0hq3v$(modelCfg);
         this$MultiLightDemo_0.bunnyMesh_0 = first(model.meshes.values);
         this$MultiLightDemo_0.applyShaders_0();
@@ -8080,7 +8141,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function (model) {
       var tmp$;
       if (model != null) {
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, false);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
         var mesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
         var geometry = mesh.geometry;
         tmp$ = geometry.numVertices;

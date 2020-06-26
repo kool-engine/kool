@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
@@ -29,19 +30,23 @@ class GltfDemo(ctx: KoolContext) {
     val mainScene: Scene
     val menu: Scene
 
-    private var autoRotate = true
-    private var camTranslationTarget: Vec3d? = null
-
     private val models = Cycler(
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5),
             GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
-                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5.0)
-//            ,GltfModel("Sci-Fi Helmet", "${Demo.modelBasePath}/scifi_helmet/SciFiHelmet.gltf",
-//                    0.75f, Vec3f(0f, 1.5f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5f)
+                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5.0),
+            GltfModel("Interpolation Test", "${Demo.modelBasePath}/InterpolationTest.glb",
+                    0.5f, Vec3f(0f, 2.5f, 0f), false, Vec3d(0.0, 3.5, 0.0), 7.0),
+            GltfModel("Animated Box", "${Demo.modelBasePath}/BoxAnimated.gltf",
+                    1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), 5.0)
     )
 
+    private var autoRotate = true
+    private var animationSpeed = .5f
+    private var animationTime = 0.0
+
     private lateinit var orbitTransform: OrbitInputTransform
+    private var camTranslationTarget: Vec3d? = null
     private val contentGroup = TransformGroup()
 
     private var irrMapPass: IrradianceMapPass? = null
@@ -121,6 +126,10 @@ class GltfDemo(ctx: KoolContext) {
             +contentGroup
             +Skybox(reflMapPass!!.colorTextureCube, 1f)
         }
+
+        onUpdate += { _, ctx ->
+            animationTime += ctx.deltaT * animationSpeed
+        }
     }
 
     private fun setupContentGroup() {
@@ -174,8 +183,8 @@ class GltfDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-280f), zero())
-            layoutSpec.setSize(dps(250f), dps(160f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-350f), zero())
+            layoutSpec.setSize(dps(250f), dps(230f), full())
 
             var y = -40f
             +label("glTF Models") {
@@ -228,6 +237,26 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = true
                     orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
+                }
+            }
+            y -= 35f
+            +label("Animation Speed:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            val speedVal = label(animationSpeed.toString(2)) {
+                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +speedVal
+            y -= 35f
+            +slider("speedSlider", 0.05f, 2f, animationSpeed) {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                onValueChanged += {
+                    speedVal.text = value.toString(2)
+                    animationSpeed = value
                 }
             }
             y -= 35f
@@ -311,6 +340,12 @@ class GltfDemo(ctx: KoolContext) {
                         translate(translation)
                         isVisible = this@GltfModel.isVisible
                         contentGroup += this
+
+                        if (animations.isNotEmpty()) {
+                            onUpdate += { _, _ ->
+                                animations.forEach { a -> a.apply(animationTime) }
+                            }
+                        }
                     }
                 }
             }

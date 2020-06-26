@@ -1,28 +1,32 @@
 package de.fabmax.kool.scene.animation
 
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.TreeMap
 
 class Animation(val name: String?) {
     val channels = mutableListOf<AnimationChannel>()
 
+    var speed = 1f
     var duration = 1f
         private set
-    private val animationNodes = mutableSetOf<AnimationNode>()
+    private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
         duration = channels.map { it.duration }.max() ?: 0f
-        channels.forEach { animationNodes += it.animationNode }
+        animationNodes += channels.map { it.animationNode }.distinct()
     }
 
     fun apply(time: Double) {
-        val t = (time % duration).toFloat()
-        animationNodes.forEach { it.clearTransform() }
+        val t = ((time * speed) % duration).toFloat()
+        for (i in animationNodes.indices) {
+            animationNodes[i].initTransform()
+        }
         for (i in channels.indices) {
             channels[i].apply(t)
+        }
+        for (i in animationNodes.indices) {
+            animationNodes[i].applyTransform()
         }
     }
 }
@@ -64,35 +68,59 @@ class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): Animat
 }
 
 interface AnimationNode {
-    fun clearTransform()
+    fun initTransform()
+    fun applyTransform()
 
-    fun translate(translation: Vec3d)
-    fun rotate(rotation: Vec4d)
-    fun scale(scale: Vec3d)
+    fun setTranslation(translation: Vec3d)
+    fun setRotation(rotation: Vec4d)
+    fun setScale(scale: Vec3d)
 }
 
 class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
-    private val initialTransform = Mat4d()
-    private val rotMat = Mat4d()
+    private val initTranslation = MutableVec3d()
+    private val initRotation = MutableVec4d()
+    private val initScale = MutableVec3d(1.0, 1.0, 1.0)
+
+    private val animTranslation = MutableVec3d()
+    private val animRotation = MutableVec4d()
+    private val animScale = MutableVec3d()
+
+    private val quatRotMat = Mat4d()
 
     init {
-        initialTransform.set(target.transform)
+        val vec4 = MutableVec4d()
+        target.transform.getCol(3, vec4)
+        initTranslation.set(vec4.x, vec4.y, vec4.z)
+        target.transform.getRotation(initRotation)
+        val sx = target.transform.getCol(0, vec4).length()
+        val sy = target.transform.getCol(0, vec4).length()
+        val sz = target.transform.getCol(0, vec4).length()
+        initScale.set(sx, sy, sz)
     }
 
-    override fun clearTransform() {
-        target.set(initialTransform)
+    override fun initTransform() {
+        animTranslation.set(initTranslation)
+        animRotation.set(initRotation)
+        animScale.set(initScale)
     }
 
-    override fun translate(translation: Vec3d) {
-        target.translate(translation.x, translation.y, translation.z)
+    override fun applyTransform() {
+        target.setIdentity()
+        target.translate(animTranslation)
+        target.mul(quatRotMat.setRotate(animRotation))
+        target.scale(animScale.x, animScale.y, animScale.z)
     }
 
-    override fun rotate(rotation: Vec4d) {
-        target.mul(rotMat.setRotate(rotation))
+    override fun setTranslation(translation: Vec3d) {
+        animTranslation.set(translation)
     }
 
-    override fun scale(scale: Vec3d) {
-        target.scale(scale.x, scale.y, scale.z)
+    override fun setRotation(rotation: Vec4d) {
+        animRotation.set(rotation)
+    }
+
+    override fun setScale(scale: Vec3d) {
+        animScale.set(scale)
     }
 
 }

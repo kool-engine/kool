@@ -1,8 +1,6 @@
 package de.fabmax.kool.util.gltf
 
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.util.DataStream
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -134,6 +132,8 @@ class FloatAccessor(val accessor: Accessor) {
             throw IndexOutOfBoundsException("Accessor overflow")
         }
     }
+
+    fun nextD() = next().toDouble()
 }
 
 /**
@@ -168,6 +168,18 @@ class Vec2fAccessor(val accessor: Accessor) {
         if (index < accessor.count) {
             result.x = stream.readFloat()
             result.y = stream.readFloat()
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
+        }
+        return result
+    }
+
+    fun nextD(): MutableVec2d = nextD(MutableVec2d())
+
+    fun nextD(result: MutableVec2d): MutableVec2d {
+        if (index < accessor.count) {
+            result.x = stream.readFloat().toDouble()
+            result.y = stream.readFloat().toDouble()
         } else {
             throw IndexOutOfBoundsException("Accessor overflow")
         }
@@ -213,6 +225,19 @@ class Vec3fAccessor(val accessor: Accessor) {
         }
         return result
     }
+
+    fun nextD(): MutableVec3d = nextD(MutableVec3d())
+
+    fun nextD(result: MutableVec3d): MutableVec3d {
+        if (index < accessor.count) {
+            result.x = stream.readFloat().toDouble()
+            result.y = stream.readFloat().toDouble()
+            result.z = stream.readFloat().toDouble()
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
+        }
+        return result
+    }
 }
 
 /**
@@ -249,6 +274,20 @@ class Vec4fAccessor(val accessor: Accessor) {
             result.y = stream.readFloat()
             result.z = stream.readFloat()
             result.w = stream.readFloat()
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
+        }
+        return result
+    }
+
+    fun nextD(): MutableVec4d = nextD(MutableVec4d())
+
+    fun nextD(result: MutableVec4d): MutableVec4d {
+        if (index < accessor.count) {
+            result.x = stream.readFloat().toDouble()
+            result.y = stream.readFloat().toDouble()
+            result.z = stream.readFloat().toDouble()
+            result.w = stream.readFloat().toDouble()
         } else {
             throw IndexOutOfBoundsException("Accessor overflow")
         }

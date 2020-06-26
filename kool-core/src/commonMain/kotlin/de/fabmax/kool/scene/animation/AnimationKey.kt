@@ -1,13 +1,16 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
+import kotlin.math.acos
+import kotlin.math.cos
+import kotlin.math.sin
 
-abstract class AnimationKey<T>(val time: Float, val value: T) {
+abstract class AnimationKey<T: AnimationKey<T>>(val time: Float) {
     var interpolation = Interpolation.LINEAR
 
-    abstract fun apply(time: Float, next: AnimationKey<T>?, node: AnimationNode)
+    abstract fun apply(time: Float, next: T?, node: AnimationNode)
 
-    fun interpolationPos(pos: Float, nextTime: Float) = interpolation.getInterpolationPos((pos - time) / (nextTime - time))
+    protected fun interpolationPos(pos: Float, nextTime: Float) = interpolation.getInterpolationPos((pos - time) / (nextTime - time))
 
     enum class Interpolation {
         LINEAR {
@@ -17,50 +20,161 @@ abstract class AnimationKey<T>(val time: Float, val value: T) {
             override fun getInterpolationPos(linearPos: Float) = 0f
         },
         CUBICSPLINE {
-            override fun getInterpolationPos(linearPos: Float): Float {
-                TODO("Not yet implemented")
-            }
+            // actual cubic interpolation depends on more variables, but takes linear value as an input
+            override fun getInterpolationPos(linearPos: Float) = linearPos
         };
 
         abstract fun getInterpolationPos(linearPos: Float): Float
     }
 }
 
-class RotationKey(time: Float, rotation: Vec4d) : AnimationKey<Vec4d>(time, rotation) {
+open class RotationKey(time: Float, val rotation: Vec4d) : AnimationKey<RotationKey>(time) {
     private val tmpRotation = MutableVec4d()
 
-    override fun apply(time: Float, next: AnimationKey<Vec4d>?, node: AnimationNode) {
+    private val qa = MutableVec4d()
+    private val qb = MutableVec4d()
+    private val qc = MutableVec4d()
+
+    override fun apply(time: Float, next: RotationKey?, node: AnimationNode) {
         if (next == null) {
-            tmpRotation.set(value)
+            tmpRotation.set(rotation)
         } else {
-            slerp(value, next.value, interpolationPos(time, next.time).toDouble(), tmpRotation)
+            slerp(rotation, next.rotation, interpolationPos(time, next.time).toDouble(), tmpRotation)
         }
-        node.rotate(tmpRotation)
+        node.setRotation(tmpRotation)
+    }
+
+    private fun slerp(quatA: Vec4d, quatB: Vec4d, f: Double, result: MutableVec4d): MutableVec4d {
+        quatA.norm(qa)
+        quatB.norm(qb)
+
+        val t = f.clamp(0.0, 1.0)
+
+        var dot = qa.dot(qb).clamp(-1.0, 1.0)
+        if (dot < 0) {
+            qa.scale(-1.0)
+            dot = -dot
+        }
+
+        if (dot > 0.9999995) {
+            qb.subtract(qa, result).scale(t).add(qa).norm()
+        } else {
+            val theta0 = acos(dot)
+            val theta = theta0 * t
+
+            qa.scale(-dot, qc).add(qb).norm()
+
+            qa.scale(cos(theta))
+            qc.scale(sin(theta))
+            result.set(qa).add(qc)
+        }
+        return result
     }
 }
 
-class TranslationKey(time: Float, position: Vec3d) : AnimationKey<Vec3d>(time, position) {
-    private val tmpPosition = MutableVec3d()
+class CubicRotationKey(time: Float, rotation: Vec4d, val startTan: Vec4d, val endTan: Vec4d) : RotationKey(time, rotation) {
+    private val p0 = MutableVec4d()
+    private val p1 = MutableVec4d()
+    private val m0 = MutableVec4d()
+    private val m1 = MutableVec4d()
 
-    override fun apply(time: Float, next: AnimationKey<Vec3d>?, node: AnimationNode) {
+    override fun apply(time: Float, next: RotationKey?, node: AnimationNode) {
         if (next == null) {
-            tmpPosition.set(value)
+            node.setRotation(rotation)
         } else {
-            next.value.subtract(value, tmpPosition).scale(interpolationPos(time, next.time).toDouble()).add(value)
+            val t = interpolationPos(time, next.time).toDouble()
+            val t2 = t * t
+            val t3 = t * t * t
+
+            val f1 = 2*t3 - 3*t2 + 1
+            val f2 = t3 - 2*t2 + t
+            val f3 = -2*t3 + 3*t2
+            val f4 = t3 - t2
+            p0.set(rotation).scale(f1)
+            m0.set(startTan).scale(f2)
+            p1.set(next.rotation).scale(f3)
+            m1.set(endTan).scale(f4)
+            node.setRotation(p0.add(m0).add(p1).add(m1).norm())
         }
-        node.translate(tmpPosition)
     }
 }
 
-class ScaleKey(time: Float, scaling: Vec3d) : AnimationKey<Vec3d>(time, scaling) {
+open class TranslationKey(time: Float, val translation: Vec3d) : AnimationKey<TranslationKey>(time) {
+    private val tmpTranslation = MutableVec3d()
+
+    override fun apply(time: Float, next: TranslationKey?, node: AnimationNode) {
+        if (next == null) {
+            node.setTranslation(translation)
+        } else {
+            next.translation.subtract(translation, tmpTranslation).scale(interpolationPos(time, next.time).toDouble()).add(translation)
+            node.setTranslation(tmpTranslation)
+        }
+    }
+}
+
+class CubicTranslationKey(time: Float, translation: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : TranslationKey(time, translation) {
+    private val p0 = MutableVec3d()
+    private val p1 = MutableVec3d()
+    private val m0 = MutableVec3d()
+    private val m1 = MutableVec3d()
+
+    override fun apply(time: Float, next: TranslationKey?, node: AnimationNode) {
+        if (next == null) {
+            node.setTranslation(translation)
+        } else {
+            val t = interpolationPos(time, next.time).toDouble()
+            val t2 = t * t
+            val t3 = t * t * t
+
+            val f1 = 2*t3 - 3*t2 + 1
+            val f2 = t3 - 2*t2 + t
+            val f3 = -2*t3 + 3*t2
+            val f4 = t3 - t2
+            p0.set(translation).scale(f1)
+            m0.set(startTan).scale(f2)
+            p1.set(next.translation).scale(f3)
+            m1.set(endTan).scale(f4)
+            node.setTranslation(p0.add(m0).add(p1).add(m1))
+        }
+    }
+}
+
+open class ScaleKey(time: Float, val scale: Vec3d) : AnimationKey<ScaleKey>(time) {
     private val tmpScale = MutableVec3d()
 
-    override fun apply(time: Float, next: AnimationKey<Vec3d>?, node: AnimationNode) {
+    override fun apply(time: Float, next: ScaleKey?, node: AnimationNode) {
         if (next == null) {
-            tmpScale.set(value)
+            node.setScale(scale)
         } else {
-            next.value.subtract(value, tmpScale).scale(interpolationPos(time, next.time).toDouble()).add(value)
+            next.scale.subtract(scale, tmpScale).scale(interpolationPos(time, next.time).toDouble()).add(scale)
+            node.setScale(tmpScale)
         }
-        node.scale(tmpScale)
+    }
+}
+
+class CubicScaleKey(time: Float, scale: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : ScaleKey(time, scale) {
+    private val p0 = MutableVec3d()
+    private val p1 = MutableVec3d()
+    private val m0 = MutableVec3d()
+    private val m1 = MutableVec3d()
+
+    override fun apply(time: Float, next: ScaleKey?, node: AnimationNode) {
+        if (next == null) {
+            node.setScale(scale)
+        } else {
+            val t = interpolationPos(time, next.time).toDouble()
+            val t2 = t * t
+            val t3 = t * t * t
+
+            val f1 = 2*t3 - 3*t2 + 1
+            val f2 = t3 - 2*t2 + t
+            val f3 = -2*t3 + 3*t2
+            val f4 = t3 - t2
+            p0.set(scale).scale(f1)
+            m0.set(startTan).scale(f2)
+            p1.set(next.scale).scale(f3)
+            m1.set(endTan).scale(f4)
+            node.setScale(p0.add(m0).add(p1).add(m1))
+        }
     }
 }

@@ -2,7 +2,6 @@ package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
-import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
@@ -103,6 +102,7 @@ data class GltfFile(
 
     class ModelGenerateConfig(
             val generateNormals: Boolean = false,
+            val loadAnimations: Boolean = true,
             val applyTransforms: Boolean = false,
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
@@ -119,10 +119,10 @@ data class GltfFile(
             scene.nodeRefs.forEach { nd ->
                 model += nd.makeNode(model, cfg)
             }
-            if (animations.isNotEmpty()) {
+            if (cfg.loadAnimations) {
                 makeAnimations(model)
             }
-            if (cfg.applyTransforms) {
+            if (cfg.applyTransforms && model.animations.isEmpty()) {
                 applyTransforms(model)
             }
             if (cfg.mergeMeshesByMaterial) {
@@ -177,8 +177,14 @@ data class GltfFile(
             val outTranslations = Vec3fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTimes.next()
-                val trans = outTranslations.next()
-                val transKey = TranslationKey(t, Vec3d(trans.x.toDouble(), trans.y.toDouble(), trans.z.toDouble()))
+                val transKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
+                    val startTan = outTranslations.nextD()
+                    val point = outTranslations.nextD()
+                    val endTan = outTranslations.nextD()
+                    CubicTranslationKey(t, point, startTan, endTan)
+                } else {
+                    TranslationKey(t, outTranslations.nextD())
+                }
                 transKey.interpolation = interpolation
                 transChannel.keys[t] = transKey
             }
@@ -211,8 +217,14 @@ data class GltfFile(
             val outRotations = Vec4fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTimes.next()
-                val rot = outRotations.next()
-                val rotKey = RotationKey(t, Vec4d(rot.x.toDouble(), rot.y.toDouble(), rot.z.toDouble(), rot.w.toDouble()))
+                val rotKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
+                    val startTan = outRotations.nextD()
+                    val point = outRotations.nextD()
+                    val endTan = outRotations.nextD()
+                    CubicRotationKey(t, point, startTan, endTan)
+                } else {
+                    RotationKey(t, outRotations.nextD())
+                }
                 rotKey.interpolation = interpolation
                 rotChannel.keys[t] = rotKey
             }
@@ -245,8 +257,14 @@ data class GltfFile(
             val outScale = Vec3fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
                 val t = inTimes.next()
-                val scale = outScale.next()
-                val scaleKey = ScaleKey(t, Vec3d(scale.x.toDouble(), scale.y.toDouble(), scale.z.toDouble()))
+                val scaleKey = if (interpolation == AnimationKey.Interpolation.CUBICSPLINE) {
+                    val startTan = outScale.nextD()
+                    val point = outScale.nextD()
+                    val endTan = outScale.nextD()
+                    CubicScaleKey(t, point, startTan, endTan)
+                } else {
+                    ScaleKey(t, outScale.nextD())
+                }
                 scaleKey.interpolation = interpolation
                 scaleChannel.keys[t] = scaleKey
             }
