@@ -187,13 +187,14 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     }
                 }
 
-                val viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
+                var viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
                     val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
                     bumpNormal.outNormal
                 } else {
                     ifNormals.output
                 }
+                viewNormal = flipBacksideNormalNode(viewNormal).outNormal
 
                 val metallic = if (cfg.isMetallicMapped) {
                     textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor

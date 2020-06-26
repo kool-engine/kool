@@ -134,7 +134,8 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                 positionOutput = vec4TransformNode(attrPositions().output, mvpNode.outMvpMat).outVec4
             }
             fragmentStage {
-                val linDepth = addNode(NormalLinearDepthNode(ifNormals.output, stage))
+                val normal = flipBacksideNormalNode(ifNormals.output).outNormal
+                val linDepth = addNode(NormalLinearDepthNode(normal, stage))
                 colorOutput(linDepth.outColor)
             }
         })

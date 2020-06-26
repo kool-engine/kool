@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.drawqueue.DrawCommand
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
@@ -194,6 +197,11 @@ class ShaderModel(val modelInfo: String = "") {
             return colAlpha
         }
 
+        fun constFloat(value: Float) = ShaderNodeIoVar(ModelVar1fConst(value))
+        fun constVec2f(value: Vec2f) = ShaderNodeIoVar(ModelVar2fConst(value))
+        fun constVec3f(value: Vec3f) = ShaderNodeIoVar(ModelVar3fConst(value))
+        fun constVec4f(value: Vec4f) = ShaderNodeIoVar(ModelVar4fConst(value))
+
         fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(Uniform1f(name), stage))
         fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(Uniform2f(name), stage))
         fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(Uniform3f(name), stage))
@@ -316,6 +324,12 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
+
+        fun flipBacksideNormalNode(inNormal: ShaderNodeIoVar? = null): FlipBacksideNormalNode {
+            val nd = addNode(FlipBacksideNormalNode(stage))
+            inNormal?.let { nd.inNormal = inNormal }
+            return nd
+        }
 
         fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
 

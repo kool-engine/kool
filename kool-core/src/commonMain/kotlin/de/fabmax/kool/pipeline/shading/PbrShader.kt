@@ -1,7 +1,9 @@
 package de.fabmax.kool.pipeline.shading
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -15,6 +17,7 @@ fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
 
 class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
+    private val cullMethod = cfg.cullMethod
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
@@ -128,6 +131,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             field = value
             ssaoSampler?.texture = value
         }
+
+    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.cullMethod = cullMethod
+        return super.createPipeline(mesh, builder, ctx)
+    }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
         uMetallic = model.findNode("uMetallic")
@@ -277,7 +285,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         Albedo.TEXTURE_ALBEDO -> {
                             val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
                             val albedoLin = gammaNode(albedoSampler.outColor)
-                            albedoLin.outColor
+                            if (cfg.isMultiplyAlbedoMap) {
+                                val fac = pushConstantNodeColor("uAlbedo").output
+                                multiplyNode(albedoLin.outColor, fac).output
+                            } else {
+                                albedoLin.outColor
+                            }
                         }
                     }
                     inNormal = if (cfg.isNormalMapped && ifTangents != null) {
@@ -287,27 +300,46 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     } else {
                         ifNormals.output
                     }
+                    inNormal = flipBacksideNormalNode(inNormal).outNormal
 
                     val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                     if (cfg.isRoughnessMapped) {
                         val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
                         rmoSamplers[cfg.roughnessTexName] = roughness
-                        inRoughness = splitNode(roughness, cfg.roughnessChannel).output
+                        val rawRoughness = splitNode(roughness, cfg.roughnessChannel).output
+                        inRoughness = if (cfg.isMultiplyRoughnessMap) {
+                            val fac = pushConstantNode1f("uRoughness").output
+                            multiplyNode(rawRoughness, fac).output
+                        } else {
+                            rawRoughness
+                        }
                     } else {
                         inRoughness = pushConstantNode1f("uRoughness").output
                     }
                     if (cfg.isMetallicMapped) {
                         val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
                         rmoSamplers[cfg.metallicTexName] = metallic
-                        inMetallic = splitNode(metallic, cfg.metallicChannel).output
+                        val rawMetallic = splitNode(metallic, cfg.metallicChannel).output
+                        inMetallic = if (cfg.isMultiplyMetallicMap) {
+                            val fac = pushConstantNode1f("uMetallic").output
+                            multiplyNode(rawMetallic, fac).output
+                        } else {
+                            rawMetallic
+                        }
                     } else {
                         inMetallic = pushConstantNode1f("uMetallic").output
                     }
-                    var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
+                    var aoFactor = constFloat(1f)
                     if (cfg.isAmbientOcclusionMapped) {
                         val occlusion = rmoSamplers.getOrPut(cfg.ambientOcclusionTexName) { textureSamplerNode(textureNode(cfg.ambientOcclusionTexName), ifTexCoords!!.output).outColor }
                         rmoSamplers[cfg.ambientOcclusionTexName] = occlusion
-                        aoFactor = splitNode(occlusion, cfg.ambientOcclusionChannel).output
+                        val rawAo = splitNode(occlusion, cfg.ambientOcclusionChannel).output
+                        aoFactor = if (cfg.ambientOcclusionStrength != 1f) {
+                            val str = cfg.ambientOcclusionStrength
+                            addNode(constFloat(1f - str), multiplyNode(rawAo, str).output).output
+                        } else {
+                            rawAo
+                        }
                     }
 
                     if (cfg.isScrSpcAmbientOcclusion) {
@@ -337,9 +369,16 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isDisplacementMapped = false
 
         var normalStrength = 1f
+        var ambientOcclusionStrength = 1f
+
+        var isMultiplyAlbedoMap = false
+        var isMultiplyRoughnessMap = false
+        var isMultiplyMetallicMap = false
 
         var isImageBasedLighting = false
         var isScrSpcAmbientOcclusion = false
+
+        var cullMethod = CullMethod.CULL_BACK_FACES
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()

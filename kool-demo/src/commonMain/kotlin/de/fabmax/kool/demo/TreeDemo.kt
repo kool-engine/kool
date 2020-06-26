@@ -80,6 +80,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 maxLights = lighting.lights.size
                 this.shadowMaps.addAll(shadowMaps)
             }
+            // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
                 ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
@@ -118,17 +119,16 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 maxLights = lighting.lights.size
                 lightBacksides = true
+                cullMethod = CullMethod.NO_CULLING
                 this.shadowMaps.addAll(shadowMaps)
             }
+            // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/leaf.png") }
                 roughness = 0.5f
 
                 onDispose += {
                     albedoMap!!.dispose()
-                }
-                onSetup += {
-                    it.cullMethod = CullMethod.NO_CULLING
                 }
                 onCreated += {
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform

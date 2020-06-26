@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.gltf
 
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.util.Color
@@ -41,6 +42,14 @@ data class Material(
         val occlusionTexture: de.fabmax.kool.pipeline.Texture? = occlusionTexture?.getTexture(gltfFile)
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
+        cfg.cullMethod = if (doubleSided) {
+            CullMethod.NO_CULLING
+        } else {
+            CullMethod.CULL_BACK_FACES
+        }
+
+        val a = if (colorFac.size > 3) colorFac[3] else 1f
+        cfg.albedo = Color(colorFac[0], colorFac[1], colorFac[2], a)
         when {
             useVertexColor -> {
                 // todo: consider albedoFactor (extend shader to multiply vertex color values with factor)
@@ -50,11 +59,12 @@ data class Material(
                 // todo: consider albedoFactor (extend shader to multiply tex values with factor)
                 cfg.albedoSource = Albedo.TEXTURE_ALBEDO
                 cfg.albedoMap = albedoTexture
+                if (cfg.albedo != Color.WHITE) {
+                    cfg.isMultiplyAlbedoMap = true
+                }
             }
             else -> {
                 cfg.albedoSource = Albedo.STATIC_ALBEDO
-                val a = if (colorFac.size > 3) colorFac[3] else 1f
-                cfg.albedo = Color(colorFac[0], colorFac[1], colorFac[2], a)
             }
         }
 
@@ -65,27 +75,34 @@ data class Material(
             cfg.isNormalMapped = false
         }
 
+        cfg.roughness = pbrMetallicRoughness.roughnessFactor
         if (roughnessTexture != null) {
             // todo: consider roughnessFactor (extend shader to multiply tex values with factor)
             cfg.isRoughnessMapped = true
             cfg.roughnessMap = roughnessTexture
+            if (pbrMetallicRoughness.roughnessFactor != 1f) {
+                cfg.isMultiplyRoughnessMap = true
+            }
         } else {
             cfg.isRoughnessMapped = false
-            cfg.roughness = pbrMetallicRoughness.roughnessFactor
         }
 
+        cfg.metallic = pbrMetallicRoughness.metallicFactor
         if (metallicTexture != null) {
             // todo: consider metallicFactor (extend shader to multiply tex values with factor)
             cfg.isMetallicMapped = true
             cfg.metallicMap = metallicTexture
+            if (pbrMetallicRoughness.metallicFactor != 1f) {
+                cfg.isMultiplyMetallicMap = true
+            }
         } else {
             cfg.isMetallicMapped = false
-            cfg.metallic = pbrMetallicRoughness.metallicFactor
         }
 
         if (occlusionTexture != null) {
             cfg.isAmbientOcclusionMapped = true
             cfg.ambientOcclusionMap = occlusionTexture
+            cfg.ambientOcclusionStrength = this.occlusionTexture?.strength ?: 1f
         } else {
             cfg.isAmbientOcclusionMapped = false
         }

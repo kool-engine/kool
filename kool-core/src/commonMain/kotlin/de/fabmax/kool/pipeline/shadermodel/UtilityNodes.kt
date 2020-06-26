@@ -150,6 +150,26 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
     }
 }
 
+class FlipBacksideNormalNode(graph: ShaderGraph) :
+        ShaderNode("flipBacksideNormal_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+
+    var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    val outNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3f("${name}_outNormal"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inNormal)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        super.generateCode(generator)
+
+        generator.appendMain("""
+            ${outNormal.declare()} = ${inNormal.ref3f()} * (float(gl_FrontFacing) * 2.0 - 1.0);
+        """)
+    }
+}
+
 class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("dispMap_${graph.nextNodeId}", graph) {
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
     var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
