@@ -127,7 +127,7 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
             vertexStage {
                 val mvpNode = mvpNode()
 
-                val modelViewMat = multiplyNode(mvpNode.outModelMat, mvpNode.outViewMat).output
+                val modelViewMat = multiplyNode(mvpNode.outViewMat, mvpNode.outModelMat).output
                 val nrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 

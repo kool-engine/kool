@@ -85,8 +85,8 @@ class IntAccessor(val accessor: Accessor) {
     }
 
     fun next(): Int {
-        return if (index < accessor.count) {
-            when (accessor.componentType) {
+        if (index < accessor.count) {
+            return when (accessor.componentType) {
                 Accessor.COMP_TYPE_BYTE -> stream.readByte()
                 Accessor.COMP_TYPE_UNSIGNED_BYTE -> stream.readUByte()
                 Accessor.COMP_TYPE_SHORT -> stream.readShort()
@@ -95,7 +95,41 @@ class IntAccessor(val accessor: Accessor) {
                 Accessor.COMP_TYPE_UNSIGNED_INT -> stream.readUInt()
                 else -> 0
             }
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
+        }
+    }
+}
 
+/**
+ * Utility class to retrieve scalar float values from an accessor. The provided accessor must have a float component
+ * type and must be of type SCALAR.
+ *
+ * @param accessor [Accessor] to use.
+ */
+class FloatAccessor(val accessor: Accessor) {
+    private val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
+
+    private val elemSize: Int = when (accessor.componentType) {
+        Accessor.COMP_TYPE_FLOAT -> 4
+        else -> throw IllegalArgumentException("Provided accessor does not have float component type")
+    }
+
+    var index: Int
+        get() = stream.index / elemSize
+        set(value) {
+            stream.index = value * elemSize
+        }
+
+    init {
+        if (accessor.type != Accessor.TYPE_SCALAR) {
+            throw IllegalArgumentException("Vec2fAccessor requires accessor type ${Accessor.TYPE_SCALAR}, provided was ${accessor.type}")
+        }
+    }
+
+    fun next(): Float {
+        if (index < accessor.count) {
+            return stream.readFloat()
         } else {
             throw IndexOutOfBoundsException("Accessor overflow")
         }

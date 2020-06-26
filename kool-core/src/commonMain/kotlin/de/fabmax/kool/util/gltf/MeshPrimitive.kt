@@ -2,6 +2,7 @@ package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -35,17 +36,21 @@ data class MeshPrimitive(
         val texCoordAcc = attribAccessorRefs[ATTRIBUTE_TEXCOORD_0]
         val colorAcc = attribAccessorRefs[ATTRIBUTE_COLOR_0]
 
+        if (positionAcc == null) {
+            logW { "MeshPrimitive without position attribute" }
+            return IndexedVertexList()
+        }
+
         var generateTangents = false
 
         val attribs = mutableListOf<Attribute>()
-        if (positionAcc != null) { attribs += Attribute.POSITIONS
-        }
-        if (normalAcc != null || generateNormals) { attribs += Attribute.NORMALS
-        }
-        if (colorAcc != null) { attribs += Attribute.COLORS
-        }
-        if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS
-        }
+
+        // for PbrShader positions and normals are always required
+        attribs += Attribute.POSITIONS
+        attribs += Attribute.NORMALS
+
+        if (colorAcc != null) { attribs += Attribute.COLORS }
+        if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS }
         if (tangentAcc != null) {
             attribs += Attribute.TANGENTS
         } else if(materialRef?.normalTexture != null) {
@@ -54,41 +59,39 @@ data class MeshPrimitive(
         }
 
         val verts = IndexedVertexList(attribs)
-        if (positionAcc != null) {
-            val poss = Vec3fAccessor(positionAcc)
-            val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
-            val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null
-            val texs = if (texCoordAcc != null) Vec2fAccessor(texCoordAcc) else null
-            val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
+        val poss = Vec3fAccessor(positionAcc)
+        val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
+        val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null
+        val texs = if (texCoordAcc != null) Vec2fAccessor(texCoordAcc) else null
+        val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
 
+        for (i in 0 until positionAcc.count) {
+            verts.addVertex {
+                poss.next(position)
+                nrms?.next(normal)
+                tans?.next()?.let { tan -> tangent.set(tan.x, tan.y, tan.z) }
+                texs?.next(texCoord)
+                cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
+            }
+        }
+
+        val indexAcc = indexAccessorRef
+        if (indexAcc != null) {
+            val inds = IntAccessor(indexAcc)
+            for (i in 0 until indexAcc.count) {
+                verts.addIndex(inds.next())
+            }
+        } else {
             for (i in 0 until positionAcc.count) {
-                verts.addVertex {
-                    poss.next(position)
-                    nrms?.next(normal)
-                    tans?.next()?.let { tan -> tangent.set(tan.x, tan.y, tan.z) }
-                    texs?.next(texCoord)
-                    cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
-                }
+                verts.addIndex(i)
             }
+        }
 
-            val indexAcc = indexAccessorRef
-            if (indexAcc != null) {
-                val inds = IntAccessor(indexAcc)
-                for (i in 0 until indexAcc.count) {
-                    verts.addIndex(inds.next())
-                }
-            } else {
-                for (i in 0 until positionAcc.count) {
-                    verts.addIndex(i)
-                }
-            }
-
-            if (generateTangents) {
-                verts.generateTangents()
-            }
-            if (generateNormals) {
-                verts.generateNormals()
-            }
+        if (generateTangents) {
+            verts.generateTangents()
+        }
+        if (generateNormals || normalAcc == null) {
+            verts.generateNormals()
         }
         return verts
     }

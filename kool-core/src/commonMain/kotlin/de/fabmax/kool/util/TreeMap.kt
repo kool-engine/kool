@@ -43,6 +43,134 @@ open class TreeMap<K: Any, V: Any> : MutableMap<K, V> {
     fun lastValue() = lastEntry().value
     fun lastKey() = lastEntry().key
 
+    /**
+     * Returns the entry corresponding to the specified key; if no such entry
+     * exists, returns the entry for the least key greater than the specified
+     * key; if no such entry exists (i.e., the greatest key in the Tree is less
+     * than the specified key), returns `null`.
+     */
+    fun ceilingEntry(key: K): MutableMap.MutableEntry<K, V>? {
+        var p = root
+        while (p != null) {
+            val cmp = cmp(key, p.key)
+            if (cmp < 0) {
+                p = if (p.left != null) p.left else return p
+            } else if (cmp > 0) {
+                if (p.right != null) {
+                    p = p.right
+                } else {
+                    var parent = p.parent
+                    var ch = p
+                    while (parent != null && ch === parent.right) {
+                        ch = parent
+                        parent = parent.parent
+                    }
+                    return parent
+                }
+            } else {
+                return p
+            }
+        }
+        return null
+    }
+
+    fun ceilingKey(key: K) = ceilingEntry(key)?.key
+    fun ceilingValue(key: K) = ceilingEntry(key)?.value
+
+    /**
+     * Returns the entry corresponding to the specified key; if no such entry
+     * exists, returns the entry for the greatest key less than the specified
+     * key; if no such entry exists, returns {@code null}.
+     */
+    fun floorEntry(key: K): MutableMap.MutableEntry<K, V>? {
+        var p = root
+        while (p != null) {
+            val cmp = cmp(key, p.key)
+            if (cmp > 0) {
+                p = if (p.right != null) p.right else return p
+            } else if (cmp < 0) {
+                if (p.left != null) {
+                    p = p.left
+                } else {
+                    var parent = p.parent
+                    var ch = p
+                    while (parent != null && ch === parent.left) {
+                        ch = parent
+                        parent = parent.parent
+                    }
+                    return parent
+                }
+            } else {
+                return p
+            }
+        }
+        return null
+    }
+
+    fun floorKey(key: K) = floorEntry(key)?.key
+    fun floorValue(key: K) = floorEntry(key)?.value
+
+    /**
+     * Returns the entry for the least key greater than the specified
+     * key; if no such entry exists, returns the entry for the least
+     * key greater than the specified key; if no such entry exists
+     * returns {@code null}.
+     */
+    fun higherEntry(key: K): MutableMap.MutableEntry<K, V>? {
+        var p = root
+        while (p != null) {
+            if (cmp(key, p.key) < 0) {
+                p = if (p.left != null) p.left else return p
+            } else {
+                if (p.right != null) {
+                    p = p.right
+                } else {
+                    var parent = p.parent
+                    var ch = p
+                    while (parent != null && ch === parent.right) {
+                        ch = parent
+                        parent = parent.parent
+                    }
+                    return parent
+                }
+            }
+        }
+        return null
+    }
+
+    fun higherKey(key: K) = higherEntry(key)?.key
+    fun higherValue(key: K) = higherEntry(key)?.value
+
+    /**
+     * Returns the entry for the greatest key less than the specified key; if
+     * no such entry exists (i.e., the least key in the Tree is greater than
+     * the specified key), returns {@code null}.
+     */
+    fun lowerEntry(key: K): MutableMap.MutableEntry<K, V>? {
+        var p = root
+        while (p != null) {
+            if (cmp(key, p.key) > 0) {
+                p = if (p.right != null) p.right else return p
+            } else {
+                if (p.left != null) {
+                    p = p.left
+                } else {
+                    var parent = p.parent
+                    var ch = p
+                    while (parent != null && ch === parent.left) {
+                        ch = parent
+                        parent = parent.parent
+                    }
+                    return parent
+                }
+            }
+        }
+        return null
+    }
+
+    fun lowerKey(key: K) = lowerEntry(key)?.key
+    fun lowerValue(key: K) = lowerEntry(key)?.value
+
     override fun put(key: K, value: V): V? {
         if (root == null) {
             root = MapEntry(key, value, null)
@@ -333,7 +461,7 @@ open class TreeMap<K: Any, V: Any> : MutableMap<K, V> {
         }
     }
 
-    private fun MapEntry?.color(): Boolean = this?.color ?: de.fabmax.kool.util.TreeMap.Companion.BLACK
+    private fun MapEntry?.color(): Boolean = this?.color ?: BLACK
 
     private fun MapEntry?.successor(): MapEntry? {
         return when {

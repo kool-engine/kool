@@ -51,6 +51,13 @@ data class AnimationTarget(
 ) {
     @Transient
     var nodeRef: Node? = null
+
+    companion object {
+        const val PATH_TRANSLATION = "translation"
+        const val PATH_ROTATION = "rotation"
+        const val PATH_SCALE = "scale"
+        const val PATH_WEIGHTS = "weights"
+    }
 }
 
 /**

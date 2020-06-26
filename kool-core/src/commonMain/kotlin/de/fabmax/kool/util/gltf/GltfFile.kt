@@ -2,18 +2,22 @@ package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TransformGroup
+import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.parse
+import kotlin.math.min
 
 /**
  * The root object for a glTF asset.
@@ -107,12 +111,16 @@ data class GltfFile(
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
+        val modelNodes = mutableMapOf<Node, TransformGroup>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<de.fabmax.kool.scene.Mesh>>()
 
         fun makeModel(scene: Scene): Model {
             val model = Model(scene.name)
             scene.nodeRefs.forEach { nd ->
                 model += nd.makeNode(model, cfg)
+            }
+            if (animations.isNotEmpty()) {
+                makeAnimations(model)
             }
             if (cfg.applyTransforms) {
                 applyTransforms(model)
@@ -126,6 +134,124 @@ data class GltfFile(
             return model
         }
 
+        private fun makeAnimations(model: Model) {
+            animations.forEach { anim ->
+                val modelAnim = de.fabmax.kool.scene.animation.Animation(anim.name)
+                model.animations += modelAnim
+                anim.channels.forEach { channel ->
+                    when (channel.target.path) {
+                        AnimationTarget.PATH_TRANSLATION -> makeTranslationAnimation(channel, modelAnim)
+                        AnimationTarget.PATH_ROTATION -> makeRotationAnimation(channel, modelAnim)
+                        AnimationTarget.PATH_SCALE -> makeScaleAnimation(channel, modelAnim)
+                        AnimationTarget.PATH_WEIGHTS -> logW { "Unsupported animation: weights" }
+                    }
+                }
+                modelAnim.prepareAnimation()
+            }
+        }
+
+        private fun makeTranslationAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+            val node = animCh.target.nodeRef ?: return
+            val nodeGrp = modelNodes[node] ?: return
+            val inputAcc = animCh.samplerRef.inputAccessorRef
+            val outputAcc = animCh.samplerRef.outputAccessorRef
+
+            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported translation animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
+                return
+            }
+            if (outputAcc.type != Accessor.TYPE_VEC3 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported translation animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC3 and 5126 (float)" }
+                return
+            }
+
+            val transChannel = TranslationAnimationChannel("${modelAnim.name}_translation", AnimatedTransformGroup(nodeGrp))
+            val interpolation = when (animCh.samplerRef.interpolation) {
+                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                else -> AnimationKey.Interpolation.LINEAR
+            }
+            modelAnim.channels += transChannel
+
+            val inTimes = FloatAccessor(inputAcc)
+            val outTranslations = Vec3fAccessor(outputAcc)
+            for (i in 0 until min(inputAcc.count, outputAcc.count)) {
+                val t = inTimes.next()
+                val trans = outTranslations.next()
+                val transKey = TranslationKey(t, Vec3d(trans.x.toDouble(), trans.y.toDouble(), trans.z.toDouble()))
+                transKey.interpolation = interpolation
+                transChannel.keys[t] = transKey
+            }
+        }
+
+        private fun makeRotationAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+            val node = animCh.target.nodeRef ?: return
+            val nodeGrp = modelNodes[node] ?: return
+            val inputAcc = animCh.samplerRef.inputAccessorRef
+            val outputAcc = animCh.samplerRef.outputAccessorRef
+
+            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported rotation animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
+                return
+            }
+            if (outputAcc.type != Accessor.TYPE_VEC4 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported rotation animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC4 and 5126 (float)" }
+                return
+            }
+
+            val rotChannel = RotationAnimationChannel("${modelAnim.name}_rotation", AnimatedTransformGroup(nodeGrp))
+            val interpolation = when (animCh.samplerRef.interpolation) {
+                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                else -> AnimationKey.Interpolation.LINEAR
+            }
+            modelAnim.channels += rotChannel
+
+            val inTimes = FloatAccessor(inputAcc)
+            val outRotations = Vec4fAccessor(outputAcc)
+            for (i in 0 until min(inputAcc.count, outputAcc.count)) {
+                val t = inTimes.next()
+                val rot = outRotations.next()
+                val rotKey = RotationKey(t, Vec4d(rot.x.toDouble(), rot.y.toDouble(), rot.z.toDouble(), rot.w.toDouble()))
+                rotKey.interpolation = interpolation
+                rotChannel.keys[t] = rotKey
+            }
+        }
+
+        private fun makeScaleAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+            val node = animCh.target.nodeRef ?: return
+            val nodeGrp = modelNodes[node] ?: return
+            val inputAcc = animCh.samplerRef.inputAccessorRef
+            val outputAcc = animCh.samplerRef.outputAccessorRef
+
+            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported scale animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
+                return
+            }
+            if (outputAcc.type != Accessor.TYPE_VEC3 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+                logW { "Unsupported scale animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC3 and 5126 (float)" }
+                return
+            }
+
+            val scaleChannel = ScaleAnimationChannel("${modelAnim.name}_scale", AnimatedTransformGroup(nodeGrp))
+            val interpolation = when (animCh.samplerRef.interpolation) {
+                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                else -> AnimationKey.Interpolation.LINEAR
+            }
+            modelAnim.channels += scaleChannel
+
+            val inTimes = FloatAccessor(inputAcc)
+            val outScale = Vec3fAccessor(outputAcc)
+            for (i in 0 until min(inputAcc.count, outputAcc.count)) {
+                val t = inTimes.next()
+                val scale = outScale.next()
+                val scaleKey = ScaleKey(t, Vec3d(scale.x.toDouble(), scale.y.toDouble(), scale.z.toDouble()))
+                scaleKey.interpolation = interpolation
+                scaleChannel.keys[t] = scaleKey
+            }
+        }
+
         private fun TransformGroup.sortNodesByAlpha() {
             children.filterIsInstance<TransformGroup>().forEach { it.sortNodesByAlpha() }
             sortChildrenBy {
@@ -137,7 +263,7 @@ data class GltfFile(
             }
         }
 
-            private fun mergeMeshesByMaterial(model: Model) {
+        private fun mergeMeshesByMaterial(model: Model) {
             model.mergeMeshesByMaterial()
         }
 
@@ -191,6 +317,7 @@ data class GltfFile(
 
         private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
             val nodeGrp = TransformGroup(name)
+            modelNodes[this] = nodeGrp
             model.nodes[name] = nodeGrp
 
             if (matrix != null) {
@@ -214,32 +341,35 @@ data class GltfFile(
 
             meshRef?.primitives?.forEachIndexed { index, p ->
                 val name = "${meshRef?.name ?: name}_$index"
-                val mesh = de.fabmax.kool.scene.Mesh(p.toGeometry(cfg.generateNormals), name)
-                nodeGrp += mesh
+                val geometry = p.toGeometry(cfg.generateNormals)
+                if (!geometry.isEmpty()) {
+                    val mesh = de.fabmax.kool.scene.Mesh(geometry, name)
+                    nodeGrp += mesh
 
-                meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
+                    meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
 
-                if (cfg.applyMaterials) {
-                    val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)
-                    mesh.pipelineLoader = pbrShader {
-                        val material = p.materialRef
-                        if (material != null) {
-                            material.applyTo(this, useVertexColor, this@GltfFile)
-                        } else {
-                            albedo = Color.GRAY
-                            albedoSource = Albedo.STATIC_ALBEDO
+                    if (cfg.applyMaterials) {
+                        val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)
+                        mesh.pipelineLoader = pbrShader {
+                            val material = p.materialRef
+                            if (material != null) {
+                                material.applyTo(this, useVertexColor, this@GltfFile)
+                            } else {
+                                albedo = Color.GRAY
+                                albedoSource = Albedo.STATIC_ALBEDO
+                            }
+                            cfg.pbrBlock?.invoke(this, p)
+
+                            albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                         }
-                        cfg.pbrBlock?.invoke(this, p)
-
-                        albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                        displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                     }
+                    model.meshes[name] = mesh
                 }
-                model.meshes[name] = mesh
             }
 
             return nodeGrp

@@ -711,6 +711,15 @@ open class Mat4d {
         return list
     }
 
+    fun dump() {
+        for (r in 0..3) {
+            for (c in 0..3) {
+                print("${this[r, c]} ")
+            }
+            println()
+        }
+    }
+
     companion object {
         private val tmpMatLock = Any()
         private val tmpMatA = Mat4d()

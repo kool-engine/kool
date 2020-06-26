@@ -132,10 +132,10 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
 
                 if (cfg.isInstanced) {
                     val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
-                    modelViewMat = multiplyNode(modelMat, mvpNode.outViewMat).output
+                    modelViewMat = multiplyNode(mvpNode.outViewMat, modelMat).output
                     mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
                 } else {
-                    modelViewMat = multiplyNode(mvpNode.outModelMat, mvpNode.outViewMat).output
+                    modelViewMat = multiplyNode(mvpNode.outViewMat, mvpNode.outModelMat).output
                     mvpMat = mvpNode.outMvpMat
                 }
 
