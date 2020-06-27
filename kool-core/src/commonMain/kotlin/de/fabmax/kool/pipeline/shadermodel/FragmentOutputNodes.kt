@@ -45,3 +45,17 @@ class FragmentDepthOutNode(graph: ShaderGraph) : ShaderNode("fragmentDepthOut", 
         generator.appendMain("gl_FragDepth = ${inDepth.ref1f()};")
     }
 }
+
+class DiscardAlphaNode(graph: ShaderGraph) : ShaderNode("discardAlpha_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+    var inAlpha = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var inAlphaCutoff = ShaderNodeIoVar(ModelVar1fConst(0f))
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inAlpha, inAlphaCutoff)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("if (${inAlpha.ref1f()} <= ${inAlphaCutoff.ref1f()}) { discard; }")
+    }
+}

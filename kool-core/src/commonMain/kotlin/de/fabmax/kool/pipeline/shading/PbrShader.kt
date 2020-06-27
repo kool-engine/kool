@@ -18,6 +18,7 @@ fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
 class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
+    private val isBlending = cfg.alphaMode is AlphaModeBlend
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
@@ -134,6 +135,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
     override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
         builder.cullMethod = cullMethod
+        builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
         return super.createPipeline(mesh, builder, ctx)
     }
 
@@ -250,7 +252,35 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 }
                 positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
+
             fragmentStage {
+                var albedo = when (cfg.albedoSource) {
+                    Albedo.VERTEX_ALBEDO -> ifColors!!.output
+                    Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                    Albedo.TEXTURE_ALBEDO -> {
+                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
+                        val albedoLin = gammaNode(albedoSampler.outColor)
+                        if (cfg.isMultiplyAlbedoMap) {
+                            val fac = pushConstantNodeColor("uAlbedo").output
+                            multiplyNode(albedoLin.outColor, fac).output
+                        } else {
+                            albedoLin.outColor
+                        }
+                    }
+                }
+
+                (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+                    discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
+                }
+                if (cfg.alphaMode !is AlphaModeBlend) {
+                    albedo = combineNode(GlslType.VEC_4F).apply {
+                        inX = splitNode(albedo, "r").output
+                        inY = splitNode(albedo, "g").output
+                        inZ = splitNode(albedo, "b").output
+                        inW = constFloat(1f)
+                    }.output
+                }
+
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
                 val lightNode = multiLightNode(cfg.maxLights)
                 shadowMapNodes.forEach {
@@ -279,20 +309,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
-                    inAlbedo = when (cfg.albedoSource) {
-                        Albedo.VERTEX_ALBEDO -> ifColors!!.output
-                        Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
-                        Albedo.TEXTURE_ALBEDO -> {
-                            val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
-                            val albedoLin = gammaNode(albedoSampler.outColor)
-                            if (cfg.isMultiplyAlbedoMap) {
-                                val fac = pushConstantNodeColor("uAlbedo").output
-                                multiplyNode(albedoLin.outColor, fac).output
-                            } else {
-                                albedoLin.outColor
-                            }
-                        }
-                    }
+                    inAlbedo = albedo
                     inNormal = if (cfg.isNormalMapped && ifTangents != null) {
                         val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                         bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
@@ -355,7 +372,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     }
                     inAmbientOccl = aoFactor
                 }
-                colorOutput(hdrToLdrNode(mat.outColor).outColor)
+
+                when (cfg.alphaMode) {
+                    is AlphaModeBlend -> colorOutput(hdrToLdrNode(mat.outColor).outColor)
+                    is AlphaModeMask -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
+                    is AlphaModeOpaque -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
+                }
             }
         }
     }
@@ -379,6 +401,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isScrSpcAmbientOcclusion = false
 
         var cullMethod = CullMethod.CULL_BACK_FACES
+        var alphaMode: AlphaMode = AlphaModeBlend()
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()

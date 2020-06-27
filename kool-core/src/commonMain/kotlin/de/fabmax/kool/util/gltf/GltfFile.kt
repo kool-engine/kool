@@ -113,6 +113,7 @@ data class GltfFile(
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
         val modelNodes = mutableMapOf<Node, TransformGroup>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<de.fabmax.kool.scene.Mesh>>()
+        val meshMaterials = mutableMapOf<de.fabmax.kool.scene.Mesh, Material?>()
 
         fun makeModel(scene: Scene): Model {
             val model = Model(scene.name)
@@ -275,7 +276,13 @@ data class GltfFile(
             sortChildrenBy {
                 var a = 1.1f
                 if (it is de.fabmax.kool.scene.Mesh) {
-                    a = (it.pipelineLoader as? PbrShader)?.albedo?.a ?: 0f
+                    val mat = meshMaterials[it]
+                    if (mat != null) {
+                        a = when (mat.alphaMode) {
+                            Material.ALPHA_MODE_BLEND -> min(0.999f, mat.pbrMetallicRoughness.baseColorFactor[3])
+                            else -> 1f
+                        }
+                    }
                 }
                 -a
             }
@@ -365,6 +372,7 @@ data class GltfFile(
                     nodeGrp += mesh
 
                     meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
+                    meshMaterials[mesh] = p.materialRef
 
                     if (cfg.applyMaterials) {
                         val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)

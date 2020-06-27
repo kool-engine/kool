@@ -410,6 +410,13 @@ class ShaderModel(val modelInfo: String = "") {
             return colorOut
         }
 
+        fun discardAlpha(alpha: ShaderNodeIoVar? = null, alphaCutoff: ShaderNodeIoVar? = null): DiscardAlphaNode {
+            val discardAlpha = addNode(DiscardAlphaNode(stage))
+            alpha?.let { discardAlpha.inAlpha = it }
+            alphaCutoff?.let { discardAlpha.inAlphaCutoff = it }
+            return discardAlpha
+        }
+
         fun depthOutput(depth: ShaderNodeIoVar? = null): FragmentDepthOutNode {
             val depthOut = addNode(FragmentDepthOutNode(stage))
             depth?.let { depthOut.inDepth = it }

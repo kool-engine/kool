@@ -1,8 +1,7 @@
 package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
 
@@ -29,7 +28,7 @@ data class Material(
         val occlusionTexture: TextureInfo? = null,
         val emissiveTexture: TextureInfo? = null,
         val emissiveFactor: List<Float>? = null,
-        val alphaMode: String = "OPAQUE",
+        val alphaMode: String = ALPHA_MODE_OPAQUE,
         val alphaCutoff: Float = 0.5f,
         val doubleSided: Boolean = false
 ) {
@@ -42,14 +41,19 @@ data class Material(
         val occlusionTexture: de.fabmax.kool.pipeline.Texture? = occlusionTexture?.getTexture(gltfFile)
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
+        cfg.alphaMode = when (alphaMode) {
+            ALPHA_MODE_BLEND -> AlphaModeBlend()
+            ALPHA_MODE_MASK -> AlphaModeMask(alphaCutoff)
+            else -> AlphaModeOpaque()
+        }
+
         cfg.cullMethod = if (doubleSided) {
             CullMethod.NO_CULLING
         } else {
             CullMethod.CULL_BACK_FACES
         }
 
-        val a = if (colorFac.size > 3) colorFac[3] else 1f
-        cfg.albedo = Color(colorFac[0], colorFac[1], colorFac[2], a)
+        cfg.albedo = if (colorFac.size == 4) { Color(colorFac[0], colorFac[1], colorFac[2], colorFac[3]) } else { Color.WHITE }
         when {
             useVertexColor -> {
                 // todo: consider albedoFactor (extend shader to multiply vertex color values with factor)
@@ -162,5 +166,11 @@ data class Material(
                 }
             }
         }
+    }
+
+    companion object {
+        const val ALPHA_MODE_BLEND = "BLEND"
+        const val ALPHA_MODE_MASK = "MASK"
+        const val ALPHA_MODE_OPAQUE = "OPAQUE"
     }
 }

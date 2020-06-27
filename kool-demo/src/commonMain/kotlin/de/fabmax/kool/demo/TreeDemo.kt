@@ -4,11 +4,11 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -74,6 +74,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
+                alphaMode = AlphaModeOpaque()
                 isNormalMapped = true
                 isAmbientOcclusionMapped = true
                 isRoughnessMapped = true
@@ -117,6 +118,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
+                alphaMode = AlphaModeMask(0.5f)
                 maxLights = lighting.lights.size
                 lightBacksides = true
                 cullMethod = CullMethod.NO_CULLING
@@ -473,6 +475,25 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
         positionOutput = vec4TransformNode(localPos, mvpNode.outMvpMat).outVec4
     }
     fragmentStage {
+        var albedo = when (cfg.albedoSource) {
+            Albedo.VERTEX_ALBEDO -> ifColors!!.output
+            Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+            Albedo.TEXTURE_ALBEDO -> {
+                val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
+                gammaNode(albedoSampler.outColor).outColor
+            }
+        }
+
+        (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+            discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
+        }
+        albedo = combineNode(GlslType.VEC_4F).apply {
+            inX = splitNode(albedo, "r").output
+            inY = splitNode(albedo, "g").output
+            inZ = splitNode(albedo, "b").output
+            inW = constFloat(1f)
+        }.output
+
         val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
         val lightNode = multiLightNode(cfg.maxLights)
         shadowMapNodes.forEach {
@@ -501,15 +522,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
 
             inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
-            inAlbedo = when (cfg.albedoSource) {
-                Albedo.VERTEX_ALBEDO -> ifColors!!.output
-                Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
-                Albedo.TEXTURE_ALBEDO -> {
-                    val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
-                    val albedoLin = gammaNode(albedoSampler.outColor)
-                    albedoLin.outColor
-                }
-            }
+            inAlbedo = albedo
             inNormal = if (cfg.isNormalMapped && ifTangents != null) {
                 val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                 bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
@@ -540,8 +553,11 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
                 inAmbientOccl = splitNode(occlusion, cfg.ambientOcclusionChannel).output
             }
         }
-        val hdrToLdr = hdrToLdrNode(mat.outColor)
-        colorOutput(hdrToLdr.outColor)
+        when (cfg.alphaMode) {
+            is AlphaModeBlend -> colorOutput(hdrToLdrNode(mat.outColor).outColor)
+            is AlphaModeMask -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
+            is AlphaModeOpaque -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
+        }
     }
 }
 
