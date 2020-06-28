@@ -166,8 +166,10 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = vec3TransformNode(attrTangents().output, modelViewMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.outVec3)
+                    val tanAttr = attrTangents().output
+                    val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, modelViewMat, 0f)
+                    val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
+                    stageInterfaceNode("ifTangents", tan4.output)
                 } else {
                     null
                 }

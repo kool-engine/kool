@@ -96,6 +96,7 @@ class DeferredDemo(ctx: KoolContext) {
     private fun PbrLightingPass.makeLightOverlays() {
         content.apply {
             lightPositionMesh = colorMesh {
+                isFrustumChecked = false
                 isVisible = true
                 generate {
                     color = Color.RED
@@ -110,6 +111,7 @@ class DeferredDemo(ctx: KoolContext) {
             +lightPositionMesh
 
             lightVolumeMesh = wireframeMesh(dynamicPointLights.mesh.geometry).apply {
+                isFrustumChecked = false
                 isVisible = false
                 pipelineLoader = ModeledShader(instancedLightIndicatorModel())
             }

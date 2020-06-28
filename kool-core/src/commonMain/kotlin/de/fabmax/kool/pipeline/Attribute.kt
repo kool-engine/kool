@@ -30,7 +30,7 @@ data class Attribute(val name: String, val type: GlslType) {
     companion object {
         val POSITIONS = Attribute("attrib_positions", GlslType.VEC_3F)
         val NORMALS = Attribute("attrib_normals", GlslType.VEC_3F)
-        val TANGENTS = Attribute("attrib_tangents", GlslType.VEC_3F)
+        val TANGENTS = Attribute("attrib_tangents", GlslType.VEC_4F)
         val TEXTURE_COORDS = Attribute("attrib_texture_coords", GlslType.VEC_2F)
         val COLORS = Attribute("attrib_colors", GlslType.VEC_4F)
     }

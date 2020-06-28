@@ -144,10 +144,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
+  var AlphaModeOpaque = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeOpaque;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
+  var AlphaModeMask = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeMask;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
+  var AlphaModeBlend = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeBlend;
   var now = $module$kool.de.fabmax.kool.now;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
@@ -1338,6 +1341,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeLightOverlays$lambda$lambda(this$DeferredDemo) {
     return function ($receiver) {
+      $receiver.isFrustumChecked = false;
       $receiver.isVisible = true;
       $receiver.generate_v2sixm$(DeferredDemo$makeLightOverlays$lambda$lambda$lambda);
       $receiver.pipelineLoader = new ModeledShader(this$DeferredDemo.instancedLightIndicatorModel_0());
@@ -1394,6 +1398,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.lightPositionMesh_0 = colorMesh(void 0, DeferredDemo$makeLightOverlays$lambda$lambda(this));
     $receiver_0.unaryPlus_uv0sim$(this.lightPositionMesh_0);
     var $receiver_1 = wireframeMesh($receiver.dynamicPointLights.mesh.geometry);
+    $receiver_1.isFrustumChecked = false;
     $receiver_1.isVisible = false;
     $receiver_1.pipelineLoader = new ModeledShader(this.instancedLightIndicatorModel_0());
     this.lightVolumeMesh_0 = $receiver_1;
@@ -2799,7 +2804,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 2.5, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0)]);
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 2.5, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 0.5, new Vec3f(0.0, 2.0, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
     this.autoRotate_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
@@ -2864,6 +2869,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this$GltfDemo.reflMapPass_0 = new ReflectionMapPass(this$, hdri);
       this$GltfDemo.brdfLutPass_0 = new BrdfLutPass(this$);
       this$.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda$lambda_0(hdri));
+      this$.unaryPlus_uv0sim$(new Skybox(ensureNotNull(this$GltfDemo.reflMapPass_0).colorTextureCube, 1.0));
       this$GltfDemo.setupContentGroup_0();
       var $receiver = this$GltfDemo.models_0;
       var tmp$;
@@ -2873,7 +2879,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         element.load_aemszp$(closure$ctx);
       }
       this$.unaryPlus_uv0sim$(this$GltfDemo.contentGroup_0);
-      this$.unaryPlus_uv0sim$(new Skybox(ensureNotNull(this$GltfDemo.reflMapPass_0).colorTextureCube, 1.0));
       return Unit;
     };
   }
@@ -8874,6 +8879,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var this$_0 = this$;
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.alphaMode = new AlphaModeOpaque();
       $receiver_0.isNormalMapped = true;
       $receiver_0.isAmbientOcclusionMapped = true;
       $receiver_0.isRoughnessMapped = true;
@@ -8962,11 +8968,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_7(it) {
-    it.cullMethod = CullMethod.NO_CULLING;
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$uWindSpeed, closure$uWindStrength) {
+  function treeScene$lambda$lambda$lambda$lambda_7(this$, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
       var tmp$, tmp$_0;
       var tmp$_1 = closure$uWindSpeed;
@@ -9061,16 +9063,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var this$_0 = this$;
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.alphaMode = new AlphaModeMask(0.5);
       $receiver_0.maxLights = this$_0.lighting.lights.size;
       $receiver_0.lightBacksides = true;
+      $receiver_0.cullMethod = CullMethod.NO_CULLING;
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       $receiver_1.albedoMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
-      $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, uWindSpeed, uWindStrength));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
@@ -9139,7 +9142,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$growDistVal) {
     return function ($receiver, value) {
       closure$treeGen.growDistance = value;
       closure$growDistVal.text = toString(value, 2);
@@ -9152,7 +9155,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.1, 0.4, closure$treeGen.growDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$growDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$growDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9173,7 +9176,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$killDistVal) {
     return function ($receiver, value) {
       closure$treeGen.killDistance = value;
       closure$killDistVal.text = toString(value, 2);
@@ -9186,7 +9189,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$killDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9207,7 +9210,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$attractPtsVal) {
     return function ($receiver, value) {
       closure$treeGen.numberOfAttractionPoints = numberToInt(value);
       closure$attractPtsVal.text = numberToInt(value).toString();
@@ -9220,7 +9223,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$attractPtsVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$attractPtsVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9241,7 +9244,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver, value) {
       closure$treeGen.radiusOfInfluence = value;
       closure$infRadiusVal.text = toString(value, 2);
@@ -9254,12 +9257,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$infRadiusVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$infRadiusVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_13(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$, tmp$_0;
       closure$treeGen.generate_za3lpa$();
@@ -9274,7 +9277,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         level = Log$Level.INFO;
         var t = now();
         closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
-        $this.generateTangents();
+        $this.generateTangents_mx4ult$();
         var ret = Unit;
         var $this_0 = util.Log;
         var tag = Kotlin.getKClassFromExpression($this).simpleName;
@@ -9312,7 +9315,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onClick;
-      var element = treeScene$lambda$lambda$lambda$lambda_13(closure$treeGen, closure$trunkMesh, closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$trunkMesh, closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9343,7 +9346,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_14(closure$windSpeed, closure$windSpeedVal) {
+  function treeScene$lambda$lambda$lambda$lambda_13(closure$windSpeed, closure$windSpeedVal) {
     return function ($receiver, value) {
       closure$windSpeed.v = value;
       closure$windSpeedVal.text = toString(value, 1);
@@ -9356,7 +9359,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.0, 10.0, closure$windSpeed.v);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$windSpeed, closure$windSpeedVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_13(closure$windSpeed, closure$windSpeedVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9377,7 +9380,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_15(closure$windStrength, closure$windStrengthVal) {
+  function treeScene$lambda$lambda$lambda$lambda_14(closure$windStrength, closure$windStrengthVal) {
     return function ($receiver, value) {
       closure$windStrength.v = value;
       closure$windStrengthVal.text = toString(value, 1);
@@ -9390,12 +9393,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.0, 5.0, closure$treeGen.radiusOfInfluence);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$windStrength, closure$windStrengthVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$windStrength, closure$windStrengthVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_16(closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_15(closure$leafMesh) {
     return function ($receiver) {
       var tmp$;
       (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = $receiver.isEnabled) : null;
@@ -9408,12 +9411,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_16(closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_17(closure$autoRotate) {
+  function treeScene$lambda$lambda$lambda$lambda_16(closure$autoRotate) {
     return function ($receiver) {
       closure$autoRotate.v = $receiver.isEnabled;
       return Unit;
@@ -9425,7 +9428,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = closure$autoRotate.v;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_17(closure$autoRotate);
+      var element = treeScene$lambda$lambda$lambda$lambda_16(closure$autoRotate);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9592,8 +9595,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, mvpNode.v.outModelMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
+      var tanAttr = $receiver_0.attrTangents().output;
+      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.splitNode_500t7j$(tanAttr, 'xyz').output, mvpNode.v.outModelMat, 0.0);
+      var tan4 = $receiver_0.combineXyzWNode_ze33is$(tan.outVec3, $receiver_0.splitNode_500t7j$(tanAttr, 'w').output);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan4.output);
     } else {
       tmp$_2 = null;
     }
@@ -9614,12 +9619,36 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }}
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos, mvpNode.v.outMvpMat).outVec4;
     var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var tmp$_4, tmp$_5, tmp$_6, tmp$_7;
+    switch (cfg.albedoSource.name) {
+      case 'VERTEX_ALBEDO':
+        tmp$_4 = ensureNotNull(ifColors.v).output;
+        break;
+      case 'STATIC_ALBEDO':
+        tmp$_4 = $receiver_3.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+        break;
+      case 'TEXTURE_ALBEDO':
+        var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
+        tmp$_4 = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor).outColor;
+        break;
+      default:tmp$_4 = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    var albedo = {v: tmp$_4};
+    if ((tmp$_6 = Kotlin.isType(tmp$_5 = cfg.alphaMode, AlphaModeMask) ? tmp$_5 : null) != null) {
+      $receiver_3.discardAlpha_ze33is$($receiver_3.splitNode_500t7j$(albedo.v, 'a').output, $receiver_3.constFloat_mx4ult$(tmp$_6.cutOff));
+    }var $receiver_4 = $receiver_3.combineNode_m7a9qd$(GlslType.VEC_4F);
+    $receiver_4.inX = $receiver_3.splitNode_500t7j$(albedo.v, 'r').output;
+    $receiver_4.inY = $receiver_3.splitNode_500t7j$(albedo.v, 'g').output;
+    $receiver_4.inZ = $receiver_3.splitNode_500t7j$(albedo.v, 'b').output;
+    $receiver_4.inW = $receiver_3.constFloat_mx4ult$(1.0);
+    albedo.v = $receiver_4.output;
     var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_3.multiLightNode_za3lpa$(cfg.maxLights);
-    var tmp$_4;
-    tmp$_4 = shadowMapNodes.iterator();
-    while (tmp$_4.hasNext()) {
-      var element_1 = tmp$_4.next();
+    var tmp$_8;
+    tmp$_8 = shadowMapNodes.iterator();
+    while (tmp$_8.hasNext()) {
+      var element_1 = tmp$_8.next();
       lightNode.inShaodwFacs[element_1.lightIndex] = element_1.outShadowFac;
     }
     var reflMap;
@@ -9635,82 +9664,74 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       reflMap = null;
       brdfLut = null;
     }
-    var $receiver_4 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
+    var $receiver_5 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
-    var tmp$_5, tmp$_6, tmp$_7;
-    $receiver_4.lightBacksides = cfg.lightBacksides;
-    $receiver_4.inFragPos = ifFragPos.v.output;
-    $receiver_4.inCamPos = mvpFrag.outCamPos;
-    $receiver_4.inIrradiance = (tmp$_5 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_5 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
-    switch (cfg.albedoSource.name) {
-      case 'VERTEX_ALBEDO':
-        tmp$_6 = ensureNotNull(ifColors.v).output;
-        break;
-      case 'STATIC_ALBEDO':
-        tmp$_6 = $receiver_3.pushConstantNodeColor_61zpoe$('uAlbedo').output;
-        break;
-      case 'TEXTURE_ALBEDO':
-        var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output, false);
-        var albedoLin = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor);
-        tmp$_6 = albedoLin.outColor;
-        break;
-      default:tmp$_6 = Kotlin.noWhenBranchMatched();
-        break;
-    }
-    $receiver_4.inAlbedo = tmp$_6;
+    var tmp$_9, tmp$_10;
+    $receiver_5.lightBacksides = cfg.lightBacksides;
+    $receiver_5.inFragPos = ifFragPos.v.output;
+    $receiver_5.inCamPos = mvpFrag.outCamPos;
+    $receiver_5.inIrradiance = (tmp$_9 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_9 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
+    $receiver_5.inAlbedo = albedo.v;
     if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_3.normalMapNode_j8913i$($receiver_3.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_7 = bumpNormal.outNormal;
+      tmp$_10 = bumpNormal.outNormal;
     } else {
-      tmp$_7 = ifNormals.v.output;
+      tmp$_10 = ifNormals.v.output;
     }
-    $receiver_4.inNormal = tmp$_7;
+    $receiver_5.inNormal = tmp$_10;
     var rmoSamplers = LinkedHashMap_init();
     if (cfg.isRoughnessMapped) {
       var roughness = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.roughnessTexName), ensureNotNull(ifTexCoords.v).output).outColor;
       var key = cfg.roughnessTexName;
       rmoSamplers.put_xwzc9p$(key, roughness);
-      $receiver_4.inRoughness = $receiver_3.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
+      $receiver_5.inRoughness = $receiver_3.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
     } else {
-      $receiver_4.inRoughness = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
+      $receiver_5.inRoughness = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
     if (cfg.isMetallicMapped) {
       var key_0 = cfg.metallicTexName;
-      var tmp$_8;
+      var tmp$_11;
       var value = rmoSamplers.get_11rb$(key_0);
       if (value == null) {
         var answer = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_0, answer);
-        tmp$_8 = answer;
+        tmp$_11 = answer;
       } else {
-        tmp$_8 = value;
+        tmp$_11 = value;
       }
-      var metallic = tmp$_8;
+      var metallic = tmp$_11;
       var key_1 = cfg.metallicTexName;
       rmoSamplers.put_xwzc9p$(key_1, metallic);
-      $receiver_4.inMetallic = $receiver_3.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
+      $receiver_5.inMetallic = $receiver_3.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
     } else {
-      $receiver_4.inMetallic = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
+      $receiver_5.inMetallic = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
     if (cfg.isAmbientOcclusionMapped) {
       var key_2 = cfg.ambientOcclusionTexName;
-      var tmp$_9;
+      var tmp$_12;
       var value_0 = rmoSamplers.get_11rb$(key_2);
       if (value_0 == null) {
         var answer_0 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.ambientOcclusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_2, answer_0);
-        tmp$_9 = answer_0;
+        tmp$_12 = answer_0;
       } else {
-        tmp$_9 = value_0;
+        tmp$_12 = value_0;
       }
-      var occlusion = tmp$_9;
+      var occlusion = tmp$_12;
       var key_3 = cfg.ambientOcclusionTexName;
       rmoSamplers.put_xwzc9p$(key_3, occlusion);
-      $receiver_4.inAmbientOccl = $receiver_3.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
-    }var mat = $receiver_4;
-    var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
-    $receiver_3.colorOutput_a3v4si$(hdrToLdr.outColor);
+      $receiver_5.inAmbientOccl = $receiver_3.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
+    }var mat = $receiver_5;
+    tmp$_7 = cfg.alphaMode;
+    if (Kotlin.isType(tmp$_7, AlphaModeBlend))
+      $receiver_3.colorOutput_a3v4si$($receiver_3.hdrToLdrNode_r20yfm$(mat.outColor).outColor);
+    else if (Kotlin.isType(tmp$_7, AlphaModeMask))
+      $receiver_3.colorOutput_a3v4si$($receiver_3.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_3.constFloat_mx4ult$(1.0));
+    else if (Kotlin.isType(tmp$_7, AlphaModeOpaque))
+      $receiver_3.colorOutput_a3v4si$($receiver_3.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_3.constFloat_mx4ult$(1.0));
+    else
+      Kotlin.noWhenBranchMatched();
     return $receiver;
   }
   function makeTreeGroundGrid$lambda$lambda$lambda$lambda($receiver) {
@@ -9740,7 +9761,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.heightFun = makeTreeGroundGrid$lambda$lambda$lambda$lambda$lambda($receiver_0);
       $receiver.grid_gtbnl3$($receiver.gridProps);
       $receiver.transform.pop();
-      $receiver.geometry.generateTangents();
+      $receiver.geometry.generateTangents_mx4ult$();
       return Unit;
     };
   }

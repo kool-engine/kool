@@ -23,7 +23,7 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     // standard attributes for easy access
     val position: MutableVec3f
     val normal: MutableVec3f
-    val tangent: MutableVec3f
+    val tangent: MutableVec4f
     val color: MutableColor
     val texCoord: MutableVec2f
 
@@ -59,7 +59,7 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
 
         position = getVec3fAttribute(Attribute.POSITIONS) ?: Vec3fView(-1)
         normal = getVec3fAttribute(Attribute.NORMALS) ?: Vec3fView(-1)
-        tangent = getVec3fAttribute(Attribute.TANGENTS) ?: Vec3fView(-1)
+        tangent = getVec4fAttribute(Attribute.TANGENTS) ?: Vec4fView(-1)
         texCoord = getVec2fAttribute(Attribute.TEXTURE_COORDS) ?: Vec2fView(-1)
         color = getColorAttribute(Attribute.COLORS) ?: ColorWrapView(Vec4fView(-1))
     }

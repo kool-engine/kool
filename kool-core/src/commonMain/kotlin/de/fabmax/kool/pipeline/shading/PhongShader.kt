@@ -115,8 +115,10 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.outVec3)
+                    val tanAttr = attrTangents().output
+                    val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, modelMat, 0f)
+                    val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
+                    stageInterfaceNode("ifTangents", tan4.output)
                 } else {
                     null
                 }

@@ -236,8 +236,10 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = vec3TransformNode(attrTangents().output, modelMat, 0f)
-                    stageInterfaceNode("ifTangents", tan.outVec3)
+                    val tanAttr = attrTangents().output
+                    val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, modelMat, 0f)
+                    val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
+                    stageInterfaceNode("ifTangents", tan4.output)
                 } else {
                     null
                 }
@@ -273,12 +275,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
                 }
                 if (cfg.alphaMode !is AlphaModeBlend) {
-                    albedo = combineNode(GlslType.VEC_4F).apply {
-                        inX = splitNode(albedo, "r").output
-                        inY = splitNode(albedo, "g").output
-                        inZ = splitNode(albedo, "b").output
-                        inW = constFloat(1f)
-                    }.output
+                    albedo = combineXyzWNode(albedo, constFloat(1f)).output
                 }
 
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)

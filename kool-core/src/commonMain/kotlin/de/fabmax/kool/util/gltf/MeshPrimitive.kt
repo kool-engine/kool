@@ -69,7 +69,7 @@ data class MeshPrimitive(
             verts.addVertex {
                 poss.next(position)
                 nrms?.next(normal)
-                tans?.next()?.let { tan -> tangent.set(tan.x, tan.y, tan.z) }
+                tans?.next(tangent)
                 texs?.next(texCoord)
                 cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
             }

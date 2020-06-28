@@ -2,6 +2,7 @@ package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
@@ -323,7 +324,9 @@ data class GltfFile(
                     forEach { v ->
                         transform.transform(v.position, 1f)
                         transform.transform(v.normal, 0f)
-                        transform.transform(v.tangent, 0f)
+                        val tan3 = v.tangent.getXyz(MutableVec3f())
+                        transform.transform(tan3, 0f)
+                        v.tangent.set(tan3, v.tangent.w)
                     }
                 }
                 if (rootGroup != this) {

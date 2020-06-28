@@ -1,10 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.triArea
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import kotlin.math.max
@@ -54,7 +51,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     var usage = Usage.STATIC
 
     /**
-     * Number of vertices. Equal to [dataF.position] / [vertexSizeF] and [dataI.position] / [vertexSizeI].
+     * Number of vertices.
      */
     var numVertices = 0
 
@@ -351,7 +348,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
     }
 
-    fun generateTangents() {
+    fun generateTangents(tangentSign: Float = 1f) {
         if (!vertexAttributes.contains(Attribute.TANGENTS)) {
             return
         }
@@ -391,9 +388,9 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
                 tan.y = f * (dv2 * e1.y - dv1 * e2.y)
                 tan.z = f * (dv2 * e1.z - dv1 * e2.z)
 
-                v0.tangent += tan
-                v1.tangent += tan
-                v2.tangent += tan
+                v0.tangent += Vec4f(tan, 0f)
+                v1.tangent += Vec4f(tan, 0f)
+                v2.tangent += Vec4f(tan, 0f)
             }
         }
 
@@ -407,6 +404,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
             if (v0.tangent.sqrLength() != 0f) {
                 v0.tangent.norm()
+                v0.tangent.w = tangentSign
             } else {
                 logW { "singular tangent" }
                 v0.normal.set(Vec3f.X_AXIS)

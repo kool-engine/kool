@@ -134,11 +134,11 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
         super.generateCode(generator)
 
         generator.appendFunction("calcBumpedNormal", """
-            vec3 calcBumpedNormal(vec3 n, vec3 t, vec2 uv, float strength) {
+            vec3 calcBumpedNormal(vec3 n, vec4 t, vec2 uv, float strength) {
                 vec3 normal = normalize(n);
-                vec3 tangent = normalize(t);
+                vec3 tangent = normalize(t.xyz);
                 tangent = normalize(tangent - dot(tangent, normal) * normal);
-                vec3 bitangent = cross(normal, tangent);
+                vec3 bitangent = cross(normal, tangent) * (step(0.0, t.w) * 2.0 - 1.0);
                 vec3 bumpMapNormal = ${generator.sampleTexture2d(texture.name, "uv")}.xyz;
                 bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
                 mat3 tbn = mat3(tangent, bitangent, normal);
@@ -146,7 +146,7 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
             }
         """)
 
-        generator.appendMain("${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref3f()}, ${inTexCoord.ref2f()}, ${inStrength.ref1f()});")
+        generator.appendMain("${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref4f()}, ${inTexCoord.ref2f()}, ${inStrength.ref1f()});")
     }
 }
 
@@ -237,6 +237,22 @@ class CombineNode(outType: GlslType, graph: ShaderGraph) : ShaderNode("combine_$
             GlslType.VEC_4F -> generator.appendMain("${output.declare()} = vec4(${inX.ref1f()}, ${inY.ref1f()}, ${inZ.ref1f()}, ${inW.ref1f()});")
             else -> throw IllegalArgumentException("Only allowed out types are VEC_2F, VEC_3F and VEC_4F")
         }
+    }
+}
+
+class Combine31Node(graph: ShaderGraph) : ShaderNode("combine31_${graph.nextNodeId}", graph) {
+    var inXyz = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inW = ShaderNodeIoVar(ModelVar1fConst(0f))
+
+    var output = ShaderNodeIoVar(ModelVar4f("${name}_out"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inXyz, inW)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = vec4(${inXyz.ref3f()}, ${inW.ref1f()});")
     }
 }
 

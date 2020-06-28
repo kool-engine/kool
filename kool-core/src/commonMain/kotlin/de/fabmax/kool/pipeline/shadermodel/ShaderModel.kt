@@ -109,6 +109,13 @@ class ShaderModel(val modelInfo: String = "") {
             return combNode
         }
 
+        fun combineXyzWNode(xyz: ShaderNodeIoVar? = null, w: ShaderNodeIoVar? = null): Combine31Node {
+            val combNode = addNode(Combine31Node(stage))
+            xyz?.let { combNode.inXyz = it }
+            w?.let { combNode.inW = it }
+            return combNode
+        }
+
         fun splitNode(input: ShaderNodeIoVar, channels: String): SplitNode {
             val splitNode = addNode(SplitNode(channels, stage))
             splitNode.input = input

@@ -305,6 +305,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   FragmentColorOutNode.prototype.constructor = FragmentColorOutNode;
   FragmentDepthOutNode.prototype = Object.create(ShaderNode.prototype);
   FragmentDepthOutNode.prototype.constructor = FragmentDepthOutNode;
+  DiscardAlphaNode.prototype = Object.create(ShaderNode.prototype);
+  DiscardAlphaNode.prototype.constructor = DiscardAlphaNode;
   LightNode.prototype = Object.create(ShaderNode.prototype);
   LightNode.prototype.constructor = LightNode;
   MultiLightNode.prototype = Object.create(LightNode.prototype);
@@ -435,12 +437,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   AoMapSampleNode.prototype.constructor = AoMapSampleNode;
   NormalMapNode.prototype = Object.create(ShaderNode.prototype);
   NormalMapNode.prototype.constructor = NormalMapNode;
+  FlipBacksideNormalNode.prototype = Object.create(ShaderNode.prototype);
+  FlipBacksideNormalNode.prototype.constructor = FlipBacksideNormalNode;
   DisplacementMapNode.prototype = Object.create(ShaderNode.prototype);
   DisplacementMapNode.prototype.constructor = DisplacementMapNode;
   SplitNode.prototype = Object.create(ShaderNode.prototype);
   SplitNode.prototype.constructor = SplitNode;
   CombineNode.prototype = Object.create(ShaderNode.prototype);
   CombineNode.prototype.constructor = CombineNode;
+  Combine31Node.prototype = Object.create(ShaderNode.prototype);
+  Combine31Node.prototype.constructor = Combine31Node;
   AttributeNode.prototype = Object.create(ShaderNode.prototype);
   AttributeNode.prototype.constructor = AttributeNode;
   InstanceAttributeNode.prototype = Object.create(ShaderNode.prototype);
@@ -455,6 +461,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderStage.prototype.constructor = ShaderStage;
   Albedo.prototype = Object.create(Enum.prototype);
   Albedo.prototype.constructor = Albedo;
+  AlphaModeBlend.prototype = Object.create(AlphaMode.prototype);
+  AlphaModeBlend.prototype.constructor = AlphaModeBlend;
+  AlphaModeOpaque.prototype = Object.create(AlphaMode.prototype);
+  AlphaModeOpaque.prototype.constructor = AlphaModeOpaque;
+  AlphaModeMask.prototype = Object.create(AlphaMode.prototype);
+  AlphaModeMask.prototype.constructor = AlphaModeMask;
   CustomShader.prototype = Object.create(Shader.prototype);
   CustomShader.prototype.constructor = CustomShader;
   ModeledShader.prototype = Object.create(Shader.prototype);
@@ -7920,7 +7932,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (closure$generateNormals) {
         this$HalfEdgeMesh.geometry.generateNormals();
       }if (closure$generateTangents) {
-        this$HalfEdgeMesh.geometry.generateTangents();
+        this$HalfEdgeMesh.geometry.generateTangents_mx4ult$();
       }return Unit;
     };
   }
@@ -9788,7 +9800,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Attribute$Companion_instance = this;
     this.POSITIONS = new Attribute('attrib_positions', GlslType$VEC_3F_getInstance());
     this.NORMALS = new Attribute('attrib_normals', GlslType$VEC_3F_getInstance());
-    this.TANGENTS = new Attribute('attrib_tangents', GlslType$VEC_3F_getInstance());
+    this.TANGENTS = new Attribute('attrib_tangents', GlslType$VEC_4F_getInstance());
     this.TEXTURE_COORDS = new Attribute('attrib_texture_coords', GlslType$VEC_2F_getInstance());
     this.COLORS = new Attribute('attrib_colors', GlslType$VEC_4F_getInstance());
   }
@@ -9998,7 +10010,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpNode.outMvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
-    var linDepth = $receiver_1.addNode_u9w9by$(new NormalLinearDepthMapPass$NormalLinearDepthNode(ifNormals.v.output, $receiver_1.stage));
+    var normal = $receiver_1.flipBacksideNormalNode_r20yfm$(ifNormals.v.output).outNormal;
+    var linDepth = $receiver_1.addNode_u9w9by$(new NormalLinearDepthMapPass$NormalLinearDepthNode(normal, $receiver_1.stage));
     $receiver_1.colorOutput_a3v4si$(linDepth.outColor);
     var shadowShader = new ModeledShader($receiver);
     var $receiver_2 = new Pipeline$Builder();
@@ -11543,6 +11556,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'FragmentDepthOutNode',
     interfaces: [ShaderNode]
   };
+  function DiscardAlphaNode(graph) {
+    ShaderNode.call(this, 'discardAlpha_' + graph.nextNodeId, graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
+    this.inAlpha = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    this.inAlphaCutoff = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+  }
+  DiscardAlphaNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inAlpha, this.inAlphaCutoff]);
+  };
+  DiscardAlphaNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('if (' + this.inAlpha.ref1f() + ' <= ' + this.inAlphaCutoff.ref1f() + ') { discard; }');
+  };
+  DiscardAlphaNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DiscardAlphaNode',
+    interfaces: [ShaderNode]
+  };
   function LightNode(name, shaderGraph) {
     ShaderNode.call(this, name, shaderGraph);
   }
@@ -11931,10 +11961,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   };
   PbrMaterialNode.prototype.generateFinalNonIbl_0 = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = ambient + Lo * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.prototype.generateFinalIbl_0 = function (generator, reflectionMap, brdfLut) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = ambient + Lo * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo) * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -12753,6 +12783,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var combNode = this.addNode_u9w9by$(new CombineNode(type, this.stage));
     return combNode;
   };
+  ShaderModel$StageBuilder.prototype.combineXyzWNode_ze33is$ = function (xyz, w) {
+    if (xyz === void 0)
+      xyz = null;
+    if (w === void 0)
+      w = null;
+    var combNode = this.addNode_u9w9by$(new Combine31Node(this.stage));
+    if (xyz != null) {
+      combNode.inXyz = xyz;
+    }if (w != null) {
+      combNode.inW = w;
+    }return combNode;
+  };
   ShaderModel$StageBuilder.prototype.splitNode_500t7j$ = function (input, channels) {
     var splitNode = this.addNode_u9w9by$(new SplitNode(channels, this.stage));
     splitNode.input = input;
@@ -12888,6 +12930,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }if (inAlpha != null) {
       colAlpha.inAlpha = inAlpha;
     }return colAlpha;
+  };
+  ShaderModel$StageBuilder.prototype.constFloat_mx4ult$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar1fConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec2f_czzhjp$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar2fConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec3f_czzhiu$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar3fConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec4f_czzhhz$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar4fConst(value));
   };
   ShaderModel$StageBuilder.prototype.pushConstantNode1f_61zpoe$ = function (name) {
     return this.addNode_u9w9by$(new PushConstantNode1f(new Uniform1f(name), this.stage));
@@ -13100,6 +13154,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.$outer = $outer;
     ShaderModel$StageBuilder.call(this, this.$outer, this.$outer.fragmentStageGraph);
   }
+  ShaderModel$FragmentStageBuilder.prototype.flipBacksideNormalNode_r20yfm$ = function (inNormal) {
+    if (inNormal === void 0)
+      inNormal = null;
+    var nd = this.addNode_u9w9by$(new FlipBacksideNormalNode(this.stage));
+    if (inNormal != null) {
+      nd.inNormal = inNormal;
+    }return nd;
+  };
   ShaderModel$FragmentStageBuilder.prototype.multiLightNode_za3lpa$ = function (maxLights) {
     if (maxLights === void 0)
       maxLights = 4;
@@ -13210,6 +13272,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       colorOut.inColors[0] = color0;
     }colorOut.alpha = alpha;
     return colorOut;
+  };
+  ShaderModel$FragmentStageBuilder.prototype.discardAlpha_ze33is$ = function (alpha, alphaCutoff) {
+    if (alpha === void 0)
+      alpha = null;
+    if (alphaCutoff === void 0)
+      alphaCutoff = null;
+    var discardAlpha = this.addNode_u9w9by$(new DiscardAlphaNode(this.stage));
+    if (alpha != null) {
+      discardAlpha.inAlpha = alpha;
+    }if (alphaCutoff != null) {
+      discardAlpha.inAlphaCutoff = alphaCutoff;
+    }return discardAlpha;
   };
   ShaderModel$FragmentStageBuilder.prototype.depthOutput_r20yfm$ = function (depth) {
     if (depth === void 0)
@@ -14274,12 +14348,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   NormalMapNode.prototype.generateCode_626509$ = function (generator) {
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
-    generator.appendFunction_puj7f4$('calcBumpedNormal', '\n' + '            vec3 calcBumpedNormal(vec3 n, vec3 t, vec2 uv, float strength) {' + '\n' + '                vec3 normal = normalize(n);' + '\n' + '                vec3 tangent = normalize(t);' + '\n' + '                tangent = normalize(tangent - dot(tangent, normal) * normal);' + '\n' + '                vec3 bitangent = cross(normal, tangent);' + '\n' + '                vec3 bumpMapNormal = ' + generator.sampleTexture2d_buzeal$(this.texture.name, 'uv') + '.xyz;' + '\n' + '                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                return normalize(mix(normal, tbn * bumpMapNormal, strength));' + '\n' + '            }' + '\n' + '        ');
-    generator.appendMain_61zpoe$(this.outNormal.declare() + ' = calcBumpedNormal(' + this.inNormal.ref3f() + ', ' + this.inTangent.ref3f() + ', ' + this.inTexCoord.ref2f() + ', ' + this.inStrength.ref1f() + ');');
+    generator.appendFunction_puj7f4$('calcBumpedNormal', '\n' + '            vec3 calcBumpedNormal(vec3 n, vec4 t, vec2 uv, float strength) {' + '\n' + '                vec3 normal = normalize(n);' + '\n' + '                vec3 tangent = normalize(t.xyz);' + '\n' + '                tangent = normalize(tangent - dot(tangent, normal) * normal);' + '\n' + '                vec3 bitangent = cross(normal, tangent) * (step(0.0, t.w) * 2.0 - 1.0);' + '\n' + '                vec3 bumpMapNormal = ' + generator.sampleTexture2d_buzeal$(this.texture.name, 'uv') + '.xyz;' + '\n' + '                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                return normalize(mix(normal, tbn * bumpMapNormal, strength));' + '\n' + '            }' + '\n' + '        ');
+    generator.appendMain_61zpoe$(this.outNormal.declare() + ' = calcBumpedNormal(' + this.inNormal.ref3f() + ', ' + this.inTangent.ref4f() + ', ' + this.inTexCoord.ref2f() + ', ' + this.inStrength.ref1f() + ');');
   };
   NormalMapNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'NormalMapNode',
+    interfaces: [ShaderNode]
+  };
+  function FlipBacksideNormalNode(graph) {
+    ShaderNode.call(this, 'flipBacksideNormal_' + graph.nextNodeId, graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
+    this.inNormal = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().Y_AXIS));
+    this.outNormal = new ShaderNodeIoVar(new ModelVar3f(this.name + '_outNormal'), this);
+  }
+  FlipBacksideNormalNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_7qvs0d$(this.inNormal);
+  };
+  FlipBacksideNormalNode.prototype.generateCode_626509$ = function (generator) {
+    ShaderNode.prototype.generateCode_626509$.call(this, generator);
+    generator.appendMain_61zpoe$('\n' + '            ' + this.outNormal.declare() + ' = ' + this.inNormal.ref3f() + ' * (float(gl_FrontFacing) * 2.0 - 1.0);' + '\n' + '        ');
+  };
+  FlipBacksideNormalNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'FlipBacksideNormalNode',
     interfaces: [ShaderNode]
   };
   function DisplacementMapNode(texture, graph) {
@@ -14380,6 +14472,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   CombineNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'CombineNode',
+    interfaces: [ShaderNode]
+  };
+  function Combine31Node(graph) {
+    ShaderNode.call(this, 'combine31_' + graph.nextNodeId, graph);
+    this.inXyz = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
+    this.inW = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.output = new ShaderNodeIoVar(new ModelVar4f(this.name + '_out'), this);
+  }
+  Combine31Node.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inXyz, this.inW]);
+  };
+  Combine31Node.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$(this.output.declare() + ' = vec4(' + this.inXyz.ref3f() + ', ' + this.inW.ref1f() + ');');
+  };
+  Combine31Node.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Combine31Node',
     interfaces: [ShaderNode]
   };
   function AttributeNode(attribute, graph) {
@@ -14628,6 +14738,72 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   Albedo.valueOf_61zpoe$ = Albedo$valueOf;
+  function AlphaMode() {
+  }
+  AlphaMode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AlphaMode',
+    interfaces: []
+  };
+  function AlphaModeBlend() {
+    AlphaMode.call(this);
+  }
+  AlphaModeBlend.prototype.equals = function (other) {
+    var tmp$;
+    if (this === other)
+      return true;
+    if (other == null || !((tmp$ = Kotlin.getKClassFromExpression(this)) != null ? tmp$.equals(Kotlin.getKClassFromExpression(other)) : null))
+      return false;
+    return true;
+  };
+  AlphaModeBlend.prototype.hashCode = function () {
+    return Kotlin.getKClassFromExpression(this).hashCode();
+  };
+  AlphaModeBlend.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AlphaModeBlend',
+    interfaces: [AlphaMode]
+  };
+  function AlphaModeOpaque() {
+    AlphaMode.call(this);
+  }
+  AlphaModeOpaque.prototype.equals = function (other) {
+    var tmp$;
+    if (this === other)
+      return true;
+    if (other == null || !((tmp$ = Kotlin.getKClassFromExpression(this)) != null ? tmp$.equals(Kotlin.getKClassFromExpression(other)) : null))
+      return false;
+    return true;
+  };
+  AlphaModeOpaque.prototype.hashCode = function () {
+    return Kotlin.getKClassFromExpression(this).hashCode();
+  };
+  AlphaModeOpaque.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AlphaModeOpaque',
+    interfaces: [AlphaMode]
+  };
+  function AlphaModeMask(cutOff) {
+    AlphaMode.call(this);
+    this.cutOff = cutOff;
+  }
+  AlphaModeMask.prototype.equals = function (other) {
+    var tmp$, tmp$_0;
+    if (this === other)
+      return true;
+    if (other == null || !((tmp$ = Kotlin.getKClassFromExpression(this)) != null ? tmp$.equals(Kotlin.getKClassFromExpression(other)) : null))
+      return false;
+    Kotlin.isType(tmp$_0 = other, AlphaModeMask) ? tmp$_0 : throwCCE();
+    return this.cutOff === other.cutOff;
+  };
+  AlphaModeMask.prototype.hashCode = function () {
+    return hashCode(this.cutOff);
+  };
+  AlphaModeMask.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AlphaModeMask',
+    interfaces: [AlphaMode]
+  };
   function CustomShader(shaderCode) {
     Shader.call(this);
     this.shaderCode = shaderCode;
@@ -15007,6 +15183,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (model === void 0)
       model = PbrShader$Companion_getInstance().defaultPbrModel_uisrv6$(cfg);
     ModeledShader.call(this, model);
+    this.cullMethod_0 = cfg.cullMethod;
+    this.isBlending_0 = Kotlin.isType(cfg.alphaMode, AlphaModeBlend);
     var array = Array_0(cfg.shadowMaps.size);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -15206,6 +15384,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.ssaoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
+  PbrShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+    builder.cullMethod = this.cullMethod_0;
+    builder.blendMode = this.isBlending_0 ? BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance() : BlendMode$DISABLED_getInstance();
+    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+  };
   PbrShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25, tmp$_26, tmp$_27, tmp$_28;
     var $this = this.model;
@@ -15851,8 +16034,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
+      var tanAttr = $receiver_0.attrTangents().output;
+      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.splitNode_500t7j$(tanAttr, 'xyz').output, modelMat, 0.0);
+      var tan4 = $receiver_0.combineXyzWNode_ze33is$(tan.outVec3, $receiver_0.splitNode_500t7j$(tanAttr, 'w').output);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan4.output);
     } else {
       tmp$_2 = null;
     }
@@ -15873,12 +16058,39 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }}
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos, mvpMat).outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver);
-    var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var tmp$_4, tmp$_5, tmp$_6, tmp$_7;
+    switch (cfg.albedoSource.name) {
+      case 'VERTEX_ALBEDO':
+        tmp$_4 = ensureNotNull(ifColors.v).output;
+        break;
+      case 'STATIC_ALBEDO':
+        tmp$_4 = $receiver_2.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+        break;
+      case 'TEXTURE_ALBEDO':
+        var albedoSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
+        var albedoLin = $receiver_2.gammaNode_r20yfm$(albedoSampler.outColor);
+        if (cfg.isMultiplyAlbedoMap) {
+          var fac = $receiver_2.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+          tmp$_4 = $receiver_2.multiplyNode_ze33is$(albedoLin.outColor, fac).output;
+        } else {
+          tmp$_4 = albedoLin.outColor;
+        }
+
+        break;
+      default:tmp$_4 = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    var albedo = {v: tmp$_4};
+    if ((tmp$_6 = Kotlin.isType(tmp$_5 = cfg.alphaMode, AlphaModeMask) ? tmp$_5 : null) != null) {
+      $receiver_2.discardAlpha_ze33is$($receiver_2.splitNode_500t7j$(albedo.v, 'a').output, $receiver_2.constFloat_mx4ult$(tmp$_6.cutOff));
+    }if (!Kotlin.isType(cfg.alphaMode, AlphaModeBlend)) {
+      albedo.v = $receiver_2.combineXyzWNode_ze33is$(albedo.v, $receiver_2.constFloat_mx4ult$(1.0)).output;
+    }var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_2.multiLightNode_za3lpa$(cfg.maxLights);
-    var tmp$_4;
-    tmp$_4 = shadowMapNodes.iterator();
-    while (tmp$_4.hasNext()) {
-      var element_1 = tmp$_4.next();
+    var tmp$_8;
+    tmp$_8 = shadowMapNodes.iterator();
+    while (tmp$_8.hasNext()) {
+      var element_1 = tmp$_8.next();
       lightNode.inShaodwFacs[element_1.lightIndex] = element_1.outShadowFac;
     }
     var reflMap;
@@ -15896,91 +16108,106 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var $receiver_3 = $receiver_2.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
-    var tmp$_5, tmp$_6, tmp$_7, tmp$_8;
+    var tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14;
     $receiver_3.lightBacksides = cfg.lightBacksides;
     $receiver_3.inFragPos = ifFragPos.v.output;
     $receiver_3.inCamPos = mvpFrag.outCamPos;
-    $receiver_3.inIrradiance = (tmp$_5 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_5 : $receiver_2.pushConstantNodeColor_61zpoe$('uAmbient').output;
-    switch (cfg.albedoSource.name) {
-      case 'VERTEX_ALBEDO':
-        tmp$_6 = ensureNotNull(ifColors.v).output;
-        break;
-      case 'STATIC_ALBEDO':
-        tmp$_6 = $receiver_2.pushConstantNodeColor_61zpoe$('uAlbedo').output;
-        break;
-      case 'TEXTURE_ALBEDO':
-        var albedoSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
-        var albedoLin = $receiver_2.gammaNode_r20yfm$(albedoSampler.outColor);
-        tmp$_6 = albedoLin.outColor;
-        break;
-      default:tmp$_6 = Kotlin.noWhenBranchMatched();
-        break;
-    }
-    $receiver_3.inAlbedo = tmp$_6;
+    $receiver_3.inIrradiance = (tmp$_9 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_9 : $receiver_2.pushConstantNodeColor_61zpoe$('uAmbient').output;
+    $receiver_3.inAlbedo = albedo.v;
     if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_2.normalMapNode_j8913i$($receiver_2.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_7 = bumpNormal.outNormal;
+      tmp$_10 = bumpNormal.outNormal;
     } else {
-      tmp$_7 = ifNormals.v.output;
+      tmp$_10 = ifNormals.v.output;
     }
-    $receiver_3.inNormal = tmp$_7;
+    $receiver_3.inNormal = tmp$_10;
+    $receiver_3.inNormal = $receiver_2.flipBacksideNormalNode_r20yfm$($receiver_3.inNormal).outNormal;
     var rmoSamplers = LinkedHashMap_init();
     if (cfg.isRoughnessMapped) {
       var roughness = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.roughnessTexName), ensureNotNull(ifTexCoords.v).output).outColor;
       var key = cfg.roughnessTexName;
       rmoSamplers.put_xwzc9p$(key, roughness);
-      $receiver_3.inRoughness = $receiver_2.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
+      var rawRoughness = $receiver_2.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
+      if (cfg.isMultiplyRoughnessMap) {
+        var fac_0 = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
+        tmp$_11 = $receiver_2.multiplyNode_ze33is$(rawRoughness, fac_0).output;
+      } else {
+        tmp$_11 = rawRoughness;
+      }
+      $receiver_3.inRoughness = tmp$_11;
     } else {
       $receiver_3.inRoughness = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
     if (cfg.isMetallicMapped) {
       var key_0 = cfg.metallicTexName;
-      var tmp$_9;
+      var tmp$_15;
       var value = rmoSamplers.get_11rb$(key_0);
       if (value == null) {
         var answer = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_0, answer);
-        tmp$_9 = answer;
+        tmp$_15 = answer;
       } else {
-        tmp$_9 = value;
+        tmp$_15 = value;
       }
-      var metallic = tmp$_9;
+      var metallic = tmp$_15;
       var key_1 = cfg.metallicTexName;
       rmoSamplers.put_xwzc9p$(key_1, metallic);
-      $receiver_3.inMetallic = $receiver_2.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
+      var rawMetallic = $receiver_2.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
+      if (cfg.isMultiplyMetallicMap) {
+        var fac_1 = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
+        tmp$_12 = $receiver_2.multiplyNode_ze33is$(rawMetallic, fac_1).output;
+      } else {
+        tmp$_12 = rawMetallic;
+      }
+      $receiver_3.inMetallic = tmp$_12;
     } else {
       $receiver_3.inMetallic = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
-    var aoFactor = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    var aoFactor = $receiver_2.constFloat_mx4ult$(1.0);
     if (cfg.isAmbientOcclusionMapped) {
       var key_2 = cfg.ambientOcclusionTexName;
-      var tmp$_10;
+      var tmp$_16;
       var value_0 = rmoSamplers.get_11rb$(key_2);
       if (value_0 == null) {
         var answer_0 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.ambientOcclusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_2, answer_0);
-        tmp$_10 = answer_0;
+        tmp$_16 = answer_0;
       } else {
-        tmp$_10 = value_0;
+        tmp$_16 = value_0;
       }
-      var occlusion = tmp$_10;
+      var occlusion = tmp$_16;
       var key_3 = cfg.ambientOcclusionTexName;
       rmoSamplers.put_xwzc9p$(key_3, occlusion);
-      aoFactor = $receiver_2.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
+      var rawAo = $receiver_2.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
+      if (cfg.ambientOcclusionStrength !== 1.0) {
+        var str = cfg.ambientOcclusionStrength;
+        tmp$_13 = $receiver_2.addNode_ze33is$($receiver_2.constFloat_mx4ult$(1.0 - str), $receiver_2.multiplyNode_tuikh5$(rawAo, str).output).output;
+      } else {
+        tmp$_13 = rawAo;
+      }
+      aoFactor = tmp$_13;
     }if (cfg.isScrSpcAmbientOcclusion) {
       var aoMap = $receiver_2.textureNode_61zpoe$('ssaoMap');
       var aoNode = $receiver_2.addNode_u9w9by$(new AoMapSampleNode(aoMap, $receiver_3.graph));
       aoNode.inViewport = mvpFrag.outViewport;
       if (!cfg.isAmbientOcclusionMapped) {
-        tmp$_8 = aoNode.outAo;
+        tmp$_14 = aoNode.outAo;
       } else {
-        tmp$_8 = $receiver_2.multiplyNode_ze33is$(aoFactor, aoNode.outAo).output;
+        tmp$_14 = $receiver_2.multiplyNode_ze33is$(aoFactor, aoNode.outAo).output;
       }
-      aoFactor = tmp$_8;
+      aoFactor = tmp$_14;
     }$receiver_3.inAmbientOccl = aoFactor;
     var mat = $receiver_3;
-    $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor);
+    tmp$_7 = cfg.alphaMode;
+    if (Kotlin.isType(tmp$_7, AlphaModeBlend))
+      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor);
+    else if (Kotlin.isType(tmp$_7, AlphaModeMask))
+      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
+    else if (Kotlin.isType(tmp$_7, AlphaModeOpaque))
+      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
+    else
+      Kotlin.noWhenBranchMatched();
     return $receiver;
   };
   PbrShader$Companion.$metadata$ = {
@@ -16002,8 +16229,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isAmbientOcclusionMapped = false;
     this.isDisplacementMapped = false;
     this.normalStrength = 1.0;
+    this.ambientOcclusionStrength = 1.0;
+    this.isMultiplyAlbedoMap = false;
+    this.isMultiplyRoughnessMap = false;
+    this.isMultiplyMetallicMap = false;
     this.isImageBasedLighting = false;
     this.isScrSpcAmbientOcclusion = false;
+    this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
+    this.alphaMode = new AlphaModeBlend();
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
     this.lightBacksides = false;
@@ -16427,8 +16660,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     ifTexCoords.v = tmp$_0;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
-      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
+      var tanAttr = $receiver_0.attrTangents().output;
+      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.splitNode_500t7j$(tanAttr, 'xyz').output, modelMat, 0.0);
+      var tan4 = $receiver_0.combineXyzWNode_ze33is$(tan.outVec3, $receiver_0.splitNode_500t7j$(tanAttr, 'w').output);
+      tmp$_1 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan4.output);
     } else {
       tmp$_1 = null;
     }
@@ -19239,7 +19474,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generate(mesh);
     var mesh_0 = mesh;
     if (isNormalMapped) {
-      mesh_0.geometry.generateTangents();
+      mesh_0.geometry.generateTangents_mx4ult$();
     }return mesh_0;
   }
   function Mesh(geometry, name) {
@@ -27679,8 +27914,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrTangents().output, modelViewMat, 0.0);
-      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan.outVec3);
+      var tanAttr = $receiver_0.attrTangents().output;
+      var tan = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.splitNode_500t7j$(tanAttr, 'xyz').output, modelViewMat, 0.0);
+      var tan4 = $receiver_0.combineXyzWNode_ze33is$(tan.outVec3, $receiver_0.splitNode_500t7j$(tanAttr, 'w').output);
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifTangents', tan4.output);
     } else {
       tmp$_2 = null;
     }
@@ -27712,7 +27949,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     } else {
       tmp$_4 = ifNormals.v.output;
     }
-    var viewNormal = tmp$_4;
+    var viewNormal = {v: tmp$_4};
+    viewNormal.v = $receiver_2.flipBacksideNormalNode_r20yfm$(viewNormal.v).outNormal;
     if (cfg.isMetallicMapped) {
       tmp$_5 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     } else {
@@ -27734,7 +27972,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_3 = $receiver_2.addNode_u9w9by$(new DeferredMrtShader$MrtMultiplexNode($receiver_2.stage));
     $receiver_3.inViewPos = viewPos;
     $receiver_3.inAlbedo = albedo;
-    $receiver_3.inViewNormal = viewNormal;
+    $receiver_3.inViewNormal = viewNormal.v;
     $receiver_3.inRoughness = roughness;
     $receiver_3.inMetallic = metallic;
     $receiver_3.inAo = aoFactor;
@@ -31401,6 +31639,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.cfg = cfg;
     this.modelNodes = LinkedHashMap_init();
     this.meshesByMaterial = LinkedHashMap_init();
+    this.meshMaterials = LinkedHashMap_init();
   }
   GltfFile$ModelGenerator.prototype.makeModel_314x6g$ = function (scene) {
     var model = new Model(scene.name);
@@ -31631,12 +31870,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       scaleChannel.keys.put_xwzc9p$(t, scaleKey);
     }
   };
-  function GltfFile$ModelGenerator$sortNodesByAlpha$lambda(it) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var a = 1.1;
-    if (Kotlin.isType(it, Mesh)) {
-      a = (tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = it.pipelineLoader, PbrShader) ? tmp$ : null) != null ? tmp$_0.albedo : null) != null ? tmp$_1.a : null) != null ? tmp$_2 : 0.0;
-    }return -a;
+  function GltfFile$ModelGenerator$sortNodesByAlpha$lambda(this$ModelGenerator) {
+    return function (it) {
+      var tmp$;
+      var a = 1.1;
+      if (Kotlin.isType(it, Mesh)) {
+        var mat = this$ModelGenerator.meshMaterials.get_11rb$(it);
+        if (mat != null) {
+          if (equals(mat.alphaMode, Material$Companion_getInstance().ALPHA_MODE_BLEND)) {
+            var b = mat.pbrMetallicRoughness.baseColorFactor.get_za3lpa$(3);
+            tmp$ = Math_0.min(0.999, b);
+          } else
+            tmp$ = 1.0;
+          a = tmp$;
+        }}return -a;
+    };
   }
   GltfFile$ModelGenerator.prototype.sortNodesByAlpha_0 = function ($receiver) {
     var $receiver_0 = $receiver.children;
@@ -31654,7 +31902,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var element_0 = tmp$_0.next();
       this.sortNodesByAlpha_0(element_0);
     }
-    $receiver.sortChildrenBy_mq7kdd$(GltfFile$ModelGenerator$sortNodesByAlpha$lambda);
+    $receiver.sortChildrenBy_mq7kdd$(GltfFile$ModelGenerator$sortNodesByAlpha$lambda(this));
   };
   GltfFile$ModelGenerator.prototype.mergeMeshesByMaterial_0 = function (model) {
     this.mergeMeshesByMaterial_1(model);
@@ -31723,7 +31971,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var v = $receiver.vertexIt;
         closure$transform_0.transform_w1lst9$(v.position, 1.0);
         closure$transform_0.transform_w1lst9$(v.normal, 0.0);
-        closure$transform_0.transform_w1lst9$(v.tangent, 0.0);
+        var tan3 = v.tangent.getXyz_5s4mqq$(MutableVec3f_init());
+        closure$transform_0.transform_w1lst9$(tan3, 0.0);
+        v.tangent.set_2qa7tb$(tan3, v.tangent.w);
       }
       return Unit;
     };
@@ -31884,6 +32134,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             tmp$_7 = value;
           }
           tmp$_7.add_11rb$(mesh);
+          var $receiver_3 = this.meshMaterials;
+          var value_0 = item_0.materialRef;
+          $receiver_3.put_xwzc9p$(mesh, value_0);
           if (cfg.applyMaterials) {
             var useVertexColor = item_0.attributes.containsKey_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
             mesh.pipelineLoader = pbrShader(GltfFile$ModelGenerator$makeNode$lambda$lambda(item_0, useVertexColor, this$GltfFile, cfg, model));
@@ -32384,7 +32637,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (emissiveFactor === void 0)
       emissiveFactor = null;
     if (alphaMode === void 0)
-      alphaMode = 'OPAQUE';
+      alphaMode = Material$Companion_getInstance().ALPHA_MODE_OPAQUE;
     if (alphaCutoff === void 0)
       alphaCutoff = 0.5;
     if (doubleSided === void 0)
@@ -32400,22 +32653,45 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.doubleSided = doubleSided;
   }
   Material.prototype.applyTo_luqtlc$ = function (cfg, useVertexColor, gltfFile) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9;
     var albedoTexture = (tmp$ = this.pbrMetallicRoughness.baseColorTexture) != null ? tmp$.getTexture_vd9sc9$(gltfFile) : null;
     var normalTexture = (tmp$_0 = this.normalTexture) != null ? tmp$_0.getTexture_vd9sc9$(gltfFile) : null;
     var metallicTexture = (tmp$_1 = this.pbrMetallicRoughness.metallicRoughnessTexture) != null ? tmp$_1.getTexture_vd9sc9$(gltfFile) : null;
     var roughnessTexture = (tmp$_2 = this.pbrMetallicRoughness.metallicRoughnessTexture) != null ? tmp$_2.getTexture_vd9sc9$(gltfFile) : null;
     var occlusionTexture = (tmp$_3 = this.occlusionTexture) != null ? tmp$_3.getTexture_vd9sc9$(gltfFile) : null;
     var colorFac = this.pbrMetallicRoughness.baseColorFactor;
+    switch (this.alphaMode) {
+      case 'BLEND':
+        tmp$_4 = new AlphaModeBlend();
+        break;
+      case 'MASK':
+        tmp$_4 = new AlphaModeMask(this.alphaCutoff);
+        break;
+      default:tmp$_4 = new AlphaModeOpaque();
+        break;
+    }
+    cfg.alphaMode = tmp$_4;
+    if (this.doubleSided) {
+      tmp$_5 = CullMethod$NO_CULLING_getInstance();
+    } else {
+      tmp$_5 = CullMethod$CULL_BACK_FACES_getInstance();
+    }
+    cfg.cullMethod = tmp$_5;
+    if (colorFac.size === 4) {
+      tmp$_6 = new Color(colorFac.get_za3lpa$(0), colorFac.get_za3lpa$(1), colorFac.get_za3lpa$(2), colorFac.get_za3lpa$(3));
+    } else {
+      tmp$_6 = Color$Companion_getInstance().WHITE;
+    }
+    cfg.albedo = tmp$_6;
     if (useVertexColor)
       cfg.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
     else if (albedoTexture != null) {
       cfg.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
       cfg.albedoMap = albedoTexture;
-    } else {
+      if (!((tmp$_7 = cfg.albedo) != null ? tmp$_7.equals(Color$Companion_getInstance().WHITE) : null)) {
+        cfg.isMultiplyAlbedoMap = true;
+      }} else {
       cfg.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
-      var a = colorFac.size > 3 ? colorFac.get_za3lpa$(3) : 1.0;
-      cfg.albedo = new Color(colorFac.get_za3lpa$(0), colorFac.get_za3lpa$(1), colorFac.get_za3lpa$(2), a);
     }
     if (normalTexture != null) {
       cfg.isNormalMapped = true;
@@ -32423,23 +32699,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     } else {
       cfg.isNormalMapped = false;
     }
+    cfg.roughness = this.pbrMetallicRoughness.roughnessFactor;
     if (roughnessTexture != null) {
       cfg.isRoughnessMapped = true;
       cfg.roughnessMap = roughnessTexture;
-    } else {
+      if (this.pbrMetallicRoughness.roughnessFactor !== 1.0) {
+        cfg.isMultiplyRoughnessMap = true;
+      }} else {
       cfg.isRoughnessMapped = false;
-      cfg.roughness = this.pbrMetallicRoughness.roughnessFactor;
     }
+    cfg.metallic = this.pbrMetallicRoughness.metallicFactor;
     if (metallicTexture != null) {
       cfg.isMetallicMapped = true;
       cfg.metallicMap = metallicTexture;
-    } else {
+      if (this.pbrMetallicRoughness.metallicFactor !== 1.0) {
+        cfg.isMultiplyMetallicMap = true;
+      }} else {
       cfg.isMetallicMapped = false;
-      cfg.metallic = this.pbrMetallicRoughness.metallicFactor;
     }
     if (occlusionTexture != null) {
       cfg.isAmbientOcclusionMapped = true;
       cfg.ambientOcclusionMap = occlusionTexture;
+      cfg.ambientOcclusionStrength = (tmp$_9 = (tmp$_8 = this.occlusionTexture) != null ? tmp$_8.strength : null) != null ? tmp$_9 : 1.0;
     } else {
       cfg.isAmbientOcclusionMapped = false;
     }
@@ -32488,6 +32769,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }};
   function Material$Companion() {
     Material$Companion_instance = this;
+    this.ALPHA_MODE_BLEND = 'BLEND';
+    this.ALPHA_MODE_MASK = 'MASK';
+    this.ALPHA_MODE_OPAQUE = 'OPAQUE';
   }
   Material$Companion.prototype.serializer = function () {
     return Material$$serializer_getInstance();
@@ -32535,7 +32819,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 4, TextureInfo$$serializer_getInstance(), value.emissiveTexture);
     if (!equals(value.emissiveFactor, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 5))
       output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), value.emissiveFactor);
-    if (!equals(value.alphaMode, 'OPAQUE') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
+    if (!equals(value.alphaMode, Material$Companion_getInstance().ALPHA_MODE_OPAQUE) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 6))
       output.encodeStringElement_bgm7zs$(this.descriptor, 6, value.alphaMode);
     if (!equals(value.alphaCutoff, 0.5) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
       output.encodeFloatElement_t7qhdx$(this.descriptor, 7, value.alphaCutoff);
@@ -32644,7 +32928,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       $this.emissiveFactor = emissiveFactor;
     if ((seen1 & 64) === 0)
-      $this.alphaMode = 'OPAQUE';
+      $this.alphaMode = Material$Companion_getInstance().ALPHA_MODE_OPAQUE;
     else
       $this.alphaMode = alphaMode;
     if ((seen1 & 128) === 0)
@@ -32918,14 +33202,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
       verts.vertexIt.index = (tmp$_5 = verts.numVertices, verts.numVertices = tmp$_5 + 1 | 0, tmp$_5);
       var $receiver = verts.vertexIt;
-      var tmp$_6, tmp$_7;
+      var tmp$_6;
       poss.next_5s4mqq$($receiver.position);
       nrms != null ? nrms.next_5s4mqq$($receiver.normal) : null;
-      if ((tmp$_6 = tans != null ? tans.next() : null) != null) {
-        $receiver.tangent.set_y2kzbl$(tmp$_6.x, tmp$_6.y, tmp$_6.z);
-      }texs != null ? texs.next_5s4mrl$($receiver.texCoord) : null;
-      if ((tmp$_7 = cols != null ? cols.next() : null) != null) {
-        $receiver.color.set_7b5o5w$(tmp$_7.x, tmp$_7.y, tmp$_7.z, tmp$_7.w);
+      tans != null ? tans.next_5s4mpv$($receiver.tangent) : null;
+      texs != null ? texs.next_5s4mrl$($receiver.texCoord) : null;
+      if ((tmp$_6 = cols != null ? cols.next() : null) != null) {
+        $receiver.color.set_7b5o5w$(tmp$_6.x, tmp$_6.y, tmp$_6.z, tmp$_6.w);
       }verts.bounds.add_czzhiu$(verts.vertexIt.position);
       verts.hasChanged = true;
       verts.numVertices - 1 | 0;
@@ -32944,7 +33227,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
     if (generateTangents) {
-      verts.generateTangents();
+      verts.generateTangents_mx4ult$();
     }if (generateNormals || normalAcc == null) {
       verts.generateNormals();
     }return verts;
@@ -34709,7 +34992,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       v0.normal.norm();
     }
   };
-  IndexedVertexList.prototype.generateTangents = function () {
+  IndexedVertexList.prototype.generateTangents_mx4ult$ = function (tangentSign) {
+    if (tangentSign === void 0)
+      tangentSign = 1.0;
     var tmp$, tmp$_0, tmp$_1;
     if (!this.vertexAttributes.contains_11rb$(Attribute$Companion_getInstance().TANGENTS)) {
       return;
@@ -34724,7 +35009,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$ = this.numVertices;
     for (var i = 0; i < tmp$; i++) {
       v0.index = i;
-      v0.tangent.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+      v0.tangent.set_2qa7tb$(Vec3f$Companion_getInstance().ZERO);
     }
     tmp$_0 = this.numIndices;
     for (var i_0 = 0; i_0 < tmp$_0; i_0 += 3) {
@@ -34748,9 +35033,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         tan.x = f * (dv2 * e1.x - dv1 * e2.x);
         tan.y = f * (dv2 * e1.y - dv1 * e2.y);
         tan.z = f * (dv2 * e1.z - dv1 * e2.z);
-        v0.tangent.plusAssign_czzhiu$(tan);
-        v1.tangent.plusAssign_czzhiu$(tan);
-        v2.tangent.plusAssign_czzhiu$(tan);
+        v0.tangent.plusAssign_czzhhz$(Vec4f_init_0(tan, 0.0));
+        v1.tangent.plusAssign_czzhhz$(Vec4f_init_0(tan, 0.0));
+        v2.tangent.plusAssign_czzhhz$(Vec4f_init_0(tan, 0.0));
       }
     }
     tmp$_1 = this.numVertices;
@@ -34765,6 +35050,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }v0.normal.set_czzhiu$(Vec3f$Companion_getInstance().Y_AXIS);
       }if (v0.tangent.sqrLength() !== 0.0) {
         v0.tangent.norm();
+        v0.tangent.w = tangentSign;
       } else {
         var $this_1 = package$util.Log;
         var level_1 = Log$Level.WARN;
@@ -39642,7 +39928,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.position = (tmp$_0 = this.getVec3fAttribute_nm2vx5$(Attribute$Companion_getInstance().POSITIONS)) != null ? tmp$_0 : new VertexView$Vec3fView(this, -1);
     this.normal = (tmp$_1 = this.getVec3fAttribute_nm2vx5$(Attribute$Companion_getInstance().NORMALS)) != null ? tmp$_1 : new VertexView$Vec3fView(this, -1);
-    this.tangent = (tmp$_2 = this.getVec3fAttribute_nm2vx5$(Attribute$Companion_getInstance().TANGENTS)) != null ? tmp$_2 : new VertexView$Vec3fView(this, -1);
+    this.tangent = (tmp$_2 = this.getVec4fAttribute_nm2vx5$(Attribute$Companion_getInstance().TANGENTS)) != null ? tmp$_2 : new VertexView$Vec4fView(this, -1);
     this.texCoord = (tmp$_3 = this.getVec2fAttribute_nm2vx5$(Attribute$Companion_getInstance().TEXTURE_COORDS)) != null ? tmp$_3 : new VertexView$Vec2fView(this, -1);
     this.color = (tmp$_4 = this.getColorAttribute_nm2vx5$(Attribute$Companion_getInstance().COLORS)) != null ? tmp$_4 : new VertexView$ColorWrapView(this, new VertexView$Vec4fView(this, -1));
   }
@@ -44467,6 +44753,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.HdrToLdrNode = HdrToLdrNode;
   package$shadermodel.FragmentColorOutNode = FragmentColorOutNode;
   package$shadermodel.FragmentDepthOutNode = FragmentDepthOutNode;
+  package$shadermodel.DiscardAlphaNode = DiscardAlphaNode;
   package$shadermodel.LightNode = LightNode;
   package$shadermodel.MultiLightNode = MultiLightNode;
   package$shadermodel.SingleLightUniformDataNode = SingleLightUniformDataNode;
@@ -44543,9 +44830,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.EquiRectSamplerNode = EquiRectSamplerNode;
   package$shadermodel.AoMapSampleNode = AoMapSampleNode;
   package$shadermodel.NormalMapNode = NormalMapNode;
+  package$shadermodel.FlipBacksideNormalNode = FlipBacksideNormalNode;
   package$shadermodel.DisplacementMapNode = DisplacementMapNode;
   package$shadermodel.SplitNode = SplitNode;
   package$shadermodel.CombineNode = CombineNode;
+  package$shadermodel.Combine31Node = Combine31Node;
   package$shadermodel.AttributeNode = AttributeNode;
   package$shadermodel.InstanceAttributeNode = InstanceAttributeNode;
   package$shadermodel.StageInterfaceNode = StageInterfaceNode;
@@ -44579,6 +44868,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   var package$shading = package$pipeline.shading || (package$pipeline.shading = {});
   package$shading.Albedo = Albedo;
+  package$shading.AlphaMode = AlphaMode;
+  package$shading.AlphaModeBlend = AlphaModeBlend;
+  package$shading.AlphaModeOpaque = AlphaModeOpaque;
+  package$shading.AlphaModeMask = AlphaModeMask;
   package$shading.CustomShader = CustomShader;
   ModeledShader.StaticColor = ModeledShader$StaticColor;
   ModeledShader.VertexColor = ModeledShader$VertexColor;

@@ -458,8 +458,10 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
         ifTangents = if (cfg.isNormalMapped) {
-            val tan = vec3TransformNode(attrTangents().output, mvpNode.outModelMat, 0f)
-            stageInterfaceNode("ifTangents", tan.outVec3)
+            val tanAttr = attrTangents().output
+            val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, mvpNode.outModelMat, 0f)
+            val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
+            stageInterfaceNode("ifTangents", tan4.output)
         } else {
             null
         }
