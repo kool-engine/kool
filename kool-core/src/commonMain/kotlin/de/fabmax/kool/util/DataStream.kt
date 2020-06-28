@@ -1,7 +1,7 @@
 package de.fabmax.kool.util
 
 /**
- * Utility class to read arbitrary numbers from a Uint8Buffer. Buffer is expected to be low byte first.
+ * Utility class to read arbitrary numbers from a Uint8Buffer. Buffer is expected to be little endian (low byte first).
  */
 class DataStream(val data: Uint8Buffer, val byteOffset: Int = 0) {
     var index = 0
@@ -54,5 +54,9 @@ class DataStream(val data: Uint8Buffer, val byteOffset: Int = 0) {
             buf[i] = data[index++]
         }
         return buf
+    }
+
+    fun skipBytes(nBytes: Int) {
+        index += nBytes
     }
 }

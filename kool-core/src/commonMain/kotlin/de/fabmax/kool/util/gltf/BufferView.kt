@@ -20,7 +20,7 @@ data class BufferView(
         val buffer: Int,
         val byteOffset: Int = 0,
         val byteLength: Int,
-        val byteStride: Int = -1,
+        val byteStride: Int = 0,
         val target: Int = 0,
         val name: String? = null
 ) {
