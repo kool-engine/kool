@@ -77,6 +77,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
         ShaderNode("PBR IBL Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inEmissive: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.BLACK))
     var inNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
     var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -205,7 +206,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
             vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
 
-            vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
+            vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
 
@@ -239,7 +240,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
             vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
             vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
-            vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
+            vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
     }

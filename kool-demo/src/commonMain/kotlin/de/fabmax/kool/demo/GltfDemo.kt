@@ -38,11 +38,11 @@ class GltfDemo(ctx: KoolContext) {
             GltfModel("Animated Box", "${Demo.modelBasePath}/BoxAnimated.gltf",
                     1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), 5.0),
             GltfModel("Interpolation Test", "${Demo.modelBasePath}/InterpolationTest.glb",
-                    0.5f, Vec3f(0f, 2.5f, 0f), false, Vec3d(0.0, 3.5, 0.0), 7.0),
+                    0.5f, Vec3f(0f, 1.25f, 0f), false, Vec3d(0.0, 3.5, 0.0), 7.0),
             GltfModel("Tangent Test", "${Demo.modelBasePath}/NormalTangentMirrorTest.glb",
-                    0.5f, Vec3f(0f, 2f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5),
+                    1f, Vec3f(0f, 1.2f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5),
             GltfModel("Alpha Mode Test", "${Demo.modelBasePath}/AlphaBlendModeTest.glb",
-                    0.5f, Vec3f(0f, 0.2f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5)
+                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5)
     )
 
     private var autoRotate = true
@@ -339,8 +339,8 @@ class GltfDemo(ctx: KoolContext) {
                         setImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
                     }
                     model = it.makeModel(modelCfg).apply {
-                        scale(scale, scale, scale)
                         translate(translation)
+                        scale(scale, scale, scale)
                         isVisible = this@GltfModel.isVisible
                         contentGroup += this
 

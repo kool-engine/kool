@@ -26,6 +26,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var uRoughness: PushConstantNode1f? = null
     private var uMetallic: PushConstantNode1f? = null
     private var uAlbedo: PushConstantNodeColor? = null
+    private var uEmissive: PushConstantNodeColor? = null
 
     var metallic = cfg.metallic
         set(value) {
@@ -45,8 +46,15 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             uAlbedo?.uniform?.value?.set(value)
         }
 
+    var emissive: Color = cfg.emissive
+        set(value) {
+            field = value
+            uEmissive?.uniform?.value?.set(value)
+        }
+
     // Material maps
     private var albedoSampler: TextureSampler? = null
+    private var emissiveSampler: TextureSampler? = null
     private var normalSampler: TextureSampler? = null
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
@@ -62,6 +70,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         set(value) {
             field = value
             albedoSampler?.texture = value
+        }
+    var emissiveMap: Texture? = cfg.emissiveMap
+        set(value) {
+            field = value
+            emissiveSampler?.texture = value
         }
     var normalMap: Texture? = cfg.normalMap
         set(value) {
@@ -146,6 +159,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         uRoughness?.let { it.uniform.value = roughness }
         uAlbedo = model.findNode("uAlbedo")
         uAlbedo?.uniform?.value?.set(albedo)
+        uEmissive = model.findNode("uEmissive")
+        uEmissive?.uniform?.value?.set(emissive)
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
@@ -170,6 +185,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
+        emissiveSampler = model.findNode<TextureNode>("tEmissive")?.sampler
+        emissiveSampler?.let { it.texture = emissiveMap }
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
         metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
@@ -316,6 +333,19 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     }
                     inNormal = flipBacksideNormalNode(inNormal).outNormal
 
+                    if (cfg.isEmissiveMapped) {
+                        val emissive = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
+                        val emissiveLin = gammaNode(emissive).outColor
+                        inEmissive = if (cfg.isMultiplyEmissiveMap) {
+                            val fac = pushConstantNodeColor("uEmissive").output
+                            multiplyNode(emissiveLin, fac).output
+                        } else {
+                            emissiveLin
+                        }
+                    } else {
+                        inEmissive = pushConstantNodeColor("uEmissive").output
+                    }
+
                     val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                     if (cfg.isRoughnessMapped) {
                         val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
@@ -381,6 +411,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
     class PbrConfig {
         var albedoSource = Albedo.VERTEX_ALBEDO
+        var isEmissiveMapped = false
         var isNormalMapped = false
         var isRoughnessMapped = false
         var isMetallicMapped = false
@@ -391,6 +422,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var ambientOcclusionStrength = 1f
 
         var isMultiplyAlbedoMap = false
+        var isMultiplyEmissiveMap = false
         var isMultiplyRoughnessMap = false
         var isMultiplyMetallicMap = false
 
@@ -408,10 +440,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         // initial shader values
         var albedo = Color.GRAY
+        var emissive = Color.BLACK
         var roughness = 0.5f
         var metallic = 0.0f
 
         var albedoMap: Texture? = null
+        var emissiveMap: Texture? = null
         var normalMap: Texture? = null
         var displacementMap: Texture? = null
 

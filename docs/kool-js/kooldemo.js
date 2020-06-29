@@ -2804,7 +2804,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 2.5, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 0.5, new Vec3f(0.0, 2.0, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 1.25, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
     this.autoRotate_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
@@ -3429,8 +3429,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var this$GltfDemo_0 = this$GltfDemo;
         var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
         var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
-        $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
         $receiver.translate_czzhiu$(this$GltfModel_0.translation);
+        $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
         $receiver.isVisible = this$GltfModel_0.isVisible;
         this$GltfDemo_0.contentGroup_0.plusAssign_f1kmr1$($receiver);
         if (!$receiver.animations.isEmpty()) {

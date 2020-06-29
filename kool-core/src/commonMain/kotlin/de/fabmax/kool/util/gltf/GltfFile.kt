@@ -398,6 +398,7 @@ data class GltfFile(
                             cfg.pbrBlock?.invoke(this, p)
 
                             albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            emissiveMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }

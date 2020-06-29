@@ -35,6 +35,7 @@ data class Material(
 
     fun applyTo(cfg: PbrShader.PbrConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
         val albedoTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
+        val emissiveTexture: de.fabmax.kool.pipeline.Texture? = emissiveTexture?.getTexture(gltfFile)
         val normalTexture: de.fabmax.kool.pipeline.Texture? = this.normalTexture?.getTexture(gltfFile)
         val metallicTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
         val roughnessTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
@@ -70,6 +71,17 @@ data class Material(
             else -> {
                 cfg.albedoSource = Albedo.STATIC_ALBEDO
             }
+        }
+
+        emissiveTexture?.let { emTex ->
+            cfg.isEmissiveMapped = true
+            cfg.emissiveMap = emTex
+            if (emissiveFactor != null) {
+                cfg.isMultiplyEmissiveMap = true
+            }
+        }
+        if (emissiveFactor != null) {
+            cfg.emissive = Color(emissiveFactor[0], emissiveFactor[1], emissiveFactor[2], 1f)
         }
 
         if (normalTexture != null) {
