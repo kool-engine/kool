@@ -29,11 +29,11 @@ data class Accessor(
         val type: String,
         val max: List<Float>? = null,
         val min: List<Float>? = null,
-        //val sparse: Sparse? = null,
+        val sparse: Sparse? = null,
         val name: String? = null
 ) {
     @Transient
-    lateinit var bufferViewRef: BufferView
+    var bufferViewRef: BufferView? = null
 
     companion object {
         const val TYPE_SCALAR = "SCALAR"
@@ -59,11 +59,69 @@ data class Accessor(
     }
 }
 
+@Serializable
+data class Sparse(
+        val count: Int,
+        val indices: SparseIndices,
+        val values: SparseValues
+)
+
+@Serializable
+data class SparseIndices(
+        val bufferView: Int,
+        val byteOffset: Int = 0,
+        val componentType: Int
+) {
+    @Transient
+    lateinit var bufferViewRef: BufferView
+}
+
+@Serializable
+data class SparseValues(
+        val bufferView: Int,
+        val byteOffset: Int = 0
+) {
+    @Transient
+    lateinit var bufferViewRef: BufferView
+}
+
 abstract class DataStreamAccessor(val accessor: Accessor) {
     private val elemByteSize: Int
     private val byteStride: Int
 
+    private val buffer: BufferView? = accessor.bufferViewRef
+    private val stream: DataStream?
+
+    private val sparseIndexStream: DataStream?
+    private val sparseValueStream: DataStream?
+    private val sparseIndexType: Int
+    private var nextSparseIndex: Int
+
+    var index: Int = 0
+        set(value) {
+            field = value
+            stream?.index = value * byteStride
+        }
+
     init {
+        stream = if (buffer != null) {
+            DataStream(buffer.bufferRef.data, accessor.byteOffset + buffer.byteOffset)
+        } else {
+            null
+        }
+
+        if (accessor.sparse != null) {
+            sparseIndexStream = DataStream(accessor.sparse.indices.bufferViewRef.bufferRef.data, accessor.sparse.indices.bufferViewRef.byteOffset)
+            sparseValueStream = DataStream(accessor.sparse.values.bufferViewRef.bufferRef.data, accessor.sparse.values.bufferViewRef.byteOffset)
+            sparseIndexType = accessor.sparse.indices.componentType
+            nextSparseIndex = sparseIndexStream.nextIntComponent(sparseIndexType)
+        } else {
+            sparseIndexStream = null
+            sparseValueStream = null
+            sparseIndexType = 0
+            nextSparseIndex = -1
+        }
+
         val compByteSize = when (accessor.componentType) {
             Accessor.COMP_TYPE_BYTE -> 1
             Accessor.COMP_TYPE_UNSIGNED_BYTE -> 1
@@ -84,26 +142,52 @@ abstract class DataStreamAccessor(val accessor: Accessor) {
             Accessor.TYPE_MAT4 -> 16
             else -> throw IllegalArgumentException("Unsupported accessor type: ${accessor.type}")
         }
+        // fixme: some mat types require padding (also depending on component type) which is currently not considered
         elemByteSize = compByteSize * numComponents
-        byteStride = if (accessor.bufferViewRef.byteStride > 0) {
-            accessor.bufferViewRef.byteStride
+        byteStride = if (buffer != null && buffer.byteStride > 0) {
+            buffer.byteStride
         } else {
             elemByteSize
         }
     }
 
-    protected val stream = DataStream(accessor.bufferViewRef.bufferRef.data, accessor.byteOffset + accessor.bufferViewRef.byteOffset)
+    private fun selectDataStream() = if (index != nextSparseIndex) stream else sparseValueStream
 
-    var index: Int
-        get() = (stream.index - accessor.byteOffset - accessor.bufferViewRef.byteOffset) / byteStride
-        set(value) {
-            stream.index = value * byteStride + accessor.byteOffset + accessor.bufferViewRef.byteOffset
+    protected fun nextInt(): Int {
+        if (index < accessor.count) {
+            return selectDataStream()?.nextIntComponent(accessor.componentType) ?: 0
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
         }
+    }
 
-    protected fun skipStride() {
-        if (accessor.bufferViewRef.byteStride > 0) {
-            stream.skipBytes(accessor.bufferViewRef.byteStride - elemByteSize)
+    protected fun nextFloat(): Float {
+        if (index < accessor.count) {
+            return selectDataStream()?.readFloat() ?: 0f
+        } else {
+            throw IndexOutOfBoundsException("Accessor overflow")
         }
+    }
+
+    protected fun nextDouble() = nextFloat().toDouble()
+
+    private fun DataStream.nextIntComponent(componentType: Int): Int {
+        return when (componentType) {
+            Accessor.COMP_TYPE_BYTE -> readByte()
+            Accessor.COMP_TYPE_UNSIGNED_BYTE -> readUByte()
+            Accessor.COMP_TYPE_SHORT -> readShort()
+            Accessor.COMP_TYPE_UNSIGNED_SHORT -> readUShort()
+            Accessor.COMP_TYPE_INT -> readInt()
+            Accessor.COMP_TYPE_UNSIGNED_INT -> readUInt()
+            else -> throw IllegalArgumentException("Invalid component type: $componentType")
+        }
+    }
+
+    protected fun advance() {
+        if (index == nextSparseIndex && sparseIndexStream?.hasRemaining() == true) {
+            nextSparseIndex = sparseIndexStream.nextIntComponent(sparseIndexType)
+        }
+        index++
     }
 }
 
@@ -125,16 +209,8 @@ class IntAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
 
     fun next(): Int {
         if (index < accessor.count) {
-            val i =  when (accessor.componentType) {
-                Accessor.COMP_TYPE_BYTE -> stream.readByte()
-                Accessor.COMP_TYPE_UNSIGNED_BYTE -> stream.readUByte()
-                Accessor.COMP_TYPE_SHORT -> stream.readShort()
-                Accessor.COMP_TYPE_UNSIGNED_SHORT -> stream.readUShort()
-                Accessor.COMP_TYPE_INT -> stream.readInt()
-                Accessor.COMP_TYPE_UNSIGNED_INT -> stream.readUInt()
-                else -> 0
-            }
-            skipStride()
+            val i = nextInt()
+            advance()
             return i
         } else {
             throw IndexOutOfBoundsException("Accessor overflow")
@@ -159,13 +235,9 @@ class FloatAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
     }
 
     fun next(): Float {
-        if (index < accessor.count) {
-            val f = stream.readFloat()
-            skipStride()
-            return f
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        val f = nextFloat()
+        advance()
+        return f
     }
 
     fun nextD() = next().toDouble()
@@ -190,26 +262,18 @@ class Vec2fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
     fun next(): MutableVec2f = next(MutableVec2f())
 
     fun next(result: MutableVec2f): MutableVec2f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextFloat()
+        result.y = nextFloat()
+        advance()
         return result
     }
 
     fun nextD(): MutableVec2d = nextD(MutableVec2d())
 
     fun nextD(result: MutableVec2d): MutableVec2d {
-        if (index < accessor.count) {
-            result.x = stream.readFloat().toDouble()
-            result.y = stream.readFloat().toDouble()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextDouble()
+        result.y = nextDouble()
+        advance()
         return result
     }
 }
@@ -233,28 +297,20 @@ class Vec3fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
     fun next(): MutableVec3f = next(MutableVec3f())
 
     fun next(result: MutableVec3f): MutableVec3f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-            result.z = stream.readFloat()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextFloat()
+        result.y = nextFloat()
+        result.z = nextFloat()
+        advance()
         return result
     }
 
     fun nextD(): MutableVec3d = nextD(MutableVec3d())
 
     fun nextD(result: MutableVec3d): MutableVec3d {
-        if (index < accessor.count) {
-            result.x = stream.readFloat().toDouble()
-            result.y = stream.readFloat().toDouble()
-            result.z = stream.readFloat().toDouble()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextDouble()
+        result.y = nextDouble()
+        result.z = nextDouble()
+        advance()
         return result
     }
 }
@@ -278,30 +334,22 @@ class Vec4fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
     fun next(): MutableVec4f = next(MutableVec4f())
 
     fun next(result: MutableVec4f): MutableVec4f {
-        if (index < accessor.count) {
-            result.x = stream.readFloat()
-            result.y = stream.readFloat()
-            result.z = stream.readFloat()
-            result.w = stream.readFloat()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextFloat()
+        result.y = nextFloat()
+        result.z = nextFloat()
+        result.w = nextFloat()
+        advance()
         return result
     }
 
     fun nextD(): MutableVec4d = nextD(MutableVec4d())
 
     fun nextD(result: MutableVec4d): MutableVec4d {
-        if (index < accessor.count) {
-            result.x = stream.readFloat().toDouble()
-            result.y = stream.readFloat().toDouble()
-            result.z = stream.readFloat().toDouble()
-            result.w = stream.readFloat().toDouble()
-            skipStride()
-        } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
-        }
+        result.x = nextDouble()
+        result.y = nextDouble()
+        result.z = nextDouble()
+        result.w = nextDouble()
+        advance()
         return result
     }
 }

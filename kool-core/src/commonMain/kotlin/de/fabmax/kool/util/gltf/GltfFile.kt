@@ -63,7 +63,15 @@ data class GltfFile(
     }
 
     internal fun updateReferences() {
-        accessors.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
+        accessors.forEach {
+            if (it.bufferView >= 0) {
+                it.bufferViewRef = bufferViews[it.bufferView]
+            }
+            it.sparse?.let { sparse ->
+                sparse.indices.bufferViewRef = bufferViews[sparse.indices.bufferView]
+                sparse.values.bufferViewRef = bufferViews[sparse.values.bufferView]
+            }
+        }
         animations.forEach { anim ->
             anim.samplers.forEach {
                 it.inputAccessorRef = accessors[it.input]
