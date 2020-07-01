@@ -13,12 +13,12 @@ import kotlinx.serialization.Transient
  * @param name       The user-defined name of this object.
  */
 @Serializable
-data class Image(
+data class GltfImage(
         var uri: String? = null,
         val mimeType: String? = null,
         val bufferView: Int = -1,
         val name: String? = null
 ) {
     @Transient
-    var bufferViewRef: BufferView? = null
+    var bufferViewRef: GltfBufferView? = null
 }

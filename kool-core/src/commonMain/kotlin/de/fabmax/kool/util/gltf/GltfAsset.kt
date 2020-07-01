@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @param minVersion The minimum glTF version that this asset targets.
  */
 @Serializable
-data class Asset(
+data class GltfAsset(
         val copyright: String? = null,
         val generator: String? = null,
         val version: String,

@@ -42,21 +42,21 @@ import kotlin.math.min
 data class GltfFile(
         val extensionsUsed: List<String> = emptyList(),
         val extensionsRequired: List<String> = emptyList(),
-        val accessors: List<Accessor> = emptyList(),
-        val animations: List<Animation> = emptyList(),
-        val asset: Asset,
-        val buffers: List<Buffer> = emptyList(),
-        val bufferViews: List<BufferView> = emptyList(),
+        val accessors: List<GltfAccessor> = emptyList(),
+        val animations: List<GltfAnimation> = emptyList(),
+        val asset: GltfAsset,
+        val buffers: List<GltfBuffer> = emptyList(),
+        val bufferViews: List<GltfBufferView> = emptyList(),
         //val cameras List<Camera> = emptyList(),
-        val images: List<Image> = emptyList(),
-        val materials: List<Material> = emptyList(),
-        val meshes: List<Mesh> = emptyList(),
-        val nodes: List<Node> = emptyList(),
+        val images: List<GltfImage> = emptyList(),
+        val materials: List<GltfMaterial> = emptyList(),
+        val meshes: List<GltfMesh> = emptyList(),
+        val nodes: List<GltfNode> = emptyList(),
         //val samplers: List<Sampler> = emptyList(),
         val scene: Int = 0,
-        val scenes: List<Scene> = emptyList(),
-        val skins: List<Skin> = emptyList(),
-        val textures: List<Texture> = emptyList()
+        val scenes: List<GltfScene> = emptyList(),
+        val skins: List<GltfSkin> = emptyList(),
+        val textures: List<GltfTexture> = emptyList()
 ) {
 
     fun makeModel(modelCfg: ModelGenerateConfig = ModelGenerateConfig(), scene: Int = this.scene): Model {
@@ -127,15 +127,15 @@ data class GltfFile(
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
             val applyMaterials: Boolean = true,
-            val pbrBlock: (PbrShader.PbrConfig.(MeshPrimitive) -> Unit)? = null
+            val pbrBlock: (PbrShader.PbrConfig.(GltfMesh.Primitive) -> Unit)? = null
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
-        val modelNodes = mutableMapOf<Node, TransformGroup>()
+        val modelNodes = mutableMapOf<GltfNode, TransformGroup>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<de.fabmax.kool.scene.Mesh>>()
-        val meshMaterials = mutableMapOf<de.fabmax.kool.scene.Mesh, Material?>()
+        val meshMaterials = mutableMapOf<de.fabmax.kool.scene.Mesh, GltfMaterial?>()
 
-        fun makeModel(scene: Scene): Model {
+        fun makeModel(scene: GltfScene): Model {
             val model = Model(scene.name ?: "model_scene")
             scene.nodeRefs.forEach { nd -> model += nd.makeNode(model, cfg) }
             if (cfg.loadAnimations) { makeAnimations(model) }
@@ -158,10 +158,10 @@ data class GltfFile(
                     if (nodeGrp != null) {
                         val animationNd = animNodes.getOrPut(nodeGrp) { AnimatedTransformGroup(nodeGrp) }
                         when (channel.target.path) {
-                            AnimationTarget.PATH_TRANSLATION -> makeTranslationAnimation(channel, animationNd, modelAnim)
-                            AnimationTarget.PATH_ROTATION -> makeRotationAnimation(channel, animationNd, modelAnim)
-                            AnimationTarget.PATH_SCALE -> makeScaleAnimation(channel, animationNd, modelAnim)
-                            AnimationTarget.PATH_WEIGHTS -> logW { "Unsupported animation: weights" }
+                            GltfAnimation.Target.PATH_TRANSLATION -> makeTranslationAnimation(channel, animationNd, modelAnim)
+                            GltfAnimation.Target.PATH_ROTATION -> makeRotationAnimation(channel, animationNd, modelAnim)
+                            GltfAnimation.Target.PATH_SCALE -> makeScaleAnimation(channel, animationNd, modelAnim)
+                            GltfAnimation.Target.PATH_WEIGHTS -> logW { "Unsupported animation: weights" }
                         }
                     }
                 }
@@ -169,23 +169,23 @@ data class GltfFile(
             }
         }
 
-        private fun makeTranslationAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+        private fun makeTranslationAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim:Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
-            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (inputAcc.type != GltfAccessor.TYPE_SCALAR || inputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported translation animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
                 return
             }
-            if (outputAcc.type != Accessor.TYPE_VEC3 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (outputAcc.type != GltfAccessor.TYPE_VEC3 || outputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported translation animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC3 and 5126 (float)" }
                 return
             }
 
             val transChannel = TranslationAnimationChannel("${modelAnim.name}_translation", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
-                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
-                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                GltfAnimation.Sampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                GltfAnimation.Sampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
                 else -> AnimationKey.Interpolation.LINEAR
             }
             modelAnim.channels += transChannel
@@ -207,23 +207,23 @@ data class GltfFile(
             }
         }
 
-        private fun makeRotationAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+        private fun makeRotationAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
-            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (inputAcc.type != GltfAccessor.TYPE_SCALAR || inputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported rotation animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
                 return
             }
-            if (outputAcc.type != Accessor.TYPE_VEC4 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (outputAcc.type != GltfAccessor.TYPE_VEC4 || outputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported rotation animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC4 and 5126 (float)" }
                 return
             }
 
             val rotChannel = RotationAnimationChannel("${modelAnim.name}_rotation", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
-                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
-                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                GltfAnimation.Sampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                GltfAnimation.Sampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
                 else -> AnimationKey.Interpolation.LINEAR
             }
             modelAnim.channels += rotChannel
@@ -245,23 +245,23 @@ data class GltfFile(
             }
         }
 
-        private fun makeScaleAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
+        private fun makeScaleAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
-            if (inputAcc.type != Accessor.TYPE_SCALAR || inputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (inputAcc.type != GltfAccessor.TYPE_SCALAR || inputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported scale animation input accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be SCALAR and 5126 (float)" }
                 return
             }
-            if (outputAcc.type != Accessor.TYPE_VEC3 || outputAcc.componentType != Accessor.COMP_TYPE_FLOAT) {
+            if (outputAcc.type != GltfAccessor.TYPE_VEC3 || outputAcc.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
                 logW { "Unsupported scale animation output accessor: type = ${inputAcc.type}, component type = ${inputAcc.componentType}, should be VEC3 and 5126 (float)" }
                 return
             }
 
             val scaleChannel = ScaleAnimationChannel("${modelAnim.name}_scale", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
-                AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
-                AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
+                GltfAnimation.Sampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
+                GltfAnimation.Sampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
                 else -> AnimationKey.Interpolation.LINEAR
             }
             modelAnim.channels += scaleChannel
@@ -289,11 +289,11 @@ data class GltfFile(
                 val invBinMats = skin.inverseBindMatrixAccessorRef?.let { Mat4fAccessor(it) }
                 if (invBinMats != null) {
                     // 1st pass: make SkinNodes for specified nodes / TransformGroups
-                    val skinNodes = mutableMapOf<Node, de.fabmax.kool.scene.animation.Skin.SkinNode>()
+                    val skinNodes = mutableMapOf<GltfNode, Skin.SkinNode>()
                     skin.jointRefs.forEach { joint ->
                         val jointGrp = modelNodes[joint]!!
                         val invBindMat = invBinMats.next()
-                        val skinNode = de.fabmax.kool.scene.animation.Skin.SkinNode(jointGrp, invBindMat)
+                        val skinNode = Skin.SkinNode(jointGrp, invBindMat)
                         modelSkin.nodes += skinNode
                         skinNodes[joint] = skinNode
                     }
@@ -320,7 +320,7 @@ data class GltfFile(
                     val mat = meshMaterials[it]
                     if (mat != null) {
                         a = when (mat.alphaMode) {
-                            Material.ALPHA_MODE_BLEND -> min(0.999f, mat.pbrMetallicRoughness.baseColorFactor[3])
+                            GltfMaterial.ALPHA_MODE_BLEND -> min(0.999f, mat.pbrMetallicRoughness.baseColorFactor[3])
                             else -> 1f
                         }
                     }
@@ -383,7 +383,7 @@ data class GltfFile(
             transform.pop()
         }
 
-        private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
+        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
             val modelNdName = name ?: "node_${model.nodes.size}"
             val nodeGrp = TransformGroup(modelNdName)
             modelNodes[this] = nodeGrp
@@ -411,7 +411,7 @@ data class GltfFile(
             return nodeGrp
         }
 
-        private fun Node.createMeshes(model: Model, nodeGrp: TransformGroup, cfg: ModelGenerateConfig) {
+        private fun GltfNode.createMeshes(model: Model, nodeGrp: TransformGroup, cfg: ModelGenerateConfig) {
             meshRef?.primitives?.forEachIndexed { index, p ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = p.toGeometry(cfg.generateNormals)
@@ -427,7 +427,7 @@ data class GltfFile(
                     }
 
                     if (cfg.applyMaterials) {
-                        val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)
+                        val useVertexColor = p.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
                         mesh.pipelineLoader = pbrShader {
                             val material = p.materialRef
                             if (material != null) {

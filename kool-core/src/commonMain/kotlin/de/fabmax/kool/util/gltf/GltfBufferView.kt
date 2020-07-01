@@ -16,7 +16,7 @@ import kotlinx.serialization.Transient
  * @param name       The user-defined name of this object.
  */
 @Serializable
-data class BufferView(
+data class GltfBufferView(
         val buffer: Int,
         val byteOffset: Int = 0,
         val byteLength: Int,
@@ -25,7 +25,7 @@ data class BufferView(
         val name: String? = null
 ) {
     @Transient
-    lateinit var bufferRef: Buffer
+    lateinit var bufferRef: GltfBuffer
 
     fun getData(): Uint8Buffer {
         val array = createUint8Buffer(byteLength)

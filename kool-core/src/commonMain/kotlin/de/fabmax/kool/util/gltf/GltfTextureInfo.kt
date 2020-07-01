@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.gltf
 
+import de.fabmax.kool.pipeline.Texture
 import kotlinx.serialization.Serializable
 
 /**
@@ -11,13 +12,13 @@ import kotlinx.serialization.Serializable
  * @param scale    The scalar multiplier applied to each normal vector of the normal texture.
  */
 @Serializable
-data class TextureInfo(
+data class GltfTextureInfo(
         val index: Int,
         val strength: Float = 1f,
         val texCoord: Int = 0,
         val scale: Float = 1f
 ) {
-    fun getTexture(gltfFile: GltfFile): de.fabmax.kool.pipeline.Texture {
+    fun getTexture(gltfFile: GltfFile): Texture {
         return gltfFile.textures[index].makeTexture()
     }
 }

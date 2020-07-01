@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.gltf
 
+import de.fabmax.kool.pipeline.Texture
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -13,18 +14,18 @@ import kotlinx.serialization.Transient
  * @param name    The user-defined name of this object.
  */
 @Serializable
-data class Texture(
+data class GltfTexture(
         val sampler: Int = -1,
         val source: Int = 0,
         val name: String? = null
 ) {
     @Transient
-    lateinit var imageRef: Image
+    lateinit var imageRef: GltfImage
 
     @Transient
-    private var createdTex: de.fabmax.kool.pipeline.Texture? = null
+    private var createdTex: Texture? = null
 
-    fun makeTexture(): de.fabmax.kool.pipeline.Texture {
+    fun makeTexture(): Texture {
         if (createdTex == null) {
             val uri = imageRef.uri
             val name = if (uri != null && !uri.startsWith("data:", true)) {
@@ -32,7 +33,7 @@ data class Texture(
             } else {
                 "gltf_tex_$source"
             }
-            createdTex = de.fabmax.kool.pipeline.Texture(name) { assetMgr ->
+            createdTex = Texture(name) { assetMgr ->
                 if (uri != null) {
                     assetMgr.loadTextureData(uri)
                 } else {

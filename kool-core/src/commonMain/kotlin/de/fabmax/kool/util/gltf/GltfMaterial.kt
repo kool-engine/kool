@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
@@ -21,12 +22,12 @@ import kotlinx.serialization.Serializable
  * @param doubleSided          Specifies whether the material is double sided.
  */
 @Serializable
-data class Material(
+data class GltfMaterial(
         val name: String? = null,
         val pbrMetallicRoughness: PbrMetallicRoughness = PbrMetallicRoughness(baseColorFactor = listOf(0.5f, 0.5f, 0.5f, 1f)),
-        val normalTexture: TextureInfo? = null,
-        val occlusionTexture: TextureInfo? = null,
-        val emissiveTexture: TextureInfo? = null,
+        val normalTexture: GltfTextureInfo? = null,
+        val occlusionTexture: GltfTextureInfo? = null,
+        val emissiveTexture: GltfTextureInfo? = null,
         val emissiveFactor: List<Float>? = null,
         val alphaMode: String = ALPHA_MODE_OPAQUE,
         val alphaCutoff: Float = 0.5f,
@@ -34,12 +35,12 @@ data class Material(
 ) {
 
     fun applyTo(cfg: PbrShader.PbrConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
-        val albedoTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
-        val emissiveTexture: de.fabmax.kool.pipeline.Texture? = emissiveTexture?.getTexture(gltfFile)
-        val normalTexture: de.fabmax.kool.pipeline.Texture? = this.normalTexture?.getTexture(gltfFile)
-        val metallicTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val roughnessTexture: de.fabmax.kool.pipeline.Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val occlusionTexture: de.fabmax.kool.pipeline.Texture? = occlusionTexture?.getTexture(gltfFile)
+        val albedoTexture: Texture? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
+        val emissiveTexture: Texture? = emissiveTexture?.getTexture(gltfFile)
+        val normalTexture: Texture? = this.normalTexture?.getTexture(gltfFile)
+        val metallicTexture: Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val roughnessTexture: Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val occlusionTexture: Texture? = occlusionTexture?.getTexture(gltfFile)
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
         cfg.alphaMode = when (alphaMode) {
@@ -179,6 +180,25 @@ data class Material(
             }
         }
     }
+
+    /**
+     * A set of parameter values that are used to define the metallic-roughness material model from Physically-Based
+     * Rendering (PBR) methodology.
+     *
+     * @param baseColorFactor          The material's base color factor.
+     * @param baseColorTexture         The base color texture.
+     * @param metallicFactor           The metalness of the material.
+     * @param roughnessFactor          The roughness of the material.
+     * @param metallicRoughnessTexture The metallic-roughness texture.
+     */
+    @Serializable
+    data class PbrMetallicRoughness(
+            val baseColorFactor: List<Float> = listOf(1f, 1f, 1f, 1f),
+            val baseColorTexture: GltfTextureInfo? = null,
+            val metallicFactor: Float = 1f,
+            val roughnessFactor: Float = 1f,
+            val metallicRoughnessTexture: GltfTextureInfo? = null
+    )
 
     companion object {
         const val ALPHA_MODE_BLEND = "BLEND"

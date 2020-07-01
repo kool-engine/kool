@@ -24,7 +24,7 @@ import kotlinx.serialization.Transient
  * @param name        The user-defined name of this object.
  */
 @Serializable
-data class Node(
+data class GltfNode(
         val camera: Int = -1,
         val children: List<Int> = emptyList(),
         val skin: Int = -1,
@@ -37,9 +37,9 @@ data class Node(
         val name: String? = null
 ) {
     @Transient
-    lateinit var childRefs: List<Node>
+    lateinit var childRefs: List<GltfNode>
     @Transient
-    var meshRef: Mesh? = null
+    var meshRef: GltfMesh? = null
     @Transient
-    var skinRef: Skin? = null
+    var skinRef: GltfSkin? = null
 }

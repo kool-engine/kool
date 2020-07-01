@@ -10,10 +10,10 @@ import kotlinx.serialization.Transient
  * @param name  The user-defined name of this object.
  */
 @Serializable
-data class Scene(
+data class GltfScene(
         val nodes: List<Int>,
         val name: String? = null
 ) {
     @Transient
-    lateinit var nodeRefs: List<Node>
+    lateinit var nodeRefs: List<GltfNode>
 }

@@ -12,7 +12,7 @@ import kotlinx.serialization.Transient
  * @param name       The user-defined name of this object.
  */
 @Serializable
-data class Buffer(
+data class GltfBuffer(
         val uri: String? = null,
         val byteLength: Int,
         val name: String? = null

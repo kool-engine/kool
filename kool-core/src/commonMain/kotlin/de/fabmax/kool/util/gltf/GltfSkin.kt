@@ -14,14 +14,14 @@ import kotlinx.serialization.Transient
  * @param name                The user-defined name of this object.
  */
 @Serializable
-data class Skin(
+data class GltfSkin(
         val inverseBindMatrices: Int = -1,
         val skeleton: Int = -1,
         val joints: List<Int>,
         val name: String? = null
 ) {
     @Transient
-    var inverseBindMatrixAccessorRef: Accessor? = null
+    var inverseBindMatrixAccessorRef: GltfAccessor? = null
     @Transient
-    lateinit var jointRefs: List<Node>
+    lateinit var jointRefs: List<GltfNode>
 }
