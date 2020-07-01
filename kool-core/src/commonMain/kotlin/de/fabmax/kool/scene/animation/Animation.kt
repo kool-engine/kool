@@ -13,7 +13,8 @@ class Animation(val name: String?) {
     private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
-        duration = channels.map { it.duration }.max() ?: 0f
+        duration = channels.map { it.lastKeyTime }.max() ?: 0f
+        channels.forEach { it.duration = duration }
         animationNodes += channels.map { it.animationNode }.distinct()
     }
 
@@ -32,40 +33,50 @@ class Animation(val name: String?) {
 }
 
 abstract class AnimationChannel(val name: String?, val animationNode: AnimationNode) {
-    abstract val duration: Float
+    abstract val lastKeyTime: Float
+    var duration = 0f
 
     abstract fun apply(time: Float)
 }
 
 class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
     val keys = TreeMap<Float, TranslationKey>()
-    override val duration: Float
+    override val lastKeyTime: Float
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        val key = keys.floorValue(time) ?: keys.lastValue()
+        var key = keys.floorValue(time)
+        if (key == null) {
+            key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
+        }
         key.apply(time, keys.higherValue(time), animationNode)
     }
 }
 
 class RotationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
     val keys = TreeMap<Float, RotationKey>()
-    override val duration: Float
+    override val lastKeyTime: Float
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        val key = keys.floorValue(time) ?: keys.lastValue()
+        var key = keys.floorValue(time)
+        if (key == null) {
+            key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
+        }
         key.apply(time, keys.higherValue(time), animationNode)
     }
 }
 
 class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
     val keys = TreeMap<Float, ScaleKey>()
-    override val duration: Float
+    override val lastKeyTime: Float
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        val key = keys.floorValue(time) ?: keys.lastValue()
+        var key = keys.floorValue(time)
+        if (key == null) {
+            key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
+        }
         key.apply(time, keys.higherValue(time), animationNode)
     }
 }

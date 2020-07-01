@@ -11,8 +11,12 @@ abstract class AnimationKey<T: AnimationKey<T>>(val time: Float) {
     abstract fun apply(time: Float, next: T?, node: AnimationNode)
 
     protected fun interpolationPos(pos: Float, nextTime: Float): Float {
-        val t = if (time < nextTime) { time } else { 0f }
-        return interpolation.getInterpolationPos((pos - t) / (nextTime - t))
+        return if (time != nextTime) {
+            val t = if (time < nextTime) { time } else { 0f }
+            interpolation.getInterpolationPos((pos - t) / (nextTime - t))
+        } else {
+            0f
+        }
     }
 
     enum class Interpolation {
