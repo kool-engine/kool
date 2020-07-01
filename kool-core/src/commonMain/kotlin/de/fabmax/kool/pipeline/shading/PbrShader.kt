@@ -214,8 +214,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
             vertexStage {
-                val modelMat: ShaderNodeIoVar
-                val mvpMat: ShaderNodeIoVar
+                var modelMat: ShaderNodeIoVar
+                var mvpMat: ShaderNodeIoVar
 
                 mvpNode = mvpNode()
                 if (cfg.isInstanced) {
@@ -224,6 +224,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 } else {
                     modelMat = mvpNode.outModelMat
                     mvpMat = mvpNode.outMvpMat
+                }
+                if (cfg.isSkinned) {
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
+                    modelMat = multiplyNode(modelMat, skinNd.outJointMat).output
+                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
 
                 val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
@@ -417,6 +422,9 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isMetallicMapped = false
         var isAmbientOcclusionMapped = false
         var isDisplacementMapped = false
+
+        var isSkinned = false
+        var maxJoints = 32
 
         var normalStrength = 1f
         var ambientOcclusionStrength = 1f

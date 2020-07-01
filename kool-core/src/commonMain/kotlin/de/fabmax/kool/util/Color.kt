@@ -378,7 +378,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
         fun fromHex(hex: String): Color {
             if (hex.isEmpty()) {
-                return Color.BLACK
+                return BLACK
             }
 
             var str = hex
@@ -455,19 +455,19 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
 
-    fun add(other: Color): MutableColor {
-        r += other.r
-        g += other.g
-        b += other.b
-        a += other.a
+    fun add(other: Vec4f): MutableColor {
+        r += other.x
+        g += other.y
+        b += other.z
+        a += other.w
         return this
     }
 
-    fun add(other: Color, weight: Float): MutableColor {
-        r += other.r * weight
-        g += other.g * weight
-        b += other.b * weight
-        a += other.a * weight
+    fun add(other: Vec4f, weight: Float): MutableColor {
+        r += other.x * weight
+        g += other.y * weight
+        b += other.z * weight
+        a += other.w * weight
         return this
     }
 
@@ -507,11 +507,11 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         return this
     }
 
-    fun set(other: Color): MutableColor {
-        r = other.r
-        g = other.g
-        b = other.b
-        a = other.a
+    fun set(other: Vec4f): MutableColor {
+        r = other.x
+        g = other.y
+        b = other.z
+        a = other.w
         return this
     }
 

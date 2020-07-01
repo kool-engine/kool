@@ -1,8 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 
@@ -26,24 +24,16 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     val tangent: MutableVec4f
     val color: MutableColor
     val texCoord: MutableVec2f
+    val joints: MutableVec4i
+    val weights: MutableVec4f
 
     private val attributeViews: Map<Attribute, Any>
-
-    override var x: Float
-        get() = position.x
-        set(value) { position.x = value }
-    override var y: Float
-        get() = position.y
-        set(value) { position.y = value }
-    override var z: Float
-        get() = position.z
-        set(value) { position.z = value }
 
     init {
         val attribViews = mutableMapOf<Attribute, Any>()
         attributeViews = attribViews
 
-        for (offset in data.attributeOffsets) {
+        for (offset in data.attributeByteOffsets) {
             when (offset.key.type) {
                 GlslType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
                 GlslType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
@@ -62,7 +52,13 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
         tangent = getVec4fAttribute(Attribute.TANGENTS) ?: Vec4fView(-1)
         texCoord = getVec2fAttribute(Attribute.TEXTURE_COORDS) ?: Vec2fView(-1)
         color = getColorAttribute(Attribute.COLORS) ?: ColorWrapView(Vec4fView(-1))
+        joints = getVec4iAttribute(Attribute.JOINTS) ?: Vec4iView(-1)
+        weights = getVec4fAttribute(Attribute.WEIGHTS) ?: Vec4fView(-1)
     }
+
+    override fun get(i: Int) = position[i]
+
+    override fun set(i: Int, v: Float) { position[i] = v }
 
     fun set(other: VertexView) {
         for (attrib in attributeViews.keys) {
@@ -158,93 +154,48 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
             }
     }
 
-    inner class Vec2iView(private val attribOffset: Int) {
-        var x: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset] = value }
+    inner class Vec2iView(private val attribOffset: Int) : MutableVec2i() {
+        override operator fun get(i: Int): Int {
+            return if (attribOffset >= 0 && i in 0..1) {
+                data.dataI[offsetI + attribOffset + i]
+            } else {
+                0
             }
-        var y: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 1] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 1] = value }
-            }
-
-        fun set(x: Int, y: Int) {
-            this.x = x
-            this.y = y
         }
-
-        fun set(other: Vec2iView) {
-            x = other.x
-            y = other.y
+        override operator fun set(i: Int, v: Int) {
+            if (attribOffset >= 0 && i in 0..1) {
+                data.dataI[offsetI + attribOffset + i] = v
+            }
         }
     }
 
-    inner class Vec3iView(private val attribOffset: Int) {
-        var x: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset] = value }
+    inner class Vec3iView(private val attribOffset: Int) : MutableVec3i() {
+        override operator fun get(i: Int): Int {
+            return if (attribOffset >= 0 && i in 0..2) {
+                data.dataI[offsetI + attribOffset + i]
+            } else {
+                0
             }
-        var y: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 1] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 1] = value }
-            }
-        var z: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 2] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 2] = value }
-            }
-
-        fun set(other: Vec3iView) {
-            x = other.x
-            y = other.y
-            z = other.z
         }
-
-        fun set(x: Int, y: Int, z: Int) {
-            this.x = x
-            this.y = y
-            this.z = z
+        override operator fun set(i: Int, v: Int) {
+            if (attribOffset >= 0 && i in 0..2) {
+                data.dataI[offsetI + attribOffset + i] = v
+            }
         }
     }
 
-    inner class Vec4iView(private val attribOffset: Int) {
-        var x: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset] = value }
+    inner class Vec4iView(private val attribOffset: Int) : MutableVec4i() {
+        override operator fun get(i: Int): Int {
+            return if (attribOffset >= 0 && i in 0..3) {
+                data.dataI[offsetI + attribOffset + i]
+            } else {
+                0
             }
-        var y: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 1] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 1] = value }
-            }
-        var z: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 2] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 2] = value }
-            }
-        var w: Int
-            get() = if (attribOffset < 0) { 0 } else { data.dataI[offsetI + attribOffset + 3] }
-            set(value) {
-                if (attribOffset >= 0) { data.dataI[offsetI + attribOffset + 3] = value }
-            }
-
-        fun set(other: Vec4iView) {
-            x = other.x
-            y = other.y
-            z = other.z
-            w = other.w
         }
-
-        fun set(x: Int, y: Int, z: Int, w: Int) {
-            this.x = x
-            this.y = y
-            this.z = z
-            this.w = w
+        override operator fun set(i: Int, v: Int) {
+            if (attribOffset >= 0 && i in 0..3) {
+                data.dataI[offsetI + attribOffset + i] = v
+            }
         }
     }
 }

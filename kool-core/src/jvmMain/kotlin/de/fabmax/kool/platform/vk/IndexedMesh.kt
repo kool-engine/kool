@@ -13,6 +13,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
     val numIndices = mesh.geometry.indices.position
 
     val vertexBuffer = createVertexBuffer()
+    val vertexBufferI = createVertexBufferI()
     val indexBuffer = createIndexBuffer()
 
     var instanceBuffer: Buffer?
@@ -21,6 +22,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
     init {
         addDependingResource(vertexBuffer)
         addDependingResource(indexBuffer)
+        vertexBufferI?.let { addDependingResource(it) }
 
         instanceBuffer = mesh.instances?.let { createInstanceBuffer(it) }
         instanceBuffer?.let { addDependingResource(it) }
@@ -40,7 +42,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
 
     private fun createVertexBuffer(): Buffer {
         memStack {
-            val bufferSize = numVertices * mesh.geometry.strideBytesF.toLong()
+            val bufferSize = numVertices * mesh.geometry.byteStrideF.toLong()
             val stagingAllocUsage = VMA_MEMORY_USAGE_CPU_ONLY
             val stagingBuffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
             stagingBuffer.mappedFloats {
@@ -54,6 +56,29 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
             buffer.put(stagingBuffer)
             stagingBuffer.destroy()
             return buffer
+        }
+    }
+
+    private fun createVertexBufferI(): Buffer? {
+        if (mesh.geometry.byteStrideI > 0) {
+            memStack {
+                val bufferSize = numVertices * mesh.geometry.byteStrideI.toLong()
+                val stagingAllocUsage = VMA_MEMORY_USAGE_CPU_ONLY
+                val stagingBuffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+                stagingBuffer.mappedInts {
+                    mesh.geometry.dataI.flip()
+                    put((mesh.geometry.dataI as Uint32BufferImpl).buffer)
+                }
+
+                val usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT or VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+                val allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
+                val buffer = Buffer(sys, bufferSize, usage, allocUsage)
+                buffer.put(stagingBuffer)
+                stagingBuffer.destroy()
+                return buffer
+            }
+        } else {
+            return null
         }
     }
 

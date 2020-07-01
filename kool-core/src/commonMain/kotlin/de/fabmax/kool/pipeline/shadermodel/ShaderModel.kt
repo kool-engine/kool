@@ -75,13 +75,24 @@ class ShaderModel(val modelInfo: String = "") {
         var attribLocation = 0
         val verts = mesh.geometry
         val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
+        val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
+        var iBinding = 0
         vertexStageGraph.requiredVertexAttributes.forEach { attrib ->
-            val off = verts.attributeOffsets[attrib] ?:
+            val off = verts.attributeByteOffsets[attrib] ?:
                     throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
-            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+
+            if (attrib.type.isInt) {
+                vertLayoutAttribsI += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+            } else {
+                vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
+            }
             attribLocation += attrib.props.nSlots
         }
-        buildCtx.vertexLayout.bindings += VertexLayout.Binding(0, InputRate.VERTEX, vertLayoutAttribs, verts.strideBytesF)
+
+        buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribs, verts.byteStrideF)
+        if (vertLayoutAttribsI.isNotEmpty()) {
+            buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribsI, verts.byteStrideI)
+        }
 
         val insts = mesh.instances
         if (insts != null) {
@@ -92,7 +103,7 @@ class ShaderModel(val modelInfo: String = "") {
                 instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
                 attribLocation += attrib.props.nSlots
             }
-            buildCtx.vertexLayout.bindings += VertexLayout.Binding(1, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
+            buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
         } else if (vertexStageGraph.requiredInstanceAttributes.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
         }
@@ -270,6 +281,8 @@ class ShaderModel(val modelInfo: String = "") {
         fun attrPositions() = attributeNode(Attribute.POSITIONS)
         fun attrTangents() = attributeNode(Attribute.TANGENTS)
         fun attrTexCoords() = attributeNode(Attribute.TEXTURE_COORDS)
+        fun attrJoints() = attributeNode(Attribute.JOINTS)
+        fun attrWeights() = attributeNode(Attribute.WEIGHTS)
         fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
 
         fun instanceAttrModelMat() = instanceAttributeNode(MeshInstanceList.MODEL_MAT)
@@ -285,6 +298,13 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         fun mvpNode() = addNode(UniformBufferMvp(stage))
+
+        fun skinTransformNode(inJoints: ShaderNodeIoVar? = null, inWeights: ShaderNodeIoVar? = null, maxJoints: Int = 32): SkinTransformNode {
+            val skinNd = addNode(SkinTransformNode(stage, maxJoints))
+            inJoints?.let { skinNd.inJoints = it }
+            inWeights?.let { skinNd.inWeights = it }
+            return skinNd
+        }
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 

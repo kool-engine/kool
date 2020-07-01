@@ -243,8 +243,8 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                     if (vertexAttrib.type.isInt) {
                         hasIntData = true
                     } else {
-                        val stride = md.strideBytesF
-                        val offset = md.attributeOffsets[vertexAttrib]!! / 4
+                        val stride = md.byteStrideF
+                        val offset = md.attributeByteOffsets[vertexAttrib]!! / 4
                         instanceAttribBinders += attributes.makeAttribBinders(vertexAttrib, dataBufferF!!, stride, offset)
                     }
                 }
@@ -254,8 +254,8 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
                         attributes[vertexAttrib.name]?.let { attr ->
-                            val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.size / 4,
-                                    md.strideBytesI, md.attributeOffsets[vertexAttrib]!! / 4, GL_INT)
+                            val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.byteSize / 4,
+                                    md.byteStrideI, md.attributeByteOffsets[vertexAttrib]!! / 4, GL_INT)
                             attributeBinders += AttributeOnLocation(vbo, attr.location)
                         }
                     }

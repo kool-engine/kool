@@ -630,7 +630,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
     return function (it) {
       var tmp$, tmp$_0, tmp$_1;
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
       closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_m0hq3v$(modelCfg) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
       return Unit;
     };
@@ -1786,7 +1786,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $this = this.pbrPass_0.dynamicPointLights;
       var light = new DeferredPointLights$DeferredPointLights$PointLight_init();
       light.intensity = 1.0;
-      light.color.set_d7aj7k$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
+      light.color.set_czzhhz$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
       $this.addPointLight_at6cwi$(light);
       var light_0 = light;
       var animLight = new DeferredDemo$AnimatedLight(light_0);
@@ -1799,7 +1799,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = this.lights_0.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.light.color.set_d7aj7k$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
+      element.light.color.set_czzhhz$(this.colorMap_0.current.colors.get_za3lpa$(this.rand_0.randomI_n8acyv$(get_indices(this.colorMap_0.current.colors))).toLinear());
     }
   };
   DeferredDemo.prototype.setAoState_0 = function (enabled) {
@@ -2804,7 +2804,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Interpolation Test', Demo$Companion_getInstance().modelBasePath + '/InterpolationTest.glb', 0.5, new Vec3f(0.0, 1.25, 0.0), false, new Vec3d(0.0, 3.5, 0.0), 7.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
+    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Cesium Man', Demo$Companion_getInstance().modelBasePath + '/CesiumMan.glb', 1.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 0.5, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
     this.autoRotate_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
@@ -3419,6 +3419,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var element = tmp$.next();
         element.apply_14dthe$(this$GltfDemo.animationTime_0);
       }
+      var tmp$_0;
+      tmp$_0 = this$.skins.iterator();
+      while (tmp$_0.hasNext()) {
+        var element_0 = tmp$_0.next();
+        element_0.updateJointTransforms();
+      }
       return Unit;
     };
   }
@@ -3427,7 +3433,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (gltf != null) {
         var this$GltfModel_0 = this$GltfModel;
         var this$GltfDemo_0 = this$GltfDemo;
-        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
+        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
         var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
         $receiver.translate_czzhiu$(this$GltfModel_0.translation);
         $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
@@ -3551,7 +3557,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     tmp$ = model.scenes;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
       var mesh = first(model.makeModel_m0hq3v$(modelCfg, i).meshes.values);
       var $this = mesh.geometry;
       var tmp$_0;
@@ -3588,7 +3594,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var rotAxis = new MutableVec3f(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
           var tmp$_2 = $receiver.instances;
           var $receiver_0 = new InstanceDemo$BunnyInstance(this, position, rotAxis);
-          $receiver_0.color.set_d7aj7k$(colors.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colors))));
+          $receiver_0.color.set_czzhhz$(colors.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colors))));
           $receiver_0.center.set_czzhiu$(this.modelCenter_0);
           $receiver_0.radius = this.modelRadius_0;
           tmp$_2.add_11rb$($receiver_0);
@@ -3944,7 +3950,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (gltf != null) {
         var this$MultiLightDemo_0 = this$MultiLightDemo;
         var this$_0 = this$;
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
         var model = gltf.makeModel_m0hq3v$(modelCfg);
         this$MultiLightDemo_0.bunnyMesh_0 = first(model.meshes.values);
         this$MultiLightDemo_0.applyShaders_0();
@@ -8146,7 +8152,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function (model) {
       var tmp$;
       if (model != null) {
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, false);
+        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
         var mesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
         var geometry = mesh.geometry;
         tmp$ = geometry.numVertices;

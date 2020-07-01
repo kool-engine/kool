@@ -18,7 +18,7 @@ class Animation(val name: String?) {
     }
 
     fun apply(time: Double) {
-        val t = ((time * speed) % duration).toFloat()
+        val t = ((time * speed) % (duration)).toFloat()
         for (i in animationNodes.indices) {
             animationNodes[i].initTransform()
         }
@@ -43,7 +43,8 @@ class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): 
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        keys.floorValue(time)?.apply(time, keys.higherValue(time), animationNode)
+        val key = keys.floorValue(time) ?: keys.lastValue()
+        key.apply(time, keys.higherValue(time), animationNode)
     }
 }
 
@@ -53,7 +54,8 @@ class RotationAnimationChannel(name: String?, animationNode: AnimationNode): Ani
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        keys.floorValue(time)?.apply(time, keys.higherValue(time), animationNode)
+        val key = keys.floorValue(time) ?: keys.lastValue()
+        key.apply(time, keys.higherValue(time), animationNode)
     }
 }
 
@@ -63,7 +65,8 @@ class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): Animat
         get() = keys.lastKey()
 
     override fun apply(time: Float) {
-        keys.floorValue(time)?.apply(time, keys.higherValue(time), animationNode)
+        val key = keys.floorValue(time) ?: keys.lastValue()
+        key.apply(time, keys.higherValue(time), animationNode)
     }
 }
 
@@ -109,17 +112,23 @@ class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
         target.translate(animTranslation)
         target.mul(quatRotMat.setRotate(animRotation))
         target.scale(animScale.x, animScale.y, animScale.z)
+
+        //println("apply transform: ${target.name}")
+        //target.transform.dump()
     }
 
     override fun setTranslation(translation: Vec3d) {
+        //println("translate: $translation")
         animTranslation.set(translation)
     }
 
     override fun setRotation(rotation: Vec4d) {
+        //println("rotate: $rotation")
         animRotation.set(rotation)
     }
 
     override fun setScale(scale: Vec3d) {
+        //println("scale: $scale")
         animScale.set(scale)
     }
 

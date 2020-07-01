@@ -48,7 +48,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
             vec3 phongMat_ambient = ${inAlbedo.ref3f()} * ${inAmbient.ref3f()};
             vec3 phongMat_diffuse = vec3(0);
             vec3 phongMat_specular = vec3(0);
-            for (int i = 0; i < ${lightNode.outLightCount.name}; i++) {
+            for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
                 vec3 phongMat_l = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
                 phongMat_l = normalize(phongMat_l);
@@ -164,7 +164,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             F0 = mix(F0, albedo, metal);
     
             vec3 Lo = vec3(0.0);
-            for (int i = 0; i < ${lightNode.outLightCount}; i++) {
+            for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
                 // calculate per-light radiance
                 vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
                 vec3 L = normalize(fragToLight);

@@ -138,7 +138,7 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
                 vec3 normal = normalize(n);
                 vec3 tangent = normalize(t.xyz);
                 tangent = normalize(tangent - dot(tangent, normal) * normal);
-                vec3 bitangent = cross(normal, tangent) * (step(0.0, t.w) * 2.0 - 1.0);
+                vec3 bitangent = cross(normal, tangent) * t.w;
                 vec3 bumpMapNormal = ${generator.sampleTexture2d(texture.name, "uv")}.xyz;
                 bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
                 mat3 tbn = mat3(tangent, bitangent, normal);

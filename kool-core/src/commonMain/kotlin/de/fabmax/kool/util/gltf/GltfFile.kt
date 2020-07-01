@@ -35,6 +35,7 @@ import kotlin.math.min
  * @param nodes              An array of nodes.
  * @param scene              The index of the default scene
  * @param scenes             An array of scenes.
+ * @param skins              An array of skins.
  * @param textures           An array of textures.
  */
 @Serializable
@@ -54,7 +55,7 @@ data class GltfFile(
         //val samplers: List<Sampler> = emptyList(),
         val scene: Int = 0,
         val scenes: List<Scene> = emptyList(),
-        //val skins: List<Skin> = emptyList(),
+        val skins: List<Skin> = emptyList(),
         val textures: List<Texture> = emptyList()
 ) {
 
@@ -88,14 +89,14 @@ data class GltfFile(
         images.filter { it.bufferView >= 0 }.forEach { it.bufferViewRef = bufferViews[it.bufferView] }
         meshes.forEach { mesh ->
             mesh.primitives.forEach {
-                if (it.material >= 0) {
-                    it.materialRef = materials[it.material]
+                it.attributes.forEach { (attrib, iAcc) ->
+                    it.attribAccessorRefs[attrib] = accessors[iAcc]
                 }
                 if (it.indices >= 0) {
                     it.indexAccessorRef = accessors[it.indices]
                 }
-                it.attributes.forEach { (attrib, iAcc) ->
-                    it.attribAccessorRefs[attrib] = accessors[iAcc]
+                if (it.material >= 0) {
+                    it.materialRef = materials[it.material]
                 }
             }
         }
@@ -104,14 +105,24 @@ data class GltfFile(
             if (it.mesh >= 0) {
                 it.meshRef = meshes[it.mesh]
             }
+            if (it.skin >= 0) {
+                it.skinRef = skins[it.skin]
+            }
         }
         scenes.forEach { it.nodeRefs = it.nodes.map { iNd -> nodes[iNd] } }
+        skins.forEach {
+            if (it.inverseBindMatrices >= 0) {
+                it.inverseBindMatrixAccessorRef = accessors[it.inverseBindMatrices]
+            }
+            it.jointRefs = it.joints.map { iJt -> nodes[iJt] }
+        }
         textures.forEach { it.imageRef = images[it.source] }
     }
 
     class ModelGenerateConfig(
             val generateNormals: Boolean = false,
             val loadAnimations: Boolean = true,
+            val applySkins: Boolean = true,
             val applyTransforms: Boolean = false,
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
@@ -125,44 +136,40 @@ data class GltfFile(
         val meshMaterials = mutableMapOf<de.fabmax.kool.scene.Mesh, Material?>()
 
         fun makeModel(scene: Scene): Model {
-            val model = Model(scene.name)
-            scene.nodeRefs.forEach { nd ->
-                model += nd.makeNode(model, cfg)
-            }
-            if (cfg.loadAnimations) {
-                makeAnimations(model)
-            }
-            if (cfg.applyTransforms && model.animations.isEmpty()) {
-                applyTransforms(model)
-            }
-            if (cfg.mergeMeshesByMaterial) {
-                mergeMeshesByMaterial(model)
-            }
-            if (cfg.sortNodesByAlpha) {
-                model.sortNodesByAlpha()
-            }
+            val model = Model(scene.name ?: "model_scene")
+            scene.nodeRefs.forEach { nd -> model += nd.makeNode(model, cfg) }
+            if (cfg.loadAnimations) { makeAnimations(model) }
+            if (cfg.loadAnimations) { makeSkins(model) }
+            modelNodes.forEach { (node, grp) -> node.createMeshes(model, grp, cfg) }
+            if (cfg.applyTransforms && model.animations.isEmpty()) { applyTransforms(model) }
+            if (cfg.mergeMeshesByMaterial) { mergeMeshesByMaterial(model) }
+            if (cfg.sortNodesByAlpha) { model.sortNodesByAlpha() }
             return model
         }
 
         private fun makeAnimations(model: Model) {
             animations.forEach { anim ->
-                val modelAnim = de.fabmax.kool.scene.animation.Animation(anim.name)
+                val modelAnim = Animation(anim.name)
                 model.animations += modelAnim
+                val animNodes = mutableMapOf<TransformGroup, AnimationNode>()
+
                 anim.channels.forEach { channel ->
-                    when (channel.target.path) {
-                        AnimationTarget.PATH_TRANSLATION -> makeTranslationAnimation(channel, modelAnim)
-                        AnimationTarget.PATH_ROTATION -> makeRotationAnimation(channel, modelAnim)
-                        AnimationTarget.PATH_SCALE -> makeScaleAnimation(channel, modelAnim)
-                        AnimationTarget.PATH_WEIGHTS -> logW { "Unsupported animation: weights" }
+                    val nodeGrp = modelNodes[channel.target.nodeRef]
+                    if (nodeGrp != null) {
+                        val animationNd = animNodes.getOrPut(nodeGrp) { AnimatedTransformGroup(nodeGrp) }
+                        when (channel.target.path) {
+                            AnimationTarget.PATH_TRANSLATION -> makeTranslationAnimation(channel, animationNd, modelAnim)
+                            AnimationTarget.PATH_ROTATION -> makeRotationAnimation(channel, animationNd, modelAnim)
+                            AnimationTarget.PATH_SCALE -> makeScaleAnimation(channel, animationNd, modelAnim)
+                            AnimationTarget.PATH_WEIGHTS -> logW { "Unsupported animation: weights" }
+                        }
                     }
                 }
                 modelAnim.prepareAnimation()
             }
         }
 
-        private fun makeTranslationAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
-            val node = animCh.target.nodeRef ?: return
-            val nodeGrp = modelNodes[node] ?: return
+        private fun makeTranslationAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -175,7 +182,7 @@ data class GltfFile(
                 return
             }
 
-            val transChannel = TranslationAnimationChannel("${modelAnim.name}_translation", AnimatedTransformGroup(nodeGrp))
+            val transChannel = TranslationAnimationChannel("${modelAnim.name}_translation", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
                 AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
                 AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
@@ -200,9 +207,7 @@ data class GltfFile(
             }
         }
 
-        private fun makeRotationAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
-            val node = animCh.target.nodeRef ?: return
-            val nodeGrp = modelNodes[node] ?: return
+        private fun makeRotationAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -215,7 +220,7 @@ data class GltfFile(
                 return
             }
 
-            val rotChannel = RotationAnimationChannel("${modelAnim.name}_rotation", AnimatedTransformGroup(nodeGrp))
+            val rotChannel = RotationAnimationChannel("${modelAnim.name}_rotation", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
                 AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
                 AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
@@ -240,9 +245,7 @@ data class GltfFile(
             }
         }
 
-        private fun makeScaleAnimation(animCh: AnimationChannel, modelAnim: de.fabmax.kool.scene.animation.Animation) {
-            val node = animCh.target.nodeRef ?: return
-            val nodeGrp = modelNodes[node] ?: return
+        private fun makeScaleAnimation(animCh: AnimationChannel, animNd: AnimationNode, modelAnim: de.fabmax.kool.scene.animation.Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -255,7 +258,7 @@ data class GltfFile(
                 return
             }
 
-            val scaleChannel = ScaleAnimationChannel("${modelAnim.name}_scale", AnimatedTransformGroup(nodeGrp))
+            val scaleChannel = ScaleAnimationChannel("${modelAnim.name}_scale", animNd)
             val interpolation = when (animCh.samplerRef.interpolation) {
                 AnimationSampler.INTERPOLATION_STEP -> AnimationKey.Interpolation.STEP
                 AnimationSampler.INTERPOLATION_CUBICSPLINE -> AnimationKey.Interpolation.CUBICSPLINE
@@ -277,6 +280,35 @@ data class GltfFile(
                 }
                 scaleKey.interpolation = interpolation
                 scaleChannel.keys[t] = scaleKey
+            }
+        }
+
+        private fun makeSkins(model: Model) {
+            skins.forEach { skin ->
+                val modelSkin = Skin()
+                val invBinMats = skin.inverseBindMatrixAccessorRef?.let { Mat4fAccessor(it) }
+                if (invBinMats != null) {
+                    // 1st pass: make SkinNodes for specified nodes / TransformGroups
+                    val skinNodes = mutableMapOf<Node, de.fabmax.kool.scene.animation.Skin.SkinNode>()
+                    skin.jointRefs.forEach { joint ->
+                        val jointGrp = modelNodes[joint]!!
+                        val invBindMat = invBinMats.next()
+                        val skinNode = de.fabmax.kool.scene.animation.Skin.SkinNode(jointGrp, invBindMat)
+                        modelSkin.nodes += skinNode
+                        skinNodes[joint] = skinNode
+                    }
+                    // 2nd pass: build SkinNode hierarchy
+                    skin.jointRefs.forEach { joint ->
+                        val skinNode = skinNodes[joint]
+                        if (skinNode != null) {
+                            joint.childRefs.forEach { child ->
+                                val childNode = skinNodes[child]
+                                childNode?.let { skinNode.addChild(it) }
+                            }
+                        }
+                    }
+                    model.skins += modelSkin
+                }
             }
         }
 
@@ -352,9 +384,10 @@ data class GltfFile(
         }
 
         private fun Node.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
-            val nodeGrp = TransformGroup(name)
+            val modelNdName = name ?: "node_${model.nodes.size}"
+            val nodeGrp = TransformGroup(modelNdName)
             modelNodes[this] = nodeGrp
-            model.nodes[name] = nodeGrp
+            model.nodes[modelNdName] = nodeGrp
 
             if (matrix != null) {
                 nodeGrp.transform.set(matrix.map { it.toDouble() })
@@ -375,8 +408,12 @@ data class GltfFile(
                 nodeGrp += it.makeNode(model, cfg)
             }
 
+            return nodeGrp
+        }
+
+        private fun Node.createMeshes(model: Model, nodeGrp: TransformGroup, cfg: ModelGenerateConfig) {
             meshRef?.primitives?.forEachIndexed { index, p ->
-                val name = "${meshRef?.name ?: name}_$index"
+                val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = p.toGeometry(cfg.generateNormals)
                 if (!geometry.isEmpty()) {
                     val mesh = de.fabmax.kool.scene.Mesh(geometry, name)
@@ -384,6 +421,10 @@ data class GltfFile(
 
                     meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
                     meshMaterials[mesh] = p.materialRef
+
+                    if (cfg.applySkins && skin >= 0) {
+                        mesh.skin = model.skins[skin]
+                    }
 
                     if (cfg.applyMaterials) {
                         val useVertexColor = p.attributes.containsKey(MeshPrimitive.ATTRIBUTE_COLOR_0)
@@ -395,6 +436,11 @@ data class GltfFile(
                                 albedo = Color.GRAY
                                 albedoSource = Albedo.STATIC_ALBEDO
                             }
+
+                            if (mesh.skin != null) {
+                                isSkinned = true
+                            }
+
                             cfg.pbrBlock?.invoke(this, p)
 
                             albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
@@ -409,8 +455,6 @@ data class GltfFile(
                     model.meshes[name] = mesh
                 }
             }
-
-            return nodeGrp
         }
     }
 

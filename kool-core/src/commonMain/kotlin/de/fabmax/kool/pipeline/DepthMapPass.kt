@@ -36,7 +36,17 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
     protected open fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
         // create a minimal dummy shader for each attribute set
         val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
-            vertexStage { positionOutput = simpleVertexPositionNode().outVec4 }
+            vertexStage {
+                var mvpMat = premultipliedMvpNode().outMvpMat
+                if (mesh.instances != null) {
+                    mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
+                }
+                if (mesh.skin != null) {
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
+                }
+                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+            }
             fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
         val pipelineBuilder = Pipeline.Builder().apply {
@@ -72,7 +82,17 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
 
     override fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
         val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
-            vertexStage { positionOutput = simpleVertexPositionNode().outVec4 }
+            vertexStage {
+                var mvpMat = premultipliedMvpNode().outMvpMat
+                if (mesh.instances != null) {
+                    mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
+                }
+                if (mesh.skin != null) {
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
+                }
+                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+            }
             fragmentStage {
                 val linDepth = addNode(LinearDepthNode(stage))
                 colorOutput(linDepth.outColor)
@@ -126,12 +146,23 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
             val ifNormals: StageInterfaceNode
             vertexStage {
                 val mvpNode = mvpNode()
+                var modelViewMat = multiplyNode(mvpNode.outViewMat, mvpNode.outModelMat).output
+                var mvpMat = mvpNode.outMvpMat
 
-                val modelViewMat = multiplyNode(mvpNode.outViewMat, mvpNode.outModelMat).output
+                if (mesh.instances != null) {
+                    mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
+                    modelViewMat = multiplyNode(modelViewMat, instanceAttrModelMat().output).output
+                }
+                if (mesh.skin != null) {
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
+                    modelViewMat = multiplyNode(modelViewMat, skinNd.outJointMat).output
+                }
+
                 val nrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                positionOutput = vec4TransformNode(attrPositions().output, mvpNode.outMvpMat).outVec4
+                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
             }
             fragmentStage {
                 val normal = flipBacksideNormalNode(ifNormals.output).outNormal

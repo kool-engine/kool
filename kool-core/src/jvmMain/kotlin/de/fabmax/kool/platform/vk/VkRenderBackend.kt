@@ -376,15 +376,33 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         val instanceCnt: Int
                         val insts = cmd.mesh.instances
                         val instData = model.instanceBuffer
-                        if (insts != null && instData != null && insts.numInstances > 0) {
+                        val intData = model.vertexBufferI?.vkBuffer
+
+                        val pBuffers: LongBuffer
+                        val pOffsets: LongBuffer
+                        if (insts != null && instData != null) {
                             instanceCnt = insts.numInstances
-                            vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer, instData.vkBuffer), longs(0L, 0L))
+                            if (intData != null) {
+                                pBuffers = longs(model.vertexBuffer.vkBuffer, intData, instData.vkBuffer)
+                                pOffsets = longs(0L, 0L, 0L)
+                            } else {
+                                pBuffers = longs(model.vertexBuffer.vkBuffer, instData.vkBuffer)
+                                pOffsets = longs(0L, 0L)
+                            }
+
                         } else {
                             instanceCnt = 1
-                            vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                            if (intData != null) {
+                                pBuffers = longs(model.vertexBuffer.vkBuffer, intData)
+                                pOffsets = longs(0L, 0L)
+                            } else {
+                                pBuffers = longs(model.vertexBuffer.vkBuffer)
+                                pOffsets = longs(0L)
+                            }
                         }
 
                         if (instanceCnt > 0) {
+                            vkCmdBindVertexBuffers(commandBuffer, 0, pBuffers, pOffsets)
                             vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                     pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)

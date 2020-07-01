@@ -34,10 +34,12 @@ data class Node(
         val scale: List<Float>? = null,
         val translation: List<Float>? = null,
         val weights: List<Float>? = null,
-        val name: String = ""
+        val name: String? = null
 ) {
     @Transient
     lateinit var childRefs: List<Node>
     @Transient
     var meshRef: Mesh? = null
+    @Transient
+    var skinRef: Skin? = null
 }

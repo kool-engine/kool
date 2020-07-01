@@ -6,7 +6,11 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.PipelineFactory
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.animation.Skin
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.MeshInstanceList
 
 
 inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
@@ -18,12 +22,6 @@ inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.(
 
 fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
     return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS), name, generate)
-}
-
-fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    val text = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS), name, generate)
-    //text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
-    return text
 }
 
 fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate: Mesh.() -> Unit): Mesh {
@@ -46,6 +44,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     val id = instanceId++
 
     var instances: MeshInstanceList? = null
+    var skin: Skin? = null
 
     var pipelineLoader: PipelineFactory? = null
         set(value) {

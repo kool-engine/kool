@@ -4,7 +4,7 @@ package de.fabmax.kool.pipeline
  * @author fabmax
  */
 
-enum class GlslType(val size: Int, val isInt: Boolean, val glslType: String) {
+enum class GlslType(val byteSize: Int, val isInt: Boolean, val glslType: String) {
     FLOAT(4, false, "float"),
     VEC_2F(8, false, "vec2"),
     VEC_3F(12, false, "vec3"),
@@ -33,6 +33,8 @@ data class Attribute(val name: String, val type: GlslType) {
         val TANGENTS = Attribute("attrib_tangents", GlslType.VEC_4F)
         val TEXTURE_COORDS = Attribute("attrib_texture_coords", GlslType.VEC_2F)
         val COLORS = Attribute("attrib_colors", GlslType.VEC_4F)
+        val JOINTS = Attribute("attrib_joints", GlslType.VEC_4I)
+        val WEIGHTS = Attribute("attrib_weights", GlslType.VEC_4F)
     }
 }
 

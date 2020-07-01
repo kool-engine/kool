@@ -37,8 +37,8 @@ class GltfDemo(ctx: KoolContext) {
                     20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5.0),
             GltfModel("Animated Box", "${Demo.modelBasePath}/BoxAnimated.gltf",
                     1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), 5.0),
-            GltfModel("Interpolation Test", "${Demo.modelBasePath}/InterpolationTest.glb",
-                    0.5f, Vec3f(0f, 1.25f, 0f), false, Vec3d(0.0, 3.5, 0.0), 7.0),
+            GltfModel("Cesium Man", "${Demo.modelBasePath}/CesiumMan.glb",
+                    1f, Vec3f.ZERO, false, Vec3d(0.0, 0.5, 0.0), 3.5),
             GltfModel("Tangent Test", "${Demo.modelBasePath}/NormalTangentMirrorTest.glb",
                     1f, Vec3f(0f, 1.2f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5),
             GltfModel("Alpha Mode Test", "${Demo.modelBasePath}/AlphaBlendModeTest.glb",
@@ -343,10 +343,10 @@ class GltfDemo(ctx: KoolContext) {
                         scale(scale, scale, scale)
                         isVisible = this@GltfModel.isVisible
                         contentGroup += this
-
                         if (animations.isNotEmpty()) {
                             onUpdate += { _, _ ->
                                 animations.forEach { a -> a.apply(animationTime) }
+                                skins.forEach { s -> s.updateJointTransforms() }
                             }
                         }
                     }

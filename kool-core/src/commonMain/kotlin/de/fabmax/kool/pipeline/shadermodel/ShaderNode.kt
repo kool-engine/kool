@@ -40,6 +40,11 @@ class ShaderNodeIoVar(val variable: ModelVar, val node: ShaderNode? = null) {
     fun ref3f() = variable.ref3f()
     fun ref4f() = variable.ref4f()
 
+    fun ref1i() = variable.ref1i()
+    fun ref2i() = variable.ref2i()
+    fun ref3i() = variable.ref3i()
+    fun ref4i() = variable.ref4i()
+
     fun refAsType(targetType: GlslType) = variable.refAsType(targetType)
 
     override fun toString(): String {

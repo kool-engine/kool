@@ -443,3 +443,104 @@ open class MutableVec4d(x: Double, y: Double, z: Double, w: Double) : Vec4d(x, y
 
     open operator fun set(i: Int, v: Double) { fields[i] = v }
 }
+
+open class Vec4i(x: Int, y: Int, z: Int, w: Int) {
+
+    protected val fields = IntArray(4)
+
+    open val x get() = this[0]
+    open val y get() = this[1]
+    open val z get() = this[2]
+    open val w get() = this[3]
+
+    constructor(f: Int) : this(f, f, f, f)
+    constructor(v: Vec4i) : this(v.x, v.y, v.z, v.w)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+        fields[3] = w
+    }
+
+    open operator fun get(i: Int): Int = fields[i]
+
+    override fun toString(): String = "($x, $y, $z, $w)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4i) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+        if (w != other.w) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        result = 31 * result + z.hashCode()
+        result = 31 * result + w.hashCode()
+        return result
+    }
+
+    companion object {
+        val ZERO = Vec4i(0)
+        val X_AXIS = Vec4i(1, 0, 0, 0)
+        val Y_AXIS = Vec4i(0, 1, 0, 0)
+        val Z_AXIS = Vec4i(0, 0, 1, 0)
+        val W_AXIS = Vec4i(0, 0, 0, 1)
+        val NEG_X_AXIS = Vec4i(-1, 0, 0, 0)
+        val NEG_Y_AXIS = Vec4i(0, -1, 0, 0)
+        val NEG_Z_AXIS = Vec4i(0, 0, -1, 0)
+        val NEG_W_AXIS = Vec4i(0, 0, 0, -1)
+    }
+}
+
+open class MutableVec4i(x: Int, y: Int, z: Int, w: Int) : Vec4i(x, y, z, w) {
+
+    override var x
+        get() = this[0]
+        set(value) { this[0] = value }
+    override var y
+        get() = this[1]
+        set(value) { this[1] = value }
+    override var z
+        get() = this[2]
+        set(value) { this[2] = value }
+    override var w
+        get() = this[3]
+        set(value) { this[3] = value }
+
+    constructor() : this(0, 0, 0, 0)
+    constructor(f: Int) : this(f, f, f, f)
+    constructor(other: Vec4i) : this(other.x, other.y, other.z, other.w)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+        fields[3] = w
+    }
+
+    fun set(x: Int, y: Int, z: Int, w: Int): MutableVec4i {
+        this.x = x
+        this.y = y
+        this.z = z
+        this.w = w
+        return this
+    }
+
+    fun set(other: Vec4i): MutableVec4i {
+        x = other.x
+        y = other.y
+        z = other.z
+        w = other.w
+        return this
+    }
+
+    open operator fun set(i: Int, v: Int) { fields[i] = v }
+}

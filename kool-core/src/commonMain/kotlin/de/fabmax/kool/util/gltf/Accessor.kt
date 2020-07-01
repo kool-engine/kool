@@ -324,7 +324,7 @@ class Vec3fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
 class Vec4fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
     init {
         if (accessor.type != Accessor.TYPE_VEC4) {
-            throw IllegalArgumentException("Vec3fAccessor requires accessor type ${Accessor.TYPE_VEC4}, provided was ${accessor.type}")
+            throw IllegalArgumentException("Vec4fAccessor requires accessor type ${Accessor.TYPE_VEC4}, provided was ${accessor.type}")
         }
         if (accessor.componentType != Accessor.COMP_TYPE_FLOAT) {
             throw IllegalArgumentException("Vec4fAccessor requires a float component type, provided was ${accessor.componentType}")
@@ -349,6 +349,72 @@ class Vec4fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
         result.y = nextDouble()
         result.z = nextDouble()
         result.w = nextDouble()
+        advance()
+        return result
+    }
+}
+
+/**
+ * Utility class to retrieve Vec4 int values from an accessor. The provided accessor must have a non floating
+ * point component type (byte, short or int either signed or unsigned) and must be of type VEC4.
+ *
+ * @param accessor [Accessor] to use.
+ */
+class Vec4iAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
+    init {
+        if (accessor.type != Accessor.TYPE_VEC4) {
+            throw IllegalArgumentException("Vec4iAccessor requires accessor type ${Accessor.TYPE_VEC4}, provided was ${accessor.type}")
+        }
+        if (accessor.componentType !in Accessor.COMP_INT_TYPES) {
+            throw IllegalArgumentException("Vec4fAccessor requires a (byte / short / int) component type, provided was ${accessor.componentType}")
+        }
+    }
+
+    fun next(): MutableVec4i = next(MutableVec4i())
+
+    fun next(result: MutableVec4i): MutableVec4i {
+        result.x = nextInt()
+        result.y = nextInt()
+        result.z = nextInt()
+        result.w = nextInt()
+        advance()
+        return result
+    }
+}
+
+
+/**
+ * Utility class to retrieve Mat4 float values from an accessor. The provided accessor must have a float component type
+ * and must be of type MAT4.
+ *
+ * @param accessor [Accessor] to use.
+ */
+class Mat4fAccessor(accessor: Accessor) : DataStreamAccessor(accessor) {
+    init {
+        if (accessor.type != Accessor.TYPE_MAT4) {
+            throw IllegalArgumentException("Mat4fAccessor requires accessor type ${Accessor.TYPE_MAT4}, provided was ${accessor.type}")
+        }
+        if (accessor.componentType != Accessor.COMP_TYPE_FLOAT) {
+            throw IllegalArgumentException("Mat4fAccessor requires a float component type, provided was ${accessor.componentType}")
+        }
+    }
+
+    fun next(): Mat4f = next(Mat4f())
+
+    fun next(result: Mat4f): Mat4f {
+        for (i in 0..15) {
+            result.matrix[i] = nextFloat()
+        }
+        advance()
+        return result
+    }
+
+    fun nextD(): Mat4d = nextD(Mat4d())
+
+    fun nextD(result: Mat4d): Mat4d {
+        for (i in 0..15) {
+            result.matrix[i] = nextDouble()
+        }
         advance()
         return result
     }

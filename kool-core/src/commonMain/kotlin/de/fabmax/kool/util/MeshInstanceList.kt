@@ -44,7 +44,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
                 throw IllegalArgumentException("For now only float attributes are supported")
             } else {
                 offsets[attrib] = strideF
-                strideF += attrib.type.size
+                strideF += attrib.type.byteSize
             }
         }
 

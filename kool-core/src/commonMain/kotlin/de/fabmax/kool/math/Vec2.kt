@@ -344,3 +344,74 @@ open class MutableVec2d(x: Double, y: Double) : Vec2d(x, y) {
 
     operator fun timesAssign(factor : Double) { scale(factor) }
 }
+
+open class Vec2i(x: Int, y: Int) {
+
+    protected val fields = IntArray(2)
+
+    open val x get() = this[0]
+    open val y get() = this[1]
+
+    constructor(f: Int) : this(f, f)
+    constructor(v: Vec2i) : this(v.x, v.y)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+    }
+
+    open operator fun get(i: Int): Int = fields[i]
+
+    override fun toString(): String = "($x, $y)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4i) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        return result
+    }
+
+    companion object {
+        val ZERO = Vec2i(0)
+        val X_AXIS = Vec2i(1, 0)
+        val Y_AXIS = Vec2i(0, 1)
+        val NEG_X_AXIS = Vec2i(-1, 0)
+        val NEG_Y_AXIS = Vec2i(0, -1)
+    }
+}
+
+open class MutableVec2i(x: Int, y: Int) : Vec2i(x, y) {
+
+    override var x
+        get() = this[0]
+        set(value) { fields[0] = value }
+    override var y
+        get() = this[1]
+        set(value) { fields[1] = value }
+
+    constructor() : this(0, 0)
+    constructor(f: Int) : this(f, f)
+    constructor(other: Vec2i) : this(other.x, other.y)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+    }
+
+    fun set(other: Vec2i): MutableVec2i {
+        x = other.x
+        y = other.y
+        return this
+    }
+
+    open operator fun set(i: Int, v: Int) { fields[i] = v }
+}

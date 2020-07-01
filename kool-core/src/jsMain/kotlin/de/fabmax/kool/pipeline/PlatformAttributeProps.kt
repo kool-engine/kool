@@ -35,8 +35,21 @@ actual class PlatformAttributeProps actual constructor(attribute: Attribute) {
                 nSlots = 4
                 attribSize = 4
             }
-            else -> {
-                throw IllegalArgumentException("Attribute type not supported: ${attribute.type}")
+            GlslType.INT -> {
+                nSlots = 1
+                attribSize = 1
+            }
+            GlslType.VEC_2I -> {
+                nSlots = 1
+                attribSize = 2
+            }
+            GlslType.VEC_3I -> {
+                nSlots = 1
+                attribSize = 3
+            }
+            GlslType.VEC_4I -> {
+                nSlots = 1
+                attribSize = 4
             }
         }
     }

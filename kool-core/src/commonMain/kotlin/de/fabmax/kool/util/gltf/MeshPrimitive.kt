@@ -35,6 +35,8 @@ data class MeshPrimitive(
         val tangentAcc = attribAccessorRefs[ATTRIBUTE_TANGENT]
         val texCoordAcc = attribAccessorRefs[ATTRIBUTE_TEXCOORD_0]
         val colorAcc = attribAccessorRefs[ATTRIBUTE_COLOR_0]
+        val jointAcc = attribAccessorRefs[ATTRIBUTE_JOINTS_0]
+        val weightAcc = attribAccessorRefs[ATTRIBUTE_WEIGHTS_0]
 
         if (positionAcc == null) {
             logW { "MeshPrimitive without position attribute" }
@@ -57,6 +59,8 @@ data class MeshPrimitive(
             attribs += Attribute.TANGENTS
             generateTangents = true
         }
+        if (jointAcc != null) { attribs += Attribute.JOINTS }
+        if (weightAcc != null) { attribs += Attribute.WEIGHTS }
 
         val verts = IndexedVertexList(attribs)
         val poss = Vec3fAccessor(positionAcc)
@@ -64,6 +68,8 @@ data class MeshPrimitive(
         val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null
         val texs = if (texCoordAcc != null) Vec2fAccessor(texCoordAcc) else null
         val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
+        val jnts = if (jointAcc != null) Vec4iAccessor(jointAcc) else null
+        val wgts = if (weightAcc != null) Vec4fAccessor(weightAcc) else null
 
         for (i in 0 until positionAcc.count) {
             verts.addVertex {
@@ -71,7 +77,9 @@ data class MeshPrimitive(
                 nrms?.next(normal)
                 tans?.next(tangent)
                 texs?.next(texCoord)
-                cols?.next()?.let { col -> color.set(col.x, col.y, col.z, col.w) }
+                cols?.next()?.let { col -> color.set(col) }
+                jnts?.next(joints)
+                wgts?.next(weights)
             }
         }
 

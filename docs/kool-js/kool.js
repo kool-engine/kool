@@ -198,14 +198,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   MutableVec2f.prototype.constructor = MutableVec2f;
   MutableVec2d.prototype = Object.create(Vec2d.prototype);
   MutableVec2d.prototype.constructor = MutableVec2d;
+  MutableVec2i.prototype = Object.create(Vec2i.prototype);
+  MutableVec2i.prototype.constructor = MutableVec2i;
   MutableVec3f.prototype = Object.create(Vec3f.prototype);
   MutableVec3f.prototype.constructor = MutableVec3f;
   MutableVec3d.prototype = Object.create(Vec3d.prototype);
   MutableVec3d.prototype.constructor = MutableVec3d;
+  MutableVec3i.prototype = Object.create(Vec3i.prototype);
+  MutableVec3i.prototype.constructor = MutableVec3i;
   MutableVec4f.prototype = Object.create(Vec4f.prototype);
   MutableVec4f.prototype.constructor = MutableVec4f;
   MutableVec4d.prototype = Object.create(Vec4d.prototype);
   MutableVec4d.prototype.constructor = MutableVec4d;
+  MutableVec4i.prototype = Object.create(Vec4i.prototype);
+  MutableVec4i.prototype.constructor = MutableVec4i;
   LowPassFilter.prototype = Object.create(SampleNode.prototype);
   LowPassFilter.prototype.constructor = LowPassFilter;
   HighPassFilter.prototype = Object.create(SampleNode.prototype);
@@ -404,6 +410,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Vec3TransformNode.prototype.constructor = Vec3TransformNode;
   Vec4TransformNode.prototype = Object.create(ShaderNode.prototype);
   Vec4TransformNode.prototype.constructor = Vec4TransformNode;
+  SkinTransformNode.prototype = Object.create(ShaderNode.prototype);
+  SkinTransformNode.prototype.constructor = SkinTransformNode;
   UniformBufferPremultipliedMvp$StageCopy.prototype = Object.create(ShaderNode.prototype);
   UniformBufferPremultipliedMvp$StageCopy.prototype.constructor = UniformBufferPremultipliedMvp$StageCopy;
   UniformBufferPremultipliedMvp.prototype = Object.create(ShaderNode.prototype);
@@ -704,6 +712,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Vec3fAccessor.prototype.constructor = Vec3fAccessor;
   Vec4fAccessor.prototype = Object.create(DataStreamAccessor.prototype);
   Vec4fAccessor.prototype.constructor = Vec4fAccessor;
+  Vec4iAccessor.prototype = Object.create(DataStreamAccessor.prototype);
+  Vec4iAccessor.prototype.constructor = Vec4iAccessor;
+  Mat4fAccessor.prototype = Object.create(DataStreamAccessor.prototype);
+  Mat4fAccessor.prototype.constructor = Mat4fAccessor;
   BrdfLutPass$BrdfLutNode.prototype = Object.create(ShaderNode.prototype);
   BrdfLutPass$BrdfLutNode.prototype.constructor = BrdfLutPass$BrdfLutNode;
   BrdfLutPass.prototype = Object.create(OffscreenRenderPass2d.prototype);
@@ -754,6 +766,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   VertexView$Vec4fView.prototype.constructor = VertexView$Vec4fView;
   VertexView$ColorWrapView.prototype = Object.create(MutableColor.prototype);
   VertexView$ColorWrapView.prototype.constructor = VertexView$ColorWrapView;
+  VertexView$Vec2iView.prototype = Object.create(MutableVec2i.prototype);
+  VertexView$Vec2iView.prototype.constructor = VertexView$Vec2iView;
+  VertexView$Vec3iView.prototype = Object.create(MutableVec3i.prototype);
+  VertexView$Vec3iView.prototype.constructor = VertexView$Vec3iView;
+  VertexView$Vec4iView.prototype = Object.create(MutableVec4i.prototype);
+  VertexView$Vec4iView.prototype.constructor = VertexView$Vec4iView;
   VertexView.prototype = Object.create(MutableVec3f.prototype);
   VertexView.prototype.constructor = VertexView;
   OffscreenPass2dImpl$OffscreenTexture.prototype = Object.create(Texture.prototype);
@@ -5945,6 +5963,127 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     MutableVec2d.call($this, v.x, v.y);
     return $this;
   }
+  function Vec2i(x, y) {
+    Vec2i$Companion_getInstance();
+    this.fields = new Int32Array(2);
+    this.fields[0] = x;
+    this.fields[1] = y;
+  }
+  Object.defineProperty(Vec2i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec2i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Vec2i.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec2i.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ')';
+  };
+  Vec2i.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec4i))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    return true;
+  };
+  Vec2i.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    return result;
+  };
+  function Vec2i$Companion() {
+    Vec2i$Companion_instance = this;
+    this.ZERO = Vec2i_init(0);
+    this.X_AXIS = new Vec2i(1, 0);
+    this.Y_AXIS = new Vec2i(0, 1);
+    this.NEG_X_AXIS = new Vec2i(-1, 0);
+    this.NEG_Y_AXIS = new Vec2i(0, -1);
+  }
+  Vec2i$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec2i$Companion_instance = null;
+  function Vec2i$Companion_getInstance() {
+    if (Vec2i$Companion_instance === null) {
+      new Vec2i$Companion();
+    }return Vec2i$Companion_instance;
+  }
+  Vec2i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec2i',
+    interfaces: []
+  };
+  function Vec2i_init(f, $this) {
+    $this = $this || Object.create(Vec2i.prototype);
+    Vec2i.call($this, f, f);
+    return $this;
+  }
+  function Vec2i_init_0(v, $this) {
+    $this = $this || Object.create(Vec2i.prototype);
+    Vec2i.call($this, v.x, v.y);
+    return $this;
+  }
+  function MutableVec2i(x, y) {
+    Vec2i.call(this, x, y);
+    this.fields[0] = x;
+    this.fields[1] = y;
+  }
+  Object.defineProperty(MutableVec2i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.fields[0] = value;
+    }
+  });
+  Object.defineProperty(MutableVec2i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.fields[1] = value;
+    }
+  });
+  MutableVec2i.prototype.set_czzhjm$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    return this;
+  };
+  MutableVec2i.prototype.set_vux9f0$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec2i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec2i',
+    interfaces: [Vec2i]
+  };
+  function MutableVec2i_init($this) {
+    $this = $this || Object.create(MutableVec2i.prototype);
+    MutableVec2i.call($this, 0, 0);
+    return $this;
+  }
+  function MutableVec2i_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec2i.prototype);
+    MutableVec2i.call($this, f, f);
+    return $this;
+  }
+  function MutableVec2i_init_1(other, $this) {
+    $this = $this || Object.create(MutableVec2i.prototype);
+    MutableVec2i.call($this, other.x, other.y);
+    return $this;
+  }
   function Vec3f(x, y, z) {
     Vec3f$Companion_getInstance();
     this.fields = new Float32Array(3);
@@ -6550,6 +6689,154 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function MutableVec3d_init_1(v, $this) {
     $this = $this || Object.create(MutableVec3d.prototype);
     MutableVec3d.call($this, v.x, v.y, v.z);
+    return $this;
+  }
+  function Vec3i(x, y, z) {
+    Vec3i$Companion_getInstance();
+    this.fields = new Int32Array(3);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+  }
+  Object.defineProperty(Vec3i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec3i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Object.defineProperty(Vec3i.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    }
+  });
+  Vec3i.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec3i.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+  };
+  Vec3i.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec4i))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    if (this.z !== other.z)
+      return false;
+    return true;
+  };
+  Vec3i.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    result = (31 * result | 0) + hashCode(this.z) | 0;
+    return result;
+  };
+  function Vec3i$Companion() {
+    Vec3i$Companion_instance = this;
+    this.ZERO = Vec3i_init(0);
+    this.X_AXIS = new Vec3i(1, 0, 0);
+    this.Y_AXIS = new Vec3i(0, 1, 0);
+    this.Z_AXIS = new Vec3i(0, 0, 1);
+    this.NEG_X_AXIS = new Vec3i(-1, 0, 0);
+    this.NEG_Y_AXIS = new Vec3i(0, -1, 0);
+    this.NEG_Z_AXIS = new Vec3i(0, 0, -1);
+  }
+  Vec3i$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec3i$Companion_instance = null;
+  function Vec3i$Companion_getInstance() {
+    if (Vec3i$Companion_instance === null) {
+      new Vec3i$Companion();
+    }return Vec3i$Companion_instance;
+  }
+  Vec3i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec3i',
+    interfaces: []
+  };
+  function Vec3i_init(f, $this) {
+    $this = $this || Object.create(Vec3i.prototype);
+    Vec3i.call($this, f, f, f);
+    return $this;
+  }
+  function Vec3i_init_0(v, $this) {
+    $this = $this || Object.create(Vec3i.prototype);
+    Vec3i.call($this, v.x, v.y, v.z);
+    return $this;
+  }
+  function MutableVec3i(x, y, z) {
+    Vec3i.call(this, x, y, z);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+  }
+  Object.defineProperty(MutableVec3i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.set_vux9f0$(0, value);
+    }
+  });
+  Object.defineProperty(MutableVec3i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.set_vux9f0$(1, value);
+    }
+  });
+  Object.defineProperty(MutableVec3i.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    },
+    set: function (value) {
+      this.set_vux9f0$(2, value);
+    }
+  });
+  MutableVec3i.prototype.set_qt1dr2$ = function (x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  };
+  MutableVec3i.prototype.set_czzhir$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+    return this;
+  };
+  MutableVec3i.prototype.set_vux9f0$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec3i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec3i',
+    interfaces: [Vec3i]
+  };
+  function MutableVec3i_init($this) {
+    $this = $this || Object.create(MutableVec3i.prototype);
+    MutableVec3i.call($this, 0, 0, 0);
+    return $this;
+  }
+  function MutableVec3i_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec3i.prototype);
+    MutableVec3i.call($this, f, f, f);
+    return $this;
+  }
+  function MutableVec3i_init_1(other, $this) {
+    $this = $this || Object.create(MutableVec3i.prototype);
+    MutableVec3i.call($this, other.x, other.y, other.z);
     return $this;
   }
   function Vec4f(x, y, z, w) {
@@ -7189,6 +7476,176 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     MutableVec4d.call($this, other.x, other.y, other.z, other.w);
     return $this;
   }
+  function Vec4i(x, y, z, w) {
+    Vec4i$Companion_getInstance();
+    this.fields = new Int32Array(4);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+    this.fields[3] = w;
+  }
+  Object.defineProperty(Vec4i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec4i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Object.defineProperty(Vec4i.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    }
+  });
+  Object.defineProperty(Vec4i.prototype, 'w', {
+    get: function () {
+      return this.get_za3lpa$(3);
+    }
+  });
+  Vec4i.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec4i.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + ')';
+  };
+  Vec4i.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec4i))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    if (this.z !== other.z)
+      return false;
+    if (this.w !== other.w)
+      return false;
+    return true;
+  };
+  Vec4i.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    result = (31 * result | 0) + hashCode(this.z) | 0;
+    result = (31 * result | 0) + hashCode(this.w) | 0;
+    return result;
+  };
+  function Vec4i$Companion() {
+    Vec4i$Companion_instance = this;
+    this.ZERO = Vec4i_init(0);
+    this.X_AXIS = new Vec4i(1, 0, 0, 0);
+    this.Y_AXIS = new Vec4i(0, 1, 0, 0);
+    this.Z_AXIS = new Vec4i(0, 0, 1, 0);
+    this.W_AXIS = new Vec4i(0, 0, 0, 1);
+    this.NEG_X_AXIS = new Vec4i(-1, 0, 0, 0);
+    this.NEG_Y_AXIS = new Vec4i(0, -1, 0, 0);
+    this.NEG_Z_AXIS = new Vec4i(0, 0, -1, 0);
+    this.NEG_W_AXIS = new Vec4i(0, 0, 0, -1);
+  }
+  Vec4i$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec4i$Companion_instance = null;
+  function Vec4i$Companion_getInstance() {
+    if (Vec4i$Companion_instance === null) {
+      new Vec4i$Companion();
+    }return Vec4i$Companion_instance;
+  }
+  Vec4i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec4i',
+    interfaces: []
+  };
+  function Vec4i_init(f, $this) {
+    $this = $this || Object.create(Vec4i.prototype);
+    Vec4i.call($this, f, f, f, f);
+    return $this;
+  }
+  function Vec4i_init_0(v, $this) {
+    $this = $this || Object.create(Vec4i.prototype);
+    Vec4i.call($this, v.x, v.y, v.z, v.w);
+    return $this;
+  }
+  function MutableVec4i(x, y, z, w) {
+    Vec4i.call(this, x, y, z, w);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+    this.fields[3] = w;
+  }
+  Object.defineProperty(MutableVec4i.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.set_vux9f0$(0, value);
+    }
+  });
+  Object.defineProperty(MutableVec4i.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.set_vux9f0$(1, value);
+    }
+  });
+  Object.defineProperty(MutableVec4i.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    },
+    set: function (value) {
+      this.set_vux9f0$(2, value);
+    }
+  });
+  Object.defineProperty(MutableVec4i.prototype, 'w', {
+    get: function () {
+      return this.get_za3lpa$(3);
+    },
+    set: function (value) {
+      this.set_vux9f0$(3, value);
+    }
+  });
+  MutableVec4i.prototype.set_tjonv8$ = function (x, y, z, w) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.w = w;
+    return this;
+  };
+  MutableVec4i.prototype.set_czzhhw$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+    this.w = other.w;
+    return this;
+  };
+  MutableVec4i.prototype.set_vux9f0$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec4i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec4i',
+    interfaces: [Vec4i]
+  };
+  function MutableVec4i_init($this) {
+    $this = $this || Object.create(MutableVec4i.prototype);
+    MutableVec4i.call($this, 0, 0, 0, 0);
+    return $this;
+  }
+  function MutableVec4i_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec4i.prototype);
+    MutableVec4i.call($this, f, f, f, f);
+    return $this;
+  }
+  function MutableVec4i_init_1(other, $this) {
+    $this = $this || Object.create(MutableVec4i.prototype);
+    MutableVec4i.call($this, other.x, other.y, other.z, other.w);
+    return $this;
+  }
   function add(a, b) {
     return a.add_q2ruao$(b, MutableVec2f_init());
   }
@@ -7715,7 +8172,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Mesh.call(this, geometry);
     this.edgeHandler = edgeHandler;
     this.verts_0 = null;
-    this.positionOffset_0 = ensureNotNull(geometry.attributeOffsets.get_11rb$(Attribute$Companion_getInstance().POSITIONS));
+    this.positionOffset_0 = ensureNotNull(geometry.attributeByteOffsets.get_11rb$(Attribute$Companion_getInstance().POSITIONS));
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
     this.tmpVec3_0 = MutableVec3f_init();
@@ -9683,9 +10140,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function terminateOnError(targetError) {
     return new terminateOnError$ObjectLiteral(targetError);
   }
-  function GlslType(name, ordinal, size, isInt, glslType) {
+  function GlslType(name, ordinal, byteSize, isInt, glslType) {
     Enum.call(this);
-    this.size = size;
+    this.byteSize = byteSize;
     this.isInt = isInt;
     this.glslType = glslType;
     this.name$ = name;
@@ -9814,6 +10271,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.TANGENTS = new Attribute('attrib_tangents', GlslType$VEC_4F_getInstance());
     this.TEXTURE_COORDS = new Attribute('attrib_texture_coords', GlslType$VEC_2F_getInstance());
     this.COLORS = new Attribute('attrib_colors', GlslType$VEC_4F_getInstance());
+    this.JOINTS = new Attribute('attrib_joints', GlslType$VEC_4I_getInstance());
+    this.WEIGHTS = new Attribute('attrib_weights', GlslType$VEC_4F_getInstance());
   }
   Attribute$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -9880,7 +10339,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     var $receiver = new ShaderModel('shadow shader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
+    var mvpMat = $receiver_0.premultipliedMvpNode().outMvpMat;
+    if (mesh.instances != null) {
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    }if (mesh.skin != null) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output);
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+    }$receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     (new ShaderModel$FragmentStageBuilder($receiver)).colorOutput_a3v4si$(new ShaderNodeIoVar(new ModelVar4fConst(Vec4f_init(1.0))));
     var shadowShader = new ModeledShader($receiver);
     var $receiver_1 = new Pipeline$Builder();
@@ -9946,7 +10411,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   LinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     var $receiver = new ShaderModel('shadow shader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    $receiver_0.positionOutput = $receiver_0.simpleVertexPositionNode().outVec4;
+    var mvpMat = $receiver_0.premultipliedMvpNode().outMvpMat;
+    if (mesh.instances != null) {
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    }if (mesh.skin != null) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output);
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+    }$receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var linDepth = $receiver_1.addNode_u9w9by$(new LinearDepthMapPass$LinearDepthNode($receiver_1.stage));
     $receiver_1.colorOutput_a3v4si$(linDepth.outColor);
@@ -10017,9 +10488,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var mvpNode = $receiver_0.mvpNode();
     var modelViewMat = $receiver_0.multiplyNode_ze33is$(mvpNode.outViewMat, mvpNode.outModelMat).output;
-    var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0);
+    var mvpMat = mvpNode.outMvpMat;
+    if (mesh.instances != null) {
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, $receiver_0.instanceAttrModelMat().output).output;
+      modelViewMat = $receiver_0.multiplyNode_ze33is$(modelViewMat, $receiver_0.instanceAttrModelMat().output).output;
+    }if (mesh.skin != null) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output);
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+      modelViewMat = $receiver_0.multiplyNode_ze33is$(modelViewMat, skinNd.outJointMat).output;
+    }var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0);
     ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
-    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpNode.outMvpMat).outVec4;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$($receiver_0.attrPositions().output, mvpMat).outVec4;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var normal = $receiver_1.flipBacksideNormalNode_r20yfm$(ifNormals.v.output).outNormal;
     var linDepth = $receiver_1.addNode_u9w9by$(new NormalLinearDepthMapPass$NormalLinearDepthNode(normal, $receiver_1.stage));
@@ -11927,7 +12406,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_lhtstx$(this.lightNode);
   };
   PhongMaterialNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 phongMat_v = normalize(' + this.inFragPos.ref3f() + ' - ' + this.inCamPos.ref3f() + ');' + '\n' + '            vec3 phongMat_n = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            vec3 phongMat_ambient = ' + this.inAlbedo.ref3f() + ' * ' + this.inAmbient.ref3f() + ';' + '\n' + '            vec3 phongMat_diffuse = vec3(0);' + '\n' + '            vec3 phongMat_specular = vec3(0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount.name + '; i++) {' + '\n' + '                vec3 phongMat_l = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'phongMat_l', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                phongMat_l = normalize(phongMat_l);' + '\n' + '                ' + '\n' + '                ' + (this.lightBacksides ? 'if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }' : '') + '\n' + '        ' + '\n' + '                float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);' + '\n' + '                vec3 phongMat_r = reflect(phongMat_l, phongMat_n);' + '\n' + '                float phongMat_cosAlpha = clamp(dot(phongMat_v, phongMat_r), 0.0, 1.0);' + '\n' + '                ' + '\n' + '                phongMat_diffuse += ' + this.inAlbedo.ref4f() + '.rgb * radiance * phongMat_cosTheta;' + '\n' + '                phongMat_specular += ' + this.inSpecularIntensity.ref1f() + ' * radiance *' + '\n' + '                        pow(phongMat_cosAlpha, ' + this.inShininess.ref1f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            } ' + '\n' + '            ' + '\n' + '            vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(phongMat_color * ' + this.inAlbedo.ref4f() + '.a, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 phongMat_v = normalize(' + this.inFragPos.ref3f() + ' - ' + this.inCamPos.ref3f() + ');' + '\n' + '            vec3 phongMat_n = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            vec3 phongMat_ambient = ' + this.inAlbedo.ref3f() + ' * ' + this.inAmbient.ref3f() + ';' + '\n' + '            vec3 phongMat_diffuse = vec3(0);' + '\n' + '            vec3 phongMat_specular = vec3(0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount.ref1i() + '; i++) {' + '\n' + '                vec3 phongMat_l = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'phongMat_l', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '                phongMat_l = normalize(phongMat_l);' + '\n' + '                ' + '\n' + '                ' + (this.lightBacksides ? 'if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }' : '') + '\n' + '        ' + '\n' + '                float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);' + '\n' + '                vec3 phongMat_r = reflect(phongMat_l, phongMat_n);' + '\n' + '                float phongMat_cosAlpha = clamp(dot(phongMat_v, phongMat_r), 0.0, 1.0);' + '\n' + '                ' + '\n' + '                phongMat_diffuse += ' + this.inAlbedo.ref4f() + '.rgb * radiance * phongMat_cosTheta;' + '\n' + '                phongMat_specular += ' + this.inSpecularIntensity.ref1f() + ' * radiance *' + '\n' + '                        pow(phongMat_cosAlpha, ' + this.inShininess.ref1f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            } ' + '\n' + '            ' + '\n' + '            vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(phongMat_color * ' + this.inAlbedo.ref4f() + '.a, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '            ');
   };
   PhongMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -11965,7 +12444,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendFunction_puj7f4$('DistributionGGX', '\n            float DistributionGGX(vec3 N, vec3 H, float roughness) {\n                float a = roughness*roughness;\n                float a2 = a*a;\n                float NdotH = max(dot(N, H), 0.0);\n                float NdotH2 = NdotH*NdotH;\n            \t\n                float num = a2;\n                float denom = (NdotH2 * (a2 - 1.0) + 1.0);\n                denom = 3.141592653589793 * denom * denom;\n            \t\n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySchlickGGX', '\n            float GeometrySchlickGGX(float NdotV, float roughness) {\n                float r = (roughness + 1.0);\n                float k = (r*r) / 8.0;\n                \n                float num   = NdotV;\n                float denom = NdotV * (1.0 - k) + k;\n                \n                return num / denom;\n            }\n        ');
     generator.appendFunction_puj7f4$('GeometrySmith', '\n            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {\n                float NdotV = max(dot(N, V), 0.0);\n                float NdotL = max(dot(N, L), 0.0);\n                float ggx2  = GeometrySchlickGGX(NdotV, roughness);\n                float ggx1  = GeometrySchlickGGX(NdotL, roughness);\n                \n                return ggx1 * ggx2;\n            }\n        ');
-    generator.appendMain_61zpoe$('\n' + '            vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '            vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '            vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '            float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '            ' + '\n' + '            vec3 F0 = vec3(0.04); ' + '\n' + '            F0 = mix(F0, albedo, metal);' + '\n' + '    ' + '\n' + '            vec3 Lo = vec3(0.0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount + '; i++) {' + '\n' + '                // calculate per-light radiance' + '\n' + '                vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '        ' + '\n' + '                ' + (this.lightBacksides ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                Lo += (kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL;' + '\n' + '            }' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 albedo = ' + this.inAlbedo.ref3f() + ';' + '\n' + '            vec3 V = normalize(' + this.inCamPos.ref3f() + ' - ' + this.inFragPos.ref3f() + ');' + '\n' + '            vec3 N = normalize(' + this.inNormal.ref3f() + ');' + '\n' + '            ' + '\n' + '            float rough = clamp(' + this.inRoughness.ref1f() + ', 0.05, 1.0);' + '\n' + '            float metal = ' + this.inMetallic.ref1f() + ';' + '\n' + '            ' + '\n' + '            vec3 F0 = vec3(0.04); ' + '\n' + '            F0 = mix(F0, albedo, metal);' + '\n' + '    ' + '\n' + '            vec3 Lo = vec3(0.0);' + '\n' + '            for (int i = 0; i < ' + this.lightNode.outLightCount.ref1i() + '; i++) {' + '\n' + '                // calculate per-light radiance' + '\n' + '                vec3 fragToLight = ' + this.lightNode.callVec3GetFragToLight_puj7f4$('i', this.inFragPos.ref3f()) + ';' + '\n' + '                vec3 L = normalize(fragToLight);' + '\n' + '                vec3 H = normalize(V + L);' + '\n' + '                vec3 radiance = ' + this.lightNode.callVec3GetRadiance_6hosri$('i', 'fragToLight', this.inSpotInnerAngle.ref1f()) + ';' + '\n' + '        ' + '\n' + '                ' + (this.lightBacksides ? 'N *= sign(dot(N, L));' : '') + '\n' + '        ' + '\n' + '                // cook-torrance BRDF' + '\n' + '                float NDF = DistributionGGX(N, H, rough); ' + '\n' + '                float G = GeometrySmith(N, V, L, rough);' + '\n' + '                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);' + '\n' + '                ' + '\n' + '                vec3 kS = F;' + '\n' + '                vec3 kD = vec3(1.0) - kS;' + '\n' + '                kD *= 1.0 - metal;' + '\n' + '                ' + '\n' + '                vec3 numerator = NDF * G * F;' + '\n' + '                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);' + '\n' + '                vec3 specular = numerator / max(denominator, 0.001);' + '\n' + '                    ' + '\n' + '                // add to outgoing radiance Lo' + '\n' + '                float NdotL = max(dot(N, L), 0.0);' + '\n' + '                Lo += (kD * albedo / ' + math.PI + ' + specular) * radiance * NdotL;' + '\n' + '            }' + '\n' + '            ');
     if (this.reflectionMap != null && this.brdfLut != null) {
       this.generateFinalIbl_0(generator, this.reflectionMap, this.brdfLut);
     } else {
@@ -12146,6 +12625,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return this.name + '.x';
       case 'VEC_4F':
         return this.name + '.x';
+      case 'INT':
+        return 'float(' + this.name + ')';
+      case 'VEC_2I':
+        return 'float(' + this.name + '.x)';
+      case 'VEC_3I':
+        return 'float(' + this.name + '.x)';
+      case 'VEC_4I':
+        return 'float(' + this.name + '.x)';
       default:throw KoolException_init(this.type.toString() + ' cannot be converted to float');
     }
   };
@@ -12159,6 +12646,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return this.name + '.xy';
       case 'VEC_4F':
         return this.name + '.xy';
+      case 'INT':
+        return 'vec2(float(' + this.name + '), 0.0)';
+      case 'VEC_2I':
+        return 'vec2(float(' + this.name + '.x), float(' + this.name + '.y))';
+      case 'VEC_3I':
+        return 'vec2(float(' + this.name + '.x), float(' + this.name + '.y))';
+      case 'VEC_4I':
+        return 'vec2(float(' + this.name + '.x), float(' + this.name + '.y))';
       default:throw KoolException_init(this.type.toString() + ' cannot be converted to vec2');
     }
   };
@@ -12172,6 +12667,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return this.name;
       case 'VEC_4F':
         return this.name + '.xyz';
+      case 'INT':
+        return 'vec3(float(' + this.name + '), 0.0, 0.0)';
+      case 'VEC_2I':
+        return 'vec3(float(' + this.name + '.x), float(' + this.name + '.y), 0.0)';
+      case 'VEC_3I':
+        return 'vec3(float(' + this.name + '.x), float(' + this.name + '.y), float(' + this.name + '.z))';
+      case 'VEC_4I':
+        return 'vec3(float(' + this.name + '.x), float(' + this.name + '.y), float(' + this.name + '.z))';
       default:throw KoolException_init(this.type.toString() + ' cannot be converted to vec3');
     }
   };
@@ -12185,7 +12688,99 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return 'vec4(' + this.name + ', 0.0)';
       case 'VEC_4F':
         return this.name;
+      case 'INT':
+        return 'vec4(float(' + this.name + '), 0.0, 0.0, 0.0)';
+      case 'VEC_2I':
+        return 'vec4(float(' + this.name + '.x), float(' + this.name + '.y), 0.0, 0.0)';
+      case 'VEC_3I':
+        return 'vec4(float(' + this.name + '.x), float(' + this.name + '.y), float(' + this.name + '.z), 0.0)';
+      case 'VEC_4I':
+        return 'vec4(float(' + this.name + '.x), float(' + this.name + '.y), float(' + this.name + '.z), float(' + this.name + '.w))';
       default:throw KoolException_init(this.type.toString() + ' cannot be converted to vec4');
+    }
+  };
+  ModelVar.prototype.ref1i = function () {
+    switch (this.type.name) {
+      case 'FLOAT':
+        return 'int(name)';
+      case 'VEC_2F':
+        return 'int(' + this.name + '.x)';
+      case 'VEC_3F':
+        return 'int(' + this.name + '.x)';
+      case 'VEC_4F':
+        return 'int(' + this.name + '.x)';
+      case 'INT':
+        return this.name;
+      case 'VEC_2I':
+        return this.name + '.x';
+      case 'VEC_3I':
+        return this.name + '.x';
+      case 'VEC_4I':
+        return this.name + '.x';
+      default:throw KoolException_init(this.type.toString() + ' cannot be converted to int');
+    }
+  };
+  ModelVar.prototype.ref2i = function () {
+    switch (this.type.name) {
+      case 'FLOAT':
+        return 'ivec2(int(' + this.name + '), 0)';
+      case 'VEC_2F':
+        return 'ivec2(int(' + this.name + '.x), int(' + this.name + '.y))';
+      case 'VEC_3F':
+        return 'ivec2(int(' + this.name + '.x), int(' + this.name + '.y))';
+      case 'VEC_4F':
+        return 'ivec2(int(' + this.name + '.x), int(' + this.name + '.y))';
+      case 'INT':
+        return 'ivec2(' + this.name + ', 0)';
+      case 'VEC_2I':
+        return this.name;
+      case 'VEC_3I':
+        return 'ivec2(' + this.name + '.xy)';
+      case 'VEC_4I':
+        return 'ivec2(' + this.name + '.xy)';
+      default:throw KoolException_init(this.type.toString() + ' cannot be converted to ivec2');
+    }
+  };
+  ModelVar.prototype.ref3i = function () {
+    switch (this.type.name) {
+      case 'FLOAT':
+        return 'ivec3(int(' + this.name + '), 0, 0)';
+      case 'VEC_2F':
+        return 'ivec3(int(' + this.name + '.x), int(' + this.name + '.y), 0)';
+      case 'VEC_3F':
+        return 'ivec3(int(' + this.name + '.x), int(' + this.name + '.y), int(' + this.name + '.z))';
+      case 'VEC_4F':
+        return 'ivec3(int(' + this.name + '.x), int(' + this.name + '.y), int(' + this.name + '.z))';
+      case 'INT':
+        return 'ivec3(' + this.name + ', 0, 0)';
+      case 'VEC_2I':
+        return 'ivec3(' + this.name + ', 0)';
+      case 'VEC_3I':
+        return this.name;
+      case 'VEC_4I':
+        return 'ivec3(' + this.name + '.xyz)';
+      default:throw KoolException_init(this.type.toString() + ' cannot be converted to ivec3');
+    }
+  };
+  ModelVar.prototype.ref4i = function () {
+    switch (this.type.name) {
+      case 'FLOAT':
+        return 'ivec4(int(' + this.name + '), 0, 0, 0)';
+      case 'VEC_2F':
+        return 'ivec4(int(' + this.name + '.x), int(' + this.name + '.y), 0, 0)';
+      case 'VEC_3F':
+        return 'ivec4(int(' + this.name + '.x), int(' + this.name + '.x), int(' + this.name + '.z), 0)';
+      case 'VEC_4F':
+        return 'ivec4(int(' + this.name + '.x), int(' + this.name + '.x), int(' + this.name + '.z), int(' + this.name + '.w))';
+      case 'INT':
+        return 'ivec4(' + this.name + ', 0, 0, 0)';
+      case 'VEC_2I':
+        return 'ivec4(' + this.name + ', 0, 0)';
+      case 'VEC_3I':
+        return 'ivec4(' + this.name + ', 0)';
+      case 'VEC_4I':
+        return this.name;
+      default:throw KoolException_init(this.type.toString() + ' cannot be converted to ivec4');
     }
   };
   ModelVar.$metadata$ = {
@@ -12297,6 +12892,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ModelVar1fConst.prototype.ref4f = function () {
     return 'vec4(float(' + this.value + '), 0.0, 0.0, 0.0)';
   };
+  ModelVar1fConst.prototype.ref1i = function () {
+    return 'int(' + this.value + ')';
+  };
+  ModelVar1fConst.prototype.ref2i = function () {
+    return 'ivec2(int(' + this.value + '), 0)';
+  };
+  ModelVar1fConst.prototype.ref3i = function () {
+    return 'ivec3(int(' + this.value + '), 0, 0)';
+  };
+  ModelVar1fConst.prototype.ref4i = function () {
+    return 'ivec4(int(' + this.value + '), 0, 0, 0)';
+  };
   ModelVar1fConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar1fConst',
@@ -12317,6 +12924,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ModelVar2fConst.prototype.ref4f = function () {
     return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), 0.0, 0.0)';
+  };
+  ModelVar2fConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar2fConst.prototype.ref2i = function () {
+    return 'ivec2(int(' + this.value.x + '), int(' + this.value.y + '))';
+  };
+  ModelVar2fConst.prototype.ref3i = function () {
+    return 'ivec3(int(' + this.value.x + '), int(' + this.value.y + '), 0)';
+  };
+  ModelVar2fConst.prototype.ref4i = function () {
+    return 'ivec4(int(' + this.value.x + '), int(' + this.value.y + '), 0, 0)';
   };
   ModelVar2fConst.$metadata$ = {
     kind: Kind_CLASS,
@@ -12339,6 +12958,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ModelVar3fConst.prototype.ref4f = function () {
     return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '), 0.0)';
   };
+  ModelVar3fConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar3fConst.prototype.ref2i = function () {
+    return 'ivec2(int(' + this.value.x + '), int(' + this.value.y + '))';
+  };
+  ModelVar3fConst.prototype.ref3i = function () {
+    return 'ivec3(int(' + this.value.x + '), int(' + this.value.y + '), int(' + this.value.z + '))';
+  };
+  ModelVar3fConst.prototype.ref4i = function () {
+    return 'ivec4(int(' + this.value.x + '), int(' + this.value.y + '), int(' + this.value.z + '), 0)';
+  };
   ModelVar3fConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar3fConst',
@@ -12360,6 +12991,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ModelVar4fConst.prototype.ref4f = function () {
     return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '), float(' + this.value.w + '))';
   };
+  ModelVar4fConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar4fConst.prototype.ref2i = function () {
+    return 'ivec2(int(' + this.value.x + '), int(' + this.value.y + '))';
+  };
+  ModelVar4fConst.prototype.ref3i = function () {
+    return 'ivec3(int(' + this.value.x + '), int(' + this.value.y + '), int(' + this.value.z + '))';
+  };
+  ModelVar4fConst.prototype.ref4i = function () {
+    return 'ivec4(int(' + this.value.x + '), int(' + this.value.y + '), int(' + this.value.z + '), int(' + this.value.w + '))';
+  };
   ModelVar4fConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar4fConst',
@@ -12370,85 +13013,127 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.value = value;
   }
   ModelVar1iConst.prototype.ref1f = function () {
-    return 'int(' + this.value + ')';
+    return 'float(' + this.value + ')';
   };
   ModelVar1iConst.prototype.ref2f = function () {
-    return 'vec2i(int(' + this.value + '), 0)';
+    return 'vec2(float(' + this.value + '), 0.0)';
   };
   ModelVar1iConst.prototype.ref3f = function () {
-    return 'vec3i(int(' + this.value + '), 0, 0)';
+    return 'vec3(float(' + this.value + '), 0.0, 0.0)';
   };
   ModelVar1iConst.prototype.ref4f = function () {
-    return 'vec4i(int(' + this.value + '), 0, 0, 0)';
+    return 'vec4(float(' + this.value + '), 0.0, 0.0, 0.0)';
+  };
+  ModelVar1iConst.prototype.ref1i = function () {
+    return this.value.toString();
+  };
+  ModelVar1iConst.prototype.ref2i = function () {
+    return 'ivec2(' + this.value + ', 0)';
+  };
+  ModelVar1iConst.prototype.ref3i = function () {
+    return 'ivec3(' + this.value + ', 0, 0)';
+  };
+  ModelVar1iConst.prototype.ref4i = function () {
+    return 'ivec4(' + this.value + ', 0, 0, 0)';
   };
   ModelVar1iConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar1iConst',
     interfaces: [ModelVar1i]
   };
-  function ModelVar2iConst(x, y) {
+  function ModelVar2iConst(value) {
     ModelVar2i.call(this, '_');
-    this.x = x;
-    this.y = y;
+    this.value = value;
   }
   ModelVar2iConst.prototype.ref1f = function () {
-    return this.x.toString();
+    return 'float(' + this.value.x + ')';
   };
   ModelVar2iConst.prototype.ref2f = function () {
-    return 'vec2i(' + this.x + ', ' + this.y + ')';
+    return 'vec2(float(' + this.value.x + '), float(' + this.value.y + '))';
   };
   ModelVar2iConst.prototype.ref3f = function () {
-    return 'vec3i(' + this.x + ', ' + this.y + ', 0)';
+    return 'vec3(float(' + this.value.x + '), float(' + this.value.y + '), 0.0)';
   };
   ModelVar2iConst.prototype.ref4f = function () {
-    return 'vec4i(' + this.x + ', ' + this.y + ', 0, 0)';
+    return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), 0.0, 0.0)';
+  };
+  ModelVar2iConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar2iConst.prototype.ref2i = function () {
+    return 'ivec2(' + this.value.x + ', ' + this.value.y + ')';
+  };
+  ModelVar2iConst.prototype.ref3i = function () {
+    return 'ivec3(' + this.value.x + ', ' + this.value.y + ', 0)';
+  };
+  ModelVar2iConst.prototype.ref4i = function () {
+    return 'ivec4(' + this.value.x + ', ' + this.value.y + ', 0, 0)';
   };
   ModelVar2iConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar2iConst',
     interfaces: [ModelVar2i]
   };
-  function ModelVar3iConst(x, y, z) {
+  function ModelVar3iConst(value) {
     ModelVar3i.call(this, '_');
-    this.x = x;
-    this.y = y;
-    this.z = z;
+    this.value = value;
   }
   ModelVar3iConst.prototype.ref1f = function () {
-    return this.x.toString();
+    return 'float(' + this.value.x + ')';
   };
   ModelVar3iConst.prototype.ref2f = function () {
-    return 'vec2i(' + this.x + ', ' + this.y + ')';
+    return 'vec2(float(' + this.value.x + '), float(' + this.value.y + '))';
   };
   ModelVar3iConst.prototype.ref3f = function () {
-    return 'vec3i(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+    return 'vec3(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '))';
   };
   ModelVar3iConst.prototype.ref4f = function () {
-    return 'vec4i(' + this.x + ', ' + this.y + ', ' + this.z + ', 0)';
+    return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '), 0.0)';
+  };
+  ModelVar3iConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar3iConst.prototype.ref2i = function () {
+    return 'ivec2(' + this.value.x + ', ' + this.value.y + ')';
+  };
+  ModelVar3iConst.prototype.ref3i = function () {
+    return 'ivec3(' + this.value.x + ', ' + this.value.y + ', ' + this.value.z + ')';
+  };
+  ModelVar3iConst.prototype.ref4i = function () {
+    return 'ivec4(' + this.value.x + ', ' + this.value.y + ', ' + this.value.z + ', 0)';
   };
   ModelVar3iConst.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelVar3iConst',
     interfaces: [ModelVar3i]
   };
-  function ModelVar4iConst(x, y, z, w) {
+  function ModelVar4iConst(value) {
     ModelVar4i.call(this, '_');
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;
+    this.value = value;
   }
   ModelVar4iConst.prototype.ref1f = function () {
-    return this.x.toString();
+    return 'float(' + this.value.x + ')';
   };
   ModelVar4iConst.prototype.ref2f = function () {
-    return 'vec2i(' + this.x + ', ' + this.y + ')';
+    return 'vec2(float(' + this.value.x + '), float(' + this.value.y + '))';
   };
   ModelVar4iConst.prototype.ref3f = function () {
-    return 'vec3i(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+    return 'vec3(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '))';
   };
   ModelVar4iConst.prototype.ref4f = function () {
-    return 'vec4i(' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + ')';
+    return 'vec4(float(' + this.value.x + '), float(' + this.value.y + '), float(' + this.value.z + '), float(' + this.value.w + '))';
+  };
+  ModelVar4iConst.prototype.ref1i = function () {
+    return 'int(' + this.value.x + ')';
+  };
+  ModelVar4iConst.prototype.ref2i = function () {
+    return 'ivec2(' + this.value.x + ', ' + this.value.y + ')';
+  };
+  ModelVar4iConst.prototype.ref3i = function () {
+    return 'ivec3(' + this.value.x + ', ' + this.value.y + ', ' + this.value.z + ')';
+  };
+  ModelVar4iConst.prototype.ref4i = function () {
+    return 'ivec4(' + this.value.x + ', ' + this.value.y + ', ' + this.value.z + ', ' + this.value.w + ')';
   };
   ModelVar4iConst.$metadata$ = {
     kind: Kind_CLASS,
@@ -12743,41 +13428,56 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var attribLocation = {v: 0};
     var verts = mesh.geometry;
     var vertLayoutAttribs = ArrayList_init_0();
+    var vertLayoutAttribsI = ArrayList_init_0();
+    var iBinding = 0;
     var tmp$;
     tmp$ = this.vertexStageGraph.requiredVertexAttributes.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
-      tmp$_0 = verts.attributeOffsets.get_11rb$(element);
+      tmp$_0 = verts.attributeByteOffsets.get_11rb$(element);
       if (tmp$_0 == null) {
         throw new NoSuchElementException_init_0('Mesh does not include required vertex attribute: ' + element.name);
       }var off = tmp$_0;
-      var element_0 = new VertexLayout$VertexAttribute(attribLocation.v, off, element);
-      vertLayoutAttribs.add_11rb$(element_0);
+      if (element.type.isInt) {
+        var element_0 = new VertexLayout$VertexAttribute(attribLocation.v, off, element);
+        vertLayoutAttribsI.add_11rb$(element_0);
+      } else {
+        var element_1 = new VertexLayout$VertexAttribute(attribLocation.v, off, element);
+        vertLayoutAttribs.add_11rb$(element_1);
+      }
       attribLocation.v = attribLocation.v + element.props.nSlots | 0;
     }
-    var $receiver = buildCtx.vertexLayout.bindings;
-    var element_1 = new VertexLayout$Binding(0, InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.strideBytesF);
-    $receiver.add_11rb$(element_1);
-    var insts = mesh.instances;
+    var tmp$_1;
+    tmp$_1 = buildCtx.vertexLayout.bindings;
+    var tmp$_2;
+    var element_2 = new VertexLayout$Binding((tmp$_2 = iBinding, iBinding = tmp$_2 + 1 | 0, tmp$_2), InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.byteStrideF);
+    tmp$_1.add_11rb$(element_2);
+    if (!vertLayoutAttribsI.isEmpty()) {
+      var tmp$_3;
+      tmp$_3 = buildCtx.vertexLayout.bindings;
+      var tmp$_4;
+      var element_3 = new VertexLayout$Binding((tmp$_4 = iBinding, iBinding = tmp$_4 + 1 | 0, tmp$_4), InputRate$VERTEX_getInstance(), vertLayoutAttribsI, verts.byteStrideI);
+      tmp$_3.add_11rb$(element_3);
+    }var insts = mesh.instances;
     if (insts != null) {
       var instLayoutAttribs = ArrayList_init_0();
-      var tmp$_1;
-      tmp$_1 = this.vertexStageGraph.requiredInstanceAttributes.iterator();
-      while (tmp$_1.hasNext()) {
-        var element_2 = tmp$_1.next();
-        var tmp$_2;
-        tmp$_2 = insts.attributeOffsets.get_11rb$(element_2);
-        if (tmp$_2 == null) {
-          throw new NoSuchElementException_init_0('Mesh does not include required instance attribute: ' + element_2.name);
-        }var off_0 = tmp$_2;
-        var element_3 = new VertexLayout$VertexAttribute(attribLocation.v, off_0, element_2);
-        instLayoutAttribs.add_11rb$(element_3);
-        attribLocation.v = attribLocation.v + element_2.props.nSlots | 0;
+      var tmp$_5;
+      tmp$_5 = this.vertexStageGraph.requiredInstanceAttributes.iterator();
+      while (tmp$_5.hasNext()) {
+        var element_4 = tmp$_5.next();
+        var tmp$_6;
+        tmp$_6 = insts.attributeOffsets.get_11rb$(element_4);
+        if (tmp$_6 == null) {
+          throw new NoSuchElementException_init_0('Mesh does not include required instance attribute: ' + element_4.name);
+        }var off_0 = tmp$_6;
+        var element_5 = new VertexLayout$VertexAttribute(attribLocation.v, off_0, element_4);
+        instLayoutAttribs.add_11rb$(element_5);
+        attribLocation.v = attribLocation.v + element_4.props.nSlots | 0;
       }
-      var $receiver_0 = buildCtx.vertexLayout.bindings;
-      var element_4 = new VertexLayout$Binding(1, InputRate$INSTANCE_getInstance(), instLayoutAttribs, insts.strideBytesF);
-      $receiver_0.add_11rb$(element_4);
+      var $receiver = buildCtx.vertexLayout.bindings;
+      var element_6 = new VertexLayout$Binding(iBinding, InputRate$INSTANCE_getInstance(), instLayoutAttribs, insts.strideBytesF);
+      $receiver.add_11rb$(element_6);
     } else {
       if (!this.vertexStageGraph.requiredInstanceAttributes.isEmpty()) {
         throw IllegalStateException_init("Shader model requires instance attributes, but mesh doesn't provide any");
@@ -13083,6 +13783,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderModel$VertexStageBuilder.prototype.attrTexCoords = function () {
     return this.attributeNode_nm2vx5$(Attribute$Companion_getInstance().TEXTURE_COORDS);
   };
+  ShaderModel$VertexStageBuilder.prototype.attrJoints = function () {
+    return this.attributeNode_nm2vx5$(Attribute$Companion_getInstance().JOINTS);
+  };
+  ShaderModel$VertexStageBuilder.prototype.attrWeights = function () {
+    return this.attributeNode_nm2vx5$(Attribute$Companion_getInstance().WEIGHTS);
+  };
   ShaderModel$VertexStageBuilder.prototype.attributeNode_nm2vx5$ = function (attribute) {
     return this.addNode_u9w9by$(new AttributeNode(attribute, this.stage));
   };
@@ -13107,6 +13813,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ShaderModel$VertexStageBuilder.prototype.mvpNode = function () {
     return this.addNode_u9w9by$(new UniformBufferMvp(this.stage));
+  };
+  ShaderModel$VertexStageBuilder.prototype.skinTransformNode_78eraa$ = function (inJoints, inWeights, maxJoints) {
+    if (inJoints === void 0)
+      inJoints = null;
+    if (inWeights === void 0)
+      inWeights = null;
+    if (maxJoints === void 0)
+      maxJoints = 32;
+    var skinNd = this.addNode_u9w9by$(new SkinTransformNode(this.stage, maxJoints));
+    if (inJoints != null) {
+      skinNd.inJoints = inJoints;
+    }if (inWeights != null) {
+      skinNd.inWeights = inWeights;
+    }return skinNd;
   };
   ShaderModel$VertexStageBuilder.prototype.premultipliedMvpNode = function () {
     return this.addNode_u9w9by$(new UniformBufferPremultipliedMvp(this.stage));
@@ -13392,6 +14112,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ShaderNodeIoVar.prototype.ref4f = function () {
     return this.variable.ref4f();
+  };
+  ShaderNodeIoVar.prototype.ref1i = function () {
+    return this.variable.ref1i();
+  };
+  ShaderNodeIoVar.prototype.ref2i = function () {
+    return this.variable.ref2i();
+  };
+  ShaderNodeIoVar.prototype.ref3i = function () {
+    return this.variable.ref3i();
+  };
+  ShaderNodeIoVar.prototype.ref4i = function () {
+    return this.variable.ref4i();
   };
   ShaderNodeIoVar.prototype.refAsType_m7a9qd$ = function (targetType) {
     return this.variable.refAsType_m7a9qd$(targetType);
@@ -13879,6 +14611,55 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Vec4TransformNode',
     interfaces: [ShaderNode]
   };
+  function SkinTransformNode(graph, maxJoints) {
+    ShaderNode.call(this, 'skinTransform_' + graph.nextNodeId, graph);
+    this.inJoints = new ShaderNodeIoVar(new ModelVar4iConst(Vec4i$Companion_getInstance().ZERO));
+    this.inWeights = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().X_AXIS));
+    this.uJointTransforms = new UniformMat4fv('uJointTransforms', maxJoints);
+    this.outJointMat = new ShaderNodeIoVar(new ModelVarMat4f(this.name + '_outMat'), this);
+  }
+  function SkinTransformNode$setup$lambda$lambda$lambda(this$SkinTransformNode) {
+    return function () {
+      return this$SkinTransformNode.uJointTransforms;
+    };
+  }
+  function SkinTransformNode$setup$lambda$lambda$lambda_0(this$SkinTransformNode) {
+    return function (f, cmd) {
+      var tmp$;
+      if ((tmp$ = cmd.mesh.skin) != null) {
+        var this$SkinTransformNode_0 = this$SkinTransformNode;
+        var tmp$_0;
+        tmp$_0 = tmp$.nodes;
+        for (var i = 0; i !== tmp$_0.size; ++i) {
+          var nd = tmp$.nodes.get_za3lpa$(i);
+          this$SkinTransformNode_0.uJointTransforms.value[i].set_d4zu6j$(nd.jointTransform);
+        }
+      }return Unit;
+    };
+  }
+  function SkinTransformNode$setup$lambda$lambda(this$SkinTransformNode) {
+    return function ($receiver) {
+      var $receiver_0 = $receiver.stages;
+      var element = this$SkinTransformNode.graph.stage;
+      $receiver_0.add_11rb$(element);
+      $receiver.unaryPlus_wq3w46$(SkinTransformNode$setup$lambda$lambda$lambda(this$SkinTransformNode));
+      $receiver.onUpdate = SkinTransformNode$setup$lambda$lambda$lambda_0(this$SkinTransformNode);
+      return Unit;
+    };
+  }
+  SkinTransformNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inJoints, this.inWeights]);
+    shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [], SkinTransformNode$setup$lambda$lambda(this));
+  };
+  SkinTransformNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('\n' + '            ' + this.outJointMat.declare() + ' = ' + this.uJointTransforms + '[' + this.inJoints.ref4i() + '.x] * ' + this.inWeights.ref4f() + '.x;' + '\n' + '            ' + this.outJointMat.name + ' += ' + this.uJointTransforms + '[' + this.inJoints.ref4i() + '.y] * ' + this.inWeights.ref4f() + '.y;' + '\n' + '            ' + this.outJointMat.name + ' += ' + this.uJointTransforms + '[' + this.inJoints.ref4i() + '.z] * ' + this.inWeights.ref4f() + '.z;' + '\n' + '            ' + this.outJointMat.name + ' += ' + this.uJointTransforms + '[' + this.inJoints.ref4i() + '.w] * ' + this.inWeights.ref4f() + '.w;' + '\n' + '        ');
+  };
+  SkinTransformNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SkinTransformNode',
+    interfaces: [ShaderNode]
+  };
   function UniformBufferPremultipliedMvp(graph) {
     ShaderNode.call(this, 'UboPremultipliedMvp', graph);
     this.uMvp = new UniformMat4f('modelViewProj');
@@ -14360,7 +15141,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   NormalMapNode.prototype.generateCode_626509$ = function (generator) {
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
-    generator.appendFunction_puj7f4$('calcBumpedNormal', '\n' + '            vec3 calcBumpedNormal(vec3 n, vec4 t, vec2 uv, float strength) {' + '\n' + '                vec3 normal = normalize(n);' + '\n' + '                vec3 tangent = normalize(t.xyz);' + '\n' + '                tangent = normalize(tangent - dot(tangent, normal) * normal);' + '\n' + '                vec3 bitangent = cross(normal, tangent) * (step(0.0, t.w) * 2.0 - 1.0);' + '\n' + '                vec3 bumpMapNormal = ' + generator.sampleTexture2d_buzeal$(this.texture.name, 'uv') + '.xyz;' + '\n' + '                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                return normalize(mix(normal, tbn * bumpMapNormal, strength));' + '\n' + '            }' + '\n' + '        ');
+    generator.appendFunction_puj7f4$('calcBumpedNormal', '\n' + '            vec3 calcBumpedNormal(vec3 n, vec4 t, vec2 uv, float strength) {' + '\n' + '                vec3 normal = normalize(n);' + '\n' + '                vec3 tangent = normalize(t.xyz);' + '\n' + '                tangent = normalize(tangent - dot(tangent, normal) * normal);' + '\n' + '                vec3 bitangent = cross(normal, tangent) * t.w;' + '\n' + '                vec3 bumpMapNormal = ' + generator.sampleTexture2d_buzeal$(this.texture.name, 'uv') + '.xyz;' + '\n' + '                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                return normalize(mix(normal, tbn * bumpMapNormal, strength));' + '\n' + '            }' + '\n' + '        ');
     generator.appendMain_61zpoe$(this.outNormal.declare() + ' = calcBumpedNormal(' + this.inNormal.ref3f() + ', ' + this.inTangent.ref4f() + ', ' + this.inTexCoord.ref2f() + ', ' + this.inStrength.ref1f() + ');');
   };
   NormalMapNode.$metadata$ = {
@@ -14902,7 +15683,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0;
       this.color_cjijrc$_0 = value;
-      (tmp$_0 = (tmp$ = this.uColor_0) != null ? tmp$.value : null) != null ? tmp$_0.set_d7aj7k$(value) : null;
+      (tmp$_0 = (tmp$ = this.uColor_0) != null ? tmp$.value : null) != null ? tmp$_0.set_czzhhz$(value) : null;
     }
   });
   ModeledShader$StaticColor.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
@@ -14942,7 +15723,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uColor_0 = (tmp$ = findNode_3klnlw$result) != null ? tmp$.uniform : null;
-    (tmp$_1 = (tmp$_0 = this.uColor_0) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(this.color) : null;
+    (tmp$_1 = (tmp$_0 = this.uColor_0) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(this.color) : null;
     ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
   };
   ModeledShader$StaticColor.$metadata$ = {
@@ -15277,7 +16058,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.albedo_iz6fyn$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(PbrShader.prototype, 'emissive', {
@@ -15287,7 +16068,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.emissive_ybel2l$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uEmissive_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uEmissive_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(PbrShader.prototype, 'albedoMap', {
@@ -15377,7 +16158,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.ambient_5b16r2$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAmbient_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAmbient_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(PbrShader.prototype, 'irradianceMap', {
@@ -15535,7 +16316,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uAlbedo_0 = findNode_3klnlw$result_1;
-    (tmp$_3 = (tmp$_2 = (tmp$_1 = this.uAlbedo_0) != null ? tmp$_1.uniform : null) != null ? tmp$_2.value : null) != null ? tmp$_3.set_d7aj7k$(this.albedo) : null;
+    (tmp$_3 = (tmp$_2 = (tmp$_1 = this.uAlbedo_0) != null ? tmp$_1.uniform : null) != null ? tmp$_2.value : null) != null ? tmp$_3.set_czzhhz$(this.albedo) : null;
     var $this_2 = this.model;
     var name_1 = 'uEmissive';
     var stage_2;
@@ -15571,7 +16352,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uEmissive_0 = findNode_3klnlw$result_2;
-    (tmp$_6 = (tmp$_5 = (tmp$_4 = this.uEmissive_0) != null ? tmp$_4.uniform : null) != null ? tmp$_5.value : null) != null ? tmp$_6.set_d7aj7k$(this.emissive) : null;
+    (tmp$_6 = (tmp$_5 = (tmp$_4 = this.uEmissive_0) != null ? tmp$_4.uniform : null) != null ? tmp$_5.value : null) != null ? tmp$_6.set_czzhhz$(this.emissive) : null;
     var $this_3 = this.model;
     var name_2 = 'uAmbient';
     var stage_3;
@@ -15607,7 +16388,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uAmbient_0 = findNode_3klnlw$result_3;
-    (tmp$_9 = (tmp$_8 = (tmp$_7 = this.uAmbient_0) != null ? tmp$_7.uniform : null) != null ? tmp$_8.value : null) != null ? tmp$_9.set_d7aj7k$(this.ambient) : null;
+    (tmp$_9 = (tmp$_8 = (tmp$_7 = this.uAmbient_0) != null ? tmp$_7.uniform : null) != null ? tmp$_8.value : null) != null ? tmp$_9.set_czzhhz$(this.ambient) : null;
     if (this.isReceivingShadow_0) {
       tmp$_10 = this.depthSamplers_0;
       loop_label: for (var i = 0; i !== tmp$_10.length; ++i) {
@@ -16116,7 +16897,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       modelMat = mvpNode.v.outModelMat;
       mvpMat = mvpNode.v.outMvpMat;
     }
-    var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
+    if (cfg.isSkinned) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output, cfg.maxJoints);
+      modelMat = $receiver_0.multiplyNode_ze33is$(modelMat, skinNd.outJointMat).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+    }var nrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
     ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', nrm.outVec3);
     if (cfg.requiresTexCoords()) {
       tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
@@ -16351,6 +17136,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isMetallicMapped = false;
     this.isAmbientOcclusionMapped = false;
     this.isDisplacementMapped = false;
+    this.isSkinned = false;
+    this.maxJoints = 32;
     this.normalStrength = 1.0;
     this.ambientOcclusionStrength = 1.0;
     this.isMultiplyAlbedoMap = false;
@@ -16501,7 +17288,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.albedo_xrasdd$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(PhongShader.prototype, 'albedoMap', {
@@ -16632,7 +17419,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uAlbedo_0 = findNode_3klnlw$result_1;
-    (tmp$_5 = (tmp$_4 = (tmp$_3 = this.uAlbedo_0) != null ? tmp$_3.uniform : null) != null ? tmp$_4.value : null) != null ? tmp$_5.set_d7aj7k$(this.albedo) : null;
+    (tmp$_5 = (tmp$_4 = (tmp$_3 = this.uAlbedo_0) != null ? tmp$_3.uniform : null) != null ? tmp$_4.value : null) != null ? tmp$_5.set_czzhhz$(this.albedo) : null;
     var $this_2 = this.model;
     var stage_2;
     var findNode_3klnlw$result_2;
@@ -17653,7 +18440,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function UniformColor_init(initValue, name, $this) {
     $this = $this || Object.create(UniformColor.prototype);
     UniformColor.call($this, name);
-    $this.value.set_d7aj7k$(initValue);
+    $this.value.set_czzhhz$(initValue);
     return $this;
   }
   function Uniform1fv(name, length) {
@@ -17947,7 +18734,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$ = vertexAttributes.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
-        sum = sum + element.attribute.type.size | 0;
+        sum = sum + element.attribute.type.byteSize | 0;
       }
       strideBytes = sum;
     }this.binding = binding;
@@ -18199,7 +18986,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   TranslationAnimationChannel.prototype.apply_mx4ult$ = function (time) {
     var tmp$;
-    (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? (tmp$.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode), Unit) : null;
+    var key = (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? tmp$ : this.keys.lastValue();
+    key.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
   };
   TranslationAnimationChannel.$metadata$ = {
     kind: Kind_CLASS,
@@ -18217,7 +19005,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   RotationAnimationChannel.prototype.apply_mx4ult$ = function (time) {
     var tmp$;
-    (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? (tmp$.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode), Unit) : null;
+    var key = (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? tmp$ : this.keys.lastValue();
+    key.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
   };
   RotationAnimationChannel.$metadata$ = {
     kind: Kind_CLASS,
@@ -18235,7 +19024,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   ScaleAnimationChannel.prototype.apply_mx4ult$ = function (time) {
     var tmp$;
-    (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? (tmp$.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode), Unit) : null;
+    var key = (tmp$ = this.keys.floorValue_trkh7z$(time)) != null ? tmp$ : this.keys.lastValue();
+    key.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
   };
   ScaleAnimationChannel.$metadata$ = {
     kind: Kind_CLASS,
@@ -18297,7 +19087,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.interpolation = AnimationKey$Interpolation$LINEAR_getInstance();
   }
   AnimationKey.prototype.interpolationPos_dleff0$ = function (pos, nextTime) {
-    return this.interpolation.getInterpolationPos_mx4ult$((pos - this.time) / (nextTime - this.time));
+    var tmp$;
+    if (this.time < nextTime) {
+      tmp$ = this.time;
+    } else {
+      tmp$ = 0.0;
+    }
+    var t = tmp$;
+    return this.interpolation.getInterpolationPos_mx4ult$((pos - t) / (nextTime - t));
   };
   function AnimationKey$Interpolation(name, ordinal) {
     Enum.call(this);
@@ -18579,6 +19376,89 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'CubicScaleKey',
     interfaces: [ScaleKey]
+  };
+  function Skin() {
+    this.nodes = ArrayList_init_0();
+  }
+  Skin.prototype.updateJointTransforms = function () {
+    var tmp$;
+    tmp$ = this.nodes;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      if (!this.nodes.get_za3lpa$(i).hasParent) {
+        this.nodes.get_za3lpa$(i).updateJointTransform();
+      }}
+  };
+  Skin.prototype.printHierarchy = function () {
+    var $receiver = this.nodes;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (!element.hasParent)
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.printHierarchy_61zpoe$('');
+    }
+  };
+  function Skin$SkinNode(joint, inverseBindMatrix) {
+    this.joint = joint;
+    this.inverseBindMatrix = inverseBindMatrix;
+    this.jointTransform = new Mat4f();
+    this.tmpMat4f_0 = new Mat4f();
+    this.parent_0 = null;
+    this.children_0 = ArrayList_init_0();
+  }
+  Object.defineProperty(Skin$SkinNode.prototype, 'hasParent', {
+    get: function () {
+      return this.parent_0 != null;
+    }
+  });
+  Skin$SkinNode.prototype.addChild_57g4th$ = function (node) {
+    node.parent_0 = this;
+    this.children_0.add_11rb$(node);
+  };
+  Skin$SkinNode.prototype.updateJointTransform = function () {
+    var tmp$;
+    this.jointTransform.set_d4zu6l$(this.joint.transform);
+    tmp$ = this.children_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
+    }
+    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
+  };
+  Skin$SkinNode.prototype.updateJointTransform_0 = function (parentTransform) {
+    var tmp$;
+    this.tmpMat4f_0.set_d4zu6l$(this.joint.transform);
+    this.jointTransform.set_d4zu6j$(parentTransform).mul_d4zu6j$(this.tmpMat4f_0);
+    tmp$ = this.children_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
+    }
+    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
+  };
+  Skin$SkinNode.prototype.printHierarchy_61zpoe$ = function (indent) {
+    println_0(indent + toString(this.joint.name));
+    var tmp$;
+    tmp$ = this.children_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.printHierarchy_61zpoe$(indent + '    ');
+    }
+  };
+  Skin$SkinNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SkinNode',
+    interfaces: []
+  };
+  Skin.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Skin',
+    interfaces: []
   };
   function Camera(name) {
     if (name === void 0)
@@ -19145,7 +20025,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.spotAngle = 60.0;
   }
   Light.prototype.setColor_y83vuj$ = function (color, intensity) {
-    this.color.set_d7aj7k$(color);
+    this.color.set_czzhhz$(color);
     this.color.a = intensity;
     return this;
   };
@@ -19308,7 +20188,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var closure$lineColor_0 = closure$lineColor;
         var $receiver_0 = $this.vertexIt;
         $receiver_0.position.set_czzhiu$(v.position);
-        $receiver_0.color.set_d7aj7k$(closure$lineColor_0 != null ? closure$lineColor_0 : v.color);
+        $receiver_0.color.set_czzhhz$(closure$lineColor_0 != null ? closure$lineColor_0 : v.color);
         $this.bounds.add_czzhiu$($this.vertexIt.position);
         $this.hasChanged = true;
         $this.numVertices - 1 | 0;
@@ -19405,7 +20285,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_0 = closure$color;
       var $receiver_0 = $receiver.vertexIt;
       $receiver_0.position.set_y2kzbl$(closure$aabb_0.min.x, closure$aabb_0.min.y, closure$aabb_0.min.z);
-      $receiver_0.color.set_d7aj7k$(closure$color_0);
+      $receiver_0.color.set_czzhhz$(closure$color_0);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i0 = $receiver.numVertices - 1 | 0;
@@ -19424,7 +20304,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_1 = closure$color;
       var $receiver_1 = $receiver.vertexIt;
       $receiver_1.position.set_y2kzbl$(closure$aabb_1.min.x, closure$aabb_1.min.y, closure$aabb_1.max.z);
-      $receiver_1.color.set_d7aj7k$(closure$color_1);
+      $receiver_1.color.set_czzhhz$(closure$color_1);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i1 = $receiver.numVertices - 1 | 0;
@@ -19443,7 +20323,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_2 = closure$color;
       var $receiver_2 = $receiver.vertexIt;
       $receiver_2.position.set_y2kzbl$(closure$aabb_2.min.x, closure$aabb_2.max.y, closure$aabb_2.max.z);
-      $receiver_2.color.set_d7aj7k$(closure$color_2);
+      $receiver_2.color.set_czzhhz$(closure$color_2);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i2 = $receiver.numVertices - 1 | 0;
@@ -19462,7 +20342,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_3 = closure$color;
       var $receiver_3 = $receiver.vertexIt;
       $receiver_3.position.set_y2kzbl$(closure$aabb_3.min.x, closure$aabb_3.max.y, closure$aabb_3.min.z);
-      $receiver_3.color.set_d7aj7k$(closure$color_3);
+      $receiver_3.color.set_czzhhz$(closure$color_3);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i3 = $receiver.numVertices - 1 | 0;
@@ -19481,7 +20361,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_4 = closure$color;
       var $receiver_4 = $receiver.vertexIt;
       $receiver_4.position.set_y2kzbl$(closure$aabb_4.max.x, closure$aabb_4.min.y, closure$aabb_4.min.z);
-      $receiver_4.color.set_d7aj7k$(closure$color_4);
+      $receiver_4.color.set_czzhhz$(closure$color_4);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i4 = $receiver.numVertices - 1 | 0;
@@ -19500,7 +20380,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_5 = closure$color;
       var $receiver_5 = $receiver.vertexIt;
       $receiver_5.position.set_y2kzbl$(closure$aabb_5.max.x, closure$aabb_5.min.y, closure$aabb_5.max.z);
-      $receiver_5.color.set_d7aj7k$(closure$color_5);
+      $receiver_5.color.set_czzhhz$(closure$color_5);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i5 = $receiver.numVertices - 1 | 0;
@@ -19519,7 +20399,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_6 = closure$color;
       var $receiver_6 = $receiver.vertexIt;
       $receiver_6.position.set_y2kzbl$(closure$aabb_6.max.x, closure$aabb_6.max.y, closure$aabb_6.max.z);
-      $receiver_6.color.set_d7aj7k$(closure$color_6);
+      $receiver_6.color.set_czzhhz$(closure$color_6);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i6 = $receiver.numVertices - 1 | 0;
@@ -19538,7 +20418,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var closure$color_7 = closure$color;
       var $receiver_7 = $receiver.vertexIt;
       $receiver_7.position.set_y2kzbl$(closure$aabb_7.max.x, closure$aabb_7.max.y, closure$aabb_7.min.z);
-      $receiver_7.color.set_d7aj7k$(closure$color_7);
+      $receiver_7.color.set_czzhhz$(closure$color_7);
       $receiver.bounds.add_czzhiu$($receiver.vertexIt.position);
       $receiver.hasChanged = true;
       var i7 = $receiver.numVertices - 1 | 0;
@@ -19579,14 +20459,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generate(mesh);
     return mesh;
   }
-  function textMesh(font, name, generate) {
-    if (name === void 0)
-      name = null;
-    var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS])), name);
-    generate(mesh);
-    var text = mesh;
-    return text;
-  }
   function textureMesh(name, isNormalMapped, generate) {
     if (name === void 0)
       name = null;
@@ -19612,6 +20484,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$;
     this.id = (tmp$ = Mesh$Companion_getInstance().instanceId_0, Mesh$Companion_getInstance().instanceId_0 = tmp$.inc(), tmp$);
     this.instances = null;
+    this.skin = null;
     this.pipelineLoader_6i1avl$_0 = null;
     this.pipeline_fj0dqa$_0 = null;
     this.discardedPipelines_d0j47k$_0 = ArrayList_init_0();
@@ -19835,6 +20708,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.meshes = LinkedHashMap_init();
     this.textures = LinkedHashMap_init();
     this.animations = ArrayList_init_0();
+    this.skins = ArrayList_init_0();
   }
   Model.prototype.printHierarchy = function () {
     this.printHierarchy_0(this, '');
@@ -21237,8 +22111,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ButtonUi.prototype.updateTextColor = function () {
     this.textColor.clear();
-    this.textColor.add_y83vuj$(this.button.textColor.apply(), this.colorWeightStd);
-    this.textColor.add_y83vuj$(this.button.textColorHovered.apply(), this.colorWeightHovered);
+    this.textColor.add_m79ulu$(this.button.textColor.apply(), this.colorWeightStd);
+    this.textColor.add_m79ulu$(this.button.textColorHovered.apply(), this.colorWeightHovered);
   };
   ButtonUi.prototype.dispose_aemszp$ = function (ctx) {
     LabelUi.prototype.dispose_aemszp$.call(this, ctx);
@@ -21637,7 +22511,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $this.text_s8z339$(props, 0.0);
     }};
   LabelUi.prototype.updateTextColor = function () {
-    this.textColor.set_d7aj7k$(this.label.textColor.apply());
+    this.textColor.set_czzhhz$(this.label.textColor.apply());
   };
   LabelUi.$metadata$ = {
     kind: Kind_CLASS,
@@ -22368,7 +23242,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Slider.prototype.setThemeProps_aemszp$ = function (ctx) {
     UiComponent.prototype.setThemeProps_aemszp$.call(this, ctx);
     this.knobColor.setTheme_11rb$(this.root.theme.accentColor);
-    this.trackColorHighlighted.setTheme_11rb$(MutableColor_init().add_y83vuj$(this.root.theme.accentColor, 0.4));
+    this.trackColorHighlighted.setTheme_11rb$(MutableColor_init().add_m79ulu$(this.root.theme.accentColor, 0.4));
   };
   Slider.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newSliderUi_l85jm8$(this);
@@ -22560,7 +23434,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.meshBuilder.color = this.label.root.theme.accentColor;
     this.meshBuilder.line_s2l86p$(x1, y, x2, y, dp_0(this.label, 1.5));
     if (this.textField.editText.selectionStart !== this.textField.editText.caretPosition) {
-      this.caretColor_qpd03i$_0.set_d7aj7k$(this.label.root.theme.accentColor);
+      this.caretColor_qpd03i$_0.set_czzhhz$(this.label.root.theme.accentColor);
       this.caretColor_qpd03i$_0.a = 0.4;
       this.meshBuilder.color = this.caretColor_qpd03i$_0;
       var $this_0 = this.meshBuilder;
@@ -22570,7 +23444,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.size.set_dleff0$(selectionX.v - caretX.v, ((tmp$_13 = (tmp$_12 = (tmp$_11 = (tmp$_10 = this.font) != null ? tmp$_10.charMap : null) != null ? tmp$_11.fontProps : null) != null ? tmp$_12.sizePts : null) != null ? tmp$_13 : 0.0) * 1.2);
       $receiver.zeroTexCoords();
       $this_0.rect_e5k3t5$($this_0.rectProps);
-    }this.caretColor_qpd03i$_0.set_d7aj7k$(this.label.root.theme.accentColor);
+    }this.caretColor_qpd03i$_0.set_czzhhz$(this.label.root.theme.accentColor);
     this.caretColor_qpd03i$_0.a = this.caretAlphaAnimator_mmbcs$_0.tick_aemszp$(ctx);
     this.meshBuilder.color = this.caretColor_qpd03i$_0;
     this.meshBuilder.line_s2l86p$(caretX.v, y, caretX.v, this.textBaseline + ((tmp$_9 = (tmp$_8 = (tmp$_7 = (tmp$_6 = this.font) != null ? tmp$_6.charMap : null) != null ? tmp$_7.fontProps : null) != null ? tmp$_8.sizePts : null) != null ? tmp$_9 : 0.0), dp_0(this.label, 1.5));
@@ -22849,8 +23723,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $this.rect_e5k3t5$($this.rectProps);
     var anim = this.knobAnimator.value.value;
     this.knobColor.clear();
-    this.knobColor.add_y83vuj$(this.tb.knobColorOff, 1.0 - anim);
-    this.knobColor.add_y83vuj$(this.tb.knobColorOn, anim);
+    this.knobColor.add_m79ulu$(this.tb.knobColorOff, 1.0 - anim);
+    this.knobColor.add_m79ulu$(this.tb.knobColorOn, anim);
     this.meshBuilder.color = this.knobColor;
     var $this_0 = this.meshBuilder;
     var $receiver_0 = $this_0.circleProps.defaults();
@@ -24174,10 +25048,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     InterpolatedValue.call(this, MutableColor_init());
     this.from = from;
     this.to = to;
-    this.value.set_d7aj7k$(this.from);
+    this.value.set_czzhhz$(this.from);
   }
   InterpolatedColor.prototype.updateValue_mx4ult$ = function (interpolationPos) {
-    this.value.set_d7aj7k$(this.to).subtract_czzhhz$(this.from).scale_mx4ult$(interpolationPos).add_d7aj7k$(this.from);
+    this.value.set_czzhhz$(this.to).subtract_czzhhz$(this.from).scale_mx4ult$(interpolationPos).add_czzhhz$(this.from);
   };
   InterpolatedColor.$metadata$ = {
     kind: Kind_CLASS,
@@ -26270,7 +27144,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   Color$Companion.prototype.fromHex_61zpoe$ = function (hex) {
     if (hex.length === 0) {
-      return Color$Companion_getInstance().BLACK;
+      return this.BLACK;
     }var str = hex;
     if (str.charCodeAt(0) === 35) {
       str = str.substring(1);
@@ -26372,18 +27246,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.fields;
     }
   });
-  MutableColor.prototype.add_d7aj7k$ = function (other) {
-    this.r = this.r + other.r;
-    this.g = this.g + other.g;
-    this.b = this.b + other.b;
-    this.a = this.a + other.a;
+  MutableColor.prototype.add_czzhhz$ = function (other) {
+    this.r = this.r + other.x;
+    this.g = this.g + other.y;
+    this.b = this.b + other.z;
+    this.a = this.a + other.w;
     return this;
   };
-  MutableColor.prototype.add_y83vuj$ = function (other, weight) {
-    this.r = this.r + other.r * weight;
-    this.g = this.g + other.g * weight;
-    this.b = this.b + other.b * weight;
-    this.a = this.a + other.a * weight;
+  MutableColor.prototype.add_m79ulu$ = function (other, weight) {
+    this.r = this.r + other.x * weight;
+    this.g = this.g + other.y * weight;
+    this.b = this.b + other.z * weight;
+    this.a = this.a + other.w * weight;
     return this;
   };
   MutableColor.prototype.subtract_czzhhz$ = function (other) {
@@ -26417,11 +27291,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.a = a;
     return this;
   };
-  MutableColor.prototype.set_d7aj7k$ = function (other) {
-    this.r = other.r;
-    this.g = other.g;
-    this.b = other.b;
-    this.a = other.a;
+  MutableColor.prototype.set_czzhhz$ = function (other) {
+    this.r = other.x;
+    this.g = other.y;
+    this.b = other.z;
+    this.a = other.w;
     return this;
   };
   MutableColor.prototype.set_24o109$ = function (i, v) {
@@ -26518,7 +27392,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         p1 = colors[Math_0.min(a, colors.length)];
       }
       var w0 = 1.0 - (p - p0.first) / (p1.first - p0.first);
-      this.gradient_0[i_0].set_d7aj7k$(p0.second).scale_mx4ult$(w0).add_y83vuj$(p1.second, 1.0 - w0);
+      this.gradient_0[i_0].set_czzhhz$(p0.second).scale_mx4ult$(w0).add_m79ulu$(p1.second, 1.0 - w0);
     }
   }
   ColorGradient.prototype.getColor_y2kzbl$ = function (value, min, max) {
@@ -27030,7 +27904,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.graphVertex.index = this.graphIdx;
     for (var i = 0; i <= 3; i++) {
       this.graphVertex.index = this.graphIdx + i | 0;
-      this.graphVertex.color.set_d7aj7k$(color);
+      this.graphVertex.color.set_czzhhz$(color);
     }
   };
   DeltaTGraph.prototype.updateUi_aemszp$ = function (ctx) {
@@ -27545,7 +28419,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.albedo_k03b7o$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(DeferredMrtShader.prototype, 'albedoMap', {
@@ -27732,7 +28606,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uAlbedo_0 = findNode_3klnlw$result_1;
-    (tmp$_3 = (tmp$_2 = (tmp$_1 = this.uAlbedo_0) != null ? tmp$_1.uniform : null) != null ? tmp$_2.value : null) != null ? tmp$_3.set_d7aj7k$(this.albedo) : null;
+    (tmp$_3 = (tmp$_2 = (tmp$_1 = this.uAlbedo_0) != null ? tmp$_1.uniform : null) != null ? tmp$_2.value : null) != null ? tmp$_3.set_czzhhz$(this.albedo) : null;
     var $this_2 = this.model;
     var stage_2;
     var findNode_3klnlw$result_2;
@@ -28901,7 +29775,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
       this.ambient_kdw3d9$_0 = value;
-      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAmbient_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_d7aj7k$(value) : null;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uAmbient_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
   Object.defineProperty(PbrSceneShader.prototype, 'irradianceMap', {
@@ -29133,7 +30007,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     this.uAmbient_0 = findNode_3klnlw$result_3;
-    (tmp$_8 = (tmp$_7 = (tmp$_6 = this.uAmbient_0) != null ? tmp$_6.uniform : null) != null ? tmp$_7.value : null) != null ? tmp$_8.set_d7aj7k$(this.ambient) : null;
+    (tmp$_8 = (tmp$_7 = (tmp$_6 = this.uAmbient_0) != null ? tmp$_6.uniform : null) != null ? tmp$_7.value : null) != null ? tmp$_8.set_czzhhz$(this.ambient) : null;
     var $this_4 = this.model;
     var name_4 = 'irradianceMap';
     var stage_4;
@@ -30612,7 +31486,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function Vec4fAccessor(accessor) {
     DataStreamAccessor.call(this, accessor);
     if (!equals(accessor.type, Accessor$Companion_getInstance().TYPE_VEC4)) {
-      throw IllegalArgumentException_init('Vec3fAccessor requires accessor type ' + Accessor$Companion_getInstance().TYPE_VEC4 + ', provided was ' + accessor.type);
+      throw IllegalArgumentException_init('Vec4fAccessor requires accessor type ' + Accessor$Companion_getInstance().TYPE_VEC4 + ', provided was ' + accessor.type);
     }if (accessor.componentType !== 5126) {
       throw IllegalArgumentException_init('Vec4fAccessor requires a float component type, provided was ' + accessor.componentType);
     }}
@@ -30641,6 +31515,61 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Vec4fAccessor.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Vec4fAccessor',
+    interfaces: [DataStreamAccessor]
+  };
+  function Vec4iAccessor(accessor) {
+    DataStreamAccessor.call(this, accessor);
+    if (!equals(accessor.type, Accessor$Companion_getInstance().TYPE_VEC4)) {
+      throw IllegalArgumentException_init('Vec4iAccessor requires accessor type ' + Accessor$Companion_getInstance().TYPE_VEC4 + ', provided was ' + accessor.type);
+    }if (!Accessor$Companion_getInstance().COMP_INT_TYPES.contains_11rb$(accessor.componentType)) {
+      throw IllegalArgumentException_init('Vec4fAccessor requires a (byte / short / int) component type, provided was ' + accessor.componentType);
+    }}
+  Vec4iAccessor.prototype.next = function () {
+    return this.next_5s4mps$(MutableVec4i_init());
+  };
+  Vec4iAccessor.prototype.next_5s4mps$ = function (result) {
+    result.x = this.nextInt();
+    result.y = this.nextInt();
+    result.z = this.nextInt();
+    result.w = this.nextInt();
+    this.advance();
+    return result;
+  };
+  Vec4iAccessor.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec4iAccessor',
+    interfaces: [DataStreamAccessor]
+  };
+  function Mat4fAccessor(accessor) {
+    DataStreamAccessor.call(this, accessor);
+    if (!equals(accessor.type, Accessor$Companion_getInstance().TYPE_MAT4)) {
+      throw IllegalArgumentException_init('Mat4fAccessor requires accessor type ' + Accessor$Companion_getInstance().TYPE_MAT4 + ', provided was ' + accessor.type);
+    }if (accessor.componentType !== 5126) {
+      throw IllegalArgumentException_init('Mat4fAccessor requires a float component type, provided was ' + accessor.componentType);
+    }}
+  Mat4fAccessor.prototype.next = function () {
+    return this.next_d4zu6j$(new Mat4f());
+  };
+  Mat4fAccessor.prototype.next_d4zu6j$ = function (result) {
+    for (var i = 0; i <= 15; i++) {
+      result.matrix[i] = this.nextFloat();
+    }
+    this.advance();
+    return result;
+  };
+  Mat4fAccessor.prototype.nextD = function () {
+    return this.nextD_d4zu6l$(new Mat4d());
+  };
+  Mat4fAccessor.prototype.nextD_d4zu6l$ = function (result) {
+    for (var i = 0; i <= 15; i++) {
+      result.matrix[i] = this.nextDouble();
+    }
+    this.advance();
+    return result;
+  };
+  Mat4fAccessor.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Mat4fAccessor',
     interfaces: [DataStreamAccessor]
   };
   function Animation_0(channels, samplers, name) {
@@ -32030,7 +32959,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       return instance.doResume(null);
   }
-  function GltfFile(extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, textures) {
+  function GltfFile(extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, skins, textures) {
     GltfFile$Companion_getInstance();
     if (extensionsUsed === void 0)
       extensionsUsed = emptyList();
@@ -32056,6 +32985,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       scene = 0;
     if (scenes === void 0)
       scenes = emptyList();
+    if (skins === void 0)
+      skins = emptyList();
     if (textures === void 0)
       textures = emptyList();
     this.extensionsUsed = extensionsUsed;
@@ -32071,6 +33002,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.nodes = nodes;
     this.scene = scene;
     this.scenes = scenes;
+    this.skins = skins;
     this.textures = textures;
   }
   GltfFile.prototype.makeModel_m0hq3v$ = function (modelCfg, scene) {
@@ -32141,11 +33073,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_8 = element_6.primitives.iterator();
       while (tmp$_8.hasNext()) {
         var element_7 = tmp$_8.next();
-        if (element_7.material >= 0) {
-          element_7.materialRef = this.materials.get_za3lpa$(element_7.material);
-        }if (element_7.indices >= 0) {
-          element_7.indexAccessorRef = this.accessors.get_za3lpa$(element_7.indices);
-        }var tmp$_9;
+        var tmp$_9;
         tmp$_9 = element_7.attributes.entries.iterator();
         while (tmp$_9.hasNext()) {
           var element_8 = tmp$_9.next();
@@ -32155,7 +33083,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           var value = this.accessors.get_za3lpa$(iAcc);
           $receiver_0.put_xwzc9p$(attrib, value);
         }
-      }
+        if (element_7.indices >= 0) {
+          element_7.indexAccessorRef = this.accessors.get_za3lpa$(element_7.indices);
+        }if (element_7.material >= 0) {
+          element_7.materialRef = this.materials.get_za3lpa$(element_7.material);
+        }}
     }
     var tmp$_10;
     tmp$_10 = this.nodes.iterator();
@@ -32172,6 +33104,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       element_9.childRefs = destination_0;
       if (element_9.mesh >= 0) {
         element_9.meshRef = this.meshes.get_za3lpa$(element_9.mesh);
+      }if (element_9.skin >= 0) {
+        element_9.skinRef = this.skins.get_za3lpa$(element_9.skin);
       }}
     var tmp$_12;
     tmp$_12 = this.scenes.iterator();
@@ -32188,17 +33122,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       element_10.nodeRefs = destination_1;
     }
     var tmp$_14;
-    tmp$_14 = this.textures.iterator();
+    tmp$_14 = this.skins.iterator();
     while (tmp$_14.hasNext()) {
       var element_11 = tmp$_14.next();
-      element_11.imageRef = this.images.get_za3lpa$(element_11.source);
+      if (element_11.inverseBindMatrices >= 0) {
+        element_11.inverseBindMatrixAccessorRef = this.accessors.get_za3lpa$(element_11.inverseBindMatrices);
+      }var $receiver_3 = element_11.joints;
+      var destination_2 = ArrayList_init(collectionSizeOrDefault($receiver_3, 10));
+      var tmp$_15;
+      tmp$_15 = $receiver_3.iterator();
+      while (tmp$_15.hasNext()) {
+        var item_1 = tmp$_15.next();
+        destination_2.add_11rb$(this.nodes.get_za3lpa$(item_1));
+      }
+      element_11.jointRefs = destination_2;
+    }
+    var tmp$_16;
+    tmp$_16 = this.textures.iterator();
+    while (tmp$_16.hasNext()) {
+      var element_12 = tmp$_16.next();
+      element_12.imageRef = this.images.get_za3lpa$(element_12.source);
     }
   };
-  function GltfFile$ModelGenerateConfig(generateNormals, loadAnimations, applyTransforms, mergeMeshesByMaterial, sortNodesByAlpha, applyMaterials, pbrBlock) {
+  function GltfFile$ModelGenerateConfig(generateNormals, loadAnimations, applySkins, applyTransforms, mergeMeshesByMaterial, sortNodesByAlpha, applyMaterials, pbrBlock) {
     if (generateNormals === void 0)
       generateNormals = false;
     if (loadAnimations === void 0)
       loadAnimations = true;
+    if (applySkins === void 0)
+      applySkins = true;
     if (applyTransforms === void 0)
       applyTransforms = false;
     if (mergeMeshesByMaterial === void 0)
@@ -32211,6 +33163,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       pbrBlock = null;
     this.generateNormals = generateNormals;
     this.loadAnimations = loadAnimations;
+    this.applySkins = applySkins;
     this.applyTransforms = applyTransforms;
     this.mergeMeshesByMaterial = mergeMeshesByMaterial;
     this.sortNodesByAlpha = sortNodesByAlpha;
@@ -32230,16 +33183,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.meshMaterials = LinkedHashMap_init();
   }
   GltfFile$ModelGenerator.prototype.makeModel_314x6g$ = function (scene) {
-    var model = new Model(scene.name);
     var tmp$;
-    tmp$ = scene.nodeRefs.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
+    var model = new Model((tmp$ = scene.name) != null ? tmp$ : 'model_scene');
+    var tmp$_0;
+    tmp$_0 = scene.nodeRefs.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
       model.plusAssign_f1kmr1$(this.makeNode_0(element, model, this.cfg));
     }
     if (this.cfg.loadAnimations) {
       this.makeAnimations_0(model);
-    }if (this.cfg.applyTransforms && model.animations.isEmpty()) {
+    }if (this.cfg.loadAnimations) {
+      this.makeSkins_0(model);
+    }var tmp$_1;
+    tmp$_1 = this.modelNodes.entries.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      var node = element_0.key;
+      var grp = element_0.value;
+      this.createMeshes_0(node, model, grp, this.cfg);
+    }
+    if (this.cfg.applyTransforms && model.animations.isEmpty()) {
       this.applyTransforms_0(model);
     }if (this.cfg.mergeMeshesByMaterial) {
       this.mergeMeshesByMaterial_0(model);
@@ -32254,43 +33218,51 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var element = tmp$.next();
       var modelAnim = new Animation(element.name);
       model.animations.add_11rb$(modelAnim);
+      var animNodes = LinkedHashMap_init();
       var tmp$_0;
       tmp$_0 = element.channels.iterator();
       while (tmp$_0.hasNext()) {
         var element_0 = tmp$_0.next();
-        switch (element_0.target.path) {
-          case 'translation':
-            this.makeTranslationAnimation_0(element_0, modelAnim);
-            break;
-          case 'rotation':
-            this.makeRotationAnimation_0(element_0, modelAnim);
-            break;
-          case 'scale':
-            this.makeScaleAnimation_0(element_0, modelAnim);
-            break;
-          case 'weights':
-            var $this = package$util.Log;
-            var level = Log$Level.WARN;
-            var tag = Kotlin.getKClassFromExpression(this).simpleName;
-            if (level.level >= $this.level.level) {
-              $this.printer(level, tag, 'Unsupported animation: weights');
-            }
-            break;
-        }
-      }
+        var $receiver = this.modelNodes;
+        var key = element_0.target.nodeRef;
+        var tmp$_1;
+        var nodeGrp = (Kotlin.isType(tmp$_1 = $receiver, Map) ? tmp$_1 : throwCCE()).get_11rb$(key);
+        if (nodeGrp != null) {
+          var tmp$_2;
+          var value = animNodes.get_11rb$(nodeGrp);
+          if (value == null) {
+            var answer = new AnimatedTransformGroup(nodeGrp);
+            animNodes.put_xwzc9p$(nodeGrp, answer);
+            tmp$_2 = answer;
+          } else {
+            tmp$_2 = value;
+          }
+          var animationNd = tmp$_2;
+          switch (element_0.target.path) {
+            case 'translation':
+              this.makeTranslationAnimation_0(element_0, animationNd, modelAnim);
+              break;
+            case 'rotation':
+              this.makeRotationAnimation_0(element_0, animationNd, modelAnim);
+              break;
+            case 'scale':
+              this.makeScaleAnimation_0(element_0, animationNd, modelAnim);
+              break;
+            case 'weights':
+              var $this = package$util.Log;
+              var level = Log$Level.WARN;
+              var tag = Kotlin.getKClassFromExpression(this).simpleName;
+              if (level.level >= $this.level.level) {
+                $this.printer(level, tag, 'Unsupported animation: weights');
+              }
+              break;
+          }
+        }}
       modelAnim.prepareAnimation();
     }
   };
-  GltfFile$ModelGenerator.prototype.makeTranslationAnimation_0 = function (animCh, modelAnim) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    tmp$ = animCh.target.nodeRef;
-    if (tmp$ == null) {
-      return;
-    }var node = tmp$;
-    tmp$_0 = this.modelNodes.get_11rb$(node);
-    if (tmp$_0 == null) {
-      return;
-    }var nodeGrp = tmp$_0;
+  GltfFile$ModelGenerator.prototype.makeTranslationAnimation_0 = function (animCh, animNd, modelAnim) {
+    var tmp$, tmp$_0, tmp$_1;
     var inputAcc = animCh.samplerRef.inputAccessorRef;
     var outputAcc = animCh.samplerRef.outputAccessorRef;
     if (!equals(inputAcc.type, Accessor$Companion_getInstance().TYPE_SCALAR) || inputAcc.componentType !== 5126) {
@@ -32307,49 +33279,41 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (level_0.level >= $this_0.level.level) {
         $this_0.printer(level_0, tag_0, 'Unsupported translation animation output accessor: type = ' + inputAcc.type + ', component type = ' + inputAcc.componentType + ', should be VEC3 and 5126 (float)');
       }return;
-    }var transChannel = new TranslationAnimationChannel(toString(modelAnim.name) + '_translation', new AnimatedTransformGroup(nodeGrp));
+    }var transChannel = new TranslationAnimationChannel(toString(modelAnim.name) + '_translation', animNd);
     switch (animCh.samplerRef.interpolation) {
       case 'STEP':
-        tmp$_1 = AnimationKey$Interpolation$STEP_getInstance();
+        tmp$ = AnimationKey$Interpolation$STEP_getInstance();
         break;
       case 'CUBICSPLINE':
-        tmp$_1 = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
+        tmp$ = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
         break;
-      default:tmp$_1 = AnimationKey$Interpolation$LINEAR_getInstance();
+      default:tmp$ = AnimationKey$Interpolation$LINEAR_getInstance();
         break;
     }
-    var interpolation = tmp$_1;
+    var interpolation = tmp$;
     modelAnim.channels.add_11rb$(transChannel);
     var inTimes = new FloatAccessor(inputAcc);
     var outTranslations = new Vec3fAccessor(outputAcc);
     var a = inputAcc.count;
     var b = outputAcc.count;
-    tmp$_2 = Math_0.min(a, b);
-    for (var i = 0; i < tmp$_2; i++) {
+    tmp$_0 = Math_0.min(a, b);
+    for (var i = 0; i < tmp$_0; i++) {
       var t = inTimes.next();
       if (interpolation === AnimationKey$Interpolation$CUBICSPLINE_getInstance()) {
         var startTan = outTranslations.nextD();
         var point = outTranslations.nextD();
         var endTan = outTranslations.nextD();
-        tmp$_3 = new CubicTranslationKey(t, point, startTan, endTan);
+        tmp$_1 = new CubicTranslationKey(t, point, startTan, endTan);
       } else {
-        tmp$_3 = new TranslationKey(t, outTranslations.nextD());
+        tmp$_1 = new TranslationKey(t, outTranslations.nextD());
       }
-      var transKey = tmp$_3;
+      var transKey = tmp$_1;
       transKey.interpolation = interpolation;
       transChannel.keys.put_xwzc9p$(t, transKey);
     }
   };
-  GltfFile$ModelGenerator.prototype.makeRotationAnimation_0 = function (animCh, modelAnim) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    tmp$ = animCh.target.nodeRef;
-    if (tmp$ == null) {
-      return;
-    }var node = tmp$;
-    tmp$_0 = this.modelNodes.get_11rb$(node);
-    if (tmp$_0 == null) {
-      return;
-    }var nodeGrp = tmp$_0;
+  GltfFile$ModelGenerator.prototype.makeRotationAnimation_0 = function (animCh, animNd, modelAnim) {
+    var tmp$, tmp$_0, tmp$_1;
     var inputAcc = animCh.samplerRef.inputAccessorRef;
     var outputAcc = animCh.samplerRef.outputAccessorRef;
     if (!equals(inputAcc.type, Accessor$Companion_getInstance().TYPE_SCALAR) || inputAcc.componentType !== 5126) {
@@ -32366,49 +33330,41 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (level_0.level >= $this_0.level.level) {
         $this_0.printer(level_0, tag_0, 'Unsupported rotation animation output accessor: type = ' + inputAcc.type + ', component type = ' + inputAcc.componentType + ', should be VEC4 and 5126 (float)');
       }return;
-    }var rotChannel = new RotationAnimationChannel(toString(modelAnim.name) + '_rotation', new AnimatedTransformGroup(nodeGrp));
+    }var rotChannel = new RotationAnimationChannel(toString(modelAnim.name) + '_rotation', animNd);
     switch (animCh.samplerRef.interpolation) {
       case 'STEP':
-        tmp$_1 = AnimationKey$Interpolation$STEP_getInstance();
+        tmp$ = AnimationKey$Interpolation$STEP_getInstance();
         break;
       case 'CUBICSPLINE':
-        tmp$_1 = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
+        tmp$ = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
         break;
-      default:tmp$_1 = AnimationKey$Interpolation$LINEAR_getInstance();
+      default:tmp$ = AnimationKey$Interpolation$LINEAR_getInstance();
         break;
     }
-    var interpolation = tmp$_1;
+    var interpolation = tmp$;
     modelAnim.channels.add_11rb$(rotChannel);
     var inTimes = new FloatAccessor(inputAcc);
     var outRotations = new Vec4fAccessor(outputAcc);
     var a = inputAcc.count;
     var b = outputAcc.count;
-    tmp$_2 = Math_0.min(a, b);
-    for (var i = 0; i < tmp$_2; i++) {
+    tmp$_0 = Math_0.min(a, b);
+    for (var i = 0; i < tmp$_0; i++) {
       var t = inTimes.next();
       if (interpolation === AnimationKey$Interpolation$CUBICSPLINE_getInstance()) {
         var startTan = outRotations.nextD();
         var point = outRotations.nextD();
         var endTan = outRotations.nextD();
-        tmp$_3 = new CubicRotationKey(t, point, startTan, endTan);
+        tmp$_1 = new CubicRotationKey(t, point, startTan, endTan);
       } else {
-        tmp$_3 = new RotationKey(t, outRotations.nextD());
+        tmp$_1 = new RotationKey(t, outRotations.nextD());
       }
-      var rotKey = tmp$_3;
+      var rotKey = tmp$_1;
       rotKey.interpolation = interpolation;
       rotChannel.keys.put_xwzc9p$(t, rotKey);
     }
   };
-  GltfFile$ModelGenerator.prototype.makeScaleAnimation_0 = function (animCh, modelAnim) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    tmp$ = animCh.target.nodeRef;
-    if (tmp$ == null) {
-      return;
-    }var node = tmp$;
-    tmp$_0 = this.modelNodes.get_11rb$(node);
-    if (tmp$_0 == null) {
-      return;
-    }var nodeGrp = tmp$_0;
+  GltfFile$ModelGenerator.prototype.makeScaleAnimation_0 = function (animCh, animNd, modelAnim) {
+    var tmp$, tmp$_0, tmp$_1;
     var inputAcc = animCh.samplerRef.inputAccessorRef;
     var outputAcc = animCh.samplerRef.outputAccessorRef;
     if (!equals(inputAcc.type, Accessor$Companion_getInstance().TYPE_SCALAR) || inputAcc.componentType !== 5126) {
@@ -32425,38 +33381,76 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (level_0.level >= $this_0.level.level) {
         $this_0.printer(level_0, tag_0, 'Unsupported scale animation output accessor: type = ' + inputAcc.type + ', component type = ' + inputAcc.componentType + ', should be VEC3 and 5126 (float)');
       }return;
-    }var scaleChannel = new ScaleAnimationChannel(toString(modelAnim.name) + '_scale', new AnimatedTransformGroup(nodeGrp));
+    }var scaleChannel = new ScaleAnimationChannel(toString(modelAnim.name) + '_scale', animNd);
     switch (animCh.samplerRef.interpolation) {
       case 'STEP':
-        tmp$_1 = AnimationKey$Interpolation$STEP_getInstance();
+        tmp$ = AnimationKey$Interpolation$STEP_getInstance();
         break;
       case 'CUBICSPLINE':
-        tmp$_1 = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
+        tmp$ = AnimationKey$Interpolation$CUBICSPLINE_getInstance();
         break;
-      default:tmp$_1 = AnimationKey$Interpolation$LINEAR_getInstance();
+      default:tmp$ = AnimationKey$Interpolation$LINEAR_getInstance();
         break;
     }
-    var interpolation = tmp$_1;
+    var interpolation = tmp$;
     modelAnim.channels.add_11rb$(scaleChannel);
     var inTimes = new FloatAccessor(inputAcc);
     var outScale = new Vec3fAccessor(outputAcc);
     var a = inputAcc.count;
     var b = outputAcc.count;
-    tmp$_2 = Math_0.min(a, b);
-    for (var i = 0; i < tmp$_2; i++) {
+    tmp$_0 = Math_0.min(a, b);
+    for (var i = 0; i < tmp$_0; i++) {
       var t = inTimes.next();
       if (interpolation === AnimationKey$Interpolation$CUBICSPLINE_getInstance()) {
         var startTan = outScale.nextD();
         var point = outScale.nextD();
         var endTan = outScale.nextD();
-        tmp$_3 = new CubicScaleKey(t, point, startTan, endTan);
+        tmp$_1 = new CubicScaleKey(t, point, startTan, endTan);
       } else {
-        tmp$_3 = new ScaleKey(t, outScale.nextD());
+        tmp$_1 = new ScaleKey(t, outScale.nextD());
       }
-      var scaleKey = tmp$_3;
+      var scaleKey = tmp$_1;
       scaleKey.interpolation = interpolation;
       scaleChannel.keys.put_xwzc9p$(t, scaleKey);
     }
+  };
+  GltfFile$ModelGenerator.prototype.makeSkins_0 = function (model) {
+    var tmp$;
+    tmp$ = this.$outer.skins.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0;
+      var modelSkin = new Skin();
+      var invBinMats = (tmp$_0 = element.inverseBindMatrixAccessorRef) != null ? new Mat4fAccessor(tmp$_0) : null;
+      if (invBinMats != null) {
+        var skinNodes = LinkedHashMap_init();
+        var tmp$_1;
+        tmp$_1 = element.jointRefs.iterator();
+        while (tmp$_1.hasNext()) {
+          var element_0 = tmp$_1.next();
+          var jointGrp = ensureNotNull(this.modelNodes.get_11rb$(element_0));
+          var invBindMat = invBinMats.next();
+          var skinNode = new Skin$SkinNode(jointGrp, invBindMat);
+          modelSkin.nodes.add_11rb$(skinNode);
+          skinNodes.put_xwzc9p$(element_0, skinNode);
+        }
+        var tmp$_2;
+        tmp$_2 = element.jointRefs.iterator();
+        while (tmp$_2.hasNext()) {
+          var element_1 = tmp$_2.next();
+          var skinNode_0 = skinNodes.get_11rb$(element_1);
+          if (skinNode_0 != null) {
+            var tmp$_3;
+            tmp$_3 = element_1.childRefs.iterator();
+            while (tmp$_3.hasNext()) {
+              var element_2 = tmp$_3.next();
+              var childNode = skinNodes.get_11rb$(element_2);
+              if (childNode != null) {
+                skinNode_0.addChild_57g4th$(childNode);
+              }}
+          }}
+        model.skins.add_11rb$(modelSkin);
+      }}
   };
   function GltfFile$ModelGenerator$sortNodesByAlpha$lambda(this$ModelGenerator) {
     return function (it) {
@@ -32612,7 +33606,41 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     transform.pop();
   };
-  function GltfFile$ModelGenerator$makeNode$lambda$lambda(closure$p, closure$useVertexColor, this$GltfFile, closure$cfg, closure$model) {
+  GltfFile$ModelGenerator.prototype.makeNode_0 = function ($receiver, model, cfg) {
+    var tmp$;
+    var modelNdName = (tmp$ = $receiver.name) != null ? tmp$ : 'node_' + model.nodes.size;
+    var nodeGrp = new TransformGroup(modelNdName);
+    this.modelNodes.put_xwzc9p$($receiver, nodeGrp);
+    model.nodes.put_xwzc9p$(modelNdName, nodeGrp);
+    if ($receiver.matrix != null) {
+      var tmp$_0 = nodeGrp.transform;
+      var $receiver_0 = $receiver.matrix;
+      var destination = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+      var tmp$_1;
+      tmp$_1 = $receiver_0.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
+        destination.add_11rb$(item);
+      }
+      tmp$_0.set_d3e2cz$(destination);
+    } else {
+      if ($receiver.translation != null) {
+        nodeGrp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
+      }if ($receiver.rotation != null) {
+        var rotMat = (new Mat4d()).setRotate_czzhi1$(new Vec4d($receiver.rotation.get_za3lpa$(0), $receiver.rotation.get_za3lpa$(1), $receiver.rotation.get_za3lpa$(2), $receiver.rotation.get_za3lpa$(3)));
+        nodeGrp.transform.mul_d4zu6l$(rotMat);
+      }if ($receiver.scale != null) {
+        nodeGrp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
+      }}
+    var tmp$_2;
+    tmp$_2 = $receiver.childRefs.iterator();
+    while (tmp$_2.hasNext()) {
+      var element = tmp$_2.next();
+      nodeGrp.plusAssign_f1kmr1$(this.makeNode_0(element, model, cfg));
+    }
+    return nodeGrp;
+  };
+  function GltfFile$ModelGenerator$createMeshes$lambda$lambda(closure$p, closure$useVertexColor, this$GltfFile, closure$mesh, closure$cfg, closure$model) {
     return function ($receiver) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
       var material = closure$p.materialRef;
@@ -32622,7 +33650,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         $receiver.albedo = Color$Companion_getInstance().GRAY;
         $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
       }
-      (tmp$ = closure$cfg.pbrBlock) != null ? tmp$($receiver, closure$p) : null;
+      if (closure$mesh.skin != null) {
+        $receiver.isSkinned = true;
+      }(tmp$ = closure$cfg.pbrBlock) != null ? tmp$($receiver, closure$p) : null;
       if ((tmp$_0 = $receiver.albedoMap) != null) {
         var closure$model_0 = closure$model;
         var tmp$_7, tmp$_8;
@@ -32668,76 +33698,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return Unit;
     };
   }
-  GltfFile$ModelGenerator.prototype.makeNode_0 = function ($receiver, model, cfg) {
+  GltfFile$ModelGenerator.prototype.createMeshes_0 = function ($receiver, model, nodeGrp, cfg) {
     var tmp$, tmp$_0;
-    var nodeGrp = new TransformGroup($receiver.name);
-    this.modelNodes.put_xwzc9p$($receiver, nodeGrp);
-    var $receiver_0 = model.nodes;
-    var key = $receiver.name;
-    $receiver_0.put_xwzc9p$(key, nodeGrp);
-    if ($receiver.matrix != null) {
-      var tmp$_1 = nodeGrp.transform;
-      var $receiver_1 = $receiver.matrix;
-      var destination = ArrayList_init(collectionSizeOrDefault($receiver_1, 10));
-      var tmp$_2;
-      tmp$_2 = $receiver_1.iterator();
-      while (tmp$_2.hasNext()) {
-        var item = tmp$_2.next();
-        destination.add_11rb$(item);
-      }
-      tmp$_1.set_d3e2cz$(destination);
-    } else {
-      if ($receiver.translation != null) {
-        nodeGrp.translate_y2kzbl$($receiver.translation.get_za3lpa$(0), $receiver.translation.get_za3lpa$(1), $receiver.translation.get_za3lpa$(2));
-      }if ($receiver.rotation != null) {
-        var rotMat = (new Mat4d()).setRotate_czzhi1$(new Vec4d($receiver.rotation.get_za3lpa$(0), $receiver.rotation.get_za3lpa$(1), $receiver.rotation.get_za3lpa$(2), $receiver.rotation.get_za3lpa$(3)));
-        nodeGrp.transform.mul_d4zu6l$(rotMat);
-      }if ($receiver.scale != null) {
-        nodeGrp.scale_y2kzbl$($receiver.scale.get_za3lpa$(0), $receiver.scale.get_za3lpa$(1), $receiver.scale.get_za3lpa$(2));
-      }}
-    var tmp$_3;
-    tmp$_3 = $receiver.childRefs.iterator();
-    while (tmp$_3.hasNext()) {
-      var element = tmp$_3.next();
-      nodeGrp.plusAssign_f1kmr1$(this.makeNode_0(element, model, cfg));
-    }
     if ((tmp$_0 = (tmp$ = $receiver.meshRef) != null ? tmp$.primitives : null) != null) {
       this.$outer;
-      var tmp$_4, tmp$_0_0;
+      var tmp$_1, tmp$_0_0;
       var index = 0;
-      tmp$_4 = tmp$_0.iterator();
-      while (tmp$_4.hasNext()) {
-        var item_0 = tmp$_4.next();
+      tmp$_1 = tmp$_0.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
         var this$GltfFile = this.$outer;
         var index_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-        var tmp$_5, tmp$_6;
-        var name = ((tmp$_6 = (tmp$_5 = $receiver.meshRef) != null ? tmp$_5.name : null) != null ? tmp$_6 : $receiver.name) + '_' + index_0;
-        var geometry = item_0.toGeometry_6taknv$(cfg.generateNormals);
+        var tmp$_2, tmp$_3;
+        var name = ((tmp$_3 = (tmp$_2 = $receiver.meshRef) != null ? tmp$_2.name : null) != null ? tmp$_3 : toString(nodeGrp.name) + '.mesh') + '_' + index_0;
+        var geometry = item.toGeometry_6taknv$(cfg.generateNormals);
         if (!geometry.isEmpty()) {
           var mesh = new Mesh(geometry, name);
           nodeGrp.plusAssign_f1kmr1$(mesh);
-          var $receiver_2 = this.meshesByMaterial;
-          var key_0 = item_0.material;
-          var tmp$_7;
-          var value = $receiver_2.get_11rb$(key_0);
+          var $receiver_0 = this.meshesByMaterial;
+          var key = item.material;
+          var tmp$_4;
+          var value = $receiver_0.get_11rb$(key);
           if (value == null) {
             var answer = LinkedHashSet_init();
-            $receiver_2.put_xwzc9p$(key_0, answer);
-            tmp$_7 = answer;
+            $receiver_0.put_xwzc9p$(key, answer);
+            tmp$_4 = answer;
           } else {
-            tmp$_7 = value;
+            tmp$_4 = value;
           }
-          tmp$_7.add_11rb$(mesh);
-          var $receiver_3 = this.meshMaterials;
-          var value_0 = item_0.materialRef;
-          $receiver_3.put_xwzc9p$(mesh, value_0);
-          if (cfg.applyMaterials) {
-            var useVertexColor = item_0.attributes.containsKey_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
-            mesh.pipelineLoader = pbrShader(GltfFile$ModelGenerator$makeNode$lambda$lambda(item_0, useVertexColor, this$GltfFile, cfg, model));
+          tmp$_4.add_11rb$(mesh);
+          var $receiver_1 = this.meshMaterials;
+          var value_0 = item.materialRef;
+          $receiver_1.put_xwzc9p$(mesh, value_0);
+          if (cfg.applySkins && $receiver.skin >= 0) {
+            mesh.skin = model.skins.get_za3lpa$($receiver.skin);
+          }if (cfg.applyMaterials) {
+            var useVertexColor = item.attributes.containsKey_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
+            mesh.pipelineLoader = pbrShader(GltfFile$ModelGenerator$createMeshes$lambda$lambda(item, useVertexColor, this$GltfFile, mesh, cfg, model));
           }model.meshes.put_xwzc9p$(name, mesh);
         }}
-    }return nodeGrp;
-  };
+    }};
   GltfFile$ModelGenerator.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModelGenerator',
@@ -32768,7 +33768,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }return GltfFile$Companion_instance;
   }
   function GltfFile$$serializer() {
-    this.descriptor_sl1tf8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.GltfFile', this, 14);
+    this.descriptor_sl1tf8$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.GltfFile', this, 15);
     this.descriptor.addElement_ivxn3r$('extensionsUsed', true);
     this.descriptor.addElement_ivxn3r$('extensionsRequired', true);
     this.descriptor.addElement_ivxn3r$('accessors', true);
@@ -32782,6 +33782,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.descriptor.addElement_ivxn3r$('nodes', true);
     this.descriptor.addElement_ivxn3r$('scene', true);
     this.descriptor.addElement_ivxn3r$('scenes', true);
+    this.descriptor.addElement_ivxn3r$('skins', true);
     this.descriptor.addElement_ivxn3r$('textures', true);
     GltfFile$$serializer_instance = this;
   }
@@ -32817,8 +33818,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       output.encodeIntElement_4wpqag$(this.descriptor, 11, value.scene);
     if (!equals(value.scenes, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 12))
       output.encodeSerializableElement_blecud$(this.descriptor, 12, new ArrayListSerializer(Scene$$serializer_getInstance()), value.scenes);
-    if (!equals(value.textures, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 13))
-      output.encodeSerializableElement_blecud$(this.descriptor, 13, new ArrayListSerializer(Texture$$serializer_getInstance()), value.textures);
+    if (!equals(value.skins, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 13))
+      output.encodeSerializableElement_blecud$(this.descriptor, 13, new ArrayListSerializer(Skin$$serializer_getInstance()), value.skins);
+    if (!equals(value.textures, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 14))
+      output.encodeSerializableElement_blecud$(this.descriptor, 14, new ArrayListSerializer(Texture$$serializer_getInstance()), value.textures);
     output.endStructure_qatsm0$(this.descriptor);
   };
   GltfFile$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
@@ -32837,7 +33840,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     , local10
     , local11
     , local12
-    , local13;
+    , local13
+    , local14;
     var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
       index = input.decodeElementIndex_qatsm0$(this.descriptor);
@@ -32895,8 +33899,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           bitMask0 |= 4096;
           break;
         case 13:
-          local13 = (bitMask0 & 8192) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 13, new ArrayListSerializer(Texture$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 13, new ArrayListSerializer(Texture$$serializer_getInstance()), local13);
+          local13 = (bitMask0 & 8192) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 13, new ArrayListSerializer(Skin$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 13, new ArrayListSerializer(Skin$$serializer_getInstance()), local13);
           bitMask0 |= 8192;
+          break;
+        case 14:
+          local14 = (bitMask0 & 16384) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 14, new ArrayListSerializer(Texture$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 14, new ArrayListSerializer(Texture$$serializer_getInstance()), local14);
+          bitMask0 |= 16384;
           break;
         case -1:
           break loopLabel;
@@ -32904,10 +33912,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
     input.endStructure_qatsm0$(this.descriptor);
-    return GltfFile_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, null);
+    return GltfFile_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14, null);
   };
   GltfFile$$serializer.prototype.childSerializers = function () {
-    return [new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(Accessor$$serializer_getInstance()), new ArrayListSerializer(Animation$$serializer_getInstance()), Asset$$serializer_getInstance(), new ArrayListSerializer(Buffer$$serializer_getInstance()), new ArrayListSerializer(BufferView$$serializer_getInstance()), new ArrayListSerializer(Image$$serializer_getInstance()), new ArrayListSerializer(Material$$serializer_getInstance()), new ArrayListSerializer(Mesh$$serializer_getInstance()), new ArrayListSerializer(Node$$serializer_getInstance()), internal.IntSerializer, new ArrayListSerializer(Scene$$serializer_getInstance()), new ArrayListSerializer(Texture$$serializer_getInstance())];
+    return [new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(internal.StringSerializer), new ArrayListSerializer(Accessor$$serializer_getInstance()), new ArrayListSerializer(Animation$$serializer_getInstance()), Asset$$serializer_getInstance(), new ArrayListSerializer(Buffer$$serializer_getInstance()), new ArrayListSerializer(BufferView$$serializer_getInstance()), new ArrayListSerializer(Image$$serializer_getInstance()), new ArrayListSerializer(Material$$serializer_getInstance()), new ArrayListSerializer(Mesh$$serializer_getInstance()), new ArrayListSerializer(Node$$serializer_getInstance()), internal.IntSerializer, new ArrayListSerializer(Scene$$serializer_getInstance()), new ArrayListSerializer(Skin$$serializer_getInstance()), new ArrayListSerializer(Texture$$serializer_getInstance())];
   };
   GltfFile$$serializer.$metadata$ = {
     kind: Kind_OBJECT,
@@ -32920,7 +33928,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new GltfFile$$serializer();
     }return GltfFile$$serializer_instance;
   }
-  function GltfFile_init(seen1, extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, textures, serializationConstructorMarker) {
+  function GltfFile_init(seen1, extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, skins, textures, serializationConstructorMarker) {
     var $this = serializationConstructorMarker || Object.create(GltfFile.prototype);
     if ((seen1 & 1) === 0)
       $this.extensionsUsed = emptyList();
@@ -32975,6 +33983,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       $this.scenes = scenes;
     if ((seen1 & 8192) === 0)
+      $this.skins = emptyList();
+    else
+      $this.skins = skins;
+    if ((seen1 & 16384) === 0)
       $this.textures = emptyList();
     else
       $this.textures = textures;
@@ -33025,13 +34037,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return this.scenes;
   };
   GltfFile.prototype.component14 = function () {
+    return this.skins;
+  };
+  GltfFile.prototype.component15 = function () {
     return this.textures;
   };
-  GltfFile.prototype.copy_po5iyc$ = function (extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, textures) {
-    return new GltfFile(extensionsUsed === void 0 ? this.extensionsUsed : extensionsUsed, extensionsRequired === void 0 ? this.extensionsRequired : extensionsRequired, accessors === void 0 ? this.accessors : accessors, animations === void 0 ? this.animations : animations, asset === void 0 ? this.asset : asset, buffers === void 0 ? this.buffers : buffers, bufferViews === void 0 ? this.bufferViews : bufferViews, images === void 0 ? this.images : images, materials === void 0 ? this.materials : materials, meshes === void 0 ? this.meshes : meshes, nodes === void 0 ? this.nodes : nodes, scene === void 0 ? this.scene : scene, scenes === void 0 ? this.scenes : scenes, textures === void 0 ? this.textures : textures);
+  GltfFile.prototype.copy_6o8fog$ = function (extensionsUsed, extensionsRequired, accessors, animations, asset, buffers, bufferViews, images, materials, meshes, nodes, scene, scenes, skins, textures) {
+    return new GltfFile(extensionsUsed === void 0 ? this.extensionsUsed : extensionsUsed, extensionsRequired === void 0 ? this.extensionsRequired : extensionsRequired, accessors === void 0 ? this.accessors : accessors, animations === void 0 ? this.animations : animations, asset === void 0 ? this.asset : asset, buffers === void 0 ? this.buffers : buffers, bufferViews === void 0 ? this.bufferViews : bufferViews, images === void 0 ? this.images : images, materials === void 0 ? this.materials : materials, meshes === void 0 ? this.meshes : meshes, nodes === void 0 ? this.nodes : nodes, scene === void 0 ? this.scene : scene, scenes === void 0 ? this.scenes : scenes, skins === void 0 ? this.skins : skins, textures === void 0 ? this.textures : textures);
   };
   GltfFile.prototype.toString = function () {
-    return 'GltfFile(extensionsUsed=' + Kotlin.toString(this.extensionsUsed) + (', extensionsRequired=' + Kotlin.toString(this.extensionsRequired)) + (', accessors=' + Kotlin.toString(this.accessors)) + (', animations=' + Kotlin.toString(this.animations)) + (', asset=' + Kotlin.toString(this.asset)) + (', buffers=' + Kotlin.toString(this.buffers)) + (', bufferViews=' + Kotlin.toString(this.bufferViews)) + (', images=' + Kotlin.toString(this.images)) + (', materials=' + Kotlin.toString(this.materials)) + (', meshes=' + Kotlin.toString(this.meshes)) + (', nodes=' + Kotlin.toString(this.nodes)) + (', scene=' + Kotlin.toString(this.scene)) + (', scenes=' + Kotlin.toString(this.scenes)) + (', textures=' + Kotlin.toString(this.textures)) + ')';
+    return 'GltfFile(extensionsUsed=' + Kotlin.toString(this.extensionsUsed) + (', extensionsRequired=' + Kotlin.toString(this.extensionsRequired)) + (', accessors=' + Kotlin.toString(this.accessors)) + (', animations=' + Kotlin.toString(this.animations)) + (', asset=' + Kotlin.toString(this.asset)) + (', buffers=' + Kotlin.toString(this.buffers)) + (', bufferViews=' + Kotlin.toString(this.bufferViews)) + (', images=' + Kotlin.toString(this.images)) + (', materials=' + Kotlin.toString(this.materials)) + (', meshes=' + Kotlin.toString(this.meshes)) + (', nodes=' + Kotlin.toString(this.nodes)) + (', scene=' + Kotlin.toString(this.scene)) + (', scenes=' + Kotlin.toString(this.scenes)) + (', skins=' + Kotlin.toString(this.skins)) + (', textures=' + Kotlin.toString(this.textures)) + ')';
   };
   GltfFile.prototype.hashCode = function () {
     var result = 0;
@@ -33048,11 +34063,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     result = result * 31 + Kotlin.hashCode(this.nodes) | 0;
     result = result * 31 + Kotlin.hashCode(this.scene) | 0;
     result = result * 31 + Kotlin.hashCode(this.scenes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.skins) | 0;
     result = result * 31 + Kotlin.hashCode(this.textures) | 0;
     return result;
   };
   GltfFile.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.extensionsUsed, other.extensionsUsed) && Kotlin.equals(this.extensionsRequired, other.extensionsRequired) && Kotlin.equals(this.accessors, other.accessors) && Kotlin.equals(this.animations, other.animations) && Kotlin.equals(this.asset, other.asset) && Kotlin.equals(this.buffers, other.buffers) && Kotlin.equals(this.bufferViews, other.bufferViews) && Kotlin.equals(this.images, other.images) && Kotlin.equals(this.materials, other.materials) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.scene, other.scene) && Kotlin.equals(this.scenes, other.scenes) && Kotlin.equals(this.textures, other.textures)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.extensionsUsed, other.extensionsUsed) && Kotlin.equals(this.extensionsRequired, other.extensionsRequired) && Kotlin.equals(this.accessors, other.accessors) && Kotlin.equals(this.animations, other.animations) && Kotlin.equals(this.asset, other.asset) && Kotlin.equals(this.buffers, other.buffers) && Kotlin.equals(this.bufferViews, other.bufferViews) && Kotlin.equals(this.images, other.images) && Kotlin.equals(this.materials, other.materials) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.scene, other.scene) && Kotlin.equals(this.scenes, other.scenes) && Kotlin.equals(this.skins, other.skins) && Kotlin.equals(this.textures, other.textures)))));
   };
   function Image_0(uri, mimeType, bufferView, name) {
     Image$Companion_getInstance();
@@ -33758,6 +34774,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tangentAcc = this.attribAccessorRefs.get_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_TANGENT);
     var texCoordAcc = this.attribAccessorRefs.get_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_TEXCOORD_0);
     var colorAcc = this.attribAccessorRefs.get_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
+    var jointAcc = this.attribAccessorRefs.get_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_JOINTS_0);
+    var weightAcc = this.attribAccessorRefs.get_11rb$(MeshPrimitive$Companion_getInstance().ATTRIBUTE_WEIGHTS_0);
     if (positionAcc == null) {
       var $this = package$util.Log;
       var level = Log$Level.WARN;
@@ -33784,12 +34802,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var element_4 = Attribute$Companion_getInstance().TANGENTS;
       attribs.add_11rb$(element_4);
       generateTangents = true;
+    }if (jointAcc != null) {
+      var element_5 = Attribute$Companion_getInstance().JOINTS;
+      attribs.add_11rb$(element_5);
+    }if (weightAcc != null) {
+      var element_6 = Attribute$Companion_getInstance().WEIGHTS;
+      attribs.add_11rb$(element_6);
     }var verts = new IndexedVertexList(attribs);
     var poss = new Vec3fAccessor(positionAcc);
     var nrms = normalAcc != null ? new Vec3fAccessor(normalAcc) : null;
     var tans = tangentAcc != null ? new Vec4fAccessor(tangentAcc) : null;
     var texs = texCoordAcc != null ? new Vec2fAccessor(texCoordAcc) : null;
     var cols = colorAcc != null ? new Vec4fAccessor(colorAcc) : null;
+    var jnts = jointAcc != null ? new Vec4iAccessor(jointAcc) : null;
+    var wgts = weightAcc != null ? new Vec4fAccessor(weightAcc) : null;
     tmp$_0 = positionAcc.count;
     for (var i = 0; i < tmp$_0; i++) {
       var tmp$_3, tmp$_4, tmp$_5;
@@ -33810,8 +34836,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tans != null ? tans.next_5s4mpv$($receiver.tangent) : null;
       texs != null ? texs.next_5s4mrl$($receiver.texCoord) : null;
       if ((tmp$_6 = cols != null ? cols.next() : null) != null) {
-        $receiver.color.set_7b5o5w$(tmp$_6.x, tmp$_6.y, tmp$_6.z, tmp$_6.w);
-      }verts.bounds.add_czzhiu$(verts.vertexIt.position);
+        $receiver.color.set_czzhhz$(tmp$_6);
+      }jnts != null ? jnts.next_5s4mps$($receiver.joints) : null;
+      wgts != null ? wgts.next_5s4mpv$($receiver.weights) : null;
+      verts.bounds.add_czzhiu$(verts.vertexIt.position);
       verts.hasChanged = true;
       verts.numVertices - 1 | 0;
     }
@@ -34020,7 +35048,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (weights === void 0)
       weights = null;
     if (name === void 0)
-      name = '';
+      name = null;
     this.camera = camera;
     this.children = children;
     this.skin = skin;
@@ -34033,6 +35061,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.name = name;
     this.childRefs_brz562$_0 = this.childRefs_brz562$_0;
     this.meshRef = null;
+    this.skinRef = null;
   }
   Object.defineProperty(Node_0.prototype, 'childRefs', {
     get: function () {
@@ -34100,8 +35129,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 7, new ArrayListSerializer(internal.FloatSerializer), value.translation);
     if (!equals(value.weights, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
       output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 8, new ArrayListSerializer(internal.FloatSerializer), value.weights);
-    if (!equals(value.name, '') || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 9))
-      output.encodeStringElement_bgm7zs$(this.descriptor, 9, value.name);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 9))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 9, internal.StringSerializer, value.name);
     output.endStructure_qatsm0$(this.descriptor);
   };
   Node$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
@@ -34158,7 +35187,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           bitMask0 |= 256;
           break;
         case 9:
-          local9 = input.decodeStringElement_3zr2iy$(this.descriptor, 9);
+          local9 = (bitMask0 & 512) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 9, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 9, internal.StringSerializer, local9);
           bitMask0 |= 512;
           break;
         case -1:
@@ -34170,7 +35199,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return Node_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, null);
   };
   Node$$serializer.prototype.childSerializers = function () {
-    return [internal.IntSerializer, new ArrayListSerializer(internal.IntSerializer), internal.IntSerializer, new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), internal.IntSerializer, new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), internal.StringSerializer];
+    return [internal.IntSerializer, new ArrayListSerializer(internal.IntSerializer), internal.IntSerializer, new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), internal.IntSerializer, new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(new ArrayListSerializer(internal.FloatSerializer)), new NullableSerializer(internal.StringSerializer)];
   };
   Node$$serializer.$metadata$ = {
     kind: Kind_OBJECT,
@@ -34222,10 +35251,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       $this.weights = weights;
     if ((seen1 & 512) === 0)
-      $this.name = '';
+      $this.name = null;
     else
       $this.name = name;
     $this.meshRef = null;
+    $this.skinRef = null;
     return $this;
   }
   Node_0.$metadata$ = {
@@ -34263,7 +35293,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Node_0.prototype.component10 = function () {
     return this.name;
   };
-  Node_0.prototype.copy_t9e3p2$ = function (camera, children, skin, matrix, mesh, rotation, scale, translation, weights, name) {
+  Node_0.prototype.copy_gbbj5h$ = function (camera, children, skin, matrix, mesh, rotation, scale, translation, weights, name) {
     return new Node_0(camera === void 0 ? this.camera : camera, children === void 0 ? this.children : children, skin === void 0 ? this.skin : skin, matrix === void 0 ? this.matrix : matrix, mesh === void 0 ? this.mesh : mesh, rotation === void 0 ? this.rotation : rotation, scale === void 0 ? this.scale : scale, translation === void 0 ? this.translation : translation, weights === void 0 ? this.weights : weights, name === void 0 ? this.name : name);
   };
   Node_0.prototype.toString = function () {
@@ -34594,6 +35624,176 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   Scene_0.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.nodes, other.nodes) && Kotlin.equals(this.name, other.name)))));
+  };
+  function Skin_0(inverseBindMatrices, skeleton, joints, name) {
+    Skin$Companion_getInstance();
+    if (inverseBindMatrices === void 0)
+      inverseBindMatrices = -1;
+    if (skeleton === void 0)
+      skeleton = -1;
+    if (name === void 0)
+      name = null;
+    this.inverseBindMatrices = inverseBindMatrices;
+    this.skeleton = skeleton;
+    this.joints = joints;
+    this.name = name;
+    this.inverseBindMatrixAccessorRef = null;
+    this.jointRefs_h8wcgd$_0 = this.jointRefs_h8wcgd$_0;
+  }
+  Object.defineProperty(Skin_0.prototype, 'jointRefs', {
+    get: function () {
+      if (this.jointRefs_h8wcgd$_0 == null)
+        return throwUPAE('jointRefs');
+      return this.jointRefs_h8wcgd$_0;
+    },
+    set: function (jointRefs) {
+      this.jointRefs_h8wcgd$_0 = jointRefs;
+    }
+  });
+  function Skin$Companion() {
+    Skin$Companion_instance = this;
+  }
+  Skin$Companion.prototype.serializer = function () {
+    return Skin$$serializer_getInstance();
+  };
+  Skin$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Skin$Companion_instance = null;
+  function Skin$Companion_getInstance() {
+    if (Skin$Companion_instance === null) {
+      new Skin$Companion();
+    }return Skin$Companion_instance;
+  }
+  function Skin$$serializer() {
+    this.descriptor_pnmcra$_0 = new SerialClassDescImpl('de.fabmax.kool.util.gltf.Skin', this, 4);
+    this.descriptor.addElement_ivxn3r$('inverseBindMatrices', true);
+    this.descriptor.addElement_ivxn3r$('skeleton', true);
+    this.descriptor.addElement_ivxn3r$('joints', false);
+    this.descriptor.addElement_ivxn3r$('name', true);
+    Skin$$serializer_instance = this;
+  }
+  Object.defineProperty(Skin$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_pnmcra$_0;
+    }
+  });
+  Skin$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    if (!equals(value.inverseBindMatrices, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 0))
+      output.encodeIntElement_4wpqag$(this.descriptor, 0, value.inverseBindMatrices);
+    if (!equals(value.skeleton, -1) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 1))
+      output.encodeIntElement_4wpqag$(this.descriptor, 1, value.skeleton);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), value.joints);
+    if (!equals(value.name, null) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 3))
+      output.encodeNullableSerializableElement_orpvvi$(this.descriptor, 3, internal.StringSerializer, value.name);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  Skin$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case 0:
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
+          bitMask0 |= 1;
+          break;
+        case 1:
+          local1 = input.decodeIntElement_3zr2iy$(this.descriptor, 1);
+          bitMask0 |= 2;
+          break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(internal.IntSerializer), local2);
+          bitMask0 |= 4;
+          break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.decodeNullableSerializableElement_cwlm4k$(this.descriptor, 3, internal.StringSerializer) : input.updateNullableSerializableElement_u33s02$(this.descriptor, 3, internal.StringSerializer, local3);
+          bitMask0 |= 8;
+          break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return Skin_init(bitMask0, local0, local1, local2, local3, null);
+  };
+  Skin$$serializer.prototype.childSerializers = function () {
+    return [internal.IntSerializer, internal.IntSerializer, new ArrayListSerializer(internal.IntSerializer), new NullableSerializer(internal.StringSerializer)];
+  };
+  Skin$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var Skin$$serializer_instance = null;
+  function Skin$$serializer_getInstance() {
+    if (Skin$$serializer_instance === null) {
+      new Skin$$serializer();
+    }return Skin$$serializer_instance;
+  }
+  function Skin_init(seen1, inverseBindMatrices, skeleton, joints, name, serializationConstructorMarker) {
+    var $this = serializationConstructorMarker || Object.create(Skin_0.prototype);
+    if ((seen1 & 1) === 0)
+      $this.inverseBindMatrices = -1;
+    else
+      $this.inverseBindMatrices = inverseBindMatrices;
+    if ((seen1 & 2) === 0)
+      $this.skeleton = -1;
+    else
+      $this.skeleton = skeleton;
+    if ((seen1 & 4) === 0)
+      throw new MissingFieldException('joints');
+    else
+      $this.joints = joints;
+    if ((seen1 & 8) === 0)
+      $this.name = null;
+    else
+      $this.name = name;
+    $this.inverseBindMatrixAccessorRef = null;
+    return $this;
+  }
+  Skin_0.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Skin',
+    interfaces: []
+  };
+  Skin_0.prototype.component1 = function () {
+    return this.inverseBindMatrices;
+  };
+  Skin_0.prototype.component2 = function () {
+    return this.skeleton;
+  };
+  Skin_0.prototype.component3 = function () {
+    return this.joints;
+  };
+  Skin_0.prototype.component4 = function () {
+    return this.name;
+  };
+  Skin_0.prototype.copy_1a8yv8$ = function (inverseBindMatrices, skeleton, joints, name) {
+    return new Skin_0(inverseBindMatrices === void 0 ? this.inverseBindMatrices : inverseBindMatrices, skeleton === void 0 ? this.skeleton : skeleton, joints === void 0 ? this.joints : joints, name === void 0 ? this.name : name);
+  };
+  Skin_0.prototype.toString = function () {
+    return 'Skin(inverseBindMatrices=' + Kotlin.toString(this.inverseBindMatrices) + (', skeleton=' + Kotlin.toString(this.skeleton)) + (', joints=' + Kotlin.toString(this.joints)) + (', name=' + Kotlin.toString(this.name)) + ')';
+  };
+  Skin_0.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.inverseBindMatrices) | 0;
+    result = result * 31 + Kotlin.hashCode(this.skeleton) | 0;
+    result = result * 31 + Kotlin.hashCode(this.joints) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    return result;
+  };
+  Skin_0.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.inverseBindMatrices, other.inverseBindMatrices) && Kotlin.equals(this.skeleton, other.skeleton) && Kotlin.equals(this.joints, other.joints) && Kotlin.equals(this.name, other.name)))));
   };
   function Texture_0(sampler, source, name) {
     Texture$Companion_getInstance_0();
@@ -35282,10 +36482,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.attributeHash = accumulator;
     this.vertexSizeF = 0;
-    this.strideBytesF = 0;
+    this.byteStrideF = 0;
     this.vertexSizeI = 0;
-    this.strideBytesI = 0;
-    this.attributeOffsets = null;
+    this.byteStrideI = 0;
+    this.attributeByteOffsets = null;
     this.primitiveType = PrimitiveType$TRIANGLES_getInstance();
     this.usage = Usage$STATIC_getInstance();
     this.numVertices = 0;
@@ -35300,7 +36500,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$_0;
     var strideF = 0;
     var strideI = 0;
-    var offsets = LinkedHashMap_init();
+    var byteOffsets = LinkedHashMap_init();
     tmp$_0 = this.vertexAttributes.iterator();
     while (tmp$_0.hasNext()) {
       var attrib = tmp$_0.next();
@@ -35308,19 +36508,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         throw IllegalArgumentException_init('Matrix types are not supported as vertex attributes');
       }if (attrib.type.isInt) {
         var value = strideI;
-        offsets.put_xwzc9p$(attrib, value);
-        strideI = strideI + attrib.type.size | 0;
+        byteOffsets.put_xwzc9p$(attrib, value);
+        strideI = strideI + attrib.type.byteSize | 0;
       } else {
         var value_0 = strideF;
-        offsets.put_xwzc9p$(attrib, value_0);
-        strideF = strideF + attrib.type.size | 0;
+        byteOffsets.put_xwzc9p$(attrib, value_0);
+        strideF = strideF + attrib.type.byteSize | 0;
       }
     }
-    this.attributeOffsets = offsets;
+    this.attributeByteOffsets = byteOffsets;
     this.vertexSizeF = strideF / 4 | 0;
-    this.strideBytesF = strideF;
+    this.byteStrideF = strideF;
     this.vertexSizeI = strideI / 4 | 0;
-    this.strideBytesI = strideI;
+    this.byteStrideI = strideI;
     this.dataF = createFloat32Buffer(strideF * 1000 | 0);
     this.dataI = createUint32Buffer(strideI * 1000 | 0);
     this.vertexIt = new VertexView(this, 0);
@@ -35435,7 +36635,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (normal != null) {
       $receiver.normal.set_czzhiu$(normal);
     }if (color != null) {
-      $receiver.color.set_d7aj7k$(color);
+      $receiver.color.set_czzhhz$(color);
     }if (texCoord != null) {
       $receiver.texCoord.set_czzhjp$(texCoord);
     }this.bounds.add_czzhiu$(this.vertexIt.position);
@@ -36574,7 +37774,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.position.set_czzhiu$(pos);
     $receiver.normal.set_czzhiu$(nrm);
     $receiver.texCoord.set_czzhjp$(uv);
-    $receiver.color.set_d7aj7k$(this.color);
+    $receiver.color.set_czzhhz$(this.color);
     this.transform.transform_w1lst9$($receiver.position);
     if (this.hasNormals_c51zdn$_0 && $receiver.normal.sqrLength() !== 0.0) {
       this.transform.transform_w1lst9$($receiver.normal, 0.0);
@@ -37593,7 +38793,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       } else {
         var value = strideF;
         offsets.put_xwzc9p$(attrib, value);
-        strideF = strideF + attrib.type.size | 0;
+        strideF = strideF + attrib.type.byteSize | 0;
       }
     }
     this.attributeOffsets = offsets;
@@ -40477,11 +41677,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.tangent = null;
     this.color = null;
     this.texCoord = null;
+    this.joints = null;
+    this.weights = null;
     this.attributeViews_0 = null;
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
     var attribViews = LinkedHashMap_init();
     this.attributeViews_0 = attribViews;
-    tmp$ = this.data.attributeOffsets.entries.iterator();
+    tmp$ = this.data.attributeByteOffsets.entries.iterator();
     while (tmp$.hasNext()) {
       var offset = tmp$.next();
       switch (offset.key.type.name) {
@@ -40533,6 +41735,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.tangent = (tmp$_2 = this.getVec4fAttribute_nm2vx5$(Attribute$Companion_getInstance().TANGENTS)) != null ? tmp$_2 : new VertexView$Vec4fView(this, -1);
     this.texCoord = (tmp$_3 = this.getVec2fAttribute_nm2vx5$(Attribute$Companion_getInstance().TEXTURE_COORDS)) != null ? tmp$_3 : new VertexView$Vec2fView(this, -1);
     this.color = (tmp$_4 = this.getColorAttribute_nm2vx5$(Attribute$Companion_getInstance().COLORS)) != null ? tmp$_4 : new VertexView$ColorWrapView(this, new VertexView$Vec4fView(this, -1));
+    this.joints = (tmp$_5 = this.getVec4iAttribute_nm2vx5$(Attribute$Companion_getInstance().JOINTS)) != null ? tmp$_5 : new VertexView$Vec4iView(this, -1);
+    this.weights = (tmp$_6 = this.getVec4fAttribute_nm2vx5$(Attribute$Companion_getInstance().WEIGHTS)) != null ? tmp$_6 : new VertexView$Vec4fView(this, -1);
   }
   Object.defineProperty(VertexView.prototype, 'index', {
     get: function () {
@@ -40544,30 +41748,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.offsetI_0 = Kotlin.imul(value, this.data.vertexSizeI);
     }
   });
-  Object.defineProperty(VertexView.prototype, 'x', {
-    get: function () {
-      return this.position.x;
-    },
-    set: function (value) {
-      this.position.x = value;
-    }
-  });
-  Object.defineProperty(VertexView.prototype, 'y', {
-    get: function () {
-      return this.position.y;
-    },
-    set: function (value) {
-      this.position.y = value;
-    }
-  });
-  Object.defineProperty(VertexView.prototype, 'z', {
-    get: function () {
-      return this.position.z;
-    },
-    set: function (value) {
-      this.position.z = value;
-    }
-  });
+  VertexView.prototype.get_za3lpa$ = function (i) {
+    return this.position.get_za3lpa$(i);
+  };
+  VertexView.prototype.set_24o109$ = function (i, v) {
+    this.position.set_24o109$(i, v);
+  };
   VertexView.prototype.set_fs4kvg$ = function (other) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7;
     tmp$ = this.attributeViews_0.keys.iterator();
@@ -40586,11 +41772,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         else if (Kotlin.isType(view, VertexView$IntView))
           (Kotlin.isType(tmp$_4 = this.attributeViews_0.get_11rb$(attrib), VertexView$IntView) ? tmp$_4 : throwCCE()).i = view.i;
         else if (Kotlin.isType(view, VertexView$Vec2iView))
-          (Kotlin.isType(tmp$_5 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec2iView) ? tmp$_5 : throwCCE()).set_b3xq3y$(view);
+          (Kotlin.isType(tmp$_5 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec2iView) ? tmp$_5 : throwCCE()).set_czzhjm$(view);
         else if (Kotlin.isType(view, VertexView$Vec3iView))
-          (Kotlin.isType(tmp$_6 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec3iView) ? tmp$_6 : throwCCE()).set_bkzci5$(view);
+          (Kotlin.isType(tmp$_6 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec3iView) ? tmp$_6 : throwCCE()).set_czzhir$(view);
         else if (Kotlin.isType(view, VertexView$Vec4iView))
-          (Kotlin.isType(tmp$_7 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec4iView) ? tmp$_7 : throwCCE()).set_c20ywc$(view);
+          (Kotlin.isType(tmp$_7 = this.attributeViews_0.get_11rb$(attrib), VertexView$Vec4iView) ? tmp$_7 : throwCCE()).set_czzhhw$(view);
       }}
   };
   VertexView.prototype.getFloatAttribute_nm2vx5$ = function (attribute) {
@@ -40766,177 +41952,72 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function VertexView$Vec2iView($outer, attribOffset) {
     this.$outer = $outer;
+    MutableVec2i_init(this);
     this.attribOffset_0 = attribOffset;
   }
-  Object.defineProperty(VertexView$Vec2iView.prototype, 'x', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec2iView.prototype, 'y', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0, value);
-      }}
-  });
-  VertexView$Vec2iView.prototype.set_vux9f0$ = function (x, y) {
-    this.x = x;
-    this.y = y;
+  VertexView$Vec2iView.prototype.get_za3lpa$ = function (i) {
+    var tmp$;
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 1)) {
+      tmp$ = this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0);
+    } else {
+      tmp$ = 0;
+    }
+    return tmp$;
   };
-  VertexView$Vec2iView.prototype.set_b3xq3y$ = function (other) {
-    this.x = other.x;
-    this.y = other.y;
-  };
+  VertexView$Vec2iView.prototype.set_vux9f0$ = function (i, v) {
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 1)) {
+      this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0, v);
+    }};
   VertexView$Vec2iView.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Vec2iView',
-    interfaces: []
+    interfaces: [MutableVec2i]
   };
   function VertexView$Vec3iView($outer, attribOffset) {
     this.$outer = $outer;
+    MutableVec3i_init(this);
     this.attribOffset_0 = attribOffset;
   }
-  Object.defineProperty(VertexView$Vec3iView.prototype, 'x', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec3iView.prototype, 'y', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec3iView.prototype, 'z', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 2 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 2 | 0, value);
-      }}
-  });
-  VertexView$Vec3iView.prototype.set_bkzci5$ = function (other) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+  VertexView$Vec3iView.prototype.get_za3lpa$ = function (i) {
+    var tmp$;
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 2)) {
+      tmp$ = this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0);
+    } else {
+      tmp$ = 0;
+    }
+    return tmp$;
   };
-  VertexView$Vec3iView.prototype.set_qt1dr2$ = function (x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  };
+  VertexView$Vec3iView.prototype.set_vux9f0$ = function (i, v) {
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 2)) {
+      this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0, v);
+    }};
   VertexView$Vec3iView.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Vec3iView',
-    interfaces: []
+    interfaces: [MutableVec3i]
   };
   function VertexView$Vec4iView($outer, attribOffset) {
     this.$outer = $outer;
+    MutableVec4i_init(this);
     this.attribOffset_0 = attribOffset;
   }
-  Object.defineProperty(VertexView$Vec4iView.prototype, 'x', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec4iView.prototype, 'y', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 1 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec4iView.prototype, 'z', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 2 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 2 | 0, value);
-      }}
-  });
-  Object.defineProperty(VertexView$Vec4iView.prototype, 'w', {
-    get: function () {
-      if (this.attribOffset_0 < 0) {
-        return 0;
-      } else {
-        return this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + 3 | 0);
-      }
-    },
-    set: function (value) {
-      if (this.attribOffset_0 >= 0) {
-        this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + 3 | 0, value);
-      }}
-  });
-  VertexView$Vec4iView.prototype.set_c20ywc$ = function (other) {
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
-    this.w = other.w;
+  VertexView$Vec4iView.prototype.get_za3lpa$ = function (i) {
+    var tmp$;
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 3)) {
+      tmp$ = this.$outer.data.dataI.get_za3lpa$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0);
+    } else {
+      tmp$ = 0;
+    }
+    return tmp$;
   };
-  VertexView$Vec4iView.prototype.set_tjonv8$ = function (x, y, z, w) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;
-  };
+  VertexView$Vec4iView.prototype.set_vux9f0$ = function (i, v) {
+    if (this.attribOffset_0 >= 0 && (0 <= i && i <= 3)) {
+      this.$outer.data.dataI.set_vux9f0$(this.$outer.offsetI_0 + this.attribOffset_0 + i | 0, v);
+    }};
   VertexView$Vec4iView.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Vec4iView',
-    interfaces: []
+    interfaces: [MutableVec4i]
   };
   VertexView.$metadata$ = {
     kind: Kind_CLASS,
@@ -41599,7 +42680,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.nSlots = 4;
         this.attribSize = 4;
         break;
-      default:throw IllegalArgumentException_init('Attribute type not supported: ' + attribute.type);
+      case 'INT':
+        this.nSlots = 1;
+        this.attribSize = 1;
+        break;
+      case 'VEC_2I':
+        this.nSlots = 1;
+        this.attribSize = 2;
+        break;
+      case 'VEC_3I':
+        this.nSlots = 1;
+        this.attribSize = 3;
+        break;
+      case 'VEC_4I':
+        this.nSlots = 1;
+        this.attribSize = 4;
+        break;
+      default:Kotlin.noWhenBranchMatched();
+        break;
     }
   }
   PlatformAttributeProps.$metadata$ = {
@@ -43289,8 +44387,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         if (vertexAttrib.type.isInt) {
           hasIntData = true;
         } else {
-          var stride = md.strideBytesF;
-          var offset = ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib)) / 4 | 0;
+          var stride = md.byteStrideF;
+          var offset = ensureNotNull(md.attributeByteOffsets.get_11rb$(vertexAttrib)) / 4 | 0;
           addAll(this.instanceAttribBinders_0, this.$outer.makeAttribBinders_0(this.$outer.attributes_0, vertexAttrib, ensureNotNull(this.dataBufferF_0), stride, offset));
         }
       }
@@ -43301,7 +44399,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var vertexAttrib_0 = tmp$_0.next();
         if (vertexAttrib_0.type.isInt) {
           if ((tmp$_1 = this.$outer.attributes_0.get_11rb$(vertexAttrib_0.name)) != null) {
-            var vbo = new VboBinder(ensureNotNull(this.dataBufferI_0), vertexAttrib_0.type.size / 4 | 0, md.strideBytesI, ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib_0)) / 4 | 0, WebGLRenderingContext.INT);
+            var vbo = new VboBinder(ensureNotNull(this.dataBufferI_0), vertexAttrib_0.type.byteSize / 4 | 0, md.byteStrideI, ensureNotNull(md.attributeByteOffsets.get_11rb$(vertexAttrib_0)) / 4 | 0, WebGLRenderingContext.INT);
             var $receiver = this.attributeBinders_0;
             var element = new CompiledShader$AttributeOnLocation(vbo, tmp$_1.location);
             $receiver.add_11rb$(element);
@@ -45055,6 +46153,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$math.MutableVec2d_init_14dthe$ = MutableVec2d_init_0;
   package$math.MutableVec2d_init_czzhjr$ = MutableVec2d_init_1;
   package$math.MutableVec2d = MutableVec2d;
+  Object.defineProperty(Vec2i, 'Companion', {
+    get: Vec2i$Companion_getInstance
+  });
+  package$math.Vec2i_init_za3lpa$ = Vec2i_init;
+  package$math.Vec2i_init_czzhjm$ = Vec2i_init_0;
+  package$math.Vec2i = Vec2i;
+  package$math.MutableVec2i_init = MutableVec2i_init;
+  package$math.MutableVec2i_init_za3lpa$ = MutableVec2i_init_0;
+  package$math.MutableVec2i_init_czzhjm$ = MutableVec2i_init_1;
+  package$math.MutableVec2i = MutableVec2i;
   Object.defineProperty(Vec3f, 'Companion', {
     get: Vec3f$Companion_getInstance
   });
@@ -45075,6 +46183,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$math.MutableVec3d_init_14dthe$ = MutableVec3d_init_0;
   package$math.MutableVec3d_init_czzhiw$ = MutableVec3d_init_1;
   package$math.MutableVec3d = MutableVec3d;
+  Object.defineProperty(Vec3i, 'Companion', {
+    get: Vec3i$Companion_getInstance
+  });
+  package$math.Vec3i_init_za3lpa$ = Vec3i_init;
+  package$math.Vec3i_init_czzhir$ = Vec3i_init_0;
+  package$math.Vec3i = Vec3i;
+  package$math.MutableVec3i_init = MutableVec3i_init;
+  package$math.MutableVec3i_init_za3lpa$ = MutableVec3i_init_0;
+  package$math.MutableVec3i_init_czzhir$ = MutableVec3i_init_1;
+  package$math.MutableVec3i = MutableVec3i;
   Object.defineProperty(Vec4f, 'Companion', {
     get: Vec4f$Companion_getInstance
   });
@@ -45099,6 +46217,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$math.MutableVec4d_init_6nz8ey$ = MutableVec4d_init_1;
   package$math.MutableVec4d_init_czzhi1$ = MutableVec4d_init_2;
   package$math.MutableVec4d = MutableVec4d;
+  Object.defineProperty(Vec4i, 'Companion', {
+    get: Vec4i$Companion_getInstance
+  });
+  package$math.Vec4i_init_za3lpa$ = Vec4i_init;
+  package$math.Vec4i_init_czzhhw$ = Vec4i_init_0;
+  package$math.Vec4i = Vec4i;
+  package$math.MutableVec4i_init = MutableVec4i_init;
+  package$math.MutableVec4i_init_za3lpa$ = MutableVec4i_init_0;
+  package$math.MutableVec4i_init_czzhhw$ = MutableVec4i_init_1;
+  package$math.MutableVec4i = MutableVec4i;
   package$math.add_drouu$ = add;
   package$math.add_4lfkt4$ = add_0;
   package$math.add_8t3gre$ = add_1;
@@ -45415,6 +46543,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.CascadedShadowMapFragmentNode = CascadedShadowMapFragmentNode;
   package$shadermodel.Vec3TransformNode = Vec3TransformNode;
   package$shadermodel.Vec4TransformNode = Vec4TransformNode;
+  package$shadermodel.SkinTransformNode = SkinTransformNode;
   UniformBufferPremultipliedMvp.StageCopy = UniformBufferPremultipliedMvp$StageCopy;
   package$shadermodel.UniformBufferPremultipliedMvp = UniformBufferPremultipliedMvp;
   UniformBufferMvp.StageCopy = UniformBufferMvp$StageCopy;
@@ -45630,6 +46759,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$animation.CubicTranslationKey = CubicTranslationKey;
   package$animation.ScaleKey = ScaleKey;
   package$animation.CubicScaleKey = CubicScaleKey;
+  Skin.SkinNode = Skin$SkinNode;
+  package$animation.Skin = Skin;
   Object.defineProperty(Camera$ProjCorrectionMode, 'NONE', {
     get: Camera$ProjCorrectionMode$NONE_getInstance
   });
@@ -45664,7 +46795,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$scene.LineMesh = LineMesh;
   package$scene.mesh_ycs46o$ = mesh;
   package$scene.colorMesh_gp9ews$ = colorMesh;
-  package$scene.textMesh_8mgi8m$ = textMesh;
   package$scene.textureMesh_pyaqjj$ = textureMesh;
   Object.defineProperty(Mesh, 'Companion', {
     get: Mesh$Companion_getInstance
@@ -45958,6 +47088,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$gltf.Vec2fAccessor = Vec2fAccessor;
   package$gltf.Vec3fAccessor = Vec3fAccessor;
   package$gltf.Vec4fAccessor = Vec4fAccessor;
+  package$gltf.Vec4iAccessor = Vec4iAccessor;
+  package$gltf.Mat4fAccessor = Mat4fAccessor;
   Object.defineProperty(Animation_0, 'Companion', {
     get: Animation$Companion_getInstance
   });
@@ -46023,7 +47155,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(GltfFile, '$serializer', {
     get: GltfFile$$serializer_getInstance
   });
-  package$gltf.GltfFile_init_ql41j1$ = GltfFile_init;
+  package$gltf.GltfFile_init_vz796i$ = GltfFile_init;
   package$gltf.GltfFile = GltfFile;
   Object.defineProperty(Image_0, 'Companion', {
     get: Image$Companion_getInstance
@@ -46081,6 +47213,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$gltf.Scene_init_i54khn$ = Scene_init;
   package$gltf.Scene = Scene_0;
+  Object.defineProperty(Skin_0, 'Companion', {
+    get: Skin$Companion_getInstance
+  });
+  Object.defineProperty(Skin_0, '$serializer', {
+    get: Skin$$serializer_getInstance
+  });
+  package$gltf.Skin_init_7aj6yj$ = Skin_init;
+  package$gltf.Skin = Skin_0;
   Object.defineProperty(Texture_0, 'Companion', {
     get: Texture$Companion_getInstance_0
   });
@@ -46378,6 +47518,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Node$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   PbrMetallicRoughness$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Scene$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  Skin$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Texture$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   TextureInfo$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;

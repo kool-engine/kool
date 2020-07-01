@@ -463,3 +463,92 @@ open class MutableVec3d(x: Double, y: Double, z: Double) : Vec3d(x, y, z) {
 
     operator fun timesAssign(factor: Double) { scale(factor) }
 }
+
+open class Vec3i(x: Int, y: Int, z: Int) {
+
+    protected val fields = IntArray(3)
+
+    open val x get() = this[0]
+    open val y get() = this[1]
+    open val z get() = this[2]
+
+    constructor(f: Int) : this(f, f, f)
+    constructor(v: Vec3i) : this(v.x, v.y, v.z)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+    }
+
+    open operator fun get(i: Int): Int = fields[i]
+
+    override fun toString(): String = "($x, $y, $z)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4i) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        result = 31 * result + z.hashCode()
+        return result
+    }
+
+    companion object {
+        val ZERO = Vec3i(0)
+        val X_AXIS = Vec3i(1, 0, 0)
+        val Y_AXIS = Vec3i(0, 1, 0)
+        val Z_AXIS = Vec3i(0, 0, 1)
+        val NEG_X_AXIS = Vec3i(-1, 0, 0)
+        val NEG_Y_AXIS = Vec3i(0, -1, 0)
+        val NEG_Z_AXIS = Vec3i(0, 0, -1)
+    }
+}
+
+open class MutableVec3i(x: Int, y: Int, z: Int) : Vec3i(x, y, z) {
+
+    override var x
+        get() = this[0]
+        set(value) { this[0] = value }
+    override var y
+        get() = this[1]
+        set(value) { this[1] = value }
+    override var z
+        get() = this[2]
+        set(value) { this[2] = value }
+
+    constructor() : this(0, 0, 0)
+    constructor(f: Int) : this(f, f, f)
+    constructor(other: Vec3i) : this(other.x, other.y, other.z)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+    }
+
+    fun set(x: Int, y: Int, z: Int): MutableVec3i {
+        this.x = x
+        this.y = y
+        this.z = z
+        return this
+    }
+
+    fun set(other: Vec3i): MutableVec3i {
+        x = other.x
+        y = other.y
+        z = other.z
+        return this
+    }
+
+    open operator fun set(i: Int, v: Int) { fields[i] = v }
+}

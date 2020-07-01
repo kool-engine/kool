@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.animation.Animation
+import de.fabmax.kool.scene.animation.Skin
 
 class Model(name: String? = null) : TransformGroup(name) {
 
@@ -11,6 +12,7 @@ class Model(name: String? = null) : TransformGroup(name) {
     val textures = mutableMapOf<String, Texture>()
 
     val animations = mutableListOf<Animation>()
+    val skins = mutableListOf<Skin>()
 
     fun printHierarchy() {
         printHierarchy("")

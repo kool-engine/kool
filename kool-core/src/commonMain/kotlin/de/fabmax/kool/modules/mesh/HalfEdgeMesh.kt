@@ -17,7 +17,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
     val vertices: List<HalfEdgeVertex>
         get() = verts
 
-    private val positionOffset = geometry.attributeOffsets[Attribute.POSITIONS]!!
+    private val positionOffset = geometry.attributeByteOffsets[Attribute.POSITIONS]!!
 
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
