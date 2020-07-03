@@ -7,9 +7,11 @@ import de.fabmax.kool.util.TreeMap
 class Animation(val name: String?) {
     val channels = mutableListOf<AnimationChannel>()
 
+    var weight = 1f
     var speed = 1f
     var duration = 1f
         private set
+
     private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
@@ -18,7 +20,7 @@ class Animation(val name: String?) {
         animationNodes += channels.map { it.animationNode }.distinct()
     }
 
-    fun apply(time: Double) {
+    fun apply(time: Double, firstWeightedTransform: Boolean = true) {
         val t = ((time * speed) % (duration)).toFloat()
         for (i in animationNodes.indices) {
             animationNodes[i].initTransform()
@@ -26,8 +28,14 @@ class Animation(val name: String?) {
         for (i in channels.indices) {
             channels[i].apply(t)
         }
-        for (i in animationNodes.indices) {
-            animationNodes[i].applyTransform()
+        if (weight == 1f) {
+            for (i in animationNodes.indices) {
+                animationNodes[i].applyTransform()
+            }
+        } else {
+            for (i in animationNodes.indices) {
+                animationNodes[i].applyTransformWeighted(weight, firstWeightedTransform)
+            }
         }
     }
 }
@@ -84,6 +92,7 @@ class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): Animat
 interface AnimationNode {
     fun initTransform()
     fun applyTransform()
+    fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean)
 
     fun setTranslation(translation: Vec3d)
     fun setRotation(rotation: Vec4d)
@@ -100,6 +109,7 @@ class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
     private val animScale = MutableVec3d()
 
     private val quatRotMat = Mat4d()
+    private val weightedTransformMat = Mat4d()
 
     init {
         val vec4 = MutableVec4d()
@@ -123,23 +133,35 @@ class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
         target.translate(animTranslation)
         target.mul(quatRotMat.setRotate(animRotation))
         target.scale(animScale.x, animScale.y, animScale.z)
+    }
 
-        //println("apply transform: ${target.name}")
-        //target.transform.dump()
+    override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
+        weightedTransformMat.setIdentity()
+        weightedTransformMat.translate(animTranslation)
+        weightedTransformMat.mul(quatRotMat.setRotate(animRotation))
+        weightedTransformMat.scale(animScale.x, animScale.y, animScale.z)
+
+        if (firstWeightedTransform) {
+            for (i in 0..15) {
+                target.transform.matrix[i] = weightedTransformMat.matrix[i] * weight
+            }
+        } else {
+            for (i in 0..15) {
+                target.transform.matrix[i] += weightedTransformMat.matrix[i] * weight
+            }
+        }
+        target.setDirty()
     }
 
     override fun setTranslation(translation: Vec3d) {
-        //println("translate: $translation")
         animTranslation.set(translation)
     }
 
     override fun setRotation(rotation: Vec4d) {
-        //println("rotate: $rotation")
         animRotation.set(rotation)
     }
 
     override fun setScale(scale: Vec3d) {
-        //println("scale: $scale")
         animScale.set(scale)
     }
 

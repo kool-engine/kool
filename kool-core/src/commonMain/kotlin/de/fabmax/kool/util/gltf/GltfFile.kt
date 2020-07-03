@@ -144,6 +144,7 @@ data class GltfFile(
             if (cfg.applyTransforms && model.animations.isEmpty()) { applyTransforms(model) }
             if (cfg.mergeMeshesByMaterial) { mergeMeshesByMaterial(model) }
             if (cfg.sortNodesByAlpha) { model.sortNodesByAlpha() }
+            model.disableAllAnimations()
             return model
         }
 

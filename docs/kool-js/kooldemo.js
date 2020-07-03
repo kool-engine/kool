@@ -103,11 +103,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var MutableVec3d_init = $module$kool.de.fabmax.kool.math.MutableVec3d_init_czzhiw$;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
-  var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
+  var MutableVec3d_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3d_init;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -2804,12 +2805,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.models_0 = Cycler_init([new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), 5.0), new GltfDemo$GltfModel(this, 'Cesium Man', Demo$Companion_getInstance().modelBasePath + '/CesiumMan.glb', 1.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 0.5, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), 3.5)]);
+    this.foxAnimator_0 = new GltfDemo$FoxAnimator(this);
+    var tmp$ = new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), false, 3.5);
+    var tmp$_0 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
+    var $receiver = new GltfDemo$GltfModel(this, 'Fox', Demo$Companion_getInstance().modelBasePath + '/fox.glb', 0.01, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), true, 3.5);
+    $receiver.animate = GltfDemo$models$lambda$lambda(this);
+    this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5)]);
     this.autoRotate_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
     this.camTranslationTarget_0 = null;
+    this.trackModel_0 = true;
     this.contentGroup_0 = new TransformGroup();
     this.irrMapPass_0 = null;
     this.reflMapPass_0 = null;
@@ -2835,7 +2842,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var tmp$;
       if (this$GltfDemo.autoRotate_0) {
         this$.verticalRotation -= closure$ctx.deltaT * 3.0;
-      }if ((tmp$ = this$GltfDemo.camTranslationTarget_0) != null) {
+      }var translationTarget = {v: this$GltfDemo.camTranslationTarget_0};
+      if (this$GltfDemo.trackModel_0) {
+        var model = this$GltfDemo.models_0.current.model;
+        if (model != null) {
+          var center = model.globalCenter;
+          translationTarget.v = new Vec3d(center.x, center.y, center.z);
+        }}if ((tmp$ = translationTarget.v) != null) {
         var this$_0 = this$;
         var this$GltfDemo_0 = this$GltfDemo;
         var v = MutableVec3d_init(this$_0.translation).scale_14dthe$(0.9).add_czzhiw$(MutableVec3d_init(tmp$).scale_14dthe$(0.1));
@@ -3196,6 +3209,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this$GltfDemo.models_0.current.isVisible = true;
       this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
       this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
       return Unit;
     };
   }
@@ -3216,6 +3230,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this$GltfDemo.models_0.current.isVisible = true;
       this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
       this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
       return Unit;
     };
   }
@@ -3237,6 +3252,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this$GltfDemo.models_0.current.isVisible = true;
       this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
       this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
+      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
       return Unit;
     };
   }
@@ -3319,7 +3335,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var speedVal = this$.label_tokfmu$(toString(this$GltfDemo.animationSpeed_0, 2), GltfDemo$menu$lambda$lambda$lambda_7(y));
       $receiver.unaryPlus_uv0sim$(speedVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('speedSlider', 0.05, 2.0, this$GltfDemo.animationSpeed_0, GltfDemo$menu$lambda$lambda$lambda_8(y, speedVal, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('speedSlider', 0.0, 1.0, this$GltfDemo.animationSpeed_0, GltfDemo$menu$lambda$lambda$lambda_8(y, speedVal, this$GltfDemo)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
       return Unit;
@@ -3378,7 +3394,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     $receiver.geometry.generateNormals();
   };
-  function GltfDemo$GltfModel($outer, name, assetPath, scale, translation, generateNormals, lookAt, zoom) {
+  function GltfDemo$GltfModel($outer, name, assetPath, scale, translation, generateNormals, lookAt, trackModel, zoom) {
     this.$outer = $outer;
     this.name = name;
     this.assetPath = assetPath;
@@ -3386,9 +3402,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.translation = translation;
     this.generateNormals = generateNormals;
     this.lookAt = lookAt;
+    this.trackModel = trackModel;
     this.zoom = zoom;
     this.model = null;
     this.isVisible_eht3mo$_0 = false;
+    this.animate = GltfDemo$GltfModel$animate$lambda;
   }
   Object.defineProperty(GltfDemo$GltfModel.prototype, 'isVisible', {
     get: function () {
@@ -3410,21 +3428,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$, this$GltfDemo) {
-    return function ($receiver, f, f_0) {
-      var $receiver_0 = this$.animations;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.apply_14dthe$(this$GltfDemo.animationTime_0);
-      }
-      var tmp$_0;
-      tmp$_0 = this$.skins.iterator();
-      while (tmp$_0.hasNext()) {
-        var element_0 = tmp$_0.next();
-        element_0.updateJointTransforms();
-      }
+  function GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, this$) {
+    return function ($receiver, f, ctx) {
+      this$GltfModel.animate(this$, this$GltfDemo.animationTime_0, ctx);
       return Unit;
     };
   }
@@ -3436,11 +3442,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
         var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
         $receiver.translate_czzhiu$(this$GltfModel_0.translation);
-        $receiver.scale_y2kzbl$(this$GltfModel_0.scale, this$GltfModel_0.scale, this$GltfModel_0.scale);
+        $receiver.scale_mx4ult$(this$GltfModel_0.scale);
         $receiver.isVisible = this$GltfModel_0.isVisible;
         this$GltfDemo_0.contentGroup_0.plusAssign_f1kmr1$($receiver);
         if (!$receiver.animations.isEmpty()) {
-          $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda($receiver, this$GltfDemo_0));
+          $receiver.enableAnimation_za3lpa$(0);
+          $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$GltfModel_0, this$GltfDemo_0, $receiver));
         }this$GltfModel_0.model = $receiver;
       }return Unit;
     };
@@ -3448,11 +3455,55 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   GltfDemo$GltfModel.prototype.load_aemszp$ = function (ctx) {
     loadGltfModel(ctx.assetMgr, this.assetPath, GltfDemo$GltfModel$load$lambda(this, this.$outer));
   };
+  function GltfDemo$GltfModel$animate$lambda($receiver, t, f) {
+    $receiver.applyAnimation_14dthe$(t);
+    return Unit;
+  }
   GltfDemo$GltfModel.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'GltfModel',
     interfaces: []
   };
+  function GltfDemo$FoxAnimator($outer) {
+    this.$outer = $outer;
+    this.angle = 0.0;
+    this.radius = 3.0;
+    this.position = MutableVec3d_init_0();
+  }
+  GltfDemo$FoxAnimator.prototype.animate_t7fsfh$ = function (model, ctx) {
+    if (this.$outer.animationSpeed_0 < 0.5) {
+      var w1 = this.$outer.animationSpeed_0 * 2.0;
+      var w0 = 1.0 - w1;
+      model.setAnimationWeight_24o109$(0, w0);
+      model.setAnimationWeight_24o109$(1, w1);
+      model.setAnimationWeight_24o109$(2, 0.0);
+    } else {
+      var w1_0 = (this.$outer.animationSpeed_0 - 0.5) * 2.0;
+      var w0_0 = 1.0 - w1_0;
+      model.setAnimationWeight_24o109$(0, 0.0);
+      model.setAnimationWeight_24o109$(1, w0_0);
+      model.setAnimationWeight_24o109$(2, w1_0);
+    }
+    model.applyAnimation_14dthe$(ctx.time);
+    model.setIdentity();
+    var speed = this.$outer.animationSpeed_0 * 2;
+    this.angle += speed * ctx.deltaT / this.radius;
+    this.position.set_yvo9jy$(this.radius, 0.0, 0.0).rotate_5820x2$(this.angle * math.RAD_2_DEG, Vec3d.Companion.Y_AXIS);
+    model.translate_czzhiw$(this.position);
+    model.rotate_5820x2$(this.angle * math.RAD_2_DEG + 180, Vec3d.Companion.Y_AXIS);
+    model.scale_14dthe$(0.01);
+  };
+  GltfDemo$FoxAnimator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'FoxAnimator',
+    interfaces: []
+  };
+  function GltfDemo$models$lambda$lambda(this$GltfDemo) {
+    return function ($receiver, f, ctx) {
+      this$GltfDemo.foxAnimator_0.animate_t7fsfh$($receiver, ctx);
+      return Unit;
+    };
+  }
   GltfDemo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'GltfDemo',

@@ -424,7 +424,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isDisplacementMapped = false
 
         var isSkinned = false
-        var maxJoints = 32
+        var maxJoints = 64
 
         var normalStrength = 1f
         var ambientOcclusionStrength = 1f

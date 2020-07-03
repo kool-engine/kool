@@ -299,7 +299,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun mvpNode() = addNode(UniformBufferMvp(stage))
 
-        fun skinTransformNode(inJoints: ShaderNodeIoVar? = null, inWeights: ShaderNodeIoVar? = null, maxJoints: Int = 32): SkinTransformNode {
+        fun skinTransformNode(inJoints: ShaderNodeIoVar? = null, inWeights: ShaderNodeIoVar? = null, maxJoints: Int = 64): SkinTransformNode {
             val skinNd = addNode(SkinTransformNode(stage, maxJoints))
             inJoints?.let { skinNd.inJoints = it }
             inWeights?.let { skinNd.inWeights = it }

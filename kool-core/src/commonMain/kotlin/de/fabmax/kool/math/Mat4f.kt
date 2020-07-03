@@ -67,6 +67,8 @@ open class Mat4f {
         }
     }
 
+    fun scale(s: Float) = scale(s, s, s)
+
     fun scale(sx: Float, sy: Float, sz: Float): Mat4f {
         for (i in 0..3) {
             val mi = offset + i

@@ -56,6 +56,8 @@ open class Mat4d {
 
     fun rotate(angleDeg: Double, axis: Vec3d, result: Mat4d) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
 
+    fun scale(s: Double) = scale(s, s, s)
+
     fun scale(sx: Double, sy: Double, sz: Double): Mat4d {
         for (i in 0..3) {
             val mi = offset + i

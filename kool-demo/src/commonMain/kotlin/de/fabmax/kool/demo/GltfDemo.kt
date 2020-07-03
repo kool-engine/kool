@@ -30,19 +30,21 @@ class GltfDemo(ctx: KoolContext) {
     val mainScene: Scene
     val menu: Scene
 
+    private val foxAnimator = FoxAnimator()
     private val models = Cycler(
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
-                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), 3.5),
+                    4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
-                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), 5.0),
+                    20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0),
+            GltfModel("Fox", "${Demo.modelBasePath}/fox.glb",
+                    0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5)
+                    .apply { animate = { _, ctx -> foxAnimator.animate(this, ctx) } },
             GltfModel("Animated Box", "${Demo.modelBasePath}/BoxAnimated.gltf",
-                    1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), 5.0),
-            GltfModel("Cesium Man", "${Demo.modelBasePath}/CesiumMan.glb",
-                    1f, Vec3f.ZERO, false, Vec3d(0.0, 0.5, 0.0), 3.5),
+                    1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0),
             GltfModel("Tangent Test", "${Demo.modelBasePath}/NormalTangentMirrorTest.glb",
-                    1f, Vec3f(0f, 1.2f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5),
+                    1f, Vec3f(0f, 1.2f, 0f), false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Alpha Mode Test", "${Demo.modelBasePath}/AlphaBlendModeTest.glb",
-                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 1.25, 0.0), 3.5)
+                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 1.25, 0.0), false, 3.5)
     )
 
     private var autoRotate = true
@@ -51,6 +53,7 @@ class GltfDemo(ctx: KoolContext) {
 
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
+    private var trackModel = true
     private val contentGroup = TransformGroup()
 
     private var irrMapPass: IrradianceMapPass? = null
@@ -69,19 +72,24 @@ class GltfDemo(ctx: KoolContext) {
 
     private fun makeMainScene(ctx: KoolContext) = scene {
         orbitTransform = orbitInputTransform {
-            // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -30f)
-            // Add camera to the transform group
             +camera
             zoom = models.current.zoom
-
 
             translation.set(models.current.lookAt)
             onUpdate += { _, _ ->
                 if (autoRotate) {
                     verticalRotation -= ctx.deltaT * 3f
                 }
-                camTranslationTarget?.let {
+                var translationTarget = camTranslationTarget
+                if (trackModel) {
+                    val model = models.current.model
+                    model?.let {
+                        val center = model.globalCenter
+                        translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
+                    }
+                }
+                translationTarget?.let {
                     val v = MutableVec3d(translation).scale(0.9).add(MutableVec3d(it).scale(0.1))
                     translation.set(v)
                     if (v.distance(it) < 0.01) {
@@ -213,6 +221,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = true
                     orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
+                    trackModel = models.current.trackModel
                 }
             }
             +modelName
@@ -227,6 +236,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = true
                     orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
+                    trackModel = models.current.trackModel
                 }
             }
             +button("nextModel") {
@@ -240,6 +250,7 @@ class GltfDemo(ctx: KoolContext) {
                     models.current.isVisible = true
                     orbitTransform.zoom = models.current.zoom
                     camTranslationTarget = models.current.lookAt
+                    trackModel = models.current.trackModel
                 }
             }
             y -= 35f
@@ -254,7 +265,7 @@ class GltfDemo(ctx: KoolContext) {
             }
             +speedVal
             y -= 35f
-            +slider("speedSlider", 0.05f, 2f, animationSpeed) {
+            +slider("speedSlider", 0f, 1f, animationSpeed) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
@@ -320,6 +331,7 @@ class GltfDemo(ctx: KoolContext) {
             val translation: Vec3f,
             val generateNormals: Boolean,
             val lookAt: Vec3d,
+            val trackModel: Boolean,
             val zoom: Double) {
 
         var model: Model? = null
@@ -328,6 +340,10 @@ class GltfDemo(ctx: KoolContext) {
                 field = value
                 model?.isVisible = value
             }
+
+        var animate: Model.(Double, KoolContext) -> Unit = { t, _ ->
+            applyAnimation(t)
+        }
 
         fun load(ctx: KoolContext) {
             ctx.assetMgr.loadGltfModel(assetPath) { gltf ->
@@ -340,18 +356,52 @@ class GltfDemo(ctx: KoolContext) {
                     }
                     model = it.makeModel(modelCfg).apply {
                         translate(translation)
-                        scale(scale, scale, scale)
+                        scale(scale)
                         isVisible = this@GltfModel.isVisible
                         contentGroup += this
+
                         if (animations.isNotEmpty()) {
-                            onUpdate += { _, _ ->
-                                animations.forEach { a -> a.apply(animationTime) }
-                                skins.forEach { s -> s.updateJointTransforms() }
+                            enableAnimation(0)
+                            onUpdate += { _, ctx ->
+                                animate(animationTime, ctx)
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private inner class FoxAnimator {
+        var angle = 0.0
+        val radius = 3.0
+        val position = MutableVec3d()
+
+        fun animate(model: Model, ctx: KoolContext) {
+            // mix survey / walk / run animations according to animation speed
+            if (animationSpeed < 0.5f) {
+                val w1 = animationSpeed * 2f
+                val w0 = 1f - w1
+                model.setAnimationWeight(0, w0)
+                model.setAnimationWeight(1, w1)
+                model.setAnimationWeight(2, 0f)
+            } else {
+                val w1 = (animationSpeed - 0.5f) * 2f
+                val w0 = 1f - w1
+                model.setAnimationWeight(0, 0f)
+                model.setAnimationWeight(1, w0)
+                model.setAnimationWeight(2, w1)
+            }
+            model.applyAnimation(ctx.time)
+
+            // move model according to animation speed
+            model.setIdentity()
+            val speed = animationSpeed * 2
+            angle += speed * ctx.deltaT / radius
+            position.set(radius, 0.0, 0.0).rotate(angle.toDeg(), Vec3d.Y_AXIS)
+            model.translate(position)
+            model.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)
+            model.scale(0.01)
         }
     }
 }

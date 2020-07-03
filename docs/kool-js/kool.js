@@ -3493,6 +3493,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Mat4d.prototype.rotate_wwd6w1$ = function (angleDeg, axis, result) {
     return this.rotate_app323$(angleDeg, axis.x, axis.y, axis.z, result);
   };
+  Mat4d.prototype.scale_14dthe$ = function (s) {
+    return this.scale_yvo9jy$(s, s, s);
+  };
   Mat4d.prototype.scale_yvo9jy$ = function (sx, sy, sz) {
     for (var i = 0; i <= 3; i++) {
       var mi = this.offset + i | 0;
@@ -4204,6 +4207,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Mat4f$Companion_getInstance().tmpMatA_0.setIdentity().setRotation_d4zu7e$(rotationMat);
     this.set_d4zu6j$(this.mul_93v2ma$(Mat4f$Companion_getInstance().tmpMatA_0, Mat4f$Companion_getInstance().tmpMatB_0));
     return Unit;
+  };
+  Mat4f.prototype.scale_mx4ult$ = function (s) {
+    return this.scale_y2kzbl$(s, s, s);
   };
   Mat4f.prototype.scale_y2kzbl$ = function (sx, sy, sz) {
     for (var i = 0; i <= 3; i++) {
@@ -13820,7 +13826,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (inWeights === void 0)
       inWeights = null;
     if (maxJoints === void 0)
-      maxJoints = 32;
+      maxJoints = 64;
     var skinNd = this.addNode_u9w9by$(new SkinTransformNode(this.stage, maxJoints));
     if (inJoints != null) {
       skinNd.inJoints = inJoints;
@@ -14629,8 +14635,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if ((tmp$ = cmd.mesh.skin) != null) {
         var this$SkinTransformNode_0 = this$SkinTransformNode;
         var tmp$_0;
-        tmp$_0 = tmp$.nodes;
-        for (var i = 0; i !== tmp$_0.size; ++i) {
+        var a = tmp$.nodes.size;
+        var b = this$SkinTransformNode_0.uJointTransforms.length;
+        tmp$_0 = Math_0.min(a, b);
+        for (var i = 0; i < tmp$_0; i++) {
           var nd = tmp$.nodes.get_za3lpa$(i);
           this$SkinTransformNode_0.uJointTransforms.value[i].set_d4zu6j$(nd.jointTransform);
         }
@@ -17137,7 +17145,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isAmbientOcclusionMapped = false;
     this.isDisplacementMapped = false;
     this.isSkinned = false;
-    this.maxJoints = 32;
+    this.maxJoints = 64;
     this.normalStrength = 1.0;
     this.ambientOcclusionStrength = 1.0;
     this.isMultiplyAlbedoMap = false;
@@ -18911,6 +18919,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function Animation(name) {
     this.name = name;
     this.channels = ArrayList_init_0();
+    this.weight = 1.0;
     this.speed = 1.0;
     this.duration_awlkw7$_0 = 1.0;
     this.animationNodes_0 = ArrayList_init_0();
@@ -18951,8 +18960,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     addAll(tmp$_2, distinct(destination_0));
   };
-  Animation.prototype.apply_14dthe$ = function (time) {
-    var tmp$, tmp$_0, tmp$_1;
+  Animation.prototype.apply_8555vt$ = function (time, firstWeightedTransform) {
+    if (firstWeightedTransform === void 0)
+      firstWeightedTransform = true;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var t = time * this.speed % this.duration;
     tmp$ = this.animationNodes_0;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -18962,9 +18973,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
       this.channels.get_za3lpa$(i_0).apply_mx4ult$(t);
     }
-    tmp$_1 = this.animationNodes_0;
-    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
-      this.animationNodes_0.get_za3lpa$(i_1).applyTransform();
+    if (this.weight === 1.0) {
+      tmp$_1 = this.animationNodes_0;
+      for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+        this.animationNodes_0.get_za3lpa$(i_1).applyTransform();
+      }
+    } else {
+      tmp$_2 = this.animationNodes_0;
+      for (var i_2 = 0; i_2 !== tmp$_2.size; ++i_2) {
+        this.animationNodes_0.get_za3lpa$(i_2).applyTransformWeighted_8ca0d4$(this.weight, firstWeightedTransform);
+      }
     }
   };
   Animation.$metadata$ = {
@@ -19073,6 +19091,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.animRotation_0 = MutableVec4d_init();
     this.animScale_0 = MutableVec3d_init();
     this.quatRotMat_0 = new Mat4d();
+    this.weightedTransformMat_0 = new Mat4d();
     var vec4 = MutableVec4d_init();
     this.target.transform.getCol_8irwu3$(3, vec4);
     this.initTranslation_0.set_yvo9jy$(vec4.x, vec4.y, vec4.z);
@@ -19092,6 +19111,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.target.translate_czzhiw$(this.animTranslation_0);
     this.target.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
     this.target.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
+  };
+  AnimatedTransformGroup.prototype.applyTransformWeighted_8ca0d4$ = function (weight, firstWeightedTransform) {
+    this.weightedTransformMat_0.setIdentity();
+    this.weightedTransformMat_0.translate_czzhiw$(this.animTranslation_0);
+    this.weightedTransformMat_0.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
+    this.weightedTransformMat_0.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
+    if (firstWeightedTransform) {
+      for (var i = 0; i <= 15; i++) {
+        this.target.transform.matrix[i] = this.weightedTransformMat_0.matrix[i] * weight;
+      }
+    } else {
+      for (var i_0 = 0; i_0 <= 15; i_0++) {
+        this.target.transform.matrix[i_0] = this.target.transform.matrix[i_0] + this.weightedTransformMat_0.matrix[i_0] * weight;
+      }
+    }
+    this.target.setDirty();
   };
   AnimatedTransformGroup.prototype.setTranslation_czzhiw$ = function (translation) {
     this.animTranslation_0.set_czzhiw$(translation);
@@ -20740,6 +20775,34 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.animations = ArrayList_init_0();
     this.skins = ArrayList_init_0();
   }
+  Model.prototype.disableAllAnimations = function () {
+    this.enableAnimation_za3lpa$(-1);
+  };
+  Model.prototype.enableAnimation_za3lpa$ = function (iAnimation) {
+    var tmp$;
+    tmp$ = this.animations;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.animations.get_za3lpa$(i).weight = i === iAnimation ? 1.0 : 0.0;
+    }
+  };
+  Model.prototype.setAnimationWeight_24o109$ = function (iAnimation, weight) {
+    if (get_indices(this.animations).contains_mef7kx$(iAnimation)) {
+      this.animations.get_za3lpa$(iAnimation).weight = weight;
+    }};
+  Model.prototype.applyAnimation_14dthe$ = function (time) {
+    var tmp$, tmp$_0;
+    var firstActive = true;
+    tmp$ = this.animations;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      if (this.animations.get_za3lpa$(i).weight > 0.0) {
+        this.animations.get_za3lpa$(i).apply_8555vt$(time, firstActive);
+        firstActive = false;
+      }}
+    tmp$_0 = this.skins;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      this.skins.get_za3lpa$(i_0).updateJointTransforms();
+    }
+  };
   Model.prototype.printHierarchy = function () {
     this.printHierarchy_0(this, '');
   };
@@ -22001,8 +22064,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.setDirty();
     return this;
   };
+  TransformGroup.prototype.scale_mx4ult$ = function (s) {
+    return this.scale_yvo9jy$(s, s, s);
+  };
   TransformGroup.prototype.scale_y2kzbl$ = function (sx, sy, sz) {
     return this.scale_yvo9jy$(sx, sy, sz);
+  };
+  TransformGroup.prototype.scale_14dthe$ = function (s) {
+    return this.scale_yvo9jy$(s, s, s);
   };
   TransformGroup.prototype.scale_yvo9jy$ = function (sx, sy, sz) {
     this.transform.scale_yvo9jy$(sx, sy, sz);
@@ -33239,7 +33308,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.mergeMeshesByMaterial_0(model);
     }if (this.cfg.sortNodesByAlpha) {
       this.sortNodesByAlpha_0(model);
-    }return model;
+    }model.disableAllAnimations();
+    return model;
   };
   GltfFile$ModelGenerator.prototype.makeAnimations_0 = function (model) {
     var tmp$;

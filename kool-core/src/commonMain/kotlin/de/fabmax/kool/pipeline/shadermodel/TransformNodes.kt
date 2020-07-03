@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.Vec4i
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.UniformMat4fv
+import kotlin.math.min
 
 class Vec3TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("vec3MatTransform", graph) {
     var inMat: ShaderNodeIoVar? = null
@@ -58,7 +59,7 @@ class SkinTransformNode(graph: ShaderGraph, maxJoints: Int) : ShaderNode("skinTr
                 +{ uJointTransforms }
                 onUpdate = { _, cmd ->
                     cmd.mesh.skin?.let {
-                        for (i in it.nodes.indices) {
+                        for (i in 0 until min(it.nodes.size, uJointTransforms.length)) {
                             val nd = it.nodes[i]
                             uJointTransforms.value[i].set(nd.jointTransform)
                         }

@@ -14,6 +14,35 @@ class Model(name: String? = null) : TransformGroup(name) {
     val animations = mutableListOf<Animation>()
     val skins = mutableListOf<Skin>()
 
+    fun disableAllAnimations() {
+        enableAnimation(-1)
+    }
+
+    fun enableAnimation(iAnimation: Int) {
+        for (i in animations.indices) {
+            animations[i].weight = if (i == iAnimation) 1f else 0f
+        }
+    }
+
+    fun setAnimationWeight(iAnimation: Int, weight: Float) {
+        if (iAnimation in animations.indices) {
+            animations[iAnimation].weight = weight
+        }
+    }
+
+    fun applyAnimation(time: Double) {
+        var firstActive = true
+        for (i in animations.indices) {
+            if (animations[i].weight > 0f) {
+                animations[i].apply(time, firstActive)
+                firstActive = false
+            }
+        }
+        for (i in skins.indices) {
+            skins[i].updateJointTransforms()
+        }
+    }
+
     fun printHierarchy() {
         printHierarchy("")
     }

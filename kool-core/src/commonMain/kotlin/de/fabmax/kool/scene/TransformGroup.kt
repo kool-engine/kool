@@ -110,7 +110,11 @@ open class TransformGroup(name: String? = null) : Group(name) {
         return this
     }
 
+    fun scale(s: Float) = scale(s.toDouble(), s.toDouble(), s.toDouble())
+
     fun scale(sx: Float, sy: Float, sz: Float) = scale(sx.toDouble(), sy.toDouble(), sz.toDouble())
+
+    fun scale(s: Double) = scale(s, s, s)
 
     fun scale(sx: Double, sy: Double, sz: Double): TransformGroup {
         transform.scale(sx, sy, sz)
