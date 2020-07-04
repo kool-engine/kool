@@ -71,8 +71,8 @@ class InstanceDemo(ctx: KoolContext) {
 
         +lodController
 
-        ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz") { gltf ->
-            gltf?.let { addLods(it) }
+        ctx.assetMgr.launch {
+            loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz")?.let { addLods(it) }
         }
     }
 

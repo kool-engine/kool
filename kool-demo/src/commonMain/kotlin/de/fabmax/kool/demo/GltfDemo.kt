@@ -66,40 +66,39 @@ class GltfDemo(ctx: KoolContext) {
     init {
         models.current.isVisible = true
 
-        mainScene = makeMainScene(ctx)
+        mainScene = makeMainSceneForward(ctx)
         menu = menu(ctx)
     }
 
-    private fun makeMainScene(ctx: KoolContext) = scene {
-        orbitTransform = orbitInputTransform {
-            setMouseRotation(0f, -30f)
-            +camera
-            zoom = models.current.zoom
+    private fun makeMainSceneForward(ctx: KoolContext) = scene {
+        setupLighting()
 
-            translation.set(models.current.lookAt)
-            onUpdate += { _, _ ->
-                if (autoRotate) {
-                    verticalRotation -= ctx.deltaT * 3f
-                }
-                var translationTarget = camTranslationTarget
-                if (trackModel) {
-                    val model = models.current.model
-                    model?.let {
-                        val center = model.globalCenter
-                        translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
-                    }
-                }
-                translationTarget?.let {
-                    val v = MutableVec3d(translation).scale(0.9).add(MutableVec3d(it).scale(0.1))
-                    translation.set(v)
-                    if (v.distance(it) < 0.01) {
-                        camTranslationTarget = null
-                    }
-                }
+        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
+
+        ctx.assetMgr.launch {
+            val hdri = loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps)
+            irrMapPass = IrradianceMapPass(this@scene, hdri)
+            reflMapPass = ReflectionMapPass(this@scene, hdri)
+            brdfLutPass = BrdfLutPass(this@scene)
+
+            onDispose += {
+                hdri.dispose()
             }
-        }
-        +orbitTransform
 
+            +Skybox(reflMapPass!!.colorTextureCube, 1f)
+            setupContentGroup()
+            models.forEach {
+                it.load(ctx)
+            }
+            makeContent(camera, this@scene)
+        }
+
+        onUpdate += { _, ctx ->
+            animationTime += ctx.deltaT * animationSpeed
+        }
+    }
+
+    private fun Scene.setupLighting() {
         lighting.lights.clear()
         lighting.lights.add(Light().apply {
             val pos = Vec3f(7f, 8f, 8f)
@@ -118,29 +117,39 @@ class GltfDemo(ctx: KoolContext) {
                 SimpleShadowMap(this, 0, 2048),
                 SimpleShadowMap(this, 1, 2048))
         aoPipeline = AoPipeline.createForward(this)
+    }
 
+    private fun Group.makeContent(camera: Camera, scene: Scene) {
+        orbitTransform = scene.orbitInputTransform {
+            setMouseRotation(0f, -30f)
+            +camera
+            zoom = models.current.zoom
+            translation.set(models.current.lookAt)
 
-        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-        ctx.assetMgr.loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps) { hdri ->
-            irrMapPass = IrradianceMapPass(this, hdri)
-            reflMapPass = ReflectionMapPass(this, hdri)
-            brdfLutPass = BrdfLutPass(this)
+            onUpdate += { _, ctx ->
+                var translationTarget = camTranslationTarget
+                if (trackModel) {
+                    val model = models.current.model
+                    model?.let {
+                        val center = model.globalCenter
+                        translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
+                    }
+                } else if (autoRotate) {
+                    verticalRotation -= ctx.deltaT * 3f
+                }
 
-            onDispose += {
-                hdri.dispose()
+                translationTarget?.let {
+                    val v = MutableVec3d(translation).scale(0.9).add(MutableVec3d(it).scale(0.1))
+                    translation.set(v)
+                    if (v.distance(it) < 0.01) {
+                        camTranslationTarget = null
+                    }
+                }
             }
-
-            +Skybox(reflMapPass!!.colorTextureCube, 1f)
-            setupContentGroup()
-            models.forEach {
-                it.load(ctx)
-            }
-            +contentGroup
         }
+        +orbitTransform
 
-        onUpdate += { _, ctx ->
-            animationTime += ctx.deltaT * animationSpeed
-        }
+        +contentGroup
     }
 
     private fun setupContentGroup() {
@@ -345,26 +354,24 @@ class GltfDemo(ctx: KoolContext) {
             applyAnimation(t)
         }
 
-        fun load(ctx: KoolContext) {
-            ctx.assetMgr.loadGltfModel(assetPath) { gltf ->
-                gltf?.let {
-                    val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = generateNormals, applyTransforms = true, mergeMeshesByMaterial = true) {
-                        shadowMaps += shadows
-                        scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
-                        isScrSpcAmbientOcclusion = true
-                        setImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
-                    }
-                    model = it.makeModel(modelCfg).apply {
-                        translate(translation)
-                        scale(scale)
-                        isVisible = this@GltfModel.isVisible
-                        contentGroup += this
+        suspend fun load(ctx: KoolContext) {
+            ctx.assetMgr.loadGltfModel(assetPath)?.let {
+                val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = generateNormals, applyTransforms = true, mergeMeshesByMaterial = true) {
+                    shadowMaps += shadows
+                    scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
+                    isScrSpcAmbientOcclusion = true
+                    setImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
+                }
+                model = it.makeModel(modelCfg).apply {
+                    translate(translation)
+                    scale(scale)
+                    isVisible = this@GltfModel.isVisible
+                    contentGroup += this
 
-                        if (animations.isNotEmpty()) {
-                            enableAnimation(0)
-                            onUpdate += { _, ctx ->
-                                animate(animationTime, ctx)
-                            }
+                    if (animations.isNotEmpty()) {
+                        enableAnimation(0)
+                        onUpdate += { _, ctx ->
+                            animate(animationTime, ctx)
                         }
                     }
                 }

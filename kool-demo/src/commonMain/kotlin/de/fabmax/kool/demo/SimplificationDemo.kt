@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
@@ -26,7 +27,6 @@ class SimplificationDemo(ctx: KoolContext) {
     val simplificationScene: Scene
     val scenes = mutableListOf<Scene>()
     val models = mutableMapOf<String, IndexedVertexList>()
-    val loadingModels = mutableSetOf<String>()
 
     val modelWireframe = LineMesh()
 
@@ -52,10 +52,11 @@ class SimplificationDemo(ctx: KoolContext) {
         models["cos"] = srcModel
         heMesh = HalfEdgeMesh(srcModel)
 
-        loadModel("${Demo.modelBasePath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f), ctx)
-        loadModel("${Demo.modelBasePath}/cow.gltf.gz", 1f, Vec3f.ZERO, ctx)
-        loadModel("${Demo.modelBasePath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f), ctx)
-
+        ctx.assetMgr.launch {
+            loadModel("${Demo.modelBasePath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
+            loadModel("${Demo.modelBasePath}/cow.gltf.gz", 1f, Vec3f.ZERO)
+            loadModel("${Demo.modelBasePath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
+        }
 
         simplificationScene = mainScene(ctx)
         scenes += simplificationScene
@@ -111,22 +112,18 @@ class SimplificationDemo(ctx: KoolContext) {
         }
     }
 
-    private fun loadModel(name: String, scale: Float, offset: Vec3f, ctx: KoolContext) {
-        loadingModels += name
-        ctx.assetMgr.loadGltfModel(name) { model ->
-            if (model != null) {
-                val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-                val mesh = model.makeModel(modelCfg).meshes.values.first()
-                val geometry = mesh.geometry
-                for (i in 0 until geometry.numVertices) {
-                    geometry.vertexIt.index = i
-                    geometry.vertexIt.position.scale(scale).add(offset)
-                }
-                val modelKey = name.substring(name.lastIndexOf('/') + 1 until name.lastIndexOf(".gltf.gz"))
-                models[modelKey] = geometry
-                loadingModels -= name
-                logD { "loaded: $name, bounds: ${models[name]?.bounds}" }
+    private suspend fun AssetManager.loadModel(name: String, scale: Float, offset: Vec3f) {
+        loadGltfModel(name)?.let { model ->
+            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+            val mesh = model.makeModel(modelCfg).meshes.values.first()
+            val geometry = mesh.geometry
+            for (i in 0 until geometry.numVertices) {
+                geometry.vertexIt.index = i
+                geometry.vertexIt.position.scale(scale).add(offset)
             }
+            val modelKey = name.substring(name.lastIndexOf('/') + 1 until name.lastIndexOf(".gltf.gz"))
+            models[modelKey] = geometry
+            logD { "loaded: $name, bounds: ${models[name]?.bounds}" }
         }
     }
 

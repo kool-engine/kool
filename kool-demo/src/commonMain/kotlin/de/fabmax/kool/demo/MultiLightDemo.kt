@@ -78,10 +78,10 @@ class MultiLightDemo(ctx: KoolContext) {
             lights.forEach { +it }
             updateLighting()
 
-            ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz") { gltf ->
-                gltf?.let {
+            ctx.assetMgr.launch {
+                loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz")?.let {
                     val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-                    val model = gltf.makeModel(modelCfg)
+                    val model = it.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()
                     applyShaders()
                     +model

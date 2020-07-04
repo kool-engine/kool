@@ -1,8 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.pipeline.CubeMapTextureData
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.Uint8Buffer
@@ -90,9 +88,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
             assetPath.startsWith("https://", true) ||
             assetPath.startsWith("data:", true)
 
-    fun loadAsset(assetPath: String, onLoad: (Uint8Buffer?) -> Unit) {
-        launch {
-            onLoad(loadAsset(assetPath))
+    fun launch(block: suspend AssetManager.() -> Unit) {
+        (this as CoroutineScope).launch {
+            block.invoke(this@AssetManager)
         }
     }
 
@@ -126,6 +124,23 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 
+    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
+        val ftd = loadTextureData(ft)
+        val bkd = loadTextureData(bk)
+        val ltd = loadTextureData(lt)
+        val rtd = loadTextureData(rt)
+        val upd = loadTextureData(up)
+        val dnd = loadTextureData(dn)
+        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
+    }
+
+    abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
+
+    abstract suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps = TextureProps()): Texture
+
+    abstract suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                       props: TextureProps = TextureProps()): CubeMapTexture
+
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {
             val idx = assetPath.indexOf(';')
@@ -138,23 +153,6 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     fun cubeMapAssetPathToName(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): String {
         return "cubeMap(ft:${assetPathToName(ft)}, bk:${assetPathToName(bk)}, lt:${assetPathToName(lt)}, rt:${assetPathToName(rt)}, up:${assetPathToName(up)}, dn:${assetPathToName(dn)})"
     }
-
-    abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
-
-    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
-        val ftd = loadTextureData(ft)
-        val bkd = loadTextureData(bk)
-        val ltd = loadTextureData(lt)
-        val rtd = loadTextureData(rt)
-        val upd = loadTextureData(up)
-        val dnd = loadTextureData(dn)
-        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
-    }
-
-    abstract fun loadAndPrepareTexture(assetPath: String, props: TextureProps = TextureProps(), recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
-
-    abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
-                                       props: TextureProps = TextureProps(), recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
 
     protected inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
 

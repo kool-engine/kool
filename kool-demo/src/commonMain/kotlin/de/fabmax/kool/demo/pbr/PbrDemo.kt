@@ -298,9 +298,10 @@ class PbrDemo(val ctx: KoolContext) {
     private fun loadHdri(idx: Int, recv: (Texture) -> Unit) {
         val tex = loadedHdris[idx]
         if (tex == null) {
-            ctx.assetMgr.loadAndPrepareTexture(hdriTextures[idx].hdriPath, hdriTexProps) {
-                loadedHdris[idx] = it
-                recv(it)
+            ctx.assetMgr.launch {
+                val loadedTex = loadAndPrepareTexture(hdriTextures[idx].hdriPath, hdriTexProps)
+                loadedHdris[idx] = loadedTex
+                recv(loadedTex)
             }
         } else {
             recv(tex)

@@ -4,31 +4,36 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.DataStream
 import de.fabmax.kool.util.logW
-import kotlinx.coroutines.launch
 
-fun AssetManager.loadGltfModel(assetPath: String, onLoad: (GltfFile?) -> Unit) {
-    launch {
-        val model = when {
-            assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true) -> loadGltf(assetPath)
-            assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)-> loadGlb(assetPath)
-            else -> null
-        }
-
-        val modelBasePath = if (assetPath.contains('/')) {
-            assetPath.substring(0, assetPath.lastIndexOf('/'))
-        } else { "." }
-        model?.let { m ->
-            m.buffers.filter { it.uri != null }.forEach {
-                val uri = it.uri!!
-                val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-                it.data = loadAsset(bufferPath)!!
-            }
-            m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
-            m.updateReferences()
-        }
-
-        onLoad(model)
+suspend fun AssetManager.loadGltfModel(assetPath: String): GltfFile? {
+    val model = when {
+        isGltf(assetPath) -> loadGltf(assetPath)
+        isBinaryGltf(assetPath) -> loadGlb(assetPath)
+        else -> null
     }
+
+    val modelBasePath = if (assetPath.contains('/')) {
+        assetPath.substring(0, assetPath.lastIndexOf('/'))
+    } else { "." }
+
+    model?.let { m ->
+        m.buffers.filter { it.uri != null }.forEach {
+            val uri = it.uri!!
+            val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
+            it.data = loadAsset(bufferPath)!!
+        }
+        m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
+        m.updateReferences()
+    }
+    return model
+}
+
+private fun isGltf(assetPath: String): Boolean{
+    return assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true)
+}
+
+private fun isBinaryGltf(assetPath: String): Boolean{
+    return assetPath.endsWith(".glb", true) || assetPath.endsWith(".glb.gz", true)
 }
 
 private suspend fun AssetManager.loadGltf(assetPath: String): GltfFile? {

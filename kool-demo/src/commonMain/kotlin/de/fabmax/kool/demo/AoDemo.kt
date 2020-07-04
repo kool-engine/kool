@@ -73,10 +73,17 @@ class AoDemo(ctx: KoolContext) {
             noAoMap.dispose()
         }
 
-        val loadingAssets = LoadingAssets { teapotMesh, hdriMap ->
-            val irrMapPass = IrradianceMapPass(this, hdriMap)
-            val reflMapPass = ReflectionMapPass(this, hdriMap)
-            val brdfLutPass = BrdfLutPass(this)
+        ctx.assetMgr.launch {
+            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
+            val hdriMap = loadAndPrepareTexture("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", hdriTexProps)
+
+            val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz")!!
+            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+            val teapotMesh = model.makeModel(modelCfg).meshes.values.first()
+
+            val irrMapPass = IrradianceMapPass(this@scene, hdriMap)
+            val reflMapPass = ReflectionMapPass(this@scene, hdriMap)
+            val brdfLutPass = BrdfLutPass(this@scene)
 
             +colorMesh("teapots") {
                 generate {
@@ -232,16 +239,7 @@ class AoDemo(ctx: KoolContext) {
                 }
             }
 
-            this += Skybox(reflMapPass.colorTextureCube, 1f)
-        }
-
-        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-        ctx.assetMgr.loadAndPrepareTexture("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", hdriTexProps) { tex ->
-            loadingAssets.hdriMap = tex
-        }
-        ctx.assetMgr.loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz") {
-            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-            loadingAssets.teapotMesh = it?.makeModel(modelCfg)?.meshes?.values?.first()
+            this@scene += Skybox(reflMapPass.colorTextureCube, 1f)
         }
     }
 
