@@ -5,13 +5,15 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.OffscreenRenderPass2dMrt
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.Color
 
-class DeferredMrtPass : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERRED) {
+class DeferredMrtPass(scene: Scene) : OffscreenRenderPass2dMrt(TransformGroup(), 1600, 900, FMTS_DEFERRED) {
 
-    val content = drawNode as Group
+    val content = drawNode as TransformGroup
     internal val alphaMeshes = mutableListOf<Mesh>()
 
     val positionAo: Texture
@@ -22,6 +24,14 @@ class DeferredMrtPass : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERR
         get() = colorTextures[2]
 
     init {
+        val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
+        camera = proxyCamera
+        onBeforeCollectDrawCommands += { ctx ->
+            proxyCamera.sync(scene.mainRenderPass.viewport, ctx)
+        }
+
+        scene.addOffscreenPass(this)
+
         clearColors[0] = Color(0f, 0f, 2f, 0f)
         clearColors[1] = null
         clearColors[2] = null

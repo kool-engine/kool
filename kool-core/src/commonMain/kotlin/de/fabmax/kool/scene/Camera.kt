@@ -340,6 +340,26 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
         return true
     }
+
+    class Proxy(val master: PerspectiveCamera) : PerspectiveCamera() {
+        init {
+            useViewportAspectRatio = false
+            projCorrectionMode = ProjCorrectionMode.OFFSCREEN
+        }
+
+        fun sync(viewport: Viewport, ctx: KoolContext) {
+            master.updateCamera(ctx, viewport)
+
+            position.set(master.globalPos)
+            lookAt.set(master.globalLookAt)
+            up.set(master.globalUp)
+
+            aspectRatio = master.aspectRatio
+            fovY = master.fovY
+            clipNear = master.clipNear
+            clipFar = master.clipFar
+        }
+    }
 }
 
 class FrustumPlane {

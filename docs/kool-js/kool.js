@@ -4,9 +4,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var Unit = Kotlin.kotlin.Unit;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
   var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
-  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
   var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
+  var CoroutineScope = $module$kotlinx_coroutines_core.kotlinx.coroutines.CoroutineScope;
   var throwCCE = Kotlin.throwCCE;
+  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
@@ -17,7 +18,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var Channel = $module$kotlinx_coroutines_core.kotlinx.coroutines.channels.Channel_ww73n8$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var ensureNotNull = Kotlin.ensureNotNull;
-  var CoroutineScope = $module$kotlinx_coroutines_core.kotlinx.coroutines.CoroutineScope;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var SelectBuilderImpl_init = $module$kotlinx_coroutines_core.kotlinx.coroutines.selects.SelectBuilderImpl;
@@ -124,8 +124,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var MissingFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.MissingFieldException;
   var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
   var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
-  var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
   var contains = Kotlin.kotlin.text.contains_sgbm27$;
+  var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
   var decodeToString = Kotlin.kotlin.text.decodeToString_964n91$;
   var getKClass = Kotlin.getKClass;
   var contains_0 = Kotlin.kotlin.collections.contains_2ws7j4$;
@@ -572,6 +572,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OrthographicCamera.prototype.constructor = OrthographicCamera;
   PerspectiveCamera.prototype = Object.create(Camera.prototype);
   PerspectiveCamera.prototype.constructor = PerspectiveCamera;
+  PerspectiveCamera$Proxy.prototype = Object.create(PerspectiveCamera.prototype);
+  PerspectiveCamera$Proxy.prototype.constructor = PerspectiveCamera$Proxy;
   Group.prototype = Object.create(Node.prototype);
   Group.prototype.constructor = Group;
   Light$Type.prototype = Object.create(Enum.prototype);
@@ -664,8 +666,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   AoPipeline$ForwardAoPipeline.prototype.constructor = AoPipeline$ForwardAoPipeline;
   AoPipeline$DeferredAoPipeline.prototype = Object.create(AoPipeline.prototype);
   AoPipeline$DeferredAoPipeline.prototype.constructor = AoPipeline$DeferredAoPipeline;
-  AoPipeline$ProxyCamera.prototype = Object.create(PerspectiveCamera.prototype);
-  AoPipeline$ProxyCamera.prototype.constructor = AoPipeline$ProxyCamera;
   Vec2fView.prototype = Object.create(MutableVec2f.prototype);
   Vec2fView.prototype.constructor = Vec2fView;
   Vec3fView.prototype = Object.create(MutableVec3f.prototype);
@@ -684,14 +684,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredLightShader.prototype.constructor = DeferredLightShader;
   DeferredMrtPass.prototype = Object.create(OffscreenRenderPass2dMrt.prototype);
   DeferredMrtPass.prototype.constructor = DeferredMrtPass;
-  DeferredMrtShader$MrtMultiplexNode.prototype = Object.create(ShaderNode.prototype);
-  DeferredMrtShader$MrtMultiplexNode.prototype.constructor = DeferredMrtShader$MrtMultiplexNode;
-  DeferredMrtShader$MrtDeMultiplexNode.prototype = Object.create(ShaderNode.prototype);
-  DeferredMrtShader$MrtDeMultiplexNode.prototype.constructor = DeferredMrtShader$MrtDeMultiplexNode;
-  DeferredMrtShader.prototype = Object.create(ModeledShader.prototype);
-  DeferredMrtShader.prototype.constructor = DeferredMrtShader;
   DeferredOutputShader.prototype = Object.create(ModeledShader.prototype);
   DeferredOutputShader.prototype.constructor = DeferredOutputShader;
+  DeferredPbrShader$MrtMultiplexNode.prototype = Object.create(ShaderNode.prototype);
+  DeferredPbrShader$MrtMultiplexNode.prototype.constructor = DeferredPbrShader$MrtMultiplexNode;
+  DeferredPbrShader$MrtDeMultiplexNode.prototype = Object.create(ShaderNode.prototype);
+  DeferredPbrShader$MrtDeMultiplexNode.prototype.constructor = DeferredPbrShader$MrtDeMultiplexNode;
+  DeferredPbrShader.prototype = Object.create(ModeledShader.prototype);
+  DeferredPbrShader.prototype.constructor = DeferredPbrShader;
   DiscardClearNode.prototype = Object.create(ShaderNode.prototype);
   DiscardClearNode.prototype.constructor = DiscardClearNode;
   DeferredCameraNode.prototype = Object.create(ShaderNode.prototype);
@@ -825,24 +825,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.loadedAssetChannel_obd8me$_0 = Channel();
     var list = ArrayList_init(8);
     for (var index = 0; index < 8; index++) {
-      list.add_11rb$(this.loadWorker_lf86lv$_0(this.assetRefChannel_acu3lu$_0, this.loadedAssetChannel_obd8me$_0));
+      var tmp$ = list.add_11rb$;
+      this.loadWorker_lf86lv$_0(this.assetRefChannel_acu3lu$_0, this.loadedAssetChannel_obd8me$_0);
+      tmp$.call(list, Unit);
     }
     this.workers_dv6i5$_0 = list;
-    this.loader_lxnfnl$_0 = launch(this, void 0, void 0, AssetManager$loader$lambda(this));
+    this.loader_lxnfnl$_0 = this.launch_eln4bt$(AssetManager$loader$lambda);
   }
   Object.defineProperty(AssetManager.prototype, 'coroutineContext', {
     get: function () {
       return this.job;
     }
   });
-  function Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$closure$assetRefs = closure$assetRefs_0;
     this.local$closure$loadedAssets = closure$loadedAssets_0;
-    this.local$this$AssetManager = this$AssetManager_0;
     this.local$tmp$ = void 0;
+    this.local$$receiver = $receiver_0;
   }
   Coroutine$AssetManager$loadWorker$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
@@ -880,7 +882,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           case 4:
             var ref = this.local$tmp$.next();
             this.state_0 = 5;
-            this.result_0 = this.local$this$AssetManager.loadAsset_lpb790$_0(ref, this);
+            this.result_0 = this.local$$receiver.loadAsset_lpb790$_0(ref, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -910,9 +912,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0) {
+  function AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0) {
     return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0, $receiver_0, this, continuation_0);
+      var instance = new Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, $receiver_0, this, continuation_0);
       if (suspended)
         return instance;
       else
@@ -920,7 +922,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   AssetManager.prototype.loadWorker_lf86lv$_0 = function (assetRefs, loadedAssets) {
-    return launch(this, void 0, void 0, AssetManager$loadWorker$lambda(assetRefs, loadedAssets, this));
+    this.launch_eln4bt$(AssetManager$loadWorker$lambda(assetRefs, loadedAssets));
   };
   AssetManager.prototype.close = function () {
     this.job.cancel_m4sck1$();
@@ -1033,35 +1035,34 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   AssetManager.prototype.isHttpAsset_61zpoe$ = function (assetPath) {
     return startsWith(assetPath, 'http://', true) || startsWith(assetPath, 'https://', true) || startsWith(assetPath, 'data:', true);
   };
-  function Coroutine$AssetManager$loadAsset$lambda(closure$onLoad_0, closure$assetPath_0, this$AssetManager_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$AssetManager$launch$lambda(closure$block_0, this$AssetManager_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$onLoad = closure$onLoad_0;
-    this.local$closure$assetPath = closure$assetPath_0;
+    this.local$closure$block = closure$block_0;
     this.local$this$AssetManager = this$AssetManager_0;
   }
-  Coroutine$AssetManager$loadAsset$lambda.$metadata$ = {
+  Coroutine$AssetManager$launch$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$AssetManager$loadAsset$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AssetManager$loadAsset$lambda.prototype.constructor = Coroutine$AssetManager$loadAsset$lambda;
-  Coroutine$AssetManager$loadAsset$lambda.prototype.doResume = function () {
+  Coroutine$AssetManager$launch$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$launch$lambda.prototype.constructor = Coroutine$AssetManager$launch$lambda;
+  Coroutine$AssetManager$launch$lambda.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$this$AssetManager.loadAsset_61zpoe$(this.local$closure$assetPath, this);
+            this.result_0 = this.local$closure$block(this.local$this$AssetManager, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
           case 1:
             throw this.exception_0;
           case 2:
-            return this.local$closure$onLoad(this.result_0);
+            return this.result_0;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -1076,17 +1077,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function AssetManager$loadAsset$lambda(closure$onLoad_0, closure$assetPath_0, this$AssetManager_0) {
+  function AssetManager$launch$lambda(closure$block_0, this$AssetManager_0) {
     return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$AssetManager$loadAsset$lambda(closure$onLoad_0, closure$assetPath_0, this$AssetManager_0, $receiver_0, this, continuation_0);
+      var instance = new Coroutine$AssetManager$launch$lambda(closure$block_0, this$AssetManager_0, $receiver_0, this, continuation_0);
       if (suspended)
         return instance;
       else
         return instance.doResume(null);
     };
   }
-  AssetManager.prototype.loadAsset_a8sf6j$ = function (assetPath, onLoad) {
-    launch(this, void 0, void 0, AssetManager$loadAsset$lambda(onLoad, assetPath, this));
+  AssetManager.prototype.launch_eln4bt$ = function (block) {
+    var tmp$;
+    launch(Kotlin.isType(tmp$ = this, CoroutineScope) ? tmp$ : throwCCE(), void 0, void 0, AssetManager$launch$lambda(block, this));
   };
   function Coroutine$loadAsset_61zpoe$($this, assetPath_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -1236,19 +1238,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       return instance.doResume(null);
   };
-  AssetManager.prototype.assetPathToName_61zpoe$ = function (assetPath) {
-    var tmp$;
-    if (startsWith(assetPath, 'data:', true)) {
-      var idx = indexOf(assetPath, 59);
-      tmp$ = substring(assetPath, until(0, idx));
-    } else {
-      tmp$ = assetPath;
-    }
-    return tmp$;
-  };
-  AssetManager.prototype.cubeMapAssetPathToName_r3y0ew$ = function (ft, bk, lt, rt, up, dn) {
-    return 'cubeMap(ft:' + this.assetPathToName_61zpoe$(ft) + ', bk:' + this.assetPathToName_61zpoe$(bk) + ', lt:' + this.assetPathToName_61zpoe$(lt) + ', rt:' + this.assetPathToName_61zpoe$(rt) + ', up:' + this.assetPathToName_61zpoe$(up) + ', dn:' + this.assetPathToName_61zpoe$(dn) + ')';
-  };
   function Coroutine$loadCubeMapTextureData_r3y0ew$($this, ft_0, bk_0, lt_0, rt_0, up_0, dn_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
@@ -1343,15 +1332,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       return instance.doResume(null);
   };
-  AssetManager.prototype.loadAndPrepareTexture_hd4f6p$ = function (assetPath, props, recv, callback$default) {
+  AssetManager.prototype.loadAndPrepareTexture_va0f2y$ = function (assetPath, props, continuation, callback$default) {
     if (props === void 0)
       props = new TextureProps();
-    callback$default ? callback$default(assetPath, props, recv) : this.loadAndPrepareTexture_hd4f6p$$default(assetPath, props, recv);
+    return callback$default ? callback$default(assetPath, props, continuation) : this.loadAndPrepareTexture_va0f2y$$default(assetPath, props, continuation);
   };
-  AssetManager.prototype.loadAndPrepareCubeMap_y2tg0w$ = function (ft, bk, lt, rt, up, dn, props, recv, callback$default) {
+  AssetManager.prototype.loadAndPrepareCubeMap_oecnw4$ = function (ft, bk, lt, rt, up, dn, props, continuation, callback$default) {
     if (props === void 0)
       props = new TextureProps();
-    callback$default ? callback$default(ft, bk, lt, rt, up, dn, props, recv) : this.loadAndPrepareCubeMap_y2tg0w$$default(ft, bk, lt, rt, up, dn, props, recv);
+    return callback$default ? callback$default(ft, bk, lt, rt, up, dn, props, continuation) : this.loadAndPrepareCubeMap_oecnw4$$default(ft, bk, lt, rt, up, dn, props, continuation);
+  };
+  AssetManager.prototype.assetPathToName_61zpoe$ = function (assetPath) {
+    var tmp$;
+    if (startsWith(assetPath, 'data:', true)) {
+      var idx = indexOf(assetPath, 59);
+      tmp$ = substring(assetPath, until(0, idx));
+    } else {
+      tmp$ = assetPath;
+    }
+    return tmp$;
+  };
+  AssetManager.prototype.cubeMapAssetPathToName_r3y0ew$ = function (ft, bk, lt, rt, up, dn) {
+    return 'cubeMap(ft:' + this.assetPathToName_61zpoe$(ft) + ', bk:' + this.assetPathToName_61zpoe$(bk) + ', lt:' + this.assetPathToName_61zpoe$(lt) + ', rt:' + this.assetPathToName_61zpoe$(rt) + ', up:' + this.assetPathToName_61zpoe$(up) + ', dn:' + this.assetPathToName_61zpoe$(dn) + ')';
   };
   function AssetManager$AwaitedAsset($outer, ref, awaiting) {
     this.$outer = $outer;
@@ -1380,11 +1382,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new AssetManager$Companion();
     }return AssetManager$Companion_instance;
   }
-  function Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$AssetManager_0, awaited_0, continuation_0) {
+  function Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$_0, awaited_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
     this.local$closure$requested = closure$requested_0;
-    this.local$this$AssetManager = this$AssetManager_0;
+    this.local$this$ = this$_0;
     this.local$awaited = awaited_0;
   }
   Coroutine$AssetManager$loader$lambda$lambda$lambda.$metadata$ = {
@@ -1406,7 +1408,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               var value = mutableListOf([this.local$awaited]);
               $receiver.put_xwzc9p$(key, value);
               this.state_0 = 2;
-              this.result_0 = this.local$this$AssetManager.assetRefChannel_acu3lu$_0.send_11rb$(this.local$awaited.ref, this);
+              this.result_0 = this.local$this$.assetRefChannel_acu3lu$_0.send_11rb$(this.local$awaited.ref, this);
               if (this.result_0 === COROUTINE_SUSPENDED)
                 return COROUTINE_SUSPENDED;
               continue;
@@ -1434,9 +1436,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$AssetManager_0) {
+  function AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$_0) {
     return function (awaited_0, continuation_0, suspended) {
-      var instance = new Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$AssetManager_0, awaited_0, continuation_0);
+      var instance = new Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, this$_0, awaited_0, continuation_0);
       if (suspended)
         return instance;
       else
@@ -1495,19 +1497,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return instance.doResume(null);
     };
   }
-  function AssetManager$loader$lambda$lambda(this$AssetManager, closure$requested) {
+  function AssetManager$loader$lambda$lambda(this$, closure$requested) {
     return function ($receiver) {
-      $receiver.invoke_veq140$(this$AssetManager.awaitedAssetsChannel_nphlkp$_0.onReceive, AssetManager$loader$lambda$lambda$lambda(closure$requested, this$AssetManager));
-      $receiver.invoke_veq140$(this$AssetManager.loadedAssetChannel_obd8me$_0.onReceive, AssetManager$loader$lambda$lambda$lambda_0(closure$requested));
+      $receiver.invoke_veq140$(this$.awaitedAssetsChannel_nphlkp$_0.onReceive, AssetManager$loader$lambda$lambda$lambda(closure$requested, this$));
+      $receiver.invoke_veq140$(this$.loadedAssetChannel_obd8me$_0.onReceive, AssetManager$loader$lambda$lambda$lambda_0(closure$requested));
       return Unit;
     };
   }
-  function Coroutine$AssetManager$loader$lambda(this$AssetManager_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$AssetManager$loader$lambda($receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$this$AssetManager = this$AssetManager_0;
     this.local$requested = void 0;
+    this.local$$receiver = $receiver_0;
   }
   Coroutine$AssetManager$loader$lambda.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
@@ -1528,7 +1530,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             throw this.exception_0;
           case 2:
             this.state_0 = 3;
-            this.result_0 = select$lambda(AssetManager$loader$lambda$lambda(this.local$this$AssetManager, this.local$requested))(this);
+            this.result_0 = select$lambda(AssetManager$loader$lambda$lambda(this.local$$receiver, this.local$requested))(this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -1550,14 +1552,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function AssetManager$loader$lambda(this$AssetManager_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$AssetManager$loader$lambda(this$AssetManager_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
+  function AssetManager$loader$lambda($receiver_0, continuation_0, suspended) {
+    var instance = new Coroutine$AssetManager$loader$lambda($receiver_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   }
   AssetManager.$metadata$ = {
     kind: Kind_CLASS,
@@ -11769,6 +11769,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.drawNode.collectDrawCommands_oco14p$(this, ctx);
     this.afterCollectDrawCommands_aemszp$(ctx);
   };
+  RenderPass.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
+    return this.drawQueue.addMesh_sbx4mf$(mesh, ctx);
+  };
   RenderPass.prototype.beforeCollectDrawCommands_aemszp$ = function (ctx) {
     var tmp$;
     this.drawQueue.clear();
@@ -15942,6 +15945,156 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ModeledShader',
     interfaces: [PipelineFactory, Shader]
   };
+  function PbrMaterialConfig() {
+    this.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
+    this.isEmissiveMapped = false;
+    this.isNormalMapped = false;
+    this.isRoughnessMapped = false;
+    this.isMetallicMapped = false;
+    this.isOcclusionMapped = false;
+    this.isDisplacementMapped = false;
+    this.isSkinned = false;
+    this.maxJoints = 64;
+    this.normalStrength = 1.0;
+    this.displacementStrength = 0.1;
+    this.occlusionStrength = 1.0;
+    this.isMultiplyAlbedoMap = false;
+    this.isMultiplyEmissiveMap = false;
+    this.isMultiplyRoughnessMap = false;
+    this.isMultiplyMetallicMap = false;
+    this.isImageBasedLighting = false;
+    this.isScrSpcAmbientOcclusion = false;
+    this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
+    this.alphaMode = new AlphaModeOpaque();
+    this.isHdrOutput = false;
+    this.maxLights = 4;
+    this.shadowMaps = ArrayList_init_0();
+    this.lightBacksides = false;
+    this.isInstanced = false;
+    this.albedo = Color$Companion_getInstance().GRAY;
+    this.emissive = Color$Companion_getInstance().BLACK;
+    this.roughness = 0.5;
+    this.metallic = 0.0;
+    this.albedoMap = null;
+    this.emissiveMap = null;
+    this.normalMap = null;
+    this.displacementMap = null;
+    this.roughnessMap = null;
+    this.roughnessChannel = 'r';
+    this.roughnessTexName = 'tRoughness';
+    this.metallicMap = null;
+    this.metallicChannel = 'r';
+    this.metallicTexName = 'tMetallic';
+    this.occlusionMap = null;
+    this.occlusionChannel = 'r';
+    this.occlusionTexName = 'tOcclusion';
+    this.irradianceMap = null;
+    this.reflectionMap = null;
+    this.brdfLut = null;
+    this.scrSpcAmbientOcclusionMap = null;
+  }
+  PbrMaterialConfig.prototype.useAlbedoMap_ivxn3r$ = function (albedoMap, isMultiplyAlbedoMap) {
+    if (isMultiplyAlbedoMap === void 0)
+      isMultiplyAlbedoMap = false;
+    this.useAlbedoMap_daqygw$(Texture_init(albedoMap), isMultiplyAlbedoMap);
+  };
+  PbrMaterialConfig.prototype.useAlbedoMap_daqygw$ = function (albedoMap, isMultiplyAlbedoMap) {
+    if (isMultiplyAlbedoMap === void 0)
+      isMultiplyAlbedoMap = false;
+    this.albedoMap = albedoMap;
+    this.isMultiplyAlbedoMap = isMultiplyAlbedoMap;
+    this.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
+  };
+  PbrMaterialConfig.prototype.useNormalMap_9sobi5$ = function (normalMap, normalStrength) {
+    if (normalStrength === void 0)
+      normalStrength = this.normalStrength;
+    this.useNormalMap_9wkq18$(Texture_init(normalMap), normalStrength);
+  };
+  PbrMaterialConfig.prototype.useNormalMap_9wkq18$ = function (normalMap, normalStrength) {
+    if (normalStrength === void 0)
+      normalStrength = this.normalStrength;
+    this.normalMap = normalMap;
+    this.normalStrength = normalStrength;
+    this.isNormalMapped = true;
+  };
+  PbrMaterialConfig.prototype.useOcclusionMap_9sobi5$ = function (occlusionMap, occlusionStrength) {
+    if (occlusionStrength === void 0)
+      occlusionStrength = this.occlusionStrength;
+    this.useOcclusionMap_9wkq18$(Texture_init(occlusionMap), occlusionStrength);
+  };
+  PbrMaterialConfig.prototype.useOcclusionMap_9wkq18$ = function (occlusionMap, occlusionStrength) {
+    if (occlusionStrength === void 0)
+      occlusionStrength = this.occlusionStrength;
+    this.occlusionMap = occlusionMap;
+    this.occlusionStrength = occlusionStrength;
+    this.isOcclusionMapped = true;
+  };
+  PbrMaterialConfig.prototype.useDisplacementMap_9sobi5$ = function (displacementMap, displacementStrength) {
+    if (displacementStrength === void 0)
+      displacementStrength = this.displacementStrength;
+    this.useDisplacementMap_9wkq18$(Texture_init(displacementMap), displacementStrength);
+  };
+  PbrMaterialConfig.prototype.useDisplacementMap_9wkq18$ = function (displacementMap, displacementStrength) {
+    if (displacementStrength === void 0)
+      displacementStrength = this.displacementStrength;
+    this.displacementMap = displacementMap;
+    this.displacementStrength = displacementStrength;
+    this.isDisplacementMapped = true;
+  };
+  PbrMaterialConfig.prototype.useEmissiveMap_ivxn3r$ = function (emissiveMap, isMultiplyEmissiveMap) {
+    if (isMultiplyEmissiveMap === void 0)
+      isMultiplyEmissiveMap = false;
+    this.useEmissiveMap_daqygw$(Texture_init(emissiveMap), isMultiplyEmissiveMap);
+  };
+  PbrMaterialConfig.prototype.useEmissiveMap_daqygw$ = function (emissiveMap, isMultiplyEmissiveMap) {
+    if (isMultiplyEmissiveMap === void 0)
+      isMultiplyEmissiveMap = false;
+    this.emissiveMap = emissiveMap;
+    this.isMultiplyEmissiveMap = isMultiplyEmissiveMap;
+    this.isEmissiveMapped = true;
+  };
+  PbrMaterialConfig.prototype.useMetallicMap_ivxn3r$ = function (metallicMap, isMultiplyMetallicMap) {
+    if (isMultiplyMetallicMap === void 0)
+      isMultiplyMetallicMap = false;
+    this.useMetallicMap_daqygw$(Texture_init(metallicMap), isMultiplyMetallicMap);
+  };
+  PbrMaterialConfig.prototype.useMetallicMap_daqygw$ = function (metallicMap, isMultiplyMetallicMap) {
+    if (isMultiplyMetallicMap === void 0)
+      isMultiplyMetallicMap = false;
+    this.metallicMap = metallicMap;
+    this.isMultiplyMetallicMap = isMultiplyMetallicMap;
+    this.isMetallicMapped = true;
+  };
+  PbrMaterialConfig.prototype.useRoughnessMap_ivxn3r$ = function (roughnessMap, isMultiplyRoughnessMap) {
+    if (isMultiplyRoughnessMap === void 0)
+      isMultiplyRoughnessMap = false;
+    this.useRoughnessMap_daqygw$(Texture_init(roughnessMap), isMultiplyRoughnessMap);
+  };
+  PbrMaterialConfig.prototype.useRoughnessMap_daqygw$ = function (roughnessMap, isMultiplyRoughnessMap) {
+    if (isMultiplyRoughnessMap === void 0)
+      isMultiplyRoughnessMap = false;
+    this.roughnessMap = roughnessMap;
+    this.isMultiplyRoughnessMap = isMultiplyRoughnessMap;
+    this.isRoughnessMapped = true;
+  };
+  PbrMaterialConfig.prototype.useScreenSpaceAmbientOcclusion_vv6xll$ = function (ssaoMap) {
+    this.scrSpcAmbientOcclusionMap = ssaoMap;
+    this.isScrSpcAmbientOcclusion = true;
+  };
+  PbrMaterialConfig.prototype.useImageBasedLighting_5m8fyp$ = function (irradianceMap, reflectionMap, brdfLut) {
+    this.irradianceMap = irradianceMap;
+    this.reflectionMap = reflectionMap;
+    this.brdfLut = brdfLut;
+    this.isImageBasedLighting = (irradianceMap != null && reflectionMap != null && brdfLut != null);
+  };
+  PbrMaterialConfig.prototype.requiresTexCoords = function () {
+    return this.albedoSource === Albedo$TEXTURE_ALBEDO_getInstance() || this.isNormalMapped || this.isRoughnessMapped || this.isMetallicMapped || this.isOcclusionMapped || this.isDisplacementMapped;
+  };
+  PbrMaterialConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PbrMaterialConfig',
+    interfaces: []
+  };
   var ShaderModel$findNode$lambda_0 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
@@ -15973,16 +16126,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   });
   function pbrShader(cfgBlock) {
-    var cfg = new PbrShader$PbrConfig();
+    var cfg = new PbrMaterialConfig();
     cfgBlock(cfg);
     return new PbrShader(cfg);
   }
   function PbrShader(cfg, model) {
     PbrShader$Companion_getInstance();
     if (cfg === void 0)
-      cfg = new PbrShader$PbrConfig();
+      cfg = new PbrMaterialConfig();
     if (model === void 0)
-      model = PbrShader$Companion_getInstance().defaultPbrModel_uisrv6$(cfg);
+      model = PbrShader$Companion_getInstance().defaultPbrModel_2ufela$(cfg);
     ModeledShader.call(this, model);
     this.cullMethod_0 = cfg.cullMethod;
     this.isBlending_0 = Kotlin.isType(cfg.alphaMode, AlphaModeBlend);
@@ -16012,15 +16165,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uDispStrength_0 = null;
     this.metallicTexName_0 = cfg.metallicTexName;
     this.roughnessTexName_0 = cfg.roughnessTexName;
-    this.occlusionTexName_0 = cfg.ambientOcclusionTexName;
+    this.occlusionTexName_0 = cfg.occlusionTexName;
     this.albedoMap_el88rd$_0 = cfg.albedoMap;
     this.emissiveMap_frsh8l$_0 = cfg.emissiveMap;
     this.normalMap_4f5ej9$_0 = cfg.normalMap;
     this.metallicMap_uadmur$_0 = cfg.metallicMap;
     this.roughnessMap_c1s1r6$_0 = cfg.roughnessMap;
-    this.ambientOcclusionMap_e3y8fx$_0 = cfg.ambientOcclusionMap;
+    this.occlusionMap_npdkt7$_0 = cfg.occlusionMap;
     this.displacementMap_lffg8r$_0 = cfg.displacementMap;
-    this.displacementStrength_mpg4z2$_0 = 0.1;
+    this.displacementStrength_mpg4z2$_0 = cfg.displacementStrength;
     this.uAmbient_0 = null;
     var array_0 = Array_0(this.shadowMaps_0.length);
     var tmp$_0;
@@ -16129,13 +16282,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.roughnessSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(PbrShader.prototype, 'ambientOcclusionMap', {
+  Object.defineProperty(PbrShader.prototype, 'occlusionMap', {
     get: function () {
-      return this.ambientOcclusionMap_e3y8fx$_0;
+      return this.occlusionMap_npdkt7$_0;
     },
     set: function (value) {
       var tmp$;
-      this.ambientOcclusionMap_e3y8fx$_0 = value;
+      this.occlusionMap_npdkt7$_0 = value;
       (tmp$ = this.occlusionSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
@@ -16804,7 +16957,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
      while (false);
     this.occlusionSampler_0 = (tmp$_29 = findNode_3klnlw$result_14) != null ? tmp$_29.sampler : null;
     if ((tmp$_30 = this.occlusionSampler_0) != null) {
-      tmp$_30.texture = this.ambientOcclusionMap;
+      tmp$_30.texture = this.occlusionMap;
     }var $this_15 = this.model;
     var name_10 = 'tDisplacement';
     var stage_15;
@@ -16884,7 +17037,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function PbrShader$Companion() {
     PbrShader$Companion_instance = this;
   }
-  PbrShader$Companion.prototype.defaultPbrModel_uisrv6$ = function (cfg) {
+  PbrShader$Companion.prototype.defaultPbrModel_2ufela$ = function (cfg) {
     var $receiver = new ShaderModel('defaultPbrModel()');
     var ifColors = {v: null};
     var ifNormals = {v: null};
@@ -16960,7 +17113,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }}
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos, mvpMat).outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver);
-    var tmp$_4, tmp$_5, tmp$_6, tmp$_7;
+    var tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8;
     switch (cfg.albedoSource.name) {
       case 'VERTEX_ALBEDO':
         tmp$_4 = ensureNotNull(ifColors.v).output;
@@ -16989,10 +17142,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       albedo.v = $receiver_2.combineXyzWNode_ze33is$(albedo.v, $receiver_2.constFloat_mx4ult$(1.0)).output;
     }var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_2.multiLightNode_za3lpa$(cfg.maxLights);
-    var tmp$_8;
-    tmp$_8 = shadowMapNodes.iterator();
-    while (tmp$_8.hasNext()) {
-      var element_1 = tmp$_8.next();
+    var tmp$_9;
+    tmp$_9 = shadowMapNodes.iterator();
+    while (tmp$_9.hasNext()) {
+      var element_1 = tmp$_9.next();
       lightNode.inShaodwFacs[element_1.lightIndex] = element_1.outShadowFac;
     }
     var reflMap;
@@ -17010,31 +17163,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     var $receiver_3 = $receiver_2.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
-    var tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15;
+    var tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16;
     $receiver_3.lightBacksides = cfg.lightBacksides;
     $receiver_3.inFragPos = ifFragPos.v.output;
     $receiver_3.inCamPos = mvpFrag.outCamPos;
-    $receiver_3.inIrradiance = (tmp$_9 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_9 : $receiver_2.pushConstantNodeColor_61zpoe$('uAmbient').output;
+    $receiver_3.inIrradiance = (tmp$_10 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_10 : $receiver_2.pushConstantNodeColor_61zpoe$('uAmbient').output;
     $receiver_3.inAlbedo = albedo.v;
     if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_2.normalMapNode_j8913i$($receiver_2.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
-      bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_10 = bumpNormal.outNormal;
+      bumpNormal.inStrength = $receiver_2.constFloat_mx4ult$(cfg.normalStrength);
+      tmp$_11 = bumpNormal.outNormal;
     } else {
-      tmp$_10 = ifNormals.v.output;
+      tmp$_11 = ifNormals.v.output;
     }
-    $receiver_3.inNormal = tmp$_10;
+    $receiver_3.inNormal = tmp$_11;
     $receiver_3.inNormal = $receiver_2.flipBacksideNormalNode_r20yfm$($receiver_3.inNormal).outNormal;
     if (cfg.isEmissiveMapped) {
       var emissive = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tEmissive'), ensureNotNull(ifTexCoords.v).output).outColor;
       var emissiveLin = $receiver_2.gammaNode_r20yfm$(emissive).outColor;
       if (cfg.isMultiplyEmissiveMap) {
         var fac_0 = $receiver_2.pushConstantNodeColor_61zpoe$('uEmissive').output;
-        tmp$_11 = $receiver_2.multiplyNode_ze33is$(emissiveLin, fac_0).output;
+        tmp$_12 = $receiver_2.multiplyNode_ze33is$(emissiveLin, fac_0).output;
       } else {
-        tmp$_11 = emissiveLin;
+        tmp$_12 = emissiveLin;
       }
-      $receiver_3.inEmissive = tmp$_11;
+      $receiver_3.inEmissive = tmp$_12;
     } else {
       $receiver_3.inEmissive = $receiver_2.pushConstantNodeColor_61zpoe$('uEmissive').output;
     }
@@ -17046,81 +17199,87 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var rawRoughness = $receiver_2.splitNode_500t7j$(roughness, cfg.roughnessChannel).output;
       if (cfg.isMultiplyRoughnessMap) {
         var fac_1 = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
-        tmp$_12 = $receiver_2.multiplyNode_ze33is$(rawRoughness, fac_1).output;
+        tmp$_13 = $receiver_2.multiplyNode_ze33is$(rawRoughness, fac_1).output;
       } else {
-        tmp$_12 = rawRoughness;
+        tmp$_13 = rawRoughness;
       }
-      $receiver_3.inRoughness = tmp$_12;
+      $receiver_3.inRoughness = tmp$_13;
     } else {
       $receiver_3.inRoughness = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
     if (cfg.isMetallicMapped) {
       var key_0 = cfg.metallicTexName;
-      var tmp$_16;
+      var tmp$_17;
       var value = rmoSamplers.get_11rb$(key_0);
       if (value == null) {
         var answer = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_0, answer);
-        tmp$_16 = answer;
+        tmp$_17 = answer;
       } else {
-        tmp$_16 = value;
+        tmp$_17 = value;
       }
-      var metallic = tmp$_16;
+      var metallic = tmp$_17;
       var key_1 = cfg.metallicTexName;
       rmoSamplers.put_xwzc9p$(key_1, metallic);
       var rawMetallic = $receiver_2.splitNode_500t7j$(metallic, cfg.metallicChannel).output;
       if (cfg.isMultiplyMetallicMap) {
         var fac_2 = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
-        tmp$_13 = $receiver_2.multiplyNode_ze33is$(rawMetallic, fac_2).output;
+        tmp$_14 = $receiver_2.multiplyNode_ze33is$(rawMetallic, fac_2).output;
       } else {
-        tmp$_13 = rawMetallic;
+        tmp$_14 = rawMetallic;
       }
-      $receiver_3.inMetallic = tmp$_13;
+      $receiver_3.inMetallic = tmp$_14;
     } else {
       $receiver_3.inMetallic = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
     var aoFactor = $receiver_2.constFloat_mx4ult$(1.0);
-    if (cfg.isAmbientOcclusionMapped) {
-      var key_2 = cfg.ambientOcclusionTexName;
-      var tmp$_17;
+    if (cfg.isOcclusionMapped) {
+      var key_2 = cfg.occlusionTexName;
+      var tmp$_18;
       var value_0 = rmoSamplers.get_11rb$(key_2);
       if (value_0 == null) {
-        var answer_0 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.ambientOcclusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        var answer_0 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.occlusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_2, answer_0);
-        tmp$_17 = answer_0;
+        tmp$_18 = answer_0;
       } else {
-        tmp$_17 = value_0;
+        tmp$_18 = value_0;
       }
-      var occlusion = tmp$_17;
-      var key_3 = cfg.ambientOcclusionTexName;
+      var occlusion = tmp$_18;
+      var key_3 = cfg.occlusionTexName;
       rmoSamplers.put_xwzc9p$(key_3, occlusion);
-      var rawAo = $receiver_2.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
-      if (cfg.ambientOcclusionStrength !== 1.0) {
-        var str = cfg.ambientOcclusionStrength;
-        tmp$_14 = $receiver_2.addNode_ze33is$($receiver_2.constFloat_mx4ult$(1.0 - str), $receiver_2.multiplyNode_tuikh5$(rawAo, str).output).output;
+      var rawAo = $receiver_2.splitNode_500t7j$(occlusion, cfg.occlusionChannel).output;
+      if (cfg.occlusionStrength !== 1.0) {
+        var str = cfg.occlusionStrength;
+        tmp$_15 = $receiver_2.addNode_ze33is$($receiver_2.constFloat_mx4ult$(1.0 - str), $receiver_2.multiplyNode_tuikh5$(rawAo, str).output).output;
       } else {
-        tmp$_14 = rawAo;
+        tmp$_15 = rawAo;
       }
-      aoFactor = tmp$_14;
+      aoFactor = tmp$_15;
     }if (cfg.isScrSpcAmbientOcclusion) {
       var aoMap = $receiver_2.textureNode_61zpoe$('ssaoMap');
       var aoNode = $receiver_2.addNode_u9w9by$(new AoMapSampleNode(aoMap, $receiver_3.graph));
       aoNode.inViewport = mvpFrag.outViewport;
-      if (!cfg.isAmbientOcclusionMapped) {
-        tmp$_15 = aoNode.outAo;
+      if (!cfg.isOcclusionMapped) {
+        tmp$_16 = aoNode.outAo;
       } else {
-        tmp$_15 = $receiver_2.multiplyNode_ze33is$(aoFactor, aoNode.outAo).output;
+        tmp$_16 = $receiver_2.multiplyNode_ze33is$(aoFactor, aoNode.outAo).output;
       }
-      aoFactor = tmp$_15;
+      aoFactor = tmp$_16;
     }$receiver_3.inAmbientOccl = aoFactor;
     var mat = $receiver_3;
-    tmp$_7 = cfg.alphaMode;
-    if (Kotlin.isType(tmp$_7, AlphaModeBlend))
-      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor);
-    else if (Kotlin.isType(tmp$_7, AlphaModeMask))
-      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
-    else if (Kotlin.isType(tmp$_7, AlphaModeOpaque))
-      $receiver_2.colorOutput_a3v4si$($receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
+    if (cfg.isHdrOutput) {
+      tmp$_7 = mat.outColor;
+    } else {
+      tmp$_7 = $receiver_2.hdrToLdrNode_r20yfm$(mat.outColor).outColor;
+    }
+    var matOutColor = tmp$_7;
+    tmp$_8 = cfg.alphaMode;
+    if (Kotlin.isType(tmp$_8, AlphaModeBlend))
+      $receiver_2.colorOutput_a3v4si$(matOutColor);
+    else if (Kotlin.isType(tmp$_8, AlphaModeMask))
+      $receiver_2.colorOutput_a3v4si$(matOutColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
+    else if (Kotlin.isType(tmp$_8, AlphaModeOpaque))
+      $receiver_2.colorOutput_a3v4si$(matOutColor, void 0, $receiver_2.constFloat_mx4ult$(1.0));
     else
       Kotlin.noWhenBranchMatched();
     return $receiver;
@@ -17136,66 +17295,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new PbrShader$Companion();
     }return PbrShader$Companion_instance;
   }
-  function PbrShader$PbrConfig() {
-    this.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
-    this.isEmissiveMapped = false;
-    this.isNormalMapped = false;
-    this.isRoughnessMapped = false;
-    this.isMetallicMapped = false;
-    this.isAmbientOcclusionMapped = false;
-    this.isDisplacementMapped = false;
-    this.isSkinned = false;
-    this.maxJoints = 64;
-    this.normalStrength = 1.0;
-    this.ambientOcclusionStrength = 1.0;
-    this.isMultiplyAlbedoMap = false;
-    this.isMultiplyEmissiveMap = false;
-    this.isMultiplyRoughnessMap = false;
-    this.isMultiplyMetallicMap = false;
-    this.isImageBasedLighting = false;
-    this.isScrSpcAmbientOcclusion = false;
-    this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
-    this.alphaMode = new AlphaModeBlend();
-    this.maxLights = 4;
-    this.shadowMaps = ArrayList_init_0();
-    this.lightBacksides = false;
-    this.isInstanced = false;
-    this.albedo = Color$Companion_getInstance().GRAY;
-    this.emissive = Color$Companion_getInstance().BLACK;
-    this.roughness = 0.5;
-    this.metallic = 0.0;
-    this.albedoMap = null;
-    this.emissiveMap = null;
-    this.normalMap = null;
-    this.displacementMap = null;
-    this.roughnessMap = null;
-    this.roughnessChannel = 'r';
-    this.roughnessTexName = 'tRoughness';
-    this.metallicMap = null;
-    this.metallicChannel = 'r';
-    this.metallicTexName = 'tMetallic';
-    this.ambientOcclusionMap = null;
-    this.ambientOcclusionChannel = 'r';
-    this.ambientOcclusionTexName = 'tOcclusion';
-    this.irradianceMap = null;
-    this.reflectionMap = null;
-    this.brdfLut = null;
-    this.scrSpcAmbientOcclusionMap = null;
-  }
-  PbrShader$PbrConfig.prototype.setImageBasedLighting_5m8fyp$ = function (irradianceMap, reflectionMap, brdfLut) {
-    this.irradianceMap = irradianceMap;
-    this.reflectionMap = reflectionMap;
-    this.brdfLut = brdfLut;
-    this.isImageBasedLighting = (irradianceMap != null && reflectionMap != null && brdfLut != null);
-  };
-  PbrShader$PbrConfig.prototype.requiresTexCoords = function () {
-    return this.albedoSource === Albedo$TEXTURE_ALBEDO_getInstance() || this.isNormalMapped || this.isRoughnessMapped || this.isMetallicMapped || this.isAmbientOcclusionMapped || this.isDisplacementMapped;
-  };
-  PbrShader$PbrConfig.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrConfig',
-    interfaces: []
-  };
   PbrShader.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'PbrShader',
@@ -17671,6 +17770,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.albedoMap = null;
     this.normalMap = null;
   }
+  PhongShader$PhongConfig.prototype.useAlbedoMap_61zpoe$ = function (albedoMap) {
+    this.useAlbedoMap_vv6xll$(Texture_init(albedoMap));
+  };
+  PhongShader$PhongConfig.prototype.useAlbedoMap_vv6xll$ = function (albedoMap) {
+    this.albedoMap = albedoMap;
+    this.albedoSource = Albedo$TEXTURE_ALBEDO_getInstance();
+  };
+  PhongShader$PhongConfig.prototype.useNormalMap_61zpoe$ = function (normalMap) {
+    this.useNormalMap_vv6xll$(Texture_init(normalMap));
+  };
+  PhongShader$PhongConfig.prototype.useNormalMap_vv6xll$ = function (normalMap) {
+    this.normalMap = normalMap;
+    this.isNormalMapped = true;
+  };
   PhongShader$PhongConfig.prototype.requiresTexCoords = function () {
     return this.albedoSource === Albedo$TEXTURE_ALBEDO_getInstance() || this.isNormalMapped;
   };
@@ -17951,6 +18064,66 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Texture',
     interfaces: []
   };
+  function Texture_init(assetPath, name, props, $this) {
+    if (name === void 0)
+      name = null;
+    if (props === void 0)
+      props = new TextureProps();
+    $this = $this || Object.create(Texture.prototype);
+    Texture.call($this, name, props, Texture_init$lambda(assetPath));
+    return $this;
+  }
+  function Coroutine$Texture_init$lambda(closure$assetPath_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$assetPath = closure$assetPath_0;
+    this.local$it = it_0;
+  }
+  Coroutine$Texture_init$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$Texture_init$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$Texture_init$lambda.prototype.constructor = Coroutine$Texture_init$lambda;
+  Coroutine$Texture_init$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$assetPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function Texture_init$lambda(closure$assetPath_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$Texture_init$lambda(closure$assetPath_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
   function SingleColorTexture(color) {
     SingleColorTexture$Companion_getInstance();
     Texture.call(this, color.toString(), new TextureProps(void 0, void 0, void 0, void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1), SingleColorTexture_init$lambda(color));
@@ -19900,6 +20073,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return false;
     }return true;
   };
+  function PerspectiveCamera$Proxy(master) {
+    PerspectiveCamera.call(this);
+    this.master = master;
+    this.useViewportAspectRatio = false;
+    this.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
+  }
+  PerspectiveCamera$Proxy.prototype.sync_hrtwbc$ = function (viewport, ctx) {
+    this.master.updateCamera_fd1mc0$(ctx, viewport);
+    this.position.set_czzhiu$(this.master.globalPos);
+    this.lookAt.set_czzhiu$(this.master.globalLookAt);
+    this.up.set_czzhiu$(this.master.globalUp);
+    this.aspectRatio = this.master.aspectRatio;
+    this.fovY = this.master.fovY;
+    this.clipNear = this.master.clipNear;
+    this.clipFar = this.master.clipFar;
+  };
+  PerspectiveCamera$Proxy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Proxy',
+    interfaces: [PerspectiveCamera]
+  };
   PerspectiveCamera.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'PerspectiveCamera',
@@ -20550,6 +20744,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.id = (tmp$ = Mesh$Companion_getInstance().instanceId_0, Mesh$Companion_getInstance().instanceId_0 = tmp$.inc(), tmp$);
     this.instances = null;
     this.skin = null;
+    this.isOpaque = true;
     this.pipelineLoader_6i1avl$_0 = null;
     this.pipeline_fj0dqa$_0 = null;
     this.discardedPipelines_d0j47k$_0 = ArrayList_init_0();
@@ -20632,7 +20827,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (this.geometry.isRebuildBoundsOnSync) {
         this.geometry.rebuildBounds();
       }this.rayTest.onMeshDataChanged_f1jspk$(this);
-    }renderPass.drawQueue.addMesh_sbx4mf$(this, ctx);
+    }renderPass.addMesh_sbx4mf$(this, ctx);
   };
   function Mesh$Companion() {
     Mesh$Companion_instance = this;
@@ -21666,9 +21861,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Scene',
     interfaces: [Group]
   };
-  function Skybox(environmentMap, texLod) {
+  function Skybox(environmentMap, texLod, hdrOutput) {
     if (texLod === void 0)
       texLod = 0.0;
+    if (hdrOutput === void 0)
+      hdrOutput = false;
     Mesh.call(this, IndexedVertexList_init([Attribute$Companion_getInstance().POSITIONS]));
     this.environmentMap = environmentMap;
     this.generate_v2sixm$(Skybox_init$lambda);
@@ -21677,6 +21874,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var texName = 'envMap';
     var $receiver = new ShaderModel('Skybox Shader');
     var closure$texLod = texLod;
+    var closure$hdrOutput = hdrOutput;
     var ifLocalPos = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var mvp = $receiver_0.mvpNode();
@@ -21687,8 +21885,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var sampler = $receiver_1.cubeMapSamplerNode_2z3a2t$($receiver_1.cubeMapNode_61zpoe$(texName), ifLocalPos.v.output, false);
     if (closure$texLod !== 0.0) {
       sampler.texLod = new ShaderNodeIoVar(new ModelVar1fConst(closure$texLod));
-    }var ldr = $receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor);
-    $receiver_1.colorOutput_a3v4si$(ldr.outColor);
+    }if (closure$hdrOutput) {
+      $receiver_1.colorOutput_a3v4si$(sampler.outColor);
+    } else {
+      var ldr = $receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor);
+      $receiver_1.colorOutput_a3v4si$(ldr.outColor);
+    }
     var model = $receiver;
     var $receiver_2 = new ModeledShader$CubeMapColor(texName, model);
     $receiver_2.onSetup.add_11rb$(Skybox_init$lambda$lambda);
@@ -26139,7 +26341,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.mapWidth_0 = numberToInt(1600 * this.size);
     this.mapHeight_0 = numberToInt(900 * this.size);
     var tmp$;
-    var proxyCamera = new AoPipeline$ProxyCamera(Kotlin.isType(tmp$ = scene.camera, PerspectiveCamera) ? tmp$ : throwCCE());
+    var proxyCamera = new PerspectiveCamera$Proxy(Kotlin.isType(tmp$ = scene.camera, PerspectiveCamera) ? tmp$ : throwCCE());
     this.depthPass = new NormalLinearDepthMapPass(scene, this.mapWidth_0, this.mapHeight_0);
     this.depthPass.camera = proxyCamera;
     this.depthPass.isUpdateDrawNode = false;
@@ -26231,27 +26433,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'DeferredAoPipeline',
     interfaces: [AoPipeline]
-  };
-  function AoPipeline$ProxyCamera(master) {
-    PerspectiveCamera.call(this);
-    this.master = master;
-    this.useViewportAspectRatio = false;
-    this.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
-  }
-  AoPipeline$ProxyCamera.prototype.sync_hrtwbc$ = function (viewport, ctx) {
-    this.master.updateCamera_fd1mc0$(ctx, viewport);
-    this.position.set_czzhiu$(this.master.globalPos);
-    this.lookAt.set_czzhiu$(this.master.globalLookAt);
-    this.up.set_czzhiu$(this.master.globalUp);
-    this.aspectRatio = this.master.aspectRatio;
-    this.fovY = this.master.fovY;
-    this.clipNear = this.master.clipNear;
-    this.clipFar = this.master.clipFar;
-  };
-  AoPipeline$ProxyCamera.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProxyCamera',
-    interfaces: [PerspectiveCamera]
   };
   function AoPipeline$Companion() {
     AoPipeline$Companion_instance = this;
@@ -28299,7 +28480,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var xyPos = $receiver_1.divideNode_ze33is$($receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'xy').output, $receiver_1.splitNode_500t7j$(ifFragCoords.v.output, 'w').output).output;
     var texPos = $receiver_1.addNode_ze33is$($receiver_1.multiplyNode_tuikh5$(xyPos, 0.5).output, new ShaderNodeIoVar(new ModelVar1fConst(0.5))).output;
     var coord = texPos;
-    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredMrtShader$MrtDeMultiplexNode($receiver_1.stage));
+    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredPbrShader$MrtDeMultiplexNode($receiver_1.stage));
     $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
@@ -28383,15 +28564,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredLightShader',
     interfaces: [ModeledShader]
   };
-  function DeferredMrtPass() {
+  function DeferredMrtPass(scene) {
     DeferredMrtPass$Companion_getInstance();
-    OffscreenRenderPass2dMrt.call(this, new Group(), 1600, 900, DeferredMrtPass$Companion_getInstance().FMTS_DEFERRED);
-    var tmp$;
-    this.content = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    OffscreenRenderPass2dMrt.call(this, new TransformGroup(), 1600, 900, DeferredMrtPass$Companion_getInstance().FMTS_DEFERRED);
+    var tmp$, tmp$_0;
+    this.content = Kotlin.isType(tmp$ = this.drawNode, TransformGroup) ? tmp$ : throwCCE();
+    this.alphaMeshes_8be2vx$ = ArrayList_init_0();
+    var proxyCamera = new PerspectiveCamera$Proxy(Kotlin.isType(tmp$_0 = scene.camera, PerspectiveCamera) ? tmp$_0 : throwCCE());
+    this.camera = proxyCamera;
+    this.onBeforeCollectDrawCommands.add_11rb$(DeferredMrtPass_init$lambda(proxyCamera, scene));
+    scene.addOffscreenPass_m1c2kf$(this);
     this.clearColors[0] = new Color(0.0, 0.0, 2.0, 0.0);
     this.clearColors[1] = null;
     this.clearColors[2] = null;
     this.content.isFrustumChecked = false;
+    this.drawQueue.meshFilter = DeferredMrtPass_init$lambda_0;
   }
   Object.defineProperty(DeferredMrtPass.prototype, 'positionAo', {
     get: function () {
@@ -28408,6 +28595,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.colorTextures.get_za3lpa$(2);
     }
   });
+  DeferredMrtPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    this.alphaMeshes_8be2vx$.clear();
+    OffscreenRenderPass2dMrt.prototype.collectDrawCommands_aemszp$.call(this, ctx);
+  };
+  DeferredMrtPass.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
+    var tmp$;
+    if (mesh.isOpaque) {
+      tmp$ = OffscreenRenderPass2dMrt.prototype.addMesh_sbx4mf$.call(this, mesh, ctx);
+    } else {
+      this.alphaMeshes_8be2vx$.add_11rb$(mesh);
+      tmp$ = null;
+    }
+    return tmp$;
+  };
   DeferredMrtPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPass2dMrt.prototype.dispose_aemszp$.call(this, ctx);
@@ -28429,6 +28630,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (DeferredMrtPass$Companion_instance === null) {
       new DeferredMrtPass$Companion();
     }return DeferredMrtPass$Companion_instance;
+  }
+  function DeferredMrtPass_init$lambda(closure$proxyCamera, closure$scene) {
+    return function (ctx) {
+      closure$proxyCamera.sync_hrtwbc$(closure$scene.mainRenderPass.viewport, ctx);
+      return Unit;
+    };
+  }
+  function DeferredMrtPass_init$lambda_0(it) {
+    return it.isOpaque;
   }
   DeferredMrtPass.$metadata$ = {
     kind: Kind_CLASS,
@@ -28465,137 +28675,245 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
-  function DeferredMrtShader(cfg, model) {
-    DeferredMrtShader$Companion_getInstance();
+  function DeferredOutputShader(pbrOutput) {
+    DeferredOutputShader$Companion_getInstance();
+    ModeledShader.call(this, DeferredOutputShader$Companion_getInstance().outputModel_0());
+    this.pbrOutput_0 = pbrOutput;
+  }
+  DeferredOutputShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+    var tmp$;
+    var $this = this.model;
+    var name = 'deferredPbrOutput';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$_0;
+      tmp$_0 = $this.stages.values.iterator();
+      while (tmp$_0.hasNext()) {
+        var element = tmp$_0.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_1;
+          var $receiver = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_2;
+            tmp$_2 = $receiver.iterator();
+            while (tmp$_2.hasNext()) {
+              var element_0 = tmp$_2.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, TextureNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_1, TextureNode) ? tmp$_1 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
+    ensureNotNull(textureSampler).texture = this.pbrOutput_0;
+    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+  };
+  function DeferredOutputShader$Companion() {
+    DeferredOutputShader$Companion_instance = this;
+  }
+  DeferredOutputShader$Companion.prototype.outputModel_0 = function () {
+    var $receiver = new ShaderModel('DeferredOutputShader');
+    var ifTexCoords = {v: null};
+    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
+    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
+    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
+    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('deferredPbrOutput'), ifTexCoords.v.output);
+    $receiver_1.colorOutput_a3v4si$($receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor).outColor);
+    return $receiver;
+  };
+  DeferredOutputShader$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var DeferredOutputShader$Companion_instance = null;
+  function DeferredOutputShader$Companion_getInstance() {
+    if (DeferredOutputShader$Companion_instance === null) {
+      new DeferredOutputShader$Companion();
+    }return DeferredOutputShader$Companion_instance;
+  }
+  DeferredOutputShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DeferredOutputShader',
+    interfaces: [ModeledShader]
+  };
+  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
+  function DeferredPbrShader(cfg, model) {
+    DeferredPbrShader$Companion_getInstance();
     if (model === void 0)
-      model = DeferredMrtShader$Companion_getInstance().defaultMrtPbrModel_pg63dk$(cfg);
+      model = DeferredPbrShader$Companion_getInstance().defaultMrtPbrModel_2ufela$(cfg);
     ModeledShader.call(this, model);
     this.uRoughness_0 = null;
     this.uMetallic_0 = null;
     this.uAlbedo_0 = null;
-    this.metallic_d07a52$_0 = cfg.metallic;
-    this.roughness_a2be35$_0 = cfg.roughness;
-    this.albedo_k03b7o$_0 = cfg.albedo;
+    this.metallic_mwthg9$_0 = cfg.metallic;
+    this.roughness_cztq66$_0 = cfg.roughness;
+    this.albedo_9owvlf$_0 = cfg.albedo;
     this.albedoSampler_0 = null;
     this.normalSampler_0 = null;
     this.metallicSampler_0 = null;
     this.roughnessSampler_0 = null;
-    this.ambientOcclusionSampler_0 = null;
+    this.occlusionSampler_0 = null;
     this.displacementSampler_0 = null;
     this.uDispStrength_0 = null;
-    this.albedoMap_hu1j44$_0 = cfg.albedoMap;
-    this.normalMap_16c46i$_0 = cfg.normalMap;
-    this.metallicMap_n78mam$_0 = cfg.metallicMap;
-    this.roughnessMap_5fsqc7$_0 = cfg.roughnessMap;
-    this.ambientOcclusionMap_mz2eoo$_0 = cfg.ambientOcclusionMap;
-    this.displacementMap_gt8f4q$_0 = cfg.displacementMap;
-    this.displacementStrength_9lp3mr$_0 = 0.1;
+    this.metallicTexName_0 = cfg.metallicTexName;
+    this.roughnessTexName_0 = cfg.roughnessTexName;
+    this.occlusionTexName_0 = cfg.occlusionTexName;
+    this.albedoMap_583l57$_0 = cfg.albedoMap;
+    this.normalMap_o8h8ft$_0 = cfg.normalMap;
+    this.metallicMap_onr26n$_0 = cfg.metallicMap;
+    this.roughnessMap_kdfn22$_0 = cfg.roughnessMap;
+    this.occlusionMap_ewiscp$_0 = cfg.occlusionMap;
+    this.displacementMap_1yztpl$_0 = cfg.displacementMap;
+    this.displacementStrength_i48dea$_0 = 0.1;
   }
-  Object.defineProperty(DeferredMrtShader.prototype, 'metallic', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'metallic', {
     get: function () {
-      return this.metallic_d07a52$_0;
+      return this.metallic_mwthg9$_0;
     },
     set: function (value) {
       var tmp$, tmp$_0;
-      this.metallic_d07a52$_0 = value;
+      this.metallic_mwthg9$_0 = value;
       (tmp$_0 = (tmp$ = this.uMetallic_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'roughness', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'roughness', {
     get: function () {
-      return this.roughness_a2be35$_0;
+      return this.roughness_cztq66$_0;
     },
     set: function (value) {
       var tmp$, tmp$_0;
-      this.roughness_a2be35$_0 = value;
+      this.roughness_cztq66$_0 = value;
       (tmp$_0 = (tmp$ = this.uRoughness_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'albedo', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'albedo', {
     get: function () {
-      return this.albedo_k03b7o$_0;
+      return this.albedo_9owvlf$_0;
     },
     set: function (value) {
       var tmp$, tmp$_0, tmp$_1;
-      this.albedo_k03b7o$_0 = value;
+      this.albedo_9owvlf$_0 = value;
       (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'albedoMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'albedoMap', {
     get: function () {
-      return this.albedoMap_hu1j44$_0;
+      return this.albedoMap_583l57$_0;
     },
     set: function (value) {
       var tmp$;
-      this.albedoMap_hu1j44$_0 = value;
+      this.albedoMap_583l57$_0 = value;
       (tmp$ = this.albedoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'normalMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'normalMap', {
     get: function () {
-      return this.normalMap_16c46i$_0;
+      return this.normalMap_o8h8ft$_0;
     },
     set: function (value) {
       var tmp$;
-      this.normalMap_16c46i$_0 = value;
+      this.normalMap_o8h8ft$_0 = value;
       (tmp$ = this.normalSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'metallicMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'metallicMap', {
     get: function () {
-      return this.metallicMap_n78mam$_0;
+      return this.metallicMap_onr26n$_0;
     },
     set: function (value) {
       var tmp$;
-      this.metallicMap_n78mam$_0 = value;
+      this.metallicMap_onr26n$_0 = value;
       (tmp$ = this.metallicSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'roughnessMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'roughnessMap', {
     get: function () {
-      return this.roughnessMap_5fsqc7$_0;
+      return this.roughnessMap_kdfn22$_0;
     },
     set: function (value) {
       var tmp$;
-      this.roughnessMap_5fsqc7$_0 = value;
+      this.roughnessMap_kdfn22$_0 = value;
       (tmp$ = this.roughnessSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'ambientOcclusionMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'occlusionMap', {
     get: function () {
-      return this.ambientOcclusionMap_mz2eoo$_0;
+      return this.occlusionMap_ewiscp$_0;
     },
     set: function (value) {
       var tmp$;
-      this.ambientOcclusionMap_mz2eoo$_0 = value;
-      (tmp$ = this.ambientOcclusionSampler_0) != null ? (tmp$.texture = value) : null;
+      this.occlusionMap_ewiscp$_0 = value;
+      (tmp$ = this.occlusionSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'displacementMap', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'displacementMap', {
     get: function () {
-      return this.displacementMap_gt8f4q$_0;
+      return this.displacementMap_1yztpl$_0;
     },
     set: function (value) {
       var tmp$;
-      this.displacementMap_gt8f4q$_0 = value;
+      this.displacementMap_1yztpl$_0 = value;
       (tmp$ = this.displacementSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  Object.defineProperty(DeferredMrtShader.prototype, 'displacementStrength', {
+  Object.defineProperty(DeferredPbrShader.prototype, 'displacementStrength', {
     get: function () {
-      return this.displacementStrength_9lp3mr$_0;
+      return this.displacementStrength_i48dea$_0;
     },
     set: function (value) {
       var tmp$, tmp$_0;
-      this.displacementStrength_9lp3mr$_0 = value;
+      this.displacementStrength_i48dea$_0 = value;
       (tmp$_0 = (tmp$ = this.uDispStrength_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
     }
   });
-  DeferredMrtShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  DeferredPbrShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
     builder.blendMode = BlendMode$DISABLED_getInstance();
     return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
   };
-  DeferredMrtShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  DeferredPbrShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16;
     var $this = this.model;
     var name = 'uMetallic';
@@ -28779,7 +29097,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$_7 = this.normalSampler_0) != null) {
       tmp$_7.texture = this.normalMap;
     }var $this_4 = this.model;
-    var name_1 = 'tMetallic';
+    var name_1 = this.metallicTexName_0;
     var stage_4;
     var findNode_3klnlw$result_4;
     findNode_3klnlw$break: do {
@@ -28816,7 +29134,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$_9 = this.metallicSampler_0) != null) {
       tmp$_9.texture = this.metallicMap;
     }var $this_5 = this.model;
-    var name_2 = 'tRoughness';
+    var name_2 = this.roughnessTexName_0;
     var stage_5;
     var findNode_3klnlw$result_5;
     findNode_3klnlw$break: do {
@@ -28853,7 +29171,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$_11 = this.roughnessSampler_0) != null) {
       tmp$_11.texture = this.roughnessMap;
     }var $this_6 = this.model;
-    var name_3 = 'tAmbOccl';
+    var name_3 = this.occlusionTexName_0;
     var stage_6;
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
@@ -28886,9 +29204,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_6 = null;
     }
      while (false);
-    this.ambientOcclusionSampler_0 = (tmp$_12 = findNode_3klnlw$result_6) != null ? tmp$_12.sampler : null;
-    if ((tmp$_13 = this.ambientOcclusionSampler_0) != null) {
-      tmp$_13.texture = this.ambientOcclusionMap;
+    this.occlusionSampler_0 = (tmp$_12 = findNode_3klnlw$result_6) != null ? tmp$_12.sampler : null;
+    if ((tmp$_13 = this.occlusionSampler_0) != null) {
+      tmp$_13.texture = this.occlusionMap;
     }var $this_7 = this.model;
     var name_4 = 'tDisplacement';
     var stage_7;
@@ -28965,10 +29283,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_16.uniform.value = this.displacementStrength;
     }ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
   };
-  function DeferredMrtShader$Companion() {
-    DeferredMrtShader$Companion_instance = this;
+  function DeferredPbrShader$Companion() {
+    DeferredPbrShader$Companion_instance = this;
   }
-  DeferredMrtShader$Companion.prototype.defaultMrtPbrModel_pg63dk$ = function (cfg) {
+  DeferredPbrShader$Companion.prototype.defaultMrtPbrModel_2ufela$ = function (cfg) {
     var $receiver = new ShaderModel('defaultMrtPbrModel()');
     var ifColors = {v: null};
     var ifNormals = {v: null};
@@ -28989,7 +29307,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       modelViewMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outViewMat, mvpNode.v.outModelMat).output;
       mvpMat = mvpNode.v.outMvpMat;
     }
-    var worldNrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0).outVec3;
+    if (cfg.isSkinned) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output, cfg.maxJoints);
+      modelViewMat = $receiver_0.multiplyNode_ze33is$(modelViewMat, skinNd.outJointMat).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+    }var worldNrm = $receiver_0.vec3TransformNode_vid4wo$($receiver_0.attrNormals().output, modelViewMat, 0.0).outVec3;
     ifNormals.v = $receiver_0.stageInterfaceNode_iikjwn$('ifNormals', worldNrm);
     if (cfg.requiresTexCoords()) {
       tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
@@ -29026,7 +29348,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ifTangents.v = tmp$_2;
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(worldPos, mvpMat).outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver);
-    var tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7;
+    var tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9;
     var viewPos = ifViewPos.v.output;
     switch (cfg.albedoSource.name) {
       case 'VERTEX_ALBEDO':
@@ -29036,48 +29358,108 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         tmp$_3 = $receiver_2.pushConstantNodeColor_61zpoe$('uAlbedo').output;
         break;
       case 'TEXTURE_ALBEDO':
-        var albedoSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output, false);
+        var albedoSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
         var albedoLin = $receiver_2.gammaNode_r20yfm$(albedoSampler.outColor);
-        tmp$_3 = albedoLin.outColor;
+        if (cfg.isMultiplyAlbedoMap) {
+          var fac = $receiver_2.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+          tmp$_3 = $receiver_2.multiplyNode_ze33is$(albedoLin.outColor, fac).output;
+        } else {
+          tmp$_3 = albedoLin.outColor;
+        }
+
         break;
       default:tmp$_3 = Kotlin.noWhenBranchMatched();
         break;
     }
-    var albedo = tmp$_3;
-    if (cfg.isNormalMapped && ifTangents.v != null) {
+    var albedo = {v: tmp$_3};
+    if ((tmp$_5 = Kotlin.isType(tmp$_4 = cfg.alphaMode, AlphaModeMask) ? tmp$_4 : null) != null) {
+      $receiver_2.discardAlpha_ze33is$($receiver_2.splitNode_500t7j$(albedo.v, 'a').output, $receiver_2.constFloat_mx4ult$(tmp$_5.cutOff));
+    }if (!Kotlin.isType(cfg.alphaMode, AlphaModeBlend)) {
+      albedo.v = $receiver_2.combineXyzWNode_ze33is$(albedo.v, $receiver_2.constFloat_mx4ult$(1.0)).output;
+    }if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_2.normalMapNode_j8913i$($receiver_2.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_4 = bumpNormal.outNormal;
+      tmp$_6 = bumpNormal.outNormal;
     } else {
-      tmp$_4 = ifNormals.v.output;
+      tmp$_6 = ifNormals.v.output;
     }
-    var viewNormal = {v: tmp$_4};
+    var viewNormal = {v: tmp$_6};
     viewNormal.v = $receiver_2.flipBacksideNormalNode_r20yfm$(viewNormal.v).outNormal;
-    if (cfg.isMetallicMapped) {
-      tmp$_5 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
-    } else {
-      tmp$_5 = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
-    }
-    var metallic = tmp$_5;
+    var roughness;
+    var metallic;
+    var aoFactor = {v: $receiver_2.constFloat_mx4ult$(1.0)};
+    var rmoSamplers = LinkedHashMap_init();
     if (cfg.isRoughnessMapped) {
-      tmp$_6 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+      var roughnessSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.roughnessTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+      var key = cfg.roughnessTexName;
+      rmoSamplers.put_xwzc9p$(key, roughnessSampler);
+      var rawRoughness = $receiver_2.splitNode_500t7j$(roughnessSampler, cfg.roughnessChannel).output;
+      if (cfg.isMultiplyRoughnessMap) {
+        var fac_0 = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
+        tmp$_7 = $receiver_2.multiplyNode_ze33is$(rawRoughness, fac_0).output;
+      } else {
+        tmp$_7 = rawRoughness;
+      }
+      roughness = tmp$_7;
     } else {
-      tmp$_6 = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
+      roughness = $receiver_2.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
-    var roughness = tmp$_6;
-    if (cfg.isAmbientOcclusionMapped) {
-      tmp$_7 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+    if (cfg.isMetallicMapped) {
+      var key_0 = cfg.metallicTexName;
+      var tmp$_10;
+      var value = rmoSamplers.get_11rb$(key_0);
+      if (value == null) {
+        var answer = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        rmoSamplers.put_xwzc9p$(key_0, answer);
+        tmp$_10 = answer;
+      } else {
+        tmp$_10 = value;
+      }
+      var metallicSampler = tmp$_10;
+      var key_1 = cfg.metallicTexName;
+      rmoSamplers.put_xwzc9p$(key_1, metallicSampler);
+      var rawMetallic = $receiver_2.splitNode_500t7j$(metallicSampler, cfg.metallicChannel).output;
+      if (cfg.isMultiplyMetallicMap) {
+        var fac_1 = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
+        tmp$_8 = $receiver_2.multiplyNode_ze33is$(rawMetallic, fac_1).output;
+      } else {
+        tmp$_8 = rawMetallic;
+      }
+      metallic = tmp$_8;
     } else {
-      tmp$_7 = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+      metallic = $receiver_2.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
-    var aoFactor = tmp$_7;
-    var $receiver_3 = $receiver_2.addNode_u9w9by$(new DeferredMrtShader$MrtMultiplexNode($receiver_2.stage));
+    if (cfg.isOcclusionMapped) {
+      var key_2 = cfg.occlusionTexName;
+      var tmp$_11;
+      var value_0 = rmoSamplers.get_11rb$(key_2);
+      if (value_0 == null) {
+        var answer_0 = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(cfg.occlusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        rmoSamplers.put_xwzc9p$(key_2, answer_0);
+        tmp$_11 = answer_0;
+      } else {
+        tmp$_11 = value_0;
+      }
+      var occlusion = tmp$_11;
+      var key_3 = cfg.occlusionTexName;
+      rmoSamplers.put_xwzc9p$(key_3, occlusion);
+      var rawAo = $receiver_2.splitNode_500t7j$(occlusion, cfg.occlusionChannel).output;
+      if (cfg.occlusionStrength !== 1.0) {
+        var str = cfg.occlusionStrength;
+        tmp$_9 = $receiver_2.addNode_ze33is$($receiver_2.constFloat_mx4ult$(1.0 - str), $receiver_2.multiplyNode_tuikh5$(rawAo, str).output).output;
+      } else {
+        tmp$_9 = rawAo;
+      }
+      aoFactor.v = tmp$_9;
+    }var $receiver_3 = $receiver_2.addNode_u9w9by$(new DeferredPbrShader$MrtMultiplexNode($receiver_2.stage));
+    var closure$roughness = roughness;
+    var closure$metallic = metallic;
     $receiver_3.inViewPos = viewPos;
-    $receiver_3.inAlbedo = albedo;
+    $receiver_3.inAlbedo = albedo.v;
     $receiver_3.inViewNormal = viewNormal.v;
-    $receiver_3.inRoughness = roughness;
-    $receiver_3.inMetallic = metallic;
-    $receiver_3.inAo = aoFactor;
+    $receiver_3.inRoughness = closure$roughness;
+    $receiver_3.inMetallic = closure$metallic;
+    $receiver_3.inAo = aoFactor.v;
     var mrtMultiplexNode = $receiver_3;
     var $receiver_4 = $receiver_2.colorOutput_a3v4si$(void 0, 3);
     $receiver_4.inColors[0] = mrtMultiplexNode.outPositionAo;
@@ -29085,45 +29467,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_4.inColors[2] = mrtMultiplexNode.outAlbedoMetallic;
     return $receiver;
   };
-  DeferredMrtShader$Companion.$metadata$ = {
+  DeferredPbrShader$Companion.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'Companion',
     interfaces: []
   };
-  var DeferredMrtShader$Companion_instance = null;
-  function DeferredMrtShader$Companion_getInstance() {
-    if (DeferredMrtShader$Companion_instance === null) {
-      new DeferredMrtShader$Companion();
-    }return DeferredMrtShader$Companion_instance;
+  var DeferredPbrShader$Companion_instance = null;
+  function DeferredPbrShader$Companion_getInstance() {
+    if (DeferredPbrShader$Companion_instance === null) {
+      new DeferredPbrShader$Companion();
+    }return DeferredPbrShader$Companion_instance;
   }
-  function DeferredMrtShader$MrtPbrConfig() {
-    this.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
-    this.isNormalMapped = false;
-    this.isRoughnessMapped = false;
-    this.isMetallicMapped = false;
-    this.isAmbientOcclusionMapped = false;
-    this.isDisplacementMapped = false;
-    this.normalStrength = 1.0;
-    this.isInstanced = false;
-    this.albedo = Color$Companion_getInstance().GRAY;
-    this.roughness = 0.5;
-    this.metallic = 0.0;
-    this.albedoMap = null;
-    this.normalMap = null;
-    this.roughnessMap = null;
-    this.metallicMap = null;
-    this.ambientOcclusionMap = null;
-    this.displacementMap = null;
-  }
-  DeferredMrtShader$MrtPbrConfig.prototype.requiresTexCoords = function () {
-    return this.albedoSource === Albedo$TEXTURE_ALBEDO_getInstance() || this.isNormalMapped || this.isRoughnessMapped || this.isMetallicMapped || this.isAmbientOcclusionMapped || this.isDisplacementMapped;
-  };
-  DeferredMrtShader$MrtPbrConfig.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MrtPbrConfig',
-    interfaces: []
-  };
-  function DeferredMrtShader$MrtMultiplexNode(graph) {
+  function DeferredPbrShader$MrtMultiplexNode(graph) {
     ShaderNode.call(this, 'mrtMultiplex', graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
     this.inViewPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inAlbedo = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
@@ -29135,19 +29490,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.outNormalRough = new ShaderNodeIoVar(new ModelVar4f('outNormalRough'), this);
     this.outAlbedoMetallic = new ShaderNodeIoVar(new ModelVar4f('outAlbedoMetallic'), this);
   }
-  DeferredMrtShader$MrtMultiplexNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+  DeferredPbrShader$MrtMultiplexNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_8ak6wm$([this.inViewPos, this.inAlbedo, this.inViewNormal, this.inRoughness, this.inMetallic, this.inAo]);
   };
-  DeferredMrtShader$MrtMultiplexNode.prototype.generateCode_626509$ = function (generator) {
+  DeferredPbrShader$MrtMultiplexNode.prototype.generateCode_626509$ = function (generator) {
     generator.appendMain_61zpoe$('\n' + '                ' + this.outPositionAo.declare() + ' = vec4(' + this.inViewPos.ref3f() + ', ' + this.inAo.ref1f() + ');' + '\n' + '                ' + this.outNormalRough.declare() + ' = vec4(normalize(' + this.inViewNormal.ref3f() + '), ' + this.inRoughness.ref1f() + ');' + '\n' + '                ' + this.outAlbedoMetallic.declare() + ' = vec4(' + this.inAlbedo.ref3f() + ', ' + this.inMetallic.ref1f() + ');' + '\n' + '            ');
   };
-  DeferredMrtShader$MrtMultiplexNode.$metadata$ = {
+  DeferredPbrShader$MrtMultiplexNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'MrtMultiplexNode',
     interfaces: [ShaderNode]
   };
-  function DeferredMrtShader$MrtDeMultiplexNode(graph) {
+  function DeferredPbrShader$MrtDeMultiplexNode(graph) {
     ShaderNode.call(this, 'mrtDeMultiplex', graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
     this.inPositionAo = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
     this.inNormalRough = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
@@ -29159,126 +29514,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.outMetallic = new ShaderNodeIoVar(new ModelVar1f('outMetallic'), this);
     this.outAo = new ShaderNodeIoVar(new ModelVar1f('outAo'), this);
   }
-  DeferredMrtShader$MrtDeMultiplexNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+  DeferredPbrShader$MrtDeMultiplexNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_8ak6wm$([this.inPositionAo, this.inNormalRough, this.inAlbedoMetallic]);
   };
-  DeferredMrtShader$MrtDeMultiplexNode.prototype.generateCode_626509$ = function (generator) {
+  DeferredPbrShader$MrtDeMultiplexNode.prototype.generateCode_626509$ = function (generator) {
     generator.appendMain_61zpoe$('\n' + '                ' + this.outViewPos.declare() + ' = vec4(' + this.inPositionAo.ref3f() + ', 1.0);' + '\n' + '                ' + this.outAlbedo.declare() + ' = vec4(' + this.inAlbedoMetallic.ref3f() + ', 1.0);' + '\n' + '                ' + this.outViewNormal.declare() + ' = vec3(' + this.inNormalRough.ref3f() + ');' + '\n' + '                ' + this.outRoughness.declare() + ' = ' + this.inNormalRough.ref4f() + '.a;' + '\n' + '                ' + this.outMetallic.declare() + ' = ' + this.inAlbedoMetallic.ref4f() + '.a;' + '\n' + '                ' + this.outAo.declare() + ' = ' + this.inPositionAo.ref4f() + '.a;' + '\n' + '            ');
   };
-  DeferredMrtShader$MrtDeMultiplexNode.$metadata$ = {
+  DeferredPbrShader$MrtDeMultiplexNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'MrtDeMultiplexNode',
     interfaces: [ShaderNode]
   };
-  DeferredMrtShader.$metadata$ = {
+  DeferredPbrShader.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'DeferredMrtShader',
-    interfaces: [ModeledShader]
-  };
-  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
-    var equals = Kotlin.equals;
-    var throwCCE = Kotlin.throwCCE;
-    return function (closure$stage, closure$name, typeClosure$T, isT) {
-      return function (it) {
-        if ((it.stage.mask & closure$stage.mask) !== 0) {
-          var isT_0 = isT;
-          var name = closure$name;
-          var tmp$;
-          var $receiver = it.nodes;
-          var firstOrNull$result;
-          firstOrNull$break: do {
-            var tmp$_0;
-            tmp$_0 = $receiver.iterator();
-            while (tmp$_0.hasNext()) {
-              var element = tmp$_0.next();
-              if (equals(element.name, name) && isT_0(element)) {
-                firstOrNull$result = element;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result = null;
-          }
-           while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
-          if (node != null) {
-            return node;
-          }}return Unit;
-      };
-    };
-  });
-  function DeferredOutputShader(pbrOutput) {
-    DeferredOutputShader$Companion_getInstance();
-    ModeledShader.call(this, DeferredOutputShader$Companion_getInstance().outputModel_0());
-    this.pbrOutput_0 = pbrOutput;
-  }
-  DeferredOutputShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
-    var tmp$;
-    var $this = this.model;
-    var name = 'deferredPbrOutput';
-    var stage;
-    var findNode_3klnlw$result;
-    findNode_3klnlw$break: do {
-      stage = ShaderStage.ALL;
-      var tmp$_0;
-      tmp$_0 = $this.stages.values.iterator();
-      while (tmp$_0.hasNext()) {
-        var element = tmp$_0.next();
-        if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_1;
-          var $receiver = element.nodes;
-          var firstOrNull$result;
-          firstOrNull$break: do {
-            var tmp$_2;
-            tmp$_2 = $receiver.iterator();
-            while (tmp$_2.hasNext()) {
-              var element_0 = tmp$_2.next();
-              if (equals(element_0.name, name) && Kotlin.isType(element_0, TextureNode)) {
-                firstOrNull$result = element_0;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result = null;
-          }
-           while (false);
-          var node = (tmp$_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_1, TextureNode) ? tmp$_1 : throwCCE();
-          if (node != null) {
-            findNode_3klnlw$result = node;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result = null;
-    }
-     while (false);
-    var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
-    ensureNotNull(textureSampler).texture = this.pbrOutput_0;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
-  };
-  function DeferredOutputShader$Companion() {
-    DeferredOutputShader$Companion_instance = this;
-  }
-  DeferredOutputShader$Companion.prototype.outputModel_0 = function () {
-    var $receiver = new ShaderModel('DeferredOutputShader');
-    var ifTexCoords = {v: null};
-    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
-    ifTexCoords.v = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
-    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
-    var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('deferredPbrOutput'), ifTexCoords.v.output);
-    $receiver_1.colorOutput_a3v4si$($receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor).outColor);
-    return $receiver;
-  };
-  DeferredOutputShader$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var DeferredOutputShader$Companion_instance = null;
-  function DeferredOutputShader$Companion_getInstance() {
-    if (DeferredOutputShader$Companion_instance === null) {
-      new DeferredOutputShader$Companion();
-    }return DeferredOutputShader$Companion_instance;
-  }
-  DeferredOutputShader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DeferredOutputShader',
+    simpleName: 'DeferredPbrShader',
     interfaces: [ModeledShader]
   };
   function DeferredPointLights(mrtPass) {
@@ -29652,7 +29902,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       cfg = new PbrSceneShader$DeferredPbrConfig();
     OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, PbrLightingPass$Companion_getInstance().pbrLightingSetup_0(mrtPass));
     this.mrtPass = mrtPass;
-    this.globalLighting = new Lighting();
     this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
     this.staticPointLights = new DeferredPointLights(this.mrtPass);
     this.mutSpotLights_0 = ArrayList_init_0();
@@ -29661,8 +29910,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
     this.dynamicPointLights.isDynamic = true;
     this.staticPointLights.isDynamic = false;
-    this.lighting = this.globalLighting;
-    this.globalLighting.lights.clear();
+    this.lighting = scene.lighting;
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
     scene.addOffscreenPass_m1c2kf$(this);
     this.dependsOn_yqp8fe$(this.mrtPass);
@@ -29704,6 +29952,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.sceneShader_w4wym2$_0 = sceneShader;
     }
   });
+  PbrLightingPass.prototype.afterCollectDrawCommands_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.mrtPass.alphaMeshes_8be2vx$;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.drawQueue.addMesh_sbx4mf$(this.mrtPass.alphaMeshes_8be2vx$.get_za3lpa$(i), ctx);
+    }
+    OffscreenRenderPass2d.prototype.afterCollectDrawCommands_aemszp$.call(this, ctx);
+  };
   PbrLightingPass.prototype.addSpotLights_mx4ult$ = function (maxSpotAngle) {
     var lights = new DeferredSpotLights(maxSpotAngle, this.mrtPass);
     this.content.plusAssign_f1kmr1$(lights.mesh);
@@ -30307,7 +30563,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var coord = ifTexCoords.v.output;
-    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredMrtShader$MrtDeMultiplexNode($receiver_1.stage));
+    var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredPbrShader$MrtDeMultiplexNode($receiver_1.stage));
     $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
@@ -30393,6 +30649,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.brdfLut = null;
     this.scrSpcAmbientOcclusionMap = null;
   }
+  PbrSceneShader$DeferredPbrConfig.prototype.useScreenSpaceAmbientOcclusion_vv6xll$ = function (ssaoMap) {
+    this.scrSpcAmbientOcclusionMap = ssaoMap;
+    this.isScrSpcAmbientOcclusion = true;
+  };
+  PbrSceneShader$DeferredPbrConfig.prototype.useImageBasedLighting_5m8fyp$ = function (irradianceMap, reflectionMap, brdfLut) {
+    this.irradianceMap = irradianceMap;
+    this.reflectionMap = reflectionMap;
+    this.brdfLut = brdfLut;
+    this.isImageBasedLighting = (irradianceMap != null && reflectionMap != null && brdfLut != null);
+  };
   PbrSceneShader$DeferredPbrConfig.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'DeferredPbrConfig',
@@ -32375,43 +32641,40 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   GltfAsset.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.copyright, other.copyright) && Kotlin.equals(this.generator, other.generator) && Kotlin.equals(this.version, other.version) && Kotlin.equals(this.minVersion, other.minVersion)))));
   };
-  function Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$loadGltfModel($receiver_0, assetPath_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$assetPath = closure$assetPath_0;
-    this.local$this$loadGltfModel = this$loadGltfModel_0;
-    this.local$closure$onLoad = closure$onLoad_0;
     this.local$tmp$ = void 0;
     this.local$model = void 0;
     this.local$modelBasePath = void 0;
-    this.local$this$loadGltfModel_0 = void 0;
     this.local$tmp$_1 = void 0;
     this.local$element = void 0;
+    this.local$$receiver = $receiver_0;
+    this.local$assetPath = assetPath_0;
   }
-  Coroutine$loadGltfModel$lambda.$metadata$ = {
+  Coroutine$loadGltfModel.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$loadGltfModel$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$loadGltfModel$lambda.prototype.constructor = Coroutine$loadGltfModel$lambda;
-  Coroutine$loadGltfModel$lambda.prototype.doResume = function () {
+  Coroutine$loadGltfModel.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGltfModel.prototype.constructor = Coroutine$loadGltfModel;
+  Coroutine$loadGltfModel.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
           case 0:
             var tmp$;
-            if (endsWith(this.local$closure$assetPath, '.gltf', true) || endsWith(this.local$closure$assetPath, '.gltf.gz', true)) {
+            if (isGltf(this.local$assetPath)) {
               this.state_0 = 4;
-              this.result_0 = loadGltf(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
+              this.result_0 = loadGltf(this.local$$receiver, this.local$assetPath, this);
               if (this.result_0 === COROUTINE_SUSPENDED)
                 return COROUTINE_SUSPENDED;
               continue;
             } else {
-              if (endsWith(this.local$closure$assetPath, '.glb', true) || endsWith(this.local$closure$assetPath, '.glb.gz', true)) {
+              if (isBinaryGltf(this.local$assetPath)) {
                 this.state_0 = 2;
-                this.result_0 = loadGlb(this.local$this$loadGltfModel, this.local$closure$assetPath, this);
+                this.result_0 = loadGlb(this.local$$receiver, this.local$assetPath, this);
                 if (this.result_0 === COROUTINE_SUSPENDED)
                   return COROUTINE_SUSPENDED;
                 continue;
@@ -32437,21 +32700,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             continue;
           case 5:
             this.local$model = this.local$tmp$;
-            if (contains(this.local$closure$assetPath, 47)) {
-              var $receiver = this.local$closure$assetPath;
-              var endIndex = lastIndexOf(this.local$closure$assetPath, 47);
-              tmp$ = $receiver.substring(0, endIndex);
+            if (contains(this.local$assetPath, 47)) {
+              var endIndex = lastIndexOf(this.local$assetPath, 47);
+              tmp$ = this.local$assetPath.substring(0, endIndex);
             } else {
               tmp$ = '.';
             }
 
             this.local$modelBasePath = tmp$;
             if (this.local$model != null) {
-              this.local$this$loadGltfModel_0 = this.local$this$loadGltfModel;
-              var $receiver_0 = this.local$model.buffers;
+              var $receiver = this.local$model.buffers;
               var destination = ArrayList_init_0();
               var tmp$_0;
-              tmp$_0 = $receiver_0.iterator();
+              tmp$_0 = $receiver.iterator();
               while (tmp$_0.hasNext()) {
                 var element = tmp$_0.next();
                 if (element.uri != null)
@@ -32481,7 +32742,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
 
             var bufferPath = tmp$_1;
             this.state_0 = 7;
-            this.result_0 = this.local$this$loadGltfModel_0.loadAsset_61zpoe$(bufferPath, this);
+            this.result_0 = this.local$$receiver.loadAsset_61zpoe$(bufferPath, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -32490,10 +32751,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             this.state_0 = 6;
             continue;
           case 8:
-            var $receiver_1 = this.local$model.images;
+            var $receiver_0 = this.local$model.images;
             var destination_0 = ArrayList_init_0();
             var tmp$_2;
-            tmp$_2 = $receiver_1.iterator();
+            tmp$_2 = $receiver_0.iterator();
             while (tmp$_2.hasNext()) {
               var element_0 = tmp$_2.next();
               if (element_0.uri != null)
@@ -32511,7 +32772,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             this.state_0 = 9;
             continue;
           case 9:
-            return this.local$closure$onLoad(this.local$model);
+            return this.local$model;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -32526,17 +32787,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$loadGltfModel$lambda(closure$assetPath_0, this$loadGltfModel_0, closure$onLoad_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
+  function loadGltfModel($receiver_0, assetPath_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadGltfModel($receiver_0, assetPath_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   }
-  function loadGltfModel($receiver, assetPath, onLoad) {
-    launch($receiver, void 0, void 0, loadGltfModel$lambda(assetPath, $receiver, onLoad));
+  function isGltf(assetPath) {
+    return endsWith(assetPath, '.gltf', true) || endsWith(assetPath, '.gltf.gz', true);
+  }
+  function isBinaryGltf(assetPath) {
+    return endsWith(assetPath, '.glb', true) || endsWith(assetPath, '.glb.gz', true);
   }
   function Coroutine$loadGltf($receiver_0, assetPath_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -33243,7 +33505,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       element_12.imageRef = this.images.get_za3lpa$(element_12.source);
     }
   };
-  function GltfFile$ModelGenerateConfig(generateNormals, loadAnimations, applySkins, applyTransforms, mergeMeshesByMaterial, sortNodesByAlpha, applyMaterials, pbrBlock) {
+  function GltfFile$ModelGenerateConfig(generateNormals, loadAnimations, applySkins, applyTransforms, mergeMeshesByMaterial, sortNodesByAlpha, applyMaterials, isDeferredShading, pbrBlock) {
     if (generateNormals === void 0)
       generateNormals = false;
     if (loadAnimations === void 0)
@@ -33258,6 +33520,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       sortNodesByAlpha = true;
     if (applyMaterials === void 0)
       applyMaterials = true;
+    if (isDeferredShading === void 0)
+      isDeferredShading = false;
     if (pbrBlock === void 0)
       pbrBlock = null;
     this.generateNormals = generateNormals;
@@ -33267,6 +33531,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.mergeMeshesByMaterial = mergeMeshesByMaterial;
     this.sortNodesByAlpha = sortNodesByAlpha;
     this.applyMaterials = applyMaterials;
+    this.isDeferredShading = isDeferredShading;
     this.pbrBlock = pbrBlock;
   }
   GltfFile$ModelGenerateConfig.$metadata$ = {
@@ -33740,64 +34005,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     return nodeGrp;
   };
-  function GltfFile$ModelGenerator$createMeshes$lambda$lambda(closure$p, closure$useVertexColor, this$GltfFile, closure$mesh, closure$cfg, closure$model) {
-    return function ($receiver) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
-      var material = closure$p.materialRef;
-      if (material != null) {
-        material.applyTo_luqtlc$($receiver, closure$useVertexColor, this$GltfFile);
-      } else {
-        $receiver.albedo = Color$Companion_getInstance().GRAY;
-        $receiver.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
-      }
-      if (closure$mesh.skin != null) {
-        $receiver.isSkinned = true;
-      }(tmp$ = closure$cfg.pbrBlock) != null ? tmp$($receiver, closure$p) : null;
-      if ((tmp$_0 = $receiver.albedoMap) != null) {
-        var closure$model_0 = closure$model;
-        var tmp$_7, tmp$_8;
-        tmp$_8 = closure$model_0.textures;
-        var key = (tmp$_7 = tmp$_0.name) != null ? tmp$_7 : 'tex_' + closure$model_0.textures.size;
-        tmp$_8.put_xwzc9p$(key, tmp$_0);
-      }if ((tmp$_1 = $receiver.emissiveMap) != null) {
-        var closure$model_1 = closure$model;
-        var tmp$_9, tmp$_10;
-        tmp$_10 = closure$model_1.textures;
-        var key_0 = (tmp$_9 = tmp$_1.name) != null ? tmp$_9 : 'tex_' + closure$model_1.textures.size;
-        tmp$_10.put_xwzc9p$(key_0, tmp$_1);
-      }if ((tmp$_2 = $receiver.normalMap) != null) {
-        var closure$model_2 = closure$model;
-        var tmp$_11, tmp$_12;
-        tmp$_12 = closure$model_2.textures;
-        var key_1 = (tmp$_11 = tmp$_2.name) != null ? tmp$_11 : 'tex_' + closure$model_2.textures.size;
-        tmp$_12.put_xwzc9p$(key_1, tmp$_2);
-      }if ((tmp$_3 = $receiver.roughnessMap) != null) {
-        var closure$model_3 = closure$model;
-        var tmp$_13, tmp$_14;
-        tmp$_14 = closure$model_3.textures;
-        var key_2 = (tmp$_13 = tmp$_3.name) != null ? tmp$_13 : 'tex_' + closure$model_3.textures.size;
-        tmp$_14.put_xwzc9p$(key_2, tmp$_3);
-      }if ((tmp$_4 = $receiver.metallicMap) != null) {
-        var closure$model_4 = closure$model;
-        var tmp$_15, tmp$_16;
-        tmp$_16 = closure$model_4.textures;
-        var key_3 = (tmp$_15 = tmp$_4.name) != null ? tmp$_15 : 'tex_' + closure$model_4.textures.size;
-        tmp$_16.put_xwzc9p$(key_3, tmp$_4);
-      }if ((tmp$_5 = $receiver.ambientOcclusionMap) != null) {
-        var closure$model_5 = closure$model;
-        var tmp$_17, tmp$_18;
-        tmp$_18 = closure$model_5.textures;
-        var key_4 = (tmp$_17 = tmp$_5.name) != null ? tmp$_17 : 'tex_' + closure$model_5.textures.size;
-        tmp$_18.put_xwzc9p$(key_4, tmp$_5);
-      }if ((tmp$_6 = $receiver.displacementMap) != null) {
-        var closure$model_6 = closure$model;
-        var tmp$_19, tmp$_20;
-        tmp$_20 = closure$model_6.textures;
-        var key_5 = (tmp$_19 = tmp$_6.name) != null ? tmp$_19 : 'tex_' + closure$model_6.textures.size;
-        tmp$_20.put_xwzc9p$(key_5, tmp$_6);
-      }return Unit;
-    };
-  }
   GltfFile$ModelGenerator.prototype.createMeshes_0 = function ($receiver, model, nodeGrp, cfg) {
     var tmp$, tmp$_0;
     if ((tmp$_0 = (tmp$ = $receiver.meshRef) != null ? tmp$.primitives : null) != null) {
@@ -33834,7 +34041,62 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             mesh.skin = model.skins.get_za3lpa$($receiver.skin);
           }if (cfg.applyMaterials) {
             var useVertexColor = item.attributes.containsKey_11rb$(GltfMesh$Primitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
-            mesh.pipelineLoader = pbrShader(GltfFile$ModelGenerator$createMeshes$lambda$lambda(item, useVertexColor, this$GltfFile, mesh, cfg, model));
+            var $receiver_2 = new PbrMaterialConfig();
+            var tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12;
+            var material = item.materialRef;
+            if (material != null) {
+              material.applyTo_rmmby8$($receiver_2, useVertexColor, this$GltfFile);
+            } else {
+              $receiver_2.albedo = Color$Companion_getInstance().GRAY;
+              $receiver_2.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
+            }
+            if (mesh.skin != null) {
+              $receiver_2.isSkinned = true;
+            }$receiver_2.isHdrOutput = cfg.isDeferredShading;
+            (tmp$_5 = cfg.pbrBlock) != null ? tmp$_5($receiver_2, item) : null;
+            if (Kotlin.isType($receiver_2.alphaMode, AlphaModeBlend)) {
+              mesh.isOpaque = false;
+            }if ((tmp$_6 = $receiver_2.albedoMap) != null) {
+              var tmp$_13, tmp$_14;
+              tmp$_14 = model.textures;
+              var key_0 = (tmp$_13 = tmp$_6.name) != null ? tmp$_13 : 'tex_' + model.textures.size;
+              tmp$_14.put_xwzc9p$(key_0, tmp$_6);
+            }if ((tmp$_7 = $receiver_2.emissiveMap) != null) {
+              var tmp$_15, tmp$_16;
+              tmp$_16 = model.textures;
+              var key_1 = (tmp$_15 = tmp$_7.name) != null ? tmp$_15 : 'tex_' + model.textures.size;
+              tmp$_16.put_xwzc9p$(key_1, tmp$_7);
+            }if ((tmp$_8 = $receiver_2.normalMap) != null) {
+              var tmp$_17, tmp$_18;
+              tmp$_18 = model.textures;
+              var key_2 = (tmp$_17 = tmp$_8.name) != null ? tmp$_17 : 'tex_' + model.textures.size;
+              tmp$_18.put_xwzc9p$(key_2, tmp$_8);
+            }if ((tmp$_9 = $receiver_2.roughnessMap) != null) {
+              var tmp$_19, tmp$_20;
+              tmp$_20 = model.textures;
+              var key_3 = (tmp$_19 = tmp$_9.name) != null ? tmp$_19 : 'tex_' + model.textures.size;
+              tmp$_20.put_xwzc9p$(key_3, tmp$_9);
+            }if ((tmp$_10 = $receiver_2.metallicMap) != null) {
+              var tmp$_21, tmp$_22;
+              tmp$_22 = model.textures;
+              var key_4 = (tmp$_21 = tmp$_10.name) != null ? tmp$_21 : 'tex_' + model.textures.size;
+              tmp$_22.put_xwzc9p$(key_4, tmp$_10);
+            }if ((tmp$_11 = $receiver_2.occlusionMap) != null) {
+              var tmp$_23, tmp$_24;
+              tmp$_24 = model.textures;
+              var key_5 = (tmp$_23 = tmp$_11.name) != null ? tmp$_23 : 'tex_' + model.textures.size;
+              tmp$_24.put_xwzc9p$(key_5, tmp$_11);
+            }if ((tmp$_12 = $receiver_2.displacementMap) != null) {
+              var tmp$_25, tmp$_26;
+              tmp$_26 = model.textures;
+              var key_6 = (tmp$_25 = tmp$_12.name) != null ? tmp$_25 : 'tex_' + model.textures.size;
+              tmp$_26.put_xwzc9p$(key_6, tmp$_12);
+            }var pbrConfig = $receiver_2;
+            if (cfg.isDeferredShading && mesh.isOpaque) {
+              mesh.pipelineLoader = new DeferredPbrShader(pbrConfig);
+            } else {
+              mesh.pipelineLoader = new PbrShader(pbrConfig);
+            }
           }model.meshes.put_xwzc9p$(name, mesh);
         }}
     }};
@@ -34362,7 +34624,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.alphaCutoff = alphaCutoff;
     this.doubleSided = doubleSided;
   }
-  GltfMaterial.prototype.applyTo_luqtlc$ = function (cfg, useVertexColor, gltfFile) {
+  GltfMaterial.prototype.applyTo_rmmby8$ = function (cfg, useVertexColor, gltfFile) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
     var albedoTexture = (tmp$ = this.pbrMetallicRoughness.baseColorTexture) != null ? tmp$.getTexture_vd9sc9$(gltfFile) : null;
     var emissiveTexture = (tmp$_0 = this.emissiveTexture) != null ? tmp$_0.getTexture_vd9sc9$(gltfFile) : null;
@@ -34436,11 +34698,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       cfg.isMetallicMapped = false;
     }
     if (occlusionTexture != null) {
-      cfg.isAmbientOcclusionMapped = true;
-      cfg.ambientOcclusionMap = occlusionTexture;
-      cfg.ambientOcclusionStrength = (tmp$_10 = (tmp$_9 = this.occlusionTexture) != null ? tmp$_9.strength : null) != null ? tmp$_10 : 1.0;
+      cfg.isOcclusionMapped = true;
+      cfg.occlusionMap = occlusionTexture;
+      cfg.occlusionStrength = (tmp$_10 = (tmp$_9 = this.occlusionTexture) != null ? tmp$_9.strength : null) != null ? tmp$_10 : 1.0;
     } else {
-      cfg.isAmbientOcclusionMapped = false;
+      cfg.isOcclusionMapped = false;
     }
     if (cfg.isRoughnessMapped) {
       if (roughnessTexture !== metallicTexture && roughnessTexture !== occlusionTexture) {
@@ -34470,14 +34732,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           cfg.roughnessTexName = 'tOcclMetal';
         }
       }
-    }if (cfg.isAmbientOcclusionMapped) {
+    }if (cfg.isOcclusionMapped) {
       if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
-        cfg.ambientOcclusionChannel = 'r';
-        cfg.ambientOcclusionTexName = 'tOcclusion';
+        cfg.occlusionChannel = 'r';
+        cfg.occlusionTexName = 'tOcclusion';
       } else {
-        cfg.ambientOcclusionChannel = 'r';
+        cfg.occlusionChannel = 'r';
         if (occlusionTexture === roughnessTexture && occlusionTexture === metallicTexture) {
-          cfg.ambientOcclusionTexName = 'tOcclRoughMetal';
+          cfg.occlusionTexName = 'tOcclRoughMetal';
         } else if (occlusionTexture === roughnessTexture) {
           cfg.roughnessTexName = 'tOcclRough';
         } else {
@@ -43371,30 +43633,29 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return instance.doResume(null);
     };
   }
-  function Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0(closure$assetPath_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$loadAndPrepareTexture_va0f2y$$default($this, assetPath_0, props_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$assetPath = closure$assetPath_0;
-    this.local$this$JsAssetManager = this$JsAssetManager_0;
-    this.local$closure$props = closure$props_0;
-    this.local$closure$tex = closure$tex_0;
-    this.local$closure$recv = closure$recv_0;
+    this.$this = $this;
+    this.local$tex = void 0;
+    this.local$assetPath = assetPath_0;
+    this.local$props = props_0;
   }
-  Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0.$metadata$ = {
+  Coroutine$loadAndPrepareTexture_va0f2y$$default.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0.prototype.constructor = Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0;
-  Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0.prototype.doResume = function () {
+  Coroutine$loadAndPrepareTexture_va0f2y$$default.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadAndPrepareTexture_va0f2y$$default.prototype.constructor = Coroutine$loadAndPrepareTexture_va0f2y$$default;
+  Coroutine$loadAndPrepareTexture_va0f2y$$default.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
           case 0:
+            this.local$tex = new Texture(this.$this.assetPathToName_61zpoe$(this.local$assetPath), this.local$props, JsAssetManager$loadAndPrepareTexture$lambda(this.local$assetPath));
             this.state_0 = 2;
-            this.result_0 = this.local$this$JsAssetManager.loadTextureData_61zpoe$(this.local$closure$assetPath, this);
+            this.result_0 = this.$this.loadTextureData_61zpoe$(this.local$assetPath, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -43402,9 +43663,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             throw this.exception_0;
           case 2:
             var data = this.result_0;
-            this.local$closure$tex.loadedTexture = TextureLoader_getInstance().loadTexture_hlfduu$(this.local$this$JsAssetManager.ctx, this.local$closure$props, data);
-            this.local$closure$tex.loadingState = Texture$LoadingState$LOADED_getInstance();
-            return this.local$closure$recv(this.local$closure$tex);
+            this.local$tex.loadedTexture = TextureLoader_getInstance().loadTexture_hlfduu$(this.$this.ctx, this.local$props, data);
+            this.local$tex.loadingState = Texture$LoadingState$LOADED_getInstance();
+            return this.local$tex;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -43419,18 +43680,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function JsAssetManager$loadAndPrepareTexture$lambda_0(closure$assetPath_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$JsAssetManager$loadAndPrepareTexture$lambda_0(closure$assetPath_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  JsAssetManager.prototype.loadAndPrepareTexture_hd4f6p$$default = function (assetPath, props, recv) {
-    var tex = new Texture(this.assetPathToName_61zpoe$(assetPath), props, JsAssetManager$loadAndPrepareTexture$lambda(assetPath));
-    launch(this, void 0, void 0, JsAssetManager$loadAndPrepareTexture$lambda_0(assetPath, this, props, tex, recv));
+  JsAssetManager.prototype.loadAndPrepareTexture_va0f2y$$default = function (assetPath_0, props_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadAndPrepareTexture_va0f2y$$default(this, assetPath_0, props_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
   function Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -43488,35 +43743,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return instance.doResume(null);
     };
   }
-  function Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$loadAndPrepareCubeMap_oecnw4$$default($this, ft_0, bk_0, lt_0, rt_0, up_0, dn_0, props_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$ft = closure$ft_0;
-    this.local$closure$bk = closure$bk_0;
-    this.local$closure$lt = closure$lt_0;
-    this.local$closure$rt = closure$rt_0;
-    this.local$closure$up = closure$up_0;
-    this.local$closure$dn = closure$dn_0;
-    this.local$this$JsAssetManager = this$JsAssetManager_0;
-    this.local$closure$props = closure$props_0;
-    this.local$closure$tex = closure$tex_0;
-    this.local$closure$recv = closure$recv_0;
+    this.$this = $this;
+    this.local$tex = void 0;
+    this.local$ft = ft_0;
+    this.local$bk = bk_0;
+    this.local$lt = lt_0;
+    this.local$rt = rt_0;
+    this.local$up = up_0;
+    this.local$dn = dn_0;
+    this.local$props = props_0;
   }
-  Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0.$metadata$ = {
+  Coroutine$loadAndPrepareCubeMap_oecnw4$$default.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0.prototype.constructor = Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0;
-  Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0.prototype.doResume = function () {
+  Coroutine$loadAndPrepareCubeMap_oecnw4$$default.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadAndPrepareCubeMap_oecnw4$$default.prototype.constructor = Coroutine$loadAndPrepareCubeMap_oecnw4$$default;
+  Coroutine$loadAndPrepareCubeMap_oecnw4$$default.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
           case 0:
+            var name = this.$this.cubeMapAssetPathToName_r3y0ew$(this.local$ft, this.local$bk, this.local$lt, this.local$rt, this.local$up, this.local$dn);
+            this.local$tex = new CubeMapTexture(name, this.local$props, JsAssetManager$loadAndPrepareCubeMap$lambda(this.local$ft, this.local$bk, this.local$lt, this.local$rt, this.local$up, this.local$dn));
             this.state_0 = 2;
-            this.result_0 = this.local$this$JsAssetManager.loadCubeMapTextureData_r3y0ew$(this.local$closure$ft, this.local$closure$bk, this.local$closure$lt, this.local$closure$rt, this.local$closure$up, this.local$closure$dn, this);
+            this.result_0 = this.$this.loadCubeMapTextureData_r3y0ew$(this.local$ft, this.local$bk, this.local$lt, this.local$rt, this.local$up, this.local$dn, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -43524,9 +43779,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             throw this.exception_0;
           case 2:
             var data = this.result_0;
-            this.local$closure$tex.loadedTexture = TextureLoader_getInstance().loadTexture_hlfduu$(this.local$this$JsAssetManager.ctx, this.local$closure$props, data);
-            this.local$closure$tex.loadingState = Texture$LoadingState$LOADED_getInstance();
-            return this.local$closure$recv(this.local$closure$tex);
+            this.local$tex.loadedTexture = TextureLoader_getInstance().loadTexture_hlfduu$(this.$this.ctx, this.local$props, data);
+            this.local$tex.loadingState = Texture$LoadingState$LOADED_getInstance();
+            return this.local$tex;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -43541,19 +43796,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function JsAssetManager$loadAndPrepareCubeMap$lambda_0(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$JsAssetManager$loadAndPrepareCubeMap$lambda_0(closure$ft_0, closure$bk_0, closure$lt_0, closure$rt_0, closure$up_0, closure$dn_0, this$JsAssetManager_0, closure$props_0, closure$tex_0, closure$recv_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  JsAssetManager.prototype.loadAndPrepareCubeMap_y2tg0w$$default = function (ft, bk, lt, rt, up, dn, props, recv) {
-    var name = this.cubeMapAssetPathToName_r3y0ew$(ft, bk, lt, rt, up, dn);
-    var tex = new CubeMapTexture(name, props, JsAssetManager$loadAndPrepareCubeMap$lambda(ft, bk, lt, rt, up, dn));
-    launch(this, void 0, void 0, JsAssetManager$loadAndPrepareCubeMap$lambda_0(ft, bk, lt, rt, up, dn, this, props, tex, recv));
+  JsAssetManager.prototype.loadAndPrepareCubeMap_oecnw4$$default = function (ft_0, bk_0, lt_0, rt_0, up_0, dn_0, props_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadAndPrepareCubeMap_oecnw4$$default(this, ft_0, bk_0, lt_0, rt_0, up_0, dn_0, props_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
   function JsAssetManager$Companion() {
     JsAssetManager$Companion_instance = this;
@@ -46712,11 +46960,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: ModeledShader$Companion_getInstance
   });
   package$shading.ModeledShader = ModeledShader;
-  package$shading.pbrShader_zfwrfj$ = pbrShader;
+  package$shading.PbrMaterialConfig = PbrMaterialConfig;
+  package$shading.pbrShader_skmpm9$ = pbrShader;
   Object.defineProperty(PbrShader, 'Companion', {
     get: PbrShader$Companion_getInstance
   });
-  PbrShader.PbrConfig = PbrShader$PbrConfig;
   package$shading.PbrShader = PbrShader;
   package$shading.phongShader_avt1hd$ = phongShader;
   Object.defineProperty(PhongShader, 'Companion', {
@@ -46767,6 +47015,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(Texture, 'Companion', {
     get: Texture$Companion_getInstance
   });
+  package$pipeline.Texture_init_wabggl$ = Texture_init;
   package$pipeline.Texture = Texture;
   Object.defineProperty(SingleColorTexture, 'Companion', {
     get: SingleColorTexture$Companion_getInstance
@@ -46873,6 +47122,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Camera.ProjCorrectionMode = Camera$ProjCorrectionMode;
   package$scene.Camera = Camera;
   package$scene.OrthographicCamera = OrthographicCamera;
+  PerspectiveCamera.Proxy = PerspectiveCamera$Proxy;
   package$scene.PerspectiveCamera = PerspectiveCamera;
   package$scene.FrustumPlane = FrustumPlane;
   package$scene.group_2ylazs$ = group;
@@ -47113,17 +47363,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: DeferredMrtPass$Companion_getInstance
   });
   package$deferred.DeferredMrtPass = DeferredMrtPass;
-  Object.defineProperty(DeferredMrtShader, 'Companion', {
-    get: DeferredMrtShader$Companion_getInstance
-  });
-  DeferredMrtShader.MrtPbrConfig = DeferredMrtShader$MrtPbrConfig;
-  DeferredMrtShader.MrtMultiplexNode = DeferredMrtShader$MrtMultiplexNode;
-  DeferredMrtShader.MrtDeMultiplexNode = DeferredMrtShader$MrtDeMultiplexNode;
-  package$deferred.DeferredMrtShader = DeferredMrtShader;
   Object.defineProperty(DeferredOutputShader, 'Companion', {
     get: DeferredOutputShader$Companion_getInstance
   });
   package$deferred.DeferredOutputShader = DeferredOutputShader;
+  Object.defineProperty(DeferredPbrShader, 'Companion', {
+    get: DeferredPbrShader$Companion_getInstance
+  });
+  DeferredPbrShader.MrtMultiplexNode = DeferredPbrShader$MrtMultiplexNode;
+  DeferredPbrShader.MrtDeMultiplexNode = DeferredPbrShader$MrtDeMultiplexNode;
+  package$deferred.DeferredPbrShader = DeferredPbrShader;
   DeferredPointLights.PointLight = DeferredPointLights$PointLight;
   package$deferred.DeferredPointLights = DeferredPointLights;
   package$deferred.DiscardClearNode = DiscardClearNode;
@@ -47230,7 +47479,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$gltf.GltfAsset_init_hbbcfw$ = GltfAsset_init;
   package$gltf.GltfAsset = GltfAsset;
-  package$gltf.loadGltfModel_4v1054$ = loadGltfModel;
+  package$gltf.loadGltfModel_7e2ead$ = loadGltfModel;
   Object.defineProperty(GltfBuffer, 'Companion', {
     get: GltfBuffer$Companion_getInstance
   });

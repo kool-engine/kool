@@ -1,11 +1,9 @@
 package de.fabmax.kool.util.ao
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.deferred.DeferredMrtPass
 
 abstract class AoPipeline {
@@ -52,7 +50,7 @@ abstract class AoPipeline {
         private var mapHeight = (900 * size).toInt()
 
         init {
-            val proxyCamera = ProxyCamera(scene.camera as PerspectiveCamera)
+            val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
             depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
@@ -116,26 +114,6 @@ abstract class AoPipeline {
                     denoisePass.resize(mapW, mapH, ctx)
                 }
             }
-        }
-    }
-
-    private class ProxyCamera(val master: PerspectiveCamera) : PerspectiveCamera() {
-        init {
-            useViewportAspectRatio = false
-            projCorrectionMode = ProjCorrectionMode.OFFSCREEN
-        }
-
-        fun sync(viewport: Viewport, ctx: KoolContext) {
-            master.updateCamera(ctx, viewport)
-
-            position.set(master.globalPos)
-            lookAt.set(master.globalLookAt)
-            up.set(master.globalUp)
-
-            aspectRatio = master.aspectRatio
-            fovY = master.fovY
-            clipNear = master.clipNear
-            clipFar = master.clipFar
         }
     }
 

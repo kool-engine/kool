@@ -433,7 +433,6 @@ data class GltfFile(
                     if (cfg.applyMaterials) {
                         val useVertexColor = p.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
                         val pbrConfig = PbrMaterialConfig().apply {
-                            isHdrOutput = true
                             val material = p.materialRef
                             if (material != null) {
                                 material.applyTo(this, useVertexColor, this@GltfFile)
@@ -444,6 +443,7 @@ data class GltfFile(
                             if (mesh.skin != null) {
                                 isSkinned = true
                             }
+                            isHdrOutput = cfg.isDeferredShading
                             cfg.pbrBlock?.invoke(this, p)
 
                             if (alphaMode is AlphaModeBlend) {

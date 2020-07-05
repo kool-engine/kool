@@ -7,6 +7,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_uj7ww7$;
   var SimpleShadowMap = $module$kool.de.fabmax.kool.util.SimpleShadowMap;
   var AoPipeline = $module$kool.de.fabmax.kool.util.ao.AoPipeline;
+  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
+  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
+  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_7e2ead$;
+  var ensureNotNull = Kotlin.ensureNotNull;
+  var GltfFile$ModelGenerateConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelGenerateConfig;
+  var first = Kotlin.kotlin.collections.first_7wnvza$;
   var IrradianceMapPass = $module$kool.de.fabmax.kool.util.ibl.IrradianceMapPass;
   var ReflectionMapPass = $module$kool.de.fabmax.kool.util.ibl.ReflectionMapPass;
   var BrdfLutPass = $module$kool.de.fabmax.kool.util.ibl.BrdfLutPass;
@@ -14,18 +20,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var Albedo = $module$kool.de.fabmax.kool.pipeline.shading.Albedo;
-  var pbrShader = $module$kool.de.fabmax.kool.pipeline.shading.pbrShader_zfwrfj$;
+  var pbrShader = $module$kool.de.fabmax.kool.pipeline.shading.pbrShader_skmpm9$;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
-  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
-  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
-  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var Skybox = $module$kool.de.fabmax.kool.scene.Skybox;
-  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
-  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
-  var GltfFile$ModelGenerateConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelGenerateConfig;
-  var first = Kotlin.kotlin.collections.first_7wnvza$;
-  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_4v1054$;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
   var scale = $module$kool.de.fabmax.kool.math.scale_2qa7tb$;
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
@@ -44,13 +44,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
   var toString = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_m9o5w1$;
-  var Kind_CLASS = Kotlin.Kind.CLASS;
   var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
   var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
   var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
   var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
+  var Kind_CLASS = Kotlin.Kind.CLASS;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var BufferedTextureData = $module$kool.de.fabmax.kool.pipeline.BufferedTextureData;
+  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var Math_0 = Math;
   var math = $module$kool.de.fabmax.kool.math;
@@ -71,8 +72,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
-  var DeferredMrtShader = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader;
-  var DeferredMrtShader$MrtPbrConfig = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtShader.MrtPbrConfig;
+  var PbrMaterialConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrMaterialConfig;
+  var DeferredPbrShader = $module$kool.de.fabmax.kool.util.deferred.DeferredPbrShader;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
@@ -81,7 +82,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var TextureNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.TextureNode;
-  var ensureNotNull = Kotlin.ensureNotNull;
   var GlslType = $module$kool.de.fabmax.kool.pipeline.GlslType;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
@@ -106,6 +106,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var MutableVec3d_init = $module$kool.de.fabmax.kool.math.MutableVec3d_init_czzhiw$;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
+  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var MutableVec3d_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3d_init;
@@ -122,9 +123,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
-  var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
-  var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
+  var phongShader = $module$kool.de.fabmax.kool.pipeline.shading.phongShader_avt1hd$;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -141,17 +140,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var lastIndexOf_0 = Kotlin.kotlin.text.lastIndexOf_l5u8uk$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var toString_1 = Kotlin.toString;
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
-  var AlphaModeOpaque = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeOpaque;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var AlphaModeMask = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeMask;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
   var AlphaModeBlend = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeBlend;
+  var AlphaModeOpaque = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeOpaque;
   var now = $module$kool.de.fabmax.kool.now;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
@@ -266,12 +264,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
       addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
       $receiver.roughness = 0.1;
-      $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
-      $receiver.isImageBasedLighting = true;
-      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
-      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
-      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
+      $receiver.useScreenSpaceAmbientOcclusion_vv6xll$(this$AoDemo.aoPipeline_0.aoMap);
+      $receiver.useImageBasedLighting_5m8fyp$(closure$irrMapPass.colorTextureCube, closure$reflMapPass.colorTextureCube, closure$brdfLutPass.colorTexture);
       return Unit;
     };
   }
@@ -362,232 +356,33 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda;
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_diff_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0;
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_AO_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1;
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_Nor_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2;
-  Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_rough_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
-    return function ($receiver) {
-      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
-      addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
-      $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
-      $receiver.isImageBasedLighting = true;
-      $receiver.irradianceMap = closure$irrMapPass.colorTextureCube;
-      $receiver.reflectionMap = closure$reflMapPass.colorTextureCube;
-      $receiver.brdfLut = closure$brdfLutPass.colorTexture;
-      $receiver.isNormalMapped = true;
-      $receiver.isRoughnessMapped = true;
-      $receiver.isAmbientOcclusionMapped = true;
-      $receiver.albedoMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda);
-      $receiver.ambientOcclusionMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_0);
-      $receiver.normalMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_1);
-      $receiver.roughnessMap = new Texture(void 0, void 0, AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda_2);
-      return Unit;
-    };
-  }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(closure$shader, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda(this$, closure$hdriMap) {
     return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-      (tmp$ = closure$shader.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
-      (tmp$_0 = closure$shader.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
-      (tmp$_1 = closure$shader.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
-      (tmp$_2 = closure$shader.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
-      (tmp$_3 = closure$shader.metallicMap) != null ? (tmp$_3.dispose(), Unit) : null;
-      (tmp$_4 = closure$shader.displacementMap) != null ? (tmp$_4.dispose(), Unit) : null;
+      var tmp$, tmp$_0, tmp$_1, tmp$_2;
+      (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = this$.occlusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = this$.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = this$.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
       closure$hdriMap.dispose();
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AoDemo, closure$shader) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$, closure$hdriMap) {
+    return function ($receiver) {
+      $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_diff_2k.jpg');
+      $receiver.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_AO_2k.jpg');
+      $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_Nor_2k.jpg');
+      $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_rough_2k.jpg');
+      $receiver.useScreenSpaceAmbientOcclusion_vv6xll$(this$AoDemo.aoPipeline_0.aoMap);
+      $receiver.useImageBasedLighting_5m8fyp$(closure$irrMapPass.colorTextureCube, closure$reflMapPass.colorTextureCube, closure$brdfLutPass.colorTexture);
+      addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
+      var $receiver_0 = this$.onDispose;
+      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver, closure$hdriMap);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AoDemo, closure$shader) {
     return function ($receiver, f, f_0) {
       if (this$AoDemo.aoPipeline_0.aoPass.isEnabled) {
         closure$shader.scrSpcAmbientOcclusionMap = this$AoDemo.aoPipeline_0.aoMap;
@@ -600,40 +395,81 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$hdriMap) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AoDemo));
-      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver, closure$hdriMap));
       $receiver.pipelineLoader = shader;
-      var $receiver_0 = $receiver.onDispose;
-      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(shader, closure$hdriMap);
+      var $receiver_0 = $receiver.onUpdate;
+      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AoDemo, shader);
       $receiver_0.add_11rb$(element);
-      var $receiver_1 = $receiver.onUpdate;
-      var element_0 = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_5(this$AoDemo, shader);
-      $receiver_1.add_11rb$(element_0);
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda_1(this$, this$AoDemo) {
-    return function (teapotMesh, hdriMap) {
-      var irrMapPass = new IrradianceMapPass(this$, hdriMap);
-      var reflMapPass = new ReflectionMapPass(this$, hdriMap);
-      var brdfLutPass = new BrdfLutPass(this$);
-      this$.unaryPlus_uv0sim$(colorMesh('teapots', AoDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this$AoDemo, irrMapPass, reflMapPass, brdfLutPass)));
-      this$.unaryPlus_uv0sim$(textureMesh('ground', true, AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, irrMapPass, reflMapPass, brdfLutPass, hdriMap)));
-      this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0));
-      return Unit;
-    };
+  function Coroutine$AoDemo$makeMainScene$lambda$lambda(this$_0, this$AoDemo_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$ = this$_0;
+    this.local$this$AoDemo = this$AoDemo_0;
+    this.local$hdriMap = void 0;
+    this.local$$receiver = $receiver_0;
   }
-  function AoDemo$makeMainScene$lambda$lambda_2(closure$loadingAssets) {
-    return function (tex) {
-      closure$loadingAssets.hdriMap = tex;
-      return Unit;
-    };
-  }
-  function AoDemo$makeMainScene$lambda$lambda_3(closure$loadingAssets) {
-    return function (it) {
-      var tmp$, tmp$_0, tmp$_1;
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
-      closure$loadingAssets.teapotMesh = (tmp$_1 = (tmp$_0 = (tmp$ = it != null ? it.makeModel_m0hq3v$(modelCfg) : null) != null ? tmp$.meshes : null) != null ? tmp$_0.values : null) != null ? first(tmp$_1) : null;
-      return Unit;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AoDemo$makeMainScene$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AoDemo$makeMainScene$lambda$lambda.prototype.constructor = Coroutine$AoDemo$makeMainScene$lambda$lambda;
+  Coroutine$AoDemo$makeMainScene$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
+            this.state_0 = 2;
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.local$hdriMap = this.result_0;
+            this.state_0 = 3;
+            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            var model = ensureNotNull(this.result_0);
+            var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+            var teapotMesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
+            var irrMapPass = new IrradianceMapPass(this.local$this$, this.local$hdriMap);
+            var reflMapPass = new ReflectionMapPass(this.local$this$, this.local$hdriMap);
+            var brdfLutPass = new BrdfLutPass(this.local$this$);
+            this.local$this$.unaryPlus_uv0sim$(colorMesh('teapots', AoDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this.local$this$AoDemo, irrMapPass, reflMapPass, brdfLutPass)));
+            this.local$this$.unaryPlus_uv0sim$(textureMesh('ground', true, AoDemo$makeMainScene$lambda$lambda$lambda_1(this.local$this$AoDemo, irrMapPass, reflMapPass, brdfLutPass, this.local$hdriMap)));
+            return this.local$this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.0)), Unit;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function AoDemo$makeMainScene$lambda$lambda_1(this$_0, this$AoDemo_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$AoDemo$makeMainScene$lambda$lambda(this$_0, this$AoDemo_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
     };
   }
   AoDemo.prototype.makeMainScene_0 = function (ctx) {
@@ -642,10 +478,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.shadows_0.add_11rb$(new SimpleShadowMap($receiver, 0, 2048));
     this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
     $receiver.onDispose.add_11rb$(AoDemo$makeMainScene$lambda$lambda_0(this));
-    var loadingAssets = new AoDemo$LoadingAssets(AoDemo$makeMainScene$lambda$lambda_1($receiver, this));
-    var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AoDemo$makeMainScene$lambda$lambda_2(loadingAssets));
-    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', AoDemo$makeMainScene$lambda$lambda_3(loadingAssets));
+    ctx.assetMgr.launch_eln4bt$(AoDemo$makeMainScene$lambda$lambda_1($receiver, this));
     return $receiver;
   };
   AoDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
@@ -1033,40 +866,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   AoDemo.prototype.menu_0 = function (ctx) {
     return uiScene(void 0, void 0, void 0, AoDemo$menu$lambda(ctx, this));
   };
-  function AoDemo$LoadingAssets(block) {
-    this.block = block;
-    this.teapotMesh_cuy05e$_0 = null;
-    this.hdriMap_1c7tuj$_0 = null;
-  }
-  Object.defineProperty(AoDemo$LoadingAssets.prototype, 'teapotMesh', {
-    get: function () {
-      return this.teapotMesh_cuy05e$_0;
-    },
-    set: function (value) {
-      this.teapotMesh_cuy05e$_0 = value;
-      this.check();
-    }
-  });
-  Object.defineProperty(AoDemo$LoadingAssets.prototype, 'hdriMap', {
-    get: function () {
-      return this.hdriMap_1c7tuj$_0;
-    },
-    set: function (value) {
-      this.hdriMap_1c7tuj$_0 = value;
-      this.check();
-    }
-  });
-  AoDemo$LoadingAssets.prototype.check = function () {
-    var mesh = this.teapotMesh;
-    var hdri = this.hdriMap;
-    if (mesh != null && hdri != null) {
-      this.block(mesh, hdri);
-    }};
-  AoDemo$LoadingAssets.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LoadingAssets',
-    interfaces: []
-  };
   function AoDemo$Companion() {
     AoDemo$Companion_instance = this;
   }
@@ -1290,6 +1089,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeDeferredScene$lambda$lambda(this$DeferredDemo) {
     return function ($receiver) {
+      $receiver.isFrustumChecked = false;
       $receiver.generate_v2sixm$(DeferredDemo$makeDeferredScene$lambda$lambda$lambda);
       $receiver.pipelineLoader = new DeferredOutputShader(this$DeferredDemo.pbrPass_0.colorTexture);
       return Unit;
@@ -1314,8 +1114,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   DeferredDemo.prototype.makeDeferredScene_0 = function () {
     var $receiver = new Scene_init(null);
-    this.mrtPass_0 = new DeferredMrtPass();
-    $receiver.addOffscreenPass_m1c2kf$(this.mrtPass_0);
+    $receiver.lighting.lights.clear();
+    this.mrtPass_0 = new DeferredMrtPass($receiver);
     this.makeContent_0(this.mrtPass_0, $receiver);
     this.aoPipeline_0 = AoPipeline.Companion.createDeferred_4lrvgg$($receiver, this.mrtPass_0);
     this.aoPipeline_0.intensity = 1.2;
@@ -1468,10 +1268,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function DeferredDemo$makeContent$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(DeferredDemo$makeContent$lambda$lambda$lambda_0(this$DeferredDemo));
-      var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
+      var $receiver_0 = new PbrMaterialConfig();
       $receiver_0.roughness = 0.15;
-      var mrtCfg = $receiver_0;
-      this$DeferredDemo.objectShader_0 = new DeferredMrtShader(mrtCfg);
+      var pbrCfg = $receiver_0;
+      this$DeferredDemo.objectShader_0 = new DeferredPbrShader(pbrCfg);
       $receiver.pipelineLoader = this$DeferredDemo.objectShader_0;
       return Unit;
     };
@@ -1486,251 +1286,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda;
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-albedo1.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0;
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1;
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-roughness.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2;
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-metallic.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype.constructor = Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3;
-  Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-ao.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
   function DeferredDemo$makeContent$lambda$lambda$lambda_2(closure$groundShader) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
       (tmp$ = closure$groundShader.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
-      (tmp$_0 = closure$groundShader.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_0 = closure$groundShader.occlusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
       (tmp$_1 = closure$groundShader.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
       (tmp$_2 = closure$groundShader.metallicMap) != null ? (tmp$_2.dispose(), Unit) : null;
       (tmp$_3 = closure$groundShader.roughnessMap) != null ? (tmp$_3.dispose(), Unit) : null;
@@ -1740,19 +1300,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function DeferredDemo$makeContent$lambda$lambda_1($receiver) {
     $receiver.generate_v2sixm$(DeferredDemo$makeContent$lambda$lambda$lambda_1);
-    var $receiver_0 = new DeferredMrtShader$MrtPbrConfig();
-    $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
-    $receiver_0.isNormalMapped = true;
-    $receiver_0.isRoughnessMapped = true;
-    $receiver_0.isMetallicMapped = true;
-    $receiver_0.isAmbientOcclusionMapped = true;
-    $receiver_0.albedoMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda);
-    $receiver_0.normalMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_0);
-    $receiver_0.roughnessMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_1);
-    $receiver_0.metallicMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_2);
-    $receiver_0.ambientOcclusionMap = new Texture(void 0, void 0, DeferredDemo$makeContent$lambda$lambda$lambda$lambda_3);
-    var mrtCfg = $receiver_0;
-    var groundShader = new DeferredMrtShader(mrtCfg);
+    var $receiver_0 = new PbrMaterialConfig();
+    $receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-albedo1.jpg');
+    $receiver_0.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-normal.jpg');
+    $receiver_0.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-roughness.jpg');
+    $receiver_0.useMetallicMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-metallic.jpg');
+    $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-ao.jpg');
+    var pbrCfg = $receiver_0;
+    var groundShader = new DeferredPbrShader(pbrCfg);
     $receiver.pipelineLoader = groundShader;
     $receiver.onDispose.add_11rb$(DeferredDemo$makeContent$lambda$lambda$lambda_2(groundShader));
     return Unit;
@@ -2812,20 +2367,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.animate = GltfDemo$models$lambda$lambda(this);
     this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5)]);
     this.autoRotate_0 = true;
+    this.useDeferredPipeline_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
     this.camTranslationTarget_0 = null;
-    this.trackModel_0 = true;
-    this.contentGroup_0 = new TransformGroup();
+    this.trackModel_0 = false;
     this.irrMapPass_0 = null;
     this.reflMapPass_0 = null;
     this.brdfLutPass_0 = null;
-    this.shadows_0 = ArrayList_init();
-    this.aoPipeline_0 = null;
+    this.shadowsForward_0 = ArrayList_init();
+    this.aoPipelineForward_0 = null;
+    this.contentGroupForward_0 = new TransformGroup();
+    this.shadowsDeferred_0 = ArrayList_init();
+    this.aoPipelineDeferred_0 = null;
+    this.contentGroupDeferred_0 = new TransformGroup();
+    this.mrtPass_y63tp0$_0 = this.mrtPass_y63tp0$_0;
+    this.pbrPass_tlnz23$_0 = this.pbrPass_tlnz23$_0;
     this.models_0.current.isVisible = true;
+    this.trackModel_0 = this.models_0.current.trackModel;
     this.mainScene = this.makeMainScene_0(ctx);
     this.menu = this.menu_0(ctx);
+    this.mainScene.onUpdate.add_11rb$(GltfDemo_init$lambda(ctx, this));
   }
   Object.defineProperty(GltfDemo.prototype, 'orbitTransform_0', {
     get: function () {
@@ -2837,18 +2400,298 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.orbitTransform_w8joii$_0 = orbitTransform;
     }
   });
-  function GltfDemo$makeMainScene$lambda$lambda$lambda(this$GltfDemo, closure$ctx, this$) {
-    return function ($receiver, f, f_0) {
+  Object.defineProperty(GltfDemo.prototype, 'mrtPass_0', {
+    get: function () {
+      if (this.mrtPass_y63tp0$_0 == null)
+        return throwUPAE('mrtPass');
+      return this.mrtPass_y63tp0$_0;
+    },
+    set: function (mrtPass) {
+      this.mrtPass_y63tp0$_0 = mrtPass;
+    }
+  });
+  Object.defineProperty(GltfDemo.prototype, 'pbrPass_0', {
+    get: function () {
+      if (this.pbrPass_tlnz23$_0 == null)
+        return throwUPAE('pbrPass');
+      return this.pbrPass_tlnz23$_0;
+    },
+    set: function (pbrPass) {
+      this.pbrPass_tlnz23$_0 = pbrPass;
+    }
+  });
+  function GltfDemo$makeMainScene$lambda$lambda$lambda(closure$hdri) {
+    return function ($receiver, it) {
+      closure$hdri.dispose();
+      return Unit;
+    };
+  }
+  function Coroutine$GltfDemo$makeMainScene$lambda$lambda(this$_0, this$GltfDemo_0, closure$ctx_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$ = this$_0;
+    this.local$this$GltfDemo = this$GltfDemo_0;
+    this.local$closure$ctx = closure$ctx_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$GltfDemo$makeMainScene$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$GltfDemo$makeMainScene$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$GltfDemo$makeMainScene$lambda$lambda.prototype.constructor = Coroutine$GltfDemo$makeMainScene$lambda$lambda;
+  Coroutine$GltfDemo$makeMainScene$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
+            this.state_0 = 2;
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var hdri = this.result_0;
+            this.local$this$GltfDemo.irrMapPass_0 = new IrradianceMapPass(this.local$this$, hdri);
+            this.local$this$GltfDemo.reflMapPass_0 = new ReflectionMapPass(this.local$this$, hdri);
+            this.local$this$GltfDemo.brdfLutPass_0 = new BrdfLutPass(this.local$this$);
+            this.local$this$.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda$lambda(hdri));
+            this.state_0 = 3;
+            this.result_0 = this.local$this$GltfDemo.makeDeferredContent_0(this.local$this$, this.local$closure$ctx, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            this.state_0 = 4;
+            this.result_0 = this.local$this$GltfDemo.makeForwardContent_0(this.local$this$, this.local$closure$ctx, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 4:
+            return this.local$this$GltfDemo.setDeferredPipelineEnabled_0(this.local$this$GltfDemo.useDeferredPipeline_0), Unit;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function GltfDemo$makeMainScene$lambda$lambda(this$_0, this$GltfDemo_0, closure$ctx_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$GltfDemo$makeMainScene$lambda$lambda(this$_0, this$GltfDemo_0, closure$ctx_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  GltfDemo.prototype.makeMainScene_0 = function (ctx) {
+    var $receiver = new Scene_init(null);
+    this.setupLighting_0($receiver);
+    this.setupCamera_0($receiver);
+    ctx.assetMgr.launch_eln4bt$(GltfDemo$makeMainScene$lambda$lambda($receiver, this, ctx));
+    return $receiver;
+  };
+  GltfDemo.prototype.setDeferredPipelineEnabled_0 = function (flag) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14;
+    if (flag) {
+      this.contentGroupForward_0.isVisible = false;
+      var tmp$_15;
+      tmp$_15 = this.shadowsForward_0.iterator();
+      while (tmp$_15.hasNext()) {
+        var element = tmp$_15.next();
+        element.isShadowMapEnabled = false;
+      }
+      (tmp$_0 = (tmp$ = this.aoPipelineForward_0) != null ? tmp$.aoPass : null) != null ? (tmp$_0.isEnabled = false) : null;
+      (tmp$_2 = (tmp$_1 = this.aoPipelineForward_0) != null ? tmp$_1.denoisePass : null) != null ? (tmp$_2.isEnabled = false) : null;
+      this.contentGroupDeferred_0.isVisible = true;
+      var tmp$_16;
+      tmp$_16 = this.shadowsDeferred_0.iterator();
+      while (tmp$_16.hasNext()) {
+        var element_0 = tmp$_16.next();
+        element_0.isShadowMapEnabled = true;
+      }
+      (tmp$_4 = (tmp$_3 = this.aoPipelineDeferred_0) != null ? tmp$_3.aoPass : null) != null ? (tmp$_4.isEnabled = true) : null;
+      (tmp$_6 = (tmp$_5 = this.aoPipelineDeferred_0) != null ? tmp$_5.denoisePass : null) != null ? (tmp$_6.isEnabled = true) : null;
+      this.mrtPass_0.isEnabled = true;
+      this.pbrPass_0.isEnabled = true;
+    } else {
+      this.contentGroupForward_0.isVisible = true;
+      var tmp$_17;
+      tmp$_17 = this.shadowsForward_0.iterator();
+      while (tmp$_17.hasNext()) {
+        var element_1 = tmp$_17.next();
+        element_1.isShadowMapEnabled = true;
+      }
+      (tmp$_8 = (tmp$_7 = this.aoPipelineForward_0) != null ? tmp$_7.aoPass : null) != null ? (tmp$_8.isEnabled = true) : null;
+      (tmp$_10 = (tmp$_9 = this.aoPipelineForward_0) != null ? tmp$_9.denoisePass : null) != null ? (tmp$_10.isEnabled = true) : null;
+      this.contentGroupDeferred_0.isVisible = false;
+      var tmp$_18;
+      tmp$_18 = this.shadowsDeferred_0.iterator();
+      while (tmp$_18.hasNext()) {
+        var element_2 = tmp$_18.next();
+        element_2.isShadowMapEnabled = false;
+      }
+      (tmp$_12 = (tmp$_11 = this.aoPipelineDeferred_0) != null ? tmp$_11.aoPass : null) != null ? (tmp$_12.isEnabled = false) : null;
+      (tmp$_14 = (tmp$_13 = this.aoPipelineDeferred_0) != null ? tmp$_13.denoisePass : null) != null ? (tmp$_14.isEnabled = false) : null;
+      this.mrtPass_0.isEnabled = false;
+      this.pbrPass_0.isEnabled = false;
+    }
+  };
+  function Coroutine$makeForwardContent_0($this, $receiver_0, ctx_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$$receiver = $receiver_0;
+    this.local$ctx = ctx_0;
+  }
+  Coroutine$makeForwardContent_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeForwardContent_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeForwardContent_0.prototype.constructor = Coroutine$makeForwardContent_0;
+  Coroutine$makeForwardContent_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.$this.aoPipelineForward_0 = AoPipeline.Companion.createForward_ushge7$(this.local$$receiver);
+            addAll(this.$this.shadowsForward_0, listOf([new SimpleShadowMap(this.local$$receiver, 0, 2048, this.$this.contentGroupForward_0), new SimpleShadowMap(this.local$$receiver, 1, 2048, this.$this.contentGroupForward_0)]));
+            this.local$$receiver.unaryPlus_uv0sim$(new Skybox(ensureNotNull(this.$this.reflMapPass_0).colorTextureCube, 1.0));
+            this.state_0 = 2;
+            this.result_0 = this.$this.setupContentGroup_0(this.$this.contentGroupForward_0, false, this.local$ctx, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.local$$receiver.unaryPlus_uv0sim$(this.$this.contentGroupForward_0);
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  GltfDemo.prototype.makeForwardContent_0 = function ($receiver_0, ctx_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeForwardContent_0(this, $receiver_0, ctx_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function GltfDemo$makeDeferredContent$lambda$lambda$lambda($receiver) {
+    $receiver.rectProps.defaults().mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function GltfDemo$makeDeferredContent$lambda$lambda(this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.isFrustumChecked = false;
+      $receiver.generate_v2sixm$(GltfDemo$makeDeferredContent$lambda$lambda$lambda);
+      $receiver.pipelineLoader = new DeferredOutputShader(this$GltfDemo.pbrPass_0.colorTexture);
+      return Unit;
+    };
+  }
+  function Coroutine$makeDeferredContent_0($this, $receiver_0, ctx_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$$receiver = $receiver_0;
+    this.local$ctx = ctx_0;
+  }
+  Coroutine$makeDeferredContent_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeDeferredContent_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeDeferredContent_0.prototype.constructor = Coroutine$makeDeferredContent_0;
+  Coroutine$makeDeferredContent_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.$this.mrtPass_0 = new DeferredMrtPass(this.local$$receiver);
+            this.$this.aoPipelineDeferred_0 = AoPipeline.Companion.createDeferred_4lrvgg$(this.local$$receiver, this.$this.mrtPass_0);
+            addAll(this.$this.shadowsDeferred_0, listOf([new SimpleShadowMap(this.local$$receiver, 0, 2048, this.$this.mrtPass_0.content), new SimpleShadowMap(this.local$$receiver, 1, 2048, this.$this.mrtPass_0.content)]));
+            this.state_0 = 2;
+            this.result_0 = this.$this.setupContentGroup_0(this.$this.mrtPass_0.content, true, this.local$ctx, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var $receiver = new PbrSceneShader$DeferredPbrConfig();
+            var tmp$, tmp$_0, tmp$_1, tmp$_2;
+            $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this.$this.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
+            $receiver.useImageBasedLighting_5m8fyp$((tmp$_0 = this.$this.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this.$this.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this.$this.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
+            addAll($receiver.shadowMaps, this.$this.shadowsDeferred_0);
+            var cfg = $receiver;
+            this.$this.pbrPass_0 = new PbrLightingPass(this.local$$receiver, this.$this.mrtPass_0, cfg);
+            this.$this.pbrPass_0.content.addNode_xtids1$(new Skybox(ensureNotNull(this.$this.reflMapPass_0).colorTextureCube, 1.0, true), 0);
+            var $receiver_0 = this.$this.contentGroupDeferred_0;
+            $receiver_0.isFrustumChecked = false;
+            $receiver_0.unaryPlus_uv0sim$(textureMesh(void 0, void 0, GltfDemo$makeDeferredContent$lambda$lambda(this.$this)));
+            this.local$$receiver.unaryPlus_uv0sim$($receiver_0);
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  GltfDemo.prototype.makeDeferredContent_0 = function ($receiver_0, ctx_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeDeferredContent_0(this, $receiver_0, ctx_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function GltfDemo$setupCamera$lambda$lambda(this$GltfDemo, this$) {
+    return function ($receiver, f, ctx) {
       var tmp$;
-      if (this$GltfDemo.autoRotate_0) {
-        this$.verticalRotation -= closure$ctx.deltaT * 3.0;
-      }var translationTarget = {v: this$GltfDemo.camTranslationTarget_0};
+      var translationTarget = {v: this$GltfDemo.camTranslationTarget_0};
       if (this$GltfDemo.trackModel_0) {
         var model = this$GltfDemo.models_0.current.model;
         if (model != null) {
           var center = model.globalCenter;
           translationTarget.v = new Vec3d(center.x, center.y, center.z);
-        }}if ((tmp$ = translationTarget.v) != null) {
+        }} else if (this$GltfDemo.autoRotate_0) {
+        this$.verticalRotation -= ctx.deltaT * 3.0;
+      }if ((tmp$ = translationTarget.v) != null) {
         var this$_0 = this$;
         var this$GltfDemo_0 = this$GltfDemo;
         var v = MutableVec3d_init(this$_0.translation).scale_14dthe$(0.9).add_czzhiw$(MutableVec3d_init(tmp$).scale_14dthe$(0.1));
@@ -2858,53 +2701,23 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         }}return Unit;
     };
   }
-  function GltfDemo$makeMainScene$lambda$lambda(this$, this$GltfDemo, closure$ctx) {
+  function GltfDemo$setupCamera$lambda(this$setupCamera, this$GltfDemo) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(0.0, -30.0);
-      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.unaryPlus_uv0sim$(this$setupCamera.camera);
       $receiver.zoom = this$GltfDemo.models_0.current.zoom;
       $receiver.translation.set_czzhiw$(this$GltfDemo.models_0.current.lookAt);
       var $receiver_0 = $receiver.onUpdate;
-      var element = GltfDemo$makeMainScene$lambda$lambda$lambda(this$GltfDemo, closure$ctx, $receiver);
+      var element = GltfDemo$setupCamera$lambda$lambda(this$GltfDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function GltfDemo$makeMainScene$lambda$lambda$lambda_0(closure$hdri) {
-    return function ($receiver, it) {
-      closure$hdri.dispose();
-      return Unit;
-    };
-  }
-  function GltfDemo$makeMainScene$lambda$lambda_0(this$, this$GltfDemo, closure$ctx) {
-    return function (hdri) {
-      this$GltfDemo.irrMapPass_0 = new IrradianceMapPass(this$, hdri);
-      this$GltfDemo.reflMapPass_0 = new ReflectionMapPass(this$, hdri);
-      this$GltfDemo.brdfLutPass_0 = new BrdfLutPass(this$);
-      this$.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda$lambda_0(hdri));
-      this$.unaryPlus_uv0sim$(new Skybox(ensureNotNull(this$GltfDemo.reflMapPass_0).colorTextureCube, 1.0));
-      this$GltfDemo.setupContentGroup_0();
-      var $receiver = this$GltfDemo.models_0;
-      var tmp$;
-      tmp$ = $receiver.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.load_aemszp$(closure$ctx);
-      }
-      this$.unaryPlus_uv0sim$(this$GltfDemo.contentGroup_0);
-      return Unit;
-    };
-  }
-  function GltfDemo$makeMainScene$lambda$lambda_1(this$GltfDemo) {
-    return function ($receiver, f, ctx) {
-      this$GltfDemo.animationTime_0 += ctx.deltaT * this$GltfDemo.animationSpeed_0;
-      return Unit;
-    };
-  }
-  GltfDemo.prototype.makeMainScene_0 = function (ctx) {
-    var $receiver = new Scene_init(null);
-    this.orbitTransform_0 = orbitInputTransform($receiver, void 0, GltfDemo$makeMainScene$lambda$lambda($receiver, this, ctx));
+  GltfDemo.prototype.setupCamera_0 = function ($receiver) {
+    this.orbitTransform_0 = orbitInputTransform($receiver, void 0, GltfDemo$setupCamera$lambda($receiver, this));
     $receiver.unaryPlus_uv0sim$(this.orbitTransform_0);
+  };
+  GltfDemo.prototype.setupLighting_0 = function ($receiver) {
     $receiver.lighting.lights.clear();
     var tmp$ = $receiver.lighting.lights;
     var $receiver_0 = new Light();
@@ -2920,259 +2733,127 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.setSpot_nve3wz$(pos_0, lookAt_0.subtract_2gj7b4$(pos_0, MutableVec3f_init()).norm(), 25.0);
     $receiver_1.setColor_y83vuj$(Color.Companion.WHITE.mix_y83vuj$(Color.Companion.MD_AMBER, 0.3).toLinear(), 500.0);
     tmp$_0.add_11rb$($receiver_1);
-    addAll(this.shadows_0, listOf([new SimpleShadowMap($receiver, 0, 2048), new SimpleShadowMap($receiver, 1, 2048)]));
-    this.aoPipeline_0 = AoPipeline.Companion.createForward_ushge7$($receiver);
-    var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, GltfDemo$makeMainScene$lambda$lambda_0($receiver, this, ctx));
-    $receiver.onUpdate.add_11rb$(GltfDemo$makeMainScene$lambda$lambda_1(this));
-    return $receiver;
   };
-  function GltfDemo$setupContentGroup$lambda$lambda(this$GltfDemo, this$) {
-    return function ($receiver, f, ctx) {
+  function GltfDemo$setupContentGroup$lambda(this$GltfDemo, this$setupContentGroup, closure$ctx) {
+    return function ($receiver, f, f_0) {
       if (this$GltfDemo.autoRotate_0) {
-        this$.rotate_5820x2$(ctx.deltaT * 3, Vec3d.Companion.Y_AXIS);
+        this$setupContentGroup.setIdentity();
+        this$setupContentGroup.rotate_5820x2$(closure$ctx.time * 3, Vec3d.Companion.Y_AXIS);
       }return Unit;
     };
   }
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda(this$GltfDemo) {
+  function GltfDemo$setupContentGroup$lambda$lambda(this$GltfDemo) {
     return function ($receiver) {
       this$GltfDemo.roundCylinder_0($receiver, 4.1, 0.2);
       return Unit;
     };
   }
-  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda;
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Color2.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0;
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1;
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Roughness.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2;
-  Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_AmbientOcclusion.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_3(this$) {
+  function GltfDemo$setupContentGroup$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
       (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
       (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
-      (tmp$_2 = this$.ambientOcclusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      (tmp$_2 = this$.occlusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
       return Unit;
     };
   }
-  function GltfDemo$setupContentGroup$lambda$lambda$lambda_0(this$GltfDemo, this$) {
+  function GltfDemo$setupContentGroup$lambda_0(this$GltfDemo, closure$isDeferredShading) {
     return function ($receiver) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2;
-      addAll($receiver.shadowMaps, this$GltfDemo.shadows_0);
-      $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.scrSpcAmbientOcclusionMap = (tmp$ = this$GltfDemo.aoPipeline_0) != null ? tmp$.aoMap : null;
-      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver.isAmbientOcclusionMapped = true;
-      $receiver.isNormalMapped = true;
-      $receiver.isRoughnessMapped = true;
-      $receiver.albedoMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_0);
-      $receiver.roughnessMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_1);
-      $receiver.ambientOcclusionMap = new Texture(void 0, void 0, GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_2);
-      $receiver.setImageBasedLighting_5m8fyp$((tmp$_0 = this$GltfDemo.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this$GltfDemo.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
-      this$.onDispose.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda$lambda$lambda_3($receiver));
+      var tmp$;
+      $receiver.generate_v2sixm$(GltfDemo$setupContentGroup$lambda$lambda(this$GltfDemo));
+      var $receiver_0 = new PbrMaterialConfig();
+      var closure$isDeferredShading_0 = closure$isDeferredShading;
+      var this$GltfDemo_0 = this$GltfDemo;
+      var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+      if (!closure$isDeferredShading_0) {
+        addAll($receiver_0.shadowMaps, this$GltfDemo_0.shadowsForward_0);
+        $receiver_0.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$_0 = this$GltfDemo_0.aoPipelineForward_0) != null ? tmp$_0.aoMap : null);
+        $receiver_0.useImageBasedLighting_5m8fyp$((tmp$_1 = this$GltfDemo_0.irrMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo_0.reflMapPass_0) != null ? tmp$_2.colorTextureCube : null, (tmp$_3 = this$GltfDemo_0.brdfLutPass_0) != null ? tmp$_3.colorTexture : null);
+      }$receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Color2.jpg');
+      $receiver_0.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Normal.jpg');
+      $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_AmbientOcclusion.jpg');
+      $receiver_0.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Roughness.jpg');
+      $receiver.onDispose.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda$lambda($receiver_0));
+      var pbrCfg = $receiver_0;
+      if (closure$isDeferredShading) {
+        tmp$ = new DeferredPbrShader(pbrCfg);
+      } else {
+        tmp$ = new PbrShader(pbrCfg);
+      }
+      $receiver.pipelineLoader = tmp$;
       return Unit;
     };
   }
-  function GltfDemo$setupContentGroup$lambda$lambda_0(this$GltfDemo) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(GltfDemo$setupContentGroup$lambda$lambda$lambda(this$GltfDemo));
-      $receiver.pipelineLoader = pbrShader(GltfDemo$setupContentGroup$lambda$lambda$lambda_0(this$GltfDemo, $receiver));
-      return Unit;
-    };
+  function Coroutine$setupContentGroup_0($this, $receiver_0, isDeferredShading_0, ctx_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$tmp$ = void 0;
+    this.local$$receiver = $receiver_0;
+    this.local$isDeferredShading = isDeferredShading_0;
+    this.local$ctx = ctx_0;
   }
-  GltfDemo.prototype.setupContentGroup_0 = function () {
-    var $receiver = this.contentGroup_0;
-    $receiver.rotate_5820x2$(-60.0, Vec3d.Companion.Y_AXIS);
-    $receiver.onUpdate.add_11rb$(GltfDemo$setupContentGroup$lambda$lambda(this, $receiver));
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, GltfDemo$setupContentGroup$lambda$lambda_0(this)));
+  Coroutine$setupContentGroup_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$setupContentGroup_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$setupContentGroup_0.prototype.constructor = Coroutine$setupContentGroup_0;
+  Coroutine$setupContentGroup_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.local$$receiver.rotate_5820x2$(-60.0, Vec3d.Companion.Y_AXIS);
+            this.local$$receiver.onUpdate.add_11rb$(GltfDemo$setupContentGroup$lambda(this.$this, this.local$$receiver, this.local$ctx));
+            this.local$$receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, GltfDemo$setupContentGroup$lambda_0(this.$this, this.local$isDeferredShading)));
+            this.local$tmp$ = this.$this.models_0.iterator();
+            this.state_0 = 2;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            if (!this.local$tmp$.hasNext()) {
+              this.state_0 = 4;
+              continue;
+            }
+            var element = this.local$tmp$.next();
+            var tmp$;
+            this.state_0 = 3;
+            this.result_0 = element.load_ggm1l6$(this.local$isDeferredShading, this.local$ctx, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            if ((tmp$ = this.result_0) != null) {
+              this.local$$receiver.unaryPlus_uv0sim$(tmp$);
+            }
+            this.state_0 = 2;
+            continue;
+          case 4:
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  GltfDemo.prototype.setupContentGroup_0 = function ($receiver_0, isDeferredShading_0, ctx_0, continuation_0, suspended) {
+    var instance = new Coroutine$setupContentGroup_0(this, $receiver_0, isDeferredShading_0, ctx_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
   function GltfDemo$menu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
@@ -3301,7 +2982,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo) {
     return function ($receiver) {
-      this$GltfDemo.autoRotate_0 = $receiver.isEnabled;
+      this$GltfDemo.useDeferredPipeline_0 = $receiver.isEnabled;
+      this$GltfDemo.setDeferredPipelineEnabled_0($receiver.isEnabled);
       return Unit;
     };
   }
@@ -3309,9 +2991,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$GltfDemo.autoRotate_0;
+      $receiver.isEnabled = this$GltfDemo.useDeferredPipeline_0;
       var $receiver_0 = $receiver.onStateChange;
       var element = GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_4(this$GltfDemo) {
+    return function ($receiver) {
+      this$GltfDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_10(closure$y, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$GltfDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_4(this$GltfDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -3319,8 +3018,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-350.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(230.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-385.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(265.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('glTF Models', GltfDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -3337,7 +3036,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('speedSlider', 0.0, 1.0, this$GltfDemo.animationSpeed_0, GltfDemo$menu$lambda$lambda$lambda_8(y, speedVal, this$GltfDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Deferred Shading', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_10(y, this$GltfDemo)));
       return Unit;
     };
   }
@@ -3405,55 +3106,90 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.trackModel = trackModel;
     this.zoom = zoom;
     this.model = null;
-    this.isVisible_eht3mo$_0 = false;
+    this.isVisible = false;
     this.animate = GltfDemo$GltfModel$animate$lambda;
   }
-  Object.defineProperty(GltfDemo$GltfModel.prototype, 'isVisible', {
-    get: function () {
-      return this.isVisible_eht3mo$_0;
-    },
-    set: function (value) {
-      var tmp$;
-      this.isVisible_eht3mo$_0 = value;
-      (tmp$ = this.model) != null ? (tmp$.isVisible = value) : null;
-    }
-  });
-  function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo) {
+  function GltfDemo$GltfModel$load$lambda$lambda(closure$isDeferredShading, this$GltfDemo) {
     return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2;
-      addAll($receiver.shadowMaps, this$GltfDemo.shadows_0);
-      $receiver.scrSpcAmbientOcclusionMap = (tmp$ = this$GltfDemo.aoPipeline_0) != null ? tmp$.aoMap : null;
-      $receiver.isScrSpcAmbientOcclusion = true;
-      $receiver.setImageBasedLighting_5m8fyp$((tmp$_0 = this$GltfDemo.irrMapPass_0) != null ? tmp$_0.colorTextureCube : null, (tmp$_1 = this$GltfDemo.reflMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+      if (closure$isDeferredShading) {
+        addAll($receiver.shadowMaps, this$GltfDemo.shadowsDeferred_0);
+        $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this$GltfDemo.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
+      } else {
+        addAll($receiver.shadowMaps, this$GltfDemo.shadowsForward_0);
+        $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$_0 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_0.aoMap : null);
+      }
+      $receiver.useImageBasedLighting_5m8fyp$((tmp$_1 = this$GltfDemo.irrMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.reflMapPass_0) != null ? tmp$_2.colorTextureCube : null, (tmp$_3 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_3.colorTexture : null);
       return Unit;
     };
   }
-  function GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, this$) {
+  function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, this$) {
     return function ($receiver, f, ctx) {
+      $receiver.isVisible = this$GltfModel.isVisible;
       this$GltfModel.animate(this$, this$GltfDemo.animationTime_0, ctx);
       return Unit;
     };
   }
-  function GltfDemo$GltfModel$load$lambda(this$GltfModel, this$GltfDemo) {
-    return function (gltf) {
-      if (gltf != null) {
-        var this$GltfModel_0 = this$GltfModel;
-        var this$GltfDemo_0 = this$GltfDemo;
-        var modelCfg = new GltfFile$ModelGenerateConfig(this$GltfModel_0.generateNormals, void 0, void 0, true, true, void 0, void 0, GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfDemo_0));
-        var $receiver = gltf.makeModel_m0hq3v$(modelCfg);
-        $receiver.translate_czzhiu$(this$GltfModel_0.translation);
-        $receiver.scale_mx4ult$(this$GltfModel_0.scale);
-        $receiver.isVisible = this$GltfModel_0.isVisible;
-        this$GltfDemo_0.contentGroup_0.plusAssign_f1kmr1$($receiver);
-        if (!$receiver.animations.isEmpty()) {
-          $receiver.enableAnimation_za3lpa$(0);
-          $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda$lambda(this$GltfModel_0, this$GltfDemo_0, $receiver));
-        }this$GltfModel_0.model = $receiver;
-      }return Unit;
-    };
+  function Coroutine$load_ggm1l6$($this, isDeferredShading_0, ctx_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$isDeferredShading = isDeferredShading_0;
+    this.local$ctx = ctx_0;
   }
-  GltfDemo$GltfModel.prototype.load_aemszp$ = function (ctx) {
-    loadGltfModel(ctx.assetMgr, this.assetPath, GltfDemo$GltfModel$load$lambda(this, this.$outer));
+  Coroutine$load_ggm1l6$.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$load_ggm1l6$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$load_ggm1l6$.prototype.constructor = Coroutine$load_ggm1l6$;
+  Coroutine$load_ggm1l6$.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = loadGltfModel(this.local$ctx.assetMgr, this.$this.assetPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            if ((tmp$ = this.result_0) != null) {
+              this.$this.$outer;
+              var this$GltfDemo = this.$this.$outer;
+              var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, void 0, true, true, void 0, void 0, this.local$isDeferredShading, GltfDemo$GltfModel$load$lambda$lambda(this.local$isDeferredShading, this$GltfDemo));
+              var $receiver = tmp$.makeModel_m0hq3v$(modelCfg);
+              $receiver.translate_czzhiu$(this.$this.translation);
+              $receiver.scale_mx4ult$(this.$this.scale);
+              $receiver.enableAnimation_za3lpa$(0);
+              $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, $receiver));
+              this.$this.model = $receiver;
+            }
+            return this.$this.model;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  GltfDemo$GltfModel.prototype.load_ggm1l6$ = function (isDeferredShading_0, ctx_0, continuation_0, suspended) {
+    var instance = new Coroutine$load_ggm1l6$(this, isDeferredShading_0, ctx_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
   function GltfDemo$GltfModel$animate$lambda($receiver, t, f) {
     $receiver.applyAnimation_14dthe$(t);
@@ -3470,6 +3206,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.radius = 3.0;
     this.position = MutableVec3d_init_0();
   }
+  GltfDemo$FoxAnimator.prototype.updatePosition_aemszp$ = function (ctx) {
+    var speed = this.$outer.animationSpeed_0 * 2;
+    this.angle += speed * ctx.deltaT / this.radius;
+  };
   GltfDemo$FoxAnimator.prototype.animate_t7fsfh$ = function (model, ctx) {
     if (this.$outer.animationSpeed_0 < 0.5) {
       var w1 = this.$outer.animationSpeed_0 * 2.0;
@@ -3486,8 +3226,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     model.applyAnimation_14dthe$(ctx.time);
     model.setIdentity();
-    var speed = this.$outer.animationSpeed_0 * 2;
-    this.angle += speed * ctx.deltaT / this.radius;
     this.position.set_yvo9jy$(this.radius, 0.0, 0.0).rotate_5820x2$(this.angle * math.RAD_2_DEG, Vec3d.Companion.Y_AXIS);
     model.translate_czzhiw$(this.position);
     model.rotate_5820x2$(this.angle * math.RAD_2_DEG + 180, Vec3d.Companion.Y_AXIS);
@@ -3501,6 +3239,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo$models$lambda$lambda(this$GltfDemo) {
     return function ($receiver, f, ctx) {
       this$GltfDemo.foxAnimator_0.animate_t7fsfh$($receiver, ctx);
+      return Unit;
+    };
+  }
+  function GltfDemo_init$lambda(closure$ctx, this$GltfDemo) {
+    return function ($receiver, f, f_0) {
+      this$GltfDemo.animationTime_0 += closure$ctx.deltaT * this$GltfDemo.animationSpeed_0;
+      this$GltfDemo.foxAnimator_0.updatePosition_aemszp$(closure$ctx);
       return Unit;
     };
   }
@@ -3589,11 +3334,62 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.setColor_y83vuj$(Color.Companion.WHITE, 1.0);
     return Unit;
   }
-  function InstanceDemo$mainScene$lambda$lambda_1(this$InstanceDemo) {
-    return function (gltf) {
-      if (gltf != null) {
-        this$InstanceDemo.addLods_0(gltf);
-      }return Unit;
+  function Coroutine$InstanceDemo$mainScene$lambda$lambda(this$InstanceDemo_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$InstanceDemo = this$InstanceDemo_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$InstanceDemo$mainScene$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$InstanceDemo$mainScene$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$InstanceDemo$mainScene$lambda$lambda.prototype.constructor = Coroutine$InstanceDemo$mainScene$lambda$lambda;
+  Coroutine$InstanceDemo$mainScene$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var tmp$_0;
+            if ((tmp$ = this.result_0) != null) {
+              this.local$this$InstanceDemo.addLods_0(tmp$);
+              tmp$_0 = Unit;
+            } else
+              tmp$_0 = null;
+            return tmp$_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function InstanceDemo$mainScene$lambda$lambda_1(this$InstanceDemo_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$InstanceDemo$mainScene$lambda$lambda(this$InstanceDemo_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
     };
   }
   InstanceDemo.prototype.mainScene_0 = function (ctx) {
@@ -3601,7 +3397,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, InstanceDemo$mainScene$lambda$lambda($receiver, this)));
     $receiver.lighting.singleLight_q9zcvo$(InstanceDemo$mainScene$lambda$lambda_0);
     $receiver.unaryPlus_uv0sim$(this.lodController_0);
-    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', InstanceDemo$mainScene$lambda$lambda_1(this));
+    ctx.assetMgr.launch_eln4bt$(InstanceDemo$mainScene$lambda$lambda_1(this));
     return $receiver;
   };
   InstanceDemo.prototype.addLods_0 = function (model) {
@@ -3996,17 +3792,69 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$initMainScene$lambda$lambda_0(this$MultiLightDemo, this$) {
-    return function (gltf) {
-      if (gltf != null) {
-        var this$MultiLightDemo_0 = this$MultiLightDemo;
-        var this$_0 = this$;
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
-        var model = gltf.makeModel_m0hq3v$(modelCfg);
-        this$MultiLightDemo_0.bunnyMesh_0 = first(model.meshes.values);
-        this$MultiLightDemo_0.applyShaders_0();
-        this$_0.unaryPlus_uv0sim$(model);
-      }return Unit;
+  function Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$MultiLightDemo_0, this$_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$MultiLightDemo = this$MultiLightDemo_0;
+    this.local$this$ = this$_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$MultiLightDemo$initMainScene$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$MultiLightDemo$initMainScene$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$MultiLightDemo$initMainScene$lambda$lambda.prototype.constructor = Coroutine$MultiLightDemo$initMainScene$lambda$lambda;
+  Coroutine$MultiLightDemo$initMainScene$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var tmp$_0;
+            if ((tmp$ = this.result_0) != null) {
+              var this$MultiLightDemo = this.local$this$MultiLightDemo;
+              var this$ = this.local$this$;
+              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+              var model = tmp$.makeModel_m0hq3v$(modelCfg);
+              this$MultiLightDemo.bunnyMesh_0 = first(model.meshes.values);
+              this$MultiLightDemo.applyShaders_0();
+              this$.unaryPlus_uv0sim$(model);
+              tmp$_0 = Unit;
+            } else
+              tmp$_0 = null;
+            return tmp$_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function MultiLightDemo$initMainScene$lambda$lambda_0(this$MultiLightDemo_0, this$_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$MultiLightDemo_0, this$_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
     };
   }
   function MultiLightDemo$initMainScene$lambda$lambda$lambda_0($receiver) {
@@ -4038,7 +3886,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(element);
     }
     this.updateLighting_0();
-    loadGltfModel(ctx.assetMgr, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
+    ctx.assetMgr.launch_eln4bt$(MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
     $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$initMainScene$lambda$lambda_1(this)));
   };
   MultiLightDemo.prototype.applyShaders_0 = function () {
@@ -4053,173 +3901,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.updateModelRoughness_0();
     this.updateLighting_0();
   };
+  function MultiLightDemo$applyPbrShaderBunny$lambda$lambda(this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+      $receiver.maxLights = this$MultiLightDemo.shadowMaps_0.size;
+      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
+      return Unit;
+    };
+  }
   MultiLightDemo.prototype.applyPbrShaderBunny_0 = function () {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
-      var $receiver = new PbrShader$PbrConfig();
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.maxLights = this.shadowMaps_0.size;
-      addAll($receiver.shadowMaps, this.shadowMaps_0);
-      $receiver.metallic = 0.0;
-      var cfg = $receiver;
-      this.modelShader_0 = new PbrShader(cfg);
+      this.modelShader_0 = pbrShader(MultiLightDemo$applyPbrShaderBunny$lambda$lambda(this));
       tmp$.pipelineLoader = this.modelShader_0;
     }};
+  function MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
+      return Unit;
+    };
+  }
   MultiLightDemo.prototype.applyPhongShaderBunny_0 = function () {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
-      var $receiver = new PhongShader$PhongConfig();
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      addAll($receiver.shadowMaps, this.shadowMaps_0);
-      var cfg = $receiver;
-      this.modelShader_0 = new PhongShader(cfg);
+      this.modelShader_0 = phongShader(MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this));
       tmp$.pipelineLoader = this.modelShader_0;
     }};
-  function Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda.prototype.constructor = Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda;
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0.prototype.constructor = Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0;
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1.prototype.constructor = Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1;
-  Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_2(this$) {
+  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       ensureNotNull(this$.albedoMap).dispose();
       ensureNotNull(this$.normalMap).dispose();
@@ -4227,140 +3936,42 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function MultiLightDemo$applyPbrShaderGround$lambda$lambda(this$MultiLightDemo, this$) {
+    return function ($receiver) {
+      $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg');
+      $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg');
+      $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg');
+      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
+      this$.onDispose.add_11rb$(MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver));
+      return Unit;
+    };
+  }
   MultiLightDemo.prototype.applyPbrShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
-      var $receiver = new PbrShader$PbrConfig();
-      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver.isNormalMapped = true;
-      $receiver.isRoughnessMapped = true;
-      addAll($receiver.shadowMaps, this.shadowMaps_0);
-      $receiver.albedoMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0);
-      $receiver.roughnessMap = new Texture(void 0, void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1);
-      $receiver.metallic = 0.0;
-      var cfg = $receiver;
-      var $receiver_0 = new PbrShader(cfg);
-      tmp$.onDispose.add_11rb$(MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_2($receiver_0));
-      tmp$.pipelineLoader = $receiver_0;
+      tmp$.pipelineLoader = pbrShader(MultiLightDemo$applyPbrShaderGround$lambda$lambda(this, tmp$));
     }};
-  function Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda.prototype.constructor = Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda;
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0.prototype.constructor = Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0;
-  Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_1(this$) {
+  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       ensureNotNull(this$.albedoMap).dispose();
       ensureNotNull(this$.normalMap).dispose();
       return Unit;
     };
   }
+  function MultiLightDemo$applyPhongShaderGround$lambda$lambda(this$MultiLightDemo, this$) {
+    return function ($receiver) {
+      $receiver.useAlbedoMap_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg');
+      $receiver.useNormalMap_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg');
+      $receiver.shininess = 100.0;
+      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
+      this$.onDispose.add_11rb$(MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver));
+      return Unit;
+    };
+  }
   MultiLightDemo.prototype.applyPhongShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
-      var $receiver = new PhongShader$PhongConfig();
-      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver.isNormalMapped = true;
-      addAll($receiver.shadowMaps, this.shadowMaps_0);
-      $receiver.albedoMap = new Texture(void 0, void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda);
-      $receiver.normalMap = new Texture(void 0, void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0);
-      $receiver.shininess = 100.0;
-      var cfg = $receiver;
-      var $receiver_0 = new PhongShader(cfg);
-      tmp$.onDispose.add_11rb$(MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_1($receiver_0));
-      tmp$.pipelineLoader = $receiver_0;
+      tmp$.pipelineLoader = phongShader(MultiLightDemo$applyPhongShaderGround$lambda$lambda(this, tmp$));
     }};
   MultiLightDemo.prototype.updateModelColor_0 = function () {
     var shader = this.modelShader_0;
@@ -5147,6 +4758,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function ColorGridContent$makeSpheres$lambda$lambda$lambda_0(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+    return function ($receiver) {
+      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+      $receiver.albedo = closure$colors.get_za3lpa$((Kotlin.imul(closure$y, closure$nCols) + closure$x | 0) % closure$colors.size).toLinear();
+      $receiver.roughness = 0.1;
+      $receiver.metallic = 0.0;
+      if (closure$withIbl) {
+        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      }return Unit;
+    };
+  }
   function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
     return function ($receiver) {
       var nRows = 4;
@@ -5175,16 +4797,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var closure$brdfLut_0 = closure$brdfLut;
           var this$ColorGridContent_0 = this$ColorGridContent;
           mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = Albedo.STATIC_ALBEDO;
-          pbrConfig.isImageBasedLighting = closure$withIbl_0;
-          var shader = new PbrShader(pbrConfig);
-          shader.albedo = colors.get_za3lpa$((Kotlin.imul(y, nCols) + x | 0) % colors.size).toLinear();
-          shader.irradianceMap = closure$irradianceMap_0;
-          shader.reflectionMap = closure$reflectionMap_0;
-          shader.brdfLut = closure$brdfLut_0;
-          shader.roughness = 0.1;
-          shader.metallic = 0.0;
+          var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda_0(colors, y, nCols, x, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
           mesh.pipelineLoader = shader;
           this$ColorGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
@@ -5624,17 +5237,65 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   PbrDemo.prototype.updateHdri_0 = function (idx) {
     this.loadHdri_0(idx, PbrDemo$updateHdri$lambda(this));
   };
-  function PbrDemo$loadHdri$lambda(this$PbrDemo, closure$idx, closure$recv) {
-    return function (it) {
-      this$PbrDemo.loadedHdris_0[closure$idx] = it;
-      closure$recv(it);
-      return Unit;
+  function Coroutine$PbrDemo$loadHdri$lambda(closure$idx_0, this$PbrDemo_0, closure$recv_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$idx = closure$idx_0;
+    this.local$this$PbrDemo = this$PbrDemo_0;
+    this.local$closure$recv = closure$recv_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$PbrDemo$loadHdri$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrDemo$loadHdri$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrDemo$loadHdri$lambda.prototype.constructor = Coroutine$PbrDemo$loadHdri$lambda;
+  Coroutine$PbrDemo$loadHdri$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(PbrDemo$Companion_getInstance().hdriTextures_0.get_za3lpa$(this.local$closure$idx).hdriPath, PbrDemo$Companion_getInstance().hdriTexProps_0, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var loadedTex = this.result_0;
+            this.local$this$PbrDemo.loadedHdris_0[this.local$closure$idx] = loadedTex;
+            return this.local$closure$recv(loadedTex);
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrDemo$loadHdri$lambda(closure$idx_0, this$PbrDemo_0, closure$recv_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrDemo$loadHdri$lambda(closure$idx_0, this$PbrDemo_0, closure$recv_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
     };
   }
   PbrDemo.prototype.loadHdri_0 = function (idx, recv) {
     var tex = this.loadedHdris_0[idx];
     if (tex == null) {
-      this.ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(PbrDemo$Companion_getInstance().hdriTextures_0.get_za3lpa$(idx).hdriPath, PbrDemo$Companion_getInstance().hdriTexProps_0, PbrDemo$loadHdri$lambda(this, idx, recv));
+      this.ctx.assetMgr.launch_eln4bt$(PbrDemo$loadHdri$lambda(idx, this, recv));
     } else {
       recv(tex);
     }
@@ -5824,7 +5485,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       element.normalMap = this.currentMat.normal;
       element.roughnessMap = this.currentMat.roughness;
       element.metallicMap = (tmp$_0 = this.currentMat.metallic) != null ? tmp$_0 : PbrMaterialContent$Companion_getInstance().defaultMetallicTex_0;
-      element.ambientOcclusionMap = (tmp$_1 = this.currentMat.ao) != null ? tmp$_1 : PbrMaterialContent$Companion_getInstance().defaultAoTex_0;
+      element.occlusionMap = (tmp$_1 = this.currentMat.ao) != null ? tmp$_1 : PbrMaterialContent$Companion_getInstance().defaultAoTex_0;
       element.displacementMap = (tmp$_2 = this.currentMat.displacement) != null ? tmp$_2 : PbrMaterialContent$Companion_getInstance().defaultDispTex_0;
     }
   };
@@ -5956,7 +5617,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.uvSphere_mojs8w$($receiver.sphereProps);
     return Unit;
   }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent) {
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+    return function ($receiver) {
+      $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver.isNormalMapped = true;
+      $receiver.isRoughnessMapped = true;
+      $receiver.isMetallicMapped = true;
+      $receiver.isOcclusionMapped = true;
+      $receiver.isDisplacementMapped = true;
+      $receiver.displacementStrength = 0.25;
+      if (closure$withIbl) {
+        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      }return Unit;
+    };
+  }
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_1(this$PbrMaterialContent) {
     return function ($receiver, it) {
       var tmp$;
       tmp$ = this$PbrMaterialContent.matCycler.iterator();
@@ -5970,26 +5645,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
-      var pbrConfig = new PbrShader$PbrConfig();
-      pbrConfig.isImageBasedLighting = closure$withIbl;
-      pbrConfig.albedoSource = Albedo.TEXTURE_ALBEDO;
-      pbrConfig.isNormalMapped = true;
-      pbrConfig.isRoughnessMapped = true;
-      pbrConfig.isMetallicMapped = true;
-      pbrConfig.isAmbientOcclusionMapped = true;
-      pbrConfig.isDisplacementMapped = true;
-      pbrConfig.irradianceMap = closure$irradianceMap;
-      pbrConfig.reflectionMap = closure$reflectionMap;
-      pbrConfig.brdfLut = closure$brdfLut;
-      var $receiver_0 = new PbrShader(pbrConfig);
-      $receiver_0.displacementStrength = 0.25;
-      var shader = $receiver_0;
+      var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut));
       $receiver.pipelineLoader = shader;
       this$PbrMaterialContent.shaders_0.add_11rb$(shader);
       this$PbrMaterialContent.updatePbrMaterial_0();
-      var $receiver_1 = closure$scene.onDispose;
-      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent);
-      $receiver_1.add_11rb$(element);
+      var $receiver_0 = closure$scene.onDispose;
+      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_1(this$PbrMaterialContent);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -7973,7 +7635,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function RoughnesMetalGridContent$makeSpheres$lambda(closure$withIbl, this$RoughnesMetalGridContent, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+    return function ($receiver) {
+      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+      $receiver.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
+      var a = closure$x / (closure$nCols - 1 | 0);
+      $receiver.roughness = Math_0.max(a, 0.05);
+      $receiver.metallic = closure$y / (closure$nRows - 1 | 0);
+      if (closure$withIbl) {
+        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      }return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$makeSpheres$lambda(this$RoughnesMetalGridContent, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
     return function ($receiver) {
       var nRows = 7;
       var nCols = 7;
@@ -7982,23 +7656,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         for (var x = 0; x < nCols; x++) {
           var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init_0(attributes), null);
-          var closure$withIbl_0 = closure$withIbl;
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
+          var closure$withIbl_0 = closure$withIbl;
           var closure$irradianceMap_0 = closure$irradianceMap;
           var closure$reflectionMap_0 = closure$reflectionMap;
           var closure$brdfLut_0 = closure$brdfLut;
           mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = Albedo.STATIC_ALBEDO;
-          pbrConfig.isImageBasedLighting = closure$withIbl_0;
-          var shader = new PbrShader(pbrConfig);
-          shader.albedo = this$RoughnesMetalGridContent_0.colors_0.current.linColor;
-          shader.irradianceMap = closure$irradianceMap_0;
-          shader.reflectionMap = closure$reflectionMap_0;
-          shader.brdfLut = closure$brdfLut_0;
-          var a = x / (nCols - 1 | 0);
-          shader.roughness = Math_0.max(a, 0.05);
-          shader.metallic = y / (nRows - 1 | 0);
+          var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent_0, x, nCols, y, nRows, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
           mesh.pipelineLoader = shader;
           this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
@@ -8008,7 +7672,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(withIbl, this, irradianceMap, reflectionMap, brdfLut));
+    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(this, withIbl, irradianceMap, reflectionMap, brdfLut));
   };
   function RoughnesMetalGridContent$MatColor(name, linColor) {
     this.name = name;
@@ -8067,7 +7731,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.simplificationScene = null;
     this.scenes = ArrayList_init();
     this.models = LinkedHashMap_init();
-    this.loadingModels = LinkedHashSet_init();
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
     this.dispModel = new Mesh_init(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
@@ -8078,28 +7741,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
     this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
     this.autoRotate = true;
-    var tmp$ = this.dispModel;
-    var $receiver = new PbrShader$PbrConfig();
-    $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-    var $receiver_0 = new PbrShader($receiver);
-    $receiver_0.albedo = Color.Companion.WHITE;
-    $receiver_0.roughness = 0.15;
-    tmp$.pipelineLoader = $receiver_0;
+    this.dispModel.pipelineLoader = pbrShader(SimplificationDemo_init$lambda);
     this.srcModel = this.makeCosGrid_0();
-    var $receiver_1 = this.models;
+    var $receiver = this.models;
     var value = this.srcModel;
-    $receiver_1.put_xwzc9p$('cos', value);
+    $receiver.put_xwzc9p$('cos', value);
     this.heMesh = new HalfEdgeMesh(this.srcModel);
-    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', 1.0, new Vec3f(0.0, -3.0, 0.0), ctx);
-    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/cow.gltf.gz', 1.0, Vec3f.Companion.ZERO, ctx);
-    this.loadModel_0(Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', 1.0, new Vec3f(0.0, -1.5, 0.0), ctx);
+    ctx.assetMgr.launch_eln4bt$(SimplificationDemo_init$lambda_0(this));
     this.simplificationScene = this.mainScene_0(ctx);
-    var $receiver_2 = this.scenes;
+    var $receiver_0 = this.scenes;
     var element = this.simplificationScene;
-    $receiver_2.add_11rb$(element);
-    var $receiver_3 = this.scenes;
+    $receiver_0.add_11rb$(element);
+    var $receiver_1 = this.scenes;
     var element_0 = this.menu_aemszp$(ctx);
-    $receiver_3.add_11rb$(element_0);
+    $receiver_1.add_11rb$(element_0);
     this.simplify();
   }
   Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
@@ -8199,38 +7854,76 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     if (false) {
       $this.rebuildBounds();
     }};
-  function SimplificationDemo$loadModel$lambda(closure$scale, closure$offset, closure$name, this$SimplificationDemo) {
-    return function (model) {
-      var tmp$;
-      if (model != null) {
-        var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
-        var mesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
-        var geometry = mesh.geometry;
-        tmp$ = geometry.numVertices;
-        for (var i = 0; i < tmp$; i++) {
-          geometry.vertexIt.index = i;
-          geometry.vertexIt.position.scale_mx4ult$(closure$scale).add_czzhiu$(closure$offset);
-        }
-        var modelKey = substring(closure$name, until(lastIndexOf(closure$name, 47) + 1 | 0, lastIndexOf_0(closure$name, '.gltf.gz')));
-        this$SimplificationDemo.models.put_xwzc9p$(modelKey, geometry);
-        var $receiver = this$SimplificationDemo.loadingModels;
-        var element = closure$name;
-        $receiver.remove_11rb$(element);
-        var $receiver_0 = this$SimplificationDemo;
-        var $this = util.Log;
-        var level = Log$Level.DEBUG;
-        var tag = Kotlin.getKClassFromExpression($receiver_0).simpleName;
-        if (level.level >= $this.level.level) {
-          var tmp$_0 = $this.printer;
-          var closure$name_0 = closure$name;
-          var tmp$_1;
-          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
-        }}return Unit;
-    };
+  function Coroutine$loadModel_0($this, $receiver_0, name_0, scale_0, offset_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$$receiver = $receiver_0;
+    this.local$name = name_0;
+    this.local$scale = scale_0;
+    this.local$offset = offset_0;
   }
-  SimplificationDemo.prototype.loadModel_0 = function (name, scale, offset, ctx) {
-    this.loadingModels.add_11rb$(name);
-    loadGltfModel(ctx.assetMgr, name, SimplificationDemo$loadModel$lambda(scale, offset, name, this));
+  Coroutine$loadModel_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadModel_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadModel_0.prototype.constructor = Coroutine$loadModel_0;
+  Coroutine$loadModel_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = loadGltfModel(this.local$$receiver, this.local$name, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            if ((tmp$ = this.result_0) != null) {
+              var tmp$_0;
+              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+              var mesh = first(tmp$.makeModel_m0hq3v$(modelCfg).meshes.values);
+              var geometry = mesh.geometry;
+              tmp$_0 = geometry.numVertices;
+              for (var i = 0; i < tmp$_0; i++) {
+                geometry.vertexIt.index = i;
+                geometry.vertexIt.position.scale_mx4ult$(this.local$scale).add_czzhiu$(this.local$offset);
+              }
+              var modelKey = substring(this.local$name, until(lastIndexOf(this.local$name, 47) + 1 | 0, lastIndexOf_0(this.local$name, '.gltf.gz')));
+              this.$this.models.put_xwzc9p$(modelKey, geometry);
+              var $this = util.Log;
+              var level = Log$Level.DEBUG;
+              var tag = Kotlin.getKClassFromExpression(this.local$$receiver).simpleName;
+              if (level.level >= $this.level.level) {
+                var tmp$_1;
+                $this.printer(level, tag, 'loaded: ' + this.local$name + ', bounds: ' + toString_1((tmp$_1 = this.$this.models.get_11rb$(this.local$name)) != null ? tmp$_1.bounds : null));
+              }}
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  SimplificationDemo.prototype.loadModel_0 = function ($receiver_0, name_0, scale_0, offset_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadModel_0(this, $receiver_0, name_0, scale_0, offset_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
   function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
     return function (x, y) {
@@ -8589,6 +8282,75 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   SimplificationDemo.prototype.menu_aemszp$ = function (ctx) {
     return uiScene(void 0, void 0, void 0, SimplificationDemo$menu$lambda(ctx, this));
   };
+  function SimplificationDemo_init$lambda($receiver) {
+    $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+    $receiver.albedo = Color.Companion.WHITE;
+    $receiver.roughness = 0.15;
+    return Unit;
+  }
+  function Coroutine$SimplificationDemo_init$lambda(this$SimplificationDemo_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$SimplificationDemo = this$SimplificationDemo_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$SimplificationDemo_init$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$SimplificationDemo_init$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$SimplificationDemo_init$lambda.prototype.constructor = Coroutine$SimplificationDemo_init$lambda;
+  Coroutine$SimplificationDemo_init$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$this$SimplificationDemo.loadModel_0(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', 1.0, new Vec3f(0.0, -3.0, 0.0), this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.state_0 = 3;
+            this.result_0 = this.local$this$SimplificationDemo.loadModel_0(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/cow.gltf.gz', 1.0, Vec3f.Companion.ZERO, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            this.state_0 = 4;
+            this.result_0 = this.local$this$SimplificationDemo.loadModel_0(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', 1.0, new Vec3f(0.0, -1.5, 0.0), this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 4:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function SimplificationDemo_init$lambda_0(this$SimplificationDemo_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$SimplificationDemo_init$lambda(this$SimplificationDemo_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
   SimplificationDemo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'SimplificationDemo',
@@ -8638,209 +8400,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_baseColor.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_0;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_ambientOcclusion.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_1;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_2;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_roughness.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function treeScene$lambda$lambda$lambda$lambda_3(this$) {
+  function treeScene$lambda$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
-      (tmp$_0 = this$.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_0 = this$.occlusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
       (tmp$_1 = this$.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
       (tmp$_2 = this$.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$uWindSpeed, closure$uWindStrength) {
+  function treeScene$lambda$lambda$lambda$lambda_0(this$, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
       var tmp$, tmp$_0;
       var tmp$_1 = closure$uWindSpeed;
@@ -8927,29 +8497,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda(closure$treeGen, this$, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda(closure$treeGen, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
-      var $receiver_0 = new PbrShader$PbrConfig();
-      var this$_0 = this$;
+      var $receiver_0 = new PbrMaterialConfig();
       var closure$shadowMaps_0 = closure$shadowMaps;
-      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver_0.alphaMode = new AlphaModeOpaque();
-      $receiver_0.isNormalMapped = true;
-      $receiver_0.isAmbientOcclusionMapped = true;
-      $receiver_0.isRoughnessMapped = true;
-      $receiver_0.maxLights = this$_0.lighting.lights.size;
+      $receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_baseColor.jpg');
+      $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_ambientOcclusion.jpg');
+      $receiver_0.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_normal.jpg');
+      $receiver_0.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_roughness.jpg');
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      $receiver_1.albedoMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda);
-      $receiver_1.ambientOcclusionMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_0);
-      $receiver_1.normalMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_1);
-      $receiver_1.roughnessMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_2);
-      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, uWindSpeed, uWindStrength));
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda($receiver_1));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_0($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
@@ -8971,61 +8534,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_3;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/leaf.png', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function treeScene$lambda$lambda$lambda$lambda_5($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function treeScene$lambda$lambda$lambda$lambda_6(this$) {
+  function treeScene$lambda$lambda$lambda$lambda_1(this$) {
     return function ($receiver, it) {
       ensureNotNull(this$.albedoMap).dispose();
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_7(this$, closure$uWindSpeed, closure$uWindStrength) {
+  function treeScene$lambda$lambda$lambda$lambda_2(this$, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
       var tmp$, tmp$_0;
       var tmp$_1 = closure$uWindSpeed;
@@ -9111,26 +8626,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, this$, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_1(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
-      var $receiver_0 = new PbrShader$PbrConfig();
-      var this$_0 = this$;
+      var $receiver_0 = new PbrMaterialConfig();
       var closure$shadowMaps_0 = closure$shadowMaps;
-      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/leaf.png');
+      $receiver_0.roughness = 0.5;
       $receiver_0.alphaMode = new AlphaModeMask(0.5);
-      $receiver_0.maxLights = this$_0.lighting.lights.size;
-      $receiver_0.lightBacksides = true;
       $receiver_0.cullMethod = CullMethod.NO_CULLING;
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      $receiver_1.albedoMap = new Texture(void 0, void 0, treeScene$lambda$lambda$lambda$lambda_5);
-      $receiver_1.roughness = 0.5;
-      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7($receiver_1, uWindSpeed, uWindStrength));
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_1($receiver_1));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_2($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
@@ -9199,7 +8710,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_3(closure$treeGen, closure$growDistVal) {
     return function ($receiver, value) {
       closure$treeGen.growDistance = value;
       closure$growDistVal.text = toString(value, 2);
@@ -9212,7 +8723,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.1, 0.4, closure$treeGen.growDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$growDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_3(closure$treeGen, closure$growDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9233,7 +8744,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_4(closure$treeGen, closure$killDistVal) {
     return function ($receiver, value) {
       closure$treeGen.killDistance = value;
       closure$killDistVal.text = toString(value, 2);
@@ -9246,7 +8757,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$killDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_4(closure$treeGen, closure$killDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9267,7 +8778,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda$lambda_5(closure$treeGen, closure$attractPtsVal) {
     return function ($receiver, value) {
       closure$treeGen.numberOfAttractionPoints = numberToInt(value);
       closure$attractPtsVal.text = numberToInt(value).toString();
@@ -9280,7 +8791,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$attractPtsVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_5(closure$treeGen, closure$attractPtsVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9301,7 +8812,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda$lambda_6(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver, value) {
       closure$treeGen.radiusOfInfluence = value;
       closure$infRadiusVal.text = toString(value, 2);
@@ -9314,12 +8825,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$infRadiusVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_6(closure$treeGen, closure$infRadiusVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$, tmp$_0;
       closure$treeGen.generate_za3lpa$();
@@ -9372,7 +8883,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onClick;
-      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$trunkMesh, closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$trunkMesh, closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9403,7 +8914,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_13(closure$windSpeed, closure$windSpeedVal) {
+  function treeScene$lambda$lambda$lambda$lambda_8(closure$windSpeed, closure$windSpeedVal) {
     return function ($receiver, value) {
       closure$windSpeed.v = value;
       closure$windSpeedVal.text = toString(value, 1);
@@ -9416,7 +8927,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.0, 10.0, closure$windSpeed.v);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_13(closure$windSpeed, closure$windSpeedVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_8(closure$windSpeed, closure$windSpeedVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9437,7 +8948,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_14(closure$windStrength, closure$windStrengthVal) {
+  function treeScene$lambda$lambda$lambda$lambda_9(closure$windStrength, closure$windStrengthVal) {
     return function ($receiver, value) {
       closure$windStrength.v = value;
       closure$windStrengthVal.text = toString(value, 1);
@@ -9450,12 +8961,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.0, 5.0, closure$treeGen.radiusOfInfluence);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$windStrength, closure$windStrengthVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$windStrength, closure$windStrengthVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_15(closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_10(closure$leafMesh) {
     return function ($receiver) {
       var tmp$;
       (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = $receiver.isEnabled) : null;
@@ -9468,12 +8979,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_16(closure$autoRotate) {
+  function treeScene$lambda$lambda$lambda$lambda_11(closure$autoRotate) {
     return function ($receiver) {
       closure$autoRotate.v = $receiver.isEnabled;
       return Unit;
@@ -9485,7 +8996,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = closure$autoRotate.v;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_16(closure$autoRotate);
+      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$autoRotate);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9577,8 +9088,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.maxRange = 50.0;
     var shadowMaps = mutableListOf([$receiver_1]);
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver, shadowMaps, windSpeed, windAnimationPos, windStrength));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver, shadowMaps, windAnimationPos, windStrength));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, shadowMaps, windSpeed, windAnimationPos, windStrength));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_1($receiver, autoRotate)));
@@ -9764,21 +9275,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     } else {
       $receiver_5.inMetallic = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
-    if (cfg.isAmbientOcclusionMapped) {
-      var key_2 = cfg.ambientOcclusionTexName;
+    if (cfg.isOcclusionMapped) {
+      var key_2 = cfg.occlusionTexName;
       var tmp$_12;
       var value_0 = rmoSamplers.get_11rb$(key_2);
       if (value_0 == null) {
-        var answer_0 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.ambientOcclusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
+        var answer_0 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$(cfg.occlusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_2, answer_0);
         tmp$_12 = answer_0;
       } else {
         tmp$_12 = value_0;
       }
       var occlusion = tmp$_12;
-      var key_3 = cfg.ambientOcclusionTexName;
+      var key_3 = cfg.occlusionTexName;
       rmoSamplers.put_xwzc9p$(key_3, occlusion);
-      $receiver_5.inAmbientOccl = $receiver_3.splitNode_500t7j$(occlusion, cfg.ambientOcclusionChannel).output;
+      $receiver_5.inAmbientOccl = $receiver_3.splitNode_500t7j$(occlusion, cfg.occlusionChannel).output;
     }var mat = $receiver_5;
     tmp$_7 = cfg.alphaMode;
     if (Kotlin.isType(tmp$_7, AlphaModeBlend))
@@ -9822,254 +9333,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda;
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0;
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1;
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2;
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3;
-  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function makeTreeGroundGrid$lambda$lambda$lambda_4(this$) {
+  function makeTreeGroundGrid$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
       (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
       (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
-      (tmp$_2 = this$.ambientOcclusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      (tmp$_2 = this$.occlusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
       (tmp$_3 = this$.displacementMap) != null ? (tmp$_3.dispose(), Unit) : null;
+      return Unit;
+    };
+  }
+  function makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, this$) {
+    return function ($receiver) {
+      $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg');
+      $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg');
+      $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg');
+      $receiver.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg');
+      $receiver.useDisplacementMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg');
+      $receiver.shadowMaps.addAll_brywnq$(closure$shadowMaps);
+      this$.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
@@ -10077,24 +9360,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(makeTreeGroundGrid$lambda$lambda(closure$groundExt));
-      var $receiver_0 = new PbrShader$PbrConfig();
-      var closure$shadowMaps_0 = closure$shadowMaps;
-      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver_0.isNormalMapped = true;
-      $receiver_0.isAmbientOcclusionMapped = true;
-      $receiver_0.isRoughnessMapped = true;
-      $receiver_0.isDisplacementMapped = true;
-      $receiver_0.maxLights = 2;
-      $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
-      var pbrCfg = $receiver_0;
-      var $receiver_1 = new PbrShader(pbrCfg);
-      $receiver_1.albedoMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda);
-      $receiver_1.normalMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
-      $receiver_1.roughnessMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_1);
-      $receiver_1.ambientOcclusionMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_2);
-      $receiver_1.displacementMap = new Texture(void 0, void 0, makeTreeGroundGrid$lambda$lambda$lambda_3);
-      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_4($receiver_1));
-      $receiver.pipelineLoader = $receiver_1;
+      $receiver.pipelineLoader = pbrShader(makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, $receiver));
       return Unit;
     };
   }

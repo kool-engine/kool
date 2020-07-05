@@ -48,37 +48,44 @@ class GltfDemo(ctx: KoolContext) {
     )
 
     private var autoRotate = true
+    private var useDeferredPipeline = true
     private var animationSpeed = .5f
     private var animationTime = 0.0
 
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
-    private val contentGroup = TransformGroup()
 
     private var irrMapPass: IrradianceMapPass? = null
     private var reflMapPass: ReflectionMapPass? = null
     private var brdfLutPass: BrdfLutPass? = null
 
-    private val shadows = mutableListOf<ShadowMap>()
-    private var aoPipeline: AoPipeline? = null
+    private val shadowsForward = mutableListOf<ShadowMap>()
+    private var aoPipelineForward: AoPipeline? = null
+    private val contentGroupForward = TransformGroup()
+
+    private val shadowsDeferred = mutableListOf<ShadowMap>()
+    private var aoPipelineDeferred: AoPipeline? = null
+    private val contentGroupDeferred = TransformGroup()
+    private lateinit var mrtPass: DeferredMrtPass
+    private lateinit var pbrPass: PbrLightingPass
 
     init {
         models.current.isVisible = true
         trackModel = models.current.trackModel
 
-//        mainScene = makeMainSceneForward(ctx)
-        mainScene = makeMainSceneDeferred(ctx)
+        mainScene = makeMainScene(ctx)
         menu = menu(ctx)
 
         mainScene.onUpdate += { _, _ ->
             animationTime += ctx.deltaT * animationSpeed
+            foxAnimator.updatePosition(ctx)
         }
     }
 
-    private fun makeMainSceneForward(ctx: KoolContext) = scene {
-        aoPipeline = AoPipeline.createForward(this)
-        setupLighting(this)
+    private fun makeMainScene(ctx: KoolContext) = scene {
+        setupLighting()
+        setupCamera()
 
         ctx.assetMgr.launch {
             val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
@@ -91,51 +98,76 @@ class GltfDemo(ctx: KoolContext) {
                 hdri.dispose()
             }
 
-            +Skybox(reflMapPass!!.colorTextureCube, 1f)
-            setupContentGroup(false)
-            models.forEach {
-                it.load(false, ctx)
-            }
-            makeContent(camera, this@scene)
+            makeDeferredContent(ctx)
+            makeForwardContent(ctx)
+
+            setDeferredPipelineEnabled(useDeferredPipeline)
         }
     }
 
-    private fun makeMainSceneDeferred(ctx: KoolContext) = scene {
-        // setup MRT pass: contains actual scene content
-        val mrtPass = DeferredMrtPass()
-        addOffscreenPass(mrtPass)
-        // setup ambient occlusion pass
-        aoPipeline = AoPipeline.createDeferred(this, mrtPass)
-        setupLighting(contentGroup)
+    private fun setDeferredPipelineEnabled(flag: Boolean) {
+        if (flag) {
+            contentGroupForward.isVisible = false
+            shadowsForward.forEach { it.isShadowMapEnabled = false }
+            aoPipelineForward?.aoPass?.isEnabled = false
+            aoPipelineForward?.denoisePass?.isEnabled = false
 
-        ctx.assetMgr.launch {
-            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-            val hdri = loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps)
-            irrMapPass = IrradianceMapPass(this@scene, hdri)
-            reflMapPass = ReflectionMapPass(this@scene, hdri)
-            brdfLutPass = BrdfLutPass(this@scene)
+            contentGroupDeferred.isVisible = true
+            shadowsDeferred.forEach { it.isShadowMapEnabled = true }
+            aoPipelineDeferred?.aoPass?.isEnabled = true
+            aoPipelineDeferred?.denoisePass?.isEnabled = true
+            mrtPass.isEnabled = true
+            pbrPass.isEnabled = true
 
-            onDispose += {
-                hdri.dispose()
-            }
+        } else {
+            contentGroupForward.isVisible = true
+            shadowsForward.forEach { it.isShadowMapEnabled = true }
+            aoPipelineForward?.aoPass?.isEnabled = true
+            aoPipelineForward?.denoisePass?.isEnabled = true
 
-            setupContentGroup(true)
-            models.forEach {
-                it.load(true, ctx)
-            }
-            mrtPass.content.makeContent(mrtPass.camera, this@scene)
+            contentGroupDeferred.isVisible = false
+            shadowsDeferred.forEach { it.isShadowMapEnabled = false }
+            aoPipelineDeferred?.aoPass?.isEnabled = false
+            aoPipelineDeferred?.denoisePass?.isEnabled = false
+            mrtPass.isEnabled = false
+            pbrPass.isEnabled = false
+        }
+    }
 
-            // setup lighting pass
-            val cfg = PbrSceneShader.DeferredPbrConfig().apply {
-                useScreenSpaceAmbientOcclusion(aoPipeline?.aoMap)
-                useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
-                shadowMaps += shadows
-            }
-            val pbrPass = PbrLightingPass(this@scene, mrtPass, cfg)
-            pbrPass.content.addNode(Skybox(reflMapPass!!.colorTextureCube, 1f, true), 0)
+    private suspend fun Scene.makeForwardContent(ctx: KoolContext) {
+        aoPipelineForward = AoPipeline.createForward(this)
+        shadowsForward += listOf(
+                SimpleShadowMap(this, 0, 2048, contentGroupForward),
+                SimpleShadowMap(this, 1, 2048, contentGroupForward))
 
-            // main scene only contains a quad used to draw the deferred shading output
+        +Skybox(reflMapPass!!.colorTextureCube, 1f)
+        contentGroupForward.setupContentGroup(false, ctx)
+        +contentGroupForward
+    }
+
+    private suspend fun Scene.makeDeferredContent(ctx: KoolContext) {
+        mrtPass = DeferredMrtPass(this)
+        aoPipelineDeferred = AoPipeline.createDeferred(this, mrtPass)
+        shadowsDeferred += listOf(
+                SimpleShadowMap(this, 0, 2048, mrtPass.content),
+                SimpleShadowMap(this, 1, 2048, mrtPass.content))
+
+        mrtPass.content.setupContentGroup(true, ctx)
+
+        // setup lighting pass
+        val cfg = PbrSceneShader.DeferredPbrConfig().apply {
+            useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
+            useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
+            shadowMaps += shadowsDeferred
+        }
+        pbrPass = PbrLightingPass(this@makeDeferredContent, mrtPass, cfg)
+        pbrPass.content.addNode(Skybox(reflMapPass!!.colorTextureCube, 1f, true), 0)
+
+        // main scene only contains a quad used to draw the deferred shading output
+        +contentGroupDeferred.apply {
+            isFrustumChecked = false
             +textureMesh {
+                isFrustumChecked = false
                 generate {
                     rect {
                         mirrorTexCoordsY()
@@ -146,28 +178,8 @@ class GltfDemo(ctx: KoolContext) {
         }
     }
 
-    private fun Scene.setupLighting(drawNode: Node) {
-        lighting.lights.clear()
-        lighting.lights.add(Light().apply {
-            val pos = Vec3f(7f, 8f, 8f)
-            val lookAt = Vec3f.ZERO
-            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
-            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
-        })
-        lighting.lights.add(Light().apply {
-            val pos = Vec3f(-7f, 8f, 8f)
-            val lookAt = Vec3f.ZERO
-            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
-            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
-        })
-
-        shadows += listOf(
-                SimpleShadowMap(this, 0, 2048, drawNode),
-                SimpleShadowMap(this, 1, 2048, drawNode))
-    }
-
-    private fun Group.makeContent(camera: Camera, scene: Scene) {
-        orbitTransform = scene.orbitInputTransform {
+    private fun Scene.setupCamera() {
+        orbitTransform = orbitInputTransform {
             setMouseRotation(0f, -30f)
             +camera
             zoom = models.current.zoom
@@ -195,47 +207,66 @@ class GltfDemo(ctx: KoolContext) {
             }
         }
         +orbitTransform
-
-        +contentGroup
     }
 
-    private fun setupContentGroup(isDeferredShading: Boolean) {
-        contentGroup.apply {
-            rotate(-60.0, Vec3d.Y_AXIS)
-            onUpdate += { _, ctx ->
-                if (autoRotate) {
-                    rotate(ctx.deltaT.toDouble() * 3, Vec3d.Y_AXIS)
-                }
-            }
+    private fun Scene.setupLighting() {
+        lighting.lights.clear()
+        lighting.lights.add(Light().apply {
+            val pos = Vec3f(7f, 8f, 8f)
+            val lookAt = Vec3f.ZERO
+            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
+        })
+        lighting.lights.add(Light().apply {
+            val pos = Vec3f(-7f, 8f, 8f)
+            val lookAt = Vec3f.ZERO
+            setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
+            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
+        })
+    }
 
-            +textureMesh(isNormalMapped = true) {
-                generate {
-                    roundCylinder(4.1f, 0.2f)
-                }
-                val pbrCfg = PbrMaterialConfig().apply {
-                    shadowMaps += shadows
-                    useScreenSpaceAmbientOcclusion(aoPipeline?.aoMap)
+    private suspend fun TransformGroup.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
+        rotate(-60.0, Vec3d.Y_AXIS)
+        onUpdate += { _, _ ->
+            if (autoRotate) {
+                setIdentity()
+                rotate(ctx.time * 3, Vec3d.Y_AXIS)
+            }
+        }
+
+        +textureMesh(isNormalMapped = true) {
+            generate {
+                roundCylinder(4.1f, 0.2f)
+            }
+            val pbrCfg = PbrMaterialConfig().apply {
+                if (!isDeferredShading) {
+                    shadowMaps += shadowsForward
+                    useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
                     useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
-
-                    useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
-                    useNormalMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Normal.jpg")
-                    useOcclusionMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
-                    useRoughnessMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Roughness.jpg")
-
-                    onDispose += {
-                        albedoMap?.dispose()
-                        normalMap?.dispose()
-                        roughnessMap?.dispose()
-                        occlusionMap?.dispose()
-                    }
                 }
 
-                pipelineLoader = if (isDeferredShading) {
-                    DeferredPbrShader(pbrCfg)
-                } else {
-                    PbrShader(pbrCfg)
+                useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
+                useNormalMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Normal.jpg")
+                useOcclusionMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
+                useRoughnessMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Roughness.jpg")
+
+                onDispose += {
+                    albedoMap?.dispose()
+                    normalMap?.dispose()
+                    roughnessMap?.dispose()
+                    occlusionMap?.dispose()
                 }
             }
+
+            pipelineLoader = if (isDeferredShading) {
+                DeferredPbrShader(pbrCfg)
+            } else {
+                PbrShader(pbrCfg)
+            }
+        }
+
+        models.forEach { model ->
+            model.load(isDeferredShading, ctx)?.let { +it }
         }
     }
 
@@ -249,8 +280,8 @@ class GltfDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-350f), zero())
-            layoutSpec.setSize(dps(250f), dps(230f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-385f), zero())
+            layoutSpec.setSize(dps(250f), dps(265f), full())
 
             var y = -40f
             +label("glTF Models") {
@@ -329,6 +360,16 @@ class GltfDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
+            +toggleButton("Deferred Shading") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = useDeferredPipeline
+                onStateChange += {
+                    useDeferredPipeline = isEnabled
+                    setDeferredPipelineEnabled(isEnabled)
+                }
+            }
+            y -= 35f
             +toggleButton("Auto Rotate") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
@@ -391,16 +432,12 @@ class GltfDemo(ctx: KoolContext) {
 
         var model: Model? = null
         var isVisible: Boolean = false
-            set(value) {
-                field = value
-                model?.isVisible = value
-            }
 
         var animate: Model.(Double, KoolContext) -> Unit = { t, _ ->
             applyAnimation(t)
         }
 
-        suspend fun load(isDeferredShading: Boolean, ctx: KoolContext) {
+        suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
             ctx.assetMgr.loadGltfModel(assetPath)?.let {
                 val modelCfg = GltfFile.ModelGenerateConfig(
                         generateNormals = generateNormals,
@@ -408,25 +445,27 @@ class GltfDemo(ctx: KoolContext) {
                         mergeMeshesByMaterial = true,
                         isDeferredShading = isDeferredShading
                 ) {
-                    shadowMaps += shadows
-                    scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
-                    isScrSpcAmbientOcclusion = true
+                    if (isDeferredShading) {
+                        shadowMaps += shadowsDeferred
+                        useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
+                    } else {
+                        shadowMaps += shadowsForward
+                        useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
+                    }
                     useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
                 }
                 model = it.makeModel(modelCfg).apply {
                     translate(translation)
                     scale(scale)
-                    isVisible = this@GltfModel.isVisible
-                    contentGroup += this
 
-                    if (animations.isNotEmpty()) {
-                        enableAnimation(0)
-                        onUpdate += { _, ctx ->
-                            animate(animationTime, ctx)
-                        }
+                    enableAnimation(0)
+                    onUpdate += { _, ctx ->
+                        isVisible = this@GltfModel.isVisible
+                        animate(animationTime, ctx)
                     }
                 }
             }
+            return model
         }
     }
 
@@ -434,6 +473,11 @@ class GltfDemo(ctx: KoolContext) {
         var angle = 0.0
         val radius = 3.0
         val position = MutableVec3d()
+
+        fun updatePosition(ctx: KoolContext) {
+            val speed = animationSpeed * 2
+            angle += speed * ctx.deltaT / radius
+        }
 
         fun animate(model: Model, ctx: KoolContext) {
             // mix survey / walk / run animations according to animation speed
@@ -454,8 +498,6 @@ class GltfDemo(ctx: KoolContext) {
 
             // move model according to animation speed
             model.setIdentity()
-            val speed = animationSpeed * 2
-            angle += speed * ctx.deltaT / radius
             position.set(radius, 0.0, 0.0).rotate(angle.toDeg(), Vec3d.Y_AXIS)
             model.translate(position)
             model.rotate(angle.toDeg() + 180, Vec3d.Y_AXIS)

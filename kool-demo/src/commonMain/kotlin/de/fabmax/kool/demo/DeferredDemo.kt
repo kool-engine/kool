@@ -61,8 +61,7 @@ class DeferredDemo(ctx: KoolContext) {
         lighting.lights.clear()
 
         // setup MRT pass: contains actual scene content
-        mrtPass = DeferredMrtPass()
-        addOffscreenPass(mrtPass)
+        mrtPass = DeferredMrtPass(this)
         mrtPass.makeContent(this)
 
         // setup ambient occlusion pass
@@ -80,6 +79,7 @@ class DeferredDemo(ctx: KoolContext) {
 
         // main scene only contains a quad used to draw the deferred shading output
         +textureMesh {
+            isFrustumChecked = false
             generate {
                 rect {
                     mirrorTexCoordsY()
