@@ -12,6 +12,9 @@ import kotlin.math.roundToInt
  */
 open class Texture(val name: String? = null, val props: TextureProps = TextureProps(), val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
 
+    constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
+            this(name, props, { it.loadTextureData(assetPath) })
+
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
      * called by the texture manager.

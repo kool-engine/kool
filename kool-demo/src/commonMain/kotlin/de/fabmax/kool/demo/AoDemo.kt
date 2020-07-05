@@ -107,13 +107,8 @@ class AoDemo(ctx: KoolContext) {
                     shadowMaps += shadows
                     roughness = 0.1f
 
-                    isScrSpcAmbientOcclusion = true
-                    scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-
-                    isImageBasedLighting = true
-                    irradianceMap = irrMapPass.colorTextureCube
-                    reflectionMap = reflMapPass.colorTextureCube
-                    brdfLut = brdfLutPass.colorTexture
+                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                    useImageBasedLighting(irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture)
                 }
                 pipelineLoader = shader
 
@@ -199,36 +194,24 @@ class AoDemo(ctx: KoolContext) {
                 }
 
                 val shader = pbrShader {
-                    albedoSource = Albedo.TEXTURE_ALBEDO
+                    useAlbedoMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+                    useOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+                    useNormalMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+                    useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+
+                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                    useImageBasedLighting(irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture)
                     shadowMaps += shadows
 
-                    isScrSpcAmbientOcclusion = true
-                    scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-
-                    isImageBasedLighting = true
-                    irradianceMap = irrMapPass.colorTextureCube
-                    reflectionMap = reflMapPass.colorTextureCube
-                    brdfLut = brdfLutPass.colorTexture
-
-                    isNormalMapped = true
-                    isRoughnessMapped = true
-                    isAmbientOcclusionMapped = true
-                    albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg") }
-                    ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg") }
-                    normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg") }
-                    roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg") }
+                    onDispose += {
+                        albedoMap?.dispose()
+                        occlusionMap?.dispose()
+                        normalMap?.dispose()
+                        roughnessMap?.dispose()
+                        hdriMap.dispose()
+                    }
                 }
                 pipelineLoader = shader
-
-                onDispose += {
-                    shader.albedoMap?.dispose()
-                    shader.ambientOcclusionMap?.dispose()
-                    shader.normalMap?.dispose()
-                    shader.roughnessMap?.dispose()
-                    shader.metallicMap?.dispose()
-                    shader.displacementMap?.dispose()
-                    hdriMap.dispose()
-                }
 
                 onUpdate += { _, _ ->
                     if (aoPipeline.aoPass.isEnabled) {
@@ -455,28 +438,6 @@ class AoDemo(ctx: KoolContext) {
                     spotLight = isEnabled
                     updateLighting()
                 }
-            }
-        }
-    }
-
-    private class LoadingAssets(val block: (Mesh, Texture) -> Unit) {
-        var teapotMesh: Mesh? = null
-            set(value) {
-                field = value
-                check()
-            }
-        var hdriMap: Texture? = null
-            set(value) {
-                field = value
-                check()
-            }
-
-        fun check() {
-            val mesh = teapotMesh
-            val hdri = hdriMap
-
-            if (mesh != null && hdri != null) {
-                block(mesh, hdri)
             }
         }
     }

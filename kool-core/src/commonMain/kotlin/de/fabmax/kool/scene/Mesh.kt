@@ -45,6 +45,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
     var instances: MeshInstanceList? = null
     var skin: Skin? = null
+    var isOpaque = true
 
     var pipelineLoader: PipelineFactory? = null
         set(value) {
@@ -105,7 +106,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-        renderPass.drawQueue.addMesh(this, ctx)
+        renderPass.addMesh(this, ctx)
     }
 
     companion object {

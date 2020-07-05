@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.util.IndexedVertexList
 
-class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(IndexedVertexList(Attribute.POSITIONS)) {
+class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f, hdrOutput: Boolean = false) : Mesh(IndexedVertexList(Attribute.POSITIONS)) {
     constructor(ft: String, bk: String, lt: String, rt: String, up: String, dn: String) : this(CubeMapTexture {
         it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
     })
@@ -34,8 +34,12 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
                 if (texLod != 0f) {
                     sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
                 }
-                val ldr = hdrToLdrNode(sampler.outColor)
-                colorOutput(ldr.outColor)
+                if (hdrOutput) {
+                    colorOutput(sampler.outColor)
+                } else {
+                    val ldr = hdrToLdrNode(sampler.outColor)
+                    colorOutput(ldr.outColor)
+                }
             }
         }
         pipelineLoader = ModeledShader.CubeMapColor(texName, model).apply {

@@ -1,11 +1,9 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Lighting
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 
@@ -49,6 +47,10 @@ abstract class RenderPass(val drawNode: Node) {
         beforeCollectDrawCommands(ctx)
         drawNode.collectDrawCommands(this, ctx)
         afterCollectDrawCommands(ctx)
+    }
+
+    open fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {
+        return drawQueue.addMesh(mesh, ctx)
     }
 
     protected open fun beforeCollectDrawCommands(ctx: KoolContext) {

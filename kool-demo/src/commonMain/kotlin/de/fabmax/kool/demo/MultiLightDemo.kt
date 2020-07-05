@@ -5,11 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.PhongShader
+import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
@@ -121,44 +117,33 @@ class MultiLightDemo(ctx: KoolContext) {
 
     private fun applyPbrShaderBunny() {
         bunnyMesh?.apply {
-            val cfg = PbrShader.PbrConfig().apply {
+            modelShader = pbrShader {
                 albedoSource = Albedo.STATIC_ALBEDO
                 maxLights = this@MultiLightDemo.shadowMaps.size
                 shadowMaps += this@MultiLightDemo.shadowMaps
-                metallic = 0f
             }
-            modelShader = PbrShader(cfg)
             pipelineLoader = modelShader
         }
     }
 
     private fun applyPhongShaderBunny() {
         bunnyMesh?.apply {
-            val cfg = PhongShader.PhongConfig().apply {
+            modelShader = phongShader {
                 albedoSource = Albedo.STATIC_ALBEDO
                 shadowMaps += this@MultiLightDemo.shadowMaps
             }
-
-            modelShader = PhongShader(cfg)
             pipelineLoader = modelShader
         }
     }
 
     private fun applyPbrShaderGround() {
         groundMesh?.apply {
-            val cfg = PbrShader.PbrConfig().apply {
-                albedoSource = Albedo.TEXTURE_ALBEDO
-                isNormalMapped = true
-                isRoughnessMapped = true
+            pipelineLoader = pbrShader {
+                useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+                useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+                useRoughnessMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
                 shadowMaps += this@MultiLightDemo.shadowMaps
 
-                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
-                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
-                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
-                metallic = 0f
-            }
-
-            pipelineLoader = PbrShader(cfg).apply {
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()
@@ -170,17 +155,12 @@ class MultiLightDemo(ctx: KoolContext) {
 
     private fun applyPhongShaderGround() {
         groundMesh?.apply {
-            val cfg = PhongShader.PhongConfig().apply {
-                albedoSource = Albedo.TEXTURE_ALBEDO
-                isNormalMapped = true
+            pipelineLoader = phongShader {
+                useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+                useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+                shininess = 100f
                 shadowMaps += this@MultiLightDemo.shadowMaps
 
-                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
-                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
-                shininess = 100f
-            }
-
-            pipelineLoader = PhongShader(cfg).apply {
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()

@@ -1,15 +1,18 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.OffscreenRenderPass2dMrt
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
-class DeferredMrtPass() : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERRED) {
+class DeferredMrtPass : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFERRED) {
 
     val content = drawNode as Group
+    internal val alphaMeshes = mutableListOf<Mesh>()
 
     val positionAo: Texture
         get() = colorTextures[0]
@@ -24,6 +27,22 @@ class DeferredMrtPass() : OffscreenRenderPass2dMrt(Group(), 1600, 900, FMTS_DEFE
         clearColors[2] = null
 
         content.isFrustumChecked = false
+
+        drawQueue.meshFilter = { it.isOpaque }
+    }
+
+    override fun collectDrawCommands(ctx: KoolContext) {
+        alphaMeshes.clear()
+        super.collectDrawCommands(ctx)
+    }
+
+    override fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {
+        return if (mesh.isOpaque) {
+            super.addMesh(mesh, ctx)
+        } else {
+            alphaMeshes += mesh
+            null
+        }
     }
 
     override fun dispose(ctx: KoolContext) {

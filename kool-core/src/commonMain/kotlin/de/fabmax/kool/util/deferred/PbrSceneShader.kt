@@ -135,7 +135,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             }
             fragmentStage {
                 val coord = ifTexCoords.output
-                val mrtDeMultiplex = addNode(DeferredMrtShader.MrtDeMultiplexNode(stage)).apply {
+                val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
                     inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
                     inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
@@ -216,5 +216,17 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         var brdfLut: Texture? = null
 
         var scrSpcAmbientOcclusionMap: Texture? = null
+
+        fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
+            this.scrSpcAmbientOcclusionMap = ssaoMap
+            isScrSpcAmbientOcclusion = true
+        }
+
+        fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {
+            this.irradianceMap = irradianceMap
+            this.reflectionMap = reflectionMap
+            this.brdfLut = brdfLut
+            isImageBasedLighting = irradianceMap != null && reflectionMap != null && brdfLut != null
+        }
     }
 }

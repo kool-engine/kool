@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
@@ -115,17 +116,15 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
                         }
                     }
 
-                    val pbrConfig = PbrShader.PbrConfig()
-                    pbrConfig.albedoSource = Albedo.STATIC_ALBEDO
-                    pbrConfig.isImageBasedLighting = withIbl
-
-                    val shader = PbrShader(pbrConfig)
-                    shader.albedo = colors[(y * nCols + x) % colors.size].toLinear()
-                    shader.irradianceMap = irradianceMap
-                    shader.reflectionMap = reflectionMap
-                    shader.brdfLut = brdfLut
-                    shader.roughness = 0.1f
-                    shader.metallic = 0f
+                    val shader = pbrShader {
+                        albedoSource = Albedo.STATIC_ALBEDO
+                        albedo = colors[(y * nCols + x) % colors.size].toLinear()
+                        roughness = 0.1f
+                        metallic = 0f
+                        if (withIbl) {
+                            useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
+                        }
+                    }
                     pipelineLoader = shader
                     shaders += shader
                 }

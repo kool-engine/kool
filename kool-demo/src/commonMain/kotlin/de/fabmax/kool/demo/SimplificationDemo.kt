@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -43,7 +43,8 @@ class SimplificationDemo(ctx: KoolContext) {
     var autoRotate = true
 
     init {
-        dispModel.pipelineLoader = PbrShader(PbrShader.PbrConfig().apply { albedoSource = Albedo.STATIC_ALBEDO }).apply {
+        dispModel.pipelineLoader = pbrShader {
+            albedoSource = Albedo.STATIC_ALBEDO
             albedo = Color.WHITE
             roughness = 0.15f
         }

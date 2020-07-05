@@ -91,7 +91,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val texPos = addNode(multiplyNode(xyPos, 0.5f).output, ShaderNodeIoVar(ModelVar1fConst(0.5f))).output
 
                 val coord = texPos
-                val mrtDeMultiplex = addNode(DeferredMrtShader.MrtDeMultiplexNode(stage)).apply {
+                val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
                     inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
                     inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor

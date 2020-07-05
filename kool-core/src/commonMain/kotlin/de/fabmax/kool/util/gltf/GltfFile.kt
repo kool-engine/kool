@@ -5,12 +5,14 @@ import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.AlphaModeBlend
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
@@ -127,7 +129,8 @@ data class GltfFile(
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
             val applyMaterials: Boolean = true,
-            val pbrBlock: (PbrShader.PbrConfig.(GltfMesh.Primitive) -> Unit)? = null
+            val isDeferredShading: Boolean = false,
+            val pbrBlock: (PbrMaterialConfig.(GltfMesh.Primitive) -> Unit)? = null
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
@@ -429,7 +432,8 @@ data class GltfFile(
 
                     if (cfg.applyMaterials) {
                         val useVertexColor = p.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
-                        mesh.pipelineLoader = pbrShader {
+                        val pbrConfig = PbrMaterialConfig().apply {
+                            isHdrOutput = true
                             val material = p.materialRef
                             if (material != null) {
                                 material.applyTo(this, useVertexColor, this@GltfFile)
@@ -437,20 +441,28 @@ data class GltfFile(
                                 albedo = Color.GRAY
                                 albedoSource = Albedo.STATIC_ALBEDO
                             }
-
                             if (mesh.skin != null) {
                                 isSkinned = true
                             }
-
                             cfg.pbrBlock?.invoke(this, p)
+
+                            if (alphaMode is AlphaModeBlend) {
+                                mesh.isOpaque = false
+                            }
 
                             albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             emissiveMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            ambientOcclusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            occlusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                        }
+
+                        if (cfg.isDeferredShading && mesh.isOpaque) {
+                            mesh.pipelineLoader = DeferredPbrShader(pbrConfig)
+                        } else {
+                            mesh.pipelineLoader = PbrShader(pbrConfig)
                         }
                     }
                     model.meshes[name] = mesh

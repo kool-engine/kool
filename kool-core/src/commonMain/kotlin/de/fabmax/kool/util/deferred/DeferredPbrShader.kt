@@ -5,8 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
@@ -14,7 +13,7 @@ import de.fabmax.kool.util.Color
  * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
  * texture-based AO into three separate texture outputs.
  */
-class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
+class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
 
     // Simple material props
     private var uRoughness: PushConstantNode1f? = null
@@ -44,9 +43,13 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
     private var normalSampler: TextureSampler? = null
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
-    private var ambientOcclusionSampler: TextureSampler? = null
+    private var occlusionSampler: TextureSampler? = null
     private var displacementSampler: TextureSampler? = null
     private var uDispStrength: PushConstantNode1f? = null
+
+    private val metallicTexName = cfg.metallicTexName
+    private val roughnessTexName = cfg.roughnessTexName
+    private val occlusionTexName = cfg.occlusionTexName
 
     var albedoMap: Texture? = cfg.albedoMap
         set(value) {
@@ -68,10 +71,10 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             field = value
             roughnessSampler?.texture = value
         }
-    var ambientOcclusionMap: Texture? = cfg.ambientOcclusionMap
+    var occlusionMap: Texture? = cfg.occlusionMap
         set(value) {
             field = value
-            ambientOcclusionSampler?.texture = value
+            occlusionSampler?.texture = value
         }
     var displacementMap: Texture? = cfg.displacementMap
         set(value) {
@@ -101,12 +104,12 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
         albedoSampler?.let { it.texture = albedoMap }
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
-        metallicSampler = model.findNode<TextureNode>("tMetallic")?.sampler
+        metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
         metallicSampler?.let { it.texture = metallicMap }
-        roughnessSampler = model.findNode<TextureNode>("tRoughness")?.sampler
+        roughnessSampler = model.findNode<TextureNode>(roughnessTexName)?.sampler
         roughnessSampler?.let { it.texture = roughnessMap }
-        ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
-        ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
+        occlusionSampler = model.findNode<TextureNode>(occlusionTexName)?.sampler
+        occlusionSampler?.let { it.texture = occlusionMap }
         displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
         displacementSampler?.let { it.texture = displacementMap }
         uDispStrength = model.findNode("uDispStrength")
@@ -116,7 +119,7 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
     }
 
     companion object {
-        fun defaultMrtPbrModel(cfg: MrtPbrConfig) = ShaderModel("defaultMrtPbrModel()").apply {
+        fun defaultMrtPbrModel(cfg: PbrMaterialConfig) = ShaderModel("defaultMrtPbrModel()").apply {
             val ifColors: StageInterfaceNode?
             val ifNormals: StageInterfaceNode
             val ifTangents: StageInterfaceNode?
@@ -125,11 +128,10 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             val mvpNode: UniformBufferMvp
 
             vertexStage {
-                val modelViewMat: ShaderNodeIoVar
-                val mvpMat: ShaderNodeIoVar
+                var modelViewMat: ShaderNodeIoVar
+                var mvpMat: ShaderNodeIoVar
 
                 mvpNode = mvpNode()
-
                 if (cfg.isInstanced) {
                     val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
                     modelViewMat = multiplyNode(mvpNode.outViewMat, modelMat).output
@@ -137,6 +139,11 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                 } else {
                     modelViewMat = multiplyNode(mvpNode.outViewMat, mvpNode.outModelMat).output
                     mvpMat = mvpNode.outMvpMat
+                }
+                if (cfg.isSkinned) {
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
+                    modelViewMat = multiplyNode(modelViewMat, skinNd.outJointMat).output
+                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
 
                 val worldNrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f).outVec3
@@ -179,14 +186,26 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
             fragmentStage {
                 val viewPos = ifViewPos.output
 
-                val albedo = when (cfg.albedoSource) {
+                var albedo = when (cfg.albedoSource) {
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
+                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
                         val albedoLin = gammaNode(albedoSampler.outColor)
-                        albedoLin.outColor
+                        if (cfg.isMultiplyAlbedoMap) {
+                            val fac = pushConstantNodeColor("uAlbedo").output
+                            multiplyNode(albedoLin.outColor, fac).output
+                        } else {
+                            albedoLin.outColor
+                        }
                     }
+                }
+
+                (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+                    discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
+                }
+                if (cfg.alphaMode !is AlphaModeBlend) {
+                    albedo = combineXyzWNode(albedo, constFloat(1f)).output
                 }
 
                 var viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
@@ -198,22 +217,47 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                 }
                 viewNormal = flipBacksideNormalNode(viewNormal).outNormal
 
-                val metallic = if (cfg.isMetallicMapped) {
-                    textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor
-                } else {
-                    pushConstantNode1f("uMetallic").output
-                }
+                val roughness: ShaderNodeIoVar
+                val metallic: ShaderNodeIoVar
+                var aoFactor = constFloat(1f)
 
-                val roughness = if (cfg.isRoughnessMapped) {
-                    textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output, false).outColor
+                val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
+                if (cfg.isRoughnessMapped) {
+                    val roughnessSampler = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
+                    rmoSamplers[cfg.roughnessTexName] = roughnessSampler
+                    val rawRoughness = splitNode(roughnessSampler, cfg.roughnessChannel).output
+                    roughness = if (cfg.isMultiplyRoughnessMap) {
+                        val fac = pushConstantNode1f("uRoughness").output
+                        multiplyNode(rawRoughness, fac).output
+                    } else {
+                        rawRoughness
+                    }
                 } else {
-                    pushConstantNode1f("uRoughness").output
+                    roughness = pushConstantNode1f("uRoughness").output
                 }
-
-                val aoFactor = if (cfg.isAmbientOcclusionMapped) {
-                    textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
+                if (cfg.isMetallicMapped) {
+                    val metallicSampler = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                    rmoSamplers[cfg.metallicTexName] = metallicSampler
+                    val rawMetallic = splitNode(metallicSampler, cfg.metallicChannel).output
+                    metallic = if (cfg.isMultiplyMetallicMap) {
+                        val fac = pushConstantNode1f("uMetallic").output
+                        multiplyNode(rawMetallic, fac).output
+                    } else {
+                        rawMetallic
+                    }
                 } else {
-                    ShaderNodeIoVar(ModelVar1fConst(1f))
+                    metallic = pushConstantNode1f("uMetallic").output
+                }
+                if (cfg.isOcclusionMapped) {
+                    val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { textureSamplerNode(textureNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
+                    rmoSamplers[cfg.occlusionTexName] = occlusion
+                    val rawAo = splitNode(occlusion, cfg.occlusionChannel).output
+                    aoFactor = if (cfg.occlusionStrength != 1f) {
+                        val str = cfg.occlusionStrength
+                        addNode(constFloat(1f - str), multiplyNode(rawAo, str).output).output
+                    } else {
+                        rawAo
+                    }
                 }
 
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
@@ -231,40 +275,6 @@ class DeferredMrtShader(cfg: MrtPbrConfig, model: ShaderModel = defaultMrtPbrMod
                     inColors[2] = mrtMultiplexNode.outAlbedoMetallic
                 }
             }
-        }
-    }
-
-    class MrtPbrConfig {
-        var albedoSource = Albedo.VERTEX_ALBEDO
-        var isNormalMapped = false
-        var isRoughnessMapped = false
-        var isMetallicMapped = false
-        var isAmbientOcclusionMapped = false
-        var isDisplacementMapped = false
-
-        var normalStrength = 1f
-
-        var isInstanced = false
-
-        // initial shader values
-        var albedo = Color.GRAY
-        var roughness = 0.5f
-        var metallic = 0.0f
-
-        var albedoMap: Texture? = null
-        var normalMap: Texture? = null
-        var roughnessMap: Texture? = null
-        var metallicMap: Texture? = null
-        var ambientOcclusionMap: Texture? = null
-        var displacementMap: Texture? = null
-
-        fun requiresTexCoords(): Boolean {
-            return albedoSource == Albedo.TEXTURE_ALBEDO ||
-                    isNormalMapped ||
-                    isRoughnessMapped ||
-                    isMetallicMapped ||
-                    isAmbientOcclusionMapped ||
-                    isDisplacementMapped
         }
     }
 

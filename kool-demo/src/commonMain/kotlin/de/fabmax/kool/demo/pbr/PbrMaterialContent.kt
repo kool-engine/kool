@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
@@ -43,7 +44,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
             it.normalMap = currentMat.normal
             it.roughnessMap = currentMat.roughness
             it.metallicMap = currentMat.metallic ?: defaultMetallicTex
-            it.ambientOcclusionMap = currentMat.ao ?: defaultAoTex
+            it.occlusionMap = currentMat.ao ?: defaultAoTex
             it.displacementMap = currentMat.displacement ?: defaultDispTex
         }
     }
@@ -139,19 +140,17 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
                 }
             }
 
-            val pbrConfig = PbrShader.PbrConfig()
-            pbrConfig.isImageBasedLighting = withIbl
-            pbrConfig.albedoSource = Albedo.TEXTURE_ALBEDO
-            pbrConfig.isNormalMapped = true
-            pbrConfig.isRoughnessMapped = true
-            pbrConfig.isMetallicMapped = true
-            pbrConfig.isAmbientOcclusionMapped = true
-            pbrConfig.isDisplacementMapped = true
-            pbrConfig.irradianceMap = irradianceMap
-            pbrConfig.reflectionMap = reflectionMap
-            pbrConfig.brdfLut = brdfLut
-            val shader = PbrShader(pbrConfig).apply {
-                this.displacementStrength = 0.25f
+            val shader = pbrShader{
+                albedoSource = Albedo.TEXTURE_ALBEDO
+                isNormalMapped = true
+                isRoughnessMapped = true
+                isMetallicMapped = true
+                isOcclusionMapped = true
+                isDisplacementMapped = true
+                displacementStrength = 0.25f
+                if (withIbl) {
+                    useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
+                }
             }
             pipelineLoader = shader
             shaders += shader

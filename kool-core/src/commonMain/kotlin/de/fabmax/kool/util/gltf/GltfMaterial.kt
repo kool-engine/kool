@@ -34,7 +34,7 @@ data class GltfMaterial(
         val doubleSided: Boolean = false
 ) {
 
-    fun applyTo(cfg: PbrShader.PbrConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
+    fun applyTo(cfg: PbrMaterialConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
         val albedoTexture: Texture? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
         val emissiveTexture: Texture? = emissiveTexture?.getTexture(gltfFile)
         val normalTexture: Texture? = this.normalTexture?.getTexture(gltfFile)
@@ -117,11 +117,11 @@ data class GltfMaterial(
         }
 
         if (occlusionTexture != null) {
-            cfg.isAmbientOcclusionMapped = true
-            cfg.ambientOcclusionMap = occlusionTexture
-            cfg.ambientOcclusionStrength = this.occlusionTexture?.strength ?: 1f
+            cfg.isOcclusionMapped = true
+            cfg.occlusionMap = occlusionTexture
+            cfg.occlusionStrength = this.occlusionTexture?.strength ?: 1f
         } else {
-            cfg.isAmbientOcclusionMapped = false
+            cfg.isOcclusionMapped = false
         }
 
         // roughness, metallic and occlusion can optionally use the same texture (using different color channels)
@@ -162,16 +162,16 @@ data class GltfMaterial(
             }
         }
 
-        if (cfg.isAmbientOcclusionMapped) {
+        if (cfg.isOcclusionMapped) {
             if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
                 // standalone occlusion texture -> use occlusion data from red channel
-                cfg.ambientOcclusionChannel = "r"
-                cfg.ambientOcclusionTexName = "tOcclusion"
+                cfg.occlusionChannel = "r"
+                cfg.occlusionTexName = "tOcclusion"
             } else {
                 // occlusion texture is joined -> use occlusion data from red channel (consistent with glTF spec)
-                cfg.ambientOcclusionChannel = "r"
+                cfg.occlusionChannel = "r"
                 if (occlusionTexture === roughnessTexture && occlusionTexture === metallicTexture) {
-                    cfg.ambientOcclusionTexName = "tOcclRoughMetal"
+                    cfg.occlusionTexName = "tOcclRoughMetal"
                 } else if (occlusionTexture === roughnessTexture) {
                     cfg.roughnessTexName = "tOcclRough"
                 } else { // occlusionTexture === metallicTexture

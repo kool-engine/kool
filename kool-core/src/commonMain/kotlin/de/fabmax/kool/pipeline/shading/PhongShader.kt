@@ -188,6 +188,22 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         var albedoMap: Texture? = null
         var normalMap: Texture? = null
 
+        fun useAlbedoMap(albedoMap: String) =
+                useAlbedoMap(Texture(albedoMap))
+
+        fun useAlbedoMap(albedoMap: Texture?) {
+            this.albedoMap = albedoMap
+            albedoSource = Albedo.TEXTURE_ALBEDO
+        }
+
+        fun useNormalMap(normalMap: String) =
+                useNormalMap(Texture(normalMap))
+
+        fun useNormalMap(normalMap: Texture?) {
+            this.normalMap = normalMap
+            isNormalMapped = true
+        }
+
         fun requiresTexCoords(): Boolean {
             return albedoSource == Albedo.TEXTURE_ALBEDO || isNormalMapped
         }

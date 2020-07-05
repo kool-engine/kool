@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
@@ -28,7 +28,7 @@ class DeferredDemo(ctx: KoolContext) {
     private lateinit var pbrPass: PbrLightingPass
 
     private lateinit var objects: Mesh
-    private lateinit var objectShader: DeferredMrtShader
+    private lateinit var objectShader: DeferredPbrShader
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
     private lateinit var lightPositionMesh: Mesh
@@ -57,6 +57,9 @@ class DeferredDemo(ctx: KoolContext) {
     }
 
     private fun makeDeferredScene() = scene {
+        // don't use any global lights
+        lighting.lights.clear()
+
         // setup MRT pass: contains actual scene content
         mrtPass = DeferredMrtPass()
         addOffscreenPass(mrtPass)
@@ -201,10 +204,10 @@ class DeferredDemo(ctx: KoolContext) {
                         }
                     }
                 }
-                val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
+                val pbrCfg = PbrMaterialConfig().apply {
                     roughness = 0.15f
                 }
-                objectShader = DeferredMrtShader(mrtCfg)
+                objectShader = DeferredPbrShader(pbrCfg)
                 pipelineLoader = objectShader
             }
             +objects
@@ -219,25 +222,19 @@ class DeferredDemo(ctx: KoolContext) {
                         generateTexCoords(30f)
                     }
                 }
-                val mrtCfg = DeferredMrtShader.MrtPbrConfig().apply {
-                    albedoSource = Albedo.TEXTURE_ALBEDO
-                    isNormalMapped = true
-                    isRoughnessMapped = true
-                    isMetallicMapped = true
-                    isAmbientOcclusionMapped = true
-
-                    albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg") }
-                    normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg") }
-                    roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg") }
-                    metallicMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg") }
-                    ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg") }
+                val pbrCfg = PbrMaterialConfig().apply {
+                    useAlbedoMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+                    useNormalMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+                    useRoughnessMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+                    useMetallicMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+                    useOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
                 }
-                val groundShader = DeferredMrtShader(mrtCfg)
+                val groundShader = DeferredPbrShader(pbrCfg)
                 pipelineLoader = groundShader
 
                 onDispose += {
                     groundShader.albedoMap?.dispose()
-                    groundShader.ambientOcclusionMap?.dispose()
+                    groundShader.occlusionMap?.dispose()
                     groundShader.normalMap?.dispose()
                     groundShader.metallicMap?.dispose()
                     groundShader.roughnessMap?.dispose()

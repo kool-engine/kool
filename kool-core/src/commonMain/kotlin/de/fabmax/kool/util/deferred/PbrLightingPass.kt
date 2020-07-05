@@ -5,14 +5,11 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, pbrLightingSetup(mrtPass)) {
-
-    val globalLighting = Lighting()
 
     val dynamicPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
     val staticPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
@@ -30,8 +27,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         dynamicPointLights.isDynamic = true
         staticPointLights.isDynamic = false
 
-        lighting = globalLighting
-        globalLighting.lights.clear()
+        lighting = scene.lighting
 
         scene.onRenderScene += { ctx ->
             val mapW = mainRenderPass.viewport.width
@@ -74,6 +70,13 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
             +dynamicPointLights.mesh
             +staticPointLights.mesh
         }
+    }
+
+    override fun afterCollectDrawCommands(ctx: KoolContext) {
+        for (i in mrtPass.alphaMeshes.indices) {
+            drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
+        }
+        super.afterCollectDrawCommands(ctx)
     }
 
     fun addSpotLights(maxSpotAngle: Float): DeferredSpotLights {

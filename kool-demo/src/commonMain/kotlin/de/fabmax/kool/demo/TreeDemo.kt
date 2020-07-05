@@ -5,7 +5,6 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.*
@@ -72,25 +71,18 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             var uWindSpeed: Uniform1f? = null
             var uWindStrength: Uniform1f? = null
-            val pbrCfg = PbrShader.PbrConfig().apply {
-                albedoSource = Albedo.TEXTURE_ALBEDO
-                alphaMode = AlphaModeOpaque()
-                isNormalMapped = true
-                isAmbientOcclusionMapped = true
-                isRoughnessMapped = true
-                maxLights = lighting.lights.size
+            val pbrCfg = PbrMaterialConfig().apply {
+                useAlbedoMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg")
+                useOcclusionMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
+                useNormalMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg")
+                useRoughnessMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg")
                 this.shadowMaps.addAll(shadowMaps)
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
-                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
-                ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
-                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
-                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg") }
-
                 onDispose += {
                     albedoMap?.dispose()
-                    ambientOcclusionMap?.dispose()
+                    occlusionMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
                 }
@@ -116,19 +108,15 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             var uWindSpeed: Uniform1f? = null
             var uWindStrength: Uniform1f? = null
-            val pbrCfg = PbrShader.PbrConfig().apply {
-                albedoSource = Albedo.TEXTURE_ALBEDO
+            val pbrCfg = PbrMaterialConfig().apply {
+                useAlbedoMap("${Demo.pbrBasePath}/leaf.png")
+                roughness = 0.5f
                 alphaMode = AlphaModeMask(0.5f)
-                maxLights = lighting.lights.size
-                lightBacksides = true
                 cullMethod = CullMethod.NO_CULLING
                 this.shadowMaps.addAll(shadowMaps)
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
-                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/leaf.png") }
-                roughness = 0.5f
-
                 onDispose += {
                     albedoMap!!.dispose()
                 }
@@ -414,7 +402,7 @@ private class WindNode(graph: ShaderGraph) : ShaderNode("windNode", graph) {
     }
 }
 
-private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()").apply {
+private fun treePbrModel(cfg: PbrMaterialConfig) = ShaderModel("treePbrModel()").apply {
     val ifColors: StageInterfaceNode?
     val ifNormals: StageInterfaceNode
     val ifTangents: StageInterfaceNode?
@@ -549,10 +537,10 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             } else {
                 inMetallic = pushConstantNode1f("uMetallic").output
             }
-            if (cfg.isAmbientOcclusionMapped) {
-                val occlusion = rmoSamplers.getOrPut(cfg.ambientOcclusionTexName) { textureSamplerNode(textureNode(cfg.ambientOcclusionTexName), ifTexCoords!!.output).outColor }
-                rmoSamplers[cfg.ambientOcclusionTexName] = occlusion
-                inAmbientOccl = splitNode(occlusion, cfg.ambientOcclusionChannel).output
+            if (cfg.isOcclusionMapped) {
+                val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { textureSamplerNode(textureNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
+                rmoSamplers[cfg.occlusionTexName] = occlusion
+                inAmbientOccl = splitNode(occlusion, cfg.occlusionChannel).output
             }
         }
         when (cfg.alphaMode) {
@@ -589,28 +577,19 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>):
             }
             geometry.generateTangents()
         }
-
-        val pbrCfg = PbrShader.PbrConfig().apply {
-            albedoSource = Albedo.TEXTURE_ALBEDO
-            isNormalMapped = true
-            isAmbientOcclusionMapped = true
-            isRoughnessMapped = true
-            isDisplacementMapped = true
-            maxLights = 2
+        pipelineLoader = pbrShader {
+            useAlbedoMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
+            useNormalMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg")
+            useRoughnessMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")
+            useOcclusionMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
+            useDisplacementMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
             this.shadowMaps.addAll(shadowMaps)
-        }
-        pipelineLoader = PbrShader(pbrCfg).apply {
-            albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") }
-            normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg") }
-            roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
-            ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
-            displacementMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
 
             onDispose += {
                 albedoMap?.dispose()
                 normalMap?.dispose()
                 roughnessMap?.dispose()
-                ambientOcclusionMap?.dispose()
+                occlusionMap?.dispose()
                 displacementMap?.dispose()
             }
         }
