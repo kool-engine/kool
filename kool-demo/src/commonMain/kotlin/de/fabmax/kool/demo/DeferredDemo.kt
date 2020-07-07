@@ -335,7 +335,7 @@ class DeferredDemo(ctx: KoolContext) {
                 }
             }
 
-            onUpdate += { rp, ctx ->
+            onUpdate += { rp, _ ->
                 val mapSz = 0.26f
                 val scaleX = rp.viewport.width * mapSz
                 val scaleY = scaleX * (rp.viewport.height.toFloat() / rp.viewport.width.toFloat())

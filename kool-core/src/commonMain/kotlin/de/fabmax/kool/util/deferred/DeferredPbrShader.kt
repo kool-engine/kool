@@ -146,42 +146,67 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
 
-                val worldNrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f).outVec3
-                ifNormals = stageInterfaceNode("ifNormals", worldNrm)
-
                 ifTexCoords = if (cfg.requiresTexCoords()) {
                     stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 } else {
                     null
                 }
-
-                val worldPos = if (cfg.isDisplacementMapped) {
-                    val dispTex = textureNode("tDisplacement")
-                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
-                        inStrength = pushConstantNode1f("uDispStrength").output
-                    }
-                    dispNd.outPosition
-                } else {
-                    attrPositions().output
-                }
-                val pos = vec3TransformNode(worldPos, modelViewMat, 1f).outVec3
-                ifViewPos = stageInterfaceNode("ifViewPos", pos)
-
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
                 }
+
+                val morphWeights = if (cfg.morphAttributes.isNotEmpty()) {
+                    morphWeightsNode(cfg.morphAttributes.size)
+                } else {
+                    null
+                }
+
+                var localPos = attrPositions().output
+                cfg.morphAttributes.filter { it.name.startsWith(Attribute.POSITIONS.name) }.forEach { morphAttrib ->
+                    val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
+                    val posDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
+                    localPos = addNode(localPos, posDisplacement.output).output
+                }
+
+                var localNrm = attrNormals().output
+                cfg.morphAttributes.filter { it.name.startsWith(Attribute.NORMALS.name) }.forEach { morphAttrib ->
+                    val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
+                    val nrmDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
+                    localNrm = addNode(localNrm, nrmDisplacement.output).output
+                }
+
                 ifTangents = if (cfg.isNormalMapped) {
                     val tanAttr = attrTangents().output
-                    val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, modelViewMat, 0f)
+                    var localTan = splitNode(tanAttr, "xyz").output
+                    cfg.morphAttributes.filter { it.name.startsWith(Attribute.TANGENTS.name) }.forEach { morphAttrib ->
+                        val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
+                        val tanDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
+                        localTan = addNode(localTan, tanDisplacement.output).output
+                    }
+                    val tan = vec3TransformNode(localTan, modelViewMat, 0f)
                     val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
                     stageInterfaceNode("ifTangents", tan4.output)
                 } else {
                     null
                 }
 
-                positionOutput = vec4TransformNode(worldPos, mvpMat).outVec4
+                if (cfg.isDisplacementMapped) {
+                    val dispTex = textureNode("tDisplacement")
+                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
+                        inStrength = pushConstantNode1f("uDispStrength").output
+                    }
+                    localPos = dispNd.outPosition
+                }
+
+                val viewNrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f).outVec3
+                ifNormals = stageInterfaceNode("ifNormals", viewNrm)
+
+                val pos = vec3TransformNode(localPos, modelViewMat, 1f).outVec3
+                ifViewPos = stageInterfaceNode("ifViewPos", pos)
+
+                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage {
                 val viewPos = ifViewPos.output

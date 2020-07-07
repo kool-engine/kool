@@ -45,7 +45,19 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
                     val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+                var localPos = attrPositions().output
+                mesh.morphWeights?.let { weights ->
+                    val morphAttribs = mesh.geometry.getMorphAttributes()
+                    if (morphAttribs.isNotEmpty()) {
+                        val morphWeights = morphWeightsNode(weights.size)
+                        morphAttribs.filter { it.name.startsWith(Attribute.POSITIONS.name) }.forEach { attrib ->
+                            val weight = getMorphWeightNode(morphAttribs.indexOf(attrib), morphWeights)
+                            val posDisplacement = multiplyNode(attributeNode(attrib).output, weight.outWeight)
+                            localPos = addNode(localPos, posDisplacement.output).output
+                        }
+                    }
+                }
+                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
@@ -91,7 +103,19 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
                     val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+                var localPos = attrPositions().output
+                mesh.morphWeights?.let { weights ->
+                    val morphAttribs = mesh.geometry.getMorphAttributes()
+                    if (morphAttribs.isNotEmpty()) {
+                        val morphWeights = morphWeightsNode(weights.size)
+                        morphAttribs.filter { it.name.startsWith(Attribute.POSITIONS.name) }.forEach { attrib ->
+                            val weight = getMorphWeightNode(morphAttribs.indexOf(attrib), morphWeights)
+                            val posDisplacement = multiplyNode(attributeNode(attrib).output, weight.outWeight)
+                            localPos = addNode(localPos, posDisplacement.output).output
+                        }
+                    }
+                }
+                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage {
                 val linDepth = addNode(LinearDepthNode(stage))
@@ -159,10 +183,29 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                     modelViewMat = multiplyNode(modelViewMat, skinNd.outJointMat).output
                 }
 
-                val nrm = vec3TransformNode(attrNormals().output, modelViewMat, 0f)
+                var localPos = attrPositions().output
+                var localNrm = attrNormals().output
+                mesh.morphWeights?.let { weights ->
+                    val morphAttribs = mesh.geometry.getMorphAttributes()
+                    if (morphAttribs.isNotEmpty()) {
+                        val morphWeights = morphWeightsNode(weights.size)
+                        morphAttribs.filter { it.name.startsWith(Attribute.POSITIONS.name) }.forEach { attrib ->
+                            val weight = getMorphWeightNode(morphAttribs.indexOf(attrib), morphWeights)
+                            val posDisplacement = multiplyNode(attributeNode(attrib).output, weight.outWeight)
+                            localPos = addNode(localPos, posDisplacement.output).output
+                        }
+                        morphAttribs.filter { it.name.startsWith(Attribute.NORMALS.name) }.forEach { attrib ->
+                            val weight = getMorphWeightNode(morphAttribs.indexOf(attrib), morphWeights)
+                            val nrmDisplacement = multiplyNode(attributeNode(attrib).output, weight.outWeight)
+                            localNrm = addNode(localNrm, nrmDisplacement.output).output
+                        }
+                    }
+                }
+
+                val nrm = vec3TransformNode(localNrm, modelViewMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
             fragmentStage {
                 val normal = flipBacksideNormalNode(ifNormals.output).outNormal

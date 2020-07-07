@@ -327,3 +327,25 @@ class FullScreenQuadTexPosNode(graph: ShaderGraph) : ShaderNode("fullScreenQuad_
         generator.appendMain("${outQuadPos.declare()} = vec4(${inTexCoord.ref2f()} * 2.0 - 1.0, ${inDepth.ref1f()}, 1.0);")
     }
 }
+
+class GetMorphWeightNode(val iWeight: Int, graph: ShaderGraph) : ShaderNode("getMorphWeight_${graph.nextNodeId}", graph) {
+    var inWeights0 = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    var inWeights1 = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    val outWeight = ShaderNodeIoVar(ModelVar1f("${name}_outW"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inWeights0, inWeights1)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        val inW = if (iWeight < 4) { inWeights0 } else { inWeights1 }
+        val c = when (iWeight % 4) {
+            0 -> "x"
+            1 -> "y"
+            2 -> "z"
+            else -> "w"
+        }
+        generator.appendMain("${outWeight.declare()} = ${inW.ref4f()}.$c;")
+    }
+}

@@ -44,6 +44,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     val id = instanceId++
 
     var instances: MeshInstanceList? = null
+    var morphWeights: FloatArray? = null
     var skin: Skin? = null
     var isOpaque = true
 

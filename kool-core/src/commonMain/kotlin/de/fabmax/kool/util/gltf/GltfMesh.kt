@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -23,34 +24,39 @@ data class GltfMesh(
     /**
      * Geometry to be rendered with the given material.
      *
-     * @param attributes A dictionary object, where each key corresponds to mesh attribute semantic and each value is the
-     *                   index of the accessor containing attribute's data.
+     * @param attributes A dictionary object, where each key corresponds to mesh attribute semantic and each value is
+     *                   the index of the accessor containing attribute's data.
      * @param indices    The index of the accessor that contains the indices.
      * @param material   The index of the material to apply to this primitive when rendering.
      * @param mode       The type of primitives to render.
+     * @param targets    An array of Morph Targets, each Morph Target is a dictionary mapping attributes (only
+     *                   POSITION, NORMAL, and TANGENT supported) to their deviations in the Morph Target.
      */
     @Serializable
     data class Primitive(
             val attributes: Map<String, Int>,
             val indices: Int = -1,
             val material: Int = -1,
-            val mode: Int = MODE_TRIANGLES
+            val mode: Int = MODE_TRIANGLES,
+            val targets: List<Map<String, Int>> = emptyList()
     ) {
         @Transient
         var materialRef: GltfMaterial? = null
-        @Transient
-        var indexAccessorRef: GltfAccessor? = null
-        @Transient
-        val attribAccessorRefs = mutableMapOf<String, GltfAccessor>()
 
-        fun toGeometry(generateNormals: Boolean): IndexedVertexList {
-            val positionAcc = attribAccessorRefs[ATTRIBUTE_POSITION]
-            val normalAcc = attribAccessorRefs[ATTRIBUTE_NORMAL]
-            val tangentAcc = attribAccessorRefs[ATTRIBUTE_TANGENT]
-            val texCoordAcc = attribAccessorRefs[ATTRIBUTE_TEXCOORD_0]
-            val colorAcc = attribAccessorRefs[ATTRIBUTE_COLOR_0]
-            val jointAcc = attribAccessorRefs[ATTRIBUTE_JOINTS_0]
-            val weightAcc = attribAccessorRefs[ATTRIBUTE_WEIGHTS_0]
+        fun toGeometry(generateNormals: Boolean, gltfAccessors: List<GltfAccessor>): IndexedVertexList {
+            val indexAccessor = if (indices >= 0) gltfAccessors[indices] else null
+
+            val positionAcc = attributes[ATTRIBUTE_POSITION]?.let { gltfAccessors[it] }
+            val normalAcc = attributes[ATTRIBUTE_NORMAL]?.let { gltfAccessors[it] }
+            val tangentAcc = attributes[ATTRIBUTE_TANGENT]?.let { gltfAccessors[it] }
+            val texCoordAcc = attributes[ATTRIBUTE_TEXCOORD_0]?.let { gltfAccessors[it] }
+            val colorAcc = attributes[ATTRIBUTE_COLOR_0]?.let { gltfAccessors[it] }
+            val jointAcc = attributes[ATTRIBUTE_JOINTS_0]?.let { gltfAccessors[it] }
+            val weightAcc = attributes[ATTRIBUTE_WEIGHTS_0]?.let { gltfAccessors[it] }
+
+            if (attributes.containsKey(ATTRIBUTE_TEXCOORD_1)) {
+                logW { "Second set of UVs is not yet supported and therefore ignored" }
+            }
 
             if (positionAcc == null) {
                 logW { "MeshPrimitive without position attribute" }
@@ -76,6 +82,9 @@ data class GltfMesh(
             if (jointAcc != null) { attribs += Attribute.JOINTS }
             if (weightAcc != null) { attribs += Attribute.WEIGHTS }
 
+            val morphAccessors = makeMorphTargetAccessors(gltfAccessors)
+            attribs += morphAccessors.keys
+
             val verts = IndexedVertexList(attribs)
             val poss = Vec3fAccessor(positionAcc)
             val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
@@ -94,13 +103,16 @@ data class GltfMesh(
                     cols?.next()?.let { col -> color.set(col) }
                     jnts?.next(joints)
                     wgts?.next(weights)
+
+                    morphAccessors.forEach { (attrib, acc) ->
+                        getVec3fAttribute(attrib)?.let { acc.next(it) }
+                    }
                 }
             }
 
-            val indexAcc = indexAccessorRef
-            if (indexAcc != null) {
-                val inds = IntAccessor(indexAcc)
-                for (i in 0 until indexAcc.count) {
+            if (indexAccessor != null) {
+                val inds = IntAccessor(indexAccessor)
+                for (i in 0 until indexAccessor.count) {
                     verts.addIndex(inds.next())
                 }
             } else {
@@ -116,6 +128,26 @@ data class GltfMesh(
                 verts.generateNormals()
             }
             return verts
+        }
+
+        private fun makeMorphTargetAccessors(gltfAccessors: List<GltfAccessor>): Map<Attribute, Vec3fAccessor> {
+            val accessors = mutableMapOf<Attribute, Vec3fAccessor>()
+            targets.forEachIndexed { index, morphTarget ->
+                val postfix = "_${index + 1}"
+                morphTarget[ATTRIBUTE_NORMAL]?.let { iAccessor ->
+                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GlslType.VEC_3F)
+                    accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
+                }
+                morphTarget[ATTRIBUTE_POSITION]?.let { iAccessor ->
+                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GlslType.VEC_3F)
+                    accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
+                }
+                morphTarget[ATTRIBUTE_TANGENT]?.let { iAccessor ->
+                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GlslType.VEC_3F)
+                    accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
+                }
+            }
+            return accessors
         }
 
         companion object {

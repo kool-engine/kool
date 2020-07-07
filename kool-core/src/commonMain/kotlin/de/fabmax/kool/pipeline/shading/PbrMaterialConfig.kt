@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.shading
 
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture
@@ -7,6 +8,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 
 class PbrMaterialConfig {
+    // shader configuration
     var albedoSource = Albedo.VERTEX_ALBEDO
     var isEmissiveMapped = false
     var isNormalMapped = false
@@ -15,12 +17,11 @@ class PbrMaterialConfig {
     var isOcclusionMapped = false
     var isDisplacementMapped = false
 
+    var isInstanced = false
     var isSkinned = false
     var maxJoints = 64
 
-    var normalStrength = 1f
-    var displacementStrength = 0.1f
-    var occlusionStrength = 1f
+    val morphAttributes = mutableListOf<Attribute>()
 
     var isMultiplyAlbedoMap = false
     var isMultiplyEmissiveMap = false
@@ -30,38 +31,38 @@ class PbrMaterialConfig {
     var isImageBasedLighting = false
     var isScrSpcAmbientOcclusion = false
 
-    var cullMethod = CullMethod.CULL_BACK_FACES
-    var alphaMode: AlphaMode = AlphaModeOpaque()
-    var isHdrOutput = false
-
     var maxLights = 4
     val shadowMaps = mutableListOf<ShadowMap>()
     var lightBacksides = false
 
-    var isInstanced = false
+    var cullMethod = CullMethod.CULL_BACK_FACES
+    var alphaMode: AlphaMode = AlphaModeOpaque()
+    var isHdrOutput = false
 
-    // initial shader values
+    var roughnessChannel = "r"
+    var roughnessTexName = "tRoughness"
+    var metallicChannel = "r"
+    var metallicTexName = "tMetallic"
+    var occlusionChannel = "r"
+    var occlusionTexName = "tOcclusion"
+
+    // initial shader attribute values
     var albedo = Color.GRAY
     var emissive = Color.BLACK
     var roughness = 0.5f
     var metallic = 0.0f
 
+    var normalStrength = 1f
+    var displacementStrength = 0.1f
+    var occlusionStrength = 1f
+
     var albedoMap: Texture? = null
     var emissiveMap: Texture? = null
     var normalMap: Texture? = null
     var displacementMap: Texture? = null
-
     var roughnessMap: Texture? = null
-    var roughnessChannel = "r"
-    var roughnessTexName = "tRoughness"
-
     var metallicMap: Texture? = null
-    var metallicChannel = "r"
-    var metallicTexName = "tMetallic"
-
     var occlusionMap: Texture? = null
-    var occlusionChannel = "r"
-    var occlusionTexName = "tOcclusion"
 
     var irradianceMap: CubeMapTexture? = null
     var reflectionMap: CubeMapTexture? = null

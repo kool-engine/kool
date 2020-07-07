@@ -185,3 +185,57 @@ class CubicScaleKey(time: Float, scale: Vec3d, val startTan: Vec3d, val endTan: 
         }
     }
 }
+
+open class WeightKey(time: Float, val weights: FloatArray) : AnimationKey<WeightKey>(time) {
+    protected var tmpW = FloatArray(1)
+
+    override fun apply(time: Float, next: WeightKey?, node: AnimationNode) {
+        if (tmpW.size != weights.size) {
+            tmpW = FloatArray(weights.size)
+        }
+
+        if (next == null) {
+            for (i in weights.indices) {
+                tmpW[i] = weights[i]
+            }
+        } else {
+            for (i in weights.indices) {
+                tmpW[i] = (next.weights[i] - weights[i]) * interpolationPos(time, next.time) + weights[i]
+            }
+        }
+        node.setWeights(tmpW)
+    }
+}
+
+class CubicWeightKey(time: Float, weights: FloatArray, val startTan: FloatArray, val endTan: FloatArray) : WeightKey(time, weights) {
+    override fun apply(time: Float, next: WeightKey?, node: AnimationNode) {
+        if (tmpW.size != weights.size) {
+            tmpW = FloatArray(weights.size)
+        }
+
+        if (next == null) {
+            for (i in weights.indices) {
+                tmpW[i] = weights[i]
+            }
+        } else {
+            val t = interpolationPos(time, next.time)
+            val t2 = t * t
+            val t3 = t * t * t
+
+            val f1 = 2*t3 - 3*t2 + 1
+            val f2 = t3 - 2*t2 + t
+            val f3 = -2*t3 + 3*t2
+            val f4 = t3 - t2
+
+            for (i in weights.indices) {
+                val p0 = weights[i] * f1
+                val m0 = startTan[i] * f2
+                val p1 = next.weights[i] * f3
+                val m1 = endTan[i] * f4
+
+                tmpW[i] = p0 + m0 + p1 + m1
+            }
+        }
+        node.setWeights(tmpW)
+    }
+}

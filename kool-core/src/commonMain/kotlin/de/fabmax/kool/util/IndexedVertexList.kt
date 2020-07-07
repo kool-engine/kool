@@ -107,6 +107,18 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         vertexIt = VertexView(this, 0)
     }
 
+    fun getMorphAttributes(): List<Attribute> {
+        val morphAttribs = mutableListOf<Attribute>()
+        vertexAttributes.forEach { a ->
+            if (a.name.startsWith(Attribute.NORMALS.name + "_") ||
+                    a.name.startsWith(Attribute.POSITIONS.name + "_") ||
+                    a.name.startsWith(Attribute.TANGENTS.name + "_")) {
+                morphAttribs += a
+            }
+        }
+        return morphAttribs
+    }
+
     fun isEmpty(): Boolean = numVertices == 0 || numIndices == 0
 
     private fun increaseDataSizeF(newSize: Int) {

@@ -232,6 +232,18 @@ class ShaderModel(val modelInfo: String = "") {
         fun pushConstantNode4f(u: Uniform4f) = addNode(PushConstantNode4f(u, stage))
         fun pushConstantNodeColor(u: UniformColor) = addNode(PushConstantNodeColor(u, stage))
 
+        fun morphWeightsNode(nWeights: Int) = addNode(MorphWeightsNode(nWeights, stage))
+
+        fun getMorphWeightNode(iWeight: Int, morphWeightsNode: MorphWeightsNode) =
+                getMorphWeightNode(iWeight, morphWeightsNode.outWeights0, morphWeightsNode.outWeights1)
+
+        fun getMorphWeightNode(iWeight: Int, weights0: ShaderNodeIoVar? = null, weights1: ShaderNodeIoVar? = null): GetMorphWeightNode {
+            val getWeightNd = addNode(GetMorphWeightNode(iWeight, stage))
+            weights0?.let { getWeightNd.inWeights0 = it }
+            weights1?.let { getWeightNd.inWeights1 = it }
+            return getWeightNd
+        }
+
         fun textureNode(texName: String) = addNode(TextureNode(stage, texName))
 
         fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSamplerNode {

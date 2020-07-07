@@ -41,7 +41,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Node based dynamic shader generation
 - Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
-- Limited support for [glTF](https://github.com/KhronosGroup/glTF) model format (no morph targets yet...)
+- (Almost) complete support for [glTF](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)
 - Deferred shading
 - Screen-space ambient occlusion

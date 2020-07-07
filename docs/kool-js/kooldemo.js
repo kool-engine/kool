@@ -441,7 +441,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             continue;
           case 3:
             var model = ensureNotNull(this.result_0);
-            var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+            var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
             var teapotMesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
             var irrMapPass = new IrradianceMapPass(this.local$this$, this.local$hdriMap);
             var reflMapPass = new ReflectionMapPass(this.local$this$, this.local$hdriMap);
@@ -1416,7 +1416,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda_1(this$) {
-    return function ($receiver, rp, ctx) {
+    return function ($receiver, rp, f) {
       var mapSz = 0.26;
       var scaleX = rp.viewport.width * mapSz;
       var scaleY = scaleX * (rp.viewport.height / rp.viewport.width);
@@ -2365,7 +2365,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$_0 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
     var $receiver = new GltfDemo$GltfModel(this, 'Fox', Demo$Companion_getInstance().modelBasePath + '/fox.glb', 0.01, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), true, 3.5);
     $receiver.animate = GltfDemo$models$lambda$lambda(this);
-    this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Tangent Test', Demo$Companion_getInstance().modelBasePath + '/NormalTangentMirrorTest.glb', 1.0, new Vec3f(0.0, 1.2, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5)]);
+    this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5)]);
     this.autoRotate_0 = true;
     this.useDeferredPipeline_0 = true;
     this.animationSpeed_0 = 0.5;
@@ -3161,7 +3161,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             if ((tmp$ = this.result_0) != null) {
               this.$this.$outer;
               var this$GltfDemo = this.$this.$outer;
-              var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, void 0, true, true, void 0, void 0, this.local$isDeferredShading, GltfDemo$GltfModel$load$lambda$lambda(this.local$isDeferredShading, this$GltfDemo));
+              var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, void 0, void 0, true, true, void 0, void 0, this.local$isDeferredShading, GltfDemo$GltfModel$load$lambda$lambda(this.local$isDeferredShading, this$GltfDemo));
               var $receiver = tmp$.makeModel_m0hq3v$(modelCfg);
               $receiver.translate_czzhiu$(this.$this.translation);
               $receiver.scale_mx4ult$(this.$this.scale);
@@ -3404,7 +3404,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     tmp$ = model.scenes;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
       var mesh = first(model.makeModel_m0hq3v$(modelCfg, i).meshes.values);
       var $this = mesh.geometry;
       var tmp$_0;
@@ -3825,7 +3825,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             if ((tmp$ = this.result_0) != null) {
               var this$MultiLightDemo = this.local$this$MultiLightDemo;
               var this$ = this.local$this$;
-              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
               var model = tmp$.makeModel_m0hq3v$(modelCfg);
               this$MultiLightDemo.bunnyMesh_0 = first(model.meshes.values);
               this$MultiLightDemo.applyShaders_0();
@@ -7886,7 +7886,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 2:
             if ((tmp$ = this.result_0) != null) {
               var tmp$_0;
-              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, false);
+              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
               var mesh = first(tmp$.makeModel_m0hq3v$(modelCfg).meshes.values);
               var geometry = mesh.geometry;
               tmp$_0 = geometry.numVertices;
@@ -8619,7 +8619,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, f, f_0) {
       var tmp$, tmp$_0;
       (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
       (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;

@@ -125,7 +125,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
             }
-            onUpdate += { _, ctx ->
+            onUpdate += { _, _ ->
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength
             }

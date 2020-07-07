@@ -1,11 +1,12 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.TreeMap
 
 class Animation(val name: String?) {
-    val channels = mutableListOf<AnimationChannel>()
+    val channels = mutableListOf<AnimationChannel<*>>()
 
     var weight = 1f
     var speed = 1f
@@ -40,19 +41,13 @@ class Animation(val name: String?) {
     }
 }
 
-abstract class AnimationChannel(val name: String?, val animationNode: AnimationNode) {
-    abstract val lastKeyTime: Float
+abstract class AnimationChannel<T: AnimationKey<T>>(val name: String?, val animationNode: AnimationNode) {
+    val keys = TreeMap<Float, T>()
+    val lastKeyTime: Float
+        get() = keys.lastKey()
     var duration = 0f
 
-    abstract fun apply(time: Float)
-}
-
-class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
-    val keys = TreeMap<Float, TranslationKey>()
-    override val lastKeyTime: Float
-        get() = keys.lastKey()
-
-    override fun apply(time: Float) {
+    fun apply(time: Float) {
         var key = keys.floorValue(time)
         if (key == null) {
             key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
@@ -61,42 +56,24 @@ class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): 
     }
 }
 
-class RotationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
-    val keys = TreeMap<Float, RotationKey>()
-    override val lastKeyTime: Float
-        get() = keys.lastKey()
+class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<TranslationKey>(name, animationNode)
 
-    override fun apply(time: Float) {
-        var key = keys.floorValue(time)
-        if (key == null) {
-            key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
-        }
-        key.apply(time, keys.higherValue(time), animationNode)
-    }
-}
+class RotationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<RotationKey>(name, animationNode)
 
-class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel(name, animationNode) {
-    val keys = TreeMap<Float, ScaleKey>()
-    override val lastKeyTime: Float
-        get() = keys.lastKey()
+class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<ScaleKey>(name, animationNode)
 
-    override fun apply(time: Float) {
-        var key = keys.floorValue(time)
-        if (key == null) {
-            key = if (isFuzzyEqual(lastKeyTime, duration)) keys.lastValue() else keys.firstValue()
-        }
-        key.apply(time, keys.higherValue(time), animationNode)
-    }
-}
+class WeightAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<WeightKey>(name, animationNode)
 
 interface AnimationNode {
-    fun initTransform()
+    fun initTransform() { }
     fun applyTransform()
     fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean)
 
-    fun setTranslation(translation: Vec3d)
-    fun setRotation(rotation: Vec4d)
-    fun setScale(scale: Vec3d)
+    fun setTranslation(translation: Vec3d) { }
+    fun setRotation(rotation: Vec4d) { }
+    fun setScale(scale: Vec3d) { }
+
+    fun setWeights(weights: FloatArray) { }
 }
 
 class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
@@ -164,5 +141,36 @@ class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
     override fun setScale(scale: Vec3d) {
         animScale.set(scale)
     }
+}
 
+class MorphAnimatedMesh(val target: Mesh): AnimationNode {
+    private var weights = FloatArray(1)
+
+    override fun applyTransform() {
+        target.morphWeights = weights
+    }
+
+    override fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean) {
+        var targetW = target.morphWeights
+        if (targetW == null || targetW.size != weights.size) {
+            targetW = FloatArray(weights.size)
+            target.morphWeights = targetW
+        }
+        for (i in weights.indices) {
+            if (firstWeightedTransform) {
+                targetW[i] = weights[i] * weight
+            } else {
+                targetW[i] += weights[i] * weight
+            }
+        }
+    }
+
+    override fun setWeights(weights: FloatArray) {
+        if (this.weights.size != weights.size) {
+            this.weights = FloatArray(weights.size)
+        }
+        for (i in weights.indices) {
+            this.weights[i] = weights[i]
+        }
+    }
 }

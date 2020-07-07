@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline.shadermodel
 
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.logE
+import kotlin.math.min
 
 class UniformBufferPremultipliedMvp(graph: ShaderGraph) : ShaderNode("UboPremultipliedMvp", graph) {
     val uMvp = UniformMat4f("modelViewProj")
@@ -134,17 +137,58 @@ class CubeMapNode(graph: ShaderGraph, name: String = "texCube_${graph.nextNodeId
     }
 }
 
+class MorphWeightsNode(val nWeights: Int, graph: ShaderGraph) : ShaderNode("morphWeights_${graph.nextNodeId}", graph) {
+    private val uWeights0 = Uniform4f("${name}_w0")
+    private val uWeights1 = Uniform4f("${name}_w1")
+
+    val outWeights0 = ShaderNodeIoVar(ModelVar4f(uWeights0.name))
+    val outWeights1 = ShaderNodeIoVar(ModelVar4f(uWeights1.name))
+
+    init {
+        if (nWeights > 8) {
+            logE { "Currently only up to 8 morph target attributes are supported" }
+        }
+    }
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        if (nWeights > 0) {
+            shaderGraph.pushConstants.apply {
+                stages += shaderGraph.stage
+                +{ uWeights0 }
+                if (nWeights > 4) {
+                    +{ uWeights1 }
+                }
+
+                onUpdate = { _, cmd ->
+                    cmd.mesh.morphWeights?.let { w ->
+                        for (i in 0 until min(4, w.size)) {
+                            uWeights0.value[i] = w[i]
+                        }
+                        for (i in 0 until min(4, w.size - 4)) {
+                            uWeights1.value[i] = w[i + 4]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 abstract class PushConstantNode<T: Uniform<*>>(name: String, graph: ShaderGraph) : ShaderNode(name, graph) {
     abstract val uniform: T
     abstract val output: ShaderNodeIoVar
 
     val visibleIn = mutableSetOf(graph.stage)
 
+    var onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = null
+
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.pushConstants.apply {
             stages += visibleIn
             +{ uniform }
+            onUpdate = this@PushConstantNode.onUpdate
         }
     }
 }
