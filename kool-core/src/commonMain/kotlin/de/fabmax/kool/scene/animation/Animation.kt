@@ -4,6 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.TreeMap
+import kotlin.math.min
 
 class Animation(val name: String?) {
     val channels = mutableListOf<AnimationChannel<*>>()
@@ -39,6 +40,14 @@ class Animation(val name: String?) {
             }
         }
     }
+
+    fun printChannels() {
+        println("$name channels:")
+        channels.forEach { ch ->
+            println("  ${ch.name} [node: ${ch.animationNode.name}]")
+            ch.printKeys("    ")
+        }
+    }
 }
 
 abstract class AnimationChannel<T: AnimationKey<T>>(val name: String?, val animationNode: AnimationNode) {
@@ -54,6 +63,16 @@ abstract class AnimationChannel<T: AnimationKey<T>>(val name: String?, val anima
         }
         key.apply(time, keys.higherValue(time), animationNode)
     }
+
+    fun printKeys(indent: String = "") {
+        val animKeys = keys.values.toList()
+        for (i in 0 until min(5, animKeys.size)) {
+            println("$indent${animKeys[i]}")
+        }
+        if (animKeys.size > 5) {
+            println("$indent  ...${animKeys.size-5} more")
+        }
+    }
 }
 
 class TranslationAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<TranslationKey>(name, animationNode)
@@ -65,6 +84,8 @@ class ScaleAnimationChannel(name: String?, animationNode: AnimationNode): Animat
 class WeightAnimationChannel(name: String?, animationNode: AnimationNode): AnimationChannel<WeightKey>(name, animationNode)
 
 interface AnimationNode {
+    val name: String?
+
     fun initTransform() { }
     fun applyTransform()
     fun applyTransformWeighted(weight: Float, firstWeightedTransform: Boolean)
@@ -77,6 +98,9 @@ interface AnimationNode {
 }
 
 class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
+    override val name: String?
+        get() = target.name
+
     private val initTranslation = MutableVec3d()
     private val initRotation = MutableVec4d()
     private val initScale = MutableVec3d(1.0, 1.0, 1.0)
@@ -144,6 +168,9 @@ class AnimatedTransformGroup(val target: TransformGroup): AnimationNode {
 }
 
 class MorphAnimatedMesh(val target: Mesh): AnimationNode {
+    override val name: String?
+        get() = target.name
+
     private var weights = FloatArray(1)
 
     override fun applyTransform() {

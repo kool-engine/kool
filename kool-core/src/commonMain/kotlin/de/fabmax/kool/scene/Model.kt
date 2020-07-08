@@ -48,7 +48,7 @@ class Model(name: String? = null) : TransformGroup(name) {
     }
 
     private fun TransformGroup.printHierarchy(indent: String) {
-        println("$indent$name")
+        println("$indent$name [${children.filterIsInstance<Mesh>().count()} meshes]")
         children.forEach {
             if (it is TransformGroup) {
                 it.printHierarchy("$indent    ")

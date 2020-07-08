@@ -189,6 +189,8 @@ abstract class Node(val name: String? = null) : Disposable {
         return true
     }
 
+    open fun findNode(name: String): Node? = if (name == this.name) { this } else { null }
+
     inline fun <reified T> findParentOfType(): T? {
         var p = parent
         while (p != null && p !is T) {

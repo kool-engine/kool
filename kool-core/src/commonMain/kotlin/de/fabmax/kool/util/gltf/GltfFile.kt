@@ -122,6 +122,7 @@ data class GltfFile(
             val applySkins: Boolean = true,
             val applyMorphTargets: Boolean = true,
             val applyTransforms: Boolean = false,
+            val removeEmptyNodes: Boolean = true,
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
             val applyMaterials: Boolean = true,
@@ -130,6 +131,7 @@ data class GltfFile(
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
+        val modelAnimations = mutableListOf<Animation>()
         val modelNodes = mutableMapOf<GltfNode, TransformGroup>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh>>()
         val meshMaterials = mutableMapOf<Mesh, GltfMaterial?>()
@@ -137,22 +139,41 @@ data class GltfFile(
         fun makeModel(scene: GltfScene): Model {
             val model = Model(scene.name ?: "model_scene")
             scene.nodeRefs.forEach { nd -> model += nd.makeNode(model, cfg) }
-            if (cfg.loadAnimations) { makeTrsAnimations(model) }
+
+            if (cfg.loadAnimations) { makeTrsAnimations() }
             if (cfg.loadAnimations) { makeSkins(model) }
             modelNodes.forEach { (node, grp) -> node.createMeshes(model, grp, cfg) }
-            if (cfg.loadAnimations) { makeMorphAnimations(model) }
+            if (cfg.loadAnimations) { makeMorphAnimations() }
+            modelAnimations.filter { it.channels.isNotEmpty() }.forEach { modelAnim ->
+                modelAnim.prepareAnimation()
+                model.animations += modelAnim
+            }
+            model.disableAllAnimations()
+
             if (cfg.applyTransforms && model.animations.isEmpty()) { applyTransforms(model) }
             if (cfg.mergeMeshesByMaterial) { mergeMeshesByMaterial(model) }
             if (cfg.sortNodesByAlpha) { model.sortNodesByAlpha() }
-            model.disableAllAnimations()
+            if (cfg.removeEmptyNodes) { model.removeEmpty() }
+
             return model
         }
 
-        private fun makeTrsAnimations(model: Model) {
+        private fun TransformGroup.removeEmpty() {
+            val tgChildren = children.filterIsInstance<TransformGroup>()
+            tgChildren.forEach {
+                it.removeEmpty()
+                if (it.children.isEmpty()) {
+                    removeNode(it)
+                }
+            }
+        }
+
+        private fun makeTrsAnimations() {
             animations.forEach { anim ->
                 val modelAnim = Animation(anim.name)
-                val animNodes = mutableMapOf<TransformGroup, AnimationNode>()
+                modelAnimations += modelAnim
 
+                val animNodes = mutableMapOf<TransformGroup, AnimationNode>()
                 anim.channels.forEach { channel ->
                     val nodeGrp = modelNodes[channel.target.nodeRef]
                     if (nodeGrp != null) {
@@ -163,10 +184,6 @@ data class GltfFile(
                             GltfAnimation.Target.PATH_SCALE -> makeScaleAnimation(channel, animationNd, modelAnim)
                         }
                     }
-                }
-                if (modelAnim.channels.isNotEmpty()) {
-                    modelAnim.prepareAnimation()
-                    model.animations += modelAnim
                 }
             }
         }
@@ -285,21 +302,17 @@ data class GltfFile(
             }
         }
 
-        private fun makeMorphAnimations(model: Model) {
-            animations.forEach { anim ->
-                val modelAnim = Animation(anim.name)
+        private fun makeMorphAnimations() {
+            animations.forEachIndexed { iAnim, anim ->
                 anim.channels.forEach { channel ->
                     if (channel.target.path == GltfAnimation.Target.PATH_WEIGHTS) {
+                        val modelAnim = modelAnimations[iAnim]
                         val gltfMesh = channel.target.nodeRef?.meshRef
                         val nodeGrp = modelNodes[channel.target.nodeRef]
                         nodeGrp?.children?.filterIsInstance<Mesh>()?.forEach {
                             makeWeightAnimation(gltfMesh!!, channel, MorphAnimatedMesh(it), modelAnim)
                         }
                     }
-                }
-                if (modelAnim.channels.isNotEmpty()) {
-                    modelAnim.prepareAnimation()
-                    model.animations += modelAnim
                 }
             }
         }
@@ -511,10 +524,15 @@ data class GltfFile(
                     meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
                     meshMaterials[mesh] = p.materialRef
 
-                    if (cfg.applySkins && skin >= 0) {
+                    if (cfg.loadAnimations && cfg.applySkins && skin >= 0) {
                         mesh.skin = model.skins[skin]
+                        val skeletonRoot = skins[skin].skeleton
+                        if (skeletonRoot >= 0) {
+                            nodeGrp -= mesh
+                            modelNodes[nodes[skeletonRoot]]!! += mesh
+                        }
                     }
-                    if (cfg.applyMorphTargets && p.targets.isNotEmpty()) {
+                    if (cfg.loadAnimations && cfg.applyMorphTargets && p.targets.isNotEmpty()) {
                         mesh.morphWeights = FloatArray(p.targets.sumBy { it.size })
                     }
 

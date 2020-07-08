@@ -106,13 +106,26 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     /**
-     * Removes BUT DOESN'T DISPOSE all children of this group.
+     * Removes but doesn't dispose all children of this group.
      */
     open fun removeAllChildren() {
         for (i in intChildren.indices) {
             intChildren[i].parent = null
         }
         intChildren.clear()
+    }
+
+    override fun findNode(name: String): Node? {
+        if (name == this.name) {
+            return this
+        }
+        for (i in children.indices) {
+            val found = children[i].findNode(name)
+            if (found != null) {
+                return found
+            }
+        }
+        return null
     }
 
     open fun containsNode(node: Node): Boolean = intChildren.contains(node)

@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.toString
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -18,6 +19,8 @@ abstract class AnimationKey<T: AnimationKey<T>>(val time: Float) {
             0f
         }
     }
+
+    override fun toString() = "${time.toString(2)} -> [$interpolation]"
 
     enum class Interpolation {
         LINEAR {
@@ -50,6 +53,8 @@ open class RotationKey(time: Float, val rotation: Vec4d) : AnimationKey<Rotation
         }
         node.setRotation(tmpRotation)
     }
+
+    override fun toString() = "${time.toString(2)} -> rotation: $rotation [$interpolation]"
 
     private fun slerp(quatA: Vec4d, quatB: Vec4d, f: Double, result: MutableVec4d): MutableVec4d {
         quatA.norm(qa)
@@ -117,6 +122,8 @@ open class TranslationKey(time: Float, val translation: Vec3d) : AnimationKey<Tr
             node.setTranslation(tmpTranslation)
         }
     }
+
+    override fun toString() = "${time.toString(2)} -> translation: $translation [$interpolation]"
 }
 
 class CubicTranslationKey(time: Float, translation: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : TranslationKey(time, translation) {
@@ -157,6 +164,8 @@ open class ScaleKey(time: Float, val scale: Vec3d) : AnimationKey<ScaleKey>(time
             node.setScale(tmpScale)
         }
     }
+
+    override fun toString() = "${time.toString(2)} -> scale: $scale [$interpolation]"
 }
 
 class CubicScaleKey(time: Float, scale: Vec3d, val startTan: Vec3d, val endTan: Vec3d) : ScaleKey(time, scale) {
@@ -205,6 +214,8 @@ open class WeightKey(time: Float, val weights: FloatArray) : AnimationKey<Weight
         }
         node.setWeights(tmpW)
     }
+
+    override fun toString() = "${time.toString(2)} -> weight: (${weights.joinToString(", ")}) [$interpolation]"
 }
 
 class CubicWeightKey(time: Float, weights: FloatArray, val startTan: FloatArray, val endTan: FloatArray) : WeightKey(time, weights) {
