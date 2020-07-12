@@ -16,7 +16,7 @@ class DiscardClearNode(stage: ShaderGraph) : ShaderNode("discardClear", stage) {
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("if (${inViewPos.name}.z > 1.0) { discard; }")
+        generator.appendMain("if (${inViewPos.name}.z > 0.0) { discard; }")
     }
 }
 

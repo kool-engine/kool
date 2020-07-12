@@ -28,6 +28,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private var positionAoSampler: TextureSampler? = null
     private var normalRoughnessSampler: TextureSampler? = null
     private var albedoMetalSampler: TextureSampler? = null
+    private var emissiveSampler: TextureSampler? = null
 
     var positionAo: Texture? = cfg.positionAo
         set(value) {
@@ -43,6 +44,11 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         set(value) {
             field = value
             albedoMetalSampler?.texture = value
+        }
+    var emissive: Texture? = cfg.emissive
+        set(value) {
+            field = value
+            emissiveSampler?.texture = value
         }
 
     // Lighting props
@@ -89,6 +95,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
     override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
         builder.depthTest = DepthCompareOp.DISABLED
+        builder.blendMode = BlendMode.DISABLED
         return super.createPipeline(mesh, builder, ctx)
     }
 
@@ -102,6 +109,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         normalRoughnessSampler?.let { it.texture = normalRoughness }
         albedoMetalSampler = model.findNode<TextureNode>("albedoMetal")?.sampler
         albedoMetalSampler?.let { it.texture = albedoMetal }
+        emissiveSampler = model.findNode<TextureNode>("emissive")?.sampler
+        emissiveSampler?.let { it.texture = emissive }
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
@@ -139,6 +148,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
                     inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
+                    if (cfg.isWithEmissive) {
+                        inEmissive = textureSamplerNode(textureNode("emissive"), coord).outColor
+                    }
                 }
 
                 addNode(DiscardClearNode(stage)).apply { inViewPos = mrtDeMultiplex.outViewPos }
@@ -179,6 +191,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     inAlbedo = mrtDeMultiplex.outAlbedo
+                    inEmissive = mrtDeMultiplex.outEmissive
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
 
@@ -202,6 +215,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         var isImageBasedLighting = false
         var isScrSpcAmbientOcclusion = false
+        var isWithEmissive = false
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
@@ -210,12 +224,24 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         var positionAo: Texture? = null
         var normalRoughness: Texture? = null
         var albedoMetal: Texture? = null
+        var emissive: Texture? = null
 
         var irradianceMap: CubeMapTexture? = null
         var reflectionMap: CubeMapTexture? = null
         var brdfLut: Texture? = null
 
         var scrSpcAmbientOcclusionMap: Texture? = null
+
+        fun useMrtPass(mrtPass: DeferredMrtPass) {
+            sceneCamera = mrtPass.camera
+            positionAo = mrtPass.positionAo
+            normalRoughness = mrtPass.normalRoughness
+            albedoMetal = mrtPass.albedoMetal
+            isWithEmissive = mrtPass.withEmissive
+            if (isWithEmissive) {
+                emissive = mrtPass.emissive
+            }
+        }
 
         fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
             this.scrSpcAmbientOcclusionMap = ssaoMap

@@ -44,6 +44,8 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         clearDepth = false
         camera = mrtPass.camera
 
+        cfg.useMrtPass(mrtPass)
+
         content.apply {
             isFrustumChecked = false
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
@@ -54,15 +56,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                         mirrorTexCoordsY()
                     }
                 }
-
-                cfg.apply {
-                    if (sceneCamera == null) { sceneCamera = mrtPass.camera }
-
-                    if (positionAo == null) { positionAo = mrtPass.positionAo }
-                    if (normalRoughness == null) { normalRoughness = mrtPass.normalRoughness }
-                    if (albedoMetal == null) { albedoMetal = mrtPass.albedoMetal }
-                }
-
                 sceneShader = PbrSceneShader(cfg)
                 pipelineLoader = sceneShader
             }

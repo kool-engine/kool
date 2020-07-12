@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
@@ -412,21 +413,24 @@ data class GltfFile(
             }
         }
 
-        private fun TransformGroup.sortNodesByAlpha() {
-            children.filterIsInstance<TransformGroup>().forEach { it.sortNodesByAlpha() }
-            sortChildrenBy {
-                var a = 1.1f
-                if (it is Mesh) {
-                    val mat = meshMaterials[it]
-                    if (mat != null) {
-                        a = when (mat.alphaMode) {
-                            GltfMaterial.ALPHA_MODE_BLEND -> min(0.999f, mat.pbrMetallicRoughness.baseColorFactor[3])
-                            else -> 1f
-                        }
-                    }
+        private fun TransformGroup.sortNodesByAlpha(): Float {
+            val childAlphas = mutableMapOf<Node, Float>()
+            var avgAlpha = 0f
+            for (child in children) {
+                var a = 1f
+                if (child is Mesh && !child.isOpaque) {
+                    a = 0f
+                } else if (child is TransformGroup) {
+                    a = child.sortNodesByAlpha()
                 }
-                -a
+                childAlphas[child] = a
+                avgAlpha += a
             }
+            sortChildrenBy { -(childAlphas[it] ?: 1f) }
+            if (children.isNotEmpty()) {
+                avgAlpha /= children.size
+            }
+            return avgAlpha
         }
 
         private fun mergeMeshesByMaterial(model: Model) {
@@ -531,9 +535,11 @@ data class GltfFile(
                             nodeGrp -= mesh
                             modelNodes[nodes[skeletonRoot]]!! += mesh
                         }
+                        mesh.isFrustumChecked = false
                     }
                     if (cfg.loadAnimations && cfg.applyMorphTargets && p.targets.isNotEmpty()) {
                         mesh.morphWeights = FloatArray(p.targets.sumBy { it.size })
+                        mesh.isFrustumChecked = false
                     }
 
                     if (cfg.applyMaterials) {

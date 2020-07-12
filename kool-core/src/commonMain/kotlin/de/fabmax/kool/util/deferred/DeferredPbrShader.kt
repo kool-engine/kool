@@ -15,31 +15,38 @@ import de.fabmax.kool.util.Color
  */
 class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
 
+    private val cullMethod = cfg.cullMethod
+
     // Simple material props
     private var uRoughness: PushConstantNode1f? = null
     private var uMetallic: PushConstantNode1f? = null
     private var uAlbedo: PushConstantNodeColor? = null
+    private var uEmissive: PushConstantNodeColor? = null
 
     var metallic = cfg.metallic
         set(value) {
             field = value
             uMetallic?.uniform?.value = value
         }
-
     var roughness = cfg.roughness
         set(value) {
             field = value
             uRoughness?.uniform?.value = value
         }
-
     var albedo: Color = cfg.albedo
         set(value) {
             field = value
             uAlbedo?.uniform?.value?.set(value)
         }
+    var emissive: Color = cfg.emissive
+        set(value) {
+            field = value
+            uEmissive?.uniform?.value?.set(value)
+        }
 
     // Material maps
     private var albedoSampler: TextureSampler? = null
+    private var emissiveSampler: TextureSampler? = null
     private var normalSampler: TextureSampler? = null
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
@@ -55,6 +62,11 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         set(value) {
             field = value
             albedoSampler?.texture = value
+        }
+    var emissiveMap: Texture? = cfg.emissiveMap
+        set(value) {
+            field = value
+            emissiveSampler?.texture = value
         }
     var normalMap: Texture? = cfg.normalMap
         set(value) {
@@ -88,6 +100,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         }
 
     override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.cullMethod = cullMethod
         builder.blendMode = BlendMode.DISABLED
         return super.createPipeline(mesh, builder, ctx)
     }
@@ -99,9 +112,13 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         uRoughness?.let { it.uniform.value = roughness }
         uAlbedo = model.findNode("uAlbedo")
         uAlbedo?.uniform?.value?.set(albedo)
+        uEmissive = model.findNode("uEmissive")
+        uEmissive?.uniform?.value?.set(emissive)
 
         albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
+        emissiveSampler = model.findNode<TextureNode>("tEmissive")?.sampler
+        emissiveSampler?.let { it.texture = emissiveMap }
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
         metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
@@ -233,6 +250,19 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                     albedo = combineXyzWNode(albedo, constFloat(1f)).output
                 }
 
+                val emissive = if (cfg.isEmissiveMapped) {
+                    val emissiveTex = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
+                    val emissiveLin = gammaNode(emissiveTex).outColor
+                    if (cfg.isMultiplyEmissiveMap) {
+                        val fac = pushConstantNodeColor("uEmissive").output
+                        multiplyNode(emissiveLin, fac).output
+                    } else {
+                        emissiveLin
+                    }
+                } else {
+                    pushConstantNodeColor("uEmissive").output
+                }
+
                 var viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
                     val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
@@ -288,16 +318,21 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
                     inViewPos = viewPos
                     inAlbedo = albedo
+                    inEmissive = emissive
                     inViewNormal = viewNormal
                     inRoughness = roughness
                     inMetallic = metallic
                     inAo = aoFactor
                 }
 
-                colorOutput(channels = 3).apply {
+                colorOutput(channels = 4).apply {
                     inColors[0] = mrtMultiplexNode.outPositionAo
                     inColors[1] = mrtMultiplexNode.outNormalRough
                     inColors[2] = mrtMultiplexNode.outAlbedoMetallic
+                    // fixme: depending on mrt pass setup emissive color attachment might not exist, in this case
+                    //  writing to it isn't particularly good style (and produces a Vulkan Validation Layer warning)
+                    //  however written values are simply discarded and shouldn't do much harm
+                    inColors[3] = mrtMultiplexNode.outEmissive
                 }
             }
         }
@@ -306,6 +341,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
     class MrtMultiplexNode(graph: ShaderGraph) : ShaderNode("mrtMultiplex", graph, ShaderStage.FRAGMENT_SHADER.mask) {
         var inViewPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inAlbedo = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+        var inEmissive = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inViewNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.5f))
         var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0f))
@@ -314,6 +350,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         val outPositionAo = ShaderNodeIoVar(ModelVar4f("outPositionAo"), this)
         val outNormalRough = ShaderNodeIoVar(ModelVar4f("outNormalRough"), this)
         val outAlbedoMetallic = ShaderNodeIoVar(ModelVar4f("outAlbedoMetallic"), this)
+        val outEmissive = ShaderNodeIoVar(ModelVar4f("outEmissive"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -325,6 +362,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                 ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
                 ${outNormalRough.declare()} = vec4(normalize(${inViewNormal.ref3f()}), ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
+                ${outEmissive.declare()} = vec4(${inEmissive.ref3f()}, 1.0);
             """)
         }
     }
@@ -333,9 +371,11 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         var inPositionAo = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inNormalRough = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inAlbedoMetallic = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+        var inEmissive = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
         val outViewPos = ShaderNodeIoVar(ModelVar4f("outViewPos"), this)
         val outAlbedo = ShaderNodeIoVar(ModelVar4f("outAlbedo"), this)
+        val outEmissive = ShaderNodeIoVar(ModelVar3f("outEmissive"), this)
         val outViewNormal = ShaderNodeIoVar(ModelVar3f("outViewNormal"), this)
         val outRoughness = ShaderNodeIoVar(ModelVar1f("outRoughness"), this)
         val outMetallic = ShaderNodeIoVar(ModelVar1f("outMetallic"), this)
@@ -350,6 +390,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
             generator.appendMain("""
                 ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
                 ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
+                ${outEmissive.declare()} = ${inEmissive.ref3f()};
                 ${outViewNormal.declare()} = vec3(${inNormalRough.ref3f()});
                 ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
                 ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;

@@ -44,7 +44,7 @@ class GltfDemo(ctx: KoolContext) {
             GltfModel("Morph Cube", "${Demo.modelBasePath}/AnimatedMorphCube.glb",
                     1f, Vec3f(0f, 1f, 0f), false, Vec3d(0.0, 1.0, 0.0), false, 3.5),
             GltfModel("Alpha Mode Test", "${Demo.modelBasePath}/AlphaBlendModeTest.glb",
-                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 1.25, 0.0), false, 3.5)
+                    0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5)
     )
 
     private var autoRotate = true
@@ -146,7 +146,7 @@ class GltfDemo(ctx: KoolContext) {
     }
 
     private suspend fun Scene.makeDeferredContent(ctx: KoolContext) {
-        mrtPass = DeferredMrtPass(this)
+        mrtPass = DeferredMrtPass(this, true)
         aoPipelineDeferred = AoPipeline.createDeferred(this, mrtPass)
         shadowsDeferred += listOf(
                 SimpleShadowMap(this, 0, 2048, mrtPass.content),
@@ -441,6 +441,9 @@ class GltfDemo(ctx: KoolContext) {
             ctx.assetMgr.loadGltfModel(assetPath)?.let {
                 val modelCfg = GltfFile.ModelGenerateConfig(
                         generateNormals = generateNormals,
+                        loadAnimations = true,
+                        applyMorphTargets = true,
+                        applySkins = true,
                         applyTransforms = true,
                         mergeMeshesByMaterial = true,
                         isDeferredShading = isDeferredShading
@@ -457,6 +460,9 @@ class GltfDemo(ctx: KoolContext) {
                 model = it.makeModel(modelCfg).apply {
                     translate(translation)
                     scale(scale)
+
+                    // only relevant for Polly, but doesn't harm the other models...
+                    findNode("Ground")?.isVisible = false
 
                     enableAnimation(0)
                     onUpdate += { _, ctx ->

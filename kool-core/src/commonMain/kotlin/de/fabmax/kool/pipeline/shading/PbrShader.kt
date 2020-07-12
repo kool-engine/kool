@@ -32,19 +32,16 @@ class PbrShader(cfg: PbrMaterialConfig = PbrMaterialConfig(), model: ShaderModel
             field = value
             uMetallic?.uniform?.value = value
         }
-
     var roughness = cfg.roughness
         set(value) {
             field = value
             uRoughness?.uniform?.value = value
         }
-
     var albedo: Color = cfg.albedo
         set(value) {
             field = value
             uAlbedo?.uniform?.value?.set(value)
         }
-
     var emissive: Color = cfg.emissive
         set(value) {
             field = value
