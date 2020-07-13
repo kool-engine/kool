@@ -239,7 +239,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     init {
         graphMesh = Mesh(graphGeom)
         graphMesh.geometry.usage = Usage.DYNAMIC
-        graphMesh.pipelineLoader = UiShader()
+        graphMesh.shader = UiShader()
     }
 
     override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {

@@ -122,7 +122,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 maxLights = this@MultiLightDemo.shadowMaps.size
                 shadowMaps += this@MultiLightDemo.shadowMaps
             }
-            pipelineLoader = modelShader
+            shader = modelShader
         }
     }
 
@@ -132,13 +132,13 @@ class MultiLightDemo(ctx: KoolContext) {
                 albedoSource = Albedo.STATIC_ALBEDO
                 shadowMaps += this@MultiLightDemo.shadowMaps
             }
-            pipelineLoader = modelShader
+            shader = modelShader
         }
     }
 
     private fun applyPbrShaderGround() {
         groundMesh?.apply {
-            pipelineLoader = pbrShader {
+            shader = pbrShader {
                 useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
@@ -155,7 +155,7 @@ class MultiLightDemo(ctx: KoolContext) {
 
     private fun applyPhongShaderGround() {
         groundMesh?.apply {
-            pipelineLoader = phongShader {
+            shader = phongShader {
                 useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
                 shininess = 100f
@@ -486,7 +486,7 @@ class MultiLightDemo(ctx: KoolContext) {
                         height = 0.15f
                     }
                 }
-                pipelineLoader = lightMeshShader
+                shader = lightMeshShader
             }
             +lightMesh
             +spotAngleMesh

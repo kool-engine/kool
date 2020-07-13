@@ -46,7 +46,7 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512,
                         colorOutput(lutNd.outColor)
                     }
                 }
-                pipelineLoader = ModeledShader(model)
+                shader = ModeledShader(model)
             }
         }
 

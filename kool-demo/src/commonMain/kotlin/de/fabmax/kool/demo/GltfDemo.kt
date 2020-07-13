@@ -173,7 +173,7 @@ class GltfDemo(ctx: KoolContext) {
                         mirrorTexCoordsY()
                     }
                 }
-                pipelineLoader = DeferredOutputShader(pbrPass.colorTexture)
+                shader = DeferredOutputShader(pbrPass.colorTexture)
             }
         }
     }
@@ -258,7 +258,7 @@ class GltfDemo(ctx: KoolContext) {
                 }
             }
 
-            pipelineLoader = if (isDeferredShading) {
+            shader = if (isDeferredShading) {
                 DeferredPbrShader(pbrCfg)
             } else {
                 PbrShader(pbrCfg)

@@ -37,7 +37,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
             normalRoughness = mrtPass.normalRoughness
             albedoMetal = mrtPass.albedoMetal
         }
-        pipelineLoader = DeferredLightShader(lightCfg)
+        shader = DeferredLightShader(lightCfg)
 
         onUpdate += { _, _ ->
             if (isDynamic) {

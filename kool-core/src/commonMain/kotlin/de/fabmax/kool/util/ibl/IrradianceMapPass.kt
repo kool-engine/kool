@@ -44,9 +44,9 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
                     }
                 }
                 irrMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {
-                    onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
                 }
-                pipelineLoader = irrMapShader
+                shader = irrMapShader
             }
         }
 

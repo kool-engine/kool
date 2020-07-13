@@ -1,10 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.scene.Mesh
-
-class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContext) {
+class Pipeline private constructor(builder: Builder) {
 
     val name = builder.name
 
@@ -22,24 +18,15 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     val isWriteDepth: Boolean = builder.isWriteDepth
     val lineWidth: Float = builder.lineWidth
 
-    val vertexLayout: VertexLayout
-    val descriptorSetLayouts: List<DescriptorSetLayout>
-    val pushConstantRanges: List<PushConstantRange>
-
-    val shader: Shader
+    val layout: Layout
     val shaderCode: ShaderCode
 
     init {
-        val buildCtx = BuildContext(builder)
-        buildCtx.vertexLayout.primitiveType = mesh.geometry.primitiveType
-        builder.onCreatePipeline.forEach { it(buildCtx) }
-        shader = builder.shaderLoader(mesh, buildCtx, ctx)
-        vertexLayout = buildCtx.vertexLayout.create()
-        descriptorSetLayouts = buildCtx.descriptorSetLayouts.mapIndexed { i, b -> b.create(i) }
-        pushConstantRanges = buildCtx.pushConstantRanges.map { it.create() }
-
-        // load / generate shader code
-        shaderCode = shader.generateCode(this, ctx)
+        val vertexLayout = builder.vertexLayout.create()
+        val descriptorSetLayouts = builder.descriptorSetLayouts.mapIndexed { i, b -> b.create(i) }
+        val pushConstantRanges = builder.pushConstantRanges.map { it.create() }
+        layout = Layout(vertexLayout, descriptorSetLayouts, pushConstantRanges)
+        shaderCode = builder.shaderCodeGenerator(layout)
 
         // compute pipelineHash
         var hash = cullMethod.hashCode().toULong()
@@ -51,9 +38,6 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         descriptorSetLayouts.forEach { hash = (hash * 71023UL) + it.longHash }
         pushConstantRanges.forEach { hash = (hash * 71023UL) + it.longHash }
         this.pipelineHash = hash
-
-        shader.onPipelineCreated(this)
-        builder.onPipelineCreated.forEach { it(this) }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -66,56 +50,34 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         return pipelineHash.hashCode()
     }
 
-    class BuildContext(val builder: Builder) {
-        val vertexLayout = VertexLayout.Builder()
-        val descriptorSetLayouts = mutableListOf<DescriptorSetLayout.Builder>()
-        val pushConstantRanges = mutableListOf<PushConstantRange.Builder>()
-
-        fun vertexLayout(block: VertexLayout.Builder.() -> Unit) {
-            vertexLayout.block()
-        }
-
-        fun descriptorSetLayout(set: Int = 0, block: DescriptorSetLayout.Builder.() -> Unit) {
-            while (set >= descriptorSetLayouts.size) {
-                descriptorSetLayouts += DescriptorSetLayout.Builder()
-            }
-            descriptorSetLayouts[set].block()
-        }
-
-        fun pushConstantRange(name: String, vararg stages: ShaderStage, block: PushConstantRange.Builder.() -> Unit) {
-            val b = PushConstantRange.Builder()
-            b.name = name
-            b.stages += stages
-            b.block()
-            pushConstantRanges.add(b)
-        }
-    }
+    class Layout(
+        val vertices: VertexLayout,
+        val descriptorSets: List<DescriptorSetLayout>,
+        val pushConstantRanges: List<PushConstantRange>
+    )
 
     class Builder {
         var name = "pipeline"
         var cullMethod = CullMethod.CULL_BACK_FACES
-        var blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
+        var blendMode = BlendMode.DISABLED
         var depthTest = DepthCompareOp.LESS
         var isWriteDepth = true
         var lineWidth = 1f
 
-        val onCreatePipeline = mutableListOf<(BuildContext) -> Unit>()
-        val onPipelineCreated = mutableListOf<(Pipeline) -> Unit>()
+        lateinit var shaderCodeGenerator: (Layout) -> ShaderCode
 
-        var shaderLoader: (mesh: Mesh, buildCtx: BuildContext, ctx: KoolContext) -> Shader = { _, _, _ -> throw KoolException("No shader loader specified") }
+        val vertexLayout = VertexLayout.Builder()
+        val descriptorSetLayouts = mutableListOf<DescriptorSetLayout.Builder>()
+        val pushConstantRanges = mutableListOf<PushConstantRange.Builder>()
 
-        fun create(mesh: Mesh, ctx: KoolContext): Pipeline {
-            return Pipeline(this, mesh, ctx)
+        fun create(): Pipeline {
+            return Pipeline(this)
         }
     }
 
     companion object {
         private var instanceId = 1L
     }
-}
-
-interface PipelineFactory {
-    fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline
 }
 
 enum class BlendMode {

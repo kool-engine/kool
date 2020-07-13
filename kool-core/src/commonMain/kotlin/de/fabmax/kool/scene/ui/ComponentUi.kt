@@ -37,7 +37,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     override fun createUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
-        mesh.pipelineLoader = shader
+        mesh.shader = shader
         component.addNode(mesh, 0)
     }
 

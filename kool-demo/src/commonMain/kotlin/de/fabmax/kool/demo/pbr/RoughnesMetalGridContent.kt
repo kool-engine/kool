@@ -121,7 +121,7 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
                             useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
                         }
                     }
-                    pipelineLoader = shader
+                    this.shader = shader
                     shaders += shader
                 }
             }

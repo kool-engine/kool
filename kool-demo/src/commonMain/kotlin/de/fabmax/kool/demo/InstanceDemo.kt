@@ -91,7 +91,7 @@ class InstanceDemo(ctx: KoolContext) {
                     modelRadius = geometry.bounds.max.distance(geometry.bounds.center)
                 }
 
-                pipelineLoader = PhongShader(model = instanceColorPhongModel())
+                shader = PhongShader(model = instanceColorPhongModel())
 
                 isFrustumChecked = false
                 lods[i].mesh = this

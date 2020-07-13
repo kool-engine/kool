@@ -152,7 +152,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
                     useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
                 }
             }
-            pipelineLoader = shader
+            this.shader = shader
             shaders += shader
 
             updatePbrMaterial()

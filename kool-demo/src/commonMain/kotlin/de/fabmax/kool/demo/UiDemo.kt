@@ -27,7 +27,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
                     colored()
                 }
             }
-            pipelineLoader = ModeledShader.VertexColor()
+            shader = ModeledShader.VertexColor()
         }
     }
 

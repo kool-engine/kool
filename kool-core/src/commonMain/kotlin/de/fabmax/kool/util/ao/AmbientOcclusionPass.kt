@@ -85,8 +85,8 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         colorOutput(aoNd.outColor)
                     }
                 }
-                pipelineLoader = ModeledShader(model).apply {
-                    onCreated += {
+                shader = ModeledShader(model).apply {
+                    onPipelineCreated += { _, _, _ ->
                         if (aoSetup.isForward) {
                             model.findNode<TextureNode>("normalDepthTex")!!.sampler.texture = aoSetup.linearDepthPass?.colorTexture
                         } else {

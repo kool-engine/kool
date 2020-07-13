@@ -8,14 +8,14 @@ import de.fabmax.kool.pipeline.shadermodel.ShaderGraph
 import de.fabmax.kool.pipeline.shadermodel.ShaderModel
 
 class ShaderGeneratorImplGL : ShaderGenerator() {
-    override fun generateShader(model: ShaderModel, pipeline: Pipeline, ctx: KoolContext): ShaderCode {
-        val (vs, fs) = generateCode(model, pipeline)
+    override fun generateShader(model: ShaderModel, pipelineLayout: Pipeline.Layout, ctx: KoolContext): ShaderCode {
+        val (vs, fs) = generateCode(model, pipelineLayout)
         return ShaderCode(ShaderCode.GlCode(vs, fs))
     }
 
-    private fun generateCode(model: ShaderModel, pipeline: Pipeline): Pair<String, String> {
-        val vertShader = generateVertexShaderCode(model, pipeline)
-        val fragShader = generateFragmentShaderCode(model, pipeline)
+    private fun generateCode(model: ShaderModel, pipelineLayout: Pipeline.Layout): Pair<String, String> {
+        val vertShader = generateVertexShaderCode(model, pipelineLayout)
+        val fragShader = generateFragmentShaderCode(model, pipelineLayout)
 
         if (model.dumpCode) {
             println("Vertex shader:\n$vertShader")
@@ -25,15 +25,15 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         return vertShader to fragShader
     }
 
-    private fun generateVertexShaderCode(model: ShaderModel, pipeline: Pipeline): String {
+    private fun generateVertexShaderCode(model: ShaderModel, pipelineLayout: Pipeline.Layout): String {
         val codeGen = CodeGen()
         model.vertexStageGraph.generateCode(codeGen)
         return """
             #version 300 es
             ${model.infoStr()}
             
-            // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.VERTEX_SHADER)}
-            // vertex attributes ${generateAttributeBindings(pipeline)}
+            // descriptor layout / uniforms ${generateDescriptorBindings(pipelineLayout, ShaderStage.VERTEX_SHADER)}
+            // vertex attributes ${generateAttributeBindings(pipelineLayout)}
             // outputs ${model.vertexStageGraph.generateStageOutputs()}
             // functions
             ${codeGen.generateFunctions()}
@@ -45,7 +45,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         """.trimIndent()
     }
 
-    private fun generateFragmentShaderCode(model: ShaderModel, pipeline: Pipeline): String {
+    private fun generateFragmentShaderCode(model: ShaderModel, pipelineLayout: Pipeline.Layout): String {
         val codeGen = CodeGen()
         model.fragmentStageGraph.generateCode(codeGen)
 
@@ -55,7 +55,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
             precision highp sampler2DShadow;
             ${model.infoStr()}
             
-            // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
+            // descriptor layout / uniforms ${generateDescriptorBindings(pipelineLayout, ShaderStage.FRAGMENT_SHADER)}
             // inputs ${model.fragmentStageGraph.generateStageInputs()}
             // functions
             ${codeGen.generateFunctions()}
@@ -70,9 +70,9 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         return modelInfo.lines().joinToString { "// $it\n"}
     }
 
-    private fun generateDescriptorBindings(pipeline: Pipeline, stage: ShaderStage): String {
+    private fun generateDescriptorBindings(pipelineLayout: Pipeline.Layout, stage: ShaderStage): String {
         val srcBuilder = StringBuilder("\n")
-        pipeline.descriptorSetLayouts.forEach { set ->
+        pipelineLayout.descriptorSets.forEach { set ->
             set.descriptors.forEach { desc ->
                 if (desc.stages.contains(stage)) {
                     when (desc) {
@@ -86,9 +86,9 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         }
 
         // WebGL doesn't have an equivalent for push constants, generate standard uniforms instead
-        val pushConstants = pipeline.pushConstantRanges.filter { it.stages.contains(stage) }
+        val pushConstants = pipelineLayout.pushConstantRanges.filter { it.stages.contains(stage) }
         if (pushConstants.isNotEmpty()) {
-            pipeline.pushConstantRanges.forEach { pcr ->
+            pipelineLayout.pushConstantRanges.forEach { pcr ->
                 pcr.pushConstants.forEach { u ->
                     srcBuilder.appendln("uniform ${u.declare()};")
                 }
@@ -118,9 +118,9 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         return "uniform $samplerType ${desc.name}$arraySuffix;\n"
     }
 
-    private fun generateAttributeBindings(pipeline: Pipeline): String {
+    private fun generateAttributeBindings(pipelineLayout: Pipeline.Layout): String {
         val srcBuilder = StringBuilder("\n")
-        pipeline.vertexLayout.bindings.forEach { binding ->
+        pipelineLayout.vertices.bindings.forEach { binding ->
             binding.vertexAttributes.forEach { attr ->
                 srcBuilder.appendln("layout(location=${attr.location}) in ${attr.type.glslType} ${attr.name};")
             }

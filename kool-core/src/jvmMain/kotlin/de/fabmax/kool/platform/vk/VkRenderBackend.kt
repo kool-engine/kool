@@ -365,7 +365,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         }
 
                         var offset = 0
-                        pipelineCfg.pushConstantRanges.forEach {
+                        pipelineCfg.layout.pushConstantRanges.forEach {
                             it.onUpdate?.invoke(it, cmd)
                             val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
                             val pushBuffer = (it.toBuffer() as MixedBufferImpl).buffer

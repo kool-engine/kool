@@ -30,7 +30,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
-        pipeline.vertexLayout.bindings.forEach { bnd ->
+        pipeline.layout.vertices.bindings.forEach { bnd ->
             bnd.vertexAttributes.forEach { attr ->
                 when (bnd.inputRate) {
                     InputRate.VERTEX -> attributes[attr.attribute.name] = attr
@@ -38,7 +38,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
         }
-        pipeline.descriptorSetLayouts.forEach { set ->
+        pipeline.layout.descriptorSets.forEach { set ->
             set.descriptors.forEach { desc ->
                 when (desc) {
                     is UniformBuffer -> {
@@ -53,7 +53,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
         }
-        pipeline.pushConstantRanges.forEach { pcr ->
+        pipeline.layout.pushConstantRanges.forEach { pcr ->
             pcr.pushConstants.forEach { pc ->
                 // in WebGL push constants are mapped to regular uniforms
                 uniformLocations[pc.name] = listOf(ctx.gl.getUniformLocation(prog, pc.name))
@@ -148,7 +148,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         var primitiveType = 0
 
         init {
-            pipeline.descriptorSetLayouts.forEach { set ->
+            pipeline.layout.descriptorSets.forEach { set ->
                 set.descriptors.forEach { desc ->
                     when (desc) {
                         is UniformBuffer -> mapUbo(desc)
@@ -158,7 +158,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     }
                 }
             }
-            pipeline.pushConstantRanges.forEach { pc ->
+            pipeline.layout.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
             ctx.engineStats.pipelineInstanceCreated(pipelineId)
@@ -297,7 +297,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 indexType = UNSIGNED_INT
                 indexBuffer?.setData(md.indices, usage, ctx)
 
-                primitiveType = pipeline.vertexLayout.primitiveType.glElemType()
+                primitiveType = pipeline.layout.vertices.primitiveType.glElemType()
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)

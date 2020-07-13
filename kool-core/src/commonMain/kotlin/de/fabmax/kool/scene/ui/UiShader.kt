@@ -24,20 +24,20 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
             uFontSampler?.texture = value
         }
 
-    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        builder.blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
         builder.cullMethod = CullMethod.NO_CULLING
         builder.depthTest = DepthCompareOp.LESS_EQUAL
-        return super.createPipeline(mesh, builder, ctx)
+        super.onPipelineSetup(builder, mesh, ctx)
     }
 
-    override fun onPipelineCreated(pipeline: Pipeline) {
-        super.onPipelineCreated(pipeline)
-
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         uAlpha = model.findNode(U_ALPHA)
         uAlpha?.uniform?.value = alpha
 
         uFontSampler = model.findNode<TextureNode>(U_FONT_TEX)?.sampler
         uFontSampler?.texture = font
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {

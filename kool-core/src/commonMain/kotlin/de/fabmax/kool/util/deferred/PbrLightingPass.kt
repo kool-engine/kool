@@ -57,7 +57,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                     }
                 }
                 sceneShader = PbrSceneShader(cfg)
-                pipelineLoader = sceneShader
+                shader = sceneShader
             }
 
             +dynamicPointLights.mesh

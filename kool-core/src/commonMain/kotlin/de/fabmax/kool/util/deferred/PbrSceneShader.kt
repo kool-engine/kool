@@ -93,13 +93,13 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
-    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.depthTest = DepthCompareOp.DISABLED
         builder.blendMode = BlendMode.DISABLED
-        return super.createPipeline(mesh, builder, ctx)
+        super.onPipelineSetup(builder, mesh, ctx)
     }
 
-    override fun onPipelineCreated(pipeline: Pipeline) {
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
 
@@ -132,6 +132,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 shadowMaps[i].setupSampler(sampler)
             }
         }
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {

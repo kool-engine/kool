@@ -34,7 +34,7 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
     init {
         geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()
-        pipelineLoader = ModeledShader.VertexColor()
+        shader = ModeledShader.VertexColor()
     }
 
     //var isXray = false

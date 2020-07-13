@@ -125,7 +125,7 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
                             useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
                         }
                     }
-                    pipelineLoader = shader
+                    this.shader = shader
                     shaders += shader
                 }
             }

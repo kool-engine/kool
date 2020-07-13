@@ -50,9 +50,9 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
                     }
                 }
                 reflMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {
-                    onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
                 }
-                pipelineLoader = reflMapShader
+                shader = reflMapShader
             }
         }
 

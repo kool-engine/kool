@@ -6,6 +6,6 @@ import de.fabmax.kool.pipeline.ShaderCode
 
 abstract class ShaderGenerator {
 
-    abstract fun generateShader(model: ShaderModel, pipeline: Pipeline, ctx: KoolContext): ShaderCode
+    abstract fun generateShader(model: ShaderModel, pipelineLayout: Pipeline.Layout, ctx: KoolContext): ShaderCode
 
 }

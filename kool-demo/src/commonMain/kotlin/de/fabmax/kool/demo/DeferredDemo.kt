@@ -85,7 +85,7 @@ class DeferredDemo(ctx: KoolContext) {
                     mirrorTexCoordsY()
                 }
             }
-            pipelineLoader = DeferredOutputShader(pbrPass.colorTexture)
+            shader = DeferredOutputShader(pbrPass.colorTexture)
         }
 
         onUpdate += { _, ctx ->
@@ -109,14 +109,14 @@ class DeferredDemo(ctx: KoolContext) {
                         center.set(Vec3f.ZERO)
                     }
                 }
-                pipelineLoader = ModeledShader(instancedLightIndicatorModel())
+                shader = ModeledShader(instancedLightIndicatorModel())
             }
             +lightPositionMesh
 
             lightVolumeMesh = wireframeMesh(dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
-                pipelineLoader = ModeledShader(instancedLightIndicatorModel())
+                shader = ModeledShader(instancedLightIndicatorModel())
             }
             +lightVolumeMesh
 
@@ -208,7 +208,7 @@ class DeferredDemo(ctx: KoolContext) {
                     roughness = 0.15f
                 }
                 objectShader = DeferredPbrShader(pbrCfg)
-                pipelineLoader = objectShader
+                shader = objectShader
             }
             +objects
 
@@ -230,7 +230,7 @@ class DeferredDemo(ctx: KoolContext) {
                     useOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
                 }
                 val groundShader = DeferredPbrShader(pbrCfg)
-                pipelineLoader = groundShader
+                shader = groundShader
 
                 onDispose += {
                     groundShader.albedoMap?.dispose()
@@ -324,7 +324,7 @@ class DeferredDemo(ctx: KoolContext) {
                         }
                     }
 
-                    pipelineLoader = when (i) {
+                    shader = when (i) {
                         0 -> ModeledShader.TextureColor(mrtPass.albedoMetal, "colorTex", rgbMapColorModel(0f, 1f))
                         1 -> ModeledShader.TextureColor(mrtPass.normalRoughness, "colorTex", rgbMapColorModel(1f, 0.5f))
                         2 -> ModeledShader.TextureColor(mrtPass.positionAo, "colorTex", rgbMapColorModel(10f, 0.05f))
@@ -565,11 +565,11 @@ class DeferredDemo(ctx: KoolContext) {
     }
 
     private class MetalRoughAoTex(val mrtPass: DeferredMrtPass) : ModeledShader(shaderModel()) {
-        override fun onPipelineCreated(pipeline: Pipeline) {
+        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
             model.findNode<TextureNode>("positionAo")!!.sampler.texture = mrtPass.positionAo
             model.findNode<TextureNode>("normalRough")!!.sampler.texture = mrtPass.normalRoughness
             model.findNode<TextureNode>("albedoMetal")!!.sampler.texture = mrtPass.albedoMetal
-            super.onPipelineCreated(pipeline)
+            super.onPipelineCreated(pipeline, mesh, ctx)
         }
 
         companion object {

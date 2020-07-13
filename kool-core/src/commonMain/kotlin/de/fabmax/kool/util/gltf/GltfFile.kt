@@ -593,9 +593,9 @@ data class GltfFile(
                         }
 
                         if (cfg.materialConfig.isDeferredShading && mesh.isOpaque) {
-                            mesh.pipelineLoader = DeferredPbrShader(pbrConfig)
+                            mesh.shader = DeferredPbrShader(pbrConfig)
                         } else {
-                            mesh.pipelineLoader = PbrShader(pbrConfig)
+                            mesh.shader = PbrShader(pbrConfig)
                         }
                     }
                     model.meshes[name] = mesh

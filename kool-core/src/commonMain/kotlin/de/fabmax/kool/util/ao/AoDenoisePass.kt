@@ -42,8 +42,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtCo
                         colorOutput(blurNd.outColor)
                     }
                 }
-                pipelineLoader = ModeledShader(model).apply {
-                    onCreated += {
+                shader = ModeledShader(model).apply {
+                    onPipelineCreated += { _, _, _ ->
                         model.findNode<TextureNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
                         model.findNode<TextureNode>("depth")!!.sampler.texture = depthTexture
                     }

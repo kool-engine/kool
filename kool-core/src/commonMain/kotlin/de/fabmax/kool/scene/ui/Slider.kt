@@ -131,7 +131,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
-        mesh.pipelineLoader = shader
+        mesh.shader = shader
         slider += mesh
     }
 

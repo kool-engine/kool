@@ -43,23 +43,23 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
             albedoMetalSampler?.texture = value
         }
 
-    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.BLEND_ADDITIVE
         builder.cullMethod = CullMethod.CULL_FRONT_FACES
         builder.depthTest = DepthCompareOp.DISABLED
-        return super.createPipeline(mesh, builder, ctx)
+        super.onPipelineSetup(builder, mesh, ctx)
     }
 
-    override fun onPipelineCreated(pipeline: Pipeline) {
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
-
         positionAoSampler = model.findNode<TextureNode>("positionAo")?.sampler
         positionAoSampler?.let { it.texture = positionAo }
         normalRoughnessSampler = model.findNode<TextureNode>("normalRoughness")?.sampler
         normalRoughnessSampler?.let { it.texture = normalRoughness }
         albedoMetalSampler = model.findNode<TextureNode>("albedoMetal")?.sampler
         albedoMetalSampler?.let { it.texture = albedoMetal }
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {

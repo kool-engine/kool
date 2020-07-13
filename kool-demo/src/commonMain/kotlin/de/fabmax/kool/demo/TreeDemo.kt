@@ -79,14 +79,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 this.shadowMaps.addAll(shadowMaps)
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
-            pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
+            shader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 onDispose += {
                     albedoMap?.dispose()
                     occlusionMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
                 }
-                onCreated += {
+                onPipelineCreated += { _, _, _ ->
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
@@ -116,11 +116,11 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 this.shadowMaps.addAll(shadowMaps)
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
-            pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
+            shader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 onDispose += {
                     albedoMap!!.dispose()
                 }
-                onCreated += {
+                onPipelineCreated += { _, _, _ ->
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
@@ -577,7 +577,7 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>):
             }
             geometry.generateTangents()
         }
-        pipelineLoader = pbrShader {
+        shader = pbrShader {
             useAlbedoMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
             useNormalMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg")
             useRoughnessMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")

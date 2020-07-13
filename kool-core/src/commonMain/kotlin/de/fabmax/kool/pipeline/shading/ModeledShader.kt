@@ -6,24 +6,14 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
-open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
+open class ModeledShader(val model: ShaderModel) : Shader() {
 
-    val onSetup = mutableListOf<((builder: Pipeline.Builder) -> Unit)>()
-
-    protected open fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext): ModeledShader {
-        model.setup(mesh, buildCtx)
-        return this
-    }
-
-    override fun generateCode(pipeline: Pipeline, ctx: KoolContext): ShaderCode {
-        return ctx.shaderGenerator.generateShader(model, pipeline, ctx)
-    }
-
-    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
-        builder.name = model.modelInfo
-        builder.shaderLoader = this::setup
-        onSetup.forEach { it(builder) }
-        return builder.create(mesh, ctx)
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        model.setup(mesh, builder)
+        builder.shaderCodeGenerator = { layout ->
+            ctx.shaderGenerator.generateShader(model, layout, ctx)
+        }
+        super.onPipelineSetup(builder, mesh, ctx)
     }
 
     class StaticColor(color: Color = Color.GRAY, model: ShaderModel = staticColorModel()) : ModeledShader(model) {
@@ -35,10 +25,10 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
                 uColor?.value?.set(value)
             }
 
-        override fun onPipelineCreated(pipeline: Pipeline) {
+        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
             uColor = model.findNode<PushConstantNodeColor>("uStaticColor")?.uniform
             uColor?.value?.set(color)
-            super.onPipelineCreated(pipeline)
+            super.onPipelineCreated(pipeline, mesh, ctx)
         }
     }
 
@@ -53,19 +43,26 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
                 textureSampler?.texture = value
             }
 
-        override fun onPipelineCreated(pipeline: Pipeline) {
+        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
             textureSampler = model.findNode<TextureNode>(texName)?.sampler
             textureSampler?.let { it.texture = texture }
-            super.onPipelineCreated(pipeline)
+            super.onPipelineCreated(pipeline, mesh, ctx)
         }
     }
 
-    class CubeMapColor(private val texName: String = "cubeMap", model: ShaderModel = cubeMapColorModel(texName)) : ModeledShader(model) {
-        lateinit var cubeMapSampler: CubeMapSampler
+    class CubeMapColor(texture: CubeMapTexture? = null, private val texName: String = "cubeMap", model: ShaderModel = cubeMapColorModel(texName)) : ModeledShader(model) {
+        private var cubeMapSampler: CubeMapSampler? = null
 
-        override fun onPipelineCreated(pipeline: Pipeline) {
-            cubeMapSampler = model.findNode<CubeMapNode>(texName)!!.sampler
-            super.onPipelineCreated(pipeline)
+        var texture: CubeMapTexture? = texture
+            set(value) {
+                field = value
+                cubeMapSampler?.texture = value
+            }
+
+        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
+            cubeMapSampler = model.findNode<CubeMapNode>(texName)?.sampler
+            cubeMapSampler?.let { it.texture = texture }
+            super.onPipelineCreated(pipeline, mesh, ctx)
         }
     }
 

@@ -81,7 +81,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 menuAnimator.speed = if (tb.isEnabled) 1f else -1f
             }
 
-            mesh.pipelineLoader = UiShader()
+            mesh.shader = UiShader()
         }
 
         override fun onRender(ctx: KoolContext) {

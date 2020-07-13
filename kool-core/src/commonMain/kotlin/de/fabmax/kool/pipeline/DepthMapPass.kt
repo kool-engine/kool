@@ -61,11 +61,11 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
             }
             fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
         })
-        val pipelineBuilder = Pipeline.Builder().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = culling
+        shadowShader.onPipelineSetup += { builder, _, _ ->
+            builder.blendMode = BlendMode.DISABLED
+            builder.cullMethod = culling
         }
-        return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
+        return shadowShader.createPipeline(mesh, ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -122,11 +122,11 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
                 colorOutput(linDepth.outColor)
             }
         })
-        val pipelineBuilder = Pipeline.Builder().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = culling
+        shadowShader.onPipelineSetup += { builder, _, _ ->
+            builder.blendMode = BlendMode.DISABLED
+            builder.cullMethod = culling
         }
-        return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
+        return shadowShader.createPipeline(mesh, ctx)
     }
 
     private class LinearDepthNode(graph: ShaderGraph) : ShaderNode("linearDepth", graph) {
@@ -213,11 +213,11 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
                 colorOutput(linDepth.outColor)
             }
         })
-        val pipelineBuilder = Pipeline.Builder().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = culling
+        shadowShader.onPipelineSetup += { builder, _, _ ->
+            builder.blendMode = BlendMode.DISABLED
+            builder.cullMethod = culling
         }
-        return shadowShader.createPipeline(mesh, pipelineBuilder, ctx)
+        return shadowShader.createPipeline(mesh, ctx)
     }
 
     private class NormalLinearDepthNode(val inNormals: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("normalLinearDepth", graph) {

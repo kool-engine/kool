@@ -1,16 +1,17 @@
 package de.fabmax.kool.util.deferred
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Mesh
 
 class DeferredOutputShader(private val pbrOutput: Texture) : ModeledShader(outputModel()) {
-
-    override fun onPipelineCreated(pipeline: Pipeline) {
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         val textureSampler = model.findNode<TextureNode>("deferredPbrOutput")?.sampler
         textureSampler!!.texture = pbrOutput
-        super.onPipelineCreated(pipeline)
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {

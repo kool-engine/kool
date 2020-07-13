@@ -62,7 +62,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
-        mesh.pipelineLoader = shader
+        mesh.shader = shader
         label += mesh
     }
 

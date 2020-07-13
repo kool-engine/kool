@@ -99,13 +99,13 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
             uDispStrength?.uniform?.value = value
         }
 
-    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = BlendMode.DISABLED
-        return super.createPipeline(mesh, builder, ctx)
+        super.onPipelineSetup(builder, mesh, ctx)
     }
 
-    override fun onPipelineCreated(pipeline: Pipeline) {
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         uMetallic = model.findNode("uMetallic")
         uMetallic?.let { it.uniform.value = metallic }
         uRoughness = model.findNode("uRoughness")
@@ -132,7 +132,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
         uDispStrength = model.findNode("uDispStrength")
         uDispStrength?.let { it.uniform.value = displacementStrength }
 
-        super.onPipelineCreated(pipeline)
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {

@@ -110,7 +110,7 @@ class AoDemo(ctx: KoolContext) {
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                     useImageBasedLighting(irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture)
                 }
-                pipelineLoader = shader
+                this.shader = shader
 
                 onUpdate += { _, _ ->
                     if (aoPipeline.aoPass.isEnabled) {
@@ -211,7 +211,7 @@ class AoDemo(ctx: KoolContext) {
                         hdriMap.dispose()
                     }
                 }
-                pipelineLoader = shader
+                this.shader = shader
 
                 onUpdate += { _, _ ->
                     if (aoPipeline.aoPass.isEnabled) {
@@ -263,7 +263,7 @@ class AoDemo(ctx: KoolContext) {
                         mirrorTexCoordsY()
                     }
                 }
-                pipelineLoader = ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", aoMapColorModel())
+                shader = ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", aoMapColorModel())
             }
 
             onUpdate += { rp, _ ->

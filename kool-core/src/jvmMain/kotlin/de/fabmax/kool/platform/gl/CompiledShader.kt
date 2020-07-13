@@ -19,7 +19,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
-        pipeline.vertexLayout.bindings.forEach { bnd ->
+        pipeline.layout.vertices.bindings.forEach { bnd ->
             bnd.vertexAttributes.forEach { attr ->
                 when (bnd.inputRate) {
                     InputRate.VERTEX -> attributes[attr.attribute.name] = attr
@@ -27,7 +27,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 }
             }
         }
-        pipeline.descriptorSetLayouts.forEach { set ->
+        pipeline.layout.descriptorSets.forEach { set ->
             set.descriptors.forEach { desc ->
                 when (desc) {
                     is UniformBuffer -> {
@@ -42,7 +42,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 }
             }
         }
-        pipeline.pushConstantRanges.forEach { pcr ->
+        pipeline.layout.pushConstantRanges.forEach { pcr ->
             pcr.pushConstants.forEach { pc ->
                 // in WebGL push constants are mapped to regular uniforms
                 uniformLocations[pc.name] = listOf(glGetUniformLocation(prog, pc.name))
@@ -137,7 +137,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
         var primitiveType = 0
 
         init {
-            pipeline.descriptorSetLayouts.forEach { set ->
+            pipeline.layout.descriptorSets.forEach { set ->
                 set.descriptors.forEach { desc ->
                     when (desc) {
                         is UniformBuffer -> mapUbo(desc)
@@ -147,7 +147,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                     }
                 }
             }
-            pipeline.pushConstantRanges.forEach { pc ->
+            pipeline.layout.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
             ctx.engineStats.pipelineInstanceCreated(pipelineId)
@@ -286,7 +286,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 indexType = GL_UNSIGNED_INT
                 indexBuffer?.setData(md.indices, usage, ctx)
 
-                primitiveType = pipeline.vertexLayout.primitiveType.glElemType()
+                primitiveType = pipeline.layout.vertices.primitiveType.glElemType()
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)

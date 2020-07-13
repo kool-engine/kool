@@ -25,11 +25,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
     init {
         memStack {
-            if (pipeline.descriptorSetLayouts.size != 1) {
+            if (pipeline.layout.descriptorSets.size != 1) {
                 TODO("For now only one descriptor set layout is supported")
             }
-            descriptorSetLayout = createDescriptorSetLayout(pipeline.descriptorSetLayouts[0])
-            descriptorPool = createDescriptorPool(pipeline.descriptorSetLayouts[0])
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.layout.descriptorSets[0])
+            descriptorPool = createDescriptorPool(pipeline.layout.descriptorSets[0])
 
             val shaderStages = pipeline.shaderCode.vkStages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
@@ -43,10 +43,10 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
-            val nBindings = pipeline.vertexLayout.bindings.size
+            val nBindings = pipeline.layout.vertices.bindings.size
             val bindingDescription = callocVkVertexInputBindingDescriptionN(nBindings) {
                 var iBinding = 0
-                pipeline.vertexLayout.bindings.forEach { binding ->
+                pipeline.layout.vertices.bindings.forEach { binding ->
                     this[iBinding++].apply {
                         binding(binding.binding)
                         stride(binding.strideBytes)
@@ -58,12 +58,12 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
-            val nAttributes = pipeline.vertexLayout.bindings.sumBy { binding ->
+            val nAttributes = pipeline.layout.vertices.bindings.sumBy { binding ->
                 binding.vertexAttributes.sumBy { it.attribute.props.nSlots }
             }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0
-                pipeline.vertexLayout.bindings.forEach { binding ->
+                pipeline.layout.vertices.bindings.forEach { binding ->
                     binding.vertexAttributes.forEach { attrib ->
                         for (i in 0 until attrib.attribute.props.nSlots) {
                             this[iAttrib++].apply {
@@ -84,7 +84,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
             val inputAssembly = callocVkPipelineInputAssemblyStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
-                when (pipeline.vertexLayout.primitiveType) {
+                when (pipeline.layout.vertices.primitiveType) {
                     PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
                     PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
                     PrimitiveType.TRIANGLES -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
@@ -222,10 +222,10 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 stencilTestEnable(false)
             }
 
-            val pushConstantRanges: VkPushConstantRange.Buffer? = if (pipeline.pushConstantRanges.isEmpty()) { null } else {
-                callocVkPushConstantRangeN(pipeline.pushConstantRanges.size) {
+            val pushConstantRanges: VkPushConstantRange.Buffer? = if (pipeline.layout.pushConstantRanges.isEmpty()) { null } else {
+                callocVkPushConstantRangeN(pipeline.layout.pushConstantRanges.size) {
                     var offset = 0
-                    pipeline.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
+                    pipeline.layout.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
                         this[i].stageFlags(pushConstantRange.stages.fold(0) { f, stage -> f or stage.bitValue() })
                                 .offset(offset)
                                 .size(pushConstantRange.size)

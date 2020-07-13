@@ -1,9 +1,9 @@
 package de.fabmax.kool.pipeline.shading
 
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureSampler
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -17,6 +17,8 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
 
 class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
+    private val cullMethod = cfg.cullMethod
+    private val isBlending = cfg.alphaMode is AlphaModeBlend
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
@@ -56,7 +58,13 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
 
     private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
 
-    override fun onPipelineCreated(pipeline: Pipeline) {
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        builder.cullMethod = cullMethod
+        builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
+        super.onPipelineSetup(builder, mesh, ctx)
+    }
+
+    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         uShininess = model.findNode("uShininess")
         uShininess?.uniform?.value = shininess
         uSpecularIntensity = model.findNode("uSpecularIntensity")
@@ -78,7 +86,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             }
         }
 
-        super.onPipelineCreated(pipeline)
+        super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {
@@ -182,6 +190,9 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
         var lightBacksides = false
+
+        var cullMethod = CullMethod.CULL_BACK_FACES
+        var alphaMode: AlphaMode = AlphaModeOpaque()
 
         var isInstanced = false
 

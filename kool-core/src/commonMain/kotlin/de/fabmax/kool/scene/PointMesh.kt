@@ -21,7 +21,7 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
     init {
         geometry.primitiveType = PrimitiveType.POINTS
         rayTest = MeshRayTest.nopTest()
-        pipelineLoader = ModeledShader.VertexColor()
+        shader = ModeledShader.VertexColor()
     }
 
     //var isXray = false

@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.PipelineFactory
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
@@ -48,7 +48,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     var skin: Skin? = null
     var isOpaque = true
 
-    var pipelineLoader: PipelineFactory? = null
+    var shader: Shader? = null
         set(value) {
             field = value
             pipeline?.let { discardedPipelines += it }
@@ -75,8 +75,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             discardedPipelines.forEach { ctx.disposePipeline(it) }
             discardedPipelines.clear()
         }
-        return pipeline ?: pipelineLoader?.let { loader ->
-            loader.createPipeline(this, Pipeline.Builder(), ctx).also { pipeline = it }
+        return pipeline ?: shader?.let { s ->
+            s.createPipeline(this, ctx).also { pipeline = it }
         }
     }
 

@@ -38,10 +38,10 @@ class ShaderModel(val modelInfo: String = "") {
         return null
     }
 
-    fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
+    fun setup(mesh: Mesh, builder: Pipeline.Builder) {
+        builder.name = modelInfo
         stages.values.forEach { it.setup() }
-
-        setupAttributes(mesh, buildCtx)
+        setupAttributes(mesh, builder)
 
         // merge all defined push constants into a single push constant range
         val pushBuilder = PushConstantRange.Builder()
@@ -57,10 +57,10 @@ class ShaderModel(val modelInfo: String = "") {
             stage.pushConstants.onUpdate?.let { pushUpdateFuns += it }
         }
         if (descBuilder.descriptors.isNotEmpty()) {
-            buildCtx.descriptorSetLayouts += descBuilder
+            builder.descriptorSetLayouts += descBuilder
         }
         if (pushBuilder.pushConstants.isNotEmpty()) {
-            buildCtx.pushConstantRanges += pushBuilder
+            builder.pushConstantRanges += pushBuilder
             if (pushUpdateFuns.isNotEmpty()) {
                 pushBuilder.onUpdate = { rng, cmd ->
                     for (i in pushUpdateFuns.indices) {
@@ -71,7 +71,7 @@ class ShaderModel(val modelInfo: String = "") {
         }
     }
 
-    private fun setupAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
+    private fun setupAttributes(mesh: Mesh, builder: Pipeline.Builder) {
         var attribLocation = 0
         val verts = mesh.geometry
         val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
@@ -89,9 +89,9 @@ class ShaderModel(val modelInfo: String = "") {
             attribLocation += attrib.props.nSlots
         }
 
-        buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribs, verts.byteStrideF)
+        builder.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribs, verts.byteStrideF)
         if (vertLayoutAttribsI.isNotEmpty()) {
-            buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribsI, verts.byteStrideI)
+            builder.vertexLayout.bindings += VertexLayout.Binding(iBinding++, InputRate.VERTEX, vertLayoutAttribsI, verts.byteStrideI)
         }
 
         val insts = mesh.instances
@@ -103,7 +103,7 @@ class ShaderModel(val modelInfo: String = "") {
                 instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, off, attrib)
                 attribLocation += attrib.props.nSlots
             }
-            buildCtx.vertexLayout.bindings += VertexLayout.Binding(iBinding, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
+            builder.vertexLayout.bindings += VertexLayout.Binding(iBinding, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
         } else if (vertexStageGraph.requiredInstanceAttributes.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
         }

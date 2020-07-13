@@ -43,7 +43,7 @@ class SimplificationDemo(ctx: KoolContext) {
     var autoRotate = true
 
     init {
-        dispModel.pipelineLoader = pbrShader {
+        dispModel.shader = pbrShader {
             albedoSource = Albedo.STATIC_ALBEDO
             albedo = Color.WHITE
             roughness = 0.15f

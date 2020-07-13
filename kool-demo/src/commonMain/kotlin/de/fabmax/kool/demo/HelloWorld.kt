@@ -26,7 +26,7 @@ fun helloWorldScene(): Scene = scene {
             }
         }
 
-        pipelineLoader = pbrShader {
+        shader = pbrShader {
             albedoSource = Albedo.VERTEX_ALBEDO
             metallic = 0.0f
             roughness = 0.25f
@@ -72,7 +72,7 @@ fun helloGltfScene(ctx: KoolContext): Scene = scene {
                 grid {  }
             }
 
-            pipelineLoader = pbrShader {
+            shader = pbrShader {
                 shadowMaps += shadows
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
             }
