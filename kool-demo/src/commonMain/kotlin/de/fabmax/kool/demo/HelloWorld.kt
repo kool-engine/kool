@@ -25,7 +25,6 @@ fun helloWorldScene(): Scene = scene {
                 centered()
             }
         }
-
         shader = pbrShader {
             albedoSource = Albedo.VERTEX_ALBEDO
             metallic = 0.0f
@@ -49,6 +48,17 @@ fun helloGltfScene(ctx: KoolContext): Scene = scene {
     val shadows = listOf(SimpleShadowMap(this, lightIndex = 0))
     val aoPipeline = AoPipeline.createForward(this)
 
+    +colorMesh {
+        generate {
+            grid {  }
+        }
+        shader = pbrShader {
+            useStaticAlbedo(Color.WHITE)
+            useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+            shadowMaps += shadows
+        }
+    }
+
     ctx.assetMgr.launch {
         val materialCfg = GltfFile.ModelMaterialConfig(
                 shadowMaps = shadows,
@@ -64,17 +74,6 @@ fun helloGltfScene(ctx: KoolContext): Scene = scene {
                 model.onUpdate += { _, ctx ->
                     model.applyAnimation(ctx.time)
                 }
-            }
-        }
-
-        +colorMesh {
-            generate {
-                grid {  }
-            }
-
-            shader = pbrShader {
-                shadowMaps += shadows
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
             }
         }
     }

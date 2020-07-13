@@ -70,6 +70,11 @@ class PbrMaterialConfig {
 
     var scrSpcAmbientOcclusionMap: Texture? = null
 
+    fun useStaticAlbedo(albedo: Color) {
+        albedoSource = Albedo.STATIC_ALBEDO
+        this.albedo = albedo
+    }
+
     fun useAlbedoMap(albedoMap: String, isMultiplyAlbedoMap: Boolean = false) =
             useAlbedoMap(Texture(albedoMap), isMultiplyAlbedoMap)
 

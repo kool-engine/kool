@@ -9,9 +9,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var AoPipeline = $module$kool.de.fabmax.kool.util.ao.AoPipeline;
   var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
-  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_7e2ead$;
-  var ensureNotNull = Kotlin.ensureNotNull;
   var GltfFile$ModelGenerateConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelGenerateConfig;
+  var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_aln4ac$;
+  var ensureNotNull = Kotlin.ensureNotNull;
   var first = Kotlin.kotlin.collections.first_7wnvza$;
   var IrradianceMapPass = $module$kool.de.fabmax.kool.util.ibl.IrradianceMapPass;
   var ReflectionMapPass = $module$kool.de.fabmax.kool.util.ibl.ReflectionMapPass;
@@ -109,6 +109,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
+  var loadGltfFile = $module$kool.de.fabmax.kool.util.gltf.loadGltfFile_7e2ead$;
+  var GltfFile$ModelMaterialConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelMaterialConfig;
   var MutableVec3d_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3d_init;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
@@ -283,7 +285,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh));
       var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
-      $receiver.pipelineLoader = shader;
+      $receiver.shader = shader;
       var $receiver_0 = $receiver.onUpdate;
       var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AoDemo, shader);
       $receiver_0.add_11rb$(element);
@@ -396,7 +398,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AoDemo));
       var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver, closure$hdriMap));
-      $receiver.pipelineLoader = shader;
+      $receiver.shader = shader;
       var $receiver_0 = $receiver.onUpdate;
       var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AoDemo, shader);
       $receiver_0.add_11rb$(element);
@@ -434,15 +436,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             throw this.exception_0;
           case 2:
             this.local$hdriMap = this.result_0;
+            var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
             this.state_0 = 3;
-            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', this);
+            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', modelCfg, void 0, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
           case 3:
             var model = ensureNotNull(this.result_0);
-            var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
-            var teapotMesh = first(model.makeModel_m0hq3v$(modelCfg).meshes.values);
+            var teapotMesh = first(model.meshes.values);
             var irrMapPass = new IrradianceMapPass(this.local$this$, this.local$hdriMap);
             var reflMapPass = new ReflectionMapPass(this.local$this$, this.local$hdriMap);
             var brdfLutPass = new BrdfLutPass(this.local$this$);
@@ -527,7 +529,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AoDemo$menu$lambda$lambda$lambda_1(this$AoDemo) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AoDemo$menu$lambda$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new ModeledShader$TextureColor(this$AoDemo.aoPipeline_0.aoMap, 'colorTex', AoDemo$Companion_getInstance().aoMapColorModel());
+      $receiver.shader = new ModeledShader$TextureColor(this$AoDemo.aoPipeline_0.aoMap, 'colorTex', AoDemo$Companion_getInstance().aoMapColorModel());
       return Unit;
     };
   }
@@ -1091,7 +1093,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.isFrustumChecked = false;
       $receiver.generate_v2sixm$(DeferredDemo$makeDeferredScene$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new DeferredOutputShader(this$DeferredDemo.pbrPass_0.colorTexture);
+      $receiver.shader = new DeferredOutputShader(this$DeferredDemo.pbrPass_0.colorTexture);
       return Unit;
     };
   }
@@ -1145,7 +1147,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isFrustumChecked = false;
       $receiver.isVisible = true;
       $receiver.generate_v2sixm$(DeferredDemo$makeLightOverlays$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new ModeledShader(this$DeferredDemo.instancedLightIndicatorModel_0());
+      $receiver.shader = new ModeledShader(this$DeferredDemo.instancedLightIndicatorModel_0());
       return Unit;
     };
   }
@@ -1201,7 +1203,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_1 = wireframeMesh($receiver.dynamicPointLights.mesh.geometry);
     $receiver_1.isFrustumChecked = false;
     $receiver_1.isVisible = false;
-    $receiver_1.pipelineLoader = new ModeledShader(this.instancedLightIndicatorModel_0());
+    $receiver_1.shader = new ModeledShader(this.instancedLightIndicatorModel_0());
     this.lightVolumeMesh_0 = $receiver_1;
     $receiver_0.unaryPlus_uv0sim$(this.lightVolumeMesh_0);
     var lightPosInsts = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), 5000);
@@ -1272,7 +1274,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.roughness = 0.15;
       var pbrCfg = $receiver_0;
       this$DeferredDemo.objectShader_0 = new DeferredPbrShader(pbrCfg);
-      $receiver.pipelineLoader = this$DeferredDemo.objectShader_0;
+      $receiver.shader = this$DeferredDemo.objectShader_0;
       return Unit;
     };
   }
@@ -1308,7 +1310,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/futuristic-panels1/futuristic-panels1-ao.jpg');
     var pbrCfg = $receiver_0;
     var groundShader = new DeferredPbrShader(pbrCfg);
-    $receiver.pipelineLoader = groundShader;
+    $receiver.shader = groundShader;
     $receiver.onDispose.add_11rb$(DeferredDemo$makeContent$lambda$lambda$lambda_2(groundShader));
     return Unit;
   }
@@ -1411,7 +1413,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         default:tmp$ = new ModeledShader$StaticColor(Color.Companion.MAGENTA);
           break;
       }
-      $receiver.pipelineLoader = tmp$;
+      $receiver.shader = tmp$;
       return Unit;
     };
   }
@@ -1827,7 +1829,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     ModeledShader.call(this, DeferredDemo$MetalRoughAoTex$Companion_getInstance().shaderModel());
     this.mrtPass = mrtPass;
   }
-  DeferredDemo$MetalRoughAoTex.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  DeferredDemo$MetalRoughAoTex.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var $this = this.model;
     var name = 'positionAo';
     var stage;
@@ -1933,7 +1935,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
      while (false);
     ensureNotNull(findNode_3klnlw$result_1).sampler.texture = this.mrtPass.albedoMetal;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function DeferredDemo$MetalRoughAoTex$Companion() {
     DeferredDemo$MetalRoughAoTex$Companion_instance = this;
@@ -2057,7 +2059,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('glTF Models', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7)), to('helloGltfDemo', new Demo$DemoEntry('Hello glTF', true, Demo$demos$lambda_8))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2286,6 +2288,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.add_11rb$(helloWorldScene());
     return Unit;
   }
+  function Demo$demos$lambda_8($receiver, it) {
+    $receiver.add_11rb$(helloGltfScene(it));
+    return Unit;
+  }
   Demo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Demo',
@@ -2365,7 +2371,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$_0 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
     var $receiver = new GltfDemo$GltfModel(this, 'Fox', Demo$Companion_getInstance().modelBasePath + '/fox.glb', 0.01, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), true, 3.5);
     $receiver.animate = GltfDemo$models$lambda$lambda(this);
-    this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5)]);
+    this.models_0 = Cycler_init([tmp$, tmp$_0, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 0.75, 0.0), false, 3.5)]);
     this.autoRotate_0 = true;
     this.useDeferredPipeline_0 = true;
     this.animationSpeed_0 = 0.5;
@@ -2612,7 +2618,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.isFrustumChecked = false;
       $receiver.generate_v2sixm$(GltfDemo$makeDeferredContent$lambda$lambda$lambda);
-      $receiver.pipelineLoader = new DeferredOutputShader(this$GltfDemo.pbrPass_0.colorTexture);
+      $receiver.shader = new DeferredOutputShader(this$GltfDemo.pbrPass_0.colorTexture);
       return Unit;
     };
   }
@@ -2635,7 +2641,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       try {
         switch (this.state_0) {
           case 0:
-            this.$this.mrtPass_0 = new DeferredMrtPass(this.local$$receiver);
+            this.$this.mrtPass_0 = new DeferredMrtPass(this.local$$receiver, true);
             this.$this.aoPipelineDeferred_0 = AoPipeline.Companion.createDeferred_4lrvgg$(this.local$$receiver, this.$this.mrtPass_0);
             addAll(this.$this.shadowsDeferred_0, listOf([new SimpleShadowMap(this.local$$receiver, 0, 2048, this.$this.mrtPass_0.content), new SimpleShadowMap(this.local$$receiver, 1, 2048, this.$this.mrtPass_0.content)]));
             this.state_0 = 2;
@@ -2781,7 +2787,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       } else {
         tmp$ = new PbrShader(pbrCfg);
       }
-      $receiver.pipelineLoader = tmp$;
+      $receiver.shader = tmp$;
       return Unit;
     };
   }
@@ -3109,20 +3115,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.isVisible = false;
     this.animate = GltfDemo$GltfModel$animate$lambda;
   }
-  function GltfDemo$GltfModel$load$lambda$lambda(closure$isDeferredShading, this$GltfDemo) {
-    return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-      if (closure$isDeferredShading) {
-        addAll($receiver.shadowMaps, this$GltfDemo.shadowsDeferred_0);
-        $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this$GltfDemo.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
-      } else {
-        addAll($receiver.shadowMaps, this$GltfDemo.shadowsForward_0);
-        $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$_0 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_0.aoMap : null);
-      }
-      $receiver.useImageBasedLighting_5m8fyp$((tmp$_1 = this$GltfDemo.irrMapPass_0) != null ? tmp$_1.colorTextureCube : null, (tmp$_2 = this$GltfDemo.reflMapPass_0) != null ? tmp$_2.colorTextureCube : null, (tmp$_3 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_3.colorTexture : null);
-      return Unit;
-    };
-  }
   function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, this$) {
     return function ($receiver, f, ctx) {
       $receiver.isVisible = this$GltfModel.isVisible;
@@ -3151,7 +3143,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 0:
             var tmp$;
             this.state_0 = 2;
-            this.result_0 = loadGltfModel(this.local$ctx.assetMgr, this.$this.assetPath, this);
+            this.result_0 = loadGltfFile(this.local$ctx.assetMgr, this.$this.assetPath, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -3161,10 +3153,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             if ((tmp$ = this.result_0) != null) {
               this.$this.$outer;
               var this$GltfDemo = this.$this.$outer;
-              var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, void 0, void 0, true, true, void 0, void 0, this.local$isDeferredShading, GltfDemo$GltfModel$load$lambda$lambda(this.local$isDeferredShading, this$GltfDemo));
+              var tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+              var materialCfg = new GltfFile$ModelMaterialConfig(this.local$isDeferredShading ? this$GltfDemo.shadowsDeferred_0 : this$GltfDemo.shadowsForward_0, this.local$isDeferredShading ? (tmp$_0 = this$GltfDemo.aoPipelineDeferred_0) != null ? tmp$_0.aoMap : null : (tmp$_1 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_1.aoMap : null, (tmp$_2 = this$GltfDemo.irrMapPass_0) != null ? tmp$_2.colorTextureCube : null, (tmp$_3 = this$GltfDemo.reflMapPass_0) != null ? tmp$_3.colorTextureCube : null, (tmp$_4 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_4.colorTexture : null, this.local$isDeferredShading);
+              var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, materialCfg, true, true, true, true, void 0, true);
               var $receiver = tmp$.makeModel_m0hq3v$(modelCfg);
+              var tmp$_5;
               $receiver.translate_czzhiu$(this.$this.translation);
               $receiver.scale_mx4ult$(this.$this.scale);
+              (tmp$_5 = $receiver.findNode_61zpoe$('Ground')) != null ? (tmp$_5.isVisible = false) : null;
               $receiver.enableAnimation_za3lpa$(0);
               $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, $receiver));
               this.$this.model = $receiver;
@@ -3269,7 +3265,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function helloWorldScene$lambda$lambda($receiver) {
     $receiver.generate_v2sixm$(helloWorldScene$lambda$lambda$lambda);
-    $receiver.pipelineLoader = pbrShader(helloWorldScene$lambda$lambda$lambda_0);
+    $receiver.shader = pbrShader(helloWorldScene$lambda$lambda$lambda_0);
     return Unit;
   }
   function helloWorldScene$lambda$lambda_0($receiver) {
@@ -3278,10 +3274,117 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function helloWorldScene() {
-    var $receiver = new Scene_init('Hello World Demo');
+    var $receiver = new Scene_init(null);
     defaultCamTransform($receiver);
     $receiver.unaryPlus_uv0sim$(colorMesh(void 0, helloWorldScene$lambda$lambda));
     $receiver.lighting.singleLight_q9zcvo$(helloWorldScene$lambda$lambda_0);
+    return $receiver;
+  }
+  function helloGltfScene$lambda$lambda($receiver) {
+    $receiver.setSpot_nve3wz$(new Vec3f(5.0, 6.25, 7.5), new Vec3f(-1.0, -1.25, -1.5), 45.0);
+    $receiver.setColor_y83vuj$(Color.Companion.WHITE, 300.0);
+    return Unit;
+  }
+  function helloGltfScene$lambda$lambda$lambda($receiver) {
+    $receiver.gridProps.defaults();
+    $receiver.grid_gtbnl3$($receiver.gridProps);
+    return Unit;
+  }
+  function helloGltfScene$lambda$lambda$lambda_0(closure$aoPipeline, closure$shadows) {
+    return function ($receiver) {
+      $receiver.useStaticAlbedo_d7aj7k$(Color.Companion.WHITE);
+      $receiver.useScreenSpaceAmbientOcclusion_vv6xll$(closure$aoPipeline.aoMap);
+      addAll($receiver.shadowMaps, closure$shadows);
+      return Unit;
+    };
+  }
+  function helloGltfScene$lambda$lambda_0(closure$aoPipeline, closure$shadows) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(helloGltfScene$lambda$lambda$lambda);
+      $receiver.shader = pbrShader(helloGltfScene$lambda$lambda$lambda_0(closure$aoPipeline, closure$shadows));
+      return Unit;
+    };
+  }
+  function helloGltfScene$lambda$lambda$lambda$lambda(closure$model) {
+    return function ($receiver, f, ctx) {
+      closure$model.applyAnimation_14dthe$(ctx.time);
+      return Unit;
+    };
+  }
+  function Coroutine$helloGltfScene$lambda$lambda(closure$shadows_0, closure$aoPipeline_0, this$_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$shadows = closure$shadows_0;
+    this.local$closure$aoPipeline = closure$aoPipeline_0;
+    this.local$this$ = this$_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$helloGltfScene$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$helloGltfScene$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$helloGltfScene$lambda$lambda.prototype.constructor = Coroutine$helloGltfScene$lambda$lambda;
+  Coroutine$helloGltfScene$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            var materialCfg = new GltfFile$ModelMaterialConfig(this.local$closure$shadows, this.local$closure$aoPipeline.aoMap);
+            var modelCfg = new GltfFile$ModelGenerateConfig(void 0, void 0, materialCfg);
+            this.state_0 = 2;
+            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', modelCfg, void 0, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            var tmp$_0;
+            if ((tmp$ = this.result_0) != null) {
+              this.local$this$.unaryPlus_uv0sim$(tmp$);
+              tmp$.translate_y2kzbl$(0.0, 0.5, 0.0);
+              if (!tmp$.animations.isEmpty()) {
+                tmp$.enableAnimation_za3lpa$(0);
+                tmp$.onUpdate.add_11rb$(helloGltfScene$lambda$lambda$lambda$lambda(tmp$));
+              }tmp$_0 = Unit;
+            } else
+              tmp$_0 = null;
+            return tmp$_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function helloGltfScene$lambda$lambda_1(closure$shadows_0, closure$aoPipeline_0, this$_0) {
+    return function ($receiver_0, continuation_0, suspended) {
+      var instance = new Coroutine$helloGltfScene$lambda$lambda(closure$shadows_0, closure$aoPipeline_0, this$_0, $receiver_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function helloGltfScene(ctx) {
+    var $receiver = new Scene_init(null);
+    defaultCamTransform($receiver);
+    $receiver.lighting.singleLight_q9zcvo$(helloGltfScene$lambda$lambda);
+    var shadows = listOf_0(new SimpleShadowMap($receiver, 0));
+    var aoPipeline = AoPipeline.Companion.createForward_ushge7$($receiver);
+    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, helloGltfScene$lambda$lambda_0(aoPipeline, shadows)));
+    ctx.assetMgr.launch_eln4bt$(helloGltfScene$lambda$lambda_1(shadows, aoPipeline, $receiver));
     return $receiver;
   }
   function instanceDemo(ctx) {
@@ -3355,7 +3458,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 0:
             var tmp$;
             this.state_0 = 2;
-            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            this.result_0 = loadGltfFile(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -3404,7 +3507,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     tmp$ = model.scenes;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
+      var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
       var mesh = first(model.makeModel_m0hq3v$(modelCfg, i).meshes.values);
       var $this = mesh.geometry;
       var tmp$_0;
@@ -3417,7 +3520,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (i === 0) {
         this.modelCenter_0.set_czzhiu$(mesh.geometry.bounds.center);
         this.modelRadius_0 = mesh.geometry.bounds.max.distance_czzhiu$(mesh.geometry.bounds.center);
-      }mesh.pipelineLoader = new PhongShader(void 0, this.instanceColorPhongModel_0());
+      }mesh.shader = new PhongShader(void 0, this.instanceColorPhongModel_0());
       mesh.isFrustumChecked = false;
       this.lods_0.get_za3lpa$(i).mesh = mesh;
       mesh.instances = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), this.lods_0.get_za3lpa$(i).maxInsts);
@@ -3814,7 +3917,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 0:
             var tmp$;
             this.state_0 = 2;
-            this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            this.result_0 = loadGltfFile(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -3825,7 +3928,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             if ((tmp$ = this.result_0) != null) {
               var this$MultiLightDemo = this.local$this$MultiLightDemo;
               var this$ = this.local$this$;
-              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
+              var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
               var model = tmp$.makeModel_m0hq3v$(modelCfg);
               this$MultiLightDemo.bunnyMesh_0 = first(model.meshes.values);
               this$MultiLightDemo.applyShaders_0();
@@ -3913,7 +4016,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
       this.modelShader_0 = pbrShader(MultiLightDemo$applyPbrShaderBunny$lambda$lambda(this));
-      tmp$.pipelineLoader = this.modelShader_0;
+      tmp$.shader = this.modelShader_0;
     }};
   function MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this$MultiLightDemo) {
     return function ($receiver) {
@@ -3926,7 +4029,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
       this.modelShader_0 = phongShader(MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this));
-      tmp$.pipelineLoader = this.modelShader_0;
+      tmp$.shader = this.modelShader_0;
     }};
   function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
@@ -3949,7 +4052,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   MultiLightDemo.prototype.applyPbrShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
-      tmp$.pipelineLoader = pbrShader(MultiLightDemo$applyPbrShaderGround$lambda$lambda(this, tmp$));
+      tmp$.shader = pbrShader(MultiLightDemo$applyPbrShaderGround$lambda$lambda(this, tmp$));
     }};
   function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
@@ -3971,7 +4074,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   MultiLightDemo.prototype.applyPhongShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
-      tmp$.pipelineLoader = phongShader(MultiLightDemo$applyPhongShaderGround$lambda$lambda(this, tmp$));
+      tmp$.shader = phongShader(MultiLightDemo$applyPhongShaderGround$lambda$lambda(this, tmp$));
     }};
   MultiLightDemo.prototype.updateModelColor_0 = function () {
     var shader = this.modelShader_0;
@@ -4545,7 +4648,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda);
-      $receiver.pipelineLoader = this$LightMesh.lightMeshShader_0;
+      $receiver.shader = this$LightMesh.lightMeshShader_0;
       return Unit;
     };
   }
@@ -4798,7 +4901,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var this$ColorGridContent_0 = this$ColorGridContent;
           mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
           var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda_0(colors, y, nCols, x, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
-          mesh.pipelineLoader = shader;
+          mesh.shader = shader;
           this$ColorGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
         }
@@ -5646,7 +5749,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
       var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut));
-      $receiver.pipelineLoader = shader;
+      $receiver.shader = shader;
       this$PbrMaterialContent.shaders_0.add_11rb$(shader);
       this$PbrMaterialContent.updatePbrMaterial_0();
       var $receiver_0 = closure$scene.onDispose;
@@ -7663,7 +7766,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var closure$brdfLut_0 = closure$brdfLut;
           mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
           var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent_0, x, nCols, y, nRows, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
-          mesh.pipelineLoader = shader;
+          mesh.shader = shader;
           this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
         }
@@ -7741,7 +7844,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
     this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
     this.autoRotate = true;
-    this.dispModel.pipelineLoader = pbrShader(SimplificationDemo_init$lambda);
+    this.dispModel.shader = pbrShader(SimplificationDemo_init$lambda);
     this.srcModel = this.makeCosGrid_0();
     var $receiver = this.models;
     var value = this.srcModel;
@@ -7876,8 +7979,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             var tmp$;
+            var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
             this.state_0 = 2;
-            this.result_0 = loadGltfModel(this.local$$receiver, this.local$name, this);
+            this.result_0 = loadGltfModel(this.local$$receiver, this.local$name, modelCfg, void 0, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -7886,8 +7990,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 2:
             if ((tmp$ = this.result_0) != null) {
               var tmp$_0;
-              var modelCfg = new GltfFile$ModelGenerateConfig(true, void 0, void 0, void 0, void 0, void 0, void 0, false);
-              var mesh = first(tmp$.makeModel_m0hq3v$(modelCfg).meshes.values);
+              var mesh = first(tmp$.meshes.values);
               var geometry = mesh.geometry;
               tmp$_0 = geometry.numVertices;
               for (var i = 0; i < tmp$_0; i++) {
@@ -8411,7 +8514,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_0(this$, closure$uWindSpeed, closure$uWindStrength) {
-    return function (it) {
+    return function (f, f_0, f_1) {
       var tmp$, tmp$_0;
       var tmp$_1 = closure$uWindSpeed;
       var $this = this$.model;
@@ -8512,8 +8615,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_0($receiver_1, uWindSpeed, uWindStrength));
-      $receiver.pipelineLoader = $receiver_1;
+      $receiver_1.onPipelineCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_0($receiver_1, uWindSpeed, uWindStrength));
+      $receiver.shader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
       $receiver_2.add_11rb$(element);
@@ -8541,7 +8644,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_2(this$, closure$uWindSpeed, closure$uWindStrength) {
-    return function (it) {
+    return function (f, f_0, f_1) {
       var tmp$, tmp$_0;
       var tmp$_1 = closure$uWindSpeed;
       var $this = this$.model;
@@ -8641,8 +8744,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_1($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_2($receiver_1, uWindSpeed, uWindStrength));
-      $receiver.pipelineLoader = $receiver_1;
+      $receiver_1.onPipelineCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_2($receiver_1, uWindSpeed, uWindStrength));
+      $receiver.shader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
       $receiver_2.add_11rb$(element);
@@ -9084,7 +9187,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.clear();
     $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(sunLightDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 3.0));
     $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(backLightDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 0.25));
-    var $receiver_1 = new CascadedShadowMap($receiver, 0, void 0, 2048);
+    var $receiver_1 = new CascadedShadowMap($receiver, 0, void 0, void 0, 2048);
     $receiver_1.maxRange = 50.0;
     var shadowMaps = mutableListOf([$receiver_1]);
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
@@ -9360,7 +9463,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(makeTreeGroundGrid$lambda$lambda(closure$groundExt));
-      $receiver.pipelineLoader = pbrShader(makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, $receiver));
+      $receiver.shader = pbrShader(makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, $receiver));
       return Unit;
     };
   }
@@ -10068,7 +10171,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function uiDemoScene$lambda$lambda$lambda_0($receiver) {
     $receiver.generate_v2sixm$(uiDemoScene$lambda$lambda$lambda$lambda);
-    $receiver.pipelineLoader = new ModeledShader$VertexColor();
+    $receiver.shader = new ModeledShader$VertexColor();
     return Unit;
   }
   function uiDemoScene$lambda$lambda_0($receiver) {
@@ -10196,6 +10299,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.gltfDemo_aemszp$ = gltfDemo;
   package$demo.GltfDemo = GltfDemo;
   package$demo.helloWorldScene = helloWorldScene;
+  package$demo.helloGltfScene_aemszp$ = helloGltfScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.InstanceDemo = InstanceDemo;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;

@@ -83,12 +83,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var substringBefore = Kotlin.kotlin.text.substringBefore_8cymmc$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
-  var getCallableRef = Kotlin.getCallableRef;
   var toString = Kotlin.toString;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
   var max = Kotlin.kotlin.collections.max_lvsncp$;
   var distinct = Kotlin.kotlin.collections.distinct_7wnvza$;
+  var toList = Kotlin.kotlin.collections.toList_7wnvza$;
+  var joinToString_0 = Kotlin.kotlin.collections.joinToString_cph1y3$;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
   var toInt = Kotlin.kotlin.text.toInt_pdl1vz$;
@@ -96,6 +97,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var joinTo = Kotlin.kotlin.collections.joinTo_gcc71v$;
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
+  var getCallableRef = Kotlin.getCallableRef;
   var Random = Kotlin.kotlin.random.Random_za3lpa$;
   var shuffled = Kotlin.kotlin.collections.shuffled_4173s5$;
   var L1431655765 = Kotlin.Long.fromInt(1431655765);
@@ -127,15 +129,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var contains = Kotlin.kotlin.text.contains_sgbm27$;
   var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
   var decodeToString = Kotlin.kotlin.text.decodeToString_964n91$;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var getKClass = Kotlin.getKClass;
   var contains_0 = Kotlin.kotlin.collections.contains_2ws7j4$;
   var JsonConfiguration = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.JsonConfiguration;
   var Json = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.Json;
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
   var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var isNaN_0 = Kotlin.kotlin.isNaN_81szk$;
-  var toList = Kotlin.kotlin.collections.toList_us0mfu$;
+  var toList_0 = Kotlin.kotlin.collections.toList_us0mfu$;
   var MutableList = Kotlin.kotlin.collections.MutableList;
   var step = Kotlin.kotlin.ranges.step_xsgg7u$;
   var toMutableList = Kotlin.kotlin.collections.toMutableList_4c7yge$;
@@ -10352,6 +10354,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     return tmp$_2;
   };
+  function DepthMapPass$createPipeline$lambda(closure$culling) {
+    return function (builder, f, f_0) {
+      builder.blendMode = BlendMode$DISABLED_getInstance();
+      builder.cullMethod = closure$culling;
+      return Unit;
+    };
+  }
   DepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     var $receiver = new ShaderModel('shadow shader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
@@ -10386,11 +10395,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }}$receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos.v, mvpMat).outVec4;
     (new ShaderModel$FragmentStageBuilder($receiver)).colorOutput_a3v4si$(new ShaderNodeIoVar(new ModelVar4fConst(Vec4f_init(1.0))));
     var shadowShader = new ModeledShader($receiver);
-    var $receiver_1 = new Pipeline$Builder();
-    $receiver_1.blendMode = BlendMode$DISABLED_getInstance();
-    $receiver_1.cullMethod = culling;
-    var pipelineBuilder = $receiver_1;
-    return shadowShader.createPipeline_y7vss5$(mesh, pipelineBuilder, ctx);
+    shadowShader.onPipelineSetup.add_11rb$(DepthMapPass$createPipeline$lambda(culling));
+    return shadowShader.createPipeline_sbx4mf$(mesh, ctx);
   };
   DepthMapPass.prototype.dispose_aemszp$ = function (ctx) {
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
@@ -10446,6 +10452,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     DepthMapPass.call(this, drawNode, width, height, LinearDepthMapPass$Companion_getInstance().linearDepthSetup_0());
     this.onAfterCollectDrawCommands.add_11rb$(LinearDepthMapPass_init$lambda(this));
   }
+  function LinearDepthMapPass$createPipeline$lambda(closure$culling) {
+    return function (builder, f, f_0) {
+      builder.blendMode = BlendMode$DISABLED_getInstance();
+      builder.cullMethod = closure$culling;
+      return Unit;
+    };
+  }
   LinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     var $receiver = new ShaderModel('shadow shader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
@@ -10482,11 +10495,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var linDepth = $receiver_1.addNode_u9w9by$(new LinearDepthMapPass$LinearDepthNode($receiver_1.stage));
     $receiver_1.colorOutput_a3v4si$(linDepth.outColor);
     var shadowShader = new ModeledShader($receiver);
-    var $receiver_2 = new Pipeline$Builder();
-    $receiver_2.blendMode = BlendMode$DISABLED_getInstance();
-    $receiver_2.cullMethod = culling;
-    var pipelineBuilder = $receiver_2;
-    return shadowShader.createPipeline_y7vss5$(mesh, pipelineBuilder, ctx);
+    shadowShader.onPipelineSetup.add_11rb$(LinearDepthMapPass$createPipeline$lambda(culling));
+    return shadowShader.createPipeline_sbx4mf$(mesh, ctx);
   };
   function LinearDepthMapPass$LinearDepthNode(graph) {
     ShaderNode.call(this, 'linearDepth', graph);
@@ -10539,6 +10549,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     DepthMapPass.call(this, drawNode, width, height, NormalLinearDepthMapPass$Companion_getInstance().normalLinearDepthSetup_0());
     this.name = 'NormalLinearDepthMapPass';
     this.onAfterCollectDrawCommands.add_11rb$(NormalLinearDepthMapPass_init$lambda(this));
+  }
+  function NormalLinearDepthMapPass$createPipeline$lambda(closure$culling) {
+    return function (builder, f, f_0) {
+      builder.blendMode = BlendMode$DISABLED_getInstance();
+      builder.cullMethod = closure$culling;
+      return Unit;
+    };
   }
   NormalLinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     if (!mesh.geometry.hasAttribute_nm2vx5$(Attribute$Companion_getInstance().NORMALS)) {
@@ -10603,11 +10620,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var linDepth = $receiver_1.addNode_u9w9by$(new NormalLinearDepthMapPass$NormalLinearDepthNode(normal, $receiver_1.stage));
     $receiver_1.colorOutput_a3v4si$(linDepth.outColor);
     var shadowShader = new ModeledShader($receiver);
-    var $receiver_2 = new Pipeline$Builder();
-    $receiver_2.blendMode = BlendMode$DISABLED_getInstance();
-    $receiver_2.cullMethod = culling;
-    var pipelineBuilder = $receiver_2;
-    return shadowShader.createPipeline_y7vss5$(mesh, pipelineBuilder, ctx);
+    shadowShader.onPipelineSetup.add_11rb$(NormalLinearDepthMapPass$createPipeline$lambda(culling));
+    return shadowShader.createPipeline_sbx4mf$(mesh, ctx);
   };
   function NormalLinearDepthMapPass$NormalLinearDepthNode(inNormals, graph) {
     ShaderNode.call(this, 'normalLinearDepth', graph);
@@ -11354,7 +11368,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'OffscreenRenderPassCube',
     interfaces: [OffscreenRenderPass]
   };
-  function Pipeline(builder, mesh, ctx) {
+  function Pipeline(builder) {
     Pipeline$Companion_getInstance();
     this.name = builder.name;
     this.pipelineHash = null;
@@ -11365,99 +11379,81 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthCompareOp = builder.depthTest;
     this.isWriteDepth = builder.isWriteDepth;
     this.lineWidth = builder.lineWidth;
-    this.vertexLayout = null;
-    this.descriptorSetLayouts = null;
-    this.pushConstantRanges = null;
-    this.shader = null;
+    this.layout = null;
     this.shaderCode = null;
-    var buildCtx = new Pipeline$BuildContext(builder);
-    buildCtx.vertexLayout.primitiveType = mesh.geometry.primitiveType;
-    var tmp$_0;
-    tmp$_0 = builder.onCreatePipeline.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      element(buildCtx);
-    }
-    this.shader = builder.shaderLoader(mesh, buildCtx, ctx);
-    this.vertexLayout = buildCtx.vertexLayout.create();
-    var $receiver = buildCtx.descriptorSetLayouts;
+    var vertexLayout = builder.vertexLayout.create();
+    var $receiver = builder.descriptorSetLayouts;
     var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
-    var tmp$_1, tmp$_0_0;
+    var tmp$_0, tmp$_0_0;
     var index = 0;
-    tmp$_1 = $receiver.iterator();
-    while (tmp$_1.hasNext()) {
-      var item = tmp$_1.next();
+    tmp$_0 = $receiver.iterator();
+    while (tmp$_0.hasNext()) {
+      var item = tmp$_0.next();
       destination.add_11rb$(item.create_za3lpa$(checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0))));
     }
-    this.descriptorSetLayouts = destination;
-    var $receiver_0 = buildCtx.pushConstantRanges;
+    var descriptorSetLayouts = destination;
+    var $receiver_0 = builder.pushConstantRanges;
     var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
-    var tmp$_2;
-    tmp$_2 = $receiver_0.iterator();
-    while (tmp$_2.hasNext()) {
-      var item_0 = tmp$_2.next();
+    var tmp$_1;
+    tmp$_1 = $receiver_0.iterator();
+    while (tmp$_1.hasNext()) {
+      var item_0 = tmp$_1.next();
       destination_0.add_11rb$(item_0.create());
     }
-    this.pushConstantRanges = destination_0;
-    this.shaderCode = this.shader.generateCode_1y5mwk$(this, ctx);
+    var pushConstantRanges = destination_0;
+    this.layout = new Pipeline$Layout(vertexLayout, descriptorSetLayouts, pushConstantRanges);
+    this.shaderCode = builder.shaderCodeGenerator(this.layout);
     var $receiver_1 = this.cullMethod.hashCode();
     var hash = {v: new ULong(Kotlin.Long.fromInt($receiver_1))};
     var $this = hash.v;
     var other = new ULong(Kotlin.Long.fromInt(71023));
-    var tmp$_3 = new ULong($this.data.multiply(other.data));
+    var tmp$_2 = new ULong($this.data.multiply(other.data));
     var $receiver_2 = this.depthCompareOp.hashCode();
     var other_0 = new ULong(Kotlin.Long.fromInt($receiver_2));
-    hash.v = new ULong(tmp$_3.data.add(other_0.data));
+    hash.v = new ULong(tmp$_2.data.add(other_0.data));
     var $this_0 = hash.v;
     var other_1 = new ULong(Kotlin.Long.fromInt(71023));
-    var tmp$_4 = new ULong($this_0.data.multiply(other_1.data));
+    var tmp$_3 = new ULong($this_0.data.multiply(other_1.data));
     var $receiver_3 = hashCode(this.isWriteDepth);
     var other_2 = new ULong(Kotlin.Long.fromInt($receiver_3));
-    hash.v = new ULong(tmp$_4.data.add(other_2.data));
+    hash.v = new ULong(tmp$_3.data.add(other_2.data));
     var $this_1 = hash.v;
     var other_3 = new ULong(Kotlin.Long.fromInt(71023));
-    var tmp$_5 = new ULong($this_1.data.multiply(other_3.data));
+    var tmp$_4 = new ULong($this_1.data.multiply(other_3.data));
     var $receiver_4 = hashCode(this.lineWidth);
     var other_4 = new ULong(Kotlin.Long.fromInt($receiver_4));
-    hash.v = new ULong(tmp$_5.data.add(other_4.data));
+    hash.v = new ULong(tmp$_4.data.add(other_4.data));
     var $this_2 = hash.v;
     var other_5 = new ULong(Kotlin.Long.fromInt(71023));
     var $this_3 = new ULong($this_2.data.multiply(other_5.data));
-    var other_6 = this.vertexLayout.longHash;
+    var other_6 = vertexLayout.longHash;
     hash.v = new ULong($this_3.data.add(other_6.data));
     var $this_4 = hash.v;
     var other_7 = new ULong(Kotlin.Long.fromInt(71023));
     var $this_5 = new ULong($this_4.data.multiply(other_7.data));
     var other_8 = this.shaderCode.longHash;
     hash.v = new ULong($this_5.data.add(other_8.data));
-    var tmp$_6;
-    tmp$_6 = this.descriptorSetLayouts.iterator();
-    while (tmp$_6.hasNext()) {
-      var element_0 = tmp$_6.next();
+    var tmp$_5;
+    tmp$_5 = descriptorSetLayouts.iterator();
+    while (tmp$_5.hasNext()) {
+      var element = tmp$_5.next();
       var $this_6 = hash.v;
       var other_9 = new ULong(Kotlin.Long.fromInt(71023));
       var $this_7 = new ULong($this_6.data.multiply(other_9.data));
-      var other_10 = element_0.longHash;
+      var other_10 = element.longHash;
       hash.v = new ULong($this_7.data.add(other_10.data));
     }
-    var tmp$_7;
-    tmp$_7 = this.pushConstantRanges.iterator();
-    while (tmp$_7.hasNext()) {
-      var element_1 = tmp$_7.next();
+    var tmp$_6;
+    tmp$_6 = pushConstantRanges.iterator();
+    while (tmp$_6.hasNext()) {
+      var element_0 = tmp$_6.next();
       var $this_8 = hash.v;
       var other_11 = new ULong(Kotlin.Long.fromInt(71023));
       var $this_9 = new ULong($this_8.data.multiply(other_11.data));
-      var other_12 = element_1.longHash;
+      var other_12 = element_0.longHash;
       hash.v = new ULong($this_9.data.add(other_12.data));
     }
     this.pipelineHash = hash.v;
-    this.shader.onPipelineCreated_lfrgcb$(this);
-    var tmp$_8;
-    tmp$_8 = builder.onPipelineCreated.iterator();
-    while (tmp$_8.hasNext()) {
-      var element_2 = tmp$_8.next();
-      element_2(this);
-    }
   }
   Pipeline.prototype.equals = function (other) {
     var tmp$;
@@ -11470,54 +11466,41 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Pipeline.prototype.hashCode = function () {
     return this.pipelineHash.hashCode();
   };
-  function Pipeline$BuildContext(builder) {
-    this.builder = builder;
-    this.vertexLayout = new VertexLayout$Builder();
-    this.descriptorSetLayouts = ArrayList_init_0();
-    this.pushConstantRanges = ArrayList_init_0();
+  function Pipeline$Layout(vertices, descriptorSets, pushConstantRanges) {
+    this.vertices = vertices;
+    this.descriptorSets = descriptorSets;
+    this.pushConstantRanges = pushConstantRanges;
   }
-  Pipeline$BuildContext.prototype.vertexLayout_ipuw3d$ = function (block) {
-    block(this.vertexLayout);
-  };
-  Pipeline$BuildContext.prototype.descriptorSetLayout_l9aa18$ = function (set, block) {
-    if (set === void 0)
-      set = 0;
-    while (set >= this.descriptorSetLayouts.size) {
-      var $receiver = this.descriptorSetLayouts;
-      var element = new DescriptorSetLayout$Builder();
-      $receiver.add_11rb$(element);
-    }
-    block(this.descriptorSetLayouts.get_za3lpa$(set));
-  };
-  Pipeline$BuildContext.prototype.pushConstantRange_77euff$ = function (name, stages, block) {
-    var b = new PushConstantRange$Builder();
-    b.name = name;
-    addAll_0(b.stages, stages);
-    block(b);
-    this.pushConstantRanges.add_11rb$(b);
-  };
-  Pipeline$BuildContext.$metadata$ = {
+  Pipeline$Layout.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'BuildContext',
+    simpleName: 'Layout',
     interfaces: []
   };
   function Pipeline$Builder() {
     this.name = 'pipeline';
     this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
-    this.blendMode = BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance();
+    this.blendMode = BlendMode$DISABLED_getInstance();
     this.depthTest = DepthCompareOp$LESS_getInstance();
     this.isWriteDepth = true;
     this.lineWidth = 1.0;
-    this.onCreatePipeline = ArrayList_init_0();
-    this.onPipelineCreated = ArrayList_init_0();
-    this.shaderLoader = Pipeline$Builder$shaderLoader$lambda;
+    this.shaderCodeGenerator_j5ii45$_0 = this.shaderCodeGenerator_j5ii45$_0;
+    this.vertexLayout = new VertexLayout$Builder();
+    this.descriptorSetLayouts = ArrayList_init_0();
+    this.pushConstantRanges = ArrayList_init_0();
   }
-  Pipeline$Builder.prototype.create_sbx4mf$ = function (mesh, ctx) {
-    return new Pipeline(this, mesh, ctx);
+  Object.defineProperty(Pipeline$Builder.prototype, 'shaderCodeGenerator', {
+    get: function () {
+      if (this.shaderCodeGenerator_j5ii45$_0 == null)
+        return throwUPAE('shaderCodeGenerator');
+      return this.shaderCodeGenerator_j5ii45$_0;
+    },
+    set: function (shaderCodeGenerator) {
+      this.shaderCodeGenerator_j5ii45$_0 = shaderCodeGenerator;
+    }
+  });
+  Pipeline$Builder.prototype.create = function () {
+    return new Pipeline(this);
   };
-  function Pipeline$Builder$shaderLoader$lambda(f, f_0, f_1) {
-    throw KoolException_init('No shader loader specified');
-  }
   Pipeline$Builder.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Builder',
@@ -11541,13 +11524,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Pipeline.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Pipeline',
-    interfaces: []
-  };
-  function PipelineFactory() {
-  }
-  PipelineFactory.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'PipelineFactory',
     interfaces: []
   };
   function BlendMode(name, ordinal) {
@@ -11948,6 +11924,39 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'ScreenRenderPass',
     interfaces: [RenderPass]
+  };
+  function Shader() {
+    this.onPipelineSetup = ArrayList_init_0();
+    this.onPipelineCreated = ArrayList_init_0();
+  }
+  Shader.prototype.createPipeline_sbx4mf$ = function (mesh, ctx) {
+    var pipelineBuilder = new Pipeline$Builder();
+    pipelineBuilder.vertexLayout.primitiveType = mesh.geometry.primitiveType;
+    this.onPipelineSetup_x08qbx$(pipelineBuilder, mesh, ctx);
+    var pipeline = pipelineBuilder.create();
+    this.onPipelineCreated_vp7qhs$(pipeline, mesh, ctx);
+    return pipeline;
+  };
+  Shader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    var tmp$;
+    tmp$ = this.onPipelineSetup.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element(builder, mesh, ctx);
+    }
+  };
+  Shader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
+    var tmp$;
+    tmp$ = this.onPipelineCreated.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element(pipeline, mesh, ctx);
+    }
+  };
+  Shader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Shader',
+    interfaces: []
   };
   function CodeGenerator() {
   }
@@ -13497,14 +13506,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return Unit;
     };
   }
-  ShaderModel.prototype.setup_f3a0ju$ = function (mesh, buildCtx) {
+  ShaderModel.prototype.setup_xbeod6$ = function (mesh, builder) {
+    builder.name = this.modelInfo;
     var tmp$;
     tmp$ = this.stages.values.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       element.setup();
     }
-    this.setupAttributes_0(mesh, buildCtx);
+    this.setupAttributes_0(mesh, builder);
     var pushBuilder = new PushConstantRange$Builder();
     var pushUpdateFuns = ArrayList_init_0();
     var descBuilder = new DescriptorSetLayout$Builder();
@@ -13520,13 +13530,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         pushUpdateFuns.add_11rb$(tmp$_1);
       }}
     if (!descBuilder.descriptors.isEmpty()) {
-      buildCtx.descriptorSetLayouts.add_11rb$(descBuilder);
+      builder.descriptorSetLayouts.add_11rb$(descBuilder);
     }if (!pushBuilder.pushConstants.isEmpty()) {
-      buildCtx.pushConstantRanges.add_11rb$(pushBuilder);
+      builder.pushConstantRanges.add_11rb$(pushBuilder);
       if (!pushUpdateFuns.isEmpty()) {
         pushBuilder.onUpdate = ShaderModel$setup$lambda(pushUpdateFuns);
       }}};
-  ShaderModel.prototype.setupAttributes_0 = function (mesh, buildCtx) {
+  ShaderModel.prototype.setupAttributes_0 = function (mesh, builder) {
     var attribLocation = {v: 0};
     var verts = mesh.geometry;
     var vertLayoutAttribs = ArrayList_init_0();
@@ -13551,13 +13561,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       attribLocation.v = attribLocation.v + element.props.nSlots | 0;
     }
     var tmp$_1;
-    tmp$_1 = buildCtx.vertexLayout.bindings;
+    tmp$_1 = builder.vertexLayout.bindings;
     var tmp$_2;
     var element_2 = new VertexLayout$Binding((tmp$_2 = iBinding, iBinding = tmp$_2 + 1 | 0, tmp$_2), InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.byteStrideF);
     tmp$_1.add_11rb$(element_2);
     if (!vertLayoutAttribsI.isEmpty()) {
       var tmp$_3;
-      tmp$_3 = buildCtx.vertexLayout.bindings;
+      tmp$_3 = builder.vertexLayout.bindings;
       var tmp$_4;
       var element_3 = new VertexLayout$Binding((tmp$_4 = iBinding, iBinding = tmp$_4 + 1 | 0, tmp$_4), InputRate$VERTEX_getInstance(), vertLayoutAttribsI, verts.byteStrideI);
       tmp$_3.add_11rb$(element_3);
@@ -13577,7 +13587,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         instLayoutAttribs.add_11rb$(element_5);
         attribLocation.v = attribLocation.v + element_4.props.nSlots | 0;
       }
-      var $receiver = buildCtx.vertexLayout.bindings;
+      var $receiver = builder.vertexLayout.bindings;
       var element_6 = new VertexLayout$Binding(iBinding, InputRate$INSTANCE_getInstance(), instLayoutAttribs, insts.strideBytesF);
       $receiver.add_11rb$(element_6);
     } else {
@@ -15824,10 +15834,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Shader.call(this);
     this.shaderCode = shaderCode;
   }
-  CustomShader.prototype.generateCode_1y5mwk$ = function (pipeline, ctx) {
-    return this.shaderCode;
-  };
-  CustomShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  function CustomShader$onPipelineSetup$lambda(this$CustomShader) {
+    return function (it) {
+      return this$CustomShader.shaderCode;
+    };
+  }
+  CustomShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    builder.shaderCodeGenerator = CustomShader$onPipelineSetup$lambda(this);
+    Shader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
   CustomShader.$metadata$ = {
     kind: Kind_CLASS,
@@ -15868,27 +15882,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ModeledShader$Companion_getInstance();
     Shader.call(this);
     this.model = model;
-    this.onSetup = ArrayList_init_0();
   }
-  ModeledShader.prototype.setup_acv7yd$ = function (mesh, buildCtx, ctx) {
-    this.model.setup_f3a0ju$(mesh, buildCtx);
-    return this;
-  };
-  ModeledShader.prototype.generateCode_1y5mwk$ = function (pipeline, ctx) {
-    return ctx.shaderGenerator.generateShader_us75rd$(this.model, pipeline, ctx);
-  };
-  ModeledShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
-    builder.name = this.model.modelInfo;
-    builder.shaderLoader = getCallableRef('setup', function ($receiver, mesh, buildCtx, ctx) {
-      return $receiver.setup_acv7yd$(mesh, buildCtx, ctx);
-    }.bind(null, this));
-    var tmp$;
-    tmp$ = this.onSetup.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element(builder);
-    }
-    return builder.create_sbx4mf$(mesh, ctx);
+  function ModeledShader$onPipelineSetup$lambda(closure$ctx, this$ModeledShader) {
+    return function (layout) {
+      return closure$ctx.shaderGenerator.generateShader_lvmec3$(this$ModeledShader.model, layout, closure$ctx);
+    };
+  }
+  ModeledShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    this.model.setup_xbeod6$(mesh, builder);
+    builder.shaderCodeGenerator = ModeledShader$onPipelineSetup$lambda(ctx, this);
+    Shader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
   function ModeledShader$StaticColor(color, model) {
     if (color === void 0)
@@ -15909,7 +15912,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$_0 = (tmp$ = this.uColor_0) != null ? tmp$.value : null) != null ? tmp$_0.set_czzhhz$(value) : null;
     }
   });
-  ModeledShader$StaticColor.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  ModeledShader$StaticColor.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0, tmp$_1;
     var $this = this.model;
     var name = 'uStaticColor';
@@ -15947,7 +15950,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
      while (false);
     this.uColor_0 = (tmp$ = findNode_3klnlw$result) != null ? tmp$.uniform : null;
     (tmp$_1 = (tmp$_0 = this.uColor_0) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(this.color) : null;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   ModeledShader$StaticColor.$metadata$ = {
     kind: Kind_CLASS,
@@ -15986,7 +15989,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.textureSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  ModeledShader$TextureColor.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  ModeledShader$TextureColor.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0;
     var $this = this.model;
     var name = this.texName_0;
@@ -16025,52 +16028,56 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.textureSampler_0 = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
     if ((tmp$_0 = this.textureSampler_0) != null) {
       tmp$_0.texture = this.texture;
-    }ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   ModeledShader$TextureColor.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TextureColor',
     interfaces: [ModeledShader]
   };
-  function ModeledShader$CubeMapColor(texName, model) {
+  function ModeledShader$CubeMapColor(texture, texName, model) {
+    if (texture === void 0)
+      texture = null;
     if (texName === void 0)
       texName = 'cubeMap';
     if (model === void 0)
       model = ModeledShader$Companion_getInstance().cubeMapColorModel_0(texName);
     ModeledShader.call(this, model);
     this.texName_0 = texName;
-    this.cubeMapSampler_1wcsvl$_0 = this.cubeMapSampler_1wcsvl$_0;
+    this.cubeMapSampler_0 = null;
+    this.texture_mz7wkp$_0 = texture;
   }
-  Object.defineProperty(ModeledShader$CubeMapColor.prototype, 'cubeMapSampler', {
+  Object.defineProperty(ModeledShader$CubeMapColor.prototype, 'texture', {
     get: function () {
-      if (this.cubeMapSampler_1wcsvl$_0 == null)
-        return throwUPAE('cubeMapSampler');
-      return this.cubeMapSampler_1wcsvl$_0;
+      return this.texture_mz7wkp$_0;
     },
-    set: function (cubeMapSampler) {
-      this.cubeMapSampler_1wcsvl$_0 = cubeMapSampler;
+    set: function (value) {
+      var tmp$;
+      this.texture_mz7wkp$_0 = value;
+      (tmp$ = this.cubeMapSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  ModeledShader$CubeMapColor.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  ModeledShader$CubeMapColor.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
+    var tmp$, tmp$_0;
     var $this = this.model;
     var name = this.texName_0;
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$;
-      tmp$ = $this.stages.values.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
+      var tmp$_1;
+      tmp$_1 = $this.stages.values.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_0;
+          var tmp$_2;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_1;
-            tmp$_1 = $receiver.iterator();
-            while (tmp$_1.hasNext()) {
-              var element_0 = tmp$_1.next();
+            var tmp$_3;
+            tmp$_3 = $receiver.iterator();
+            while (tmp$_3.hasNext()) {
+              var element_0 = tmp$_3.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, CubeMapNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -16078,7 +16085,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0, CubeMapNode) ? tmp$_0 : throwCCE();
+          var node = (tmp$_2 = firstOrNull$result) == null || Kotlin.isType(tmp$_2, CubeMapNode) ? tmp$_2 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -16086,8 +16093,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result = null;
     }
      while (false);
-    this.cubeMapSampler = ensureNotNull(findNode_3klnlw$result).sampler;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    this.cubeMapSampler_0 = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
+    if ((tmp$_0 = this.cubeMapSampler_0) != null) {
+      tmp$_0.texture = this.texture;
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   ModeledShader$CubeMapColor.$metadata$ = {
     kind: Kind_CLASS,
@@ -16155,7 +16164,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ModeledShader.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ModeledShader',
-    interfaces: [PipelineFactory, Shader]
+    interfaces: [Shader]
   };
   function PbrMaterialConfig() {
     this.albedoSource = Albedo$VERTEX_ALBEDO_getInstance();
@@ -16206,6 +16215,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.brdfLut = null;
     this.scrSpcAmbientOcclusionMap = null;
   }
+  PbrMaterialConfig.prototype.useStaticAlbedo_d7aj7k$ = function (albedo) {
+    this.albedoSource = Albedo$STATIC_ALBEDO_getInstance();
+    this.albedo = albedo;
+  };
   PbrMaterialConfig.prototype.useAlbedoMap_ivxn3r$ = function (albedoMap, isMultiplyAlbedoMap) {
     if (isMultiplyAlbedoMap === void 0)
       isMultiplyAlbedoMap = false;
@@ -16575,12 +16588,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.ssaoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  PbrShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  PbrShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
     builder.cullMethod = this.cullMethod_0;
     builder.blendMode = this.isBlending_0 ? BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance() : BlendMode$DISABLED_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
-  PbrShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  PbrShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25, tmp$_26, tmp$_27, tmp$_28, tmp$_29, tmp$_30, tmp$_31, tmp$_32, tmp$_33;
     var $this = this.model;
     var name = 'uMetallic';
@@ -17245,7 +17258,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uDispStrength_0 = findNode_3klnlw$result_16;
     if ((tmp$_33 = this.uDispStrength_0) != null) {
       tmp$_33.uniform.value = this.displacementStrength;
-    }ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function PbrShader$Companion() {
     PbrShader$Companion_instance = this;
@@ -17611,6 +17624,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (model === void 0)
       model = PhongShader$Companion_getInstance().defaultPhongModel_m663ta$(cfg);
     ModeledShader.call(this, model);
+    this.cullMethod_0 = cfg.cullMethod;
+    this.isBlending_0 = Kotlin.isType(cfg.alphaMode, AlphaModeBlend);
     var array = Array_0(cfg.shadowMaps.size);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -17687,7 +17702,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.normalSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  PhongShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  PhongShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    builder.cullMethod = this.cullMethod_0;
+    builder.blendMode = this.isBlending_0 ? BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance() : BlendMode$DISABLED_getInstance();
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
+  };
+  PhongShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
     var $this = this.model;
     var name = 'uShininess';
@@ -17910,7 +17930,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.depthSamplers_0[i] = sampler;
         this.shadowMaps_0[i].setupSampler_s70oj3$(sampler);
       }
-    }ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function PhongShader$Companion() {
     PhongShader$Companion_instance = this;
@@ -18035,6 +18055,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
     this.lightBacksides = false;
+    this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
+    this.alphaMode = new AlphaModeOpaque();
     this.isInstanced = false;
     this.albedoMap = null;
     this.normalMap = null;
@@ -18065,22 +18087,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'PhongShader',
     interfaces: [ModeledShader]
-  };
-  function Shader() {
-    this.onCreated = ArrayList_init_0();
-  }
-  Shader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
-    var tmp$;
-    tmp$ = this.onCreated.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element(pipeline);
-    }
-  };
-  Shader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Shader',
-    interfaces: []
   };
   function Std140Layout(uniforms) {
     this.elements_0 = ArrayList_init_0();
@@ -19427,6 +19433,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
   };
+  Animation.prototype.printChannels = function () {
+    println_0(toString(this.name) + ' channels:');
+    var tmp$;
+    tmp$ = this.channels.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      println_0('  ' + toString(element.name) + ' [node: ' + toString(element.animationNode.name) + ']');
+      element.printKeys_61zpoe$('    ');
+    }
+  };
   Animation.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Animation',
@@ -19454,6 +19470,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       key = Math_0.abs($receiver) <= eps ? this.keys.lastValue() : this.keys.firstValue();
     }key.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
   };
+  AnimationChannel.prototype.printKeys_61zpoe$ = function (indent) {
+    if (indent === void 0)
+      indent = '';
+    var tmp$;
+    var animKeys = toList(this.keys.values);
+    var b = animKeys.size;
+    tmp$ = Math_0.min(5, b);
+    for (var i = 0; i < tmp$; i++) {
+      println_0(indent + animKeys.get_za3lpa$(i));
+    }
+    if (animKeys.size > 5) {
+      println_0(indent + '  ...' + (animKeys.size - 5 | 0) + ' more');
+    }};
   AnimationChannel.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AnimationChannel',
@@ -19527,6 +19556,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var sz = this.target.transform.getCol_8irwu3$(0, vec4).length();
     this.initScale_0.set_yvo9jy$(sx, sy, sz);
   }
+  Object.defineProperty(AnimatedTransformGroup.prototype, 'name', {
+    get: function () {
+      return this.target.name;
+    }
+  });
   AnimatedTransformGroup.prototype.initTransform = function () {
     this.animTranslation_0.set_czzhiw$(this.initTranslation_0);
     this.animRotation_0.set_czzhi1$(this.initRotation_0);
@@ -19572,6 +19606,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.target = target;
     this.weights_0 = new Float32Array(1);
   }
+  Object.defineProperty(MorphAnimatedMesh.prototype, 'name', {
+    get: function () {
+      return this.target.name;
+    }
+  });
   MorphAnimatedMesh.prototype.applyTransform = function () {
     this.target.morphWeights = this.weights_0;
   };
@@ -19620,6 +19659,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_0 = 0.0;
     }
     return tmp$_0;
+  };
+  AnimationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> [' + this.interpolation + ']';
   };
   function AnimationKey$Interpolation(name, ordinal) {
     Enum.call(this);
@@ -19726,6 +19768,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     node.setRotation_czzhi1$(this.tmpRotation_ndkhzb$_0);
   };
+  RotationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> rotation: ' + this.rotation + ' [' + this.interpolation + ']';
+  };
   RotationKey.prototype.slerp_nwt50b$_0 = function (quatA, quatB, f, result) {
     quatA.norm_5s4mpx$(this.qa_uw9ek8$_0);
     quatB.norm_5s4mpx$(this.qb_uw9ejd$_0);
@@ -19815,6 +19860,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       node.setTranslation_czzhiw$(this.tmpTranslation_3fbkj9$_0);
     }
   };
+  TranslationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> translation: ' + this.translation + ' [' + this.interpolation + ']';
+  };
   TranslationKey.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TranslationKey',
@@ -19864,6 +19912,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       next.scale.subtract_vgki2o$(this.scale, this.tmpScale_y7mgar$_0).scale_14dthe$(this.interpolationPos_dleff0$(time, next.time)).add_czzhiw$(this.scale);
       node.setScale_czzhiw$(this.tmpScale_y7mgar$_0);
     }
+  };
+  ScaleKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> scale: ' + this.scale + ' [' + this.interpolation + ']';
   };
   ScaleKey.$metadata$ = {
     kind: Kind_CLASS,
@@ -19923,6 +19974,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
     node.setWeights_q3cr5i$(this.tmpW);
+  };
+  WeightKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> weight: (' + joinToString_0(this.weights, ', ') + ') [' + this.interpolation + ']';
   };
   WeightKey.$metadata$ = {
     kind: Kind_CLASS,
@@ -20596,6 +20650,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.intChildren.clear();
   };
+  Group.prototype.findNode_61zpoe$ = function (name) {
+    var tmp$;
+    if (equals(name, this.name)) {
+      return this;
+    }tmp$ = this.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var found = this.children.get_za3lpa$(i).findNode_61zpoe$(name);
+      if (found != null) {
+        return found;
+      }}
+    return null;
+  };
   Group.prototype.containsNode_f1kmr1$ = function (node) {
     return this.intChildren.contains_11rb$(node);
   };
@@ -20746,7 +20812,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Mesh.call(this, geometry, name);
     geometry.primitiveType = PrimitiveType$LINES_getInstance();
     this.rayTest = MeshRayTest$Companion_getInstance().nopTest();
-    this.pipelineLoader = new ModeledShader$VertexColor();
+    this.shader = new ModeledShader$VertexColor();
   }
   function LineMesh$addLine$lambda(closure$point0, closure$color0, closure$idx0, closure$point1, closure$color1) {
     return function ($receiver) {
@@ -21098,18 +21164,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.morphWeights = null;
     this.skin = null;
     this.isOpaque = true;
-    this.pipelineLoader_6i1avl$_0 = null;
+    this.shader_cdun6p$_0 = null;
     this.pipeline_fj0dqa$_0 = null;
     this.discardedPipelines_d0j47k$_0 = ArrayList_init_0();
     this.rayTest = MeshRayTest$Companion_getInstance().boundsTest();
   }
-  Object.defineProperty(Mesh.prototype, 'pipelineLoader', {
+  Object.defineProperty(Mesh.prototype, 'shader', {
     get: function () {
-      return this.pipelineLoader_6i1avl$_0;
+      return this.shader_cdun6p$_0;
     },
     set: function (value) {
       var tmp$;
-      this.pipelineLoader_6i1avl$_0 = value;
+      this.shader_cdun6p$_0 = value;
       if ((tmp$ = this.pipeline_fj0dqa$_0) != null) {
         this.discardedPipelines_d0j47k$_0.add_11rb$(tmp$);
       }this.pipeline_fj0dqa$_0 = null;
@@ -21152,8 +21218,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_2 = tmp$_0;
     else {
       var tmp$_3;
-      if ((tmp$ = this.pipelineLoader) != null) {
-        var $receiver = tmp$.createPipeline_y7vss5$(this, new Pipeline$Builder(), ctx);
+      if ((tmp$ = this.shader) != null) {
+        var $receiver = tmp$.createPipeline_sbx4mf$(this, ctx);
         this.pipeline_fj0dqa$_0 = $receiver;
         tmp$_3 = $receiver;
       } else
@@ -21355,15 +21421,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.printHierarchy_0(this, '');
   };
   Model.prototype.printHierarchy_0 = function ($receiver, indent) {
-    println_0(indent + toString($receiver.name));
-    var tmp$;
-    tmp$ = $receiver.children.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      if (Kotlin.isType(element, TransformGroup)) {
-        this.printHierarchy_0(element, indent + '    ');
+    var tmp$ = indent + toString($receiver.name) + ' [';
+    var $receiver_0 = $receiver.children;
+    var destination = ArrayList_init_0();
+    var tmp$_0;
+    tmp$_0 = $receiver_0.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      if (Kotlin.isType(element, Mesh))
+        destination.add_11rb$(element);
+    }
+    println_0(tmp$ + destination.size + ' meshes]');
+    var tmp$_1;
+    tmp$_1 = $receiver.children.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      if (Kotlin.isType(element_0, TransformGroup)) {
+        this.printHierarchy_0(element_0, indent + '    ');
       } else {
-        println_0(indent + '    ' + toString(element.name));
+        println_0(indent + '    ' + toString(element_0.name));
       }
     }
   };
@@ -21545,6 +21621,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     } else if (this.isFrustumChecked && !this.bounds.isEmpty) {
       return cam.isInFrustum_f1kmr1$(this);
     }return true;
+  };
+  Node.prototype.findNode_61zpoe$ = function (name) {
+    if (equals(name, this.name)) {
+      return this;
+    } else {
+      return null;
+    }
   };
   Node.prototype.findParentOfType_287e2$ = defineInlineFunction('kool.de.fabmax.kool.scene.Node.findParentOfType_287e2$', wrapFunction(function () {
     var throwCCE = Kotlin.throwCCE;
@@ -22010,7 +22093,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Mesh.call(this, geometry, name);
     geometry.primitiveType = PrimitiveType$POINTS_getInstance();
     this.rayTest = MeshRayTest$Companion_getInstance().nopTest();
-    this.pipelineLoader = new ModeledShader$VertexColor();
+    this.shader = new ModeledShader$VertexColor();
   }
   PointMesh.prototype.addPoint_tohjaj$ = function (block) {
     var $this = this.geometry;
@@ -22220,7 +22303,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (hdrOutput === void 0)
       hdrOutput = false;
     Mesh.call(this, IndexedVertexList_init([Attribute$Companion_getInstance().POSITIONS]));
-    this.environmentMap = environmentMap;
     this.generate_v2sixm$(Skybox_init$lambda);
     this.isFrustumChecked = false;
     this.isCastingShadow = false;
@@ -22245,10 +22327,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver_1.colorOutput_a3v4si$(ldr.outColor);
     }
     var model = $receiver;
-    var $receiver_2 = new ModeledShader$CubeMapColor(texName, model);
-    $receiver_2.onSetup.add_11rb$(Skybox_init$lambda$lambda);
-    $receiver_2.onCreated.add_11rb$(Skybox_init$lambda$lambda_0(this, $receiver_2));
-    this.pipelineLoader = $receiver_2;
+    var $receiver_2 = new ModeledShader$CubeMapColor(environmentMap, texName, model);
+    $receiver_2.onPipelineSetup.add_11rb$(Skybox_init$lambda$lambda);
+    this.shader = $receiver_2;
   }
   function Skybox$SkyboxPosNode(mvp, inPos, graph) {
     ShaderNode.call(this, 'skyboxPos', graph, ShaderStage$VERTEX_SHADER_getInstance().mask);
@@ -22274,16 +22355,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function Skybox_init$lambda$lambda(it) {
-    it.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
-    it.depthTest = DepthCompareOp$LESS_EQUAL_getInstance();
+  function Skybox_init$lambda$lambda(builder, f, f_0) {
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+    builder.depthTest = DepthCompareOp$LESS_EQUAL_getInstance();
     return Unit;
-  }
-  function Skybox_init$lambda$lambda_0(this$Skybox, this$) {
-    return function (it) {
-      this$.cubeMapSampler.texture = this$Skybox.environmentMap;
-      return Unit;
-    };
   }
   Skybox.$metadata$ = {
     kind: Kind_CLASS,
@@ -22837,7 +22912,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   SimpleComponentUi.prototype.createUi_aemszp$ = function (ctx) {
     this.color.setTheme_11rb$(this.component.root.theme.backgroundColor).apply();
-    this.mesh.pipelineLoader = this.shader;
+    this.mesh.shader = this.shader;
     this.component.addNode_xtids1$(this.mesh, 0);
   };
   SimpleComponentUi.prototype.dispose_aemszp$ = function (ctx) {
@@ -22924,7 +22999,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = this.tb.onStateChange;
     var element = DrawerMenu$MenuButtonUi$createUi$lambda(this, this.$outer);
     $receiver.add_11rb$(element);
-    this.mesh.pipelineLoader = new UiShader();
+    this.mesh.shader = new UiShader();
   };
   DrawerMenu$MenuButtonUi.prototype.onRender_aemszp$ = function (ctx) {
     ToggleButtonUi.prototype.onRender_aemszp$.call(this, ctx);
@@ -23088,7 +23163,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   LabelUi.prototype.createUi_aemszp$ = function (ctx) {
     this.baseUi_tctiu8$_0.createUi_aemszp$(ctx);
-    this.mesh.pipelineLoader = this.shader;
+    this.mesh.shader = this.shader;
     this.label.plusAssign_f1kmr1$(this.mesh);
   };
   LabelUi.prototype.updateUi_aemszp$ = function (ctx) {
@@ -23930,7 +24005,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   SliderUi.prototype.createUi_aemszp$ = function (ctx) {
     this.baseUi.createUi_aemszp$(ctx);
-    this.mesh.pipelineLoader = this.shader;
+    this.mesh.shader = this.shader;
     this.slider.plusAssign_f1kmr1$(this.mesh);
   };
   SliderUi.prototype.dispose_aemszp$ = function (ctx) {
@@ -25087,14 +25162,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.uFontSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  UiShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  UiShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    builder.blendMode = BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance();
     builder.cullMethod = CullMethod$NO_CULLING_getInstance();
     builder.depthTest = DepthCompareOp$LESS_EQUAL_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
-  UiShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  UiShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
     var $this = this.model;
     var name = UiShader$Companion_getInstance().U_ALPHA_0;
     var stage;
@@ -25167,6 +25242,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
      while (false);
     this.uFontSampler_0 = (tmp$_1 = findNode_3klnlw$result_0) != null ? tmp$_1.sampler : null;
     (tmp$_2 = this.uFontSampler_0) != null ? (tmp$_2.texture = this.font) : null;
+    ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function UiShader$Companion() {
     UiShader$Companion_instance = this;
@@ -25910,8 +25986,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(aoNd.outColor);
     var model = $receiver_0;
     var $receiver_3 = new ModeledShader(model);
-    $receiver_3.onCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(this, model));
-    mesh.pipelineLoader = $receiver_3;
+    $receiver_3.onPipelineCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(this, model));
+    mesh.shader = $receiver_3;
     $receiver.unaryPlus_uv0sim$(mesh);
   }
   Object.defineProperty(AmbientOcclusionPass.prototype, 'kernelSz', {
@@ -26198,7 +26274,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return Unit;
   }
   function AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(this$AmbientOcclusionPass, closure$model) {
-    return function (it) {
+    return function (f, f_0, f_1) {
       var tmp$, tmp$_0, tmp$_1;
       if (this$AmbientOcclusionPass.aoSetup.isForward) {
         var $this = closure$model;
@@ -26515,8 +26591,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(blurNd.outColor);
     var model = $receiver_0;
     var $receiver_3 = new ModeledShader(model);
-    $receiver_3.onCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model, depthTexture));
-    mesh.pipelineLoader = $receiver_3;
+    $receiver_3.onPipelineCreated.add_11rb$(AoDenoisePass_init$lambda$lambda$lambda$lambda(aoPass, model, depthTexture));
+    mesh.shader = $receiver_3;
     $receiver.unaryPlus_uv0sim$(mesh);
   }
   Object.defineProperty(AoDenoisePass.prototype, 'radius', {
@@ -26563,7 +26639,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return Unit;
   }
   function AoDenoisePass_init$lambda$lambda$lambda$lambda(closure$aoPass, closure$model, closure$depthTexture) {
-    return function (it) {
+    return function (f, f_0, f_1) {
       var $this = closure$model;
       var stage;
       var findNode_3klnlw$result;
@@ -28505,7 +28581,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.prevDeltaT = 0.0;
     this.graphMesh = new Mesh(this.graphGeom);
     this.graphMesh.geometry.usage = Usage$DYNAMIC_getInstance();
-    this.graphMesh.pipelineLoader = new UiShader();
+    this.graphMesh.shader = new UiShader();
   }
   DeltaTGraph.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
     var color = Color$Companion_getInstance().WHITE;
@@ -28646,13 +28722,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.albedoMetalSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  DeferredLightShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  DeferredLightShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
     builder.blendMode = BlendMode$BLEND_ADDITIVE_getInstance();
     builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     builder.depthTest = DepthCompareOp$DISABLED_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
-  DeferredLightShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  DeferredLightShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     var $this = this.model;
     var name = 'deferredCam';
@@ -28802,7 +28878,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.albedoMetalSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
     if ((tmp$_5 = this.albedoMetalSampler_0) != null) {
       tmp$_5.texture = this.albedoMetal;
-    }};
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
+  };
   function DeferredLightShader$Companion() {
     DeferredLightShader$Companion_instance = this;
     this.LIGHT_POS = new Attribute('aLightPos', GlslType$VEC_4F_getInstance());
@@ -28917,9 +28994,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredLightShader',
     interfaces: [ModeledShader]
   };
-  function DeferredMrtPass(scene) {
+  function DeferredMrtPass(scene, withEmissive) {
     DeferredMrtPass$Companion_getInstance();
-    OffscreenRenderPass2dMrt.call(this, new TransformGroup(), 1600, 900, DeferredMrtPass$Companion_getInstance().FMTS_DEFERRED);
+    if (withEmissive === void 0)
+      withEmissive = false;
+    OffscreenRenderPass2dMrt.call(this, new TransformGroup(), 1600, 900, withEmissive ? DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED_EMISSIVE : DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED);
+    this.withEmissive = withEmissive;
     var tmp$, tmp$_0;
     this.content = Kotlin.isType(tmp$ = this.drawNode, TransformGroup) ? tmp$ : throwCCE();
     this.alphaMeshes_8be2vx$ = ArrayList_init_0();
@@ -28927,10 +29007,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.camera = proxyCamera;
     this.onBeforeCollectDrawCommands.add_11rb$(DeferredMrtPass_init$lambda(proxyCamera, scene));
     scene.addOffscreenPass_m1c2kf$(this);
-    this.clearColors[0] = new Color(0.0, 0.0, 2.0, 0.0);
+    this.clearColors[0] = new Color(0.0, 0.0, 1.0, 0.0);
     this.clearColors[1] = null;
     this.clearColors[2] = null;
-    this.content.isFrustumChecked = false;
+    if (this.withEmissive) {
+      this.clearColors[3] = null;
+    }this.content.isFrustumChecked = false;
     this.drawQueue.meshFilter = DeferredMrtPass_init$lambda_0;
   }
   Object.defineProperty(DeferredMrtPass.prototype, 'positionAo', {
@@ -28946,6 +29028,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(DeferredMrtPass.prototype, 'albedoMetal', {
     get: function () {
       return this.colorTextures.get_za3lpa$(2);
+    }
+  });
+  Object.defineProperty(DeferredMrtPass.prototype, 'emissive', {
+    get: function () {
+      return this.withEmissive ? this.colorTextures.get_za3lpa$(3) : null;
     }
   });
   DeferredMrtPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
@@ -28971,7 +29058,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.FMT_POSITION_AO = TexFormat$RGBA_F16_getInstance();
     this.FMT_NORMAL_ROUGH = TexFormat$RGBA_F16_getInstance();
     this.FMT_ALBEDO_METAL = TexFormat$RGBA_getInstance();
-    this.FMTS_DEFERRED = listOf([this.FMT_POSITION_AO, this.FMT_NORMAL_ROUGH, this.FMT_ALBEDO_METAL]);
+    this.FMT_EMISSIVE = TexFormat$RGBA_getInstance();
+    this.FORMATS_DEFERRED = listOf([this.FMT_POSITION_AO, this.FMT_NORMAL_ROUGH, this.FMT_ALBEDO_METAL]);
+    this.FORMATS_DEFERRED_EMISSIVE = listOf([this.FMT_POSITION_AO, this.FMT_NORMAL_ROUGH, this.FMT_ALBEDO_METAL, this.FMT_EMISSIVE]);
   }
   DeferredMrtPass$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -29033,7 +29122,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ModeledShader.call(this, DeferredOutputShader$Companion_getInstance().outputModel_0());
     this.pbrOutput_0 = pbrOutput;
   }
-  DeferredOutputShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
+  DeferredOutputShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
     var tmp$;
     var $this = this.model;
     var name = 'deferredPbrOutput';
@@ -29071,7 +29160,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
      while (false);
     var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
     ensureNotNull(textureSampler).texture = this.pbrOutput_0;
-    ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function DeferredOutputShader$Companion() {
     DeferredOutputShader$Companion_instance = this;
@@ -29138,13 +29227,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (model === void 0)
       model = DeferredPbrShader$Companion_getInstance().defaultMrtPbrModel_2ufela$(cfg);
     ModeledShader.call(this, model);
+    this.cullMethod_0 = cfg.cullMethod;
     this.uRoughness_0 = null;
     this.uMetallic_0 = null;
     this.uAlbedo_0 = null;
+    this.uEmissive_0 = null;
     this.metallic_mwthg9$_0 = cfg.metallic;
     this.roughness_cztq66$_0 = cfg.roughness;
     this.albedo_9owvlf$_0 = cfg.albedo;
+    this.emissive_9uv8z3$_0 = cfg.emissive;
     this.albedoSampler_0 = null;
+    this.emissiveSampler_0 = null;
     this.normalSampler_0 = null;
     this.metallicSampler_0 = null;
     this.roughnessSampler_0 = null;
@@ -29155,6 +29248,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.roughnessTexName_0 = cfg.roughnessTexName;
     this.occlusionTexName_0 = cfg.occlusionTexName;
     this.albedoMap_583l57$_0 = cfg.albedoMap;
+    this.emissiveMap_lef1wp$_0 = cfg.emissiveMap;
     this.normalMap_o8h8ft$_0 = cfg.normalMap;
     this.metallicMap_onr26n$_0 = cfg.metallicMap;
     this.roughnessMap_kdfn22$_0 = cfg.roughnessMap;
@@ -29192,6 +29286,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$_1 = (tmp$_0 = (tmp$ = this.uAlbedo_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
     }
   });
+  Object.defineProperty(DeferredPbrShader.prototype, 'emissive', {
+    get: function () {
+      return this.emissive_9uv8z3$_0;
+    },
+    set: function (value) {
+      var tmp$, tmp$_0, tmp$_1;
+      this.emissive_9uv8z3$_0 = value;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uEmissive_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
+    }
+  });
   Object.defineProperty(DeferredPbrShader.prototype, 'albedoMap', {
     get: function () {
       return this.albedoMap_583l57$_0;
@@ -29200,6 +29304,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tmp$;
       this.albedoMap_583l57$_0 = value;
       (tmp$ = this.albedoSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(DeferredPbrShader.prototype, 'emissiveMap', {
+    get: function () {
+      return this.emissiveMap_lef1wp$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.emissiveMap_lef1wp$_0 = value;
+      (tmp$ = this.emissiveSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
   Object.defineProperty(DeferredPbrShader.prototype, 'normalMap', {
@@ -29262,31 +29376,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$_0 = (tmp$ = this.uDispStrength_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
     }
   });
-  DeferredPbrShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  DeferredPbrShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    builder.cullMethod = this.cullMethod_0;
     builder.blendMode = BlendMode$DISABLED_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
-  DeferredPbrShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16;
+  DeferredPbrShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21;
     var $this = this.model;
     var name = 'uMetallic';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_17;
-      tmp$_17 = $this.stages.values.iterator();
-      while (tmp$_17.hasNext()) {
-        var element = tmp$_17.next();
+      var tmp$_22;
+      tmp$_22 = $this.stages.values.iterator();
+      while (tmp$_22.hasNext()) {
+        var element = tmp$_22.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_18;
+          var tmp$_23;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_19;
-            tmp$_19 = $receiver.iterator();
-            while (tmp$_19.hasNext()) {
-              var element_0 = tmp$_19.next();
+            var tmp$_24;
+            tmp$_24 = $receiver.iterator();
+            while (tmp$_24.hasNext()) {
+              var element_0 = tmp$_24.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -29294,7 +29409,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_18 = firstOrNull$result) == null || Kotlin.isType(tmp$_18, PushConstantNode1f) ? tmp$_18 : throwCCE();
+          var node = (tmp$_23 = firstOrNull$result) == null || Kotlin.isType(tmp$_23, PushConstantNode1f) ? tmp$_23 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -29311,19 +29426,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_0;
     findNode_3klnlw$break: do {
       stage_0 = ShaderStage.ALL;
-      var tmp$_20;
-      tmp$_20 = $this_0.stages.values.iterator();
-      while (tmp$_20.hasNext()) {
-        var element_1 = tmp$_20.next();
+      var tmp$_25;
+      tmp$_25 = $this_0.stages.values.iterator();
+      while (tmp$_25.hasNext()) {
+        var element_1 = tmp$_25.next();
         if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_21;
+          var tmp$_26;
           var $receiver_0 = element_1.nodes;
           var firstOrNull$result_0;
           firstOrNull$break: do {
-            var tmp$_22;
-            tmp$_22 = $receiver_0.iterator();
-            while (tmp$_22.hasNext()) {
-              var element_2 = tmp$_22.next();
+            var tmp$_27;
+            tmp$_27 = $receiver_0.iterator();
+            while (tmp$_27.hasNext()) {
+              var element_2 = tmp$_27.next();
               if (equals(element_2.name, name_0) && Kotlin.isType(element_2, PushConstantNode1f)) {
                 firstOrNull$result_0 = element_2;
                 break firstOrNull$break;
@@ -29331,7 +29446,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_0 = null;
           }
            while (false);
-          var node_0 = (tmp$_21 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_21, PushConstantNode1f) ? tmp$_21 : throwCCE();
+          var node_0 = (tmp$_26 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_26, PushConstantNode1f) ? tmp$_26 : throwCCE();
           if (node_0 != null) {
             findNode_3klnlw$result_0 = node_0;
             break findNode_3klnlw$break;
@@ -29347,19 +29462,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_1;
     findNode_3klnlw$break: do {
       stage_1 = ShaderStage.ALL;
-      var tmp$_23;
-      tmp$_23 = $this_1.stages.values.iterator();
-      while (tmp$_23.hasNext()) {
-        var element_3 = tmp$_23.next();
+      var tmp$_28;
+      tmp$_28 = $this_1.stages.values.iterator();
+      while (tmp$_28.hasNext()) {
+        var element_3 = tmp$_28.next();
         if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_24;
+          var tmp$_29;
           var $receiver_1 = element_3.nodes;
           var firstOrNull$result_1;
           firstOrNull$break: do {
-            var tmp$_25;
-            tmp$_25 = $receiver_1.iterator();
-            while (tmp$_25.hasNext()) {
-              var element_4 = tmp$_25.next();
+            var tmp$_30;
+            tmp$_30 = $receiver_1.iterator();
+            while (tmp$_30.hasNext()) {
+              var element_4 = tmp$_30.next();
               if (equals(element_4.name, 'uAlbedo') && Kotlin.isType(element_4, PushConstantNodeColor)) {
                 firstOrNull$result_1 = element_4;
                 break firstOrNull$break;
@@ -29367,7 +29482,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_1 = null;
           }
            while (false);
-          var node_1 = (tmp$_24 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_24, PushConstantNodeColor) ? tmp$_24 : throwCCE();
+          var node_1 = (tmp$_29 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_29, PushConstantNodeColor) ? tmp$_29 : throwCCE();
           if (node_1 != null) {
             findNode_3klnlw$result_1 = node_1;
             break findNode_3klnlw$break;
@@ -29378,31 +29493,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uAlbedo_0 = findNode_3klnlw$result_1;
     (tmp$_3 = (tmp$_2 = (tmp$_1 = this.uAlbedo_0) != null ? tmp$_1.uniform : null) != null ? tmp$_2.value : null) != null ? tmp$_3.set_czzhhz$(this.albedo) : null;
     var $this_2 = this.model;
+    var name_1 = 'uEmissive';
     var stage_2;
     var findNode_3klnlw$result_2;
     findNode_3klnlw$break: do {
       stage_2 = ShaderStage.ALL;
-      var tmp$_26;
-      tmp$_26 = $this_2.stages.values.iterator();
-      while (tmp$_26.hasNext()) {
-        var element_5 = tmp$_26.next();
+      var tmp$_31;
+      tmp$_31 = $this_2.stages.values.iterator();
+      while (tmp$_31.hasNext()) {
+        var element_5 = tmp$_31.next();
         if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_27;
+          var tmp$_32;
           var $receiver_2 = element_5.nodes;
           var firstOrNull$result_2;
           firstOrNull$break: do {
-            var tmp$_28;
-            tmp$_28 = $receiver_2.iterator();
-            while (tmp$_28.hasNext()) {
-              var element_6 = tmp$_28.next();
-              if (equals(element_6.name, 'tAlbedo') && Kotlin.isType(element_6, TextureNode)) {
+            var tmp$_33;
+            tmp$_33 = $receiver_2.iterator();
+            while (tmp$_33.hasNext()) {
+              var element_6 = tmp$_33.next();
+              if (equals(element_6.name, name_1) && Kotlin.isType(element_6, PushConstantNodeColor)) {
                 firstOrNull$result_2 = element_6;
                 break firstOrNull$break;
               }}
             firstOrNull$result_2 = null;
           }
            while (false);
-          var node_2 = (tmp$_27 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_27, TextureNode) ? tmp$_27 : throwCCE();
+          var node_2 = (tmp$_32 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_32, PushConstantNodeColor) ? tmp$_32 : throwCCE();
           if (node_2 != null) {
             findNode_3klnlw$result_2 = node_2;
             break findNode_3klnlw$break;
@@ -29410,35 +29526,34 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_2 = null;
     }
      while (false);
-    this.albedoSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
-    if ((tmp$_5 = this.albedoSampler_0) != null) {
-      tmp$_5.texture = this.albedoMap;
-    }var $this_3 = this.model;
+    this.uEmissive_0 = findNode_3klnlw$result_2;
+    (tmp$_6 = (tmp$_5 = (tmp$_4 = this.uEmissive_0) != null ? tmp$_4.uniform : null) != null ? tmp$_5.value : null) != null ? tmp$_6.set_czzhhz$(this.emissive) : null;
+    var $this_3 = this.model;
     var stage_3;
     var findNode_3klnlw$result_3;
     findNode_3klnlw$break: do {
       stage_3 = ShaderStage.ALL;
-      var tmp$_29;
-      tmp$_29 = $this_3.stages.values.iterator();
-      while (tmp$_29.hasNext()) {
-        var element_7 = tmp$_29.next();
+      var tmp$_34;
+      tmp$_34 = $this_3.stages.values.iterator();
+      while (tmp$_34.hasNext()) {
+        var element_7 = tmp$_34.next();
         if ((element_7.stage.mask & stage_3.mask) !== 0) {
-          var tmp$_30;
+          var tmp$_35;
           var $receiver_3 = element_7.nodes;
           var firstOrNull$result_3;
           firstOrNull$break: do {
-            var tmp$_31;
-            tmp$_31 = $receiver_3.iterator();
-            while (tmp$_31.hasNext()) {
-              var element_8 = tmp$_31.next();
-              if (equals(element_8.name, 'tNormal') && Kotlin.isType(element_8, TextureNode)) {
+            var tmp$_36;
+            tmp$_36 = $receiver_3.iterator();
+            while (tmp$_36.hasNext()) {
+              var element_8 = tmp$_36.next();
+              if (equals(element_8.name, 'tAlbedo') && Kotlin.isType(element_8, TextureNode)) {
                 firstOrNull$result_3 = element_8;
                 break firstOrNull$break;
               }}
             firstOrNull$result_3 = null;
           }
            while (false);
-          var node_3 = (tmp$_30 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_30, TextureNode) ? tmp$_30 : throwCCE();
+          var node_3 = (tmp$_35 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_35, TextureNode) ? tmp$_35 : throwCCE();
           if (node_3 != null) {
             findNode_3klnlw$result_3 = node_3;
             break findNode_3klnlw$break;
@@ -29446,36 +29561,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_3 = null;
     }
      while (false);
-    this.normalSampler_0 = (tmp$_6 = findNode_3klnlw$result_3) != null ? tmp$_6.sampler : null;
-    if ((tmp$_7 = this.normalSampler_0) != null) {
-      tmp$_7.texture = this.normalMap;
+    this.albedoSampler_0 = (tmp$_7 = findNode_3klnlw$result_3) != null ? tmp$_7.sampler : null;
+    if ((tmp$_8 = this.albedoSampler_0) != null) {
+      tmp$_8.texture = this.albedoMap;
     }var $this_4 = this.model;
-    var name_1 = this.metallicTexName_0;
+    var name_2 = 'tEmissive';
     var stage_4;
     var findNode_3klnlw$result_4;
     findNode_3klnlw$break: do {
       stage_4 = ShaderStage.ALL;
-      var tmp$_32;
-      tmp$_32 = $this_4.stages.values.iterator();
-      while (tmp$_32.hasNext()) {
-        var element_9 = tmp$_32.next();
+      var tmp$_37;
+      tmp$_37 = $this_4.stages.values.iterator();
+      while (tmp$_37.hasNext()) {
+        var element_9 = tmp$_37.next();
         if ((element_9.stage.mask & stage_4.mask) !== 0) {
-          var tmp$_33;
+          var tmp$_38;
           var $receiver_4 = element_9.nodes;
           var firstOrNull$result_4;
           firstOrNull$break: do {
-            var tmp$_34;
-            tmp$_34 = $receiver_4.iterator();
-            while (tmp$_34.hasNext()) {
-              var element_10 = tmp$_34.next();
-              if (equals(element_10.name, name_1) && Kotlin.isType(element_10, TextureNode)) {
+            var tmp$_39;
+            tmp$_39 = $receiver_4.iterator();
+            while (tmp$_39.hasNext()) {
+              var element_10 = tmp$_39.next();
+              if (equals(element_10.name, name_2) && Kotlin.isType(element_10, TextureNode)) {
                 firstOrNull$result_4 = element_10;
                 break firstOrNull$break;
               }}
             firstOrNull$result_4 = null;
           }
            while (false);
-          var node_4 = (tmp$_33 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_33, TextureNode) ? tmp$_33 : throwCCE();
+          var node_4 = (tmp$_38 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_38, TextureNode) ? tmp$_38 : throwCCE();
           if (node_4 != null) {
             findNode_3klnlw$result_4 = node_4;
             break findNode_3klnlw$break;
@@ -29483,36 +29598,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_4 = null;
     }
      while (false);
-    this.metallicSampler_0 = (tmp$_8 = findNode_3klnlw$result_4) != null ? tmp$_8.sampler : null;
-    if ((tmp$_9 = this.metallicSampler_0) != null) {
-      tmp$_9.texture = this.metallicMap;
+    this.emissiveSampler_0 = (tmp$_9 = findNode_3klnlw$result_4) != null ? tmp$_9.sampler : null;
+    if ((tmp$_10 = this.emissiveSampler_0) != null) {
+      tmp$_10.texture = this.emissiveMap;
     }var $this_5 = this.model;
-    var name_2 = this.roughnessTexName_0;
     var stage_5;
     var findNode_3klnlw$result_5;
     findNode_3klnlw$break: do {
       stage_5 = ShaderStage.ALL;
-      var tmp$_35;
-      tmp$_35 = $this_5.stages.values.iterator();
-      while (tmp$_35.hasNext()) {
-        var element_11 = tmp$_35.next();
+      var tmp$_40;
+      tmp$_40 = $this_5.stages.values.iterator();
+      while (tmp$_40.hasNext()) {
+        var element_11 = tmp$_40.next();
         if ((element_11.stage.mask & stage_5.mask) !== 0) {
-          var tmp$_36;
+          var tmp$_41;
           var $receiver_5 = element_11.nodes;
           var firstOrNull$result_5;
           firstOrNull$break: do {
-            var tmp$_37;
-            tmp$_37 = $receiver_5.iterator();
-            while (tmp$_37.hasNext()) {
-              var element_12 = tmp$_37.next();
-              if (equals(element_12.name, name_2) && Kotlin.isType(element_12, TextureNode)) {
+            var tmp$_42;
+            tmp$_42 = $receiver_5.iterator();
+            while (tmp$_42.hasNext()) {
+              var element_12 = tmp$_42.next();
+              if (equals(element_12.name, 'tNormal') && Kotlin.isType(element_12, TextureNode)) {
                 firstOrNull$result_5 = element_12;
                 break firstOrNull$break;
               }}
             firstOrNull$result_5 = null;
           }
            while (false);
-          var node_5 = (tmp$_36 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_36, TextureNode) ? tmp$_36 : throwCCE();
+          var node_5 = (tmp$_41 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_41, TextureNode) ? tmp$_41 : throwCCE();
           if (node_5 != null) {
             findNode_3klnlw$result_5 = node_5;
             break findNode_3klnlw$break;
@@ -29520,28 +29634,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_5 = null;
     }
      while (false);
-    this.roughnessSampler_0 = (tmp$_10 = findNode_3klnlw$result_5) != null ? tmp$_10.sampler : null;
-    if ((tmp$_11 = this.roughnessSampler_0) != null) {
-      tmp$_11.texture = this.roughnessMap;
+    this.normalSampler_0 = (tmp$_11 = findNode_3klnlw$result_5) != null ? tmp$_11.sampler : null;
+    if ((tmp$_12 = this.normalSampler_0) != null) {
+      tmp$_12.texture = this.normalMap;
     }var $this_6 = this.model;
-    var name_3 = this.occlusionTexName_0;
+    var name_3 = this.metallicTexName_0;
     var stage_6;
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
       stage_6 = ShaderStage.ALL;
-      var tmp$_38;
-      tmp$_38 = $this_6.stages.values.iterator();
-      while (tmp$_38.hasNext()) {
-        var element_13 = tmp$_38.next();
+      var tmp$_43;
+      tmp$_43 = $this_6.stages.values.iterator();
+      while (tmp$_43.hasNext()) {
+        var element_13 = tmp$_43.next();
         if ((element_13.stage.mask & stage_6.mask) !== 0) {
-          var tmp$_39;
+          var tmp$_44;
           var $receiver_6 = element_13.nodes;
           var firstOrNull$result_6;
           firstOrNull$break: do {
-            var tmp$_40;
-            tmp$_40 = $receiver_6.iterator();
-            while (tmp$_40.hasNext()) {
-              var element_14 = tmp$_40.next();
+            var tmp$_45;
+            tmp$_45 = $receiver_6.iterator();
+            while (tmp$_45.hasNext()) {
+              var element_14 = tmp$_45.next();
               if (equals(element_14.name, name_3) && Kotlin.isType(element_14, TextureNode)) {
                 firstOrNull$result_6 = element_14;
                 break firstOrNull$break;
@@ -29549,7 +29663,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_6 = null;
           }
            while (false);
-          var node_6 = (tmp$_39 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_39, TextureNode) ? tmp$_39 : throwCCE();
+          var node_6 = (tmp$_44 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_44, TextureNode) ? tmp$_44 : throwCCE();
           if (node_6 != null) {
             findNode_3klnlw$result_6 = node_6;
             break findNode_3klnlw$break;
@@ -29557,28 +29671,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_6 = null;
     }
      while (false);
-    this.occlusionSampler_0 = (tmp$_12 = findNode_3klnlw$result_6) != null ? tmp$_12.sampler : null;
-    if ((tmp$_13 = this.occlusionSampler_0) != null) {
-      tmp$_13.texture = this.occlusionMap;
+    this.metallicSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
+    if ((tmp$_14 = this.metallicSampler_0) != null) {
+      tmp$_14.texture = this.metallicMap;
     }var $this_7 = this.model;
-    var name_4 = 'tDisplacement';
+    var name_4 = this.roughnessTexName_0;
     var stage_7;
     var findNode_3klnlw$result_7;
     findNode_3klnlw$break: do {
       stage_7 = ShaderStage.ALL;
-      var tmp$_41;
-      tmp$_41 = $this_7.stages.values.iterator();
-      while (tmp$_41.hasNext()) {
-        var element_15 = tmp$_41.next();
+      var tmp$_46;
+      tmp$_46 = $this_7.stages.values.iterator();
+      while (tmp$_46.hasNext()) {
+        var element_15 = tmp$_46.next();
         if ((element_15.stage.mask & stage_7.mask) !== 0) {
-          var tmp$_42;
+          var tmp$_47;
           var $receiver_7 = element_15.nodes;
           var firstOrNull$result_7;
           firstOrNull$break: do {
-            var tmp$_43;
-            tmp$_43 = $receiver_7.iterator();
-            while (tmp$_43.hasNext()) {
-              var element_16 = tmp$_43.next();
+            var tmp$_48;
+            tmp$_48 = $receiver_7.iterator();
+            while (tmp$_48.hasNext()) {
+              var element_16 = tmp$_48.next();
               if (equals(element_16.name, name_4) && Kotlin.isType(element_16, TextureNode)) {
                 firstOrNull$result_7 = element_16;
                 break firstOrNull$break;
@@ -29586,7 +29700,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_7 = null;
           }
            while (false);
-          var node_7 = (tmp$_42 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_42, TextureNode) ? tmp$_42 : throwCCE();
+          var node_7 = (tmp$_47 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_47, TextureNode) ? tmp$_47 : throwCCE();
           if (node_7 != null) {
             findNode_3klnlw$result_7 = node_7;
             break findNode_3klnlw$break;
@@ -29594,36 +29708,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_7 = null;
     }
      while (false);
-    this.displacementSampler_0 = (tmp$_14 = findNode_3klnlw$result_7) != null ? tmp$_14.sampler : null;
-    if ((tmp$_15 = this.displacementSampler_0) != null) {
-      tmp$_15.texture = this.displacementMap;
+    this.roughnessSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
+    if ((tmp$_16 = this.roughnessSampler_0) != null) {
+      tmp$_16.texture = this.roughnessMap;
     }var $this_8 = this.model;
-    var name_5 = 'uDispStrength';
+    var name_5 = this.occlusionTexName_0;
     var stage_8;
     var findNode_3klnlw$result_8;
     findNode_3klnlw$break: do {
       stage_8 = ShaderStage.ALL;
-      var tmp$_44;
-      tmp$_44 = $this_8.stages.values.iterator();
-      while (tmp$_44.hasNext()) {
-        var element_17 = tmp$_44.next();
+      var tmp$_49;
+      tmp$_49 = $this_8.stages.values.iterator();
+      while (tmp$_49.hasNext()) {
+        var element_17 = tmp$_49.next();
         if ((element_17.stage.mask & stage_8.mask) !== 0) {
-          var tmp$_45;
+          var tmp$_50;
           var $receiver_8 = element_17.nodes;
           var firstOrNull$result_8;
           firstOrNull$break: do {
-            var tmp$_46;
-            tmp$_46 = $receiver_8.iterator();
-            while (tmp$_46.hasNext()) {
-              var element_18 = tmp$_46.next();
-              if (equals(element_18.name, name_5) && Kotlin.isType(element_18, PushConstantNode1f)) {
+            var tmp$_51;
+            tmp$_51 = $receiver_8.iterator();
+            while (tmp$_51.hasNext()) {
+              var element_18 = tmp$_51.next();
+              if (equals(element_18.name, name_5) && Kotlin.isType(element_18, TextureNode)) {
                 firstOrNull$result_8 = element_18;
                 break firstOrNull$break;
               }}
             firstOrNull$result_8 = null;
           }
            while (false);
-          var node_8 = (tmp$_45 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_45, PushConstantNode1f) ? tmp$_45 : throwCCE();
+          var node_8 = (tmp$_50 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_50, TextureNode) ? tmp$_50 : throwCCE();
           if (node_8 != null) {
             findNode_3klnlw$result_8 = node_8;
             break findNode_3klnlw$break;
@@ -29631,10 +29745,84 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_8 = null;
     }
      while (false);
-    this.uDispStrength_0 = findNode_3klnlw$result_8;
-    if ((tmp$_16 = this.uDispStrength_0) != null) {
-      tmp$_16.uniform.value = this.displacementStrength;
-    }ModeledShader.prototype.onPipelineCreated_lfrgcb$.call(this, pipeline);
+    this.occlusionSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
+    if ((tmp$_18 = this.occlusionSampler_0) != null) {
+      tmp$_18.texture = this.occlusionMap;
+    }var $this_9 = this.model;
+    var name_6 = 'tDisplacement';
+    var stage_9;
+    var findNode_3klnlw$result_9;
+    findNode_3klnlw$break: do {
+      stage_9 = ShaderStage.ALL;
+      var tmp$_52;
+      tmp$_52 = $this_9.stages.values.iterator();
+      while (tmp$_52.hasNext()) {
+        var element_19 = tmp$_52.next();
+        if ((element_19.stage.mask & stage_9.mask) !== 0) {
+          var tmp$_53;
+          var $receiver_9 = element_19.nodes;
+          var firstOrNull$result_9;
+          firstOrNull$break: do {
+            var tmp$_54;
+            tmp$_54 = $receiver_9.iterator();
+            while (tmp$_54.hasNext()) {
+              var element_20 = tmp$_54.next();
+              if (equals(element_20.name, name_6) && Kotlin.isType(element_20, TextureNode)) {
+                firstOrNull$result_9 = element_20;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_9 = null;
+          }
+           while (false);
+          var node_9 = (tmp$_53 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_53, TextureNode) ? tmp$_53 : throwCCE();
+          if (node_9 != null) {
+            findNode_3klnlw$result_9 = node_9;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_9 = null;
+    }
+     while (false);
+    this.displacementSampler_0 = (tmp$_19 = findNode_3klnlw$result_9) != null ? tmp$_19.sampler : null;
+    if ((tmp$_20 = this.displacementSampler_0) != null) {
+      tmp$_20.texture = this.displacementMap;
+    }var $this_10 = this.model;
+    var name_7 = 'uDispStrength';
+    var stage_10;
+    var findNode_3klnlw$result_10;
+    findNode_3klnlw$break: do {
+      stage_10 = ShaderStage.ALL;
+      var tmp$_55;
+      tmp$_55 = $this_10.stages.values.iterator();
+      while (tmp$_55.hasNext()) {
+        var element_21 = tmp$_55.next();
+        if ((element_21.stage.mask & stage_10.mask) !== 0) {
+          var tmp$_56;
+          var $receiver_10 = element_21.nodes;
+          var firstOrNull$result_10;
+          firstOrNull$break: do {
+            var tmp$_57;
+            tmp$_57 = $receiver_10.iterator();
+            while (tmp$_57.hasNext()) {
+              var element_22 = tmp$_57.next();
+              if (equals(element_22.name, name_7) && Kotlin.isType(element_22, PushConstantNode1f)) {
+                firstOrNull$result_10 = element_22;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_10 = null;
+          }
+           while (false);
+          var node_10 = (tmp$_56 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_56, PushConstantNode1f) ? tmp$_56 : throwCCE();
+          if (node_10 != null) {
+            findNode_3klnlw$result_10 = node_10;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_10 = null;
+    }
+     while (false);
+    this.uDispStrength_0 = findNode_3klnlw$result_10;
+    if ((tmp$_21 = this.uDispStrength_0) != null) {
+      tmp$_21.uniform.value = this.displacementStrength;
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function DeferredPbrShader$Companion() {
     DeferredPbrShader$Companion_instance = this;
@@ -29757,7 +29945,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ifViewPos.v = $receiver_0.stageInterfaceNode_iikjwn$('ifViewPos', pos);
     $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos.v, mvpMat).outVec4;
     var $receiver_5 = new ShaderModel$FragmentStageBuilder($receiver);
-    var tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15;
+    var tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16;
     var viewPos = ifViewPos.v.output;
     switch (cfg.albedoSource.name) {
       case 'VERTEX_ALBEDO':
@@ -29785,14 +29973,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver_5.discardAlpha_ze33is$($receiver_5.splitNode_500t7j$(albedo.v, 'a').output, $receiver_5.constFloat_mx4ult$(tmp$_11.cutOff));
     }if (!Kotlin.isType(cfg.alphaMode, AlphaModeBlend)) {
       albedo.v = $receiver_5.combineXyzWNode_ze33is$(albedo.v, $receiver_5.constFloat_mx4ult$(1.0)).output;
-    }if (cfg.isNormalMapped && ifTangents.v != null) {
+    }if (cfg.isEmissiveMapped) {
+      var emissiveTex = $receiver_5.textureSamplerNode_ce41yx$($receiver_5.textureNode_61zpoe$('tEmissive'), ensureNotNull(ifTexCoords.v).output).outColor;
+      var emissiveLin = $receiver_5.gammaNode_r20yfm$(emissiveTex).outColor;
+      if (cfg.isMultiplyEmissiveMap) {
+        var fac_0 = $receiver_5.pushConstantNodeColor_61zpoe$('uEmissive').output;
+        tmp$_12 = $receiver_5.multiplyNode_ze33is$(emissiveLin, fac_0).output;
+      } else {
+        tmp$_12 = emissiveLin;
+      }
+    } else {
+      tmp$_12 = $receiver_5.pushConstantNodeColor_61zpoe$('uEmissive').output;
+    }
+    var emissive = tmp$_12;
+    if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_5.normalMapNode_j8913i$($receiver_5.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_12 = bumpNormal.outNormal;
+      tmp$_13 = bumpNormal.outNormal;
     } else {
-      tmp$_12 = ifNormals.v.output;
+      tmp$_13 = ifNormals.v.output;
     }
-    var viewNormal = {v: tmp$_12};
+    var viewNormal = {v: tmp$_13};
     viewNormal.v = $receiver_5.flipBacksideNormalNode_r20yfm$(viewNormal.v).outNormal;
     var roughness;
     var metallic;
@@ -29804,76 +30005,78 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       rmoSamplers.put_xwzc9p$(key, roughnessSampler);
       var rawRoughness = $receiver_5.splitNode_500t7j$(roughnessSampler, cfg.roughnessChannel).output;
       if (cfg.isMultiplyRoughnessMap) {
-        var fac_0 = $receiver_5.pushConstantNode1f_61zpoe$('uRoughness').output;
-        tmp$_13 = $receiver_5.multiplyNode_ze33is$(rawRoughness, fac_0).output;
+        var fac_1 = $receiver_5.pushConstantNode1f_61zpoe$('uRoughness').output;
+        tmp$_14 = $receiver_5.multiplyNode_ze33is$(rawRoughness, fac_1).output;
       } else {
-        tmp$_13 = rawRoughness;
+        tmp$_14 = rawRoughness;
       }
-      roughness = tmp$_13;
+      roughness = tmp$_14;
     } else {
       roughness = $receiver_5.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
     if (cfg.isMetallicMapped) {
       var key_0 = cfg.metallicTexName;
-      var tmp$_16;
+      var tmp$_17;
       var value = rmoSamplers.get_11rb$(key_0);
       if (value == null) {
         var answer = $receiver_5.textureSamplerNode_ce41yx$($receiver_5.textureNode_61zpoe$(cfg.metallicTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_0, answer);
-        tmp$_16 = answer;
+        tmp$_17 = answer;
       } else {
-        tmp$_16 = value;
+        tmp$_17 = value;
       }
-      var metallicSampler = tmp$_16;
+      var metallicSampler = tmp$_17;
       var key_1 = cfg.metallicTexName;
       rmoSamplers.put_xwzc9p$(key_1, metallicSampler);
       var rawMetallic = $receiver_5.splitNode_500t7j$(metallicSampler, cfg.metallicChannel).output;
       if (cfg.isMultiplyMetallicMap) {
-        var fac_1 = $receiver_5.pushConstantNode1f_61zpoe$('uMetallic').output;
-        tmp$_14 = $receiver_5.multiplyNode_ze33is$(rawMetallic, fac_1).output;
+        var fac_2 = $receiver_5.pushConstantNode1f_61zpoe$('uMetallic').output;
+        tmp$_15 = $receiver_5.multiplyNode_ze33is$(rawMetallic, fac_2).output;
       } else {
-        tmp$_14 = rawMetallic;
+        tmp$_15 = rawMetallic;
       }
-      metallic = tmp$_14;
+      metallic = tmp$_15;
     } else {
       metallic = $receiver_5.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
     if (cfg.isOcclusionMapped) {
       var key_2 = cfg.occlusionTexName;
-      var tmp$_17;
+      var tmp$_18;
       var value_0 = rmoSamplers.get_11rb$(key_2);
       if (value_0 == null) {
         var answer_0 = $receiver_5.textureSamplerNode_ce41yx$($receiver_5.textureNode_61zpoe$(cfg.occlusionTexName), ensureNotNull(ifTexCoords.v).output).outColor;
         rmoSamplers.put_xwzc9p$(key_2, answer_0);
-        tmp$_17 = answer_0;
+        tmp$_18 = answer_0;
       } else {
-        tmp$_17 = value_0;
+        tmp$_18 = value_0;
       }
-      var occlusion = tmp$_17;
+      var occlusion = tmp$_18;
       var key_3 = cfg.occlusionTexName;
       rmoSamplers.put_xwzc9p$(key_3, occlusion);
       var rawAo = $receiver_5.splitNode_500t7j$(occlusion, cfg.occlusionChannel).output;
       if (cfg.occlusionStrength !== 1.0) {
         var str = cfg.occlusionStrength;
-        tmp$_15 = $receiver_5.addNode_ze33is$($receiver_5.constFloat_mx4ult$(1.0 - str), $receiver_5.multiplyNode_tuikh5$(rawAo, str).output).output;
+        tmp$_16 = $receiver_5.addNode_ze33is$($receiver_5.constFloat_mx4ult$(1.0 - str), $receiver_5.multiplyNode_tuikh5$(rawAo, str).output).output;
       } else {
-        tmp$_15 = rawAo;
+        tmp$_16 = rawAo;
       }
-      aoFactor.v = tmp$_15;
+      aoFactor.v = tmp$_16;
     }var $receiver_6 = $receiver_5.addNode_u9w9by$(new DeferredPbrShader$MrtMultiplexNode($receiver_5.stage));
     var closure$roughness = roughness;
     var closure$metallic = metallic;
     $receiver_6.inViewPos = viewPos;
     $receiver_6.inAlbedo = albedo.v;
+    $receiver_6.inEmissive = emissive;
     $receiver_6.inViewNormal = viewNormal.v;
     $receiver_6.inRoughness = closure$roughness;
     $receiver_6.inMetallic = closure$metallic;
     $receiver_6.inAo = aoFactor.v;
     var mrtMultiplexNode = $receiver_6;
-    var $receiver_7 = $receiver_5.colorOutput_a3v4si$(void 0, 3);
+    var $receiver_7 = $receiver_5.colorOutput_a3v4si$(void 0, 4);
     $receiver_7.inColors[0] = mrtMultiplexNode.outPositionAo;
     $receiver_7.inColors[1] = mrtMultiplexNode.outNormalRough;
     $receiver_7.inColors[2] = mrtMultiplexNode.outAlbedoMetallic;
+    $receiver_7.inColors[3] = mrtMultiplexNode.outEmissive;
     return $receiver;
   };
   DeferredPbrShader$Companion.$metadata$ = {
@@ -29891,6 +30094,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ShaderNode.call(this, 'mrtMultiplex', graph, ShaderStage$FRAGMENT_SHADER_getInstance().mask);
     this.inViewPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inAlbedo = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
+    this.inEmissive = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inViewNormal = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.5));
     this.inMetallic = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
@@ -29898,13 +30102,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.outPositionAo = new ShaderNodeIoVar(new ModelVar4f('outPositionAo'), this);
     this.outNormalRough = new ShaderNodeIoVar(new ModelVar4f('outNormalRough'), this);
     this.outAlbedoMetallic = new ShaderNodeIoVar(new ModelVar4f('outAlbedoMetallic'), this);
+    this.outEmissive = new ShaderNodeIoVar(new ModelVar4f('outEmissive'), this);
   }
   DeferredPbrShader$MrtMultiplexNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_8ak6wm$([this.inViewPos, this.inAlbedo, this.inViewNormal, this.inRoughness, this.inMetallic, this.inAo]);
   };
   DeferredPbrShader$MrtMultiplexNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                ' + this.outPositionAo.declare() + ' = vec4(' + this.inViewPos.ref3f() + ', ' + this.inAo.ref1f() + ');' + '\n' + '                ' + this.outNormalRough.declare() + ' = vec4(normalize(' + this.inViewNormal.ref3f() + '), ' + this.inRoughness.ref1f() + ');' + '\n' + '                ' + this.outAlbedoMetallic.declare() + ' = vec4(' + this.inAlbedo.ref3f() + ', ' + this.inMetallic.ref1f() + ');' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                ' + this.outPositionAo.declare() + ' = vec4(' + this.inViewPos.ref3f() + ', ' + this.inAo.ref1f() + ');' + '\n' + '                ' + this.outNormalRough.declare() + ' = vec4(normalize(' + this.inViewNormal.ref3f() + '), ' + this.inRoughness.ref1f() + ');' + '\n' + '                ' + this.outAlbedoMetallic.declare() + ' = vec4(' + this.inAlbedo.ref3f() + ', ' + this.inMetallic.ref1f() + ');' + '\n' + '                ' + this.outEmissive.declare() + ' = vec4(' + this.inEmissive.ref3f() + ', 1.0);' + '\n' + '            ');
   };
   DeferredPbrShader$MrtMultiplexNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -29916,8 +30121,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inPositionAo = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
     this.inNormalRough = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
     this.inAlbedoMetallic = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.inEmissive = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.outViewPos = new ShaderNodeIoVar(new ModelVar4f('outViewPos'), this);
     this.outAlbedo = new ShaderNodeIoVar(new ModelVar4f('outAlbedo'), this);
+    this.outEmissive = new ShaderNodeIoVar(new ModelVar3f('outEmissive'), this);
     this.outViewNormal = new ShaderNodeIoVar(new ModelVar3f('outViewNormal'), this);
     this.outRoughness = new ShaderNodeIoVar(new ModelVar1f('outRoughness'), this);
     this.outMetallic = new ShaderNodeIoVar(new ModelVar1f('outMetallic'), this);
@@ -29928,7 +30135,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_8ak6wm$([this.inPositionAo, this.inNormalRough, this.inAlbedoMetallic]);
   };
   DeferredPbrShader$MrtDeMultiplexNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                ' + this.outViewPos.declare() + ' = vec4(' + this.inPositionAo.ref3f() + ', 1.0);' + '\n' + '                ' + this.outAlbedo.declare() + ' = vec4(' + this.inAlbedoMetallic.ref3f() + ', 1.0);' + '\n' + '                ' + this.outViewNormal.declare() + ' = vec3(' + this.inNormalRough.ref3f() + ');' + '\n' + '                ' + this.outRoughness.declare() + ' = ' + this.inNormalRough.ref4f() + '.a;' + '\n' + '                ' + this.outMetallic.declare() + ' = ' + this.inAlbedoMetallic.ref4f() + '.a;' + '\n' + '                ' + this.outAo.declare() + ' = ' + this.inPositionAo.ref4f() + '.a;' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                ' + this.outViewPos.declare() + ' = vec4(' + this.inPositionAo.ref3f() + ', 1.0);' + '\n' + '                ' + this.outAlbedo.declare() + ' = vec4(' + this.inAlbedoMetallic.ref3f() + ', 1.0);' + '\n' + '                ' + this.outEmissive.declare() + ' = ' + this.inEmissive.ref3f() + ';' + '\n' + '                ' + this.outViewNormal.declare() + ' = vec3(' + this.inNormalRough.ref3f() + ');' + '\n' + '                ' + this.outRoughness.declare() + ' = ' + this.inNormalRough.ref4f() + '.a;' + '\n' + '                ' + this.outMetallic.declare() + ' = ' + this.inAlbedoMetallic.ref4f() + '.a;' + '\n' + '                ' + this.outAo.declare() + ' = ' + this.inPositionAo.ref4f() + '.a;' + '\n' + '            ');
   };
   DeferredPbrShader$MrtDeMultiplexNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -29957,7 +30164,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.normalRoughness = mrtPass.normalRoughness;
     $receiver.albedoMetal = mrtPass.albedoMetal;
     var lightCfg = $receiver;
-    mesh.pipelineLoader = new DeferredLightShader(lightCfg);
+    mesh.shader = new DeferredLightShader(lightCfg);
     mesh.onUpdate.add_11rb$(DeferredPointLights$mesh$lambda$lambda_0(this));
     this.mesh = mesh;
   }
@@ -30050,7 +30257,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_7qvs0d$(this.inViewPos);
   };
   DiscardClearNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('if (' + this.inViewPos.name + '.z > 1.0) { discard; }');
+    generator.appendMain_61zpoe$('if (' + this.inViewPos.name + '.z > 0.0) { discard; }');
   };
   DiscardClearNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -30130,7 +30337,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.normalRoughness = mrtPass.normalRoughness;
     $receiver.albedoMetal = mrtPass.albedoMetal;
     var lightCfg = $receiver;
-    mesh.pipelineLoader = new DeferredLightShader(lightCfg);
+    mesh.shader = new DeferredLightShader(lightCfg);
     mesh.onUpdate.add_11rb$(DeferredSpotLights$mesh$lambda$lambda_0(this));
     this.mesh = mesh;
   }
@@ -30326,22 +30533,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.clearColor = (tmp$_0 = this.clearColor) != null ? tmp$_0.toLinear() : null;
     this.clearDepth = false;
     this.camera = this.mrtPass.camera;
+    cfg.useMrtPass_u6tred$(this.mrtPass);
     var $receiver = this.content;
     var closure$cfg = cfg;
     $receiver.isFrustumChecked = false;
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.isFrustumChecked = false;
     mesh.generate_v2sixm$(PbrLightingPass_init$lambda$lambda$lambda);
-    if (closure$cfg.sceneCamera == null) {
-      closure$cfg.sceneCamera = this.mrtPass.camera;
-    }if (closure$cfg.positionAo == null) {
-      closure$cfg.positionAo = this.mrtPass.positionAo;
-    }if (closure$cfg.normalRoughness == null) {
-      closure$cfg.normalRoughness = this.mrtPass.normalRoughness;
-    }if (closure$cfg.albedoMetal == null) {
-      closure$cfg.albedoMetal = this.mrtPass.albedoMetal;
-    }this.sceneShader = new PbrSceneShader(closure$cfg);
-    mesh.pipelineLoader = this.sceneShader;
+    this.sceneShader = new PbrSceneShader(closure$cfg);
+    mesh.shader = this.sceneShader;
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(this.dynamicPointLights.mesh);
     $receiver.unaryPlus_uv0sim$(this.staticPointLights.mesh);
@@ -30463,9 +30663,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.positionAoSampler_0 = null;
     this.normalRoughnessSampler_0 = null;
     this.albedoMetalSampler_0 = null;
+    this.emissiveSampler_0 = null;
     this.positionAo_xpzjm6$_0 = cfg.positionAo;
     this.normalRoughness_ruv8si$_0 = cfg.normalRoughness;
     this.albedoMetal_4sc1kt$_0 = cfg.albedoMetal;
+    this.emissive_4k8acu$_0 = cfg.emissive;
     this.uAmbient_0 = null;
     this.ambient_kdw3d9$_0 = new Color(0.03, 0.03, 0.03, 1.0);
     this.irradianceMapSampler_0 = null;
@@ -30532,6 +30734,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.albedoMetalSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
+  Object.defineProperty(PbrSceneShader.prototype, 'emissive', {
+    get: function () {
+      return this.emissive_4k8acu$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.emissive_4k8acu$_0 = value;
+      (tmp$ = this.emissiveSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
   Object.defineProperty(PbrSceneShader.prototype, 'ambient', {
     get: function () {
       return this.ambient_kdw3d9$_0;
@@ -30582,31 +30794,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.ssaoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
-  PbrSceneShader.prototype.createPipeline_y7vss5$ = function (mesh, builder, ctx) {
+  PbrSceneShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
     builder.depthTest = DepthCompareOp$DISABLED_getInstance();
-    return ModeledShader.prototype.createPipeline_y7vss5$.call(this, mesh, builder, ctx);
+    builder.blendMode = BlendMode$DISABLED_getInstance();
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
-  PbrSceneShader.prototype.onPipelineCreated_lfrgcb$ = function (pipeline) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17;
+  PbrSceneShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19;
     var $this = this.model;
     var name = 'deferredCam';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_18;
-      tmp$_18 = $this.stages.values.iterator();
-      while (tmp$_18.hasNext()) {
-        var element = tmp$_18.next();
+      var tmp$_20;
+      tmp$_20 = $this.stages.values.iterator();
+      while (tmp$_20.hasNext()) {
+        var element = tmp$_20.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_19;
+          var tmp$_21;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_20;
-            tmp$_20 = $receiver.iterator();
-            while (tmp$_20.hasNext()) {
-              var element_0 = tmp$_20.next();
+            var tmp$_22;
+            tmp$_22 = $receiver.iterator();
+            while (tmp$_22.hasNext()) {
+              var element_0 = tmp$_22.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, DeferredCameraNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -30614,7 +30827,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_19 = firstOrNull$result) == null || Kotlin.isType(tmp$_19, DeferredCameraNode) ? tmp$_19 : throwCCE();
+          var node = (tmp$_21 = firstOrNull$result) == null || Kotlin.isType(tmp$_21, DeferredCameraNode) ? tmp$_21 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -30631,19 +30844,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_0;
     findNode_3klnlw$break: do {
       stage_0 = ShaderStage.ALL;
-      var tmp$_21;
-      tmp$_21 = $this_0.stages.values.iterator();
-      while (tmp$_21.hasNext()) {
-        var element_1 = tmp$_21.next();
+      var tmp$_23;
+      tmp$_23 = $this_0.stages.values.iterator();
+      while (tmp$_23.hasNext()) {
+        var element_1 = tmp$_23.next();
         if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_22;
+          var tmp$_24;
           var $receiver_0 = element_1.nodes;
           var firstOrNull$result_0;
           firstOrNull$break: do {
-            var tmp$_23;
-            tmp$_23 = $receiver_0.iterator();
-            while (tmp$_23.hasNext()) {
-              var element_2 = tmp$_23.next();
+            var tmp$_25;
+            tmp$_25 = $receiver_0.iterator();
+            while (tmp$_25.hasNext()) {
+              var element_2 = tmp$_25.next();
               if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
                 firstOrNull$result_0 = element_2;
                 break firstOrNull$break;
@@ -30651,7 +30864,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_0 = null;
           }
            while (false);
-          var node_0 = (tmp$_22 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_22, TextureNode) ? tmp$_22 : throwCCE();
+          var node_0 = (tmp$_24 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_24, TextureNode) ? tmp$_24 : throwCCE();
           if (node_0 != null) {
             findNode_3klnlw$result_0 = node_0;
             break findNode_3klnlw$break;
@@ -30668,19 +30881,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_1;
     findNode_3klnlw$break: do {
       stage_1 = ShaderStage.ALL;
-      var tmp$_24;
-      tmp$_24 = $this_1.stages.values.iterator();
-      while (tmp$_24.hasNext()) {
-        var element_3 = tmp$_24.next();
+      var tmp$_26;
+      tmp$_26 = $this_1.stages.values.iterator();
+      while (tmp$_26.hasNext()) {
+        var element_3 = tmp$_26.next();
         if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_25;
+          var tmp$_27;
           var $receiver_1 = element_3.nodes;
           var firstOrNull$result_1;
           firstOrNull$break: do {
-            var tmp$_26;
-            tmp$_26 = $receiver_1.iterator();
-            while (tmp$_26.hasNext()) {
-              var element_4 = tmp$_26.next();
+            var tmp$_28;
+            tmp$_28 = $receiver_1.iterator();
+            while (tmp$_28.hasNext()) {
+              var element_4 = tmp$_28.next();
               if (equals(element_4.name, name_1) && Kotlin.isType(element_4, TextureNode)) {
                 firstOrNull$result_1 = element_4;
                 break firstOrNull$break;
@@ -30688,7 +30901,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_1 = null;
           }
            while (false);
-          var node_1 = (tmp$_25 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_25, TextureNode) ? tmp$_25 : throwCCE();
+          var node_1 = (tmp$_27 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_27, TextureNode) ? tmp$_27 : throwCCE();
           if (node_1 != null) {
             findNode_3klnlw$result_1 = node_1;
             break findNode_3klnlw$break;
@@ -30705,19 +30918,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_2;
     findNode_3klnlw$break: do {
       stage_2 = ShaderStage.ALL;
-      var tmp$_27;
-      tmp$_27 = $this_2.stages.values.iterator();
-      while (tmp$_27.hasNext()) {
-        var element_5 = tmp$_27.next();
+      var tmp$_29;
+      tmp$_29 = $this_2.stages.values.iterator();
+      while (tmp$_29.hasNext()) {
+        var element_5 = tmp$_29.next();
         if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_28;
+          var tmp$_30;
           var $receiver_2 = element_5.nodes;
           var firstOrNull$result_2;
           firstOrNull$break: do {
-            var tmp$_29;
-            tmp$_29 = $receiver_2.iterator();
-            while (tmp$_29.hasNext()) {
-              var element_6 = tmp$_29.next();
+            var tmp$_31;
+            tmp$_31 = $receiver_2.iterator();
+            while (tmp$_31.hasNext()) {
+              var element_6 = tmp$_31.next();
               if (equals(element_6.name, name_2) && Kotlin.isType(element_6, TextureNode)) {
                 firstOrNull$result_2 = element_6;
                 break firstOrNull$break;
@@ -30725,7 +30938,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_2 = null;
           }
            while (false);
-          var node_2 = (tmp$_28 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_28, TextureNode) ? tmp$_28 : throwCCE();
+          var node_2 = (tmp$_30 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_30, TextureNode) ? tmp$_30 : throwCCE();
           if (node_2 != null) {
             findNode_3klnlw$result_2 = node_2;
             break findNode_3klnlw$break;
@@ -30737,32 +30950,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$_5 = this.albedoMetalSampler_0) != null) {
       tmp$_5.texture = this.albedoMetal;
     }var $this_3 = this.model;
-    var name_3 = 'uAmbient';
+    var name_3 = 'emissive';
     var stage_3;
     var findNode_3klnlw$result_3;
     findNode_3klnlw$break: do {
       stage_3 = ShaderStage.ALL;
-      var tmp$_30;
-      tmp$_30 = $this_3.stages.values.iterator();
-      while (tmp$_30.hasNext()) {
-        var element_7 = tmp$_30.next();
+      var tmp$_32;
+      tmp$_32 = $this_3.stages.values.iterator();
+      while (tmp$_32.hasNext()) {
+        var element_7 = tmp$_32.next();
         if ((element_7.stage.mask & stage_3.mask) !== 0) {
-          var tmp$_31;
+          var tmp$_33;
           var $receiver_3 = element_7.nodes;
           var firstOrNull$result_3;
           firstOrNull$break: do {
-            var tmp$_32;
-            tmp$_32 = $receiver_3.iterator();
-            while (tmp$_32.hasNext()) {
-              var element_8 = tmp$_32.next();
-              if (equals(element_8.name, name_3) && Kotlin.isType(element_8, PushConstantNodeColor)) {
+            var tmp$_34;
+            tmp$_34 = $receiver_3.iterator();
+            while (tmp$_34.hasNext()) {
+              var element_8 = tmp$_34.next();
+              if (equals(element_8.name, name_3) && Kotlin.isType(element_8, TextureNode)) {
                 firstOrNull$result_3 = element_8;
                 break firstOrNull$break;
               }}
             firstOrNull$result_3 = null;
           }
            while (false);
-          var node_3 = (tmp$_31 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_31, PushConstantNodeColor) ? tmp$_31 : throwCCE();
+          var node_3 = (tmp$_33 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_33, TextureNode) ? tmp$_33 : throwCCE();
           if (node_3 != null) {
             findNode_3klnlw$result_3 = node_3;
             break findNode_3klnlw$break;
@@ -30770,35 +30983,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_3 = null;
     }
      while (false);
-    this.uAmbient_0 = findNode_3klnlw$result_3;
-    (tmp$_8 = (tmp$_7 = (tmp$_6 = this.uAmbient_0) != null ? tmp$_6.uniform : null) != null ? tmp$_7.value : null) != null ? tmp$_8.set_czzhhz$(this.ambient) : null;
-    var $this_4 = this.model;
-    var name_4 = 'irradianceMap';
+    this.emissiveSampler_0 = (tmp$_6 = findNode_3klnlw$result_3) != null ? tmp$_6.sampler : null;
+    if ((tmp$_7 = this.emissiveSampler_0) != null) {
+      tmp$_7.texture = this.emissive;
+    }var $this_4 = this.model;
+    var name_4 = 'uAmbient';
     var stage_4;
     var findNode_3klnlw$result_4;
     findNode_3klnlw$break: do {
       stage_4 = ShaderStage.ALL;
-      var tmp$_33;
-      tmp$_33 = $this_4.stages.values.iterator();
-      while (tmp$_33.hasNext()) {
-        var element_9 = tmp$_33.next();
+      var tmp$_35;
+      tmp$_35 = $this_4.stages.values.iterator();
+      while (tmp$_35.hasNext()) {
+        var element_9 = tmp$_35.next();
         if ((element_9.stage.mask & stage_4.mask) !== 0) {
-          var tmp$_34;
+          var tmp$_36;
           var $receiver_4 = element_9.nodes;
           var firstOrNull$result_4;
           firstOrNull$break: do {
-            var tmp$_35;
-            tmp$_35 = $receiver_4.iterator();
-            while (tmp$_35.hasNext()) {
-              var element_10 = tmp$_35.next();
-              if (equals(element_10.name, name_4) && Kotlin.isType(element_10, CubeMapNode)) {
+            var tmp$_37;
+            tmp$_37 = $receiver_4.iterator();
+            while (tmp$_37.hasNext()) {
+              var element_10 = tmp$_37.next();
+              if (equals(element_10.name, name_4) && Kotlin.isType(element_10, PushConstantNodeColor)) {
                 firstOrNull$result_4 = element_10;
                 break firstOrNull$break;
               }}
             firstOrNull$result_4 = null;
           }
            while (false);
-          var node_4 = (tmp$_34 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_34, CubeMapNode) ? tmp$_34 : throwCCE();
+          var node_4 = (tmp$_36 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_36, PushConstantNodeColor) ? tmp$_36 : throwCCE();
           if (node_4 != null) {
             findNode_3klnlw$result_4 = node_4;
             break findNode_3klnlw$break;
@@ -30806,28 +31020,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_4 = null;
     }
      while (false);
-    this.irradianceMapSampler_0 = (tmp$_9 = findNode_3klnlw$result_4) != null ? tmp$_9.sampler : null;
-    if ((tmp$_10 = this.irradianceMapSampler_0) != null) {
-      tmp$_10.texture = this.irradianceMap;
-    }var $this_5 = this.model;
-    var name_5 = 'reflectionMap';
+    this.uAmbient_0 = findNode_3klnlw$result_4;
+    (tmp$_10 = (tmp$_9 = (tmp$_8 = this.uAmbient_0) != null ? tmp$_8.uniform : null) != null ? tmp$_9.value : null) != null ? tmp$_10.set_czzhhz$(this.ambient) : null;
+    var $this_5 = this.model;
+    var name_5 = 'irradianceMap';
     var stage_5;
     var findNode_3klnlw$result_5;
     findNode_3klnlw$break: do {
       stage_5 = ShaderStage.ALL;
-      var tmp$_36;
-      tmp$_36 = $this_5.stages.values.iterator();
-      while (tmp$_36.hasNext()) {
-        var element_11 = tmp$_36.next();
+      var tmp$_38;
+      tmp$_38 = $this_5.stages.values.iterator();
+      while (tmp$_38.hasNext()) {
+        var element_11 = tmp$_38.next();
         if ((element_11.stage.mask & stage_5.mask) !== 0) {
-          var tmp$_37;
+          var tmp$_39;
           var $receiver_5 = element_11.nodes;
           var firstOrNull$result_5;
           firstOrNull$break: do {
-            var tmp$_38;
-            tmp$_38 = $receiver_5.iterator();
-            while (tmp$_38.hasNext()) {
-              var element_12 = tmp$_38.next();
+            var tmp$_40;
+            tmp$_40 = $receiver_5.iterator();
+            while (tmp$_40.hasNext()) {
+              var element_12 = tmp$_40.next();
               if (equals(element_12.name, name_5) && Kotlin.isType(element_12, CubeMapNode)) {
                 firstOrNull$result_5 = element_12;
                 break firstOrNull$break;
@@ -30835,7 +31048,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_5 = null;
           }
            while (false);
-          var node_5 = (tmp$_37 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_37, CubeMapNode) ? tmp$_37 : throwCCE();
+          var node_5 = (tmp$_39 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_39, CubeMapNode) ? tmp$_39 : throwCCE();
           if (node_5 != null) {
             findNode_3klnlw$result_5 = node_5;
             break findNode_3klnlw$break;
@@ -30843,35 +31056,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_5 = null;
     }
      while (false);
-    this.reflectionMapSampler_0 = (tmp$_11 = findNode_3klnlw$result_5) != null ? tmp$_11.sampler : null;
-    if ((tmp$_12 = this.reflectionMapSampler_0) != null) {
-      tmp$_12.texture = this.reflectionMap;
+    this.irradianceMapSampler_0 = (tmp$_11 = findNode_3klnlw$result_5) != null ? tmp$_11.sampler : null;
+    if ((tmp$_12 = this.irradianceMapSampler_0) != null) {
+      tmp$_12.texture = this.irradianceMap;
     }var $this_6 = this.model;
+    var name_6 = 'reflectionMap';
     var stage_6;
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
       stage_6 = ShaderStage.ALL;
-      var tmp$_39;
-      tmp$_39 = $this_6.stages.values.iterator();
-      while (tmp$_39.hasNext()) {
-        var element_13 = tmp$_39.next();
+      var tmp$_41;
+      tmp$_41 = $this_6.stages.values.iterator();
+      while (tmp$_41.hasNext()) {
+        var element_13 = tmp$_41.next();
         if ((element_13.stage.mask & stage_6.mask) !== 0) {
-          var tmp$_40;
+          var tmp$_42;
           var $receiver_6 = element_13.nodes;
           var firstOrNull$result_6;
           firstOrNull$break: do {
-            var tmp$_41;
-            tmp$_41 = $receiver_6.iterator();
-            while (tmp$_41.hasNext()) {
-              var element_14 = tmp$_41.next();
-              if (equals(element_14.name, 'brdfLut') && Kotlin.isType(element_14, TextureNode)) {
+            var tmp$_43;
+            tmp$_43 = $receiver_6.iterator();
+            while (tmp$_43.hasNext()) {
+              var element_14 = tmp$_43.next();
+              if (equals(element_14.name, name_6) && Kotlin.isType(element_14, CubeMapNode)) {
                 firstOrNull$result_6 = element_14;
                 break firstOrNull$break;
               }}
             firstOrNull$result_6 = null;
           }
            while (false);
-          var node_6 = (tmp$_40 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_40, TextureNode) ? tmp$_40 : throwCCE();
+          var node_6 = (tmp$_42 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_42, CubeMapNode) ? tmp$_42 : throwCCE();
           if (node_6 != null) {
             findNode_3klnlw$result_6 = node_6;
             break findNode_3klnlw$break;
@@ -30879,35 +31093,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_6 = null;
     }
      while (false);
-    this.brdfLutSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
-    if ((tmp$_14 = this.brdfLutSampler_0) != null) {
-      tmp$_14.texture = this.brdfLut;
+    this.reflectionMapSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
+    if ((tmp$_14 = this.reflectionMapSampler_0) != null) {
+      tmp$_14.texture = this.reflectionMap;
     }var $this_7 = this.model;
     var stage_7;
     var findNode_3klnlw$result_7;
     findNode_3klnlw$break: do {
       stage_7 = ShaderStage.ALL;
-      var tmp$_42;
-      tmp$_42 = $this_7.stages.values.iterator();
-      while (tmp$_42.hasNext()) {
-        var element_15 = tmp$_42.next();
+      var tmp$_44;
+      tmp$_44 = $this_7.stages.values.iterator();
+      while (tmp$_44.hasNext()) {
+        var element_15 = tmp$_44.next();
         if ((element_15.stage.mask & stage_7.mask) !== 0) {
-          var tmp$_43;
+          var tmp$_45;
           var $receiver_7 = element_15.nodes;
           var firstOrNull$result_7;
           firstOrNull$break: do {
-            var tmp$_44;
-            tmp$_44 = $receiver_7.iterator();
-            while (tmp$_44.hasNext()) {
-              var element_16 = tmp$_44.next();
-              if (equals(element_16.name, 'ssaoMap') && Kotlin.isType(element_16, TextureNode)) {
+            var tmp$_46;
+            tmp$_46 = $receiver_7.iterator();
+            while (tmp$_46.hasNext()) {
+              var element_16 = tmp$_46.next();
+              if (equals(element_16.name, 'brdfLut') && Kotlin.isType(element_16, TextureNode)) {
                 firstOrNull$result_7 = element_16;
                 break firstOrNull$break;
               }}
             firstOrNull$result_7 = null;
           }
            while (false);
-          var node_7 = (tmp$_43 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_43, TextureNode) ? tmp$_43 : throwCCE();
+          var node_7 = (tmp$_45 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_45, TextureNode) ? tmp$_45 : throwCCE();
           if (node_7 != null) {
             findNode_3klnlw$result_7 = node_7;
             break findNode_3klnlw$break;
@@ -30915,52 +31129,89 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_7 = null;
     }
      while (false);
-    this.ssaoSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
-    if ((tmp$_16 = this.ssaoSampler_0) != null) {
-      tmp$_16.texture = this.scrSpcAmbientOcclusionMap;
+    this.brdfLutSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
+    if ((tmp$_16 = this.brdfLutSampler_0) != null) {
+      tmp$_16.texture = this.brdfLut;
+    }var $this_8 = this.model;
+    var stage_8;
+    var findNode_3klnlw$result_8;
+    findNode_3klnlw$break: do {
+      stage_8 = ShaderStage.ALL;
+      var tmp$_47;
+      tmp$_47 = $this_8.stages.values.iterator();
+      while (tmp$_47.hasNext()) {
+        var element_17 = tmp$_47.next();
+        if ((element_17.stage.mask & stage_8.mask) !== 0) {
+          var tmp$_48;
+          var $receiver_8 = element_17.nodes;
+          var firstOrNull$result_8;
+          firstOrNull$break: do {
+            var tmp$_49;
+            tmp$_49 = $receiver_8.iterator();
+            while (tmp$_49.hasNext()) {
+              var element_18 = tmp$_49.next();
+              if (equals(element_18.name, 'ssaoMap') && Kotlin.isType(element_18, TextureNode)) {
+                firstOrNull$result_8 = element_18;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_8 = null;
+          }
+           while (false);
+          var node_8 = (tmp$_48 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_48, TextureNode) ? tmp$_48 : throwCCE();
+          if (node_8 != null) {
+            findNode_3klnlw$result_8 = node_8;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_8 = null;
+    }
+     while (false);
+    this.ssaoSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
+    if ((tmp$_18 = this.ssaoSampler_0) != null) {
+      tmp$_18.texture = this.scrSpcAmbientOcclusionMap;
     }if (this.isReceivingShadow_0) {
-      tmp$_17 = this.depthSamplers_0;
-      loop_label: for (var i = 0; i !== tmp$_17.length; ++i) {
-        var tmp$_45;
-        var $this_8 = this.model;
-        var name_6 = 'depthMap_' + i;
-        var stage_8;
-        var findNode_3klnlw$result_8;
+      tmp$_19 = this.depthSamplers_0;
+      loop_label: for (var i = 0; i !== tmp$_19.length; ++i) {
+        var tmp$_50;
+        var $this_9 = this.model;
+        var name_7 = 'depthMap_' + i;
+        var stage_9;
+        var findNode_3klnlw$result_9;
         findNode_3klnlw$break: do {
-          stage_8 = ShaderStage.ALL;
-          var tmp$_46;
-          tmp$_46 = $this_8.stages.values.iterator();
-          while (tmp$_46.hasNext()) {
-            var element_17 = tmp$_46.next();
-            if ((element_17.stage.mask & stage_8.mask) !== 0) {
-              var tmp$_47;
-              var $receiver_8 = element_17.nodes;
-              var firstOrNull$result_8;
+          stage_9 = ShaderStage.ALL;
+          var tmp$_51;
+          tmp$_51 = $this_9.stages.values.iterator();
+          while (tmp$_51.hasNext()) {
+            var element_19 = tmp$_51.next();
+            if ((element_19.stage.mask & stage_9.mask) !== 0) {
+              var tmp$_52;
+              var $receiver_9 = element_19.nodes;
+              var firstOrNull$result_9;
               firstOrNull$break: do {
-                var tmp$_48;
-                tmp$_48 = $receiver_8.iterator();
-                while (tmp$_48.hasNext()) {
-                  var element_18 = tmp$_48.next();
-                  if (equals(element_18.name, name_6) && Kotlin.isType(element_18, TextureNode)) {
-                    firstOrNull$result_8 = element_18;
+                var tmp$_53;
+                tmp$_53 = $receiver_9.iterator();
+                while (tmp$_53.hasNext()) {
+                  var element_20 = tmp$_53.next();
+                  if (equals(element_20.name, name_7) && Kotlin.isType(element_20, TextureNode)) {
+                    firstOrNull$result_9 = element_20;
                     break firstOrNull$break;
                   }}
-                firstOrNull$result_8 = null;
+                firstOrNull$result_9 = null;
               }
                while (false);
-              var node_8 = (tmp$_47 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_47, TextureNode) ? tmp$_47 : throwCCE();
-              if (node_8 != null) {
-                findNode_3klnlw$result_8 = node_8;
+              var node_9 = (tmp$_52 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_52, TextureNode) ? tmp$_52 : throwCCE();
+              if (node_9 != null) {
+                findNode_3klnlw$result_9 = node_9;
                 break findNode_3klnlw$break;
               }}}
-          findNode_3klnlw$result_8 = null;
+          findNode_3klnlw$result_9 = null;
         }
          while (false);
-        var sampler = (tmp$_45 = findNode_3klnlw$result_8) != null ? tmp$_45.sampler : null;
+        var sampler = (tmp$_50 = findNode_3klnlw$result_9) != null ? tmp$_50.sampler : null;
         this.depthSamplers_0[i] = sampler;
         this.shadowMaps_0[i].setupSampler_s70oj3$(sampler);
       }
-    }};
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
+  };
   function PbrSceneShader$Companion() {
     PbrSceneShader$Companion_instance = this;
   }
@@ -30976,7 +31227,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
-    var mrtDeMultiplex = $receiver_2;
+    if (cfg.isWithEmissive) {
+      $receiver_2.inEmissive = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('emissive'), coord).outColor;
+    }var mrtDeMultiplex = $receiver_2;
     $receiver_1.addNode_u9w9by$(new DiscardClearNode($receiver_1.stage)).inViewPos = mrtDeMultiplex.outViewPos;
     var defCam = $receiver_1.addNode_u9w9by$(new DeferredCameraNode($receiver_1.stage));
     var worldPos = $receiver_1.vec3TransformNode_vid4wo$(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1.0).outVec3;
@@ -31019,6 +31272,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_3.inCamPos = defCam.outCamPos;
     $receiver_3.inIrradiance = (tmp$_2 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_2 : $receiver_1.pushConstantNodeColor_61zpoe$('uAmbient').output;
     $receiver_3.inAlbedo = mrtDeMultiplex.outAlbedo;
+    $receiver_3.inEmissive = mrtDeMultiplex.outEmissive;
     $receiver_3.inMetallic = mrtDeMultiplex.outMetallic;
     $receiver_3.inRoughness = mrtDeMultiplex.outRoughness;
     var aoFactor = mrtDeMultiplex.outAo;
@@ -31047,17 +31301,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.sceneCamera = null;
     this.isImageBasedLighting = false;
     this.isScrSpcAmbientOcclusion = false;
+    this.isWithEmissive = false;
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
     this.lightBacksides = false;
     this.positionAo = null;
     this.normalRoughness = null;
     this.albedoMetal = null;
+    this.emissive = null;
     this.irradianceMap = null;
     this.reflectionMap = null;
     this.brdfLut = null;
     this.scrSpcAmbientOcclusionMap = null;
   }
+  PbrSceneShader$DeferredPbrConfig.prototype.useMrtPass_u6tred$ = function (mrtPass) {
+    this.sceneCamera = mrtPass.camera;
+    this.positionAo = mrtPass.positionAo;
+    this.normalRoughness = mrtPass.normalRoughness;
+    this.albedoMetal = mrtPass.albedoMetal;
+    this.isWithEmissive = mrtPass.withEmissive;
+    if (this.isWithEmissive) {
+      this.emissive = mrtPass.emissive;
+    }};
   PbrSceneShader$DeferredPbrConfig.prototype.useScreenSpaceAmbientOcclusion_vv6xll$ = function (ssaoMap) {
     this.scrSpcAmbientOcclusionMap = ssaoMap;
     this.isScrSpcAmbientOcclusion = true;
@@ -33050,25 +33315,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   GltfAsset.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.copyright, other.copyright) && Kotlin.equals(this.generator, other.generator) && Kotlin.equals(this.version, other.version) && Kotlin.equals(this.minVersion, other.minVersion)))));
   };
-  function Coroutine$loadGltfModel($receiver_0, assetPath_0, continuation_0) {
+  function Coroutine$loadGltfFile($receiver_0, assetPath_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
     this.local$tmp$ = void 0;
-    this.local$model = void 0;
+    this.local$file = void 0;
     this.local$modelBasePath = void 0;
     this.local$tmp$_1 = void 0;
     this.local$element = void 0;
     this.local$$receiver = $receiver_0;
     this.local$assetPath = assetPath_0;
   }
-  Coroutine$loadGltfModel.$metadata$ = {
+  Coroutine$loadGltfFile.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$loadGltfModel.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$loadGltfModel.prototype.constructor = Coroutine$loadGltfModel;
-  Coroutine$loadGltfModel.prototype.doResume = function () {
+  Coroutine$loadGltfFile.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGltfFile.prototype.constructor = Coroutine$loadGltfFile;
+  Coroutine$loadGltfFile.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -33108,7 +33373,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             this.state_0 = 5;
             continue;
           case 5:
-            this.local$model = this.local$tmp$;
+            this.local$file = this.local$tmp$;
             if (contains(this.local$assetPath, 47)) {
               var endIndex = lastIndexOf(this.local$assetPath, 47);
               tmp$ = this.local$assetPath.substring(0, endIndex);
@@ -33117,8 +33382,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             }
 
             this.local$modelBasePath = tmp$;
-            if (this.local$model != null) {
-              var $receiver = this.local$model.buffers;
+            if (this.local$file != null) {
+              var $receiver = this.local$file.buffers;
               var destination = ArrayList_init_0();
               var tmp$_0;
               tmp$_0 = $receiver.iterator();
@@ -33160,7 +33425,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             this.state_0 = 6;
             continue;
           case 8:
-            var $receiver_0 = this.local$model.images;
+            var $receiver_0 = this.local$file.images;
             var destination_0 = ArrayList_init_0();
             var tmp$_2;
             tmp$_2 = $receiver_0.iterator();
@@ -33177,11 +33442,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               element_1.uri = this.local$modelBasePath + '/' + toString(element_1.uri);
             }
 
-            this.local$model.updateReferences_8be2vx$();
+            this.local$file.updateReferences_8be2vx$();
             this.state_0 = 9;
             continue;
           case 9:
-            return this.local$model;
+            return this.local$file;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -33196,8 +33461,63 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
      while (true);
   };
-  function loadGltfModel($receiver_0, assetPath_0, continuation_0, suspended) {
-    var instance = new Coroutine$loadGltfModel($receiver_0, assetPath_0, continuation_0);
+  function loadGltfFile($receiver_0, assetPath_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadGltfFile($receiver_0, assetPath_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$loadGltfModel($receiver_0, assetPath_0, modelCfg_0, scene_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$$receiver = $receiver_0;
+    this.local$assetPath = assetPath_0;
+    this.local$modelCfg = modelCfg_0;
+    this.local$scene = scene_0;
+  }
+  Coroutine$loadGltfModel.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadGltfModel.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadGltfModel.prototype.constructor = Coroutine$loadGltfModel;
+  Coroutine$loadGltfModel.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            if (this.local$modelCfg === void 0)
+              this.local$modelCfg = new GltfFile$ModelGenerateConfig();
+            if (this.local$scene === void 0)
+              this.local$scene = 0;
+            var tmp$;
+            this.state_0 = 2;
+            this.result_0 = loadGltfFile(this.local$$receiver, this.local$assetPath, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return (tmp$ = this.result_0) != null ? tmp$.makeModel_m0hq3v$(this.local$modelCfg, this.local$scene) : null;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function loadGltfModel($receiver_0, assetPath_0, modelCfg_0, scene_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadGltfModel($receiver_0, assetPath_0, modelCfg_0, scene_0, continuation_0);
     if (suspended)
       return instance;
     else
@@ -33902,9 +34222,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       element_11.imageRef = this.images.get_za3lpa$(element_11.source);
     }
   };
-  function GltfFile$ModelGenerateConfig(generateNormals, loadAnimations, applySkins, applyMorphTargets, applyTransforms, mergeMeshesByMaterial, sortNodesByAlpha, applyMaterials, isDeferredShading, pbrBlock) {
+  function GltfFile$ModelGenerateConfig(generateNormals, applyMaterials, materialConfig, loadAnimations, applySkins, applyMorphTargets, applyTransforms, removeEmptyNodes, mergeMeshesByMaterial, sortNodesByAlpha, pbrBlock) {
     if (generateNormals === void 0)
       generateNormals = false;
+    if (applyMaterials === void 0)
+      applyMaterials = true;
+    if (materialConfig === void 0)
+      materialConfig = new GltfFile$ModelMaterialConfig();
     if (loadAnimations === void 0)
       loadAnimations = true;
     if (applySkins === void 0)
@@ -33913,25 +34237,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       applyMorphTargets = true;
     if (applyTransforms === void 0)
       applyTransforms = false;
+    if (removeEmptyNodes === void 0)
+      removeEmptyNodes = true;
     if (mergeMeshesByMaterial === void 0)
       mergeMeshesByMaterial = false;
     if (sortNodesByAlpha === void 0)
       sortNodesByAlpha = true;
-    if (applyMaterials === void 0)
-      applyMaterials = true;
-    if (isDeferredShading === void 0)
-      isDeferredShading = false;
     if (pbrBlock === void 0)
       pbrBlock = null;
     this.generateNormals = generateNormals;
+    this.applyMaterials = applyMaterials;
+    this.materialConfig = materialConfig;
     this.loadAnimations = loadAnimations;
     this.applySkins = applySkins;
     this.applyMorphTargets = applyMorphTargets;
     this.applyTransforms = applyTransforms;
+    this.removeEmptyNodes = removeEmptyNodes;
     this.mergeMeshesByMaterial = mergeMeshesByMaterial;
     this.sortNodesByAlpha = sortNodesByAlpha;
-    this.applyMaterials = applyMaterials;
-    this.isDeferredShading = isDeferredShading;
     this.pbrBlock = pbrBlock;
   }
   GltfFile$ModelGenerateConfig.$metadata$ = {
@@ -33939,9 +34262,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ModelGenerateConfig',
     interfaces: []
   };
+  function GltfFile$ModelMaterialConfig(shadowMaps, scrSpcAmbientOcclusionMap, iblIrradianceMap, iblReflectionMap, iblBrdfMap, isDeferredShading) {
+    if (shadowMaps === void 0)
+      shadowMaps = emptyList();
+    if (scrSpcAmbientOcclusionMap === void 0)
+      scrSpcAmbientOcclusionMap = null;
+    if (iblIrradianceMap === void 0)
+      iblIrradianceMap = null;
+    if (iblReflectionMap === void 0)
+      iblReflectionMap = null;
+    if (iblBrdfMap === void 0)
+      iblBrdfMap = null;
+    if (isDeferredShading === void 0)
+      isDeferredShading = false;
+    this.shadowMaps = shadowMaps;
+    this.scrSpcAmbientOcclusionMap = scrSpcAmbientOcclusionMap;
+    this.iblIrradianceMap = iblIrradianceMap;
+    this.iblReflectionMap = iblReflectionMap;
+    this.iblBrdfMap = iblBrdfMap;
+    this.isDeferredShading = isDeferredShading;
+  }
+  GltfFile$ModelMaterialConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ModelMaterialConfig',
+    interfaces: []
+  };
   function GltfFile$ModelGenerator($outer, cfg) {
     this.$outer = $outer;
     this.cfg = cfg;
+    this.modelAnimations = ArrayList_init_0();
     this.modelNodes = LinkedHashMap_init();
     this.meshesByMaterial = LinkedHashMap_init();
     this.meshMaterials = LinkedHashMap_init();
@@ -33956,7 +34305,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       model.plusAssign_f1kmr1$(this.makeNode_0(element, model, this.cfg));
     }
     if (this.cfg.loadAnimations) {
-      this.makeTrsAnimations_0(model);
+      this.makeTrsAnimations_0();
     }if (this.cfg.loadAnimations) {
       this.makeSkins_0(model);
     }var tmp$_1;
@@ -33968,22 +34317,61 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.createMeshes_0(node, model, grp, this.cfg);
     }
     if (this.cfg.loadAnimations) {
-      this.makeMorphAnimations_0(model);
-    }if (this.cfg.applyTransforms && model.animations.isEmpty()) {
+      this.makeMorphAnimations_0();
+    }var $receiver = this.modelAnimations;
+    var destination = ArrayList_init_0();
+    var tmp$_2;
+    tmp$_2 = $receiver.iterator();
+    while (tmp$_2.hasNext()) {
+      var element_1 = tmp$_2.next();
+      if (!element_1.channels.isEmpty())
+        destination.add_11rb$(element_1);
+    }
+    var tmp$_3;
+    tmp$_3 = destination.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_2 = tmp$_3.next();
+      element_2.prepareAnimation();
+      model.animations.add_11rb$(element_2);
+    }
+    model.disableAllAnimations();
+    if (this.cfg.applyTransforms && model.animations.isEmpty()) {
       this.applyTransforms_0(model);
     }if (this.cfg.mergeMeshesByMaterial) {
       this.mergeMeshesByMaterial_0(model);
     }if (this.cfg.sortNodesByAlpha) {
       this.sortNodesByAlpha_0(model);
-    }model.disableAllAnimations();
-    return model;
+    }if (this.cfg.removeEmptyNodes) {
+      this.removeEmpty_0(model);
+    }return model;
   };
-  GltfFile$ModelGenerator.prototype.makeTrsAnimations_0 = function (model) {
+  GltfFile$ModelGenerator.prototype.removeEmpty_0 = function ($receiver) {
+    var $receiver_0 = $receiver.children;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (Kotlin.isType(element, TransformGroup))
+        destination.add_11rb$(element);
+    }
+    var tgChildren = destination;
+    var tmp$_0;
+    tmp$_0 = tgChildren.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      this.removeEmpty_0(element_0);
+      if (element_0.children.isEmpty()) {
+        $receiver.removeNode_f1kmr1$(element_0);
+      }}
+  };
+  GltfFile$ModelGenerator.prototype.makeTrsAnimations_0 = function () {
     var tmp$;
     tmp$ = this.$outer.animations.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var modelAnim = new Animation(element.name);
+      this.modelAnimations.add_11rb$(modelAnim);
       var animNodes = LinkedHashMap_init();
       var tmp$_0;
       tmp$_0 = element.channels.iterator();
@@ -34016,10 +34404,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               break;
           }
         }}
-      if (!modelAnim.channels.isEmpty()) {
-        modelAnim.prepareAnimation();
-        model.animations.add_11rb$(modelAnim);
-      }}
+    }
   };
   GltfFile$ModelGenerator.prototype.makeTranslationAnimation_0 = function (animCh, animNd, modelAnim) {
     var tmp$, tmp$_0, tmp$_1;
@@ -34174,48 +34559,47 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       scaleChannel.keys.put_xwzc9p$(t, scaleKey);
     }
   };
-  GltfFile$ModelGenerator.prototype.makeMorphAnimations_0 = function (model) {
-    var tmp$;
+  GltfFile$ModelGenerator.prototype.makeMorphAnimations_0 = function () {
+    var tmp$, tmp$_0;
+    var index = 0;
     tmp$ = this.$outer.animations.iterator();
     while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var modelAnim = new Animation(element.name);
-      var tmp$_0;
-      tmp$_0 = element.channels.iterator();
-      while (tmp$_0.hasNext()) {
-        var element_0 = tmp$_0.next();
-        var tmp$_1, tmp$_2, tmp$_3;
-        if (equals(element_0.target.path, GltfAnimation$Target$Companion_getInstance().PATH_WEIGHTS)) {
-          var gltfMesh = (tmp$_1 = element_0.target.nodeRef) != null ? tmp$_1.meshRef : null;
+      var item = tmp$.next();
+      var iAnim = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
+      var tmp$_1;
+      tmp$_1 = item.channels.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
+        var tmp$_2, tmp$_3, tmp$_4;
+        if (equals(element.target.path, GltfAnimation$Target$Companion_getInstance().PATH_WEIGHTS)) {
+          var modelAnim = this.modelAnimations.get_za3lpa$(iAnim);
+          var gltfMesh = (tmp$_2 = element.target.nodeRef) != null ? tmp$_2.meshRef : null;
           var $receiver = this.modelNodes;
-          var key = element_0.target.nodeRef;
-          var tmp$_4;
-          var nodeGrp = (Kotlin.isType(tmp$_4 = $receiver, Map) ? tmp$_4 : throwCCE()).get_11rb$(key);
+          var key = element.target.nodeRef;
           var tmp$_5;
-          if ((tmp$_2 = nodeGrp != null ? nodeGrp.children : null) != null) {
+          var nodeGrp = (Kotlin.isType(tmp$_5 = $receiver, Map) ? tmp$_5 : throwCCE()).get_11rb$(key);
+          var tmp$_6;
+          if ((tmp$_3 = nodeGrp != null ? nodeGrp.children : null) != null) {
             var destination = ArrayList_init_0();
-            var tmp$_6;
-            tmp$_6 = tmp$_2.iterator();
-            while (tmp$_6.hasNext()) {
-              var element_1 = tmp$_6.next();
-              if (Kotlin.isType(element_1, Mesh))
-                destination.add_11rb$(element_1);
-            }
-            tmp$_5 = destination;
-          } else
-            tmp$_5 = null;
-          if ((tmp$_3 = tmp$_5) != null) {
             var tmp$_7;
             tmp$_7 = tmp$_3.iterator();
             while (tmp$_7.hasNext()) {
-              var element_2 = tmp$_7.next();
-              this.makeWeightAnimation_0(ensureNotNull(gltfMesh), element_0, new MorphAnimatedMesh(element_2), modelAnim);
+              var element_0 = tmp$_7.next();
+              if (Kotlin.isType(element_0, Mesh))
+                destination.add_11rb$(element_0);
+            }
+            tmp$_6 = destination;
+          } else
+            tmp$_6 = null;
+          if ((tmp$_4 = tmp$_6) != null) {
+            var tmp$_8;
+            tmp$_8 = tmp$_4.iterator();
+            while (tmp$_8.hasNext()) {
+              var element_1 = tmp$_8.next();
+              this.makeWeightAnimation_0(ensureNotNull(gltfMesh), element, new MorphAnimatedMesh(element_1), modelAnim);
             }
           }}}
-      if (!modelAnim.channels.isEmpty()) {
-        modelAnim.prepareAnimation();
-        model.animations.add_11rb$(modelAnim);
-      }}
+    }
   };
   GltfFile$ModelGenerator.prototype.makeWeightAnimation_0 = function (gltfMesh, animCh, animNd, modelAnim) {
     var tmp$, tmp$_0, tmp$_1;
@@ -34352,39 +34736,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         model.skins.add_11rb$(modelSkin);
       }}
   };
-  function GltfFile$ModelGenerator$sortNodesByAlpha$lambda(this$ModelGenerator) {
+  function GltfFile$ModelGenerator$sortNodesByAlpha$lambda(closure$childAlphas) {
     return function (it) {
       var tmp$;
-      var a = 1.1;
-      if (Kotlin.isType(it, Mesh)) {
-        var mat = this$ModelGenerator.meshMaterials.get_11rb$(it);
-        if (mat != null) {
-          if (equals(mat.alphaMode, GltfMaterial$Companion_getInstance().ALPHA_MODE_BLEND)) {
-            var b = mat.pbrMetallicRoughness.baseColorFactor.get_za3lpa$(3);
-            tmp$ = Math_0.min(0.999, b);
-          } else
-            tmp$ = 1.0;
-          a = tmp$;
-        }}return -a;
+      return -((tmp$ = closure$childAlphas.get_11rb$(it)) != null ? tmp$ : 1.0);
     };
   }
   GltfFile$ModelGenerator.prototype.sortNodesByAlpha_0 = function ($receiver) {
-    var $receiver_0 = $receiver.children;
-    var destination = ArrayList_init_0();
     var tmp$;
-    tmp$ = $receiver_0.iterator();
+    var childAlphas = LinkedHashMap_init();
+    var avgAlpha = 0.0;
+    tmp$ = $receiver.children.iterator();
     while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      if (Kotlin.isType(element, TransformGroup))
-        destination.add_11rb$(element);
+      var child = tmp$.next();
+      var a = 1.0;
+      if (Kotlin.isType(child, Mesh) && !child.isOpaque) {
+        a = 0.0;
+      } else if (Kotlin.isType(child, TransformGroup)) {
+        a = this.sortNodesByAlpha_0(child);
+      }var value = a;
+      childAlphas.put_xwzc9p$(child, value);
+      avgAlpha += a;
     }
-    var tmp$_0;
-    tmp$_0 = destination.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      this.sortNodesByAlpha_0(element_0);
-    }
-    $receiver.sortChildrenBy_mq7kdd$(GltfFile$ModelGenerator$sortNodesByAlpha$lambda(this));
+    $receiver.sortChildrenBy_mq7kdd$(GltfFile$ModelGenerator$sortNodesByAlpha$lambda(childAlphas));
+    if (!$receiver.children.isEmpty()) {
+      avgAlpha /= $receiver.children.size;
+    }return avgAlpha;
   };
   GltfFile$ModelGenerator.prototype.mergeMeshesByMaterial_0 = function (model) {
     this.mergeMeshesByMaterial_1(model);
@@ -34573,9 +34950,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           var $receiver_1 = this.meshMaterials;
           var value_0 = item.materialRef;
           $receiver_1.put_xwzc9p$(mesh, value_0);
-          if (cfg.applySkins && $receiver.skin >= 0) {
+          if (cfg.loadAnimations && cfg.applySkins && $receiver.skin >= 0) {
             mesh.skin = model.skins.get_za3lpa$($receiver.skin);
-          }var tmp$_5 = cfg.applyMorphTargets;
+            var skeletonRoot = this$GltfFile.skins.get_za3lpa$($receiver.skin).skeleton;
+            if (skeletonRoot >= 0) {
+              nodeGrp.minusAssign_f1kmr1$(mesh);
+              ensureNotNull(this.modelNodes.get_11rb$(this$GltfFile.nodes.get_za3lpa$(skeletonRoot))).plusAssign_f1kmr1$(mesh);
+            }mesh.isFrustumChecked = false;
+          }var tmp$_5 = cfg.loadAnimations && cfg.applyMorphTargets;
           if (tmp$_5) {
             tmp$_5 = !item.targets.isEmpty();
           }if (tmp$_5) {
@@ -34588,6 +34970,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               sum = sum + element.size | 0;
             }
             mesh.morphWeights = new tmp$_6(sum);
+            mesh.isFrustumChecked = false;
           }if (cfg.applyMaterials) {
             var useVertexColor = item.attributes.containsKey_11rb$(GltfMesh$Primitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
             var $receiver_2 = new PbrMaterialConfig();
@@ -34603,50 +34986,56 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               $receiver_2.isSkinned = true;
             }if (mesh.morphWeights != null) {
               addAll($receiver_2.morphAttributes, mesh.geometry.getMorphAttributes());
-            }$receiver_2.isHdrOutput = cfg.isDeferredShading;
+            }var matCfg = cfg.materialConfig;
+            var tmp$_16;
+            $receiver_2.isHdrOutput = matCfg.isDeferredShading;
+            addAll($receiver_2.shadowMaps, matCfg.shadowMaps);
+            if ((tmp$_16 = matCfg.scrSpcAmbientOcclusionMap) != null) {
+              $receiver_2.useScreenSpaceAmbientOcclusion_vv6xll$(tmp$_16);
+            }$receiver_2.useImageBasedLighting_5m8fyp$(matCfg.iblIrradianceMap, matCfg.iblReflectionMap, matCfg.iblBrdfMap);
             (tmp$_8 = cfg.pbrBlock) != null ? tmp$_8($receiver_2, item) : null;
             if (Kotlin.isType($receiver_2.alphaMode, AlphaModeBlend)) {
               mesh.isOpaque = false;
             }if ((tmp$_9 = $receiver_2.albedoMap) != null) {
-              var tmp$_16, tmp$_17;
-              tmp$_17 = model.textures;
-              var key_0 = (tmp$_16 = tmp$_9.name) != null ? tmp$_16 : 'tex_' + model.textures.size;
-              tmp$_17.put_xwzc9p$(key_0, tmp$_9);
+              var tmp$_17, tmp$_18;
+              tmp$_18 = model.textures;
+              var key_0 = (tmp$_17 = tmp$_9.name) != null ? tmp$_17 : 'tex_' + model.textures.size;
+              tmp$_18.put_xwzc9p$(key_0, tmp$_9);
             }if ((tmp$_10 = $receiver_2.emissiveMap) != null) {
-              var tmp$_18, tmp$_19;
-              tmp$_19 = model.textures;
-              var key_1 = (tmp$_18 = tmp$_10.name) != null ? tmp$_18 : 'tex_' + model.textures.size;
-              tmp$_19.put_xwzc9p$(key_1, tmp$_10);
+              var tmp$_19, tmp$_20;
+              tmp$_20 = model.textures;
+              var key_1 = (tmp$_19 = tmp$_10.name) != null ? tmp$_19 : 'tex_' + model.textures.size;
+              tmp$_20.put_xwzc9p$(key_1, tmp$_10);
             }if ((tmp$_11 = $receiver_2.normalMap) != null) {
-              var tmp$_20, tmp$_21;
-              tmp$_21 = model.textures;
-              var key_2 = (tmp$_20 = tmp$_11.name) != null ? tmp$_20 : 'tex_' + model.textures.size;
-              tmp$_21.put_xwzc9p$(key_2, tmp$_11);
+              var tmp$_21, tmp$_22;
+              tmp$_22 = model.textures;
+              var key_2 = (tmp$_21 = tmp$_11.name) != null ? tmp$_21 : 'tex_' + model.textures.size;
+              tmp$_22.put_xwzc9p$(key_2, tmp$_11);
             }if ((tmp$_12 = $receiver_2.roughnessMap) != null) {
-              var tmp$_22, tmp$_23;
-              tmp$_23 = model.textures;
-              var key_3 = (tmp$_22 = tmp$_12.name) != null ? tmp$_22 : 'tex_' + model.textures.size;
-              tmp$_23.put_xwzc9p$(key_3, tmp$_12);
+              var tmp$_23, tmp$_24;
+              tmp$_24 = model.textures;
+              var key_3 = (tmp$_23 = tmp$_12.name) != null ? tmp$_23 : 'tex_' + model.textures.size;
+              tmp$_24.put_xwzc9p$(key_3, tmp$_12);
             }if ((tmp$_13 = $receiver_2.metallicMap) != null) {
-              var tmp$_24, tmp$_25;
-              tmp$_25 = model.textures;
-              var key_4 = (tmp$_24 = tmp$_13.name) != null ? tmp$_24 : 'tex_' + model.textures.size;
-              tmp$_25.put_xwzc9p$(key_4, tmp$_13);
+              var tmp$_25, tmp$_26;
+              tmp$_26 = model.textures;
+              var key_4 = (tmp$_25 = tmp$_13.name) != null ? tmp$_25 : 'tex_' + model.textures.size;
+              tmp$_26.put_xwzc9p$(key_4, tmp$_13);
             }if ((tmp$_14 = $receiver_2.occlusionMap) != null) {
-              var tmp$_26, tmp$_27;
-              tmp$_27 = model.textures;
-              var key_5 = (tmp$_26 = tmp$_14.name) != null ? tmp$_26 : 'tex_' + model.textures.size;
-              tmp$_27.put_xwzc9p$(key_5, tmp$_14);
+              var tmp$_27, tmp$_28;
+              tmp$_28 = model.textures;
+              var key_5 = (tmp$_27 = tmp$_14.name) != null ? tmp$_27 : 'tex_' + model.textures.size;
+              tmp$_28.put_xwzc9p$(key_5, tmp$_14);
             }if ((tmp$_15 = $receiver_2.displacementMap) != null) {
-              var tmp$_28, tmp$_29;
-              tmp$_29 = model.textures;
-              var key_6 = (tmp$_28 = tmp$_15.name) != null ? tmp$_28 : 'tex_' + model.textures.size;
-              tmp$_29.put_xwzc9p$(key_6, tmp$_15);
+              var tmp$_29, tmp$_30;
+              tmp$_30 = model.textures;
+              var key_6 = (tmp$_29 = tmp$_15.name) != null ? tmp$_29 : 'tex_' + model.textures.size;
+              tmp$_30.put_xwzc9p$(key_6, tmp$_15);
             }var pbrConfig = $receiver_2;
-            if (cfg.isDeferredShading && mesh.isOpaque) {
-              mesh.pipelineLoader = new DeferredPbrShader(pbrConfig);
+            if (cfg.materialConfig.isDeferredShading && mesh.isOpaque) {
+              mesh.shader = new DeferredPbrShader(pbrConfig);
             } else {
-              mesh.pipelineLoader = new PbrShader(pbrConfig);
+              mesh.shader = new PbrShader(pbrConfig);
             }
           }model.meshes.put_xwzc9p$(name, mesh);
         }}
@@ -37183,7 +37572,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var lutNd = $receiver_4;
     $receiver_3.colorOutput_a3v4si$(lutNd.outColor);
     var model = $receiver_1;
-    mesh.pipelineLoader = new ModeledShader(model);
+    mesh.shader = new ModeledShader(model);
     $receiver_0.unaryPlus_uv0sim$(mesh);
     parentScene.addOffscreenPass_m1c2kf$(this);
     this.onAfterCollectDrawCommands.add_11rb$(BrdfLutPass_init$lambda(parentScene, this));
@@ -37258,9 +37647,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(convNd.outColor);
     var model = $receiver_0;
     var $receiver_4 = new ModeledShader$TextureColor(hdriTexture, texName, model);
-    $receiver_4.onSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
+    $receiver_4.onPipelineSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
     this.irrMapShader_0 = $receiver_4;
-    mesh.pipelineLoader = this.irrMapShader_0;
+    mesh.shader = this.irrMapShader_0;
     $receiver.unaryPlus_uv0sim$(mesh);
     this.update();
     this.onAfterCollectDrawCommands.add_11rb$(IrradianceMapPass_init$lambda(this));
@@ -37312,8 +37701,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function IrradianceMapPass_init$lambda$lambda$lambda$lambda(it) {
-    it.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+  function IrradianceMapPass_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
   function IrradianceMapPass_init$lambda(this$IrradianceMapPass) {
@@ -37362,9 +37751,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(convNd.outColor);
     var model = $receiver_0;
     var $receiver_4 = new ModeledShader$TextureColor(hdriTexture, texName, model);
-    $receiver_4.onSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
+    $receiver_4.onPipelineSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
     this.reflMapShader_0 = $receiver_4;
-    mesh.pipelineLoader = this.reflMapShader_0;
+    mesh.shader = this.reflMapShader_0;
     $receiver.unaryPlus_uv0sim$(mesh);
     this.update();
     this.parentScene.onDispose.add_11rb$(ReflectionMapPass_init$lambda(this));
@@ -37424,8 +37813,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function ReflectionMapPass_init$lambda$lambda$lambda$lambda(it) {
-    it.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+  function ReflectionMapPass_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
   function ReflectionMapPass_init$lambda(this$ReflectionMapPass) {
@@ -37867,7 +38256,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function IndexedVertexList_init(vertexAttributes, $this) {
     $this = $this || Object.create(IndexedVertexList.prototype);
-    IndexedVertexList.call($this, toList(vertexAttributes));
+    IndexedVertexList.call($this, toList_0(vertexAttributes));
     return $this;
   }
   function PrimitiveType(name, ordinal, nVertices) {
@@ -38723,7 +39112,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function MeshBuilder(geometry) {
     this.geometry = geometry;
     this.transform = new Mat4fStack();
-    this.color = Color$Companion_getInstance().BLACK;
+    this.color = Color$Companion_getInstance().GRAY;
     this.vertexModFun = null;
     this.hasNormals_c51zdn$_0 = this.geometry.hasAttribute_nm2vx5$(Attribute$Companion_getInstance().NORMALS);
     this.tmpPos_5ud41y$_0 = MutableVec3f_init();
@@ -40564,7 +40953,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function SimpleShadowMap(scene, lightIndex, mapSize, drawNode) {
     if (mapSize === void 0)
-      mapSize = 1024;
+      mapSize = 2048;
     if (drawNode === void 0)
       drawNode = scene;
     DepthMapPass.call(this, drawNode, mapSize);
@@ -40677,14 +41066,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'SimpleShadowMap',
     interfaces: [ShadowMap, DepthMapPass]
   };
-  function CascadedShadowMap(scene, lightIndex, numCascades, mapSize, drawNode) {
+  function CascadedShadowMap(scene, lightIndex, maxRange, numCascades, mapSize, drawNode) {
+    if (maxRange === void 0)
+      maxRange = 100.0;
     if (numCascades === void 0)
       numCascades = 3;
     if (mapSize === void 0)
-      mapSize = 1024;
+      mapSize = 2048;
     if (drawNode === void 0)
       drawNode = scene;
     this.lightIndex = lightIndex;
+    this.maxRange = maxRange;
     this.numCascades = numCascades;
     var array = Array_0(this.numCascades);
     var tmp$;
@@ -40700,7 +41092,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       array[i] = new CascadedShadowMap$MapRange(near, far);
     }
     this.mapRanges = array;
-    this.maxRange = 100.0;
     var array_0 = Array_0(this.numCascades);
     var tmp$_2;
     tmp$_2 = array_0.length - 1 | 0;
@@ -45002,7 +45393,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uniformLocations_0 = LinkedHashMap_init();
     this.instances_0 = LinkedHashMap_init();
     var tmp$;
-    tmp$ = pipeline.vertexLayout.bindings.iterator();
+    tmp$ = pipeline.layout.vertices.bindings.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
@@ -45024,7 +45415,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
     var tmp$_1;
-    tmp$_1 = pipeline.descriptorSetLayouts.iterator();
+    tmp$_1 = pipeline.layout.descriptorSets.iterator();
     while (tmp$_1.hasNext()) {
       var element_1 = tmp$_1.next();
       var tmp$_2;
@@ -45054,7 +45445,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }}
     }
     var tmp$_4;
-    tmp$_4 = pipeline.pushConstantRanges.iterator();
+    tmp$_4 = pipeline.layout.pushConstantRanges.iterator();
     while (tmp$_4.hasNext()) {
       var element_4 = tmp$_4.next();
       var tmp$_5;
@@ -45186,7 +45577,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.indexType = 0;
     this.primitiveType = 0;
     var tmp$;
-    tmp$ = this.pipeline.descriptorSetLayouts.iterator();
+    tmp$ = this.pipeline.layout.descriptorSets.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
@@ -45205,7 +45596,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
     var tmp$_1;
-    tmp$_1 = this.pipeline.pushConstantRanges.iterator();
+    tmp$_1 = this.pipeline.layout.pushConstantRanges.iterator();
     while (tmp$_1.hasNext()) {
       var element_1 = tmp$_1.next();
       this.mapPushConstants_0(element_1);
@@ -45391,7 +45782,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var usage = this.$outer.glUsage_0(md.usage);
       this.indexType = WebGLRenderingContext.UNSIGNED_INT;
       (tmp$_3 = this.indexBuffer_0) != null ? (tmp$_3.setData_ysni9y$(md.indices, usage, this.$outer.ctx), Unit) : null;
-      this.primitiveType = this.$outer.glElemType_0(this.pipeline.vertexLayout.primitiveType);
+      this.primitiveType = this.$outer.glElemType_0(this.pipeline.layout.vertices.primitiveType);
       this.numIndices = md.numIndices;
       (tmp$_4 = this.dataBufferF_0) != null ? (tmp$_4.setData_phhdsy$(md.dataF, usage, this.$outer.ctx), Unit) : null;
       (tmp$_5 = this.dataBufferI_0) != null ? (tmp$_5.setData_ysni9y$(md.dataI, usage, this.$outer.ctx), Unit) : null;
@@ -46099,29 +46490,29 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function ShaderGeneratorImplWebGl() {
     ShaderGenerator.call(this);
   }
-  ShaderGeneratorImplWebGl.prototype.generateShader_us75rd$ = function (model, pipeline, ctx) {
-    var tmp$ = this.generateCode_0(model, pipeline);
+  ShaderGeneratorImplWebGl.prototype.generateShader_lvmec3$ = function (model, pipelineLayout, ctx) {
+    var tmp$ = this.generateCode_0(model, pipelineLayout);
     var vs = tmp$.component1()
     , fs = tmp$.component2();
     return new ShaderCode(vs, fs);
   };
-  ShaderGeneratorImplWebGl.prototype.generateCode_0 = function (model, pipeline) {
-    var vertShader = this.generateVertexShaderCode_0(model, pipeline);
-    var fragShader = this.generateFragmentShaderCode_0(model, pipeline);
+  ShaderGeneratorImplWebGl.prototype.generateCode_0 = function (model, pipelineLayout) {
+    var vertShader = this.generateVertexShaderCode_0(model, pipelineLayout);
+    var fragShader = this.generateFragmentShaderCode_0(model, pipelineLayout);
     if (model.dumpCode) {
       println_0('Vertex shader:' + '\n' + vertShader);
       println_0('Fragment shader:' + '\n' + fragShader);
     }return to(vertShader, fragShader);
   };
-  ShaderGeneratorImplWebGl.prototype.generateVertexShaderCode_0 = function (model, pipeline) {
+  ShaderGeneratorImplWebGl.prototype.generateVertexShaderCode_0 = function (model, pipelineLayout) {
     var codeGen = new ShaderGeneratorImplWebGl$CodeGen();
     model.vertexStageGraph.generateCode_626509$(codeGen);
-    return trimIndent('\n' + '            #version 300 es' + '\n' + '            ' + this.infoStr_0(model) + '\n' + '            ' + '\n' + '            // descriptor layout / uniforms ' + this.generateDescriptorBindings_0(pipeline, ShaderStage$VERTEX_SHADER_getInstance()) + '\n' + '            // vertex attributes ' + this.generateAttributeBindings_0(pipeline) + '\n' + '            // outputs ' + this.generateStageOutputs_0(model.vertexStageGraph) + '\n' + '            // functions' + '\n' + '            ' + codeGen.generateFunctions() + '\n' + '            ' + '\n' + '            void main() {' + '\n' + '                ' + codeGen.generateMain() + '\n' + '                gl_Position = ' + model.vertexStageGraph.positionOutput.variable.ref4f() + ';' + '\n' + '            }' + '\n' + '        ');
+    return trimIndent('\n' + '            #version 300 es' + '\n' + '            ' + this.infoStr_0(model) + '\n' + '            ' + '\n' + '            // descriptor layout / uniforms ' + this.generateDescriptorBindings_0(pipelineLayout, ShaderStage$VERTEX_SHADER_getInstance()) + '\n' + '            // vertex attributes ' + this.generateAttributeBindings_0(pipelineLayout) + '\n' + '            // outputs ' + this.generateStageOutputs_0(model.vertexStageGraph) + '\n' + '            // functions' + '\n' + '            ' + codeGen.generateFunctions() + '\n' + '            ' + '\n' + '            void main() {' + '\n' + '                ' + codeGen.generateMain() + '\n' + '                gl_Position = ' + model.vertexStageGraph.positionOutput.variable.ref4f() + ';' + '\n' + '            }' + '\n' + '        ');
   };
-  ShaderGeneratorImplWebGl.prototype.generateFragmentShaderCode_0 = function (model, pipeline) {
+  ShaderGeneratorImplWebGl.prototype.generateFragmentShaderCode_0 = function (model, pipelineLayout) {
     var codeGen = new ShaderGeneratorImplWebGl$CodeGen();
     model.fragmentStageGraph.generateCode_626509$(codeGen);
-    return trimIndent('\n' + '            #version 300 es' + '\n' + '            precision highp float;' + '\n' + '            precision highp sampler2DShadow;' + '\n' + '            ' + this.infoStr_0(model) + '\n' + '\n' + '            // descriptor layout / uniforms ' + this.generateDescriptorBindings_0(pipeline, ShaderStage$FRAGMENT_SHADER_getInstance()) + '\n' + '            // inputs ' + this.generateStageInputs_0(model.fragmentStageGraph) + '\n' + '            // functions' + '\n' + '            ' + codeGen.generateFunctions() + '\n' + '            ' + '\n' + '            void main() {' + '\n' + '                ' + codeGen.generateMain() + '\n' + '            }' + '\n' + '        ');
+    return trimIndent('\n' + '            #version 300 es' + '\n' + '            precision highp float;' + '\n' + '            precision highp sampler2DShadow;' + '\n' + '            ' + this.infoStr_0(model) + '\n' + '\n' + '            // descriptor layout / uniforms ' + this.generateDescriptorBindings_0(pipelineLayout, ShaderStage$FRAGMENT_SHADER_getInstance()) + '\n' + '            // inputs ' + this.generateStageInputs_0(model.fragmentStageGraph) + '\n' + '            // functions' + '\n' + '            ' + codeGen.generateFunctions() + '\n' + '            ' + '\n' + '            void main() {' + '\n' + '                ' + codeGen.generateMain() + '\n' + '            }' + '\n' + '        ');
   };
   function ShaderGeneratorImplWebGl$infoStr$lambda(it) {
     return '// ' + it + '\n';
@@ -46129,10 +46520,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderGeneratorImplWebGl.prototype.infoStr_0 = function ($receiver) {
     return joinToString(lines($receiver.modelInfo), void 0, void 0, void 0, void 0, void 0, ShaderGeneratorImplWebGl$infoStr$lambda);
   };
-  ShaderGeneratorImplWebGl.prototype.generateDescriptorBindings_0 = function (pipeline, stage) {
+  ShaderGeneratorImplWebGl.prototype.generateDescriptorBindings_0 = function (pipelineLayout, stage) {
     var srcBuilder = new StringBuilder('\n');
     var tmp$;
-    tmp$ = pipeline.descriptorSetLayouts.iterator();
+    tmp$ = pipelineLayout.descriptorSets.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
@@ -46151,7 +46542,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           }
         }}
     }
-    var $receiver = pipeline.pushConstantRanges;
+    var $receiver = pipelineLayout.pushConstantRanges;
     var destination = ArrayList_init_0();
     var tmp$_1;
     tmp$_1 = $receiver.iterator();
@@ -46163,7 +46554,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var pushConstants = destination;
     if (!pushConstants.isEmpty()) {
       var tmp$_2;
-      tmp$_2 = pipeline.pushConstantRanges.iterator();
+      tmp$_2 = pipelineLayout.pushConstantRanges.iterator();
       while (tmp$_2.hasNext()) {
         var element_2 = tmp$_2.next();
         var tmp$_3;
@@ -46207,10 +46598,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var arraySuffix = tmp$;
     return 'uniform ' + samplerType + ' ' + desc.name + arraySuffix + ';' + '\n';
   };
-  ShaderGeneratorImplWebGl.prototype.generateAttributeBindings_0 = function (pipeline) {
+  ShaderGeneratorImplWebGl.prototype.generateAttributeBindings_0 = function (pipelineLayout) {
     var srcBuilder = new StringBuilder('\n');
     var tmp$;
-    tmp$ = pipeline.vertexLayout.bindings.iterator();
+    tmp$ = pipelineLayout.vertices.bindings.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
@@ -47372,13 +47763,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   OffscreenRenderPassCube.ViewDirection = OffscreenRenderPassCube$ViewDirection;
   package$pipeline.OffscreenRenderPassCube = OffscreenRenderPassCube;
-  Pipeline.BuildContext = Pipeline$BuildContext;
+  Pipeline.Layout = Pipeline$Layout;
   Pipeline.Builder = Pipeline$Builder;
   Object.defineProperty(Pipeline, 'Companion', {
     get: Pipeline$Companion_getInstance
   });
   package$pipeline.Pipeline = Pipeline;
-  package$pipeline.PipelineFactory = PipelineFactory;
   Object.defineProperty(BlendMode, 'DISABLED', {
     get: BlendMode$DISABLED_getInstance
   });
@@ -47435,6 +47825,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   RenderPass.Type = RenderPass$Type;
   package$pipeline.RenderPass = RenderPass;
   package$pipeline.ScreenRenderPass = ScreenRenderPass;
+  package$pipeline.Shader = Shader;
   Object.defineProperty(CodeGenerator$ClipSpaceOrientation, 'Y_UP', {
     get: CodeGenerator$ClipSpaceOrientation$Y_UP_getInstance
   });
@@ -47593,7 +47984,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   PhongShader.PhongConfig = PhongShader$PhongConfig;
   package$shading.PhongShader = PhongShader;
-  package$shading.Shader = Shader;
   package$pipeline.Std140Layout = Std140Layout;
   Object.defineProperty(TexFormat, 'R', {
     get: TexFormat$R_getInstance
@@ -48104,7 +48494,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$gltf.GltfAsset_init_hbbcfw$ = GltfAsset_init;
   package$gltf.GltfAsset = GltfAsset;
-  package$gltf.loadGltfModel_7e2ead$ = loadGltfModel;
+  package$gltf.loadGltfFile_7e2ead$ = loadGltfFile;
+  package$gltf.loadGltfModel_aln4ac$ = loadGltfModel;
   Object.defineProperty(GltfBuffer, 'Companion', {
     get: GltfBuffer$Companion_getInstance
   });
@@ -48122,6 +48513,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$gltf.GltfBufferView_init_rvfrvf$ = GltfBufferView_init;
   package$gltf.GltfBufferView = GltfBufferView;
   GltfFile.ModelGenerateConfig = GltfFile$ModelGenerateConfig;
+  GltfFile.ModelMaterialConfig = GltfFile$ModelMaterialConfig;
   $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
   Object.defineProperty(GltfFile, 'Companion', {
     get: GltfFile$Companion_getInstance
