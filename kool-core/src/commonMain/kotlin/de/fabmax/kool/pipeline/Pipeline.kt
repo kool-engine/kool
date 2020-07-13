@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.shading.Shader
 import de.fabmax.kool.scene.Mesh
 
 class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContext) {

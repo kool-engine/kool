@@ -13,7 +13,7 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.*
 import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
+import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.BrdfLutPass
 import de.fabmax.kool.util.ibl.IrradianceMapPass
 import de.fabmax.kool.util.ibl.ReflectionMapPass
@@ -438,25 +438,24 @@ class GltfDemo(ctx: KoolContext) {
         }
 
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
-            ctx.assetMgr.loadGltfModel(assetPath)?.let {
+            ctx.assetMgr.loadGltfFile(assetPath)?.let {
+                val materialCfg = GltfFile.ModelMaterialConfig(
+                        shadowMaps = if (isDeferredShading) shadowsDeferred else shadowsForward,
+                        scrSpcAmbientOcclusionMap = if (isDeferredShading) aoPipelineDeferred?.aoMap else aoPipelineForward?.aoMap,
+                        iblIrradianceMap = irrMapPass?.colorTextureCube,
+                        iblReflectionMap = reflMapPass?.colorTextureCube,
+                        iblBrdfMap = brdfLutPass?.colorTexture,
+                        isDeferredShading = isDeferredShading
+                )
                 val modelCfg = GltfFile.ModelGenerateConfig(
                         generateNormals = generateNormals,
+                        materialConfig = materialCfg,
                         loadAnimations = true,
                         applyMorphTargets = true,
                         applySkins = true,
                         applyTransforms = true,
-                        mergeMeshesByMaterial = true,
-                        isDeferredShading = isDeferredShading
-                ) {
-                    if (isDeferredShading) {
-                        shadowMaps += shadowsDeferred
-                        useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
-                    } else {
-                        shadowMaps += shadowsForward
-                        useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
-                    }
-                    useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
-                }
+                        mergeMeshesByMaterial = true
+                )
                 model = it.makeModel(modelCfg).apply {
                     translate(translation)
                     scale(scale)

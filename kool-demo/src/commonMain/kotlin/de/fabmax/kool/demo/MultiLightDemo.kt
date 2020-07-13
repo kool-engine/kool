@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
+import de.fabmax.kool.util.gltf.loadGltfFile
 import kotlin.math.*
 
 fun multiLightDemo(ctx: KoolContext): List<Scene> {
@@ -75,7 +75,7 @@ class MultiLightDemo(ctx: KoolContext) {
             updateLighting()
 
             ctx.assetMgr.launch {
-                loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz")?.let {
+                loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")?.let {
                     val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
                     val model = it.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()

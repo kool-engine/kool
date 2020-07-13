@@ -12,7 +12,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     val transform = Mat4fStack()
 
-    var color = Color.BLACK
+    var color = Color.GRAY
     var vertexModFun: (VertexView.() -> Unit)? = null
 
     private val hasNormals = geometry.hasAttribute(Attribute.NORMALS)

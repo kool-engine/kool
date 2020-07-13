@@ -1,8 +1,6 @@
-package de.fabmax.kool.pipeline.shading
+package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.ShaderCode
 
 abstract class Shader {
 

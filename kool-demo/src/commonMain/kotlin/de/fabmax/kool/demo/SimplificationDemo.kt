@@ -114,9 +114,9 @@ class SimplificationDemo(ctx: KoolContext) {
     }
 
     private suspend fun AssetManager.loadModel(name: String, scale: Float, offset: Vec3f) {
-        loadGltfModel(name)?.let { model ->
-            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-            val mesh = model.makeModel(modelCfg).meshes.values.first()
+        val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+        loadGltfModel(name, modelCfg)?.let { model ->
+            val mesh = model.meshes.values.first()
             val geometry = mesh.geometry
             for (i in 0 until geometry.numVertices) {
                 geometry.vertexIt.index = i

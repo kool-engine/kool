@@ -16,7 +16,7 @@ interface ShadowMap {
     fun setupSampler(sampler: TextureSampler?)
 }
 
-class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024, drawNode: Node = scene) : DepthMapPass(drawNode, mapSize), ShadowMap {
+class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) : DepthMapPass(drawNode, mapSize), ShadowMap {
 
     val lightViewProjMat = Mat4d()
 
@@ -125,13 +125,12 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024
     }
 }
 
-class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int = 3, mapSize: Int = 1024, drawNode: Node = scene) : ShadowMap {
+class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float = 100f, val numCascades: Int = 3, mapSize: Int = 2048, drawNode: Node = scene) : ShadowMap {
     val mapRanges = Array(numCascades) { i ->
         val near = i.toFloat().pow(2) / numCascades.toFloat().pow(2)
         val far = (i + 1).toFloat().pow(2) / numCascades.toFloat().pow(2)
         MapRange(near, far)
     }
-    var maxRange = 100f
 
     val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode) }
     val viewSpaceRanges = FloatArray(numCascades)

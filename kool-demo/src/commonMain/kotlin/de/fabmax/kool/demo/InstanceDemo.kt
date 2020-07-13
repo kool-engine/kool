@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
+import de.fabmax.kool.util.gltf.loadGltfFile
 
 fun instanceDemo(ctx: KoolContext) : List<Scene> {
     return InstanceDemo(ctx).scenes
@@ -72,7 +72,7 @@ class InstanceDemo(ctx: KoolContext) {
         +lodController
 
         ctx.assetMgr.launch {
-            loadGltfModel("${Demo.modelBasePath}/bunny.gltf.gz")?.let { addLods(it) }
+            loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")?.let { addLods(it) }
         }
     }
 

@@ -77,9 +77,9 @@ class AoDemo(ctx: KoolContext) {
             val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
             val hdriMap = loadAndPrepareTexture("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", hdriTexProps)
 
-            val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz")!!
             val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-            val teapotMesh = model.makeModel(modelCfg).meshes.values.first()
+            val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
+            val teapotMesh = model.meshes.values.first()
 
             val irrMapPass = IrradianceMapPass(this@scene, hdriMap)
             val reflMapPass = ReflectionMapPass(this@scene, hdriMap)

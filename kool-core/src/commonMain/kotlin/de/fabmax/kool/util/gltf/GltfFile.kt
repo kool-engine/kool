@@ -4,6 +4,8 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.AlphaModeBlend
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -14,6 +16,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -119,6 +122,8 @@ data class GltfFile(
 
     class ModelGenerateConfig(
             val generateNormals: Boolean = false,
+            val applyMaterials: Boolean = true,
+            val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
             val loadAnimations: Boolean = true,
             val applySkins: Boolean = true,
             val applyMorphTargets: Boolean = true,
@@ -126,9 +131,16 @@ data class GltfFile(
             val removeEmptyNodes: Boolean = true,
             val mergeMeshesByMaterial: Boolean = false,
             val sortNodesByAlpha: Boolean = true,
-            val applyMaterials: Boolean = true,
-            val isDeferredShading: Boolean = false,
             val pbrBlock: (PbrMaterialConfig.(GltfMesh.Primitive) -> Unit)? = null
+    )
+
+    class ModelMaterialConfig(
+            val shadowMaps: List<ShadowMap> = emptyList(),
+            val scrSpcAmbientOcclusionMap: Texture? = null,
+            val iblIrradianceMap: CubeMapTexture? = null,
+            val iblReflectionMap: CubeMapTexture? = null,
+            val iblBrdfMap: Texture? = null,
+            val isDeferredShading: Boolean = false
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
@@ -559,7 +571,12 @@ data class GltfFile(
                                 morphAttributes += mesh.geometry.getMorphAttributes()
                             }
 
-                            isHdrOutput = cfg.isDeferredShading
+                            cfg.materialConfig.let { matCfg ->
+                                isHdrOutput = matCfg.isDeferredShading
+                                shadowMaps += matCfg.shadowMaps
+                                matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
+                                useImageBasedLighting(matCfg.iblIrradianceMap, matCfg.iblReflectionMap, matCfg.iblBrdfMap)
+                            }
                             cfg.pbrBlock?.invoke(this, p)
 
                             if (alphaMode is AlphaModeBlend) {
@@ -575,7 +592,7 @@ data class GltfFile(
                             displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                         }
 
-                        if (cfg.isDeferredShading && mesh.isOpaque) {
+                        if (cfg.materialConfig.isDeferredShading && mesh.isOpaque) {
                             mesh.pipelineLoader = DeferredPbrShader(pbrConfig)
                         } else {
                             mesh.pipelineLoader = PbrShader(pbrConfig)
