@@ -110,7 +110,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
 
     override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
-        var img: BufferedImage? = null
+        var img: BufferedImage?
         withContext(Dispatchers.IO) {
             img = synchronized(imageIoLock) {
                 ImageIO.read(ByteArrayInputStream(texData.toArray()))
