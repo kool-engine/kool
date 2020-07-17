@@ -15,6 +15,9 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
     val texId = nextTexId.getAndIncrement()
 
+    override var width = 0
+    override var height = 0
+
     init {
         if (!isSharedRes) {
             addDependingResource(textureImage)
@@ -24,6 +27,11 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
                     textureImage.width, textureImage.height, format.vkBytesPerPx, textureImage.arrayLayers, textureImage.mipLevels))
         }
         logD { "Created texture: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
+    }
+
+    fun setSize(width: Int, height: Int) {
+        this.width = width
+        this.height = height
     }
 
     override fun freeResources() {

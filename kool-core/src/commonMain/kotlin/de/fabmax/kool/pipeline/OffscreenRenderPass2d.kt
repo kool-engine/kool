@@ -10,6 +10,7 @@ open class OffscreenRenderPass2d(drawNode: Node, texWidth: Int, texHeight: Int, 
     internal val impl = OffscreenPass2dImpl(this)
 
     val colorFormat = setup.colorFormat
+    val copyTargetsColor = mutableListOf<Texture>()
 
     val colorTexture: Texture
         get() {

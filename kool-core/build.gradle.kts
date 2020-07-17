@@ -117,6 +117,11 @@ if (publishCredentials.isAvailable) {
                             url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
                         }
                     }
+                    scm {
+                        connection.set("scm:git:https://github.com/fabmax/kool.git")
+                        developerConnection.set("scm:git:https://github.com/fabmax/kool.git")
+                        url.set("https://github.com/fabmax/kool")
+                    }
                 }
             }
         }

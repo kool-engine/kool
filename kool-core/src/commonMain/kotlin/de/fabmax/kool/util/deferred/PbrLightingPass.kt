@@ -1,9 +1,7 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
@@ -20,8 +18,8 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
     val content = drawNode as Group
 
-    lateinit var sceneShader: PbrSceneShader
-        private set
+    val sceneShader: PbrSceneShader
+    val prevColorTex = Texture("PbrLightingPass.prevColorTex", TextureProps(TexFormat.RGBA_F16, mipMapping = false, maxAnisotropy = 1))
 
     init {
         dynamicPointLights.isDynamic = true
@@ -45,6 +43,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         camera = mrtPass.camera
 
         cfg.useMrtPass(mrtPass)
+        sceneShader = PbrSceneShader(cfg)
 
         content.apply {
             isFrustumChecked = false
@@ -56,13 +55,14 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                         mirrorTexCoordsY()
                     }
                 }
-                sceneShader = PbrSceneShader(cfg)
                 shader = sceneShader
             }
 
             +dynamicPointLights.mesh
             +staticPointLights.mesh
         }
+
+        copyTargetsColor += prevColorTex
     }
 
     override fun afterCollectDrawCommands(ctx: KoolContext) {

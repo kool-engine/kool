@@ -58,7 +58,31 @@ object TextureLoader {
                 textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
 
         val sampler = createSampler(sys, props, textureImage)
-        return LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
+        val tex = LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
+        tex.setSize(width, height)
+        return tex
+    }
+
+    fun createTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
+        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
+
+        val imgConfig = Image.Config()
+        imgConfig.width = width
+        imgConfig.height = height
+        imgConfig.mipLevels = mipLevels
+        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
+        imgConfig.format = format.vkFormat
+        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+
+        val textureImage = Image(sys, imgConfig)
+        val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
+        val sampler = createSampler(sys, props, textureImage)
+
+        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
+        tex.setSize(width, height)
+        return tex
     }
 
     fun loadTexture(sys: VkSystem, props: TextureProps, img: BufferedTextureData) : LoadedTextureVk {
@@ -76,29 +100,17 @@ object TextureLoader {
             put(buf)
         }
 
-        val imgConfig = Image.Config()
-        imgConfig.width = width
-        imgConfig.height = height
-        imgConfig.mipLevels = mipLevels
-        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = dstFmt.vkFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
-        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-        val textureImage = Image(sys, imgConfig)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(sys, stagingBuffer, textureImage, width, height)
-        if (mipLevels > 1) {
-            textureImage.generateMipmaps(sys)
-        } else {
-            textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        }
+        val tex = createTexture(sys, props, width, height, dstFmt)
+        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        copyBufferToImage(sys, stagingBuffer, tex.textureImage, width, height)
         stagingBuffer.destroy()
 
-        val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
-
-        val sampler = createSampler(sys, props, textureImage)
-        return LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
+        if (mipLevels > 1) {
+            tex.textureImage.generateMipmaps(sys)
+        } else {
+            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        }
+        return tex
     }
 
     private fun FilterMethod.vkFilterMethod(): Int {

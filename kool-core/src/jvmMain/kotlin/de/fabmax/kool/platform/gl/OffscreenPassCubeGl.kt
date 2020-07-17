@@ -14,7 +14,6 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     private val rbos = mutableListOf<Int>()
 
     private var isCreated = false
-
     private var glColorTex = 0
 
     override fun draw(ctx: Lwjgl3Context) {
@@ -77,18 +76,14 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val width = parentPass.offscreenPass.texWidth
         val height = parentPass.offscreenPass.texHeight
 
-        glColorTex = glGenTextures()
-        glBindTexture(GL_TEXTURE_CUBE_MAP, glColorTex)
+        val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 6, parentPass.offscreenPass.mipLevels)
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(parentPass.texture.props)
         glTexStorage2D(GL_TEXTURE_CUBE_MAP, parentPass.offscreenPass.mipLevels, intFormat, width, height)
 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-        val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 6, parentPass.offscreenPass.mipLevels)
-        parentPass.texture.loadedTexture = LoadedTextureGl(ctx, glColorTex, estSize)
+        glColorTex = tex.texture
+        parentPass.texture.loadedTexture = tex
         parentPass.texture.loadingState = Texture.LoadingState.LOADED
     }
 

@@ -41,7 +41,6 @@ class FragmentDepthOutNode(graph: ShaderGraph) : ShaderNode("fragmentDepthOut", 
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendFunction("out_fragDepth", "out float gl_FragDepth;\n")
         generator.appendMain("gl_FragDepth = ${inDepth.ref1f()};")
     }
 }

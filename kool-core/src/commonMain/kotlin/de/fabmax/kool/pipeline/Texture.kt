@@ -10,7 +10,7 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by it's properties and a loader function which is called once the texture is used.
  */
-open class Texture(val name: String? = null, val props: TextureProps = TextureProps(), val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
+open class Texture(val name: String? = null, val props: TextureProps = TextureProps(), val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) {
 
     constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
             this(name, props, { it.loadTextureData(assetPath) })
@@ -82,7 +82,7 @@ data class TextureProps(
         val minFilter: FilterMethod = FilterMethod.LINEAR,
         val magFilter: FilterMethod = FilterMethod.LINEAR,
         val mipMapping: Boolean = true,
-        val maxAnisotropy: Int = 16)
+        val maxAnisotropy: Int = 4)
 
 enum class FilterMethod {
     NEAREST,

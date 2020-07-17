@@ -9,21 +9,30 @@ import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
 import org.khronos.webgl.WebGLTexture
 
 actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
-    actual val texture: CubeMapTexture = OffscreenTextureCube()
+    actual val texture = CubeMapTexture(
+            "offscreen_cube_tex",
+            TextureProps(
+                    addressModeU = AddressMode.CLAMP_TO_EDGE,
+                    addressModeV = AddressMode.CLAMP_TO_EDGE,
+                    addressModeW = AddressMode.CLAMP_TO_EDGE,
+                    minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                    mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1),
+            loader = null)
 
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
     private var isCreated = false
+    private var offscreenTex: WebGLTexture? = null
 
     private fun create(ctx: JsContext) {
         val gl = ctx.gl
 
-        texture as OffscreenTextureCube
-        texture.create(ctx)
+        createColorTex(ctx)
 
         for (i in 0 until offscreenPass.mipLevels) {
             val fbo = gl.createFramebuffer()
@@ -60,7 +69,6 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         if (!isCreated) {
             create(ctx)
         }
-        texture as OffscreenTextureCube
 
         val mipLevel = offscreenPass.targetMipLevel
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
@@ -71,7 +79,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         for (i in 0 until 6) {
             val view = VIEWS[i]
             val queue = offscreenPass.drawQueues[view.index]
-            ctx.gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i, texture.offscreenTex, fboIdx)
+            ctx.gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i, offscreenTex, fboIdx)
             ctx.queueRenderer.renderQueue(queue)
         }
 
@@ -92,33 +100,19 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    private inner class OffscreenTextureCube : CubeMapTexture(
-            "offscreen_cube_tex",
-            TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE),
-            loader = null) {
+    fun createColorTex(ctx: JsContext) {
+        val intFormat = offscreenPass.colorFormat.glInternalFormat
+        val width = offscreenPass.texWidth
+        val height = offscreenPass.texHeight
 
-        var offscreenTex: WebGLTexture? = null
+        val estSize = Texture.estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 6, offscreenPass.mipLevels)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(texture.props)
+        ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, offscreenPass.mipLevels, intFormat, width, height)
 
-        fun create(ctx: JsContext) {
-            val gl = ctx.gl
-
-            val intFormat = offscreenPass.colorFormat.glInternalFormat
-            val width = offscreenPass.texWidth
-            val height = offscreenPass.texHeight
-
-            offscreenTex = gl.createTexture()
-            gl.bindTexture(WebGLRenderingContext.TEXTURE_CUBE_MAP, offscreenTex)
-            gl.texStorage2D(WebGLRenderingContext.TEXTURE_CUBE_MAP, offscreenPass.mipLevels, intFormat, width, height)
-
-            gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE)
-            gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE)
-            gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGL2RenderingContext.TEXTURE_WRAP_R, WebGLRenderingContext.CLAMP_TO_EDGE)
-            gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR_MIPMAP_LINEAR)
-            gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR)
-
-            val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 6, offscreenPass.mipLevels)
-            loadedTexture = LoadedTextureWebGl(ctx, offscreenTex, estSize)
-            loadingState = LoadingState.LOADED
-        }
+        offscreenTex = tex.texture
+        texture.loadedTexture = tex
+        texture.loadingState = Texture.LoadingState.LOADED
     }
 }

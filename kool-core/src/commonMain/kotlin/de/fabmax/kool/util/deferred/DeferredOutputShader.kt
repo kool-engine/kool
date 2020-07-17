@@ -7,10 +7,12 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 
-class DeferredOutputShader(private val pbrOutput: Texture) : ModeledShader(outputModel()) {
+class DeferredOutputShader(private val pbrOutput: Texture, private val depth: Texture) : ModeledShader(outputModel()) {
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         val textureSampler = model.findNode<TextureNode>("deferredPbrOutput")?.sampler
         textureSampler!!.texture = pbrOutput
+        val depthSampler = model.findNode<TextureNode>("deferredDepthOutput")?.sampler
+        depthSampler!!.texture = depth
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -25,6 +27,8 @@ class DeferredOutputShader(private val pbrOutput: Texture) : ModeledShader(outpu
             fragmentStage {
                 val sampler = textureSamplerNode(textureNode("deferredPbrOutput"), ifTexCoords.output)
                 colorOutput(hdrToLdrNode(sampler.outColor).outColor)
+                val depthSampler = textureSamplerNode(textureNode("deferredDepthOutput"), ifTexCoords.output)
+                depthOutput(depthSampler.outColor)
             }
         }
     }

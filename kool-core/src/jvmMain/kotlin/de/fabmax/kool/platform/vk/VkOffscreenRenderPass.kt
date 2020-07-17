@@ -221,7 +221,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                     height = maxHeight
                     format = colorFormats[i]
                     tiling = VK_IMAGE_TILING_OPTIMAL
-                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
+                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or if (!isCopied) VK_IMAGE_USAGE_SAMPLED_BIT else 0
                     allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
                 }
 
@@ -286,7 +286,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                     sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
                     magFilter(VK_FILTER_LINEAR)
                     minFilter(VK_FILTER_LINEAR)
-                    mipmapMode(VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                    mipmapMode(if (isDepth) VK_SAMPLER_MIPMAP_MODE_NEAREST else VK_SAMPLER_MIPMAP_MODE_LINEAR)
                     addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)

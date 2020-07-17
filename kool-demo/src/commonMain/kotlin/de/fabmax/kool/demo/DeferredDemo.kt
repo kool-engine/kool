@@ -85,7 +85,7 @@ class DeferredDemo(ctx: KoolContext) {
                     mirrorTexCoordsY()
                 }
             }
-            shader = DeferredOutputShader(pbrPass.colorTexture)
+            shader = DeferredOutputShader(pbrPass.colorTexture, mrtPass.depthTexture)
         }
 
         onUpdate += { _, ctx ->

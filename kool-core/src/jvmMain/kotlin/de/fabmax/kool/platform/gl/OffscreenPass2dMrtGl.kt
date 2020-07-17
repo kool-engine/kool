@@ -1,9 +1,7 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.pipeline.OffscreenPass2dMrtImpl
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
-import org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 
@@ -66,18 +64,19 @@ class OffscreenPass2dMrtGl(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
             val intFormat = colorFormat.glInternalFormat
             val width = parentPass.offscreenPass.texWidth
             val height = parentPass.offscreenPass.texHeight
-
-            glColorTexs[i] = glGenTextures()
-            glBindTexture(GL_TEXTURE_2D, glColorTexs[i])
-            glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            val samplerProps = TextureProps(
+                    addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                    minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
+                    mipMapping = parentPass.offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
             val estSize = Texture.estimatedTexSize(width, height, colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
-            parentPass.colorTextures[i].loadedTexture = LoadedTextureGl(ctx, glColorTexs[i], estSize)
+            val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
+            tex.setSize(width, height)
+            tex.applySamplerProps(samplerProps)
+            glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+
+            glColorTexs[i] = tex.texture
+            parentPass.colorTextures[i].loadedTexture = tex
             parentPass.colorTextures[i].loadingState = Texture.LoadingState.LOADED
         }
     }
@@ -86,20 +85,22 @@ class OffscreenPass2dMrtGl(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
         val intFormat = GL_DEPTH_COMPONENT24
         val width = parentPass.offscreenPass.texWidth
         val height = parentPass.offscreenPass.texHeight
-
-        glDepthTex = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D, glDepthTex)
-        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        val samplerProps = TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                mipMapping = parentPass.offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, parentPass.offscreenPass.mipLevels)
-        parentPass.depthTexture.loadedTexture = LoadedTextureGl(ctx, glDepthTex, estSize)
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(samplerProps)
+        // do not set compare mode: if compare mode is set depth texture cannot be sampled with regular 2d sampler anymore
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+
+        glDepthTex = tex.texture
+        parentPass.depthTexture.loadedTexture = tex
         parentPass.depthTexture.loadingState = Texture.LoadingState.LOADED
     }
 }

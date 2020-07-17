@@ -2,26 +2,15 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.glInternalFormat
 import de.fabmax.kool.platform.pxSize
 import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
-import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_ATTACHMENT
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
-import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
-import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
-import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
-import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MAG_FILTER
-import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MIN_FILTER
-import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_S
-import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_T
 import org.khronos.webgl.WebGLTexture
 
 actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: OffscreenRenderPass2dMrt) {
@@ -79,47 +68,48 @@ actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: Offscr
     }
 
     private fun createColorTex(ctx: JsContext) {
-        val gl = ctx.gl
         for (i in glColorTexs.indices) {
             val colorFormat = offscreenPass.texFormats[i]
             val intFormat = colorFormat.glInternalFormat
             val width = offscreenPass.texWidth
             val height = offscreenPass.texHeight
-
-            glColorTexs[i] = gl.createTexture()
-            gl.bindTexture(TEXTURE_2D, glColorTexs[i])
-            gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
-
-            gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
-            gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
-            gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST)
-            gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST)
+            val samplerProps = TextureProps(
+                    addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                    minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
+                    mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
             val estSize = Texture.estimatedTexSize(width, height, colorFormat.pxSize, 1, offscreenPass.mipLevels)
-            colorTextures[i].loadedTexture = LoadedTextureWebGl(ctx, glColorTexs[i], estSize)
+            val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+            tex.setSize(width, height)
+            tex.applySamplerProps(samplerProps)
+            ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
+
+            glColorTexs[i] = tex.texture
+            colorTextures[i].loadedTexture = tex
             colorTextures[i].loadingState = Texture.LoadingState.LOADED
         }
     }
 
     private fun createDepthTex(ctx: JsContext) {
-        val gl = ctx.gl
         val intFormat = DEPTH_COMPONENT24
         val width = offscreenPass.texWidth
         val height = offscreenPass.texHeight
-
-        glDepthTex = gl.createTexture()
-        gl.bindTexture(TEXTURE_2D, glDepthTex)
-        gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
-
-        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
-        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
-        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
-        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
-        gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
-        gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
+        val samplerProps = TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, offscreenPass.mipLevels)
-        depthTexture.loadedTexture = LoadedTextureWebGl(ctx, glDepthTex, estSize)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(samplerProps)
+        // do not set compare mode: if compare mode is set depth texture cannot be sampled with regular 2d sampler anymore
+        //ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
+        //ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
+        ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
+
+        glDepthTex = tex.texture
+        depthTexture.loadedTexture = tex
         depthTexture.loadingState = Texture.LoadingState.LOADED
     }
 }

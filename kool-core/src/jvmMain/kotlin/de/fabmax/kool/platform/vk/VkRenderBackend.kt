@@ -455,6 +455,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
                 vkCmdEndRenderPass(commandBuffer)
             }
+            backendImpl.copyToTextures(commandBuffer, ctx)
         }
 
         private fun MemoryStack.renderOffscreen2dMrt(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2dMrt) {
@@ -478,7 +479,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
                 for (view in cubeRenderPassViews) {
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                     offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
@@ -560,6 +560,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     companion object {
+        // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
         private val cubeRenderPassViews = Array(7) {
             i -> OffscreenRenderPassCube.ViewDirection.values()[i % OffscreenRenderPassCube.ViewDirection.values().size]
         }

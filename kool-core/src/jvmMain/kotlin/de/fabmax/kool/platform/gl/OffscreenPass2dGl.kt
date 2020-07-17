@@ -1,18 +1,18 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.pipeline.OffscreenPass2dImpl
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
+import org.lwjgl.opengl.GL43.glCopyImageSubData
+import kotlin.math.max
 
 class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
     private val fbos = mutableListOf<Int>()
     private val rbos = mutableListOf<Int>()
 
     private var isCreated = false
-
     private var glColorTex = 0
     private var glDepthTex = 0
 
@@ -22,13 +22,38 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
 
         if (isCreated) {
-            val mipLevel = parentPass.offscreenPass.targetMipLevel
-            val fboIdx = if (mipLevel < 0) 0 else mipLevel
+            val mipLevel = max(0, parentPass.offscreenPass.targetMipLevel)
 
-            glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
+            glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
             val glBackend = ctx.renderBackend as GlRenderBackend
             glBackend.queueRenderer.renderQueue(parentPass.offscreenPass.drawQueue)
+            copyToTextures(mipLevel, ctx)
             glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE)
+        }
+    }
+
+    private fun copyToTextures(mipLevel: Int, ctx: Lwjgl3Context) {
+        if (parentPass.offscreenPass.setup.colorRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_RENDERBUFFER) {
+            GL11.glReadBuffer(GL_COLOR_ATTACHMENT0)
+        }
+
+        for (i in parentPass.offscreenPass.copyTargetsColor.indices) {
+            val copyTarget = parentPass.offscreenPass.copyTargetsColor[i]
+            val width = copyTarget.loadedTexture?.width ?: 0
+            val height = copyTarget.loadedTexture?.height ?: 0
+            if (width != parentPass.offscreenPass.texWidth || height != parentPass.offscreenPass.texHeight) {
+                copyTarget.loadedTexture?.dispose()
+                copyTarget.createCopyTexColor(ctx)
+            }
+            val target = copyTarget.loadedTexture as LoadedTextureGl
+
+            if (parentPass.offscreenPass.setup.colorRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_TEXTURE) {
+                glCopyImageSubData(glColorTex, GL_TEXTURE_2D, mipLevel, 0, 0, 0,
+                    target.texture, GL_TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
+            } else {
+                glBindTexture(GL_TEXTURE_2D, target.texture)
+                glCopyTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
+            }
         }
     }
 
@@ -103,22 +128,37 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         isCreated = true
     }
 
+    private fun Texture.createCopyTexColor(ctx: Lwjgl3Context) {
+        val intFormat = props.format.glInternalFormat
+        val width = parentPass.offscreenPass.texWidth
+        val height = parentPass.offscreenPass.texHeight
+
+        val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(props)
+        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+        loadedTexture = tex
+        loadingState = Texture.LoadingState.LOADED
+    }
+
     private fun createColorTex(ctx: Lwjgl3Context) {
         val intFormat = parentPass.offscreenPass.colorFormat.glInternalFormat
         val width = parentPass.offscreenPass.texWidth
         val height = parentPass.offscreenPass.texHeight
-
-        glColorTex = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D, glColorTex)
-        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        val samplerProps = TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                mipMapping = parentPass.offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 1, parentPass.offscreenPass.mipLevels)
-        parentPass.colorTexture.loadedTexture = LoadedTextureGl(ctx, glColorTex, estSize)
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(samplerProps)
+        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+
+        glColorTex = tex.texture
+        parentPass.colorTexture.loadedTexture = tex
         parentPass.colorTexture.loadingState = Texture.LoadingState.LOADED
     }
 
@@ -126,20 +166,21 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         val intFormat = GL_DEPTH_COMPONENT24
         val width = parentPass.offscreenPass.texWidth
         val height = parentPass.offscreenPass.texHeight
-
-        glDepthTex = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D, glDepthTex)
-        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        val samplerProps = TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
+                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                mipMapping = parentPass.offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, parentPass.offscreenPass.mipLevels)
-        parentPass.depthTexture.loadedTexture = LoadedTextureGl(ctx, glDepthTex, estSize)
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(samplerProps)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+
+        glDepthTex = tex.texture
+        parentPass.depthTexture.loadedTexture = tex
         parentPass.depthTexture.loadingState = Texture.LoadingState.LOADED
     }
 }

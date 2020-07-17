@@ -173,7 +173,7 @@ class GltfDemo(ctx: KoolContext) {
                         mirrorTexCoordsY()
                     }
                 }
-                shader = DeferredOutputShader(pbrPass.colorTexture)
+                shader = DeferredOutputShader(pbrPass.colorTexture, mrtPass.depthTexture)
             }
         }
     }
