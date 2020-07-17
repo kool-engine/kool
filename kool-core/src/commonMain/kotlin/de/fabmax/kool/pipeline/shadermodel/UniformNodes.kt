@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.logE
 import kotlin.math.min
 

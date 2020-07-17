@@ -1,10 +1,14 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.util.spatial
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.scene.LineMesh
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.PrimitiveType
 import kotlin.math.min
 
 fun <T: Vec3f> pointKdTree(points: List<T>, bucketSz: Int = 20): KdTree<T> {
@@ -217,9 +221,9 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
             MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+1]; set(data.vertexIt.position) },
             MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+2]; set(data.vertexIt.position) }
     ) {
-//        if (data.primitiveType != GL_TRIANGLES) {
-//            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_TRIANGLES")
-//        }
+        if (data.primitiveType != PrimitiveType.TRIANGLES) {
+            throw IllegalArgumentException("Supplied geometry data must have primitiveType TRIANGLES")
+        }
     }
 
     init {

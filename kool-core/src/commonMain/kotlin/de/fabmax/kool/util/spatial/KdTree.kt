@@ -1,4 +1,4 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.util.spatial
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.partition

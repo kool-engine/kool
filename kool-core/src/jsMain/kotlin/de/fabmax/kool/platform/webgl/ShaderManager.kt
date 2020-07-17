@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.logE
 import org.khronos.webgl.WebGLProgram

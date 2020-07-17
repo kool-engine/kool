@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue

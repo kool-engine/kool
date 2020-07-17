@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.PrimitiveType

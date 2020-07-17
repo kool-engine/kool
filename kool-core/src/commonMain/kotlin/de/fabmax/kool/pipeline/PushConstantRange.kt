@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.createMixedBuffer

@@ -1,6 +1,11 @@
 package de.fabmax.kool.modules.mesh
 
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.spatial.ItemAdapter
+import de.fabmax.kool.util.spatial.OcTree
+import de.fabmax.kool.util.spatial.SpatialTree
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

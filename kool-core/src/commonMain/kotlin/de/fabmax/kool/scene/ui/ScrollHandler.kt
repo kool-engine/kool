@@ -9,7 +9,11 @@ import de.fabmax.kool.math.isFuzzyEqual
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.animation.SpringDamperFloat
 import kotlin.math.min
 import kotlin.math.sqrt
 

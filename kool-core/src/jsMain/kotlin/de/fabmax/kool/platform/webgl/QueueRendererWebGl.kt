@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR

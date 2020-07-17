@@ -1,4 +1,4 @@
-package de.fabmax.kool.drawqueue
+package de.fabmax.kool.pipeline.drawqueue
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f

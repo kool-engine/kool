@@ -1,4 +1,4 @@
-package de.fabmax.kool.scene.animation
+package de.fabmax.kool.util.animation
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.scene.TransformGroup

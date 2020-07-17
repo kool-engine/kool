@@ -1,11 +1,11 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Uniform1i
 import de.fabmax.kool.pipeline.Uniform4f
 import de.fabmax.kool.pipeline.Uniform4fv
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Light
 import kotlin.math.PI
 import kotlin.math.cos

@@ -1,8 +1,10 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.util.spatial
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.ObjectPool
+import de.fabmax.kool.util.PriorityQueue
 import kotlin.math.max
 import kotlin.math.sqrt
 

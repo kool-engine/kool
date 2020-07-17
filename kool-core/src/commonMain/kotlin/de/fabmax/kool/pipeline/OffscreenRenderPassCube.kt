@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera

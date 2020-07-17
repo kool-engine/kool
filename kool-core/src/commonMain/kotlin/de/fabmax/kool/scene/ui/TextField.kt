@@ -3,7 +3,11 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.animation.Animator
+import de.fabmax.kool.util.animation.CosAnimator
+import de.fabmax.kool.util.animation.InterpolatedFloat
+import de.fabmax.kool.util.animation.LinearAnimator
 import kotlin.math.max
 import kotlin.math.min
 

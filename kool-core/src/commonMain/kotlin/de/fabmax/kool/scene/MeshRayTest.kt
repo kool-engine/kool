@@ -2,7 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.PrimitiveType
+import de.fabmax.kool.util.spatial.*
 import kotlin.math.sqrt
 
 interface MeshRayTest {

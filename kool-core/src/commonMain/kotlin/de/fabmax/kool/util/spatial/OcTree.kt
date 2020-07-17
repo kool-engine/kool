@@ -1,8 +1,11 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.util.spatial
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 import kotlin.math.max
 
 class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),

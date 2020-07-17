@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.spatial.OcTree
 
 /**
  * An editable mesh.

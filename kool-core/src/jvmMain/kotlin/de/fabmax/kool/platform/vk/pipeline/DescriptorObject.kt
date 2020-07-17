@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.vk.pipeline
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE

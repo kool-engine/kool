@@ -4,9 +4,9 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.CosAnimator
-import de.fabmax.kool.util.InterpolatedFloat
 import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.animation.CosAnimator
+import de.fabmax.kool.util.animation.InterpolatedFloat
 
 /**
  * @author fabmax

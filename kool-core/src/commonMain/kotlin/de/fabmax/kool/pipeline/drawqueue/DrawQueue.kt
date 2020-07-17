@@ -1,4 +1,4 @@
-package de.fabmax.kool.drawqueue
+package de.fabmax.kool.pipeline.drawqueue
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.RenderPass

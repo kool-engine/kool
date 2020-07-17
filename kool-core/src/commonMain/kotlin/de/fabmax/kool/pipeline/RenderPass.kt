@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.drawqueue.DrawQueue
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport

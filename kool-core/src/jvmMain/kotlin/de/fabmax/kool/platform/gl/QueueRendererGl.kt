@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.createFloat32Buffer

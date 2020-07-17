@@ -2,8 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.scene.animation.Animation
-import de.fabmax.kool.scene.animation.Skin
+import de.fabmax.kool.util.animation.Animation
+import de.fabmax.kool.util.animation.Skin
 
 class Model(name: String? = null) : TransformGroup(name) {
 

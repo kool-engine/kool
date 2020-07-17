@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.SpringDamperDouble
+import de.fabmax.kool.util.animation.SpringDamperDouble
 
 /**
  * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful

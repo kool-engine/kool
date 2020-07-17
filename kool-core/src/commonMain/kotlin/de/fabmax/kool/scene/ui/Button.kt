@@ -6,8 +6,8 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.InterpolatedFloat
-import de.fabmax.kool.util.LinearAnimator
+import de.fabmax.kool.util.animation.InterpolatedFloat
+import de.fabmax.kool.util.animation.LinearAnimator
 
 /**
  * @author fabmax

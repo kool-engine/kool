@@ -14,9 +14,9 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
-import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.animation.*
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable

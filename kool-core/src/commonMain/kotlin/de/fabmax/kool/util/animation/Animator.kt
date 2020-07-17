@@ -1,8 +1,9 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.util.animation
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyZero
+import de.fabmax.kool.util.MutableColor
 import kotlin.math.*
 
 /**

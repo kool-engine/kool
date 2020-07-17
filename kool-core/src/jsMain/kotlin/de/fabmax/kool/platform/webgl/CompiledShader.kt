@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.PrimitiveType

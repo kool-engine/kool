@@ -2,7 +2,11 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.LineMesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.spatial.InRadiusTraverser
+import de.fabmax.kool.util.spatial.pointKdTree
+import de.fabmax.kool.util.timedMs
 import kotlin.math.*
 
 class TreeGenerator(val distribution: PointDistribution,
