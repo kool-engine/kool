@@ -178,17 +178,20 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         val intFormat = DEPTH_COMPONENT24
         val width = offscreenPass.texWidth
         val height = offscreenPass.texHeight
+        val filterMethod = if (offscreenPass.setup.isUsedAsShadowMap) FilterMethod.LINEAR else FilterMethod.NEAREST
         val samplerProps = TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
-                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                minFilter = filterMethod, magFilter = filterMethod,
                 mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, offscreenPass.mipLevels)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
         tex.setSize(width, height)
         tex.applySamplerProps(samplerProps)
-        ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
-        ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
+        if (filterMethod == FilterMethod.LINEAR) {
+            ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
+            ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
+        }
         ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
 
         depthTex = tex.texture

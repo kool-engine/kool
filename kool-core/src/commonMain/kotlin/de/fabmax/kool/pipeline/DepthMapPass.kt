@@ -74,7 +74,7 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
     }
 
     companion object {
-        private fun defaultSetup(): Setup {
+        fun defaultSetup(): Setup {
             return Setup().apply {
                 colorFormat = TexFormat.R
                 colorRenderTarget = RENDER_TARGET_RENDERBUFFER

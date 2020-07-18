@@ -96,16 +96,13 @@ actual class OffscreenPass2dMrtImpl actual constructor(val offscreenPass: Offscr
         val height = offscreenPass.texHeight
         val samplerProps = TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
-                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, offscreenPass.mipLevels)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
         tex.setSize(width, height)
         tex.applySamplerProps(samplerProps)
-        // do not set compare mode: if compare mode is set depth texture cannot be sampled with regular 2d sampler anymore
-        //ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
-        //ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
         ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
 
         glDepthTex = tex.texture

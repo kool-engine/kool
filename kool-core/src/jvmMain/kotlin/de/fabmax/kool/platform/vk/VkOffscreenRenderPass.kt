@@ -9,13 +9,15 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                             val depthAttachment: DepthAttachment, val isExtDepthAttachments: Boolean) :
         VkRenderPass(sys, maxWidth, maxHeight, colorAttachments.colorFormats) {
 
-    constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int, depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
-            this(sys, maxWidth, maxHeight, isCopied, listOf(texFormat), depthCopmpareOp)
+    constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
+                colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
+            this(sys, maxWidth, maxHeight, isCopied, listOf(texFormat), colorFilterMethod, depthFilterMethod, depthCopmpareOp)
 
-    constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormats: List<Int>, depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
+    constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormats: List<Int>,
+                colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
             this(sys, maxWidth, maxHeight,
-                    CreatedColorAttachments(sys, maxWidth, maxHeight, isCopied, texFormats), false,
-                    CreatedDepthAttachment(sys, maxWidth, maxHeight, isCopied, depthCopmpareOp), false)
+                    CreatedColorAttachments(sys, maxWidth, maxHeight, isCopied, texFormats, colorFilterMethod), false,
+                    CreatedDepthAttachment(sys, maxWidth, maxHeight, isCopied, depthFilterMethod, depthCopmpareOp), false)
 
     override val vkRenderPass: Long
 
@@ -205,7 +207,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
         override fun freeResources() { }
     }
 
-    class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, colorFormats: List<Int>) :
+    class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, colorFormats: List<Int>, filterMethod: Int) :
             ColorAttachments(isCopied, colorFormats) {
         override val colorImages: List<Image>
         override val colorImageViews: List<ImageView>
@@ -228,7 +230,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                 val img = Image(sys, fbImageCfg)
                 mImages += img
                 mImageViews += ImageView(sys, img, VK_IMAGE_ASPECT_COLOR_BIT)
-                mSamplers += createSampler(sys, false, VK_COMPARE_OP_NEVER)
+                mSamplers += createSampler(sys, filterMethod, false, VK_COMPARE_OP_NEVER)
             }
             colorImages = mImages
             colorImageViews = mImageViews
@@ -251,7 +253,8 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
         override fun freeResources() { }
     }
 
-    class CreatedDepthAttachment(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, depthCompareOp: Int = VK_COMPARE_OP_LESS) :
+    class CreatedDepthAttachment(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
+                                 filterMethod: Int, depthCompareOp: Int) :
             DepthAttachment(isCopied) {
         override val depthImage: Image
         override val depthImageView: ImageView
@@ -263,12 +266,12 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                 height = maxHeight
                 format = sys.physicalDevice.depthFormat
                 tiling = VK_IMAGE_TILING_OPTIMAL
-                usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
+                usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else VK_IMAGE_USAGE_SAMPLED_BIT
                 allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
             }
             depthImage = Image(sys, depthImageCfg)
             depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
-            depthSampler = createSampler(sys, true, depthCompareOp)
+            depthSampler = createSampler(sys, filterMethod, true, depthCompareOp)
 
             addDependingResource(depthImage)
             addDependingResource(depthImageView)
@@ -280,13 +283,13 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
     }
 
     companion object {
-        private fun createSampler(sys: VkSystem, isDepth: Boolean, depthCompareOp: Int): Long {
+        private fun createSampler(sys: VkSystem, filterMethod: Int, isDepth: Boolean, depthCompareOp: Int): Long {
             memStack {
                 val samplerInfo = callocVkSamplerCreateInfo {
                     sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                    magFilter(VK_FILTER_LINEAR)
-                    minFilter(VK_FILTER_LINEAR)
-                    mipmapMode(if (isDepth) VK_SAMPLER_MIPMAP_MODE_NEAREST else VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    magFilter(filterMethod)
+                    minFilter(filterMethod)
+                    mipmapMode(if (filterMethod == VK_FILTER_NEAREST) VK_SAMPLER_MIPMAP_MODE_NEAREST else VK_SAMPLER_MIPMAP_MODE_LINEAR)
                     addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
@@ -296,7 +299,7 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
                     maxLod(1f)
                     borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
 
-                    if (isDepth) {
+                    if (isDepth && filterMethod == VK_FILTER_LINEAR) {
                         compareEnable(true)
                         compareOp(depthCompareOp)
                     }

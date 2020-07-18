@@ -44,10 +44,8 @@ kotlin {
 
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
-                runtimeOnly(DepsJvm.lwjglNatives("assimp"))
                 runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))
                 runtimeOnly(DepsJvm.lwjglNatives("opengl"))
-                runtimeOnly(DepsJvm.lwjglNatives("stb"))
                 runtimeOnly(DepsJvm.lwjglNatives("vma"))
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
             }

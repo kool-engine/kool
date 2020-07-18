@@ -46,6 +46,7 @@ open class OffscreenRenderPass2d(drawNode: Node, texWidth: Int, texHeight: Int, 
 
         var colorRenderTarget = RENDER_TARGET_TEXTURE
         var depthRenderTarget = RENDER_TARGET_RENDERBUFFER
+        var isUsedAsShadowMap = false
 
         var extColorTexture: Texture? = null
         var extDepthTexture: Texture? = null

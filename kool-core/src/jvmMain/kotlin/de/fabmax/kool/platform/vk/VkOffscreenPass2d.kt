@@ -137,7 +137,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                         null
                     }
                 } else {
-                    VkOffscreenRenderPass.CreatedColorAttachments(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, listOf(offscreenPass.colorFormat.vkFormat))
+                    VkOffscreenRenderPass.CreatedColorAttachments(sys, offscreenPass.texWidth, offscreenPass.texHeight,
+                            false, listOf(offscreenPass.colorFormat.vkFormat), VK_FILTER_LINEAR)
                 }
             }
 
@@ -150,7 +151,10 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                         null
                     }
                 } else {
-                    VkOffscreenRenderPass.CreatedDepthAttachment(sys, offscreenPass.texWidth, offscreenPass.texHeight, false)
+                    val filterMethod = if (parentPass.offscreenPass.setup.isUsedAsShadowMap) VK_FILTER_LINEAR else VK_FILTER_NEAREST
+                    val depthCompareOp = if (filterMethod == VK_FILTER_LINEAR) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
+                    VkOffscreenRenderPass.CreatedDepthAttachment(sys, offscreenPass.texWidth, offscreenPass.texHeight,
+                            false, filterMethod, depthCompareOp)
                 }
             }
 

@@ -229,9 +229,7 @@ If you are adventurous, you can use kool as a library in your own projects.
 Gradle setup:
 ```groovy
 repositories {
-    maven {
-        url = "https://dl.bintray.com/fabmax/kool"
-    }
+    jcenter()
 }
 
 // JVM dependencies
@@ -243,10 +241,8 @@ dependencies {
     def lwjglNatives = "natives-windows"    // alternatively: natives-linux or natives-macos, depending on your OS
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-    runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:$lwjglNatives"
     runtime "org.lwjgl:lwjgl-shaderc:${lwjglVersion}:$lwjglNatives"
 }

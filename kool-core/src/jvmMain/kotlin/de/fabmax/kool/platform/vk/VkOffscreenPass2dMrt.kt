@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.OffscreenPass2dMrtImpl
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
+import org.lwjgl.vulkan.VK10.VK_FILTER_NEAREST
 
 class VkOffscreenPass2dMrt(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPass2dMrtImpl.BackendImpl {
     private var isCreated = false
@@ -49,7 +50,7 @@ class VkOffscreenPass2dMrt(val parentPass: OffscreenPass2dMrtImpl) : OffscreenPa
         val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
         parentPass.apply {
             val colorFormats = offscreenPass.texFormats.map { it.vkFormat }
-            val rp = VkOffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, colorFormats)
+            val rp = VkOffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, colorFormats, colorFilterMethod = VK_FILTER_NEAREST)
             for (i in colorTextures.indices) {
                 createTex(colorTextures[i], i, true, rp, sys)
             }

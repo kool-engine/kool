@@ -166,17 +166,20 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         val intFormat = GL_DEPTH_COMPONENT24
         val width = parentPass.offscreenPass.texWidth
         val height = parentPass.offscreenPass.texHeight
+        val filterMethod = if (parentPass.offscreenPass.setup.isUsedAsShadowMap) FilterMethod.LINEAR else FilterMethod.NEAREST
         val samplerProps = TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
-                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
+                minFilter = filterMethod, magFilter = filterMethod,
                 mipMapping = parentPass.offscreenPass.mipLevels > 1, maxAnisotropy = 1)
 
         val estSize = Texture.estimatedTexSize(width, height, 4, 1, parentPass.offscreenPass.mipLevels)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
         tex.setSize(width, height)
         tex.applySamplerProps(samplerProps)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        if (filterMethod == FilterMethod.LINEAR) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS)
+        }
         glTexStorage2D(GL_TEXTURE_2D, parentPass.offscreenPass.mipLevels, intFormat, width, height)
 
         glDepthTex = tex.texture
