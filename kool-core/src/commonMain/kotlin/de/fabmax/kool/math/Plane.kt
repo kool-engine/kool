@@ -19,7 +19,7 @@ class Plane {
      * Computes the intersection point of this plane and the specified ray. Returns false if there is no intersection
      * point (i.e. plane and ray are parallel).
      */
-    fun intersectionPoint(result: MutableVec3f, ray: Ray): Boolean {
+    fun intersectionPoint(ray: Ray, result: MutableVec3f): Boolean {
         val denom = n.dot(ray.direction)
         if (!denom.isFuzzyZero()) {
             val t = p.subtract(ray.origin, result).dot(n) / denom

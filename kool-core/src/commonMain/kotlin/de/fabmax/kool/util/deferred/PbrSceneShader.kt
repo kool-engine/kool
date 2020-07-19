@@ -1,15 +1,15 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -80,12 +80,24 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             brdfLutSampler?.texture = value
         }
 
-    // Screen space ambient occlusion map
+    // Screen space AO and Reflection maps
     private var ssaoSampler: TextureSampler? = null
     var scrSpcAmbientOcclusionMap: Texture? = cfg.scrSpcAmbientOcclusionMap
         set(value) {
             field = value
             ssaoSampler?.texture = value
+        }
+    private var ssrSampler: TextureSampler? = null
+    var scrSpcReflectionMap: Texture? = cfg.scrSpcReflectionMap
+        set(value) {
+            field = value
+            ssrSampler?.texture = value
+        }
+    private var ssrNoiseSampler: TextureSampler? = null
+    var scrSpcReflectionNoise: Texture? = cfg.scrSpcReflectionNoise
+        set(value) {
+            field = value
+            ssrSampler?.texture = value
         }
 
     // Shadow Mapping
@@ -124,6 +136,10 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
         ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
+        ssrSampler = model.findNode<TextureNode>("ssrMap")?.sampler
+        ssrSampler?.let { it.texture = scrSpcReflectionMap }
+        ssrNoiseSampler = model.findNode<TextureNode>("ssrNoiseTex")?.sampler
+        ssrNoiseSampler?.let { it.texture = scrSpcReflectionNoise }
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -136,6 +152,26 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     }
 
     companion object {
+        fun generateScrSpcReflectionNoiseTex(): Texture {
+            val sz = 64
+            val buf = createUint8Buffer(sz * sz * 4)
+            val rand = Random(0x1deadb0b)
+            val vec = MutableVec3f()
+            for (i in 0 until (sz * sz)) {
+                do {
+                    vec.set(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f))
+                } while (vec.length() > 1f)
+                vec.norm().scale(0.5f)
+                buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toByte()
+                buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toByte()
+                buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toByte()
+                buf[i * 4 + 3] = rand.randomI(0..255).toByte()
+            }
+            val data = BufferedTextureData(buf, sz, sz, TexFormat.RGBA)
+            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT, minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
+            return Texture("ssr_noise_tex", texProps) { data }
+        }
+
         fun defaultDeferredPbrModel(cfg: DeferredPbrConfig) = ShaderModel("defaultDeferredPbrModel()").apply {
             val ifTexCoords: StageInterfaceNode
 
@@ -145,8 +181,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             }
             fragmentStage {
                 val coord = ifTexCoords.output
+                val posAoTex = textureNode("positionAo")
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
+                    inPositionAo = textureSamplerNode(posAoTex, coord).outColor
                     inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
                     if (cfg.isWithEmissive) {
@@ -204,6 +241,29 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                         aoFactor = multiplyNode(aoFactor, aoNode.outAo).output
                     }
                     inAmbientOccl = aoFactor
+
+                    if (cfg.isScrSpcReflections) {
+                        val ssrNoiseTex = textureNode("ssrNoiseTex")
+                        val noise = noiseTextureSamplerNode(ssrNoiseTex, constVec2i(Vec2i(64, 64))).outNoise
+                        val sceneColorTex = textureNode("ssrMap")
+                        val viewPos = mrtDeMultiplex.outViewPos
+                        val viewDir = normalizeNode(viewPos).output
+                        val rayOffset = splitNode(noise, "a").output
+                        val rayDir = reflectNode(viewDir, normalizeNode(mrtDeMultiplex.outViewNormal).output).outDirection
+
+                        val rayDirNoise = vecFromColorNode(splitNode(noise, "xyz").output).output
+                        val rayDirMod = multiplyNode(rayDirNoise, mrtDeMultiplex.outRoughness).output
+                        val roughRayDir = normalizeNode(addNode(rayDir, rayDirMod).output).output
+
+                        val rayTraceNode = addNode(ScreenSpaceRayTraceNode(posAoTex, stage)).apply {
+                            inProjMat = defCam.outProjMat
+                            inRayOrigin = viewPos
+                            inRayDirection = roughRayDir
+                            inRayOffset = rayOffset
+                        }
+                        inReflectionColor = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
+                        inReflectionWeight = rayTraceNode.outSampleWeight
+                    }
                 }
 
                 colorOutput(mat.outColor)
@@ -216,6 +276,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         var isImageBasedLighting = false
         var isScrSpcAmbientOcclusion = false
+        var isScrSpcReflections = false
         var isWithEmissive = false
 
         var maxLights = 4
@@ -232,6 +293,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         var brdfLut: Texture? = null
 
         var scrSpcAmbientOcclusionMap: Texture? = null
+        var scrSpcReflectionMap: Texture? = null
+        var scrSpcReflectionNoise: Texture? = null
 
         fun useMrtPass(mrtPass: DeferredMrtPass) {
             sceneCamera = mrtPass.camera
@@ -247,6 +310,14 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
             this.scrSpcAmbientOcclusionMap = ssaoMap
             isScrSpcAmbientOcclusion = true
+        }
+
+        fun useScreenSpaceReflections(ssrMap: Texture?, generateNoiseTex: Boolean) {
+            this.scrSpcReflectionMap = ssrMap
+            isScrSpcReflections = true
+            if (generateNoiseTex) {
+                scrSpcReflectionNoise = generateScrSpcReflectionNoiseTex()
+            }
         }
 
         fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {

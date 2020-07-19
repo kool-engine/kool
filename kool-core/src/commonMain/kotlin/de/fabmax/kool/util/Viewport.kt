@@ -3,6 +3,8 @@ package de.fabmax.kool.util
 import kotlin.math.abs
 
 class Viewport(var x: Int, var ySigned: Int, var width: Int, var heightSigned: Int) {
+    constructor() : this(0, 0, 0, 0)
+
     val y: Int
         get() = if (heightSigned < 0) ySigned + heightSigned else ySigned
     val height: Int

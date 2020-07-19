@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Attribute
@@ -31,6 +32,26 @@ class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premu
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }
+    }
+}
+
+class NoiseTextureSamplerNode(val texture: TextureNode, graph: ShaderGraph) :
+        ShaderNode("noise_sampler_${texture.name}_${graph.nextNodeId}", graph) {
+
+    var inTexSize = ShaderNodeIoVar(ModelVar2iConst(Vec2i(16, 16)))
+    val outNoise: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outNoise"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(texture)
+        dependsOn(inTexSize)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            vec2 ${name}_texCoord = (vec2(ivec2(gl_FragCoord.xy) % ${inTexSize.ref2i()}) + 0.5) / ${inTexSize.ref2f()};
+            ${outNoise.declare()} = ${generator.sampleTexture2d(texture.name, "${name}_texCoord")};
+        """)
     }
 }
 

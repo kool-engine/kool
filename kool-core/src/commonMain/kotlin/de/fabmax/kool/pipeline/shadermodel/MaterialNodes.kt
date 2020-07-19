@@ -88,6 +88,8 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
     var inAmbientOccl = ShaderNodeIoVar(ModelVar1fConst(1f))
 
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+    var inReflectionColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inReflectionWeight = ShaderNodeIoVar(ModelVar1fConst(0f))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
 
@@ -95,7 +97,9 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance, inAmbientOccl)
+        dependsOn(inAlbedo, inEmissive, inNormal, inFragPos, inCamPos)
+        dependsOn(inSpotInnerAngle, inMetallic, inRoughness, inAmbientOccl)
+        dependsOn(inIrradiance, inReflectionColor, inReflectionWeight)
         dependsOn(lightNode)
         dependsOn(reflectionMap)
         dependsOn(brdfLut)
@@ -209,18 +213,6 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
-
-//        generator.appendMain("""
-//            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
-//            vec3 kD = 1.0 - kS;
-//            kD *= 1.0 - metal;
-//            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
-//
-//            vec3 specular = ${inIrradiance.ref3f()} * (kS * 0.5 + 0.5);
-//            vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
-//            vec3 color = (ambient + Lo) * ${inAlbedo.ref4f()}.a;
-//            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
-//        """)
     }
 
     private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: CubeMapNode, brdfLut: TextureNode) {
@@ -235,6 +227,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 R = reflect(-V, N);
             const float MAX_REFLECTION_LOD = 6.0;
             vec3 prefilteredColor = ${generator.sampleTexture2d(reflectionMap.name, "R", "rough * MAX_REFLECTION_LOD")}.rgb;
+            prefilteredColor = mix(prefilteredColor, clamp(${inReflectionColor.ref3f()}, 0.0, 5.0), ${inReflectionWeight.ref1f()});
 
             vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;

@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Light
@@ -165,10 +163,31 @@ class ShaderModel(val modelInfo: String = "") {
             return mulNode
         }
 
+        fun mixNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null, fac: ShaderNodeIoVar? = null): MixNode {
+            val mixNode = addNode(MixNode(stage))
+            left?.let { mixNode.left = it }
+            right?.let { mixNode.right = it }
+            fac?.let { mixNode.mixFac = it }
+            return mixNode
+        }
+
+        fun vecFromColorNode(input: ShaderNodeIoVar? = null): VecFromColorNode {
+            val nrmNode = addNode(VecFromColorNode(stage))
+            input?.let { nrmNode.input = input }
+            return nrmNode
+        }
+
         fun normalizeNode(input: ShaderNodeIoVar? = null): NormalizeNode {
             val nrmNode = addNode(NormalizeNode(stage))
             input?.let { nrmNode.input = input }
             return nrmNode
+        }
+
+        fun reflectNode(inDirection: ShaderNodeIoVar? = null, inNormal: ShaderNodeIoVar? = null): ReflectNode {
+            val reflectNd = addNode(ReflectNode(stage))
+            inDirection?.let { reflectNd.inDirection = it }
+            inNormal?.let { reflectNd.inNormal = it }
+            return reflectNd
         }
 
         fun normalMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null,
@@ -220,6 +239,11 @@ class ShaderModel(val modelInfo: String = "") {
         fun constVec3f(value: Vec3f) = ShaderNodeIoVar(ModelVar3fConst(value))
         fun constVec4f(value: Vec4f) = ShaderNodeIoVar(ModelVar4fConst(value))
 
+        fun constInt(value: Int) = ShaderNodeIoVar(ModelVar1iConst(value))
+        fun constVec2i(value: Vec2i) = ShaderNodeIoVar(ModelVar2iConst(value))
+        fun constVec3i(value: Vec3i) = ShaderNodeIoVar(ModelVar3iConst(value))
+        fun constVec4i(value: Vec4i) = ShaderNodeIoVar(ModelVar4iConst(value))
+
         fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(Uniform1f(name), stage))
         fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(Uniform2f(name), stage))
         fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(Uniform3f(name), stage))
@@ -250,6 +274,12 @@ class ShaderModel(val modelInfo: String = "") {
             val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
+        }
+
+        fun noiseTextureSamplerNode(texNode: TextureNode, texSize: ShaderNodeIoVar? = null): NoiseTextureSamplerNode {
+            val sampler = addNode(NoiseTextureSamplerNode(texNode, stage))
+            texSize?.let { sampler.inTexSize = it }
+            return sampler
         }
 
         fun equiRectSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): EquiRectSamplerNode {

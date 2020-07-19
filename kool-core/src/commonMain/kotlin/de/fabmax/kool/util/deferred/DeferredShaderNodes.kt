@@ -21,10 +21,12 @@ class DiscardClearNode(stage: ShaderGraph) : ShaderNode("discardClear", stage) {
 }
 
 class DeferredCameraNode(stage: ShaderGraph) : ShaderNode("deferredCam", stage) {
+    private val uProjMat = UniformMat4f("uProjMat")
     private val uInvViewMat = UniformMat4f("uInvViewMat")
     private val uCamPos = Uniform4f("uCamPos")
     private val uViewport = Uniform4f("uViewport")
 
+    val outProjMat = ShaderNodeIoVar(ModelVarMat4f(uProjMat.name), this)
     val outInvViewMat = ShaderNodeIoVar(ModelVarMat4f(uInvViewMat.name), this)
     val outCamPos = ShaderNodeIoVar(ModelVar4f(uCamPos.name), this)
     val outViewport = ShaderNodeIoVar(ModelVar4f(uViewport.name), this)
@@ -35,12 +37,14 @@ class DeferredCameraNode(stage: ShaderGraph) : ShaderNode("deferredCam", stage) 
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
+                +{ uProjMat }
                 +{ uInvViewMat }
                 +{ uCamPos }
                 +{ uViewport }
                 onUpdate = { _, cmd ->
                     val cam = sceneCam
                     if (cam != null) {
+                        uProjMat.value.set(cam.proj)
                         uInvViewMat.value.set(cam.invView)
                         uCamPos.value.set(cam.globalPos, 1f)
                     }

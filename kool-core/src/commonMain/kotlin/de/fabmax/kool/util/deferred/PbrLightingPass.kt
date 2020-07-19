@@ -43,6 +43,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         camera = mrtPass.camera
 
         cfg.useMrtPass(mrtPass)
+        cfg.useScreenSpaceReflections(prevColorTex, true)
         sceneShader = PbrSceneShader(cfg)
 
         content.apply {
@@ -81,6 +82,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
+        sceneShader.scrSpcReflectionNoise?.dispose()
         super.dispose(ctx)
     }
 

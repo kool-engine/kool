@@ -89,7 +89,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
         if (dragPtrs.size == 1 && !dragPtrs[0].isConsumed() && dragPtrs[0].isLeftButtonDown &&
                 computeLocalPickRay(dragPtrs[0], ctx, pickRay)) {
-            if (hitPlane.intersectionPoint(hitPos, pickRay)) {
+            if (hitPlane.intersectionPoint(pickRay, hitPos)) {
                 if (startDrag) {
                     startDrag = false
                     initHitPos.set(hitPos)

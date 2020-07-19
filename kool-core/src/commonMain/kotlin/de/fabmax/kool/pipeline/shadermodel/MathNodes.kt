@@ -42,6 +42,33 @@ class MultiplyNode(graph: ShaderGraph) : MathOpNode("multiply_${graph.nextNodeId
     }
 }
 
+class MixNode(graph: ShaderGraph) : MathOpNode("mix_${graph.nextNodeId}", graph) {
+    var mixFac = ShaderNodeIoVar(ModelVar1fConst(0.5f))
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(mixFac)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = mix($left, $right, ${mixFac.ref1f()});")
+    }
+}
+
+class VecFromColorNode(graph: ShaderGraph) : ShaderNode("vecFromColor_${graph.nextNodeId}", graph) {
+    var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+    val output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(input)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = (${input.ref3f()} - 0.5) * 2.0;")
+    }
+}
+
 class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNodeId}", graph) {
     var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
     val output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
@@ -53,5 +80,20 @@ class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNode
 
     override fun generateCode(generator: CodeGenerator) {
         generator.appendMain("${output.declare()} = normalize(${input.ref3f()});")
+    }
+}
+
+class ReflectNode(graph: ShaderGraph) : ShaderNode("reflect_${graph.nextNodeId}", graph) {
+    var inDirection = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+    var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    val outDirection = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inDirection, inNormal)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${outDirection.declare()} = reflect(${inDirection.ref3f()}, ${inNormal.ref3f()});")
     }
 }
