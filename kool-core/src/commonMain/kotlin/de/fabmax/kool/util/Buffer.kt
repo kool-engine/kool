@@ -135,6 +135,21 @@ interface Float32Buffer : Buffer {
  * @author fabmax
  */
 interface MixedBuffer : Buffer {
+    fun putInt8(value: Byte) = putUint8(value)
+    fun putInt8(data: ByteArray) = putUint8(data)
+    fun putInt8(data: ByteArray, offset: Int, len: Int) = putUint8(data, offset, len)
+    fun putInt8(data: Uint8Buffer) = putUint8(data)
+
+    fun putInt16(value: Short) = putUint16(value)
+    fun putInt16(data: ShortArray) = putUint16(data)
+    fun putInt16(data: ShortArray, offset: Int, len: Int) = putUint16(data, offset, len)
+    fun putInt16(data: Uint16Buffer) = putUint16(data)
+
+    fun putInt32(value: Int) = putUint32(value)
+    fun putInt32(data: IntArray) = putUint32(data)
+    fun putInt32(data: IntArray, offset: Int, len: Int) = putUint32(data, offset, len)
+    fun putInt32(data: Uint32Buffer) = putUint32(data)
+
     fun putUint8(value: Byte): MixedBuffer
     fun putUint8(data: ByteArray): MixedBuffer = putUint8(data, 0, data.size)
     fun putUint8(data: ByteArray, offset: Int, len: Int): MixedBuffer

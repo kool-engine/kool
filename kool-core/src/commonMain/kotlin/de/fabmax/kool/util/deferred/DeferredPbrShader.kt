@@ -9,6 +9,12 @@ import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
+inline fun deferredPbrShader(block: PbrMaterialConfig.() -> Unit): DeferredPbrShader {
+    val cfg = PbrMaterialConfig()
+    cfg.block()
+    return DeferredPbrShader(cfg)
+}
+
 /**
  * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
  * texture-based AO into three separate texture outputs.

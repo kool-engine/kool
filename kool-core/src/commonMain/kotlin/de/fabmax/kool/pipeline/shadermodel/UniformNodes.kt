@@ -212,3 +212,19 @@ class PushConstantNode4f(override val uniform: Uniform4f, graph: ShaderGraph) : 
 class PushConstantNodeColor(override val uniform: UniformColor, graph: ShaderGraph) : PushConstantNode<UniformColor>(uniform.name, graph) {
     override val output = ShaderNodeIoVar(ModelVar4f(name), this)
 }
+
+class PushConstantNode1i(override val uniform: Uniform1i, graph: ShaderGraph) : PushConstantNode<Uniform1i>(uniform.name, graph) {
+    override val output = ShaderNodeIoVar(ModelVar1i(name), this)
+}
+
+class PushConstantNode2i(override val uniform: Uniform2i, graph: ShaderGraph) : PushConstantNode<Uniform2i>(uniform.name, graph) {
+    override val output = ShaderNodeIoVar(ModelVar2i(name), this)
+}
+
+class PushConstantNode3i(override val uniform: Uniform3i, graph: ShaderGraph) : PushConstantNode<Uniform3i>(uniform.name, graph) {
+    override val output = ShaderNodeIoVar(ModelVar3i(name), this)
+}
+
+class PushConstantNode4i(override val uniform: Uniform4i, graph: ShaderGraph) : PushConstantNode<Uniform4i>(uniform.name, graph) {
+    override val output = ShaderNodeIoVar(ModelVar4i(name), this)
+}

@@ -11,7 +11,10 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
-import de.fabmax.kool.util.deferred.*
+import de.fabmax.kool.util.deferred.DeferredMrtPass
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.PbrLightingPass
+import de.fabmax.kool.util.deferred.PbrSceneShader
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.BrdfLutPass
@@ -166,15 +169,7 @@ class GltfDemo(ctx: KoolContext) {
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
             isFrustumChecked = false
-            +textureMesh {
-                isFrustumChecked = false
-                generate {
-                    rect {
-                        mirrorTexCoordsY()
-                    }
-                }
-                shader = DeferredOutputShader(pbrPass.colorTexture, mrtPass.depthTexture)
-            }
+            +pbrPass.createOutputQuad()
         }
     }
 

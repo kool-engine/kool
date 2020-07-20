@@ -526,6 +526,9 @@ open class MutableVec3i(x: Int, y: Int, z: Int) : Vec3i(x, y, z) {
         get() = this[2]
         set(value) { this[2] = value }
 
+    val array: IntArray
+        get() = fields
+
     constructor() : this(0, 0, 0)
     constructor(f: Int) : this(f, f, f)
     constructor(other: Vec3i) : this(other.x, other.y, other.z)

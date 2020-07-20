@@ -22,15 +22,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var SelectBuilderImpl_init = $module$kotlinx_coroutines_core.kotlinx.coroutines.selects.SelectBuilderImpl;
   var Throwable = Error;
-  var throwUPAE = Kotlin.throwUPAE;
-  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
-  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var L0 = Kotlin.Long.ZERO;
   var toChar = Kotlin.toChar;
   var toBoxedChar = Kotlin.toBoxedChar;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
   var unboxChar = Kotlin.unboxChar;
+  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var collectionSizeOrDefault = Kotlin.kotlin.collections.collectionSizeOrDefault_ba2ldo$;
   var Math_0 = Math;
   var Array_0 = Array;
@@ -59,6 +57,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var Iterable = Kotlin.kotlin.collections.Iterable;
   var removeAll = Kotlin.kotlin.collections.removeAll_qafx1e$;
   var Pair = Kotlin.kotlin.Pair;
+  var throwUPAE = Kotlin.throwUPAE;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
   var Iterator = Kotlin.kotlin.collections.Iterator;
@@ -69,6 +68,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
   var emptySet = Kotlin.kotlin.collections.emptySet_287e2$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var filterNotNull = Kotlin.kotlin.collections.filterNotNull_m3lr2h$;
   var equals = Kotlin.equals;
@@ -86,10 +86,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var toString = Kotlin.toString;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
-  var max = Kotlin.kotlin.collections.max_lvsncp$;
-  var distinct = Kotlin.kotlin.collections.distinct_7wnvza$;
-  var toList = Kotlin.kotlin.collections.toList_7wnvza$;
-  var joinToString_0 = Kotlin.kotlin.collections.joinToString_cph1y3$;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
   var toInt = Kotlin.kotlin.text.toInt_pdl1vz$;
@@ -98,6 +94,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
   var getCallableRef = Kotlin.getCallableRef;
+  var max = Kotlin.kotlin.collections.max_lvsncp$;
+  var distinct = Kotlin.kotlin.collections.distinct_7wnvza$;
+  var toList = Kotlin.kotlin.collections.toList_7wnvza$;
+  var joinToString_0 = Kotlin.kotlin.collections.joinToString_cph1y3$;
   var Random = Kotlin.kotlin.random.Random_za3lpa$;
   var shuffled = Kotlin.kotlin.collections.shuffled_4173s5$;
   var L1431655765 = Kotlin.Long.fromInt(1431655765);
@@ -115,6 +115,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var last_0 = Kotlin.kotlin.collections.last_us0mfu$;
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
+  var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var get_indices_1 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
   var NullableSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.NullableSerializer;
@@ -142,16 +143,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var step = Kotlin.kotlin.ranges.step_xsgg7u$;
   var toMutableList = Kotlin.kotlin.collections.toMutableList_4c7yge$;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
-  var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
-  var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   var Collection = Kotlin.kotlin.collections.Collection;
   var NotImplementedError_init = Kotlin.kotlin.NotImplementedError;
+  var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
+  var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var MutableMap$MutableEntry = Kotlin.kotlin.collections.MutableMap.MutableEntry;
   var roundToLong = Kotlin.kotlin.math.roundToLong_yrwdxr$;
   var IllegalStateException_init_0 = Kotlin.kotlin.IllegalStateException_init;
   var async = $module$kotlinx_coroutines_core.kotlinx.coroutines.async_pda6u4$;
-  var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var lines = Kotlin.kotlin.text.lines_gw00vp$;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
   LocalRawAssetRef.prototype = Object.create(AssetRef.prototype);
@@ -346,8 +346,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DivideNode.prototype.constructor = DivideNode;
   MultiplyNode.prototype = Object.create(MathOpNode.prototype);
   MultiplyNode.prototype.constructor = MultiplyNode;
+  MixNode.prototype = Object.create(MathOpNode.prototype);
+  MixNode.prototype.constructor = MixNode;
+  VecFromColorNode.prototype = Object.create(ShaderNode.prototype);
+  VecFromColorNode.prototype.constructor = VecFromColorNode;
   NormalizeNode.prototype = Object.create(ShaderNode.prototype);
   NormalizeNode.prototype.constructor = NormalizeNode;
+  ReflectNode.prototype = Object.create(ShaderNode.prototype);
+  ReflectNode.prototype.constructor = ReflectNode;
   ModelVar1f.prototype = Object.create(ModelVar.prototype);
   ModelVar1f.prototype.constructor = ModelVar1f;
   ModelVar2f.prototype = Object.create(ModelVar.prototype);
@@ -440,8 +446,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PushConstantNode4f.prototype.constructor = PushConstantNode4f;
   PushConstantNodeColor.prototype = Object.create(PushConstantNode.prototype);
   PushConstantNodeColor.prototype.constructor = PushConstantNodeColor;
+  PushConstantNode1i.prototype = Object.create(PushConstantNode.prototype);
+  PushConstantNode1i.prototype.constructor = PushConstantNode1i;
+  PushConstantNode2i.prototype = Object.create(PushConstantNode.prototype);
+  PushConstantNode2i.prototype.constructor = PushConstantNode2i;
+  PushConstantNode3i.prototype = Object.create(PushConstantNode.prototype);
+  PushConstantNode3i.prototype.constructor = PushConstantNode3i;
+  PushConstantNode4i.prototype = Object.create(PushConstantNode.prototype);
+  PushConstantNode4i.prototype.constructor = PushConstantNode4i;
   TextureSamplerNode.prototype = Object.create(ShaderNode.prototype);
   TextureSamplerNode.prototype.constructor = TextureSamplerNode;
+  NoiseTextureSamplerNode.prototype = Object.create(ShaderNode.prototype);
+  NoiseTextureSamplerNode.prototype.constructor = NoiseTextureSamplerNode;
   CubeMapSamplerNode.prototype = Object.create(ShaderNode.prototype);
   CubeMapSamplerNode.prototype.constructor = CubeMapSamplerNode;
   EquiRectSamplerNode.prototype = Object.create(ShaderNode.prototype);
@@ -540,42 +556,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UniformMat4fv.prototype.constructor = UniformMat4fv;
   Uniform1i.prototype = Object.create(Uniform.prototype);
   Uniform1i.prototype.constructor = Uniform1i;
+  Uniform2i.prototype = Object.create(Uniform.prototype);
+  Uniform2i.prototype.constructor = Uniform2i;
+  Uniform3i.prototype = Object.create(Uniform.prototype);
+  Uniform3i.prototype.constructor = Uniform3i;
+  Uniform4i.prototype = Object.create(Uniform.prototype);
+  Uniform4i.prototype.constructor = Uniform4i;
   Uniform1iv.prototype = Object.create(Uniform.prototype);
   Uniform1iv.prototype.constructor = Uniform1iv;
+  Uniform2iv.prototype = Object.create(Uniform.prototype);
+  Uniform2iv.prototype.constructor = Uniform2iv;
+  Uniform3iv.prototype = Object.create(Uniform.prototype);
+  Uniform3iv.prototype.constructor = Uniform3iv;
+  Uniform4iv.prototype = Object.create(Uniform.prototype);
+  Uniform4iv.prototype.constructor = Uniform4iv;
   InputRate.prototype = Object.create(Enum.prototype);
   InputRate.prototype.constructor = InputRate;
-  TranslationAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
-  TranslationAnimationChannel.prototype.constructor = TranslationAnimationChannel;
-  RotationAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
-  RotationAnimationChannel.prototype.constructor = RotationAnimationChannel;
-  ScaleAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
-  ScaleAnimationChannel.prototype.constructor = ScaleAnimationChannel;
-  WeightAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
-  WeightAnimationChannel.prototype.constructor = WeightAnimationChannel;
-  AnimationKey$Interpolation.prototype = Object.create(Enum.prototype);
-  AnimationKey$Interpolation.prototype.constructor = AnimationKey$Interpolation;
-  AnimationKey$Interpolation$LINEAR.prototype = Object.create(AnimationKey$Interpolation.prototype);
-  AnimationKey$Interpolation$LINEAR.prototype.constructor = AnimationKey$Interpolation$LINEAR;
-  AnimationKey$Interpolation$STEP.prototype = Object.create(AnimationKey$Interpolation.prototype);
-  AnimationKey$Interpolation$STEP.prototype.constructor = AnimationKey$Interpolation$STEP;
-  AnimationKey$Interpolation$CUBICSPLINE.prototype = Object.create(AnimationKey$Interpolation.prototype);
-  AnimationKey$Interpolation$CUBICSPLINE.prototype.constructor = AnimationKey$Interpolation$CUBICSPLINE;
-  RotationKey.prototype = Object.create(AnimationKey.prototype);
-  RotationKey.prototype.constructor = RotationKey;
-  CubicRotationKey.prototype = Object.create(RotationKey.prototype);
-  CubicRotationKey.prototype.constructor = CubicRotationKey;
-  TranslationKey.prototype = Object.create(AnimationKey.prototype);
-  TranslationKey.prototype.constructor = TranslationKey;
-  CubicTranslationKey.prototype = Object.create(TranslationKey.prototype);
-  CubicTranslationKey.prototype.constructor = CubicTranslationKey;
-  ScaleKey.prototype = Object.create(AnimationKey.prototype);
-  ScaleKey.prototype.constructor = ScaleKey;
-  CubicScaleKey.prototype = Object.create(ScaleKey.prototype);
-  CubicScaleKey.prototype.constructor = CubicScaleKey;
-  WeightKey.prototype = Object.create(AnimationKey.prototype);
-  WeightKey.prototype.constructor = WeightKey;
-  CubicWeightKey.prototype = Object.create(WeightKey.prototype);
-  CubicWeightKey.prototype.constructor = CubicWeightKey;
   Camera$ProjCorrectionMode.prototype = Object.create(Enum.prototype);
   Camera$ProjCorrectionMode.prototype.constructor = Camera$ProjCorrectionMode;
   Camera.prototype = Object.create(Node.prototype);
@@ -654,6 +650,38 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UiShader.prototype.constructor = UiShader;
   ThemeBuilder.prototype = Object.create(UiTheme.prototype);
   ThemeBuilder.prototype.constructor = ThemeBuilder;
+  TranslationAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
+  TranslationAnimationChannel.prototype.constructor = TranslationAnimationChannel;
+  RotationAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
+  RotationAnimationChannel.prototype.constructor = RotationAnimationChannel;
+  ScaleAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
+  ScaleAnimationChannel.prototype.constructor = ScaleAnimationChannel;
+  WeightAnimationChannel.prototype = Object.create(AnimationChannel.prototype);
+  WeightAnimationChannel.prototype.constructor = WeightAnimationChannel;
+  AnimationKey$Interpolation.prototype = Object.create(Enum.prototype);
+  AnimationKey$Interpolation.prototype.constructor = AnimationKey$Interpolation;
+  AnimationKey$Interpolation$LINEAR.prototype = Object.create(AnimationKey$Interpolation.prototype);
+  AnimationKey$Interpolation$LINEAR.prototype.constructor = AnimationKey$Interpolation$LINEAR;
+  AnimationKey$Interpolation$STEP.prototype = Object.create(AnimationKey$Interpolation.prototype);
+  AnimationKey$Interpolation$STEP.prototype.constructor = AnimationKey$Interpolation$STEP;
+  AnimationKey$Interpolation$CUBICSPLINE.prototype = Object.create(AnimationKey$Interpolation.prototype);
+  AnimationKey$Interpolation$CUBICSPLINE.prototype.constructor = AnimationKey$Interpolation$CUBICSPLINE;
+  RotationKey.prototype = Object.create(AnimationKey.prototype);
+  RotationKey.prototype.constructor = RotationKey;
+  CubicRotationKey.prototype = Object.create(RotationKey.prototype);
+  CubicRotationKey.prototype.constructor = CubicRotationKey;
+  TranslationKey.prototype = Object.create(AnimationKey.prototype);
+  TranslationKey.prototype.constructor = TranslationKey;
+  CubicTranslationKey.prototype = Object.create(TranslationKey.prototype);
+  CubicTranslationKey.prototype.constructor = CubicTranslationKey;
+  ScaleKey.prototype = Object.create(AnimationKey.prototype);
+  ScaleKey.prototype.constructor = ScaleKey;
+  CubicScaleKey.prototype = Object.create(ScaleKey.prototype);
+  CubicScaleKey.prototype.constructor = CubicScaleKey;
+  WeightKey.prototype = Object.create(AnimationKey.prototype);
+  WeightKey.prototype.constructor = WeightKey;
+  CubicWeightKey.prototype = Object.create(WeightKey.prototype);
+  CubicWeightKey.prototype.constructor = CubicWeightKey;
   LinearAnimator.prototype = Object.create(Animator.prototype);
   LinearAnimator.prototype.constructor = LinearAnimator;
   CosAnimator.prototype = Object.create(Animator.prototype);
@@ -712,6 +740,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PbrLightingPass.prototype.constructor = PbrLightingPass;
   PbrSceneShader.prototype = Object.create(ModeledShader.prototype);
   PbrSceneShader.prototype.constructor = PbrSceneShader;
+  ScreenSpaceRayTraceNode.prototype = Object.create(ShaderNode.prototype);
+  ScreenSpaceRayTraceNode.prototype.constructor = ScreenSpaceRayTraceNode;
   Font.prototype = Object.create(Texture.prototype);
   Font.prototype.constructor = Font;
   IntAccessor.prototype = Object.create(DataStreamAccessor.prototype);
@@ -746,22 +776,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Usage.prototype.constructor = Usage;
   InstancedLodController.prototype = Object.create(Node.prototype);
   InstancedLodController.prototype.constructor = InstancedLodController;
-  KdTree$KdNode.prototype = Object.create(SpatialTree$Node.prototype);
-  KdTree$KdNode.prototype.constructor = KdTree$KdNode;
-  KdTree.prototype = Object.create(SpatialTree.prototype);
-  KdTree.prototype.constructor = KdTree;
   Log$Level.prototype = Object.create(Enum.prototype);
   Log$Level.prototype.constructor = Log$Level;
   ObjectPool.prototype = Object.create(ObjectRecycler.prototype);
   ObjectPool.prototype.constructor = ObjectPool;
   AutoRecycler.prototype = Object.create(ObjectRecycler.prototype);
   AutoRecycler.prototype.constructor = AutoRecycler;
+  SimpleShadowMap.prototype = Object.create(DepthMapPass.prototype);
+  SimpleShadowMap.prototype.constructor = SimpleShadowMap;
+  KdTree$KdNode.prototype = Object.create(SpatialTree$Node.prototype);
+  KdTree$KdNode.prototype.constructor = KdTree$KdNode;
+  KdTree.prototype = Object.create(SpatialTree.prototype);
+  KdTree.prototype.constructor = KdTree;
   OcTree$OcNode.prototype = Object.create(SpatialTree$Node.prototype);
   OcTree$OcNode.prototype.constructor = OcTree$OcNode;
   OcTree.prototype = Object.create(SpatialTree.prototype);
   OcTree.prototype.constructor = OcTree;
-  SimpleShadowMap.prototype = Object.create(DepthMapPass.prototype);
-  SimpleShadowMap.prototype.constructor = SimpleShadowMap;
   BoundingSphereInRadiusTraverser.prototype = Object.create(InRadiusTraverser.prototype);
   BoundingSphereInRadiusTraverser.prototype.constructor = BoundingSphereInRadiusTraverser;
   NearestToRayTraverser.prototype = Object.create(SpatialTreeTraverser.prototype);
@@ -786,12 +816,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   VertexView$Vec4iView.prototype.constructor = VertexView$Vec4iView;
   VertexView.prototype = Object.create(MutableVec3f.prototype);
   VertexView.prototype.constructor = VertexView;
-  OffscreenPass2dImpl$OffscreenTexture.prototype = Object.create(Texture.prototype);
-  OffscreenPass2dImpl$OffscreenTexture.prototype.constructor = OffscreenPass2dImpl$OffscreenTexture;
-  OffscreenPass2dImpl$OffscreenDepthTexture.prototype = Object.create(Texture.prototype);
-  OffscreenPass2dImpl$OffscreenDepthTexture.prototype.constructor = OffscreenPass2dImpl$OffscreenDepthTexture;
-  OffscreenPassCubeImpl$OffscreenTextureCube.prototype = Object.create(CubeMapTexture.prototype);
-  OffscreenPassCubeImpl$OffscreenTextureCube.prototype.constructor = OffscreenPassCubeImpl$OffscreenTextureCube;
   ImageTextureData.prototype = Object.create(TextureData.prototype);
   ImageTextureData.prototype.constructor = ImageTextureData;
   JsAssetManager.prototype = Object.create(AssetManager.prototype);
@@ -1713,106 +1737,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'LoadedTextureAsset',
     interfaces: [LoadedAsset]
-  };
-  function DrawCommand(renderPass) {
-    this.renderPass = renderPass;
-    this.mesh_61i9uk$_0 = this.mesh_61i9uk$_0;
-    this.pipeline = null;
-    this.modelMat = new Mat4f();
-    this.viewMat = new Mat4f();
-    this.projMat = new Mat4f();
-    this.mvpMat = new Mat4f();
-    this.mvpMatD_0 = new Mat4d();
-  }
-  Object.defineProperty(DrawCommand.prototype, 'mesh', {
-    get: function () {
-      if (this.mesh_61i9uk$_0 == null)
-        return throwUPAE('mesh');
-      return this.mesh_61i9uk$_0;
-    },
-    set: function (mesh) {
-      this.mesh_61i9uk$_0 = mesh;
-    }
-  });
-  DrawCommand.prototype.captureMatrices = function () {
-    this.modelMat.set_d4zu6l$(this.mesh.modelMat);
-    this.viewMat.set_d4zu6l$(this.renderPass.camera.view);
-    this.projMat.set_d4zu6l$(this.renderPass.camera.proj);
-    this.renderPass.camera.viewProj.mul_u47j3u$(this.mesh.modelMat, this.mvpMatD_0);
-    this.mvpMat.set_d4zu6l$(this.mvpMatD_0);
-  };
-  DrawCommand.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DrawCommand',
-    interfaces: []
-  };
-  function DrawQueue(renderPass) {
-    this.renderPass = renderPass;
-    this.mutCommands_0 = ArrayList_init_0();
-    this.commandPool_0 = ArrayList_init_0();
-    this.meshFilter = DrawQueue$meshFilter$lambda;
-  }
-  Object.defineProperty(DrawQueue.prototype, 'commands', {
-    get: function () {
-      return this.mutCommands_0;
-    }
-  });
-  DrawQueue.prototype.clear = function () {
-    this.commandPool_0.addAll_brywnq$(this.mutCommands_0);
-    this.mutCommands_0.clear();
-  };
-  DrawQueue.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
-    var tmp$, tmp$_0;
-    if (!this.meshFilter(mesh)) {
-      tmp$_0 = null;
-    } else {
-      if (!this.commandPool_0.isEmpty()) {
-        tmp$ = this.commandPool_0.removeAt_za3lpa$(get_lastIndex(this.commandPool_0));
-      } else {
-        tmp$ = new DrawCommand(this.renderPass);
-      }
-      var cmd = tmp$;
-      cmd.mesh = mesh;
-      cmd.pipeline = mesh.getPipeline_aemszp$(ctx);
-      cmd.captureMatrices();
-      this.mutCommands_0.add_11rb$(cmd);
-      tmp$_0 = cmd;
-    }
-    return tmp$_0;
-  };
-  function DrawQueue$meshFilter$lambda(it) {
-    return true;
-  }
-  DrawQueue.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DrawQueue',
-    interfaces: []
-  };
-  function SceneSetup() {
-    SceneSetup$Companion_getInstance();
-    this.clearColor = new MutableColor(0.05, 0.15, 0.25, 1.0);
-    this.clearMask = 3;
-  }
-  function SceneSetup$Companion() {
-    SceneSetup$Companion_instance = this;
-    this.CLEAR_COLOR = 1;
-    this.CLEAR_DEPTH = 2;
-  }
-  SceneSetup$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var SceneSetup$Companion_instance = null;
-  function SceneSetup$Companion_getInstance() {
-    if (SceneSetup$Companion_instance === null) {
-      new SceneSetup$Companion();
-    }return SceneSetup$Companion_instance;
-  }
-  SceneSetup.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SceneSetup',
-    interfaces: []
   };
   function EngineStats() {
     this.bufferAllocations = LinkedHashMap_init();
@@ -5094,7 +5018,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.p = MutableVec3f_init();
     this.n = MutableVec3f_init_1(Vec3f$Companion_getInstance().Y_AXIS);
   }
-  Plane.prototype.intersectionPoint_m2314x$ = function (result, ray) {
+  Plane.prototype.intersectionPoint_lplggz$ = function (ray, result) {
     var denom = this.n.dot_czzhiu$(ray.direction);
     var eps;
     eps = package$math.FUZZY_EQ_F;
@@ -6074,6 +5998,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.fields[1] = value;
     }
   });
+  Object.defineProperty(MutableVec2i.prototype, 'array', {
+    get: function () {
+      return this.fields;
+    }
+  });
   MutableVec2i.prototype.set_czzhjm$ = function (other) {
     this.x = other.x;
     this.y = other.y;
@@ -6820,6 +6749,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     },
     set: function (value) {
       this.set_vux9f0$(2, value);
+    }
+  });
+  Object.defineProperty(MutableVec3i.prototype, 'array', {
+    get: function () {
+      return this.fields;
     }
   });
   MutableVec3i.prototype.set_qt1dr2$ = function (x, y, z) {
@@ -7625,6 +7559,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     },
     set: function (value) {
       this.set_vux9f0$(3, value);
+    }
+  });
+  Object.defineProperty(MutableVec4i.prototype, 'array', {
+    get: function () {
+      return this.fields;
     }
   });
   MutableVec4i.prototype.set_tjonv8$ = function (x, y, z, w) {
@@ -9047,7 +8986,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       trav.setup_czzhjp$(element);
-      trav.traverse_m6hlto$(this.ocTreeHandler.edgeTree);
+      trav.traverse_7efza$(this.ocTreeHandler.edgeTree);
       var tmp$_0;
       tmp$_0 = trav.result.iterator();
       loop_label: while (tmp$_0.hasNext()) {
@@ -9107,7 +9046,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     while (tmp$.hasNext()) {
       var cutEdge = tmp$.next();
       for (var pass = 1; pass <= 2; pass++) {
-        intersectionTrav.setup_r4d89c$(cutEdge).traverse_m6hlto$(this.ocTreeHandler.edgeTree);
+        intersectionTrav.setup_rtvwu2$(cutEdge).traverse_7efza$(this.ocTreeHandler.edgeTree);
         if (!intersectionTrav.splitEdges.isEmpty()) {
           var tmp$_0;
           tmp$_0 = intersectionTrav.splitEdges.iterator();
@@ -9133,7 +9072,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var remove = true;
       while (remove) {
         remove = false;
-        edgeTrav.setup_r4d89c$(cutEdge).traverse_m6hlto$(this.ocTreeHandler.edgeTree);
+        edgeTrav.setup_rtvwu2$(cutEdge).traverse_7efza$(this.ocTreeHandler.edgeTree);
         if (!edgeTrav.result.isEmpty()) {
           var ed = edgeTrav.result.get_za3lpa$(0);
           var a = ed.from.distance_czzhiu$(cutEdge.pt0);
@@ -9192,11 +9131,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function MeshCutXy$MeshCutXy$CoveringTriXyTrav_init$ObjectLiteral(this$CoveringTriXyTrav) {
     this.this$CoveringTriXyTrav = this$CoveringTriXyTrav;
   }
-  MeshCutXy$MeshCutXy$CoveringTriXyTrav_init$ObjectLiteral.prototype.nodeSqrDistanceToPoint_m5117s$ = function (node, point) {
+  MeshCutXy$MeshCutXy$CoveringTriXyTrav_init$ObjectLiteral.prototype.nodeSqrDistanceToPoint_fpn9fm$ = function (node, point) {
     var pt = new Vec3f(point.x, point.y, node.bounds.center.z);
     return node.bounds.pointDistanceSqr_czzhiu$(pt);
   };
-  MeshCutXy$MeshCutXy$CoveringTriXyTrav_init$ObjectLiteral.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
+  MeshCutXy$MeshCutXy$CoveringTriXyTrav_init$ObjectLiteral.prototype.itemSqrDistanceToPoint_xpaqv3$ = function (tree, item, point) {
     var tmp$;
     this.this$CoveringTriXyTrav.triPts.get_za3lpa$(0).set_dleff0$(item.from.x, item.from.y);
     this.this$CoveringTriXyTrav.triPts.get_za3lpa$(1).set_dleff0$(item.next.from.x, item.next.from.y);
@@ -9236,11 +9175,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.this$MeshCutXy = this$MeshCutXy;
     this.closure$edge = closure$edge;
   }
-  MeshCutXy$ShortEdgeOnEdgeTraverser$setup$ObjectLiteral.prototype.nodeSqrDistanceToPoint_m5117s$ = function (node, point) {
+  MeshCutXy$ShortEdgeOnEdgeTraverser$setup$ObjectLiteral.prototype.nodeSqrDistanceToPoint_fpn9fm$ = function (node, point) {
     var pt = new Vec3f(point.x, point.y, node.bounds.center.z);
-    return PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$.call(this, node, pt);
+    return PointDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$.call(this, node, pt);
   };
-  MeshCutXy$ShortEdgeOnEdgeTraverser$setup$ObjectLiteral.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
+  MeshCutXy$ShortEdgeOnEdgeTraverser$setup$ObjectLiteral.prototype.itemSqrDistanceToPoint_xpaqv3$ = function (tree, item, point) {
     if (item.computeLength() < this.this$MeshCutXy.shortEdgeThresh) {
       var d0 = distanceToEdge_0(new Vec3f(item.from.x, item.from.y, 0.0), this.closure$edge.pt0, this.closure$edge.pt1);
       var d1 = distanceToEdge_0(new Vec3f(item.to.x, item.to.y, 0.0), this.closure$edge.pt0, this.closure$edge.pt1);
@@ -9264,7 +9203,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     interfaces: [PointDistance]
   };
-  MeshCutXy$ShortEdgeOnEdgeTraverser.prototype.setup_r4d89c$ = function (edge) {
+  MeshCutXy$ShortEdgeOnEdgeTraverser.prototype.setup_rtvwu2$ = function (edge) {
     InRadiusTraverser.prototype.setup_2qa7tb$.call(this, MutableVec3f_init_1(edge.pt0).add_czzhiu$(edge.pt1).scale_mx4ult$(0.5), edge.length / 2);
     this.edge = edge;
     this.pointDistance = new MeshCutXy$ShortEdgeOnEdgeTraverser$setup$ObjectLiteral(this.$outer, edge);
@@ -9297,9 +9236,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return it.second.distance_czzhiu$(this$EdgeXyIntersectionTrav.edge.pt0);
     };
   }
-  MeshCutXy$EdgeXyIntersectionTrav.prototype.traverse_m6hlto$ = function (tree) {
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.traverse_7efza$ = function (tree) {
     this.splitEdges.clear();
-    InRadiusTraverser.prototype.traverse_m6hlto$.call(this, tree);
+    InRadiusTraverser.prototype.traverse_7efza$.call(this, tree);
     var $receiver = this.splitEdges;
     if ($receiver.size > 1) {
       sortWith($receiver, new Comparator$ObjectLiteral(compareBy$lambda(MeshCutXy$EdgeXyIntersectionTrav$traverse$lambda(this))));
@@ -9308,11 +9247,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.closure$edge = closure$edge;
     this.this$EdgeXyIntersectionTrav = this$EdgeXyIntersectionTrav;
   }
-  MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral.prototype.nodeSqrDistanceToPoint_m5117s$ = function (node, point) {
+  MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral.prototype.nodeSqrDistanceToPoint_fpn9fm$ = function (node, point) {
     var pt = new Vec3f(point.x, point.y, node.bounds.center.z);
-    return PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$.call(this, node, pt);
+    return PointDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$.call(this, node, pt);
   };
-  MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
+  MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral.prototype.itemSqrDistanceToPoint_xpaqv3$ = function (tree, item, point) {
     var tmp$;
     if (MeshCutXy$Companion_getInstance().computeXyEdgeIntersectionPoint_0(this.closure$edge.pt0, this.closure$edge.pt1, item.from, item.to, this.this$EdgeXyIntersectionTrav.intersectionPt)) {
       var d = MeshCutXy$Companion_getInstance().distXy_1(this.this$EdgeXyIntersectionTrav.intersectionPt, item.from) / MeshCutXy$Companion_getInstance().distXy_1(item.to, item.from);
@@ -9343,7 +9282,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     interfaces: [PointDistance]
   };
-  MeshCutXy$EdgeXyIntersectionTrav.prototype.setup_r4d89c$ = function (edge) {
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.setup_rtvwu2$ = function (edge) {
     InRadiusTraverser.prototype.setup_2qa7tb$.call(this, MutableVec3f_init_1(edge.pt0).add_czzhiu$(edge.pt1).scale_mx4ult$(0.5), edge.length / 2);
     this.edge = edge;
     this.pointDistance = new MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral(edge, this);
@@ -9582,7 +9521,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getCenterZ_trkh7z$ = function (item) {
     return (item.from.z + item.to.z) * 0.5;
   };
-  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.setNode_bc9457$ = function (item, node) {
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.setNode_kvimhn$ = function (item, node) {
     var tmp$;
     item.treeNode = Kotlin.isType(tmp$ = node, OcTree$OcNode) ? tmp$ : throwCCE();
   };
@@ -10331,7 +10270,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (height === void 0)
       height = width;
     if (setup === void 0)
-      setup = DepthMapPass$Companion_getInstance().defaultSetup_0();
+      setup = DepthMapPass$Companion_getInstance().defaultSetup();
     OffscreenRenderPass2d.call(this, drawNode, width, height, setup);
     this.shadowPipelines_j0os6i$_0 = LinkedHashMap_init();
     this.cullMethod = null;
@@ -10410,7 +10349,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function DepthMapPass$Companion() {
     DepthMapPass$Companion_instance = this;
   }
-  DepthMapPass$Companion.prototype.defaultSetup_0 = function () {
+  DepthMapPass$Companion.prototype.defaultSetup = function () {
     var $receiver = new OffscreenRenderPass2d$Setup();
     $receiver.colorFormat = TexFormat$R_getInstance();
     $receiver.colorRenderTarget = 2;
@@ -11015,6 +10954,106 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   DescriptorType.valueOf_61zpoe$ = DescriptorType$valueOf;
+  function DrawCommand(renderPass) {
+    this.renderPass = renderPass;
+    this.mesh_aolzlu$_0 = this.mesh_aolzlu$_0;
+    this.pipeline = null;
+    this.modelMat = new Mat4f();
+    this.viewMat = new Mat4f();
+    this.projMat = new Mat4f();
+    this.mvpMat = new Mat4f();
+    this.mvpMatD_0 = new Mat4d();
+  }
+  Object.defineProperty(DrawCommand.prototype, 'mesh', {
+    get: function () {
+      if (this.mesh_aolzlu$_0 == null)
+        return throwUPAE('mesh');
+      return this.mesh_aolzlu$_0;
+    },
+    set: function (mesh) {
+      this.mesh_aolzlu$_0 = mesh;
+    }
+  });
+  DrawCommand.prototype.captureMatrices = function () {
+    this.modelMat.set_d4zu6l$(this.mesh.modelMat);
+    this.viewMat.set_d4zu6l$(this.renderPass.camera.view);
+    this.projMat.set_d4zu6l$(this.renderPass.camera.proj);
+    this.renderPass.camera.viewProj.mul_u47j3u$(this.mesh.modelMat, this.mvpMatD_0);
+    this.mvpMat.set_d4zu6l$(this.mvpMatD_0);
+  };
+  DrawCommand.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DrawCommand',
+    interfaces: []
+  };
+  function DrawQueue(renderPass) {
+    this.renderPass = renderPass;
+    this.mutCommands_0 = ArrayList_init_0();
+    this.commandPool_0 = ArrayList_init_0();
+    this.meshFilter = DrawQueue$meshFilter$lambda;
+  }
+  Object.defineProperty(DrawQueue.prototype, 'commands', {
+    get: function () {
+      return this.mutCommands_0;
+    }
+  });
+  DrawQueue.prototype.clear = function () {
+    this.commandPool_0.addAll_brywnq$(this.mutCommands_0);
+    this.mutCommands_0.clear();
+  };
+  DrawQueue.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
+    var tmp$, tmp$_0;
+    if (!this.meshFilter(mesh)) {
+      tmp$_0 = null;
+    } else {
+      if (!this.commandPool_0.isEmpty()) {
+        tmp$ = this.commandPool_0.removeAt_za3lpa$(get_lastIndex(this.commandPool_0));
+      } else {
+        tmp$ = new DrawCommand(this.renderPass);
+      }
+      var cmd = tmp$;
+      cmd.mesh = mesh;
+      cmd.pipeline = mesh.getPipeline_aemszp$(ctx);
+      cmd.captureMatrices();
+      this.mutCommands_0.add_11rb$(cmd);
+      tmp$_0 = cmd;
+    }
+    return tmp$_0;
+  };
+  function DrawQueue$meshFilter$lambda(it) {
+    return true;
+  }
+  DrawQueue.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DrawQueue',
+    interfaces: []
+  };
+  function SceneSetup() {
+    SceneSetup$Companion_getInstance();
+    this.clearColor = new MutableColor(0.05, 0.15, 0.25, 1.0);
+    this.clearMask = 3;
+  }
+  function SceneSetup$Companion() {
+    SceneSetup$Companion_instance = this;
+    this.CLEAR_COLOR = 1;
+    this.CLEAR_DEPTH = 2;
+  }
+  SceneSetup$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var SceneSetup$Companion_instance = null;
+  function SceneSetup$Companion_getInstance() {
+    if (SceneSetup$Companion_instance === null) {
+      new SceneSetup$Companion();
+    }return SceneSetup$Companion_instance;
+  }
+  SceneSetup.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SceneSetup',
+    interfaces: []
+  };
   function LoadedTexture() {
   }
   LoadedTexture.$metadata$ = {
@@ -11095,6 +11134,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.setup = setup;
     this.impl_8be2vx$ = new OffscreenPass2dImpl(this);
     this.colorFormat = this.setup.colorFormat;
+    this.copyTargetsColor = ArrayList_init_0();
   }
   Object.defineProperty(OffscreenRenderPass2d.prototype, 'colorTexture', {
     get: function () {
@@ -11131,6 +11171,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.mipLevels = 1;
     this.colorRenderTarget = 1;
     this.depthRenderTarget = 2;
+    this.isUsedAsShadowMap = false;
     this.extColorTexture = null;
     this.extDepthTexture = null;
   }
@@ -12149,7 +12190,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_7qvs0d$(this.inDepth);
   };
   FragmentDepthOutNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendFunction_puj7f4$('out_fragDepth', 'out float gl_FragDepth;\n');
     generator.appendMain_61zpoe$('gl_FragDepth = ' + this.inDepth.ref1f() + ';');
   };
   FragmentDepthOutNode.$metadata$ = {
@@ -12539,12 +12579,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.1));
     this.inAmbientOccl = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.inIrradiance = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.03)));
+    this.inReflectionColor = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
+    this.inReflectionWeight = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('pbrMat_outColor'), this);
     this.lightBacksides = false;
   }
   PbrMaterialNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_8ak6wm$([this.inAlbedo, this.inNormal, this.inFragPos, this.inCamPos, this.inIrradiance, this.inAmbientOccl]);
+    this.dependsOn_8ak6wm$([this.inAlbedo, this.inEmissive, this.inNormal, this.inFragPos, this.inCamPos]);
+    this.dependsOn_8ak6wm$([this.inSpotInnerAngle, this.inMetallic, this.inRoughness, this.inAmbientOccl]);
+    this.dependsOn_8ak6wm$([this.inIrradiance, this.inReflectionColor, this.inReflectionWeight]);
     this.dependsOn_lhtstx$(this.lightNode);
     this.dependsOn_lhtstx$(this.reflectionMap);
     this.dependsOn_lhtstx$(this.brdfLut);
@@ -12566,7 +12610,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.prototype.generateFinalIbl_0 = function (generator, reflectionMap, brdfLut) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '            prefilteredColor = mix(prefilteredColor, clamp(' + this.inReflectionColor.ref3f() + ', 0.0, 5.0), ' + this.inReflectionWeight.ref1f() + ');' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse + specular) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -12681,6 +12725,39 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'MultiplyNode',
     interfaces: [MathOpNode]
   };
+  function MixNode(graph) {
+    MathOpNode.call(this, 'mix_' + graph.nextNodeId, graph);
+    this.mixFac = new ShaderNodeIoVar(new ModelVar1fConst(0.5));
+  }
+  MixNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    MathOpNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_7qvs0d$(this.mixFac);
+  };
+  MixNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$(this.output.declare() + ' = mix(' + this.left + ', ' + this.right + ', ' + this.mixFac.ref1f() + ');');
+  };
+  MixNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MixNode',
+    interfaces: [MathOpNode]
+  };
+  function VecFromColorNode(graph) {
+    ShaderNode.call(this, 'vecFromColor_' + graph.nextNodeId, graph);
+    this.input = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
+    this.output = new ShaderNodeIoVar(new ModelVar3f(this.name + '_out'), this);
+  }
+  VecFromColorNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_7qvs0d$(this.input);
+  };
+  VecFromColorNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$(this.output.declare() + ' = (' + this.input.ref3f() + ' - 0.5) * 2.0;');
+  };
+  VecFromColorNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'VecFromColorNode',
+    interfaces: [ShaderNode]
+  };
   function NormalizeNode(graph) {
     ShaderNode.call(this, 'normalize_' + graph.nextNodeId, graph);
     this.input = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
@@ -12696,6 +12773,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   NormalizeNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'NormalizeNode',
+    interfaces: [ShaderNode]
+  };
+  function ReflectNode(graph) {
+    ShaderNode.call(this, 'reflect_' + graph.nextNodeId, graph);
+    this.inDirection = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
+    this.inNormal = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().Y_AXIS));
+    this.outDirection = new ShaderNodeIoVar(new ModelVar3f(this.name + '_out'), this);
+  }
+  ReflectNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inDirection, this.inNormal]);
+  };
+  ReflectNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$(this.outDirection.declare() + ' = reflect(' + this.inDirection.ref3f() + ', ' + this.inNormal.ref3f() + ');');
+  };
+  ReflectNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ReflectNode',
     interfaces: [ShaderNode]
   };
   function ModelVar(name, type) {
@@ -13675,6 +13770,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mulNode.right = right;
     }return mulNode;
   };
+  ShaderModel$StageBuilder.prototype.mixNode_92v6he$ = function (left, right, fac) {
+    if (left === void 0)
+      left = null;
+    if (right === void 0)
+      right = null;
+    if (fac === void 0)
+      fac = null;
+    var mixNode = this.addNode_u9w9by$(new MixNode(this.stage));
+    if (left != null) {
+      mixNode.left = left;
+    }if (right != null) {
+      mixNode.right = right;
+    }if (fac != null) {
+      mixNode.mixFac = fac;
+    }return mixNode;
+  };
+  ShaderModel$StageBuilder.prototype.vecFromColorNode_r20yfm$ = function (input) {
+    if (input === void 0)
+      input = null;
+    var nrmNode = this.addNode_u9w9by$(new VecFromColorNode(this.stage));
+    if (input != null) {
+      nrmNode.input = input;
+    }return nrmNode;
+  };
   ShaderModel$StageBuilder.prototype.normalizeNode_r20yfm$ = function (input) {
     if (input === void 0)
       input = null;
@@ -13682,6 +13801,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (input != null) {
       nrmNode.input = input;
     }return nrmNode;
+  };
+  ShaderModel$StageBuilder.prototype.reflectNode_ze33is$ = function (inDirection, inNormal) {
+    if (inDirection === void 0)
+      inDirection = null;
+    if (inNormal === void 0)
+      inNormal = null;
+    var reflectNd = this.addNode_u9w9by$(new ReflectNode(this.stage));
+    if (inDirection != null) {
+      reflectNd.inDirection = inDirection;
+    }if (inNormal != null) {
+      reflectNd.inNormal = inNormal;
+    }return reflectNd;
   };
   ShaderModel$StageBuilder.prototype.normalMapNode_j8913i$ = function (texture, textureCoord, normal, tangent) {
     if (textureCoord === void 0)
@@ -13767,6 +13898,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderModel$StageBuilder.prototype.constVec4f_czzhhz$ = function (value) {
     return new ShaderNodeIoVar(new ModelVar4fConst(value));
   };
+  ShaderModel$StageBuilder.prototype.constInt_za3lpa$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar1iConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec2i_czzhjm$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar2iConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec3i_czzhir$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar3iConst(value));
+  };
+  ShaderModel$StageBuilder.prototype.constVec4i_czzhhw$ = function (value) {
+    return new ShaderNodeIoVar(new ModelVar4iConst(value));
+  };
   ShaderModel$StageBuilder.prototype.pushConstantNode1f_61zpoe$ = function (name) {
     return this.addNode_u9w9by$(new PushConstantNode1f(new Uniform1f(name), this.stage));
   };
@@ -13796,6 +13939,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ShaderModel$StageBuilder.prototype.pushConstantNodeColor_uqrny$ = function (u) {
     return this.addNode_u9w9by$(new PushConstantNodeColor(u, this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode1i_61zpoe$ = function (name) {
+    return this.addNode_u9w9by$(new PushConstantNode1i(new Uniform1i(name), this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode2i_61zpoe$ = function (name) {
+    return this.addNode_u9w9by$(new PushConstantNode2i(new Uniform2i(name), this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode3i_61zpoe$ = function (name) {
+    return this.addNode_u9w9by$(new PushConstantNode3i(new Uniform3i(name), this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode4i_61zpoe$ = function (name) {
+    return this.addNode_u9w9by$(new PushConstantNode4i(new Uniform4i(name), this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode1i_978i2x$ = function (u) {
+    return this.addNode_u9w9by$(new PushConstantNode1i(u, this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode2i_978i3s$ = function (u) {
+    return this.addNode_u9w9by$(new PushConstantNode2i(u, this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode3i_978i4n$ = function (u) {
+    return this.addNode_u9w9by$(new PushConstantNode3i(u, this.stage));
+  };
+  ShaderModel$StageBuilder.prototype.pushConstantNode4i_978i5i$ = function (u) {
+    return this.addNode_u9w9by$(new PushConstantNode4i(u, this.stage));
   };
   ShaderModel$StageBuilder.prototype.morphWeightsNode_za3lpa$ = function (nWeights) {
     return this.addNode_u9w9by$(new MorphWeightsNode(nWeights, this.stage));
@@ -13827,6 +13994,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (texCoords != null) {
       texSampler.inTexCoord = texCoords;
     }return texSampler;
+  };
+  ShaderModel$StageBuilder.prototype.noiseTextureSamplerNode_gwl5ki$ = function (texNode, texSize) {
+    if (texSize === void 0)
+      texSize = null;
+    var sampler = this.addNode_u9w9by$(new NoiseTextureSamplerNode(texNode, this.stage));
+    if (texSize != null) {
+      sampler.inTexSize = texSize;
+    }return sampler;
   };
   ShaderModel$StageBuilder.prototype.equiRectSamplerNode_ce41yx$ = function (texNode, texCoords, premultiply) {
     if (texCoords === void 0)
@@ -15200,6 +15375,86 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'PushConstantNodeColor',
     interfaces: [PushConstantNode]
   };
+  function PushConstantNode1i(uniform, graph) {
+    PushConstantNode.call(this, uniform.name, graph);
+    this.uniform_7m7o4x$_0 = uniform;
+    this.output_p908nk$_0 = new ShaderNodeIoVar(new ModelVar1i(this.name), this);
+  }
+  Object.defineProperty(PushConstantNode1i.prototype, 'uniform', {
+    get: function () {
+      return this.uniform_7m7o4x$_0;
+    }
+  });
+  Object.defineProperty(PushConstantNode1i.prototype, 'output', {
+    get: function () {
+      return this.output_p908nk$_0;
+    }
+  });
+  PushConstantNode1i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PushConstantNode1i',
+    interfaces: [PushConstantNode]
+  };
+  function PushConstantNode2i(uniform, graph) {
+    PushConstantNode.call(this, uniform.name, graph);
+    this.uniform_xp1hao$_0 = uniform;
+    this.output_si07g1$_0 = new ShaderNodeIoVar(new ModelVar2i(this.name), this);
+  }
+  Object.defineProperty(PushConstantNode2i.prototype, 'uniform', {
+    get: function () {
+      return this.uniform_xp1hao$_0;
+    }
+  });
+  Object.defineProperty(PushConstantNode2i.prototype, 'output', {
+    get: function () {
+      return this.output_si07g1$_0;
+    }
+  });
+  PushConstantNode2i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PushConstantNode2i',
+    interfaces: [PushConstantNode]
+  };
+  function PushConstantNode3i(uniform, graph) {
+    PushConstantNode.call(this, uniform.name, graph);
+    this.uniform_3z6kr5$_0 = uniform;
+    this.output_vr068i$_0 = new ShaderNodeIoVar(new ModelVar3i(this.name), this);
+  }
+  Object.defineProperty(PushConstantNode3i.prototype, 'uniform', {
+    get: function () {
+      return this.uniform_3z6kr5$_0;
+    }
+  });
+  Object.defineProperty(PushConstantNode3i.prototype, 'output', {
+    get: function () {
+      return this.output_vr068i$_0;
+    }
+  });
+  PushConstantNode3i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PushConstantNode3i',
+    interfaces: [PushConstantNode]
+  };
+  function PushConstantNode4i(uniform, graph) {
+    PushConstantNode.call(this, uniform.name, graph);
+    this.uniform_pqobse$_0 = uniform;
+    this.output_z0050z$_0 = new ShaderNodeIoVar(new ModelVar4i(this.name), this);
+  }
+  Object.defineProperty(PushConstantNode4i.prototype, 'uniform', {
+    get: function () {
+      return this.uniform_pqobse$_0;
+    }
+  });
+  Object.defineProperty(PushConstantNode4i.prototype, 'output', {
+    get: function () {
+      return this.output_z0050z$_0;
+    }
+  });
+  PushConstantNode4i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PushConstantNode4i',
+    interfaces: [PushConstantNode]
+  };
   function TextureSamplerNode(texture, graph, premultiply) {
     if (premultiply === void 0)
       premultiply = false;
@@ -15231,6 +15486,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   TextureSamplerNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TextureSamplerNode',
+    interfaces: [ShaderNode]
+  };
+  function NoiseTextureSamplerNode(texture, graph) {
+    ShaderNode.call(this, 'noise_sampler_' + texture.name + '_' + graph.nextNodeId, graph);
+    this.texture = texture;
+    this.inTexSize = new ShaderNodeIoVar(new ModelVar2iConst(new Vec2i(16, 16)));
+    this.outNoise = new ShaderNodeIoVar(new ModelVar4f(this.name + '_outNoise'), this);
+  }
+  NoiseTextureSamplerNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_lhtstx$(this.texture);
+    this.dependsOn_7qvs0d$(this.inTexSize);
+  };
+  NoiseTextureSamplerNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('\n' + '            vec2 ' + this.name + '_texCoord = (vec2(ivec2(gl_FragCoord.xy) % ' + this.inTexSize.ref2i() + ') + 0.5) / ' + this.inTexSize.ref2f() + ';' + '\n' + '            ' + this.outNoise.declare() + ' = ' + generator.sampleTexture2d_buzeal$(this.texture.name, this.name + '_texCoord') + ';' + '\n' + '        ');
+  };
+  NoiseTextureSamplerNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NoiseTextureSamplerNode',
     interfaces: [ShaderNode]
   };
   function CubeMapSamplerNode(cubeMap, graph, premultiply) {
@@ -18240,6 +18514,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       name = null;
     if (props === void 0)
       props = new TextureProps();
+    if (loader === void 0)
+      loader = null;
     this.name = name;
     this.props = props;
     this.loader = loader;
@@ -18508,7 +18784,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (mipMapping === void 0)
       mipMapping = true;
     if (maxAnisotropy === void 0)
-      maxAnisotropy = 16;
+      maxAnisotropy = 4;
     this.format = format;
     this.addressModeU = addressModeU;
     this.addressModeV = addressModeV;
@@ -19114,7 +19390,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   });
   Uniform1i.prototype.putTo_l6oshk$ = function (buffer) {
-    buffer.putUint32_za3lpa$(this.value);
+    buffer.putInt32_za3lpa$(this.value);
   };
   Uniform1i.$metadata$ = {
     kind: Kind_CLASS,
@@ -19125,6 +19401,75 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $this = $this || Object.create(Uniform1i.prototype);
     Uniform1i.call($this, name);
     $this.value = initValue;
+    return $this;
+  }
+  function Uniform2i(name) {
+    Uniform.call(this, MutableVec2i_init(), name);
+    this.size_ju05ub$_0 = 8;
+  }
+  Object.defineProperty(Uniform2i.prototype, 'size', {
+    get: function () {
+      return this.size_ju05ub$_0;
+    }
+  });
+  Uniform2i.prototype.putTo_l6oshk$ = function (buffer) {
+    buffer.putInt32_q5rwfd$(this.value.array);
+  };
+  Uniform2i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform2i',
+    interfaces: [Uniform]
+  };
+  function Uniform2i_init(initValue, name, $this) {
+    $this = $this || Object.create(Uniform2i.prototype);
+    Uniform2i.call($this, name);
+    $this.value.set_czzhjm$(initValue);
+    return $this;
+  }
+  function Uniform3i(name) {
+    Uniform.call(this, MutableVec3i_init(), name);
+    this.size_mdhf2m$_0 = 12;
+  }
+  Object.defineProperty(Uniform3i.prototype, 'size', {
+    get: function () {
+      return this.size_mdhf2m$_0;
+    }
+  });
+  Uniform3i.prototype.putTo_l6oshk$ = function (buffer) {
+    buffer.putInt32_q5rwfd$(this.value.array);
+  };
+  Uniform3i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform3i',
+    interfaces: [Uniform]
+  };
+  function Uniform3i_init(initValue, name, $this) {
+    $this = $this || Object.create(Uniform3i.prototype);
+    Uniform3i.call($this, name);
+    $this.value.set_czzhir$(initValue);
+    return $this;
+  }
+  function Uniform4i(name) {
+    Uniform.call(this, MutableVec4i_init(), name);
+    this.size_6g51zl$_0 = 16;
+  }
+  Object.defineProperty(Uniform4i.prototype, 'size', {
+    get: function () {
+      return this.size_6g51zl$_0;
+    }
+  });
+  Uniform4i.prototype.putTo_l6oshk$ = function (buffer) {
+    buffer.putInt32_q5rwfd$(this.value.array);
+  };
+  Uniform4i.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform4i',
+    interfaces: [Uniform]
+  };
+  function Uniform4i_init(initValue, name, $this) {
+    $this = $this || Object.create(Uniform4i.prototype);
+    Uniform4i.call($this, name);
+    $this.value.set_czzhhw$(initValue);
     return $this;
   }
   function Uniform1iv(name, length) {
@@ -19152,15 +19497,117 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$;
     tmp$ = this.length;
     for (var i = 0; i < tmp$; i++) {
-      buffer.putUint32_za3lpa$(this.value[i]);
-      buffer.putUint32_za3lpa$(0);
-      buffer.putUint32_za3lpa$(0);
-      buffer.putUint32_za3lpa$(0);
+      buffer.putInt32_za3lpa$(this.value[i]);
+      buffer.putInt32_za3lpa$(0);
+      buffer.putInt32_za3lpa$(0);
+      buffer.putInt32_za3lpa$(0);
     }
   };
   Uniform1iv.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Uniform1iv',
+    interfaces: [Uniform]
+  };
+  function Uniform2iv(name, length) {
+    var array = Array_0(length);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableVec2i_init();
+    }
+    Uniform.call(this, array, name);
+    this.length_yi95os$_0 = length;
+    this.size_5e7ubd$_0 = 16 * this.length | 0;
+  }
+  Object.defineProperty(Uniform2iv.prototype, 'length', {
+    get: function () {
+      return this.length_yi95os$_0;
+    }
+  });
+  Object.defineProperty(Uniform2iv.prototype, 'size', {
+    get: function () {
+      return this.size_5e7ubd$_0;
+    }
+  });
+  Uniform2iv.prototype.putTo_l6oshk$ = function (buffer) {
+    var tmp$;
+    tmp$ = this.length;
+    for (var i = 0; i < tmp$; i++) {
+      buffer.putInt32_q5rwfd$(this.value[i].array);
+      buffer.putInt32_za3lpa$(0);
+      buffer.putInt32_za3lpa$(0);
+    }
+  };
+  Uniform2iv.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform2iv',
+    interfaces: [Uniform]
+  };
+  function Uniform3iv(name, length) {
+    var array = Array_0(length);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableVec3i_init();
+    }
+    Uniform.call(this, array, name);
+    this.length_6szzqt$_0 = length;
+    this.size_ohw6h2$_0 = 16 * this.length | 0;
+  }
+  Object.defineProperty(Uniform3iv.prototype, 'length', {
+    get: function () {
+      return this.length_6szzqt$_0;
+    }
+  });
+  Object.defineProperty(Uniform3iv.prototype, 'size', {
+    get: function () {
+      return this.size_ohw6h2$_0;
+    }
+  });
+  Uniform3iv.prototype.putTo_l6oshk$ = function (buffer) {
+    var tmp$;
+    tmp$ = this.length;
+    for (var i = 0; i < tmp$; i++) {
+      buffer.putInt32_q5rwfd$(this.value[i].array);
+      buffer.putInt32_za3lpa$(0);
+    }
+  };
+  Uniform3iv.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform3iv',
+    interfaces: [Uniform]
+  };
+  function Uniform4iv(name, length) {
+    var array = Array_0(length);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableVec4i_init();
+    }
+    Uniform.call(this, array, name);
+    this.length_mwuwsq$_0 = length;
+    this.size_gn3upn$_0 = 16 * this.length | 0;
+  }
+  Object.defineProperty(Uniform4iv.prototype, 'length', {
+    get: function () {
+      return this.length_mwuwsq$_0;
+    }
+  });
+  Object.defineProperty(Uniform4iv.prototype, 'size', {
+    get: function () {
+      return this.size_gn3upn$_0;
+    }
+  });
+  Uniform4iv.prototype.putTo_l6oshk$ = function (buffer) {
+    var tmp$;
+    tmp$ = this.length;
+    for (var i = 0; i < tmp$; i++) {
+      buffer.putInt32_q5rwfd$(this.value[i].array);
+    }
+  };
+  Uniform4iv.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uniform4iv',
     interfaces: [Uniform]
   };
   function VertexLayout(bindings, primitiveType) {
@@ -19364,746 +19811,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function toString_0($receiver, precision) {
     return toString_1($receiver, precision);
   }
-  function Animation(name) {
-    this.name = name;
-    this.channels = ArrayList_init_0();
-    this.weight = 1.0;
-    this.speed = 1.0;
-    this.duration_awlkw7$_0 = 1.0;
-    this.animationNodes_0 = ArrayList_init_0();
-  }
-  Object.defineProperty(Animation.prototype, 'duration', {
-    get: function () {
-      return this.duration_awlkw7$_0;
-    },
-    set: function (duration) {
-      this.duration_awlkw7$_0 = duration;
-    }
-  });
-  Animation.prototype.prepareAnimation = function () {
-    var tmp$;
-    var $receiver = this.channels;
-    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
-    var tmp$_0;
-    tmp$_0 = $receiver.iterator();
-    while (tmp$_0.hasNext()) {
-      var item = tmp$_0.next();
-      destination.add_11rb$(item.lastKeyTime);
-    }
-    this.duration = (tmp$ = max(destination)) != null ? tmp$ : 0.0;
-    var tmp$_1;
-    tmp$_1 = this.channels.iterator();
-    while (tmp$_1.hasNext()) {
-      var element = tmp$_1.next();
-      element.duration = this.duration;
-    }
-    var tmp$_2 = this.animationNodes_0;
-    var $receiver_0 = this.channels;
-    var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
-    var tmp$_3;
-    tmp$_3 = $receiver_0.iterator();
-    while (tmp$_3.hasNext()) {
-      var item_0 = tmp$_3.next();
-      destination_0.add_11rb$(item_0.animationNode);
-    }
-    addAll(tmp$_2, distinct(destination_0));
-  };
-  Animation.prototype.apply_8555vt$ = function (time, firstWeightedTransform) {
-    if (firstWeightedTransform === void 0)
-      firstWeightedTransform = true;
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var t = time * this.speed % this.duration;
-    tmp$ = this.animationNodes_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.animationNodes_0.get_za3lpa$(i).initTransform();
-    }
-    tmp$_0 = this.channels;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      this.channels.get_za3lpa$(i_0).apply_mx4ult$(t);
-    }
-    if (this.weight === 1.0) {
-      tmp$_1 = this.animationNodes_0;
-      for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
-        this.animationNodes_0.get_za3lpa$(i_1).applyTransform();
-      }
-    } else {
-      tmp$_2 = this.animationNodes_0;
-      for (var i_2 = 0; i_2 !== tmp$_2.size; ++i_2) {
-        this.animationNodes_0.get_za3lpa$(i_2).applyTransformWeighted_8ca0d4$(this.weight, firstWeightedTransform);
-      }
-    }
-  };
-  Animation.prototype.printChannels = function () {
-    println_0(toString(this.name) + ' channels:');
-    var tmp$;
-    tmp$ = this.channels.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      println_0('  ' + toString(element.name) + ' [node: ' + toString(element.animationNode.name) + ']');
-      element.printKeys_61zpoe$('    ');
-    }
-  };
-  Animation.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Animation',
-    interfaces: []
-  };
-  function AnimationChannel(name, animationNode) {
-    this.name = name;
-    this.animationNode = animationNode;
-    this.keys = new TreeMap();
-    this.duration = 0.0;
-  }
-  Object.defineProperty(AnimationChannel.prototype, 'lastKeyTime', {
-    get: function () {
-      return this.keys.lastKey();
-    }
-  });
-  AnimationChannel.prototype.apply_mx4ult$ = function (time) {
-    var key = this.keys.floorValue_trkh7z$(time);
-    if (key == null) {
-      var a = this.lastKeyTime;
-      var b = this.duration;
-      var eps;
-      eps = package$math.FUZZY_EQ_F;
-      var $receiver = a - b;
-      key = Math_0.abs($receiver) <= eps ? this.keys.lastValue() : this.keys.firstValue();
-    }key.apply_yyyjof$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
-  };
-  AnimationChannel.prototype.printKeys_61zpoe$ = function (indent) {
-    if (indent === void 0)
-      indent = '';
-    var tmp$;
-    var animKeys = toList(this.keys.values);
-    var b = animKeys.size;
-    tmp$ = Math_0.min(5, b);
-    for (var i = 0; i < tmp$; i++) {
-      println_0(indent + animKeys.get_za3lpa$(i));
-    }
-    if (animKeys.size > 5) {
-      println_0(indent + '  ...' + (animKeys.size - 5 | 0) + ' more');
-    }};
-  AnimationChannel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AnimationChannel',
-    interfaces: []
-  };
-  function TranslationAnimationChannel(name, animationNode) {
-    AnimationChannel.call(this, name, animationNode);
-  }
-  TranslationAnimationChannel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TranslationAnimationChannel',
-    interfaces: [AnimationChannel]
-  };
-  function RotationAnimationChannel(name, animationNode) {
-    AnimationChannel.call(this, name, animationNode);
-  }
-  RotationAnimationChannel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RotationAnimationChannel',
-    interfaces: [AnimationChannel]
-  };
-  function ScaleAnimationChannel(name, animationNode) {
-    AnimationChannel.call(this, name, animationNode);
-  }
-  ScaleAnimationChannel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ScaleAnimationChannel',
-    interfaces: [AnimationChannel]
-  };
-  function WeightAnimationChannel(name, animationNode) {
-    AnimationChannel.call(this, name, animationNode);
-  }
-  WeightAnimationChannel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'WeightAnimationChannel',
-    interfaces: [AnimationChannel]
-  };
-  function AnimationNode() {
-  }
-  AnimationNode.prototype.initTransform = function () {
-  };
-  AnimationNode.prototype.setTranslation_czzhiw$ = function (translation) {
-  };
-  AnimationNode.prototype.setRotation_czzhi1$ = function (rotation) {
-  };
-  AnimationNode.prototype.setScale_czzhiw$ = function (scale) {
-  };
-  AnimationNode.prototype.setWeights_q3cr5i$ = function (weights) {
-  };
-  AnimationNode.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'AnimationNode',
-    interfaces: []
-  };
-  function AnimatedTransformGroup(target) {
-    this.target = target;
-    this.initTranslation_0 = MutableVec3d_init();
-    this.initRotation_0 = MutableVec4d_init();
-    this.initScale_0 = new MutableVec3d(1.0, 1.0, 1.0);
-    this.animTranslation_0 = MutableVec3d_init();
-    this.animRotation_0 = MutableVec4d_init();
-    this.animScale_0 = MutableVec3d_init();
-    this.quatRotMat_0 = new Mat4d();
-    this.weightedTransformMat_0 = new Mat4d();
-    var vec4 = MutableVec4d_init();
-    this.target.transform.getCol_8irwu3$(3, vec4);
-    this.initTranslation_0.set_yvo9jy$(vec4.x, vec4.y, vec4.z);
-    this.target.transform.getRotation_5s4mpx$(this.initRotation_0);
-    var sx = this.target.transform.getCol_8irwu3$(0, vec4).length();
-    var sy = this.target.transform.getCol_8irwu3$(0, vec4).length();
-    var sz = this.target.transform.getCol_8irwu3$(0, vec4).length();
-    this.initScale_0.set_yvo9jy$(sx, sy, sz);
-  }
-  Object.defineProperty(AnimatedTransformGroup.prototype, 'name', {
-    get: function () {
-      return this.target.name;
-    }
-  });
-  AnimatedTransformGroup.prototype.initTransform = function () {
-    this.animTranslation_0.set_czzhiw$(this.initTranslation_0);
-    this.animRotation_0.set_czzhi1$(this.initRotation_0);
-    this.animScale_0.set_czzhiw$(this.initScale_0);
-  };
-  AnimatedTransformGroup.prototype.applyTransform = function () {
-    this.target.setIdentity();
-    this.target.translate_czzhiw$(this.animTranslation_0);
-    this.target.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
-    this.target.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
-  };
-  AnimatedTransformGroup.prototype.applyTransformWeighted_8ca0d4$ = function (weight, firstWeightedTransform) {
-    this.weightedTransformMat_0.setIdentity();
-    this.weightedTransformMat_0.translate_czzhiw$(this.animTranslation_0);
-    this.weightedTransformMat_0.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
-    this.weightedTransformMat_0.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
-    if (firstWeightedTransform) {
-      for (var i = 0; i <= 15; i++) {
-        this.target.transform.matrix[i] = this.weightedTransformMat_0.matrix[i] * weight;
-      }
-    } else {
-      for (var i_0 = 0; i_0 <= 15; i_0++) {
-        this.target.transform.matrix[i_0] = this.target.transform.matrix[i_0] + this.weightedTransformMat_0.matrix[i_0] * weight;
-      }
-    }
-    this.target.setDirty();
-  };
-  AnimatedTransformGroup.prototype.setTranslation_czzhiw$ = function (translation) {
-    this.animTranslation_0.set_czzhiw$(translation);
-  };
-  AnimatedTransformGroup.prototype.setRotation_czzhi1$ = function (rotation) {
-    this.animRotation_0.set_czzhi1$(rotation);
-  };
-  AnimatedTransformGroup.prototype.setScale_czzhiw$ = function (scale) {
-    this.animScale_0.set_czzhiw$(scale);
-  };
-  AnimatedTransformGroup.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AnimatedTransformGroup',
-    interfaces: [AnimationNode]
-  };
-  function MorphAnimatedMesh(target) {
-    this.target = target;
-    this.weights_0 = new Float32Array(1);
-  }
-  Object.defineProperty(MorphAnimatedMesh.prototype, 'name', {
-    get: function () {
-      return this.target.name;
-    }
-  });
-  MorphAnimatedMesh.prototype.applyTransform = function () {
-    this.target.morphWeights = this.weights_0;
-  };
-  MorphAnimatedMesh.prototype.applyTransformWeighted_8ca0d4$ = function (weight, firstWeightedTransform) {
-    var tmp$;
-    var targetW = this.target.morphWeights;
-    if (targetW == null || targetW.length !== this.weights_0.length) {
-      targetW = new Float32Array(this.weights_0.length);
-      this.target.morphWeights = targetW;
-    }tmp$ = this.weights_0;
-    for (var i = 0; i !== tmp$.length; ++i) {
-      if (firstWeightedTransform) {
-        targetW[i] = this.weights_0[i] * weight;
-      } else {
-        targetW[i] = targetW[i] + this.weights_0[i] * weight;
-      }
-    }
-  };
-  MorphAnimatedMesh.prototype.setWeights_q3cr5i$ = function (weights) {
-    if (this.weights_0.length !== weights.length) {
-      this.weights_0 = new Float32Array(weights.length);
-    }for (var i = 0; i !== weights.length; ++i) {
-      this.weights_0[i] = weights[i];
-    }
-  };
-  MorphAnimatedMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MorphAnimatedMesh',
-    interfaces: [AnimationNode]
-  };
-  function AnimationKey(time) {
-    this.time = time;
-    this.interpolation = AnimationKey$Interpolation$LINEAR_getInstance();
-  }
-  AnimationKey.prototype.interpolationPos_dleff0$ = function (pos, nextTime) {
-    var tmp$, tmp$_0;
-    if (this.time !== nextTime) {
-      if (this.time < nextTime) {
-        tmp$ = this.time;
-      } else {
-        tmp$ = 0.0;
-      }
-      var t = tmp$;
-      tmp$_0 = this.interpolation.getInterpolationPos_mx4ult$((pos - t) / (nextTime - t));
-    } else {
-      tmp$_0 = 0.0;
-    }
-    return tmp$_0;
-  };
-  AnimationKey.prototype.toString = function () {
-    return toString_0(this.time, 2) + ' -> [' + this.interpolation + ']';
-  };
-  function AnimationKey$Interpolation(name, ordinal) {
-    Enum.call(this);
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function AnimationKey$Interpolation_initFields() {
-    AnimationKey$Interpolation_initFields = function () {
-    };
-    new AnimationKey$Interpolation$LINEAR();
-    new AnimationKey$Interpolation$STEP();
-    new AnimationKey$Interpolation$CUBICSPLINE();
-  }
-  function AnimationKey$Interpolation$LINEAR() {
-    AnimationKey$Interpolation$LINEAR_instance = this;
-    AnimationKey$Interpolation.call(this, 'LINEAR', 0);
-  }
-  AnimationKey$Interpolation$LINEAR.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
-    return linearPos;
-  };
-  AnimationKey$Interpolation$LINEAR.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LINEAR',
-    interfaces: [AnimationKey$Interpolation]
-  };
-  var AnimationKey$Interpolation$LINEAR_instance = null;
-  function AnimationKey$Interpolation$LINEAR_getInstance() {
-    AnimationKey$Interpolation_initFields();
-    return AnimationKey$Interpolation$LINEAR_instance;
-  }
-  function AnimationKey$Interpolation$STEP() {
-    AnimationKey$Interpolation$STEP_instance = this;
-    AnimationKey$Interpolation.call(this, 'STEP', 1);
-  }
-  AnimationKey$Interpolation$STEP.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
-    return 0.0;
-  };
-  AnimationKey$Interpolation$STEP.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'STEP',
-    interfaces: [AnimationKey$Interpolation]
-  };
-  var AnimationKey$Interpolation$STEP_instance = null;
-  function AnimationKey$Interpolation$STEP_getInstance() {
-    AnimationKey$Interpolation_initFields();
-    return AnimationKey$Interpolation$STEP_instance;
-  }
-  function AnimationKey$Interpolation$CUBICSPLINE() {
-    AnimationKey$Interpolation$CUBICSPLINE_instance = this;
-    AnimationKey$Interpolation.call(this, 'CUBICSPLINE', 2);
-  }
-  AnimationKey$Interpolation$CUBICSPLINE.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
-    return linearPos;
-  };
-  AnimationKey$Interpolation$CUBICSPLINE.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'CUBICSPLINE',
-    interfaces: [AnimationKey$Interpolation]
-  };
-  var AnimationKey$Interpolation$CUBICSPLINE_instance = null;
-  function AnimationKey$Interpolation$CUBICSPLINE_getInstance() {
-    AnimationKey$Interpolation_initFields();
-    return AnimationKey$Interpolation$CUBICSPLINE_instance;
-  }
-  AnimationKey$Interpolation.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Interpolation',
-    interfaces: [Enum]
-  };
-  function AnimationKey$Interpolation$values() {
-    return [AnimationKey$Interpolation$LINEAR_getInstance(), AnimationKey$Interpolation$STEP_getInstance(), AnimationKey$Interpolation$CUBICSPLINE_getInstance()];
-  }
-  AnimationKey$Interpolation.values = AnimationKey$Interpolation$values;
-  function AnimationKey$Interpolation$valueOf(name) {
-    switch (name) {
-      case 'LINEAR':
-        return AnimationKey$Interpolation$LINEAR_getInstance();
-      case 'STEP':
-        return AnimationKey$Interpolation$STEP_getInstance();
-      case 'CUBICSPLINE':
-        return AnimationKey$Interpolation$CUBICSPLINE_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.scene.animation.AnimationKey.Interpolation.' + name);
-    }
-  }
-  AnimationKey$Interpolation.valueOf_61zpoe$ = AnimationKey$Interpolation$valueOf;
-  AnimationKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AnimationKey',
-    interfaces: []
-  };
-  function RotationKey(time, rotation) {
-    AnimationKey.call(this, time);
-    this.rotation = rotation;
-    this.tmpRotation_ndkhzb$_0 = MutableVec4d_init();
-    this.qa_uw9ek8$_0 = MutableVec4d_init();
-    this.qb_uw9ejd$_0 = MutableVec4d_init();
-    this.qc_uw9eii$_0 = MutableVec4d_init();
-  }
-  RotationKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      this.tmpRotation_ndkhzb$_0.set_czzhi1$(this.rotation);
-    } else {
-      this.slerp_nwt50b$_0(this.rotation, next.rotation, this.interpolationPos_dleff0$(time, next.time), this.tmpRotation_ndkhzb$_0);
-    }
-    node.setRotation_czzhi1$(this.tmpRotation_ndkhzb$_0);
-  };
-  RotationKey.prototype.toString = function () {
-    return toString_0(this.time, 2) + ' -> rotation: ' + this.rotation + ' [' + this.interpolation + ']';
-  };
-  RotationKey.prototype.slerp_nwt50b$_0 = function (quatA, quatB, f, result) {
-    quatA.norm_5s4mpx$(this.qa_uw9ek8$_0);
-    quatB.norm_5s4mpx$(this.qb_uw9ejd$_0);
-    var clamp$result;
-    if (f < 0.0) {
-      clamp$result = 0.0;
-    } else if (f > 1.0) {
-      clamp$result = 1.0;
-    } else {
-      clamp$result = f;
-    }
-    var t = clamp$result;
-    var $receiver = this.qa_uw9ek8$_0.dot_czzhi1$(this.qb_uw9ejd$_0);
-    var min = -1.0;
-    var clamp$result_0;
-    if ($receiver < min) {
-      clamp$result_0 = min;
-    } else if ($receiver > 1.0) {
-      clamp$result_0 = 1.0;
-    } else {
-      clamp$result_0 = $receiver;
-    }
-    var dot = clamp$result_0;
-    if (dot < 0) {
-      this.qa_uw9ek8$_0.scale_14dthe$(-1.0);
-      dot = -dot;
-    }if (dot > 0.9999995) {
-      this.qb_uw9ejd$_0.subtract_2x9ggw$(this.qa_uw9ek8$_0, result).scale_14dthe$(t).add_czzhi1$(this.qa_uw9ek8$_0).norm();
-    } else {
-      var x = dot;
-      var theta0 = Math_0.acos(x);
-      var theta = theta0 * t;
-      this.qa_uw9ek8$_0.scale_b0flav$(-dot, this.qc_uw9eii$_0).add_czzhi1$(this.qb_uw9ejd$_0).norm();
-      this.qa_uw9ek8$_0.scale_14dthe$(Math_0.cos(theta));
-      this.qc_uw9eii$_0.scale_14dthe$(Math_0.sin(theta));
-      result.set_czzhi1$(this.qa_uw9ek8$_0).add_czzhi1$(this.qc_uw9eii$_0);
-    }
-    return result;
-  };
-  RotationKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RotationKey',
-    interfaces: [AnimationKey]
-  };
-  function CubicRotationKey(time, rotation, startTan, endTan) {
-    RotationKey.call(this, time, rotation);
-    this.startTan = startTan;
-    this.endTan = endTan;
-    this.p0_0 = MutableVec4d_init();
-    this.p1_0 = MutableVec4d_init();
-    this.m0_0 = MutableVec4d_init();
-    this.m1_0 = MutableVec4d_init();
-  }
-  CubicRotationKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      node.setRotation_czzhi1$(this.rotation);
-    } else {
-      var t = this.interpolationPos_dleff0$(time, next.time);
-      var t2 = t * t;
-      var t3 = t * t * t;
-      var f1 = 2 * t3 - 3 * t2 + 1;
-      var f2 = t3 - 2 * t2 + t;
-      var f3 = -2 * t3 + 3 * t2;
-      var f4 = t3 - t2;
-      this.p0_0.set_czzhi1$(this.rotation).scale_14dthe$(f1);
-      this.m0_0.set_czzhi1$(this.startTan).scale_14dthe$(f2);
-      this.p1_0.set_czzhi1$(next.rotation).scale_14dthe$(f3);
-      this.m1_0.set_czzhi1$(this.endTan).scale_14dthe$(f4);
-      node.setRotation_czzhi1$(this.p0_0.add_czzhi1$(this.m0_0).add_czzhi1$(this.p1_0).add_czzhi1$(this.m1_0).norm());
-    }
-  };
-  CubicRotationKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'CubicRotationKey',
-    interfaces: [RotationKey]
-  };
-  function TranslationKey(time, translation) {
-    AnimationKey.call(this, time);
-    this.translation = translation;
-    this.tmpTranslation_3fbkj9$_0 = MutableVec3d_init();
-  }
-  TranslationKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      node.setTranslation_czzhiw$(this.translation);
-    } else {
-      next.translation.subtract_vgki2o$(this.translation, this.tmpTranslation_3fbkj9$_0).scale_14dthe$(this.interpolationPos_dleff0$(time, next.time)).add_czzhiw$(this.translation);
-      node.setTranslation_czzhiw$(this.tmpTranslation_3fbkj9$_0);
-    }
-  };
-  TranslationKey.prototype.toString = function () {
-    return toString_0(this.time, 2) + ' -> translation: ' + this.translation + ' [' + this.interpolation + ']';
-  };
-  TranslationKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TranslationKey',
-    interfaces: [AnimationKey]
-  };
-  function CubicTranslationKey(time, translation, startTan, endTan) {
-    TranslationKey.call(this, time, translation);
-    this.startTan = startTan;
-    this.endTan = endTan;
-    this.p0_0 = MutableVec3d_init();
-    this.p1_0 = MutableVec3d_init();
-    this.m0_0 = MutableVec3d_init();
-    this.m1_0 = MutableVec3d_init();
-  }
-  CubicTranslationKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      node.setTranslation_czzhiw$(this.translation);
-    } else {
-      var t = this.interpolationPos_dleff0$(time, next.time);
-      var t2 = t * t;
-      var t3 = t * t * t;
-      var f1 = 2 * t3 - 3 * t2 + 1;
-      var f2 = t3 - 2 * t2 + t;
-      var f3 = -2 * t3 + 3 * t2;
-      var f4 = t3 - t2;
-      this.p0_0.set_czzhiw$(this.translation).scale_14dthe$(f1);
-      this.m0_0.set_czzhiw$(this.startTan).scale_14dthe$(f2);
-      this.p1_0.set_czzhiw$(next.translation).scale_14dthe$(f3);
-      this.m1_0.set_czzhiw$(this.endTan).scale_14dthe$(f4);
-      node.setTranslation_czzhiw$(this.p0_0.add_czzhiw$(this.m0_0).add_czzhiw$(this.p1_0).add_czzhiw$(this.m1_0));
-    }
-  };
-  CubicTranslationKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'CubicTranslationKey',
-    interfaces: [TranslationKey]
-  };
-  function ScaleKey(time, scale) {
-    AnimationKey.call(this, time);
-    this.scale = scale;
-    this.tmpScale_y7mgar$_0 = MutableVec3d_init();
-  }
-  ScaleKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      node.setScale_czzhiw$(this.scale);
-    } else {
-      next.scale.subtract_vgki2o$(this.scale, this.tmpScale_y7mgar$_0).scale_14dthe$(this.interpolationPos_dleff0$(time, next.time)).add_czzhiw$(this.scale);
-      node.setScale_czzhiw$(this.tmpScale_y7mgar$_0);
-    }
-  };
-  ScaleKey.prototype.toString = function () {
-    return toString_0(this.time, 2) + ' -> scale: ' + this.scale + ' [' + this.interpolation + ']';
-  };
-  ScaleKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ScaleKey',
-    interfaces: [AnimationKey]
-  };
-  function CubicScaleKey(time, scale, startTan, endTan) {
-    ScaleKey.call(this, time, scale);
-    this.startTan = startTan;
-    this.endTan = endTan;
-    this.p0_0 = MutableVec3d_init();
-    this.p1_0 = MutableVec3d_init();
-    this.m0_0 = MutableVec3d_init();
-    this.m1_0 = MutableVec3d_init();
-  }
-  CubicScaleKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    if (next == null) {
-      node.setScale_czzhiw$(this.scale);
-    } else {
-      var t = this.interpolationPos_dleff0$(time, next.time);
-      var t2 = t * t;
-      var t3 = t * t * t;
-      var f1 = 2 * t3 - 3 * t2 + 1;
-      var f2 = t3 - 2 * t2 + t;
-      var f3 = -2 * t3 + 3 * t2;
-      var f4 = t3 - t2;
-      this.p0_0.set_czzhiw$(this.scale).scale_14dthe$(f1);
-      this.m0_0.set_czzhiw$(this.startTan).scale_14dthe$(f2);
-      this.p1_0.set_czzhiw$(next.scale).scale_14dthe$(f3);
-      this.m1_0.set_czzhiw$(this.endTan).scale_14dthe$(f4);
-      node.setScale_czzhiw$(this.p0_0.add_czzhiw$(this.m0_0).add_czzhiw$(this.p1_0).add_czzhiw$(this.m1_0));
-    }
-  };
-  CubicScaleKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'CubicScaleKey',
-    interfaces: [ScaleKey]
-  };
-  function WeightKey(time, weights) {
-    AnimationKey.call(this, time);
-    this.weights = weights;
-    this.tmpW = new Float32Array(1);
-  }
-  WeightKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    var tmp$, tmp$_0;
-    if (this.tmpW.length !== this.weights.length) {
-      this.tmpW = new Float32Array(this.weights.length);
-    }if (next == null) {
-      tmp$ = this.weights;
-      for (var i = 0; i !== tmp$.length; ++i) {
-        this.tmpW[i] = this.weights[i];
-      }
-    } else {
-      tmp$_0 = this.weights;
-      for (var i_0 = 0; i_0 !== tmp$_0.length; ++i_0) {
-        this.tmpW[i_0] = (next.weights[i_0] - this.weights[i_0]) * this.interpolationPos_dleff0$(time, next.time) + this.weights[i_0];
-      }
-    }
-    node.setWeights_q3cr5i$(this.tmpW);
-  };
-  WeightKey.prototype.toString = function () {
-    return toString_0(this.time, 2) + ' -> weight: (' + joinToString_0(this.weights, ', ') + ') [' + this.interpolation + ']';
-  };
-  WeightKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'WeightKey',
-    interfaces: [AnimationKey]
-  };
-  function CubicWeightKey(time, weights, startTan, endTan) {
-    WeightKey.call(this, time, weights);
-    this.startTan = startTan;
-    this.endTan = endTan;
-  }
-  CubicWeightKey.prototype.apply_yyyjof$ = function (time, next, node) {
-    var tmp$, tmp$_0;
-    if (this.tmpW.length !== this.weights.length) {
-      this.tmpW = new Float32Array(this.weights.length);
-    }if (next == null) {
-      tmp$ = this.weights;
-      for (var i = 0; i !== tmp$.length; ++i) {
-        this.tmpW[i] = this.weights[i];
-      }
-    } else {
-      var t = this.interpolationPos_dleff0$(time, next.time);
-      var t2 = t * t;
-      var t3 = t * t * t;
-      var f1 = 2 * t3 - 3 * t2 + 1;
-      var f2 = t3 - 2 * t2 + t;
-      var f3 = -2 * t3 + 3 * t2;
-      var f4 = t3 - t2;
-      tmp$_0 = this.weights;
-      for (var i_0 = 0; i_0 !== tmp$_0.length; ++i_0) {
-        var p0 = this.weights[i_0] * f1;
-        var m0 = this.startTan[i_0] * f2;
-        var p1 = next.weights[i_0] * f3;
-        var m1 = this.endTan[i_0] * f4;
-        this.tmpW[i_0] = p0 + m0 + p1 + m1;
-      }
-    }
-    node.setWeights_q3cr5i$(this.tmpW);
-  };
-  CubicWeightKey.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'CubicWeightKey',
-    interfaces: [WeightKey]
-  };
-  function Skin() {
-    this.nodes = ArrayList_init_0();
-  }
-  Skin.prototype.updateJointTransforms = function () {
-    var tmp$;
-    tmp$ = this.nodes;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      if (!this.nodes.get_za3lpa$(i).hasParent) {
-        this.nodes.get_za3lpa$(i).updateJointTransform();
-      }}
-  };
-  Skin.prototype.printHierarchy = function () {
-    var $receiver = this.nodes;
-    var destination = ArrayList_init_0();
-    var tmp$;
-    tmp$ = $receiver.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      if (!element.hasParent)
-        destination.add_11rb$(element);
-    }
-    var tmp$_0;
-    tmp$_0 = destination.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      element_0.printHierarchy_61zpoe$('');
-    }
-  };
-  function Skin$SkinNode(joint, inverseBindMatrix) {
-    this.joint = joint;
-    this.inverseBindMatrix = inverseBindMatrix;
-    this.jointTransform = new Mat4f();
-    this.tmpMat4f_0 = new Mat4f();
-    this.parent_0 = null;
-    this.children_0 = ArrayList_init_0();
-  }
-  Object.defineProperty(Skin$SkinNode.prototype, 'hasParent', {
-    get: function () {
-      return this.parent_0 != null;
-    }
-  });
-  Skin$SkinNode.prototype.addChild_57g4th$ = function (node) {
-    node.parent_0 = this;
-    this.children_0.add_11rb$(node);
-  };
-  Skin$SkinNode.prototype.updateJointTransform = function () {
-    var tmp$;
-    this.jointTransform.set_d4zu6l$(this.joint.transform);
-    tmp$ = this.children_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
-    }
-    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
-  };
-  Skin$SkinNode.prototype.updateJointTransform_0 = function (parentTransform) {
-    var tmp$;
-    this.tmpMat4f_0.set_d4zu6l$(this.joint.transform);
-    this.jointTransform.set_d4zu6j$(parentTransform).mul_d4zu6j$(this.tmpMat4f_0);
-    tmp$ = this.children_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
-    }
-    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
-  };
-  Skin$SkinNode.prototype.printHierarchy_61zpoe$ = function (indent) {
-    println_0(indent + toString(this.joint.name));
-    var tmp$;
-    tmp$ = this.children_0.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.printHierarchy_61zpoe$(indent + '    ');
-    }
-  };
-  Skin$SkinNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SkinNode',
-    interfaces: []
-  };
-  Skin.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Skin',
-    interfaces: []
-  };
   function Camera(name) {
     if (name === void 0)
       name = 'camera';
@@ -21322,7 +21029,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$;
     this.rayTraverser.setup_nvyeur$(test.ray);
     if ((tmp$ = this.triangleTree) != null) {
-      this.rayTraverser.traverse_m6hlto$(tmp$);
+      this.rayTraverser.traverse_7efza$(tmp$);
     }if (this.rayTraverser.distanceSqr < test.hitDistanceSqr) {
       test.setHit_vfk0k2$(this.closure$mesh, this.rayTraverser.distance);
     }};
@@ -21342,7 +21049,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$;
     this.rayTraverser.setup_nvyeur$(test.ray);
     if ((tmp$ = this.edgeTree) != null) {
-      this.rayTraverser.traverse_m6hlto$(tmp$);
+      this.rayTraverser.traverse_7efza$(tmp$);
     }if (this.rayTraverser.distanceSqr < test.hitDistanceSqr) {
       test.setHit_vfk0k2$(this.closure$mesh, this.rayTraverser.distance);
     }};
@@ -22047,7 +21754,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   CameraOrthogonalPan.prototype.computePanPoint_467c2i$ = function (result, renderPass, ptrPos, ctx) {
     this.panPlane.p.set_czzhiu$(renderPass.camera.globalLookAt);
     this.panPlane.n.set_czzhiu$(renderPass.camera.globalLookDir);
-    return renderPass.camera.computePickRay_k7d561$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+    return renderPass.camera.computePickRay_k7d561$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_lplggz$(this.pointerRay_0, result);
   };
   CameraOrthogonalPan.$metadata$ = {
     kind: Kind_CLASS,
@@ -22062,7 +21769,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   FixedPlanePan.prototype.computePanPoint_467c2i$ = function (result, renderPass, ptrPos, ctx) {
     this.panPlane.p.set_czzhiu$(renderPass.camera.globalLookAt);
-    return renderPass.camera.computePickRay_k7d561$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+    return renderPass.camera.computePickRay_k7d561$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_lplggz$(this.pointerRay_0, result);
   };
   FixedPlanePan.$metadata$ = {
     kind: Kind_CLASS,
@@ -23956,7 +23663,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   Slider.prototype.handleDrag_urvnay$ = function (dragPtrs, scene, ctx) {
     if (dragPtrs.size === 1 && !dragPtrs.get_za3lpa$(0).isConsumed_za3lpa$() && dragPtrs.get_za3lpa$(0).isLeftButtonDown && this.computeLocalPickRay_wswg9$(dragPtrs.get_za3lpa$(0), ctx, this.pickRay_0)) {
-      if (this.hitPlane_0.intersectionPoint_m2314x$(this.hitPos_0, this.pickRay_0)) {
+      if (this.hitPlane_0.intersectionPoint_lplggz$(this.pickRay_0, this.hitPos_0)) {
         if (this.startDrag_0) {
           this.startDrag_0 = false;
           this.initHitPos_0.set_czzhiu$(this.hitPos_0);
@@ -25647,6 +25354,663 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ThemeOrCustomProp',
     interfaces: []
   };
+  function Animation(name) {
+    this.name = name;
+    this.channels = ArrayList_init_0();
+    this.weight = 1.0;
+    this.speed = 1.0;
+    this.duration_dwtdbj$_0 = 1.0;
+    this.animationNodes_0 = ArrayList_init_0();
+  }
+  Object.defineProperty(Animation.prototype, 'duration', {
+    get: function () {
+      return this.duration_dwtdbj$_0;
+    },
+    set: function (duration) {
+      this.duration_dwtdbj$_0 = duration;
+    }
+  });
+  Animation.prototype.prepareAnimation = function () {
+    var tmp$;
+    var $receiver = this.channels;
+    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var tmp$_0;
+    tmp$_0 = $receiver.iterator();
+    while (tmp$_0.hasNext()) {
+      var item = tmp$_0.next();
+      destination.add_11rb$(item.lastKeyTime);
+    }
+    this.duration = (tmp$ = max(destination)) != null ? tmp$ : 0.0;
+    var tmp$_1;
+    tmp$_1 = this.channels.iterator();
+    while (tmp$_1.hasNext()) {
+      var element = tmp$_1.next();
+      element.duration = this.duration;
+    }
+    var tmp$_2 = this.animationNodes_0;
+    var $receiver_0 = this.channels;
+    var destination_0 = ArrayList_init(collectionSizeOrDefault($receiver_0, 10));
+    var tmp$_3;
+    tmp$_3 = $receiver_0.iterator();
+    while (tmp$_3.hasNext()) {
+      var item_0 = tmp$_3.next();
+      destination_0.add_11rb$(item_0.animationNode);
+    }
+    addAll(tmp$_2, distinct(destination_0));
+  };
+  Animation.prototype.apply_8555vt$ = function (time, firstWeightedTransform) {
+    if (firstWeightedTransform === void 0)
+      firstWeightedTransform = true;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var t = time * this.speed % this.duration;
+    tmp$ = this.animationNodes_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.animationNodes_0.get_za3lpa$(i).initTransform();
+    }
+    tmp$_0 = this.channels;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      this.channels.get_za3lpa$(i_0).apply_mx4ult$(t);
+    }
+    if (this.weight === 1.0) {
+      tmp$_1 = this.animationNodes_0;
+      for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+        this.animationNodes_0.get_za3lpa$(i_1).applyTransform();
+      }
+    } else {
+      tmp$_2 = this.animationNodes_0;
+      for (var i_2 = 0; i_2 !== tmp$_2.size; ++i_2) {
+        this.animationNodes_0.get_za3lpa$(i_2).applyTransformWeighted_8ca0d4$(this.weight, firstWeightedTransform);
+      }
+    }
+  };
+  Animation.prototype.printChannels = function () {
+    println_0(toString(this.name) + ' channels:');
+    var tmp$;
+    tmp$ = this.channels.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      println_0('  ' + toString(element.name) + ' [node: ' + toString(element.animationNode.name) + ']');
+      element.printKeys_61zpoe$('    ');
+    }
+  };
+  Animation.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Animation',
+    interfaces: []
+  };
+  function AnimationChannel(name, animationNode) {
+    this.name = name;
+    this.animationNode = animationNode;
+    this.keys = new TreeMap();
+    this.duration = 0.0;
+  }
+  Object.defineProperty(AnimationChannel.prototype, 'lastKeyTime', {
+    get: function () {
+      return this.keys.lastKey();
+    }
+  });
+  AnimationChannel.prototype.apply_mx4ult$ = function (time) {
+    var key = this.keys.floorValue_trkh7z$(time);
+    if (key == null) {
+      var a = this.lastKeyTime;
+      var b = this.duration;
+      var eps;
+      eps = package$math.FUZZY_EQ_F;
+      var $receiver = a - b;
+      key = Math_0.abs($receiver) <= eps ? this.keys.lastValue() : this.keys.firstValue();
+    }key.apply_8kwor9$(time, this.keys.higherValue_trkh7z$(time), this.animationNode);
+  };
+  AnimationChannel.prototype.printKeys_61zpoe$ = function (indent) {
+    if (indent === void 0)
+      indent = '';
+    var tmp$;
+    var animKeys = toList(this.keys.values);
+    var b = animKeys.size;
+    tmp$ = Math_0.min(5, b);
+    for (var i = 0; i < tmp$; i++) {
+      println_0(indent + animKeys.get_za3lpa$(i));
+    }
+    if (animKeys.size > 5) {
+      println_0(indent + '  ...' + (animKeys.size - 5 | 0) + ' more');
+    }};
+  AnimationChannel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AnimationChannel',
+    interfaces: []
+  };
+  function TranslationAnimationChannel(name, animationNode) {
+    AnimationChannel.call(this, name, animationNode);
+  }
+  TranslationAnimationChannel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TranslationAnimationChannel',
+    interfaces: [AnimationChannel]
+  };
+  function RotationAnimationChannel(name, animationNode) {
+    AnimationChannel.call(this, name, animationNode);
+  }
+  RotationAnimationChannel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RotationAnimationChannel',
+    interfaces: [AnimationChannel]
+  };
+  function ScaleAnimationChannel(name, animationNode) {
+    AnimationChannel.call(this, name, animationNode);
+  }
+  ScaleAnimationChannel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ScaleAnimationChannel',
+    interfaces: [AnimationChannel]
+  };
+  function WeightAnimationChannel(name, animationNode) {
+    AnimationChannel.call(this, name, animationNode);
+  }
+  WeightAnimationChannel.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'WeightAnimationChannel',
+    interfaces: [AnimationChannel]
+  };
+  function AnimationNode() {
+  }
+  AnimationNode.prototype.initTransform = function () {
+  };
+  AnimationNode.prototype.setTranslation_czzhiw$ = function (translation) {
+  };
+  AnimationNode.prototype.setRotation_czzhi1$ = function (rotation) {
+  };
+  AnimationNode.prototype.setScale_czzhiw$ = function (scale) {
+  };
+  AnimationNode.prototype.setWeights_q3cr5i$ = function (weights) {
+  };
+  AnimationNode.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'AnimationNode',
+    interfaces: []
+  };
+  function AnimatedTransformGroup(target) {
+    this.target = target;
+    this.initTranslation_0 = MutableVec3d_init();
+    this.initRotation_0 = MutableVec4d_init();
+    this.initScale_0 = new MutableVec3d(1.0, 1.0, 1.0);
+    this.animTranslation_0 = MutableVec3d_init();
+    this.animRotation_0 = MutableVec4d_init();
+    this.animScale_0 = MutableVec3d_init();
+    this.quatRotMat_0 = new Mat4d();
+    this.weightedTransformMat_0 = new Mat4d();
+    var vec4 = MutableVec4d_init();
+    this.target.transform.getCol_8irwu3$(3, vec4);
+    this.initTranslation_0.set_yvo9jy$(vec4.x, vec4.y, vec4.z);
+    this.target.transform.getRotation_5s4mpx$(this.initRotation_0);
+    var sx = this.target.transform.getCol_8irwu3$(0, vec4).length();
+    var sy = this.target.transform.getCol_8irwu3$(0, vec4).length();
+    var sz = this.target.transform.getCol_8irwu3$(0, vec4).length();
+    this.initScale_0.set_yvo9jy$(sx, sy, sz);
+  }
+  Object.defineProperty(AnimatedTransformGroup.prototype, 'name', {
+    get: function () {
+      return this.target.name;
+    }
+  });
+  AnimatedTransformGroup.prototype.initTransform = function () {
+    this.animTranslation_0.set_czzhiw$(this.initTranslation_0);
+    this.animRotation_0.set_czzhi1$(this.initRotation_0);
+    this.animScale_0.set_czzhiw$(this.initScale_0);
+  };
+  AnimatedTransformGroup.prototype.applyTransform = function () {
+    this.target.setIdentity();
+    this.target.translate_czzhiw$(this.animTranslation_0);
+    this.target.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
+    this.target.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
+  };
+  AnimatedTransformGroup.prototype.applyTransformWeighted_8ca0d4$ = function (weight, firstWeightedTransform) {
+    this.weightedTransformMat_0.setIdentity();
+    this.weightedTransformMat_0.translate_czzhiw$(this.animTranslation_0);
+    this.weightedTransformMat_0.mul_d4zu6l$(this.quatRotMat_0.setRotate_czzhi1$(this.animRotation_0));
+    this.weightedTransformMat_0.scale_yvo9jy$(this.animScale_0.x, this.animScale_0.y, this.animScale_0.z);
+    if (firstWeightedTransform) {
+      for (var i = 0; i <= 15; i++) {
+        this.target.transform.matrix[i] = this.weightedTransformMat_0.matrix[i] * weight;
+      }
+    } else {
+      for (var i_0 = 0; i_0 <= 15; i_0++) {
+        this.target.transform.matrix[i_0] = this.target.transform.matrix[i_0] + this.weightedTransformMat_0.matrix[i_0] * weight;
+      }
+    }
+    this.target.setDirty();
+  };
+  AnimatedTransformGroup.prototype.setTranslation_czzhiw$ = function (translation) {
+    this.animTranslation_0.set_czzhiw$(translation);
+  };
+  AnimatedTransformGroup.prototype.setRotation_czzhi1$ = function (rotation) {
+    this.animRotation_0.set_czzhi1$(rotation);
+  };
+  AnimatedTransformGroup.prototype.setScale_czzhiw$ = function (scale) {
+    this.animScale_0.set_czzhiw$(scale);
+  };
+  AnimatedTransformGroup.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AnimatedTransformGroup',
+    interfaces: [AnimationNode]
+  };
+  function MorphAnimatedMesh(target) {
+    this.target = target;
+    this.weights_0 = new Float32Array(1);
+  }
+  Object.defineProperty(MorphAnimatedMesh.prototype, 'name', {
+    get: function () {
+      return this.target.name;
+    }
+  });
+  MorphAnimatedMesh.prototype.applyTransform = function () {
+    this.target.morphWeights = this.weights_0;
+  };
+  MorphAnimatedMesh.prototype.applyTransformWeighted_8ca0d4$ = function (weight, firstWeightedTransform) {
+    var tmp$;
+    var targetW = this.target.morphWeights;
+    if (targetW == null || targetW.length !== this.weights_0.length) {
+      targetW = new Float32Array(this.weights_0.length);
+      this.target.morphWeights = targetW;
+    }tmp$ = this.weights_0;
+    for (var i = 0; i !== tmp$.length; ++i) {
+      if (firstWeightedTransform) {
+        targetW[i] = this.weights_0[i] * weight;
+      } else {
+        targetW[i] = targetW[i] + this.weights_0[i] * weight;
+      }
+    }
+  };
+  MorphAnimatedMesh.prototype.setWeights_q3cr5i$ = function (weights) {
+    if (this.weights_0.length !== weights.length) {
+      this.weights_0 = new Float32Array(weights.length);
+    }for (var i = 0; i !== weights.length; ++i) {
+      this.weights_0[i] = weights[i];
+    }
+  };
+  MorphAnimatedMesh.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MorphAnimatedMesh',
+    interfaces: [AnimationNode]
+  };
+  function AnimationKey(time) {
+    this.time = time;
+    this.interpolation = AnimationKey$Interpolation$LINEAR_getInstance();
+  }
+  AnimationKey.prototype.interpolationPos_dleff0$ = function (pos, nextTime) {
+    var tmp$, tmp$_0;
+    if (this.time !== nextTime) {
+      if (this.time < nextTime) {
+        tmp$ = this.time;
+      } else {
+        tmp$ = 0.0;
+      }
+      var t = tmp$;
+      tmp$_0 = this.interpolation.getInterpolationPos_mx4ult$((pos - t) / (nextTime - t));
+    } else {
+      tmp$_0 = 0.0;
+    }
+    return tmp$_0;
+  };
+  AnimationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> [' + this.interpolation + ']';
+  };
+  function AnimationKey$Interpolation(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function AnimationKey$Interpolation_initFields() {
+    AnimationKey$Interpolation_initFields = function () {
+    };
+    new AnimationKey$Interpolation$LINEAR();
+    new AnimationKey$Interpolation$STEP();
+    new AnimationKey$Interpolation$CUBICSPLINE();
+  }
+  function AnimationKey$Interpolation$LINEAR() {
+    AnimationKey$Interpolation$LINEAR_instance = this;
+    AnimationKey$Interpolation.call(this, 'LINEAR', 0);
+  }
+  AnimationKey$Interpolation$LINEAR.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
+    return linearPos;
+  };
+  AnimationKey$Interpolation$LINEAR.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LINEAR',
+    interfaces: [AnimationKey$Interpolation]
+  };
+  var AnimationKey$Interpolation$LINEAR_instance = null;
+  function AnimationKey$Interpolation$LINEAR_getInstance() {
+    AnimationKey$Interpolation_initFields();
+    return AnimationKey$Interpolation$LINEAR_instance;
+  }
+  function AnimationKey$Interpolation$STEP() {
+    AnimationKey$Interpolation$STEP_instance = this;
+    AnimationKey$Interpolation.call(this, 'STEP', 1);
+  }
+  AnimationKey$Interpolation$STEP.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
+    return 0.0;
+  };
+  AnimationKey$Interpolation$STEP.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'STEP',
+    interfaces: [AnimationKey$Interpolation]
+  };
+  var AnimationKey$Interpolation$STEP_instance = null;
+  function AnimationKey$Interpolation$STEP_getInstance() {
+    AnimationKey$Interpolation_initFields();
+    return AnimationKey$Interpolation$STEP_instance;
+  }
+  function AnimationKey$Interpolation$CUBICSPLINE() {
+    AnimationKey$Interpolation$CUBICSPLINE_instance = this;
+    AnimationKey$Interpolation.call(this, 'CUBICSPLINE', 2);
+  }
+  AnimationKey$Interpolation$CUBICSPLINE.prototype.getInterpolationPos_mx4ult$ = function (linearPos) {
+    return linearPos;
+  };
+  AnimationKey$Interpolation$CUBICSPLINE.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CUBICSPLINE',
+    interfaces: [AnimationKey$Interpolation]
+  };
+  var AnimationKey$Interpolation$CUBICSPLINE_instance = null;
+  function AnimationKey$Interpolation$CUBICSPLINE_getInstance() {
+    AnimationKey$Interpolation_initFields();
+    return AnimationKey$Interpolation$CUBICSPLINE_instance;
+  }
+  AnimationKey$Interpolation.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Interpolation',
+    interfaces: [Enum]
+  };
+  function AnimationKey$Interpolation$values() {
+    return [AnimationKey$Interpolation$LINEAR_getInstance(), AnimationKey$Interpolation$STEP_getInstance(), AnimationKey$Interpolation$CUBICSPLINE_getInstance()];
+  }
+  AnimationKey$Interpolation.values = AnimationKey$Interpolation$values;
+  function AnimationKey$Interpolation$valueOf(name) {
+    switch (name) {
+      case 'LINEAR':
+        return AnimationKey$Interpolation$LINEAR_getInstance();
+      case 'STEP':
+        return AnimationKey$Interpolation$STEP_getInstance();
+      case 'CUBICSPLINE':
+        return AnimationKey$Interpolation$CUBICSPLINE_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.util.animation.AnimationKey.Interpolation.' + name);
+    }
+  }
+  AnimationKey$Interpolation.valueOf_61zpoe$ = AnimationKey$Interpolation$valueOf;
+  AnimationKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AnimationKey',
+    interfaces: []
+  };
+  function RotationKey(time, rotation) {
+    AnimationKey.call(this, time);
+    this.rotation = rotation;
+    this.tmpRotation_2somu9$_0 = MutableVec4d_init();
+    this.qa_lcvm40$_0 = MutableVec4d_init();
+    this.qb_lcvm4v$_0 = MutableVec4d_init();
+    this.qc_lcvm5q$_0 = MutableVec4d_init();
+  }
+  RotationKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      this.tmpRotation_2somu9$_0.set_czzhi1$(this.rotation);
+    } else {
+      this.slerp_6dcy83$_0(this.rotation, next.rotation, this.interpolationPos_dleff0$(time, next.time), this.tmpRotation_2somu9$_0);
+    }
+    node.setRotation_czzhi1$(this.tmpRotation_2somu9$_0);
+  };
+  RotationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> rotation: ' + this.rotation + ' [' + this.interpolation + ']';
+  };
+  RotationKey.prototype.slerp_6dcy83$_0 = function (quatA, quatB, f, result) {
+    quatA.norm_5s4mpx$(this.qa_lcvm40$_0);
+    quatB.norm_5s4mpx$(this.qb_lcvm4v$_0);
+    var clamp$result;
+    if (f < 0.0) {
+      clamp$result = 0.0;
+    } else if (f > 1.0) {
+      clamp$result = 1.0;
+    } else {
+      clamp$result = f;
+    }
+    var t = clamp$result;
+    var $receiver = this.qa_lcvm40$_0.dot_czzhi1$(this.qb_lcvm4v$_0);
+    var min = -1.0;
+    var clamp$result_0;
+    if ($receiver < min) {
+      clamp$result_0 = min;
+    } else if ($receiver > 1.0) {
+      clamp$result_0 = 1.0;
+    } else {
+      clamp$result_0 = $receiver;
+    }
+    var dot = clamp$result_0;
+    if (dot < 0) {
+      this.qa_lcvm40$_0.scale_14dthe$(-1.0);
+      dot = -dot;
+    }if (dot > 0.9999995) {
+      this.qb_lcvm4v$_0.subtract_2x9ggw$(this.qa_lcvm40$_0, result).scale_14dthe$(t).add_czzhi1$(this.qa_lcvm40$_0).norm();
+    } else {
+      var x = dot;
+      var theta0 = Math_0.acos(x);
+      var theta = theta0 * t;
+      this.qa_lcvm40$_0.scale_b0flav$(-dot, this.qc_lcvm5q$_0).add_czzhi1$(this.qb_lcvm4v$_0).norm();
+      this.qa_lcvm40$_0.scale_14dthe$(Math_0.cos(theta));
+      this.qc_lcvm5q$_0.scale_14dthe$(Math_0.sin(theta));
+      result.set_czzhi1$(this.qa_lcvm40$_0).add_czzhi1$(this.qc_lcvm5q$_0);
+    }
+    return result;
+  };
+  RotationKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RotationKey',
+    interfaces: [AnimationKey]
+  };
+  function CubicRotationKey(time, rotation, startTan, endTan) {
+    RotationKey.call(this, time, rotation);
+    this.startTan = startTan;
+    this.endTan = endTan;
+    this.p0_0 = MutableVec4d_init();
+    this.p1_0 = MutableVec4d_init();
+    this.m0_0 = MutableVec4d_init();
+    this.m1_0 = MutableVec4d_init();
+  }
+  CubicRotationKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      node.setRotation_czzhi1$(this.rotation);
+    } else {
+      var t = this.interpolationPos_dleff0$(time, next.time);
+      var t2 = t * t;
+      var t3 = t * t * t;
+      var f1 = 2 * t3 - 3 * t2 + 1;
+      var f2 = t3 - 2 * t2 + t;
+      var f3 = -2 * t3 + 3 * t2;
+      var f4 = t3 - t2;
+      this.p0_0.set_czzhi1$(this.rotation).scale_14dthe$(f1);
+      this.m0_0.set_czzhi1$(this.startTan).scale_14dthe$(f2);
+      this.p1_0.set_czzhi1$(next.rotation).scale_14dthe$(f3);
+      this.m1_0.set_czzhi1$(this.endTan).scale_14dthe$(f4);
+      node.setRotation_czzhi1$(this.p0_0.add_czzhi1$(this.m0_0).add_czzhi1$(this.p1_0).add_czzhi1$(this.m1_0).norm());
+    }
+  };
+  CubicRotationKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubicRotationKey',
+    interfaces: [RotationKey]
+  };
+  function TranslationKey(time, translation) {
+    AnimationKey.call(this, time);
+    this.translation = translation;
+    this.tmpTranslation_1fj65v$_0 = MutableVec3d_init();
+  }
+  TranslationKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      node.setTranslation_czzhiw$(this.translation);
+    } else {
+      next.translation.subtract_vgki2o$(this.translation, this.tmpTranslation_1fj65v$_0).scale_14dthe$(this.interpolationPos_dleff0$(time, next.time)).add_czzhiw$(this.translation);
+      node.setTranslation_czzhiw$(this.tmpTranslation_1fj65v$_0);
+    }
+  };
+  TranslationKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> translation: ' + this.translation + ' [' + this.interpolation + ']';
+  };
+  TranslationKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TranslationKey',
+    interfaces: [AnimationKey]
+  };
+  function CubicTranslationKey(time, translation, startTan, endTan) {
+    TranslationKey.call(this, time, translation);
+    this.startTan = startTan;
+    this.endTan = endTan;
+    this.p0_0 = MutableVec3d_init();
+    this.p1_0 = MutableVec3d_init();
+    this.m0_0 = MutableVec3d_init();
+    this.m1_0 = MutableVec3d_init();
+  }
+  CubicTranslationKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      node.setTranslation_czzhiw$(this.translation);
+    } else {
+      var t = this.interpolationPos_dleff0$(time, next.time);
+      var t2 = t * t;
+      var t3 = t * t * t;
+      var f1 = 2 * t3 - 3 * t2 + 1;
+      var f2 = t3 - 2 * t2 + t;
+      var f3 = -2 * t3 + 3 * t2;
+      var f4 = t3 - t2;
+      this.p0_0.set_czzhiw$(this.translation).scale_14dthe$(f1);
+      this.m0_0.set_czzhiw$(this.startTan).scale_14dthe$(f2);
+      this.p1_0.set_czzhiw$(next.translation).scale_14dthe$(f3);
+      this.m1_0.set_czzhiw$(this.endTan).scale_14dthe$(f4);
+      node.setTranslation_czzhiw$(this.p0_0.add_czzhiw$(this.m0_0).add_czzhiw$(this.p1_0).add_czzhiw$(this.m1_0));
+    }
+  };
+  CubicTranslationKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubicTranslationKey',
+    interfaces: [TranslationKey]
+  };
+  function ScaleKey(time, scale) {
+    AnimationKey.call(this, time);
+    this.scale = scale;
+    this.tmpScale_fz7pzv$_0 = MutableVec3d_init();
+  }
+  ScaleKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      node.setScale_czzhiw$(this.scale);
+    } else {
+      next.scale.subtract_vgki2o$(this.scale, this.tmpScale_fz7pzv$_0).scale_14dthe$(this.interpolationPos_dleff0$(time, next.time)).add_czzhiw$(this.scale);
+      node.setScale_czzhiw$(this.tmpScale_fz7pzv$_0);
+    }
+  };
+  ScaleKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> scale: ' + this.scale + ' [' + this.interpolation + ']';
+  };
+  ScaleKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ScaleKey',
+    interfaces: [AnimationKey]
+  };
+  function CubicScaleKey(time, scale, startTan, endTan) {
+    ScaleKey.call(this, time, scale);
+    this.startTan = startTan;
+    this.endTan = endTan;
+    this.p0_0 = MutableVec3d_init();
+    this.p1_0 = MutableVec3d_init();
+    this.m0_0 = MutableVec3d_init();
+    this.m1_0 = MutableVec3d_init();
+  }
+  CubicScaleKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    if (next == null) {
+      node.setScale_czzhiw$(this.scale);
+    } else {
+      var t = this.interpolationPos_dleff0$(time, next.time);
+      var t2 = t * t;
+      var t3 = t * t * t;
+      var f1 = 2 * t3 - 3 * t2 + 1;
+      var f2 = t3 - 2 * t2 + t;
+      var f3 = -2 * t3 + 3 * t2;
+      var f4 = t3 - t2;
+      this.p0_0.set_czzhiw$(this.scale).scale_14dthe$(f1);
+      this.m0_0.set_czzhiw$(this.startTan).scale_14dthe$(f2);
+      this.p1_0.set_czzhiw$(next.scale).scale_14dthe$(f3);
+      this.m1_0.set_czzhiw$(this.endTan).scale_14dthe$(f4);
+      node.setScale_czzhiw$(this.p0_0.add_czzhiw$(this.m0_0).add_czzhiw$(this.p1_0).add_czzhiw$(this.m1_0));
+    }
+  };
+  CubicScaleKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubicScaleKey',
+    interfaces: [ScaleKey]
+  };
+  function WeightKey(time, weights) {
+    AnimationKey.call(this, time);
+    this.weights = weights;
+    this.tmpW = new Float32Array(1);
+  }
+  WeightKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    var tmp$, tmp$_0;
+    if (this.tmpW.length !== this.weights.length) {
+      this.tmpW = new Float32Array(this.weights.length);
+    }if (next == null) {
+      tmp$ = this.weights;
+      for (var i = 0; i !== tmp$.length; ++i) {
+        this.tmpW[i] = this.weights[i];
+      }
+    } else {
+      tmp$_0 = this.weights;
+      for (var i_0 = 0; i_0 !== tmp$_0.length; ++i_0) {
+        this.tmpW[i_0] = (next.weights[i_0] - this.weights[i_0]) * this.interpolationPos_dleff0$(time, next.time) + this.weights[i_0];
+      }
+    }
+    node.setWeights_q3cr5i$(this.tmpW);
+  };
+  WeightKey.prototype.toString = function () {
+    return toString_0(this.time, 2) + ' -> weight: (' + joinToString_0(this.weights, ', ') + ') [' + this.interpolation + ']';
+  };
+  WeightKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'WeightKey',
+    interfaces: [AnimationKey]
+  };
+  function CubicWeightKey(time, weights, startTan, endTan) {
+    WeightKey.call(this, time, weights);
+    this.startTan = startTan;
+    this.endTan = endTan;
+  }
+  CubicWeightKey.prototype.apply_8kwor9$ = function (time, next, node) {
+    var tmp$, tmp$_0;
+    if (this.tmpW.length !== this.weights.length) {
+      this.tmpW = new Float32Array(this.weights.length);
+    }if (next == null) {
+      tmp$ = this.weights;
+      for (var i = 0; i !== tmp$.length; ++i) {
+        this.tmpW[i] = this.weights[i];
+      }
+    } else {
+      var t = this.interpolationPos_dleff0$(time, next.time);
+      var t2 = t * t;
+      var t3 = t * t * t;
+      var f1 = 2 * t3 - 3 * t2 + 1;
+      var f2 = t3 - 2 * t2 + t;
+      var f3 = -2 * t3 + 3 * t2;
+      var f4 = t3 - t2;
+      tmp$_0 = this.weights;
+      for (var i_0 = 0; i_0 !== tmp$_0.length; ++i_0) {
+        var p0 = this.weights[i_0] * f1;
+        var m0 = this.startTan[i_0] * f2;
+        var p1 = next.weights[i_0] * f3;
+        var m1 = this.endTan[i_0] * f4;
+        this.tmpW[i_0] = p0 + m0 + p1 + m1;
+      }
+    }
+    node.setWeights_q3cr5i$(this.tmpW);
+  };
+  CubicWeightKey.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubicWeightKey',
+    interfaces: [WeightKey]
+  };
   function Animator(value) {
     Animator$Companion_getInstance();
     this.value = value;
@@ -25791,25 +26155,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function SpringDamperFloat(value) {
     this.desired = value;
     this.actual = value;
-    this.speed_j0cmgy$_0 = 0.0;
+    this.speed_t20eng$_0 = 0.0;
     this.damping_0 = 0.0;
-    this.stiffness_kq1inq$_0 = 0.0;
+    this.stiffness_h7kl9w$_0 = 0.0;
     this.stiffness = 100.0;
   }
   Object.defineProperty(SpringDamperFloat.prototype, 'speed', {
     get: function () {
-      return this.speed_j0cmgy$_0;
+      return this.speed_t20eng$_0;
     },
     set: function (speed) {
-      this.speed_j0cmgy$_0 = speed;
+      this.speed_t20eng$_0 = speed;
     }
   });
   Object.defineProperty(SpringDamperFloat.prototype, 'stiffness', {
     get: function () {
-      return this.stiffness_kq1inq$_0;
+      return this.stiffness_h7kl9w$_0;
     },
     set: function (value) {
-      this.stiffness_kq1inq$_0 = value;
+      this.stiffness_h7kl9w$_0 = value;
       var x = this.stiffness;
       this.damping_0 = 2.0 * Math_0.sqrt(x);
     }
@@ -25850,25 +26214,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function SpringDamperDouble(value) {
     this.desired = value;
     this.actual = value;
-    this.speed_tjror7$_0 = 0.0;
+    this.speed_e6bbiv$_0 = 0.0;
     this.damping_0 = 0.0;
-    this.stiffness_ruyi91$_0 = 0.0;
+    this.stiffness_bla035$_0 = 0.0;
     this.stiffness = 100.0;
   }
   Object.defineProperty(SpringDamperDouble.prototype, 'speed', {
     get: function () {
-      return this.speed_tjror7$_0;
+      return this.speed_e6bbiv$_0;
     },
     set: function (speed) {
-      this.speed_tjror7$_0 = speed;
+      this.speed_e6bbiv$_0 = speed;
     }
   });
   Object.defineProperty(SpringDamperDouble.prototype, 'stiffness', {
     get: function () {
-      return this.stiffness_ruyi91$_0;
+      return this.stiffness_bla035$_0;
     },
     set: function (value) {
-      this.stiffness_ruyi91$_0 = value;
+      this.stiffness_bla035$_0 = value;
       var x = this.stiffness;
       this.damping_0 = 2.0 * Math_0.sqrt(x);
     }
@@ -25904,6 +26268,89 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   SpringDamperDouble.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'SpringDamperDouble',
+    interfaces: []
+  };
+  function Skin() {
+    this.nodes = ArrayList_init_0();
+  }
+  Skin.prototype.updateJointTransforms = function () {
+    var tmp$;
+    tmp$ = this.nodes;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      if (!this.nodes.get_za3lpa$(i).hasParent) {
+        this.nodes.get_za3lpa$(i).updateJointTransform();
+      }}
+  };
+  Skin.prototype.printHierarchy = function () {
+    var $receiver = this.nodes;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (!element.hasParent)
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.printHierarchy_61zpoe$('');
+    }
+  };
+  function Skin$SkinNode(joint, inverseBindMatrix) {
+    this.joint = joint;
+    this.inverseBindMatrix = inverseBindMatrix;
+    this.jointTransform = new Mat4f();
+    this.tmpMat4f_0 = new Mat4f();
+    this.parent_0 = null;
+    this.children_0 = ArrayList_init_0();
+  }
+  Object.defineProperty(Skin$SkinNode.prototype, 'hasParent', {
+    get: function () {
+      return this.parent_0 != null;
+    }
+  });
+  Skin$SkinNode.prototype.addChild_j3a3b7$ = function (node) {
+    node.parent_0 = this;
+    this.children_0.add_11rb$(node);
+  };
+  Skin$SkinNode.prototype.updateJointTransform = function () {
+    var tmp$;
+    this.jointTransform.set_d4zu6l$(this.joint.transform);
+    tmp$ = this.children_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
+    }
+    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
+  };
+  Skin$SkinNode.prototype.updateJointTransform_0 = function (parentTransform) {
+    var tmp$;
+    this.tmpMat4f_0.set_d4zu6l$(this.joint.transform);
+    this.jointTransform.set_d4zu6j$(parentTransform).mul_d4zu6j$(this.tmpMat4f_0);
+    tmp$ = this.children_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children_0.get_za3lpa$(i).updateJointTransform_0(this.jointTransform);
+    }
+    this.jointTransform.mul_d4zu6j$(this.inverseBindMatrix);
+  };
+  Skin$SkinNode.prototype.printHierarchy_61zpoe$ = function (indent) {
+    println_0(indent + toString(this.joint.name));
+    var tmp$;
+    tmp$ = this.children_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.printHierarchy_61zpoe$(indent + '    ');
+    }
+  };
+  Skin$SkinNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SkinNode',
+    interfaces: []
+  };
+  Skin.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Skin',
     interfaces: []
   };
   var ShaderModel$findNode$lambda_3 = wrapFunction(function () {
@@ -27409,6 +27856,42 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function MixedBuffer() {
   }
+  MixedBuffer.prototype.putInt8_s8j3t7$ = function (value) {
+    return this.putUint8_s8j3t7$(value);
+  };
+  MixedBuffer.prototype.putInt8_fqrh44$ = function (data) {
+    return this.putUint8_fqrh44$(data);
+  };
+  MixedBuffer.prototype.putInt8_mj6st8$ = function (data, offset, len) {
+    return this.putUint8_mj6st8$(data, offset, len);
+  };
+  MixedBuffer.prototype.putInt8_ay2i3f$ = function (data) {
+    return this.putUint8_ay2i3f$(data);
+  };
+  MixedBuffer.prototype.putInt16_mq22fl$ = function (value) {
+    return this.putUint16_mq22fl$(value);
+  };
+  MixedBuffer.prototype.putInt16_gmedm2$ = function (data) {
+    return this.putUint16_gmedm2$(data);
+  };
+  MixedBuffer.prototype.putInt16_359eei$ = function (data, offset, len) {
+    return this.putUint16_359eei$(data, offset, len);
+  };
+  MixedBuffer.prototype.putInt16_8k344i$ = function (data) {
+    return this.putUint16_8k344i$(data);
+  };
+  MixedBuffer.prototype.putInt32_za3lpa$ = function (value) {
+    return this.putUint32_za3lpa$(value);
+  };
+  MixedBuffer.prototype.putInt32_q5rwfd$ = function (data) {
+    return this.putUint32_q5rwfd$(data);
+  };
+  MixedBuffer.prototype.putInt32_nd5v6f$ = function (data, offset, len) {
+    return this.putUint32_nd5v6f$(data, offset, len);
+  };
+  MixedBuffer.prototype.putInt32_7hqxcs$ = function (data) {
+    return this.putUint32_7hqxcs$(data);
+  };
   MixedBuffer.prototype.putUint8_fqrh44$ = function (data) {
     return this.putUint8_mj6st8$(data, 0, data.length);
   };
@@ -29117,32 +29600,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
-  function DeferredOutputShader(pbrOutput) {
+  function DeferredOutputShader(pbrOutput, depth) {
     DeferredOutputShader$Companion_getInstance();
     ModeledShader.call(this, DeferredOutputShader$Companion_getInstance().outputModel_0());
     this.pbrOutput_0 = pbrOutput;
+    this.depth_0 = depth;
   }
   DeferredOutputShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
-    var tmp$;
+    var tmp$, tmp$_0;
     var $this = this.model;
     var name = 'deferredPbrOutput';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_0;
-      tmp$_0 = $this.stages.values.iterator();
-      while (tmp$_0.hasNext()) {
-        var element = tmp$_0.next();
+      var tmp$_1;
+      tmp$_1 = $this.stages.values.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_1;
+          var tmp$_2;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_2;
-            tmp$_2 = $receiver.iterator();
-            while (tmp$_2.hasNext()) {
-              var element_0 = tmp$_2.next();
+            var tmp$_3;
+            tmp$_3 = $receiver.iterator();
+            while (tmp$_3.hasNext()) {
+              var element_0 = tmp$_3.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, TextureNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -29150,7 +29634,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_1, TextureNode) ? tmp$_1 : throwCCE();
+          var node = (tmp$_2 = firstOrNull$result) == null || Kotlin.isType(tmp$_2, TextureNode) ? tmp$_2 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -29160,6 +29644,42 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
      while (false);
     var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
     ensureNotNull(textureSampler).texture = this.pbrOutput_0;
+    var $this_0 = this.model;
+    var name_0 = 'deferredDepthOutput';
+    var stage_0;
+    var findNode_3klnlw$result_0;
+    findNode_3klnlw$break: do {
+      stage_0 = ShaderStage.ALL;
+      var tmp$_4;
+      tmp$_4 = $this_0.stages.values.iterator();
+      while (tmp$_4.hasNext()) {
+        var element_1 = tmp$_4.next();
+        if ((element_1.stage.mask & stage_0.mask) !== 0) {
+          var tmp$_5;
+          var $receiver_0 = element_1.nodes;
+          var firstOrNull$result_0;
+          firstOrNull$break: do {
+            var tmp$_6;
+            tmp$_6 = $receiver_0.iterator();
+            while (tmp$_6.hasNext()) {
+              var element_2 = tmp$_6.next();
+              if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
+                firstOrNull$result_0 = element_2;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_0 = null;
+          }
+           while (false);
+          var node_0 = (tmp$_5 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_5, TextureNode) ? tmp$_5 : throwCCE();
+          if (node_0 != null) {
+            findNode_3klnlw$result_0 = node_0;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_0 = null;
+    }
+     while (false);
+    var depthSampler = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
+    ensureNotNull(depthSampler).texture = this.depth_0;
     ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function DeferredOutputShader$Companion() {
@@ -29174,6 +29694,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var sampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('deferredPbrOutput'), ifTexCoords.v.output);
     $receiver_1.colorOutput_a3v4si$($receiver_1.hdrToLdrNode_r20yfm$(sampler.outColor).outColor);
+    var depthSampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('deferredDepthOutput'), ifTexCoords.v.output);
+    $receiver_1.depthOutput_r20yfm$(depthSampler.outColor);
     return $receiver;
   };
   DeferredOutputShader$Companion.$metadata$ = {
@@ -29222,6 +29744,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
+  var deferredPbrShader = defineInlineFunction('kool.de.fabmax.kool.util.deferred.deferredPbrShader_skmpm9$', wrapFunction(function () {
+    var PbrMaterialConfig_init = _.de.fabmax.kool.pipeline.shading.PbrMaterialConfig;
+    var DeferredPbrShader_init = _.de.fabmax.kool.util.deferred.DeferredPbrShader;
+    return function (block) {
+      var cfg = new PbrMaterialConfig_init();
+      block(cfg);
+      return new DeferredPbrShader_init(cfg);
+    };
+  }));
   function DeferredPbrShader(cfg, model) {
     DeferredPbrShader$Companion_getInstance();
     if (model === void 0)
@@ -30135,7 +30666,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_8ak6wm$([this.inPositionAo, this.inNormalRough, this.inAlbedoMetallic]);
   };
   DeferredPbrShader$MrtDeMultiplexNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                ' + this.outViewPos.declare() + ' = vec4(' + this.inPositionAo.ref3f() + ', 1.0);' + '\n' + '                ' + this.outAlbedo.declare() + ' = vec4(' + this.inAlbedoMetallic.ref3f() + ', 1.0);' + '\n' + '                ' + this.outEmissive.declare() + ' = ' + this.inEmissive.ref3f() + ';' + '\n' + '                ' + this.outViewNormal.declare() + ' = vec3(' + this.inNormalRough.ref3f() + ');' + '\n' + '                ' + this.outRoughness.declare() + ' = ' + this.inNormalRough.ref4f() + '.a;' + '\n' + '                ' + this.outMetallic.declare() + ' = ' + this.inAlbedoMetallic.ref4f() + '.a;' + '\n' + '                ' + this.outAo.declare() + ' = ' + this.inPositionAo.ref4f() + '.a;' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                ' + this.outViewPos.declare() + ' = vec4(' + this.inPositionAo.ref3f() + ', 1.0);' + '\n' + '                ' + this.outAlbedo.declare() + ' = vec4(' + this.inAlbedoMetallic.ref3f() + ', 1.0);' + '\n' + '                ' + this.outEmissive.declare() + ' = ' + this.inEmissive.ref3f() + ';' + '\n' + '                ' + this.outViewNormal.declare() + ' = ' + this.inNormalRough.ref3f() + ';' + '\n' + '                ' + this.outRoughness.declare() + ' = ' + this.inNormalRough.ref4f() + '.a;' + '\n' + '                ' + this.outMetallic.declare() + ' = ' + this.inAlbedoMetallic.ref4f() + '.a;' + '\n' + '                ' + this.outAo.declare() + ' = ' + this.inPositionAo.ref4f() + '.a;' + '\n' + '            ');
   };
   DeferredPbrShader$MrtDeMultiplexNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -30266,9 +30797,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function DeferredCameraNode(stage) {
     ShaderNode.call(this, 'deferredCam', stage);
+    this.uProjMat_0 = new UniformMat4f('uProjMat');
     this.uInvViewMat_0 = new UniformMat4f('uInvViewMat');
     this.uCamPos_0 = new Uniform4f('uCamPos');
     this.uViewport_0 = new Uniform4f('uViewport');
+    this.outProjMat = new ShaderNodeIoVar(new ModelVarMat4f(this.uProjMat_0.name), this);
     this.outInvViewMat = new ShaderNodeIoVar(new ModelVarMat4f(this.uInvViewMat_0.name), this);
     this.outCamPos = new ShaderNodeIoVar(new ModelVar4f(this.uCamPos_0.name), this);
     this.outViewport = new ShaderNodeIoVar(new ModelVar4f(this.uViewport_0.name), this);
@@ -30276,23 +30809,29 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode) {
     return function () {
-      return this$DeferredCameraNode.uInvViewMat_0;
+      return this$DeferredCameraNode.uProjMat_0;
     };
   }
   function DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode) {
     return function () {
-      return this$DeferredCameraNode.uCamPos_0;
+      return this$DeferredCameraNode.uInvViewMat_0;
     };
   }
   function DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode) {
     return function () {
-      return this$DeferredCameraNode.uViewport_0;
+      return this$DeferredCameraNode.uCamPos_0;
     };
   }
   function DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode) {
+    return function () {
+      return this$DeferredCameraNode.uViewport_0;
+    };
+  }
+  function DeferredCameraNode$setup$lambda$lambda$lambda_3(this$DeferredCameraNode) {
     return function (f, cmd) {
       var cam = this$DeferredCameraNode.sceneCam;
       if (cam != null) {
+        this$DeferredCameraNode.uProjMat_0.value.set_d4zu6l$(cam.proj);
         this$DeferredCameraNode.uInvViewMat_0.value.set_d4zu6l$(cam.invView);
         this$DeferredCameraNode.uCamPos_0.value.set_2qa7tb$(cam.globalPos, 1.0);
       }var $receiver = cmd.renderPass.viewport;
@@ -30305,7 +30844,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda(this$DeferredCameraNode));
       $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda_0(this$DeferredCameraNode));
       $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda_1(this$DeferredCameraNode));
-      $receiver.onUpdate = DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode);
+      $receiver.unaryPlus_wq3w46$(DeferredCameraNode$setup$lambda$lambda$lambda_2(this$DeferredCameraNode));
+      $receiver.onUpdate = DeferredCameraNode$setup$lambda$lambda$lambda_3(this$DeferredCameraNode);
       return Unit;
     };
   }
@@ -30523,7 +31063,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.mutSpotLights_0 = ArrayList_init_0();
     var tmp$, tmp$_0;
     this.content = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
-    this.sceneShader_w4wym2$_0 = this.sceneShader_w4wym2$_0;
+    this.sceneShader = null;
+    this.prevColorTex = new Texture('PbrLightingPass.prevColorTex', new TextureProps(TexFormat$RGBA_F16_getInstance(), void 0, void 0, void 0, void 0, void 0, false, 1));
     this.dynamicPointLights.isDynamic = true;
     this.staticPointLights.isDynamic = false;
     this.lighting = scene.lighting;
@@ -30534,31 +31075,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.clearDepth = false;
     this.camera = this.mrtPass.camera;
     cfg.useMrtPass_u6tred$(this.mrtPass);
+    if (cfg.isScrSpcReflections) {
+      cfg.useScreenSpaceReflections_daqygw$(this.prevColorTex, true);
+    }this.sceneShader = new PbrSceneShader(cfg);
     var $receiver = this.content;
-    var closure$cfg = cfg;
     $receiver.isFrustumChecked = false;
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.isFrustumChecked = false;
     mesh.generate_v2sixm$(PbrLightingPass_init$lambda$lambda$lambda);
-    this.sceneShader = new PbrSceneShader(closure$cfg);
     mesh.shader = this.sceneShader;
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(this.dynamicPointLights.mesh);
     $receiver.unaryPlus_uv0sim$(this.staticPointLights.mesh);
+    var $receiver_0 = this.copyTargetsColor;
+    var element = this.prevColorTex;
+    $receiver_0.add_11rb$(element);
   }
   Object.defineProperty(PbrLightingPass.prototype, 'spotLights', {
     get: function () {
       return this.mutSpotLights_0;
-    }
-  });
-  Object.defineProperty(PbrLightingPass.prototype, 'sceneShader', {
-    get: function () {
-      if (this.sceneShader_w4wym2$_0 == null)
-        return throwUPAE('sceneShader');
-      return this.sceneShader_w4wym2$_0;
-    },
-    set: function (sceneShader) {
-      this.sceneShader_w4wym2$_0 = sceneShader;
     }
   });
   PbrLightingPass.prototype.afterCollectDrawCommands_aemszp$ = function (ctx) {
@@ -30576,8 +31111,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return lights;
   };
   PbrLightingPass.prototype.dispose_aemszp$ = function (ctx) {
+    var tmp$;
     this.drawNode.dispose_aemszp$(ctx);
+    (tmp$ = this.sceneShader.scrSpcReflectionNoise) != null ? (tmp$.dispose(), Unit) : null;
     OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  function PbrLightingPass$createOutputQuad$lambda$lambda($receiver) {
+    $receiver.rectProps.defaults().mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function PbrLightingPass$createOutputQuad$lambda(this$PbrLightingPass) {
+    return function ($receiver) {
+      $receiver.isFrustumChecked = false;
+      $receiver.generate_v2sixm$(PbrLightingPass$createOutputQuad$lambda$lambda);
+      $receiver.shader = new DeferredOutputShader(this$PbrLightingPass.colorTexture, this$PbrLightingPass.mrtPass.depthTexture);
+      return Unit;
+    };
+  }
+  PbrLightingPass.prototype.createOutputQuad = function () {
+    return textureMesh(void 0, void 0, PbrLightingPass$createOutputQuad$lambda(this));
   };
   function PbrLightingPass$Companion() {
     PbrLightingPass$Companion_instance = this;
@@ -30678,6 +31231,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.brdfLut_bolscy$_0 = cfg.brdfLut;
     this.ssaoSampler_0 = null;
     this.scrSpcAmbientOcclusionMap_4r7yg8$_0 = cfg.scrSpcAmbientOcclusionMap;
+    this.ssrSampler_0 = null;
+    this.scrSpcReflectionMap_b22z3y$_0 = cfg.scrSpcReflectionMap;
+    this.ssrNoiseSampler_0 = null;
+    this.scrSpcReflectionNoise_rcthhc$_0 = cfg.scrSpcReflectionNoise;
+    this.uMaxIterations_0 = null;
+    this.scrSpcReflectionIterations_ns9azo$_0 = 24;
     var array = Array_0(cfg.shadowMaps.size);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -30794,32 +31353,62 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.ssaoSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
+  Object.defineProperty(PbrSceneShader.prototype, 'scrSpcReflectionMap', {
+    get: function () {
+      return this.scrSpcReflectionMap_b22z3y$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.scrSpcReflectionMap_b22z3y$_0 = value;
+      (tmp$ = this.ssrSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(PbrSceneShader.prototype, 'scrSpcReflectionNoise', {
+    get: function () {
+      return this.scrSpcReflectionNoise_rcthhc$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.scrSpcReflectionNoise_rcthhc$_0 = value;
+      (tmp$ = this.ssrSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(PbrSceneShader.prototype, 'scrSpcReflectionIterations', {
+    get: function () {
+      return this.scrSpcReflectionIterations_ns9azo$_0;
+    },
+    set: function (value) {
+      var tmp$, tmp$_0;
+      this.scrSpcReflectionIterations_ns9azo$_0 = value;
+      (tmp$_0 = (tmp$ = this.uMaxIterations_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
+    }
+  });
   PbrSceneShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
     builder.depthTest = DepthCompareOp$DISABLED_getInstance();
     builder.blendMode = BlendMode$DISABLED_getInstance();
     ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
   PbrSceneShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25;
     var $this = this.model;
     var name = 'deferredCam';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_20;
-      tmp$_20 = $this.stages.values.iterator();
-      while (tmp$_20.hasNext()) {
-        var element = tmp$_20.next();
+      var tmp$_26;
+      tmp$_26 = $this.stages.values.iterator();
+      while (tmp$_26.hasNext()) {
+        var element = tmp$_26.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_21;
+          var tmp$_27;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_22;
-            tmp$_22 = $receiver.iterator();
-            while (tmp$_22.hasNext()) {
-              var element_0 = tmp$_22.next();
+            var tmp$_28;
+            tmp$_28 = $receiver.iterator();
+            while (tmp$_28.hasNext()) {
+              var element_0 = tmp$_28.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, DeferredCameraNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -30827,7 +31416,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_21 = firstOrNull$result) == null || Kotlin.isType(tmp$_21, DeferredCameraNode) ? tmp$_21 : throwCCE();
+          var node = (tmp$_27 = firstOrNull$result) == null || Kotlin.isType(tmp$_27, DeferredCameraNode) ? tmp$_27 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -30844,19 +31433,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_0;
     findNode_3klnlw$break: do {
       stage_0 = ShaderStage.ALL;
-      var tmp$_23;
-      tmp$_23 = $this_0.stages.values.iterator();
-      while (tmp$_23.hasNext()) {
-        var element_1 = tmp$_23.next();
+      var tmp$_29;
+      tmp$_29 = $this_0.stages.values.iterator();
+      while (tmp$_29.hasNext()) {
+        var element_1 = tmp$_29.next();
         if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_24;
+          var tmp$_30;
           var $receiver_0 = element_1.nodes;
           var firstOrNull$result_0;
           firstOrNull$break: do {
-            var tmp$_25;
-            tmp$_25 = $receiver_0.iterator();
-            while (tmp$_25.hasNext()) {
-              var element_2 = tmp$_25.next();
+            var tmp$_31;
+            tmp$_31 = $receiver_0.iterator();
+            while (tmp$_31.hasNext()) {
+              var element_2 = tmp$_31.next();
               if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
                 firstOrNull$result_0 = element_2;
                 break firstOrNull$break;
@@ -30864,7 +31453,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_0 = null;
           }
            while (false);
-          var node_0 = (tmp$_24 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_24, TextureNode) ? tmp$_24 : throwCCE();
+          var node_0 = (tmp$_30 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_30, TextureNode) ? tmp$_30 : throwCCE();
           if (node_0 != null) {
             findNode_3klnlw$result_0 = node_0;
             break findNode_3klnlw$break;
@@ -30881,19 +31470,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_1;
     findNode_3klnlw$break: do {
       stage_1 = ShaderStage.ALL;
-      var tmp$_26;
-      tmp$_26 = $this_1.stages.values.iterator();
-      while (tmp$_26.hasNext()) {
-        var element_3 = tmp$_26.next();
+      var tmp$_32;
+      tmp$_32 = $this_1.stages.values.iterator();
+      while (tmp$_32.hasNext()) {
+        var element_3 = tmp$_32.next();
         if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_27;
+          var tmp$_33;
           var $receiver_1 = element_3.nodes;
           var firstOrNull$result_1;
           firstOrNull$break: do {
-            var tmp$_28;
-            tmp$_28 = $receiver_1.iterator();
-            while (tmp$_28.hasNext()) {
-              var element_4 = tmp$_28.next();
+            var tmp$_34;
+            tmp$_34 = $receiver_1.iterator();
+            while (tmp$_34.hasNext()) {
+              var element_4 = tmp$_34.next();
               if (equals(element_4.name, name_1) && Kotlin.isType(element_4, TextureNode)) {
                 firstOrNull$result_1 = element_4;
                 break firstOrNull$break;
@@ -30901,7 +31490,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_1 = null;
           }
            while (false);
-          var node_1 = (tmp$_27 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_27, TextureNode) ? tmp$_27 : throwCCE();
+          var node_1 = (tmp$_33 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_33, TextureNode) ? tmp$_33 : throwCCE();
           if (node_1 != null) {
             findNode_3klnlw$result_1 = node_1;
             break findNode_3klnlw$break;
@@ -30918,19 +31507,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_2;
     findNode_3klnlw$break: do {
       stage_2 = ShaderStage.ALL;
-      var tmp$_29;
-      tmp$_29 = $this_2.stages.values.iterator();
-      while (tmp$_29.hasNext()) {
-        var element_5 = tmp$_29.next();
+      var tmp$_35;
+      tmp$_35 = $this_2.stages.values.iterator();
+      while (tmp$_35.hasNext()) {
+        var element_5 = tmp$_35.next();
         if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_30;
+          var tmp$_36;
           var $receiver_2 = element_5.nodes;
           var firstOrNull$result_2;
           firstOrNull$break: do {
-            var tmp$_31;
-            tmp$_31 = $receiver_2.iterator();
-            while (tmp$_31.hasNext()) {
-              var element_6 = tmp$_31.next();
+            var tmp$_37;
+            tmp$_37 = $receiver_2.iterator();
+            while (tmp$_37.hasNext()) {
+              var element_6 = tmp$_37.next();
               if (equals(element_6.name, name_2) && Kotlin.isType(element_6, TextureNode)) {
                 firstOrNull$result_2 = element_6;
                 break firstOrNull$break;
@@ -30938,7 +31527,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_2 = null;
           }
            while (false);
-          var node_2 = (tmp$_30 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_30, TextureNode) ? tmp$_30 : throwCCE();
+          var node_2 = (tmp$_36 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_36, TextureNode) ? tmp$_36 : throwCCE();
           if (node_2 != null) {
             findNode_3klnlw$result_2 = node_2;
             break findNode_3klnlw$break;
@@ -30955,19 +31544,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_3;
     findNode_3klnlw$break: do {
       stage_3 = ShaderStage.ALL;
-      var tmp$_32;
-      tmp$_32 = $this_3.stages.values.iterator();
-      while (tmp$_32.hasNext()) {
-        var element_7 = tmp$_32.next();
+      var tmp$_38;
+      tmp$_38 = $this_3.stages.values.iterator();
+      while (tmp$_38.hasNext()) {
+        var element_7 = tmp$_38.next();
         if ((element_7.stage.mask & stage_3.mask) !== 0) {
-          var tmp$_33;
+          var tmp$_39;
           var $receiver_3 = element_7.nodes;
           var firstOrNull$result_3;
           firstOrNull$break: do {
-            var tmp$_34;
-            tmp$_34 = $receiver_3.iterator();
-            while (tmp$_34.hasNext()) {
-              var element_8 = tmp$_34.next();
+            var tmp$_40;
+            tmp$_40 = $receiver_3.iterator();
+            while (tmp$_40.hasNext()) {
+              var element_8 = tmp$_40.next();
               if (equals(element_8.name, name_3) && Kotlin.isType(element_8, TextureNode)) {
                 firstOrNull$result_3 = element_8;
                 break firstOrNull$break;
@@ -30975,7 +31564,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_3 = null;
           }
            while (false);
-          var node_3 = (tmp$_33 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_33, TextureNode) ? tmp$_33 : throwCCE();
+          var node_3 = (tmp$_39 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_39, TextureNode) ? tmp$_39 : throwCCE();
           if (node_3 != null) {
             findNode_3klnlw$result_3 = node_3;
             break findNode_3klnlw$break;
@@ -30992,19 +31581,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_4;
     findNode_3klnlw$break: do {
       stage_4 = ShaderStage.ALL;
-      var tmp$_35;
-      tmp$_35 = $this_4.stages.values.iterator();
-      while (tmp$_35.hasNext()) {
-        var element_9 = tmp$_35.next();
+      var tmp$_41;
+      tmp$_41 = $this_4.stages.values.iterator();
+      while (tmp$_41.hasNext()) {
+        var element_9 = tmp$_41.next();
         if ((element_9.stage.mask & stage_4.mask) !== 0) {
-          var tmp$_36;
+          var tmp$_42;
           var $receiver_4 = element_9.nodes;
           var firstOrNull$result_4;
           firstOrNull$break: do {
-            var tmp$_37;
-            tmp$_37 = $receiver_4.iterator();
-            while (tmp$_37.hasNext()) {
-              var element_10 = tmp$_37.next();
+            var tmp$_43;
+            tmp$_43 = $receiver_4.iterator();
+            while (tmp$_43.hasNext()) {
+              var element_10 = tmp$_43.next();
               if (equals(element_10.name, name_4) && Kotlin.isType(element_10, PushConstantNodeColor)) {
                 firstOrNull$result_4 = element_10;
                 break firstOrNull$break;
@@ -31012,7 +31601,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_4 = null;
           }
            while (false);
-          var node_4 = (tmp$_36 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_36, PushConstantNodeColor) ? tmp$_36 : throwCCE();
+          var node_4 = (tmp$_42 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_42, PushConstantNodeColor) ? tmp$_42 : throwCCE();
           if (node_4 != null) {
             findNode_3klnlw$result_4 = node_4;
             break findNode_3klnlw$break;
@@ -31028,19 +31617,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_5;
     findNode_3klnlw$break: do {
       stage_5 = ShaderStage.ALL;
-      var tmp$_38;
-      tmp$_38 = $this_5.stages.values.iterator();
-      while (tmp$_38.hasNext()) {
-        var element_11 = tmp$_38.next();
+      var tmp$_44;
+      tmp$_44 = $this_5.stages.values.iterator();
+      while (tmp$_44.hasNext()) {
+        var element_11 = tmp$_44.next();
         if ((element_11.stage.mask & stage_5.mask) !== 0) {
-          var tmp$_39;
+          var tmp$_45;
           var $receiver_5 = element_11.nodes;
           var firstOrNull$result_5;
           firstOrNull$break: do {
-            var tmp$_40;
-            tmp$_40 = $receiver_5.iterator();
-            while (tmp$_40.hasNext()) {
-              var element_12 = tmp$_40.next();
+            var tmp$_46;
+            tmp$_46 = $receiver_5.iterator();
+            while (tmp$_46.hasNext()) {
+              var element_12 = tmp$_46.next();
               if (equals(element_12.name, name_5) && Kotlin.isType(element_12, CubeMapNode)) {
                 firstOrNull$result_5 = element_12;
                 break firstOrNull$break;
@@ -31048,7 +31637,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_5 = null;
           }
            while (false);
-          var node_5 = (tmp$_39 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_39, CubeMapNode) ? tmp$_39 : throwCCE();
+          var node_5 = (tmp$_45 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_45, CubeMapNode) ? tmp$_45 : throwCCE();
           if (node_5 != null) {
             findNode_3klnlw$result_5 = node_5;
             break findNode_3klnlw$break;
@@ -31065,19 +31654,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
       stage_6 = ShaderStage.ALL;
-      var tmp$_41;
-      tmp$_41 = $this_6.stages.values.iterator();
-      while (tmp$_41.hasNext()) {
-        var element_13 = tmp$_41.next();
+      var tmp$_47;
+      tmp$_47 = $this_6.stages.values.iterator();
+      while (tmp$_47.hasNext()) {
+        var element_13 = tmp$_47.next();
         if ((element_13.stage.mask & stage_6.mask) !== 0) {
-          var tmp$_42;
+          var tmp$_48;
           var $receiver_6 = element_13.nodes;
           var firstOrNull$result_6;
           firstOrNull$break: do {
-            var tmp$_43;
-            tmp$_43 = $receiver_6.iterator();
-            while (tmp$_43.hasNext()) {
-              var element_14 = tmp$_43.next();
+            var tmp$_49;
+            tmp$_49 = $receiver_6.iterator();
+            while (tmp$_49.hasNext()) {
+              var element_14 = tmp$_49.next();
               if (equals(element_14.name, name_6) && Kotlin.isType(element_14, CubeMapNode)) {
                 firstOrNull$result_6 = element_14;
                 break firstOrNull$break;
@@ -31085,7 +31674,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_6 = null;
           }
            while (false);
-          var node_6 = (tmp$_42 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_42, CubeMapNode) ? tmp$_42 : throwCCE();
+          var node_6 = (tmp$_48 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_48, CubeMapNode) ? tmp$_48 : throwCCE();
           if (node_6 != null) {
             findNode_3klnlw$result_6 = node_6;
             break findNode_3klnlw$break;
@@ -31101,19 +31690,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_7;
     findNode_3klnlw$break: do {
       stage_7 = ShaderStage.ALL;
-      var tmp$_44;
-      tmp$_44 = $this_7.stages.values.iterator();
-      while (tmp$_44.hasNext()) {
-        var element_15 = tmp$_44.next();
+      var tmp$_50;
+      tmp$_50 = $this_7.stages.values.iterator();
+      while (tmp$_50.hasNext()) {
+        var element_15 = tmp$_50.next();
         if ((element_15.stage.mask & stage_7.mask) !== 0) {
-          var tmp$_45;
+          var tmp$_51;
           var $receiver_7 = element_15.nodes;
           var firstOrNull$result_7;
           firstOrNull$break: do {
-            var tmp$_46;
-            tmp$_46 = $receiver_7.iterator();
-            while (tmp$_46.hasNext()) {
-              var element_16 = tmp$_46.next();
+            var tmp$_52;
+            tmp$_52 = $receiver_7.iterator();
+            while (tmp$_52.hasNext()) {
+              var element_16 = tmp$_52.next();
               if (equals(element_16.name, 'brdfLut') && Kotlin.isType(element_16, TextureNode)) {
                 firstOrNull$result_7 = element_16;
                 break firstOrNull$break;
@@ -31121,7 +31710,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_7 = null;
           }
            while (false);
-          var node_7 = (tmp$_45 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_45, TextureNode) ? tmp$_45 : throwCCE();
+          var node_7 = (tmp$_51 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_51, TextureNode) ? tmp$_51 : throwCCE();
           if (node_7 != null) {
             findNode_3klnlw$result_7 = node_7;
             break findNode_3klnlw$break;
@@ -31137,19 +31726,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_8;
     findNode_3klnlw$break: do {
       stage_8 = ShaderStage.ALL;
-      var tmp$_47;
-      tmp$_47 = $this_8.stages.values.iterator();
-      while (tmp$_47.hasNext()) {
-        var element_17 = tmp$_47.next();
+      var tmp$_53;
+      tmp$_53 = $this_8.stages.values.iterator();
+      while (tmp$_53.hasNext()) {
+        var element_17 = tmp$_53.next();
         if ((element_17.stage.mask & stage_8.mask) !== 0) {
-          var tmp$_48;
+          var tmp$_54;
           var $receiver_8 = element_17.nodes;
           var firstOrNull$result_8;
           firstOrNull$break: do {
-            var tmp$_49;
-            tmp$_49 = $receiver_8.iterator();
-            while (tmp$_49.hasNext()) {
-              var element_18 = tmp$_49.next();
+            var tmp$_55;
+            tmp$_55 = $receiver_8.iterator();
+            while (tmp$_55.hasNext()) {
+              var element_18 = tmp$_55.next();
               if (equals(element_18.name, 'ssaoMap') && Kotlin.isType(element_18, TextureNode)) {
                 firstOrNull$result_8 = element_18;
                 break firstOrNull$break;
@@ -31157,7 +31746,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_8 = null;
           }
            while (false);
-          var node_8 = (tmp$_48 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_48, TextureNode) ? tmp$_48 : throwCCE();
+          var node_8 = (tmp$_54 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_54, TextureNode) ? tmp$_54 : throwCCE();
           if (node_8 != null) {
             findNode_3klnlw$result_8 = node_8;
             break findNode_3klnlw$break;
@@ -31168,45 +31757,154 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.ssaoSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
     if ((tmp$_18 = this.ssaoSampler_0) != null) {
       tmp$_18.texture = this.scrSpcAmbientOcclusionMap;
-    }if (this.isReceivingShadow_0) {
-      tmp$_19 = this.depthSamplers_0;
-      loop_label: for (var i = 0; i !== tmp$_19.length; ++i) {
-        var tmp$_50;
-        var $this_9 = this.model;
-        var name_7 = 'depthMap_' + i;
-        var stage_9;
-        var findNode_3klnlw$result_9;
+    }var $this_9 = this.model;
+    var stage_9;
+    var findNode_3klnlw$result_9;
+    findNode_3klnlw$break: do {
+      stage_9 = ShaderStage.ALL;
+      var tmp$_56;
+      tmp$_56 = $this_9.stages.values.iterator();
+      while (tmp$_56.hasNext()) {
+        var element_19 = tmp$_56.next();
+        if ((element_19.stage.mask & stage_9.mask) !== 0) {
+          var tmp$_57;
+          var $receiver_9 = element_19.nodes;
+          var firstOrNull$result_9;
+          firstOrNull$break: do {
+            var tmp$_58;
+            tmp$_58 = $receiver_9.iterator();
+            while (tmp$_58.hasNext()) {
+              var element_20 = tmp$_58.next();
+              if (equals(element_20.name, 'ssrMap') && Kotlin.isType(element_20, TextureNode)) {
+                firstOrNull$result_9 = element_20;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_9 = null;
+          }
+           while (false);
+          var node_9 = (tmp$_57 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_57, TextureNode) ? tmp$_57 : throwCCE();
+          if (node_9 != null) {
+            findNode_3klnlw$result_9 = node_9;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_9 = null;
+    }
+     while (false);
+    this.ssrSampler_0 = (tmp$_19 = findNode_3klnlw$result_9) != null ? tmp$_19.sampler : null;
+    if ((tmp$_20 = this.ssrSampler_0) != null) {
+      tmp$_20.texture = this.scrSpcReflectionMap;
+    }var $this_10 = this.model;
+    var name_7 = 'ssrNoiseTex';
+    var stage_10;
+    var findNode_3klnlw$result_10;
+    findNode_3klnlw$break: do {
+      stage_10 = ShaderStage.ALL;
+      var tmp$_59;
+      tmp$_59 = $this_10.stages.values.iterator();
+      while (tmp$_59.hasNext()) {
+        var element_21 = tmp$_59.next();
+        if ((element_21.stage.mask & stage_10.mask) !== 0) {
+          var tmp$_60;
+          var $receiver_10 = element_21.nodes;
+          var firstOrNull$result_10;
+          firstOrNull$break: do {
+            var tmp$_61;
+            tmp$_61 = $receiver_10.iterator();
+            while (tmp$_61.hasNext()) {
+              var element_22 = tmp$_61.next();
+              if (equals(element_22.name, name_7) && Kotlin.isType(element_22, TextureNode)) {
+                firstOrNull$result_10 = element_22;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_10 = null;
+          }
+           while (false);
+          var node_10 = (tmp$_60 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_60, TextureNode) ? tmp$_60 : throwCCE();
+          if (node_10 != null) {
+            findNode_3klnlw$result_10 = node_10;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_10 = null;
+    }
+     while (false);
+    this.ssrNoiseSampler_0 = (tmp$_21 = findNode_3klnlw$result_10) != null ? tmp$_21.sampler : null;
+    if ((tmp$_22 = this.ssrNoiseSampler_0) != null) {
+      tmp$_22.texture = this.scrSpcReflectionNoise;
+    }var $this_11 = this.model;
+    var name_8 = 'uMaxIterations';
+    var stage_11;
+    var findNode_3klnlw$result_11;
+    findNode_3klnlw$break: do {
+      stage_11 = ShaderStage.ALL;
+      var tmp$_62;
+      tmp$_62 = $this_11.stages.values.iterator();
+      while (tmp$_62.hasNext()) {
+        var element_23 = tmp$_62.next();
+        if ((element_23.stage.mask & stage_11.mask) !== 0) {
+          var tmp$_63;
+          var $receiver_11 = element_23.nodes;
+          var firstOrNull$result_11;
+          firstOrNull$break: do {
+            var tmp$_64;
+            tmp$_64 = $receiver_11.iterator();
+            while (tmp$_64.hasNext()) {
+              var element_24 = tmp$_64.next();
+              if (equals(element_24.name, name_8) && Kotlin.isType(element_24, PushConstantNode1i)) {
+                firstOrNull$result_11 = element_24;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_11 = null;
+          }
+           while (false);
+          var node_11 = (tmp$_63 = firstOrNull$result_11) == null || Kotlin.isType(tmp$_63, PushConstantNode1i) ? tmp$_63 : throwCCE();
+          if (node_11 != null) {
+            findNode_3klnlw$result_11 = node_11;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_11 = null;
+    }
+     while (false);
+    this.uMaxIterations_0 = findNode_3klnlw$result_11;
+    (tmp$_24 = (tmp$_23 = this.uMaxIterations_0) != null ? tmp$_23.uniform : null) != null ? (tmp$_24.value = this.scrSpcReflectionIterations) : null;
+    if (this.isReceivingShadow_0) {
+      tmp$_25 = this.depthSamplers_0;
+      loop_label: for (var i = 0; i !== tmp$_25.length; ++i) {
+        var tmp$_65;
+        var $this_12 = this.model;
+        var name_9 = 'depthMap_' + i;
+        var stage_12;
+        var findNode_3klnlw$result_12;
         findNode_3klnlw$break: do {
-          stage_9 = ShaderStage.ALL;
-          var tmp$_51;
-          tmp$_51 = $this_9.stages.values.iterator();
-          while (tmp$_51.hasNext()) {
-            var element_19 = tmp$_51.next();
-            if ((element_19.stage.mask & stage_9.mask) !== 0) {
-              var tmp$_52;
-              var $receiver_9 = element_19.nodes;
-              var firstOrNull$result_9;
+          stage_12 = ShaderStage.ALL;
+          var tmp$_66;
+          tmp$_66 = $this_12.stages.values.iterator();
+          while (tmp$_66.hasNext()) {
+            var element_25 = tmp$_66.next();
+            if ((element_25.stage.mask & stage_12.mask) !== 0) {
+              var tmp$_67;
+              var $receiver_12 = element_25.nodes;
+              var firstOrNull$result_12;
               firstOrNull$break: do {
-                var tmp$_53;
-                tmp$_53 = $receiver_9.iterator();
-                while (tmp$_53.hasNext()) {
-                  var element_20 = tmp$_53.next();
-                  if (equals(element_20.name, name_7) && Kotlin.isType(element_20, TextureNode)) {
-                    firstOrNull$result_9 = element_20;
+                var tmp$_68;
+                tmp$_68 = $receiver_12.iterator();
+                while (tmp$_68.hasNext()) {
+                  var element_26 = tmp$_68.next();
+                  if (equals(element_26.name, name_9) && Kotlin.isType(element_26, TextureNode)) {
+                    firstOrNull$result_12 = element_26;
                     break firstOrNull$break;
                   }}
-                firstOrNull$result_9 = null;
+                firstOrNull$result_12 = null;
               }
                while (false);
-              var node_9 = (tmp$_52 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_52, TextureNode) ? tmp$_52 : throwCCE();
-              if (node_9 != null) {
-                findNode_3klnlw$result_9 = node_9;
+              var node_12 = (tmp$_67 = firstOrNull$result_12) == null || Kotlin.isType(tmp$_67, TextureNode) ? tmp$_67 : throwCCE();
+              if (node_12 != null) {
+                findNode_3klnlw$result_12 = node_12;
                 break findNode_3klnlw$break;
               }}}
-          findNode_3klnlw$result_9 = null;
+          findNode_3klnlw$result_12 = null;
         }
          while (false);
-        var sampler = (tmp$_50 = findNode_3klnlw$result_9) != null ? tmp$_50.sampler : null;
+        var sampler = (tmp$_65 = findNode_3klnlw$result_12) != null ? tmp$_65.sampler : null;
         this.depthSamplers_0[i] = sampler;
         this.shadowMaps_0[i].setupSampler_s70oj3$(sampler);
       }
@@ -31215,6 +31913,72 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function PbrSceneShader$Companion() {
     PbrSceneShader$Companion_instance = this;
   }
+  function Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda(closure$data_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$data = closure$data_0;
+  }
+  Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda.prototype.constructor = Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda;
+  Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            return this.local$closure$data;
+          case 1:
+            throw this.exception_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda(closure$data_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda(closure$data_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  PbrSceneShader$Companion.prototype.generateScrSpcReflectionNoiseTex = function () {
+    var tmp$;
+    var sz = 64;
+    var buf = createUint8Buffer(Kotlin.imul(sz, sz) * 4 | 0);
+    var rand = new Random_0(501930763);
+    var vec = MutableVec3f_init();
+    tmp$ = Kotlin.imul(sz, sz);
+    for (var i = 0; i < tmp$; i++) {
+      do {
+        vec.set_y2kzbl$(rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 1.0));
+      }
+       while (vec.length() > 1.0);
+      vec.norm().scale_mx4ult$(0.25);
+      buf.set_6t1wet$((i * 4 | 0) + 0 | 0, toByte(numberToInt((vec.x + 1.0) * 127.5)));
+      buf.set_6t1wet$((i * 4 | 0) + 1 | 0, toByte(numberToInt((vec.y + 1.0) * 127.5)));
+      buf.set_6t1wet$((i * 4 | 0) + 2 | 0, toByte(numberToInt((vec.z + 1.0) * 127.5)));
+      buf.set_6t1wet$((i * 4 | 0) + 3 | 0, toByte(rand.randomI_n8acyv$(new IntRange(0, 255))));
+    }
+    var data = new BufferedTextureData(buf, sz, sz, TexFormat$RGBA_getInstance());
+    var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance());
+    return new Texture('ssr_noise_tex', texProps, PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda(data));
+  };
   PbrSceneShader$Companion.prototype.defaultDeferredPbrModel_ijjr66$ = function (cfg) {
     var $receiver = new ShaderModel('defaultDeferredPbrModel()');
     var ifTexCoords = {v: null};
@@ -31223,8 +31987,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_0.positionOutput = $receiver_0.fullScreenQuadPositionNode_r20yfm$($receiver_0.attrTexCoords().output).outQuadPos;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var coord = ifTexCoords.v.output;
+    var posAoTex = $receiver_1.textureNode_61zpoe$('positionAo');
     var $receiver_2 = $receiver_1.addNode_u9w9by$(new DeferredPbrShader$MrtDeMultiplexNode($receiver_1.stage));
-    $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('positionAo'), coord).outColor;
+    $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$(posAoTex, coord).outColor;
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     $receiver_2.inAlbedoMetallic = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('albedoMetal'), coord).outColor;
     if (cfg.isWithEmissive) {
@@ -31282,7 +32047,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       aoNode.inViewport = defCam.outViewport;
       aoFactor = $receiver_1.multiplyNode_ze33is$(aoFactor, aoNode.outAo).output;
     }$receiver_3.inAmbientOccl = aoFactor;
-    var mat = $receiver_3;
+    if (cfg.isScrSpcReflections) {
+      var ssrNoiseTex = $receiver_1.textureNode_61zpoe$('ssrNoiseTex');
+      var noise = $receiver_1.noiseTextureSamplerNode_gwl5ki$(ssrNoiseTex, $receiver_1.constVec2i_czzhjm$(new Vec2i(64, 64))).outNoise;
+      var sceneColorTex = $receiver_1.textureNode_61zpoe$('ssrMap');
+      var viewPos = mrtDeMultiplex.outViewPos;
+      var viewDir = $receiver_1.normalizeNode_r20yfm$(viewPos).output;
+      var rayOffset = $receiver_1.splitNode_500t7j$(noise, 'a').output;
+      var rayDir = $receiver_1.reflectNode_ze33is$(viewDir, $receiver_1.normalizeNode_r20yfm$(mrtDeMultiplex.outViewNormal).output).outDirection;
+      var rayDirNoise = $receiver_1.vecFromColorNode_r20yfm$($receiver_1.splitNode_500t7j$(noise, 'xyz').output).output;
+      var rayDirMod = $receiver_1.multiplyNode_ze33is$(rayDirNoise, mrtDeMultiplex.outRoughness).output;
+      var roughRayDir = $receiver_1.normalizeNode_r20yfm$($receiver_1.addNode_ze33is$(rayDir, rayDirMod).output).output;
+      var $receiver_4 = $receiver_1.addNode_u9w9by$(new ScreenSpaceRayTraceNode(posAoTex, $receiver_1.stage));
+      $receiver_4.inProjMat = defCam.outProjMat;
+      $receiver_4.inRayOrigin = viewPos;
+      $receiver_4.inRayDirection = roughRayDir;
+      $receiver_4.inRayOffset = rayOffset;
+      $receiver_4.maxIterations = $receiver_1.pushConstantNode1i_61zpoe$('uMaxIterations').output;
+      var rayTraceNode = $receiver_4;
+      $receiver_3.inReflectionColor = $receiver_1.textureSamplerNode_ce41yx$(sceneColorTex, rayTraceNode.outSamplePos).outColor;
+      $receiver_3.inReflectionWeight = rayTraceNode.outSampleWeight;
+    }var mat = $receiver_3;
     $receiver_1.colorOutput_a3v4si$(mat.outColor);
     return $receiver;
   };
@@ -31301,6 +32086,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.sceneCamera = null;
     this.isImageBasedLighting = false;
     this.isScrSpcAmbientOcclusion = false;
+    this.isScrSpcReflections = false;
     this.isWithEmissive = false;
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
@@ -31313,6 +32099,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.reflectionMap = null;
     this.brdfLut = null;
     this.scrSpcAmbientOcclusionMap = null;
+    this.scrSpcReflectionMap = null;
+    this.scrSpcReflectionNoise = null;
   }
   PbrSceneShader$DeferredPbrConfig.prototype.useMrtPass_u6tred$ = function (mrtPass) {
     this.sceneCamera = mrtPass.camera;
@@ -31327,6 +32115,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.scrSpcAmbientOcclusionMap = ssaoMap;
     this.isScrSpcAmbientOcclusion = true;
   };
+  PbrSceneShader$DeferredPbrConfig.prototype.useScreenSpaceReflections_daqygw$ = function (ssrMap, generateNoiseTex) {
+    this.scrSpcReflectionMap = ssrMap;
+    this.isScrSpcReflections = true;
+    if (generateNoiseTex) {
+      this.scrSpcReflectionNoise = PbrSceneShader$Companion_getInstance().generateScrSpcReflectionNoiseTex();
+    }};
   PbrSceneShader$DeferredPbrConfig.prototype.useImageBasedLighting_5m8fyp$ = function (irradianceMap, reflectionMap, brdfLut) {
     this.irradianceMap = irradianceMap;
     this.reflectionMap = reflectionMap;
@@ -31342,6 +32136,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'PbrSceneShader',
     interfaces: [ModeledShader]
+  };
+  function ScreenSpaceRayTraceNode(positionTex, graph) {
+    ShaderNode.call(this, 'rayTrace_' + graph.nextNodeId, graph);
+    this.positionTex = positionTex;
+    this.baseStepFac = new ShaderNodeIoVar(new ModelVar1fConst(0.02));
+    this.stepIncFac = new ShaderNodeIoVar(new ModelVar1fConst(1.2));
+    this.maxIterations = new ShaderNodeIoVar(new ModelVar1iConst(24));
+    this.maxRefinements = new ShaderNodeIoVar(new ModelVar1iConst(5));
+    this.inProjMat = new ShaderNodeIoVar(new ModelVarMat4f('_'));
+    this.inRayOrigin = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
+    this.inRayDirection = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().Z_AXIS));
+    this.inRayOffset = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().Z_AXIS));
+    this.outRayPos = new ShaderNodeIoVar(new ModelVar3f(this.name + '_outPos'), this);
+    this.outSamplePos = new ShaderNodeIoVar(new ModelVar3f(this.name + '_outSamplePos'), this);
+    this.outSampleWeight = new ShaderNodeIoVar(new ModelVar1f(this.name + '_outHitWeight'), this);
+  }
+  ScreenSpaceRayTraceNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.baseStepFac, this.stepIncFac, this.maxIterations, this.maxRefinements]);
+    this.dependsOn_8ak6wm$([this.inProjMat, this.inRayOrigin, this.inRayDirection, this.inRayOffset]);
+  };
+  ScreenSpaceRayTraceNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendFunction_puj7f4$('projectViewPos', '\n' + '            vec3 projectViewPos(vec3 viewPos) {' + '\n' + '                vec4 proj = ' + this.inProjMat + ' * vec4(viewPos, 1.0);' + '\n' + '                return (proj.xyz / proj.w) * 0.5 + 0.5;' + '\n' + '            }' + '\n' + '        ');
+    generator.appendFunction_puj7f4$('linearStep', trimIndent('\n            float linearStep(float edge0, float edge1, float x) {\n                float f = clamp(x, edge0, edge1);\n                return (f - edge0) / (edge1 - edge0);\n            }\n        '));
+    generator.appendMain_61zpoe$('\n' + '            vec3 ' + this.name + '_rayPos = ' + this.inRayOrigin.ref3f() + ';' + '\n' + '            vec3 ' + this.name + '_rayStepPos = ' + this.name + '_rayPos;' + '\n' + '            float ' + this.name + '_rayStep = -' + this.name + '_rayPos.z * ' + this.baseStepFac.ref1f() + ';' + '\n' + '            float ' + this.name + '_rayOffset = ' + this.inRayOffset.ref1f() + ';' + '\n' + '            ' + '\n' + '            float ' + this.name + '_sampleDepth = 0.0;' + '\n' + '            float ' + this.name + '_dDepth = 0.0;' + '\n' + '            bool ' + this.name + '_refineHit = false;' + '\n' + '\n' + '            int ' + this.name + '_iSteps, ' + this.name + '_iRef;' + '\n' + '            for (' + this.name + '_iSteps = 0, ' + this.name + '_iRef = 0; ' + this.name + '_iSteps < ' + this.maxIterations.ref1i() + ' && ' + this.name + '_iRef < ' + this.maxRefinements.ref1i() + '; ' + this.name + '_iSteps++) {' + '\n' + '                ' + this.name + '_rayStepPos += ' + this.inRayDirection.ref3f() + ' * ' + this.name + '_rayStep;' + '\n' + '                ' + this.name + '_rayPos = ' + this.name + '_rayStepPos + ' + this.inRayDirection.ref3f() + ' * ' + this.name + '_rayStep * ' + this.name + '_rayOffset * ' + this.stepIncFac.ref1f() + ';' + '\n' + '                ' + '\n' + '                vec2 ' + this.name + '_samplePos = projectViewPos(' + this.name + '_rayPos).xy;' + '\n' + '                if (' + this.name + '_samplePos.x < 0.0 || ' + this.name + '_samplePos.x > 1.0' + '\n' + '                        || ' + this.name + '_samplePos.x < 0.0 || ' + this.name + '_samplePos.x > 1.0' + '\n' + '                        || ' + this.name + '_rayPos.z > 0.0) {' + '\n' + '                    break;' + '\n' + '                }' + '\n' + '                ' + '\n' + '                ' + this.name + '_sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.positionTex.name, this.name + '_samplePos') + '.z;' + '\n' + '\n' + '                // set a large depth if sampleDepth is positive (clear value)' + '\n' + '                ' + this.name + '_sampleDepth -= 1e5 * step(0.1, ' + this.name + '_sampleDepth);' + '\n' + '                ' + '\n' + '                // diff between ray position depth and scene depth' + '\n' + '                //   negative -> ray pos is behind scene depth, i.e. covered by an object' + '\n' + '                //   positive -> ray pos is in front of scene' + '\n' + '                ' + this.name + '_dDepth = ' + this.name + '_rayPos.z - ' + this.name + '_sampleDepth;' + '\n' + '                ' + '\n' + '                if (!' + this.name + '_refineHit) {' + '\n' + '                    // search for hit' + '\n' + '                    if (' + this.name + '_dDepth < 0.0 && ' + this.name + '_dDepth > (-' + this.name + '_rayStep - 0.2)) {' + '\n' + '                        // hit -> roll back position to previous ray position and start refinement' + '\n' + '                        ' + this.name + '_rayStepPos = ' + this.name + '_rayPos - ' + this.inRayDirection.ref3f() + ' * ' + this.name + '_rayStep;' + '\n' + '                        ' + this.name + '_rayOffset = 0.0;' + '\n' + '                        ' + this.name + '_rayStep *= 0.5;' + '\n' + '                        ' + this.name + '_refineHit = true;' + '\n' + '                    } else {' + '\n' + '                        // no hit, increase step size' + '\n' + '                        ' + this.name + '_rayStep *= ' + this.stepIncFac.ref1f() + ';' + '\n' + '                    }' + '\n' + '\n' + '                } else {' + '\n' + '                    // refine hit position' + '\n' + '                    ' + this.name + '_rayStep = 0.5 * abs(' + this.name + '_rayStep) * sign(' + this.name + '_dDepth);' + '\n' + '                    ' + this.name + '_iRef++;' + '\n' + '                }' + '\n' + '            }' + '\n' + '            ' + '\n' + '            ' + this.outSampleWeight.declare() + ' = 0.0;' + '\n' + '            ' + this.outRayPos.declare() + ' = vec3(0.0);' + '\n' + '            ' + this.outSamplePos.declare() + ' = vec3(0.0);' + '\n' + '            ' + '\n' + '            if (' + this.maxIterations.ref1i() + ' > 0) {' + '\n' + '                ' + this.outRayPos + ' = ' + this.name + '_rayPos + ' + this.inRayDirection.ref3f() + ' * ' + this.name + '_rayStep;' + '\n' + '                ' + this.outSamplePos + ' = projectViewPos(' + this.outRayPos + ');' + '\n' + '                ' + '\n' + '                ' + this.outSampleWeight + ' = ' + '\n' + '                              linearStep(0.0, 0.1, ' + this.outSamplePos + '.x) * (1.0 - linearStep(0.9, 1.0, ' + this.outSamplePos + '.x))' + '\n' + '                            * linearStep(0.0, 0.1, ' + this.outSamplePos + '.y) * (1.0 - linearStep(0.9, 1.0, ' + this.outSamplePos + '.y))' + '\n' + '                            * (1.0 - step(0.9999, ' + this.outSamplePos + '.z))' + '\n' + '                            * (1.0 - linearStep(0.0, -' + this.name + '_rayPos.z / 10.0, abs(' + this.name + '_dDepth)));' + '\n' + '            }' + '\n' + '        ');
+  };
+  ScreenSpaceRayTraceNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ScreenSpaceRayTraceNode',
+    interfaces: [ShaderNode]
   };
   function Disposable() {
   }
@@ -34730,7 +35554,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               var element_2 = tmp$_3.next();
               var childNode = skinNodes.get_11rb$(element_2);
               if (childNode != null) {
-                skinNode_0.addChild_57g4th$(childNode);
+                skinNode_0.addChild_j3a3b7$(childNode);
               }}
           }}
         model.skins.add_11rb$(modelSkin);
@@ -37602,7 +38426,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [ShaderNode]
   };
   function BrdfLutPass_init$lambda$lambda$lambda($receiver) {
-    $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(1.0, 1.0);
+    $receiver_0.mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
@@ -38546,166 +39372,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'InstancedLodController',
     interfaces: [Node]
-  };
-  function KdTree(items, itemAdapter, bucketSz) {
-    if (bucketSz === void 0)
-      bucketSz = 20;
-    SpatialTree.call(this, itemAdapter);
-    this.root_qv5wxo$_0 = null;
-    var size = items.size;
-    var init = getCallableRef('get', function ($receiver, index) {
-      return $receiver.get_za3lpa$(index);
-    }.bind(null, items));
-    var list = ArrayList_init(size);
-    for (var index = 0; index < size; index++) {
-      list.add_11rb$(init(index));
-    }
-    this.items_0 = list;
-    this.cmpX_0 = KdTree$cmpX$lambda(itemAdapter);
-    this.cmpY_0 = KdTree$cmpY$lambda(itemAdapter);
-    this.cmpZ_0 = KdTree$cmpZ$lambda(itemAdapter);
-    this.root_qv5wxo$_0 = new KdTree$KdNode(this, get_indices(items), 0, bucketSz);
-  }
-  Object.defineProperty(KdTree.prototype, 'root', {
-    get: function () {
-      return this.root_qv5wxo$_0;
-    }
-  });
-  Object.defineProperty(KdTree.prototype, 'size', {
-    get: function () {
-      return this.items_0.size;
-    }
-  });
-  KdTree.prototype.contains_11rb$ = function (element) {
-    return this.root.contains_uargzz$(element);
-  };
-  KdTree.prototype.containsAll_brywnq$ = function (elements) {
-    var tmp$;
-    tmp$ = elements.iterator();
-    while (tmp$.hasNext()) {
-      var elem = tmp$.next();
-      if (!this.contains_11rb$(elem)) {
-        return false;
-      }}
-    return true;
-  };
-  KdTree.prototype.isEmpty = function () {
-    return this.items_0.isEmpty();
-  };
-  KdTree.prototype.iterator = function () {
-    return this.items_0.iterator();
-  };
-  function KdTree$KdNode($outer, nodeRange, depth, bucketSz) {
-    this.$outer = $outer;
-    SpatialTree$Node.call(this, this.$outer, depth);
-    this.nodeRange_rt7fdu$_0 = nodeRange;
-    this.children_wv5otg$_0 = ArrayList_init_0();
-    this.size_zddesm$_0 = 0;
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var tmpVec = MutableVec3f_init();
-    this.size_zddesm$_0 = this.nodeRange.last - this.nodeRange.first + 1 | 0;
-    var $this = this.bounds;
-    this.$outer;
-    var wasBatchUpdate = $this.isBatchUpdate;
-    $this.isBatchUpdate = true;
-    var this$KdTree = this.$outer;
-    var tmp$_3, tmp$_4, tmp$_5, tmp$_6;
-    tmp$_3 = this.nodeRange;
-    tmp$_4 = tmp$_3.first;
-    tmp$_5 = tmp$_3.last;
-    tmp$_6 = tmp$_3.step;
-    for (var i = tmp$_4; i <= tmp$_5; i += tmp$_6) {
-      var it = this.items.get_za3lpa$(i);
-      $this.add_czzhiu$(this$KdTree.itemAdapter.getMin_hm1yd1$(it, tmpVec));
-      $this.add_czzhiu$(this$KdTree.itemAdapter.getMax_hm1yd1$(it, tmpVec));
-    }
-    $this.isBatchUpdate = wasBatchUpdate;
-    if ((this.nodeRange.last - this.nodeRange.first | 0) > bucketSz) {
-      var cmp = this.$outer.cmpX_0;
-      if (this.bounds.size.y > this.bounds.size.x && this.bounds.size.y > this.bounds.size.z) {
-        cmp = this.$outer.cmpY_0;
-      } else if (this.bounds.size.z > this.bounds.size.x && this.bounds.size.z > this.bounds.size.y) {
-        cmp = this.$outer.cmpZ_0;
-      }var k = this.nodeRange.first + ((this.nodeRange.last - this.nodeRange.first | 0) / 2 | 0) | 0;
-      partition_0(this.$outer.items_0, this.nodeRange, k, cmp);
-      this.children.add_11rb$(new KdTree$KdNode(this.$outer, new IntRange(this.nodeRange.first, k), depth + 1 | 0, bucketSz));
-      this.children.add_11rb$(new KdTree$KdNode(this.$outer, new IntRange(k + 1 | 0, this.nodeRange.last), depth + 1 | 0, bucketSz));
-    } else {
-      tmp$ = this.nodeRange;
-      tmp$_0 = tmp$.first;
-      tmp$_1 = tmp$.last;
-      tmp$_2 = tmp$.step;
-      for (var i_0 = tmp$_0; i_0 <= tmp$_1; i_0 += tmp$_2) {
-        this.$outer.itemAdapter.setNode_bc9457$(this.items.get_za3lpa$(i_0), this);
-      }
-    }
-  }
-  Object.defineProperty(KdTree$KdNode.prototype, 'nodeRange', {
-    get: function () {
-      return this.nodeRange_rt7fdu$_0;
-    }
-  });
-  Object.defineProperty(KdTree$KdNode.prototype, 'children', {
-    get: function () {
-      return this.children_wv5otg$_0;
-    }
-  });
-  Object.defineProperty(KdTree$KdNode.prototype, 'size', {
-    get: function () {
-      return this.size_zddesm$_0;
-    }
-  });
-  Object.defineProperty(KdTree$KdNode.prototype, 'items', {
-    get: function () {
-      return this.$outer.items_0;
-    }
-  });
-  KdTree$KdNode.prototype.contains_uargzz$ = function (item) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    if (this.isLeaf) {
-      tmp$ = this.nodeRange;
-      tmp$_0 = tmp$.first;
-      tmp$_1 = tmp$.last;
-      tmp$_2 = tmp$.step;
-      for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
-        if (equals(this.items.get_za3lpa$(i), item)) {
-          return true;
-        }}
-      return false;
-    } else {
-      if (this.children.get_za3lpa$(0).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
-        tmp$_3 = this.children.get_za3lpa$(0).contains_uargzz$(item);
-      else if (this.children.get_za3lpa$(1).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
-        tmp$_3 = this.children.get_za3lpa$(1).contains_uargzz$(item);
-      else
-        tmp$_3 = false;
-      return tmp$_3;
-    }
-  };
-  KdTree$KdNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'KdNode',
-    interfaces: [SpatialTree$Node]
-  };
-  function KdTree$cmpX$lambda(closure$itemAdapter) {
-    return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getMinX_trkh7z$(a), closure$itemAdapter.getMinX_trkh7z$(b));
-    };
-  }
-  function KdTree$cmpY$lambda(closure$itemAdapter) {
-    return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getMinY_trkh7z$(a), closure$itemAdapter.getMinY_trkh7z$(b));
-    };
-  }
-  function KdTree$cmpZ$lambda(closure$itemAdapter) {
-    return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getMinZ_trkh7z$(a), closure$itemAdapter.getMinZ_trkh7z$(b));
-    };
-  }
-  KdTree.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'KdTree',
-    interfaces: [SpatialTree]
   };
   function LineString(points) {
     if (points === void 0) {
@@ -40349,407 +41015,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'AutoRecycler',
     interfaces: [ObjectRecycler]
   };
-  function OcTree(itemAdapter, items, bounds, padding, bucketSz, accurateBounds) {
-    OcTree$Companion_getInstance();
-    if (items === void 0)
-      items = emptyList();
-    if (bounds === void 0)
-      bounds = new BoundingBox();
-    if (padding === void 0)
-      padding = 0.1;
-    if (bucketSz === void 0)
-      bucketSz = 20;
-    if (accurateBounds === void 0)
-      accurateBounds = true;
-    SpatialTree.call(this, itemAdapter);
-    this.accurateBounds = accurateBounds;
-    this.root_be3r27$_0 = null;
-    this.emptyItems_0 = ArrayList_init_0();
-    var tmpPt = MutableVec3f_init();
-    if (!items.isEmpty()) {
-      var $this = bounds;
-      var wasBatchUpdate = $this.isBatchUpdate;
-      $this.isBatchUpdate = true;
-      var closure$items = items;
-      var closure$bounds = bounds;
-      for (var i = 0; i !== closure$items.size; ++i) {
-        closure$bounds.add_czzhiu$(itemAdapter.getMin_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
-        closure$bounds.add_czzhiu$(itemAdapter.getMax_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
-      }
-      $this.isBatchUpdate = wasBatchUpdate;
-    }if (bounds.isEmpty) {
-      throw KoolException_init('OcTree bounds are empty, specify bounds manually');
-    }var tmp$ = bounds.size.x;
-    var a = bounds.size.y;
-    var b = bounds.size.z;
-    var b_0 = Math_0.max(a, b);
-    var edLen = Math_0.max(tmp$, b_0);
-    var pad = edLen * padding;
-    bounds.set_w8lrqs$(bounds.min.x - pad, bounds.min.y - pad, bounds.min.z - pad, bounds.min.x + edLen + pad * 2, bounds.min.y + edLen + pad * 2, bounds.min.z + edLen + pad * 2);
-    this.root_be3r27$_0 = new OcTree$OcNode(this, bounds, 0, bucketSz);
-    for (var i_0 = 0; i_0 !== items.size; ++i_0) {
-      this.root.add_bzsob0$(items.get_za3lpa$(i_0));
-    }
-  }
-  Object.defineProperty(OcTree.prototype, 'root', {
-    get: function () {
-      return this.root_be3r27$_0;
-    }
-  });
-  Object.defineProperty(OcTree.prototype, 'size', {
-    get: function () {
-      return this.root.size;
-    }
-  });
-  OcTree.prototype.add_11rb$ = function (element) {
-    if (!this.root.nodeBounds.contains_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(element), this.itemAdapter.getCenterY_trkh7z$(element), this.itemAdapter.getCenterZ_trkh7z$(element))) {
-      var $this = package$util.Log;
-      var level = Log$Level.ERROR;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Item not in tree bounds: (' + this.itemAdapter.getMinX_trkh7z$(element) + ', ' + this.itemAdapter.getMinY_trkh7z$(element) + ', ' + this.itemAdapter.getMinZ_trkh7z$(element) + '), bounds: ' + this.root.bounds);
-      }return false;
-    }this.root.add_bzsob0$(element);
-    return true;
-  };
-  OcTree.prototype.remove_11rb$ = function (element) {
-    var success = this.root.remove_4rla3$(element, true);
-    if (!success) {
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Failed to remove: ' + element);
-      }var it = this.iterator();
-      while (it.hasNext()) {
-        if (equals(it.next(), element)) {
-          var $this_0 = package$util.Log;
-          var level_0 = Log$Level.WARN;
-          var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
-          if (level_0.level >= $this_0.level.level) {
-            $this_0.printer(level_0, tag_0, "Removed via brute force, did element change it's position?");
-          }it.remove();
-        }}
-    }return success;
-  };
-  function OcTree$iterator$ObjectLiteral(this$OcTree) {
-    this.elementIts = ArrayList_init_0();
-    this.elemIt = null;
-    var tmp$;
-    this.collectElements_witnv0$(this$OcTree.root);
-    if (!this.elementIts.isEmpty()) {
-      tmp$ = this.elementIts.removeAt_za3lpa$(get_lastIndex(this.elementIts));
-    } else {
-      tmp$ = ArrayList_init_0().iterator();
-    }
-    this.elemIt = tmp$;
-  }
-  OcTree$iterator$ObjectLiteral.prototype.collectElements_witnv0$ = function (node) {
-    var tmp$;
-    if (node.isLeaf) {
-      if (!node.items.isEmpty()) {
-        var $receiver = this.elementIts;
-        var element = node.items.iterator();
-        $receiver.add_11rb$(element);
-      }} else {
-      tmp$ = node.children;
-      for (var i = 0; i !== tmp$.size; ++i) {
-        this.collectElements_witnv0$(node.children.get_za3lpa$(i));
-      }
-    }
-  };
-  OcTree$iterator$ObjectLiteral.prototype.hasNext = function () {
-    if (this.elemIt.hasNext()) {
-      return true;
-    } else {
-      while (!this.elementIts.isEmpty()) {
-        this.elemIt = this.elementIts.removeAt_za3lpa$(get_lastIndex(this.elementIts));
-        if (this.elemIt.hasNext()) {
-          return true;
-        }}
-      return false;
-    }
-  };
-  OcTree$iterator$ObjectLiteral.prototype.next = function () {
-    return this.elemIt.next();
-  };
-  OcTree$iterator$ObjectLiteral.prototype.remove = function () {
-    this.elemIt.remove();
-  };
-  OcTree$iterator$ObjectLiteral.$metadata$ = {
-    kind: Kind_CLASS,
-    interfaces: [MutableIterator]
-  };
-  OcTree.prototype.iterator = function () {
-    return new OcTree$iterator$ObjectLiteral(this);
-  };
-  OcTree.prototype.contains_11rb$ = function (element) {
-    return this.root.contains_uargzz$(element);
-  };
-  OcTree.prototype.containsAll_brywnq$ = function (elements) {
-    var tmp$;
-    tmp$ = elements.iterator();
-    while (tmp$.hasNext()) {
-      var elem = tmp$.next();
-      if (!this.contains_11rb$(elem)) {
-        return false;
-      }}
-    return true;
-  };
-  OcTree.prototype.isEmpty = function () {
-    return this.size === 0;
-  };
-  OcTree.prototype.addAll_brywnq$ = function (elements) {
-    var tmp$;
-    var anyAdded = false;
-    tmp$ = elements.iterator();
-    while (tmp$.hasNext()) {
-      var elem = tmp$.next();
-      anyAdded = anyAdded || this.add_11rb$(elem);
-    }
-    return anyAdded;
-  };
-  OcTree.prototype.clear = function () {
-    this.root.clear_8be2vx$();
-  };
-  OcTree.prototype.removeAll_brywnq$ = function (elements) {
-    var tmp$;
-    var anyRemoved = false;
-    tmp$ = elements.iterator();
-    while (tmp$.hasNext()) {
-      var elem = tmp$.next();
-      anyRemoved = anyRemoved || this.remove_11rb$(elem);
-    }
-    return anyRemoved;
-  };
-  OcTree.prototype.retainAll_brywnq$ = function (elements) {
-    var anyRemoved = false;
-    var retainSet = LinkedHashSet_init();
-    retainSet.addAll_brywnq$(elements);
-    var it = this.iterator();
-    while (it.hasNext()) {
-      if (!retainSet.contains_11rb$(it.next())) {
-        it.remove();
-        anyRemoved = true;
-      }}
-    return anyRemoved;
-  };
-  function OcTree$OcNode($outer, nodeBounds, depth, bucketSz) {
-    this.$outer = $outer;
-    SpatialTree$Node.call(this, this.$outer, depth);
-    this.nodeBounds = nodeBounds;
-    this.bucketSz = bucketSz;
-    this.size_yjj6gq$_0 = 0;
-    this.children_oh99z0$_0 = ArrayList_init_0();
-    this.tmpVec_0 = MutableVec3f_init();
-    this.mutItems_0 = ArrayList_init_0();
-    if (depth > 20) {
-      throw KoolException_init('Octree is too deep');
-    }if (!this.$outer.accurateBounds) {
-      this.bounds.add_ea4od8$(this.nodeBounds);
-    }}
-  Object.defineProperty(OcTree$OcNode.prototype, 'size', {
-    get: function () {
-      return this.size_yjj6gq$_0;
-    },
-    set: function (size) {
-      this.size_yjj6gq$_0 = size;
-    }
-  });
-  Object.defineProperty(OcTree$OcNode.prototype, 'children', {
-    get: function () {
-      return this.children_oh99z0$_0;
-    }
-  });
-  Object.defineProperty(OcTree$OcNode.prototype, 'items', {
-    get: function () {
-      return this.mutItems_0;
-    }
-  });
-  Object.defineProperty(OcTree$OcNode.prototype, 'nodeRange', {
-    get: function () {
-      return get_indices(this.items);
-    }
-  });
-  OcTree$OcNode.prototype.clear_8be2vx$ = function () {
-    if (this.depth !== 0) {
-      throw KoolException_init('clear() is only allowed for root node');
-    }this.mutItems_0.clear();
-    this.children.clear();
-    this.size = 0;
-    if (this.$outer.accurateBounds) {
-      this.bounds.clear();
-    }};
-  OcTree$OcNode.prototype.add_bzsob0$ = function (item) {
-    this.size = this.size + 1 | 0;
-    if (this.isLeaf) {
-      if (this.$outer.accurateBounds) {
-        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0));
-        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0));
-      }if (this.mutItems_0.size < this.bucketSz || this.depth === 20) {
-        this.mutItems_0.add_11rb$(item);
-        this.$outer.itemAdapter.setNode_bc9457$(item, this);
-      } else {
-        this.split_0();
-        this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
-      }
-    } else {
-      var child = this.children.get_za3lpa$(this.childIndexForItem_0(item));
-      child.add_bzsob0$(item);
-      if (this.$outer.accurateBounds) {
-        this.bounds.add_ea4od8$(child.bounds);
-      }}
-  };
-  OcTree$OcNode.prototype.remove_4rla3$ = function (item, canMerge) {
-    var tmp$;
-    if (this.isLeaf) {
-      tmp$ = this.mutItems_0.remove_11rb$(item);
-    } else {
-      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).remove_4rla3$(item, canMerge);
-    }
-    var success = tmp$;
-    if (success) {
-      this.size = this.size - 1 | 0;
-      if (!this.isLeaf && this.size < this.bucketSz && canMerge) {
-        this.merge_0();
-      }if (this.$outer.accurateBounds && this.isBorderItem_0(item)) {
-        this.recomputeBounds_0();
-      }}return success;
-  };
-  OcTree$OcNode.prototype.isBorderItem_0 = function (item) {
-    this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0);
-    if (this.tmpVec_0.x <= this.bounds.min.x || this.tmpVec_0.y <= this.bounds.min.y || this.tmpVec_0.z <= this.bounds.min.z) {
-      return true;
-    }this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0);
-    if (this.tmpVec_0.x >= this.bounds.max.x || this.tmpVec_0.y >= this.bounds.max.y || this.tmpVec_0.z >= this.bounds.max.z) {
-      return true;
-    }return false;
-  };
-  OcTree$OcNode.prototype.recomputeBounds_0 = function () {
-    var tmp$, tmp$_0;
-    this.bounds.clear();
-    if (this.isLeaf) {
-      tmp$ = this.mutItems_0;
-      for (var i = 0; i !== tmp$.size; ++i) {
-        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
-        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
-      }
-    } else {
-      tmp$_0 = this.children;
-      for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-        this.bounds.add_ea4od8$(this.children.get_za3lpa$(i_0).bounds);
-      }
-    }
-  };
-  OcTree$OcNode.prototype.contains_uargzz$ = function (item) {
-    var tmp$;
-    if (this.isLeaf) {
-      tmp$ = this.mutItems_0.contains_11rb$(item);
-    } else {
-      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).contains_uargzz$(item);
-    }
-    return tmp$;
-  };
-  OcTree$OcNode.prototype.isInBounds_czzhiu$ = function (center) {
-    return this.isInBounds_y2kzbl$(center.x, center.y, center.z);
-  };
-  OcTree$OcNode.prototype.isInBounds_y2kzbl$ = function (centerX, centerY, centerZ) {
-    return centerX >= this.nodeBounds.min.x && centerX < this.nodeBounds.max.x && centerY >= this.nodeBounds.min.y && centerY < this.nodeBounds.max.y && centerZ >= this.nodeBounds.min.z && centerZ < this.nodeBounds.max.z;
-  };
-  OcTree$OcNode.prototype.split_0 = function () {
-    var tmp$;
-    var x0 = this.nodeBounds.min.x;
-    var x1 = this.nodeBounds.center.x;
-    var x2 = this.nodeBounds.max.x;
-    var y0 = this.nodeBounds.min.y;
-    var y1 = this.nodeBounds.center.y;
-    var y2 = this.nodeBounds.max.y;
-    var z0 = this.nodeBounds.min.z;
-    var z1 = this.nodeBounds.center.z;
-    var z2 = this.nodeBounds.max.z;
-    var $receiver = this.children;
-    var element = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y0, z0), new Vec3f(x1, y1, z1)), this.depth + 1 | 0, this.bucketSz);
-    $receiver.add_11rb$(element);
-    var $receiver_0 = this.children;
-    var element_0 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y0, z1), new Vec3f(x1, y1, z2)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_0.add_11rb$(element_0);
-    var $receiver_1 = this.children;
-    var element_1 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y1, z0), new Vec3f(x1, y2, z1)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_1.add_11rb$(element_1);
-    var $receiver_2 = this.children;
-    var element_2 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y1, z1), new Vec3f(x1, y2, z2)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_2.add_11rb$(element_2);
-    var $receiver_3 = this.children;
-    var element_3 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y0, z0), new Vec3f(x2, y1, z1)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_3.add_11rb$(element_3);
-    var $receiver_4 = this.children;
-    var element_4 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y0, z1), new Vec3f(x2, y1, z2)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_4.add_11rb$(element_4);
-    var $receiver_5 = this.children;
-    var element_5 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y1, z0), new Vec3f(x2, y2, z1)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_5.add_11rb$(element_5);
-    var $receiver_6 = this.children;
-    var element_6 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y1, z1), new Vec3f(x2, y2, z2)), this.depth + 1 | 0, this.bucketSz);
-    $receiver_6.add_11rb$(element_6);
-    tmp$ = this.mutItems_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.children.get_za3lpa$(this.childIndexForItem_0(this.mutItems_0.get_za3lpa$(i))).add_bzsob0$(this.mutItems_0.get_za3lpa$(i));
-    }
-    this.mutItems_0 = this.$outer.emptyItems_0;
-  };
-  OcTree$OcNode.prototype.merge_0 = function () {
-    var tmp$;
-    this.mutItems_0 = ArrayList_init_0();
-    tmp$ = this.children;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.mutItems_0.addAll_brywnq$(this.children.get_za3lpa$(i).mutItems_0);
-    }
-    this.children.clear();
-  };
-  OcTree$OcNode.prototype.childIndexForItem_0 = function (item) {
-    var tmp$, tmp$_0, tmp$_1;
-    if (this.$outer.itemAdapter.getCenterX_trkh7z$(item) < this.nodeBounds.center.x) {
-      tmp$ = 0;
-    } else {
-      tmp$ = 4;
-    }
-    if (this.$outer.itemAdapter.getCenterY_trkh7z$(item) < this.nodeBounds.center.y) {
-      tmp$_0 = 0;
-    } else {
-      tmp$_0 = 2;
-    }
-    if (this.$outer.itemAdapter.getCenterZ_trkh7z$(item) < this.nodeBounds.center.z) {
-      tmp$_1 = 0;
-    } else {
-      tmp$_1 = 1;
-    }
-    return tmp$ | tmp$_0 | tmp$_1;
-  };
-  OcTree$OcNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OcNode',
-    interfaces: [SpatialTree$Node]
-  };
-  function OcTree$Companion() {
-    OcTree$Companion_instance = this;
-    this.MAX_DEPTH = 20;
-  }
-  OcTree$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var OcTree$Companion_instance = null;
-  function OcTree$Companion_getInstance() {
-    if (OcTree$Companion_instance === null) {
-      new OcTree$Companion();
-    }return OcTree$Companion_instance;
-  }
-  OcTree.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OcTree',
-    interfaces: [MutableCollection, SpatialTree]
-  };
   function PerfTimer() {
     this.tStart_0 = 0.0;
     this.reset();
@@ -40956,7 +41221,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       mapSize = 2048;
     if (drawNode === void 0)
       drawNode = scene;
-    DepthMapPass.call(this, drawNode, mapSize);
+    var tmp$ = drawNode;
+    var tmp$_0 = mapSize;
+    var tmp$_1 = void 0;
+    var $receiver = DepthMapPass$Companion_getInstance().defaultSetup();
+    $receiver.isUsedAsShadowMap = true;
+    DepthMapPass.call(this, tmp$, tmp$_0, tmp$_1, $receiver);
     this.scene = scene;
     this.lightIndex = lightIndex;
     this.lightViewProjMat = new Mat4d();
@@ -41170,6 +41440,567 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'CascadedShadowMap',
     interfaces: [ShadowMap]
   };
+  function KdTree(items, itemAdapter, bucketSz) {
+    if (bucketSz === void 0)
+      bucketSz = 20;
+    SpatialTree.call(this, itemAdapter);
+    this.root_7kvd7y$_0 = null;
+    var size = items.size;
+    var init = getCallableRef('get', function ($receiver, index) {
+      return $receiver.get_za3lpa$(index);
+    }.bind(null, items));
+    var list = ArrayList_init(size);
+    for (var index = 0; index < size; index++) {
+      list.add_11rb$(init(index));
+    }
+    this.items_0 = list;
+    this.cmpX_0 = KdTree$cmpX$lambda(itemAdapter);
+    this.cmpY_0 = KdTree$cmpY$lambda(itemAdapter);
+    this.cmpZ_0 = KdTree$cmpZ$lambda(itemAdapter);
+    this.root_7kvd7y$_0 = new KdTree$KdNode(this, get_indices(items), 0, bucketSz);
+  }
+  Object.defineProperty(KdTree.prototype, 'root', {
+    get: function () {
+      return this.root_7kvd7y$_0;
+    }
+  });
+  Object.defineProperty(KdTree.prototype, 'size', {
+    get: function () {
+      return this.items_0.size;
+    }
+  });
+  KdTree.prototype.contains_11rb$ = function (element) {
+    return this.root.contains_uargzz$(element);
+  };
+  KdTree.prototype.containsAll_brywnq$ = function (elements) {
+    var tmp$;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      if (!this.contains_11rb$(elem)) {
+        return false;
+      }}
+    return true;
+  };
+  KdTree.prototype.isEmpty = function () {
+    return this.items_0.isEmpty();
+  };
+  KdTree.prototype.iterator = function () {
+    return this.items_0.iterator();
+  };
+  function KdTree$KdNode($outer, nodeRange, depth, bucketSz) {
+    this.$outer = $outer;
+    SpatialTree$Node.call(this, this.$outer, depth);
+    this.nodeRange_cforgo$_0 = nodeRange;
+    this.children_ay15fy$_0 = ArrayList_init_0();
+    this.size_ugdyxc$_0 = 0;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var tmpVec = MutableVec3f_init();
+    this.size_ugdyxc$_0 = this.nodeRange.last - this.nodeRange.first + 1 | 0;
+    var $this = this.bounds;
+    this.$outer;
+    var wasBatchUpdate = $this.isBatchUpdate;
+    $this.isBatchUpdate = true;
+    var this$KdTree = this.$outer;
+    var tmp$_3, tmp$_4, tmp$_5, tmp$_6;
+    tmp$_3 = this.nodeRange;
+    tmp$_4 = tmp$_3.first;
+    tmp$_5 = tmp$_3.last;
+    tmp$_6 = tmp$_3.step;
+    for (var i = tmp$_4; i <= tmp$_5; i += tmp$_6) {
+      var it = this.items.get_za3lpa$(i);
+      $this.add_czzhiu$(this$KdTree.itemAdapter.getMin_hm1yd1$(it, tmpVec));
+      $this.add_czzhiu$(this$KdTree.itemAdapter.getMax_hm1yd1$(it, tmpVec));
+    }
+    $this.isBatchUpdate = wasBatchUpdate;
+    if ((this.nodeRange.last - this.nodeRange.first | 0) > bucketSz) {
+      var cmp = this.$outer.cmpX_0;
+      if (this.bounds.size.y > this.bounds.size.x && this.bounds.size.y > this.bounds.size.z) {
+        cmp = this.$outer.cmpY_0;
+      } else if (this.bounds.size.z > this.bounds.size.x && this.bounds.size.z > this.bounds.size.y) {
+        cmp = this.$outer.cmpZ_0;
+      }var k = this.nodeRange.first + ((this.nodeRange.last - this.nodeRange.first | 0) / 2 | 0) | 0;
+      partition_0(this.$outer.items_0, this.nodeRange, k, cmp);
+      this.children.add_11rb$(new KdTree$KdNode(this.$outer, new IntRange(this.nodeRange.first, k), depth + 1 | 0, bucketSz));
+      this.children.add_11rb$(new KdTree$KdNode(this.$outer, new IntRange(k + 1 | 0, this.nodeRange.last), depth + 1 | 0, bucketSz));
+    } else {
+      tmp$ = this.nodeRange;
+      tmp$_0 = tmp$.first;
+      tmp$_1 = tmp$.last;
+      tmp$_2 = tmp$.step;
+      for (var i_0 = tmp$_0; i_0 <= tmp$_1; i_0 += tmp$_2) {
+        this.$outer.itemAdapter.setNode_kvimhn$(this.items.get_za3lpa$(i_0), this);
+      }
+    }
+  }
+  Object.defineProperty(KdTree$KdNode.prototype, 'nodeRange', {
+    get: function () {
+      return this.nodeRange_cforgo$_0;
+    }
+  });
+  Object.defineProperty(KdTree$KdNode.prototype, 'children', {
+    get: function () {
+      return this.children_ay15fy$_0;
+    }
+  });
+  Object.defineProperty(KdTree$KdNode.prototype, 'size', {
+    get: function () {
+      return this.size_ugdyxc$_0;
+    }
+  });
+  Object.defineProperty(KdTree$KdNode.prototype, 'items', {
+    get: function () {
+      return this.$outer.items_0;
+    }
+  });
+  KdTree$KdNode.prototype.contains_uargzz$ = function (item) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    if (this.isLeaf) {
+      tmp$ = this.nodeRange;
+      tmp$_0 = tmp$.first;
+      tmp$_1 = tmp$.last;
+      tmp$_2 = tmp$.step;
+      for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+        if (equals(this.items.get_za3lpa$(i), item)) {
+          return true;
+        }}
+      return false;
+    } else {
+      if (this.children.get_za3lpa$(0).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
+        tmp$_3 = this.children.get_za3lpa$(0).contains_uargzz$(item);
+      else if (this.children.get_za3lpa$(1).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
+        tmp$_3 = this.children.get_za3lpa$(1).contains_uargzz$(item);
+      else
+        tmp$_3 = false;
+      return tmp$_3;
+    }
+  };
+  KdTree$KdNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'KdNode',
+    interfaces: [SpatialTree$Node]
+  };
+  function KdTree$cmpX$lambda(closure$itemAdapter) {
+    return function (a, b) {
+      return Kotlin.compareTo(closure$itemAdapter.getMinX_trkh7z$(a), closure$itemAdapter.getMinX_trkh7z$(b));
+    };
+  }
+  function KdTree$cmpY$lambda(closure$itemAdapter) {
+    return function (a, b) {
+      return Kotlin.compareTo(closure$itemAdapter.getMinY_trkh7z$(a), closure$itemAdapter.getMinY_trkh7z$(b));
+    };
+  }
+  function KdTree$cmpZ$lambda(closure$itemAdapter) {
+    return function (a, b) {
+      return Kotlin.compareTo(closure$itemAdapter.getMinZ_trkh7z$(a), closure$itemAdapter.getMinZ_trkh7z$(b));
+    };
+  }
+  KdTree.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'KdTree',
+    interfaces: [SpatialTree]
+  };
+  function OcTree(itemAdapter, items, bounds, padding, bucketSz, accurateBounds) {
+    OcTree$Companion_getInstance();
+    if (items === void 0)
+      items = emptyList();
+    if (bounds === void 0)
+      bounds = new BoundingBox();
+    if (padding === void 0)
+      padding = 0.1;
+    if (bucketSz === void 0)
+      bucketSz = 20;
+    if (accurateBounds === void 0)
+      accurateBounds = true;
+    SpatialTree.call(this, itemAdapter);
+    this.accurateBounds = accurateBounds;
+    this.root_p6z0rb$_0 = null;
+    this.emptyItems_0 = ArrayList_init_0();
+    var tmpPt = MutableVec3f_init();
+    if (!items.isEmpty()) {
+      var $this = bounds;
+      var wasBatchUpdate = $this.isBatchUpdate;
+      $this.isBatchUpdate = true;
+      var closure$items = items;
+      var closure$bounds = bounds;
+      for (var i = 0; i !== closure$items.size; ++i) {
+        closure$bounds.add_czzhiu$(itemAdapter.getMin_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
+        closure$bounds.add_czzhiu$(itemAdapter.getMax_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
+      }
+      $this.isBatchUpdate = wasBatchUpdate;
+    }if (bounds.isEmpty) {
+      throw KoolException_init('OcTree bounds are empty, specify bounds manually');
+    }var tmp$ = bounds.size.x;
+    var a = bounds.size.y;
+    var b = bounds.size.z;
+    var b_0 = Math_0.max(a, b);
+    var edLen = Math_0.max(tmp$, b_0);
+    var pad = edLen * padding;
+    bounds.set_w8lrqs$(bounds.min.x - pad, bounds.min.y - pad, bounds.min.z - pad, bounds.min.x + edLen + pad * 2, bounds.min.y + edLen + pad * 2, bounds.min.z + edLen + pad * 2);
+    this.root_p6z0rb$_0 = new OcTree$OcNode(this, bounds, 0, bucketSz);
+    for (var i_0 = 0; i_0 !== items.size; ++i_0) {
+      this.root.add_bzsob0$(items.get_za3lpa$(i_0));
+    }
+  }
+  Object.defineProperty(OcTree.prototype, 'root', {
+    get: function () {
+      return this.root_p6z0rb$_0;
+    }
+  });
+  Object.defineProperty(OcTree.prototype, 'size', {
+    get: function () {
+      return this.root.size;
+    }
+  });
+  OcTree.prototype.add_11rb$ = function (element) {
+    if (!this.root.nodeBounds.contains_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(element), this.itemAdapter.getCenterY_trkh7z$(element), this.itemAdapter.getCenterZ_trkh7z$(element))) {
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Item not in tree bounds: (' + this.itemAdapter.getMinX_trkh7z$(element) + ', ' + this.itemAdapter.getMinY_trkh7z$(element) + ', ' + this.itemAdapter.getMinZ_trkh7z$(element) + '), bounds: ' + this.root.bounds);
+      }return false;
+    }this.root.add_bzsob0$(element);
+    return true;
+  };
+  OcTree.prototype.remove_11rb$ = function (element) {
+    var success = this.root.remove_4rla3$(element, true);
+    if (!success) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Failed to remove: ' + element);
+      }var it = this.iterator();
+      while (it.hasNext()) {
+        if (equals(it.next(), element)) {
+          var $this_0 = package$util.Log;
+          var level_0 = Log$Level.WARN;
+          var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+          if (level_0.level >= $this_0.level.level) {
+            $this_0.printer(level_0, tag_0, "Removed via brute force, did element change it's position?");
+          }it.remove();
+        }}
+    }return success;
+  };
+  function OcTree$iterator$ObjectLiteral(this$OcTree) {
+    this.elementIts = ArrayList_init_0();
+    this.elemIt = null;
+    var tmp$;
+    this.collectElements_b1uyba$(this$OcTree.root);
+    if (!this.elementIts.isEmpty()) {
+      tmp$ = this.elementIts.removeAt_za3lpa$(get_lastIndex(this.elementIts));
+    } else {
+      tmp$ = ArrayList_init_0().iterator();
+    }
+    this.elemIt = tmp$;
+  }
+  OcTree$iterator$ObjectLiteral.prototype.collectElements_b1uyba$ = function (node) {
+    var tmp$;
+    if (node.isLeaf) {
+      if (!node.items.isEmpty()) {
+        var $receiver = this.elementIts;
+        var element = node.items.iterator();
+        $receiver.add_11rb$(element);
+      }} else {
+      tmp$ = node.children;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        this.collectElements_b1uyba$(node.children.get_za3lpa$(i));
+      }
+    }
+  };
+  OcTree$iterator$ObjectLiteral.prototype.hasNext = function () {
+    if (this.elemIt.hasNext()) {
+      return true;
+    } else {
+      while (!this.elementIts.isEmpty()) {
+        this.elemIt = this.elementIts.removeAt_za3lpa$(get_lastIndex(this.elementIts));
+        if (this.elemIt.hasNext()) {
+          return true;
+        }}
+      return false;
+    }
+  };
+  OcTree$iterator$ObjectLiteral.prototype.next = function () {
+    return this.elemIt.next();
+  };
+  OcTree$iterator$ObjectLiteral.prototype.remove = function () {
+    this.elemIt.remove();
+  };
+  OcTree$iterator$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [MutableIterator]
+  };
+  OcTree.prototype.iterator = function () {
+    return new OcTree$iterator$ObjectLiteral(this);
+  };
+  OcTree.prototype.contains_11rb$ = function (element) {
+    return this.root.contains_uargzz$(element);
+  };
+  OcTree.prototype.containsAll_brywnq$ = function (elements) {
+    var tmp$;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      if (!this.contains_11rb$(elem)) {
+        return false;
+      }}
+    return true;
+  };
+  OcTree.prototype.isEmpty = function () {
+    return this.size === 0;
+  };
+  OcTree.prototype.addAll_brywnq$ = function (elements) {
+    var tmp$;
+    var anyAdded = false;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      anyAdded = anyAdded || this.add_11rb$(elem);
+    }
+    return anyAdded;
+  };
+  OcTree.prototype.clear = function () {
+    this.root.clear_8be2vx$();
+  };
+  OcTree.prototype.removeAll_brywnq$ = function (elements) {
+    var tmp$;
+    var anyRemoved = false;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      anyRemoved = anyRemoved || this.remove_11rb$(elem);
+    }
+    return anyRemoved;
+  };
+  OcTree.prototype.retainAll_brywnq$ = function (elements) {
+    var anyRemoved = false;
+    var retainSet = LinkedHashSet_init();
+    retainSet.addAll_brywnq$(elements);
+    var it = this.iterator();
+    while (it.hasNext()) {
+      if (!retainSet.contains_11rb$(it.next())) {
+        it.remove();
+        anyRemoved = true;
+      }}
+    return anyRemoved;
+  };
+  function OcTree$OcNode($outer, nodeBounds, depth, bucketSz) {
+    this.$outer = $outer;
+    SpatialTree$Node.call(this, this.$outer, depth);
+    this.nodeBounds = nodeBounds;
+    this.bucketSz = bucketSz;
+    this.size_vklfn4$_0 = 0;
+    this.children_omq8mm$_0 = ArrayList_init_0();
+    this.tmpVec_0 = MutableVec3f_init();
+    this.mutItems_0 = ArrayList_init_0();
+    if (depth > 20) {
+      throw KoolException_init('Octree is too deep');
+    }if (!this.$outer.accurateBounds) {
+      this.bounds.add_ea4od8$(this.nodeBounds);
+    }}
+  Object.defineProperty(OcTree$OcNode.prototype, 'size', {
+    get: function () {
+      return this.size_vklfn4$_0;
+    },
+    set: function (size) {
+      this.size_vklfn4$_0 = size;
+    }
+  });
+  Object.defineProperty(OcTree$OcNode.prototype, 'children', {
+    get: function () {
+      return this.children_omq8mm$_0;
+    }
+  });
+  Object.defineProperty(OcTree$OcNode.prototype, 'items', {
+    get: function () {
+      return this.mutItems_0;
+    }
+  });
+  Object.defineProperty(OcTree$OcNode.prototype, 'nodeRange', {
+    get: function () {
+      return get_indices(this.items);
+    }
+  });
+  OcTree$OcNode.prototype.clear_8be2vx$ = function () {
+    if (this.depth !== 0) {
+      throw KoolException_init('clear() is only allowed for root node');
+    }this.mutItems_0.clear();
+    this.children.clear();
+    this.size = 0;
+    if (this.$outer.accurateBounds) {
+      this.bounds.clear();
+    }};
+  OcTree$OcNode.prototype.add_bzsob0$ = function (item) {
+    this.size = this.size + 1 | 0;
+    if (this.isLeaf) {
+      if (this.$outer.accurateBounds) {
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0));
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0));
+      }if (this.mutItems_0.size < this.bucketSz || this.depth === 20) {
+        this.mutItems_0.add_11rb$(item);
+        this.$outer.itemAdapter.setNode_kvimhn$(item, this);
+      } else {
+        this.split_0();
+        this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
+      }
+    } else {
+      var child = this.children.get_za3lpa$(this.childIndexForItem_0(item));
+      child.add_bzsob0$(item);
+      if (this.$outer.accurateBounds) {
+        this.bounds.add_ea4od8$(child.bounds);
+      }}
+  };
+  OcTree$OcNode.prototype.remove_4rla3$ = function (item, canMerge) {
+    var tmp$;
+    if (this.isLeaf) {
+      tmp$ = this.mutItems_0.remove_11rb$(item);
+    } else {
+      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).remove_4rla3$(item, canMerge);
+    }
+    var success = tmp$;
+    if (success) {
+      this.size = this.size - 1 | 0;
+      if (!this.isLeaf && this.size < this.bucketSz && canMerge) {
+        this.merge_0();
+      }if (this.$outer.accurateBounds && this.isBorderItem_0(item)) {
+        this.recomputeBounds_0();
+      }}return success;
+  };
+  OcTree$OcNode.prototype.isBorderItem_0 = function (item) {
+    this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0);
+    if (this.tmpVec_0.x <= this.bounds.min.x || this.tmpVec_0.y <= this.bounds.min.y || this.tmpVec_0.z <= this.bounds.min.z) {
+      return true;
+    }this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0);
+    if (this.tmpVec_0.x >= this.bounds.max.x || this.tmpVec_0.y >= this.bounds.max.y || this.tmpVec_0.z >= this.bounds.max.z) {
+      return true;
+    }return false;
+  };
+  OcTree$OcNode.prototype.recomputeBounds_0 = function () {
+    var tmp$, tmp$_0;
+    this.bounds.clear();
+    if (this.isLeaf) {
+      tmp$ = this.mutItems_0;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
+      }
+    } else {
+      tmp$_0 = this.children;
+      for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+        this.bounds.add_ea4od8$(this.children.get_za3lpa$(i_0).bounds);
+      }
+    }
+  };
+  OcTree$OcNode.prototype.contains_uargzz$ = function (item) {
+    var tmp$;
+    if (this.isLeaf) {
+      tmp$ = this.mutItems_0.contains_11rb$(item);
+    } else {
+      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).contains_uargzz$(item);
+    }
+    return tmp$;
+  };
+  OcTree$OcNode.prototype.isInBounds_czzhiu$ = function (center) {
+    return this.isInBounds_y2kzbl$(center.x, center.y, center.z);
+  };
+  OcTree$OcNode.prototype.isInBounds_y2kzbl$ = function (centerX, centerY, centerZ) {
+    return centerX >= this.nodeBounds.min.x && centerX < this.nodeBounds.max.x && centerY >= this.nodeBounds.min.y && centerY < this.nodeBounds.max.y && centerZ >= this.nodeBounds.min.z && centerZ < this.nodeBounds.max.z;
+  };
+  OcTree$OcNode.prototype.split_0 = function () {
+    var tmp$;
+    var x0 = this.nodeBounds.min.x;
+    var x1 = this.nodeBounds.center.x;
+    var x2 = this.nodeBounds.max.x;
+    var y0 = this.nodeBounds.min.y;
+    var y1 = this.nodeBounds.center.y;
+    var y2 = this.nodeBounds.max.y;
+    var z0 = this.nodeBounds.min.z;
+    var z1 = this.nodeBounds.center.z;
+    var z2 = this.nodeBounds.max.z;
+    var $receiver = this.children;
+    var element = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y0, z0), new Vec3f(x1, y1, z1)), this.depth + 1 | 0, this.bucketSz);
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.children;
+    var element_0 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y0, z1), new Vec3f(x1, y1, z2)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_0.add_11rb$(element_0);
+    var $receiver_1 = this.children;
+    var element_1 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y1, z0), new Vec3f(x1, y2, z1)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_1.add_11rb$(element_1);
+    var $receiver_2 = this.children;
+    var element_2 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y1, z1), new Vec3f(x1, y2, z2)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_2.add_11rb$(element_2);
+    var $receiver_3 = this.children;
+    var element_3 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y0, z0), new Vec3f(x2, y1, z1)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_3.add_11rb$(element_3);
+    var $receiver_4 = this.children;
+    var element_4 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y0, z1), new Vec3f(x2, y1, z2)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_4.add_11rb$(element_4);
+    var $receiver_5 = this.children;
+    var element_5 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y1, z0), new Vec3f(x2, y2, z1)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_5.add_11rb$(element_5);
+    var $receiver_6 = this.children;
+    var element_6 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y1, z1), new Vec3f(x2, y2, z2)), this.depth + 1 | 0, this.bucketSz);
+    $receiver_6.add_11rb$(element_6);
+    tmp$ = this.mutItems_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children.get_za3lpa$(this.childIndexForItem_0(this.mutItems_0.get_za3lpa$(i))).add_bzsob0$(this.mutItems_0.get_za3lpa$(i));
+    }
+    this.mutItems_0 = this.$outer.emptyItems_0;
+  };
+  OcTree$OcNode.prototype.merge_0 = function () {
+    var tmp$;
+    this.mutItems_0 = ArrayList_init_0();
+    tmp$ = this.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.mutItems_0.addAll_brywnq$(this.children.get_za3lpa$(i).mutItems_0);
+    }
+    this.children.clear();
+  };
+  OcTree$OcNode.prototype.childIndexForItem_0 = function (item) {
+    var tmp$, tmp$_0, tmp$_1;
+    if (this.$outer.itemAdapter.getCenterX_trkh7z$(item) < this.nodeBounds.center.x) {
+      tmp$ = 0;
+    } else {
+      tmp$ = 4;
+    }
+    if (this.$outer.itemAdapter.getCenterY_trkh7z$(item) < this.nodeBounds.center.y) {
+      tmp$_0 = 0;
+    } else {
+      tmp$_0 = 2;
+    }
+    if (this.$outer.itemAdapter.getCenterZ_trkh7z$(item) < this.nodeBounds.center.z) {
+      tmp$_1 = 0;
+    } else {
+      tmp$_1 = 1;
+    }
+    return tmp$ | tmp$_0 | tmp$_1;
+  };
+  OcTree$OcNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OcNode',
+    interfaces: [SpatialTree$Node]
+  };
+  function OcTree$Companion() {
+    OcTree$Companion_instance = this;
+    this.MAX_DEPTH = 20;
+  }
+  OcTree$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var OcTree$Companion_instance = null;
+  function OcTree$Companion_getInstance() {
+    if (OcTree$Companion_instance === null) {
+      new OcTree$Companion();
+    }return OcTree$Companion_instance;
+  }
+  OcTree.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OcTree',
+    interfaces: [MutableCollection, SpatialTree]
+  };
   function pointKdTree(points, bucketSz) {
     if (bucketSz === void 0)
       bucketSz = 20;
@@ -41279,7 +42110,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ItemAdapter.prototype.getCenter_hm1yd1$ = function (item, result) {
     return result.set_y2kzbl$(this.getCenterX_trkh7z$(item), this.getCenterY_trkh7z$(item), this.getCenterZ_trkh7z$(item));
   };
-  ItemAdapter.prototype.setNode_bc9457$ = function (item, node) {
+  ItemAdapter.prototype.setNode_kvimhn$ = function (item, node) {
   };
   ItemAdapter.$metadata$ = {
     kind: Kind_INTERFACE,
@@ -41433,8 +42264,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxX = 0;
     this.maxY = 0;
     this.maxZ = 0;
-    this.tmpVec_hbsawf$_0 = MutableVec3f_init();
-    this.tmpResult_ve9atw$_0 = MutableVec3f_init();
+    this.tmpVec_j9agx3$_0 = MutableVec3f_init();
+    this.tmpResult_bszuwa$_0 = MutableVec3f_init();
     this.e = this.pt1.subtract_2gj7b4$(this.pt0, MutableVec3f_init()).norm();
     this.length = this.pt0.distance_czzhiu$(this.pt1);
     var a = this.pt0.x;
@@ -41457,7 +42288,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxZ = Math_0.max(a_4, b_4);
   }
   Edge.prototype.rayDistanceSqr_nvyeur$ = function (ray) {
-    return ray.sqrDistanceToPoint_czzhiu$(this.nearestPointOnEdge_lplggz$(ray, this.tmpResult_ve9atw$_0));
+    return ray.sqrDistanceToPoint_czzhiu$(this.nearestPointOnEdge_lplggz$(ray, this.tmpResult_bszuwa$_0));
   };
   Edge.prototype.nearestPointOnEdge_lplggz$ = function (ray, result) {
     var dot = this.e.times_czzhiu$(ray.direction);
@@ -41466,9 +42297,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     eps = package$math.FUZZY_EQ_F;
     if (Math_0.abs(n) <= eps) {
       return result.set_czzhiu$(this.pt0.sqrDistance_czzhiu$(ray.origin) < this.pt1.sqrDistance_czzhiu$(ray.origin) ? this.pt0 : this.pt1);
-    }ray.origin.subtract_2gj7b4$(this.pt0, this.tmpVec_hbsawf$_0);
-    var a = this.tmpVec_hbsawf$_0.times_czzhiu$(this.e);
-    var b = this.tmpVec_hbsawf$_0.times_czzhiu$(ray.direction);
+    }ray.origin.subtract_2gj7b4$(this.pt0, this.tmpVec_j9agx3$_0);
+    var a = this.tmpVec_j9agx3$_0.times_czzhiu$(this.e);
+    var b = this.tmpVec_j9agx3$_0.times_czzhiu$(ray.direction);
     var l = (a - b * dot) / n;
     var tmp$;
     if (l > 0) {
@@ -41531,9 +42362,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxX = 0;
     this.maxY = 0;
     this.maxZ = 0;
-    this.tmpS_2u2gaj$_0 = MutableVec3f_init();
-    this.tmpP_2u2g7y$_0 = MutableVec3f_init();
-    this.tmpQ_2u2g8t$_0 = MutableVec3f_init();
+    this.tmpS_4hszl1$_0 = MutableVec3f_init();
+    this.tmpP_4hszig$_0 = MutableVec3f_init();
+    this.tmpQ_4hszjb$_0 = MutableVec3f_init();
     this.e1 = this.pt1.subtract_2gj7b4$(this.pt0, MutableVec3f_init());
     this.e2 = this.pt2.subtract_2gj7b4$(this.pt0, MutableVec3f_init());
     var a = this.pt0.x;
@@ -41562,13 +42393,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxZ = Math_0.max(a_4, b_4, c_4);
   }
   Triangle.prototype.hitDistance_nvyeur$ = function (ray) {
-    ray.origin.subtract_2gj7b4$(this.pt0, this.tmpS_2u2gaj$_0);
-    ray.direction.cross_2gj7b4$(this.e2, this.tmpP_2u2g7y$_0);
-    this.tmpS_2u2gaj$_0.cross_2gj7b4$(this.e1, this.tmpQ_2u2g8t$_0);
-    var f = 1.0 / this.tmpP_2u2g7y$_0.times_czzhiu$(this.e1);
-    var t = f * this.tmpQ_2u2g8t$_0.times_czzhiu$(this.e2);
-    var u = f * this.tmpP_2u2g7y$_0.times_czzhiu$(this.tmpS_2u2gaj$_0);
-    var v = f * this.tmpQ_2u2g8t$_0.times_czzhiu$(ray.direction);
+    ray.origin.subtract_2gj7b4$(this.pt0, this.tmpS_4hszl1$_0);
+    ray.direction.cross_2gj7b4$(this.e2, this.tmpP_4hszig$_0);
+    this.tmpS_4hszl1$_0.cross_2gj7b4$(this.e1, this.tmpQ_4hszjb$_0);
+    var f = 1.0 / this.tmpP_4hszig$_0.times_czzhiu$(this.e1);
+    var t = f * this.tmpQ_4hszjb$_0.times_czzhiu$(this.e2);
+    var u = f * this.tmpP_4hszig$_0.times_czzhiu$(this.tmpS_4hszl1$_0);
+    var v = f * this.tmpQ_4hszjb$_0.times_czzhiu$(ray.direction);
     return u >= 0.0 && v >= 0.0 && u + v <= 1.0 && t >= 0.0 ? t : kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
   };
   function Triangle$Companion() {
@@ -41612,7 +42443,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     data.vertexIt.index = data.indices.get_za3lpa$(idx0 + 2 | 0);
     $receiver_1.set_czzhiu$(data.vertexIt.position);
     Triangle.call($this, $receiver, $receiver_0, $receiver_1);
-    return $this;
+    if (data.primitiveType !== PrimitiveType$TRIANGLES_getInstance()) {
+      throw IllegalArgumentException_init('Supplied geometry data must have primitiveType TRIANGLES');
+    }return $this;
   }
   function SpatialTree(itemAdapter) {
     this.itemAdapter = itemAdapter;
@@ -41668,10 +42501,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   function PointDistance() {
   }
-  PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$ = function (node, point) {
+  PointDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$ = function (node, point) {
     return node.bounds.pointDistanceSqr_czzhiu$(point);
   };
-  PointDistance.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
+  PointDistance.prototype.itemSqrDistanceToPoint_xpaqv3$ = function (tree, item, point) {
     var dx = tree.itemAdapter.getCenterX_trkh7z$(item) - point.x;
     var dy = tree.itemAdapter.getCenterY_trkh7z$(item) - point.y;
     var dz = tree.itemAdapter.getCenterZ_trkh7z$(item) - point.z;
@@ -41684,7 +42517,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function BoundingSphereDistance() {
   }
-  BoundingSphereDistance.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
+  BoundingSphereDistance.prototype.itemSqrDistanceToPoint_xpaqv3$ = function (tree, item, point) {
     var dx = tree.itemAdapter.getCenterX_trkh7z$(item) - point.x;
     var dy = tree.itemAdapter.getCenterY_trkh7z$(item) - point.y;
     var dz = tree.itemAdapter.getCenterZ_trkh7z$(item) - point.z;
@@ -41705,10 +42538,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function RayDistance() {
   }
-  RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$ = function (node, ray) {
+  RayDistance.prototype.nodeSqrDistanceToRay_m0emyn$ = function (node, ray) {
     return node.bounds.hitDistanceSqr_nvyeur$(ray);
   };
-  RayDistance.prototype.itemSqrDistanceToRay_t0er6w$ = function (tree, item, ray) {
+  RayDistance.prototype.itemSqrDistanceToRay_bo5c3m$ = function (tree, item, ray) {
     return ray.sqrDistanceToPoint_y2kzbl$(tree.itemAdapter.getCenterX_trkh7z$(item), tree.itemAdapter.getCenterY_trkh7z$(item), tree.itemAdapter.getCenterZ_trkh7z$(item));
   };
   RayDistance.$metadata$ = {
@@ -41718,14 +42551,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function SpatialTreeTraverser() {
   }
-  SpatialTreeTraverser.prototype.traverse_m6hlto$ = function (tree) {
-    this.traverseNode_h2y3v6$(tree, tree.root);
+  SpatialTreeTraverser.prototype.traverse_7efza$ = function (tree) {
+    this.traverseNode_4w85ke$(tree, tree.root);
   };
-  SpatialTreeTraverser.prototype.traverseNode_h2y3v6$ = function (tree, node) {
+  SpatialTreeTraverser.prototype.traverseNode_4w85ke$ = function (tree, node) {
     if (node.isLeaf) {
-      this.traverseLeaf_h2y3v6$(tree, node);
+      this.traverseLeaf_4w85ke$(tree, node);
     } else {
-      this.traverseChildren_h2y3v6$(tree, node);
+      this.traverseChildren_4w85ke$(tree, node);
     }
   };
   SpatialTreeTraverser.$metadata$ = {
@@ -41755,15 +42588,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function InRadiusTraverser() {
     CenterPointTraverser.call(this);
     this.result = ArrayList_init_0();
-    this.radius_45ks74$_0 = 1.0;
+    this.radius_z1vvhm$_0 = 1.0;
     this.radiusSqr = 1.0;
   }
   Object.defineProperty(InRadiusTraverser.prototype, 'radius', {
     get: function () {
-      return this.radius_45ks74$_0;
+      return this.radius_z1vvhm$_0;
     },
     set: function (radius) {
-      this.radius_45ks74$_0 = radius;
+      this.radius_z1vvhm$_0 = radius;
     }
   });
   InRadiusTraverser.prototype.setup_2qa7tb$ = function (center, radius) {
@@ -41772,21 +42605,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.radiusSqr = radius * radius;
     return this;
   };
-  InRadiusTraverser.prototype.traverse_m6hlto$ = function (tree) {
+  InRadiusTraverser.prototype.traverse_7efza$ = function (tree) {
     this.result.clear();
-    CenterPointTraverser.prototype.traverse_m6hlto$.call(this, tree);
+    CenterPointTraverser.prototype.traverse_7efza$.call(this, tree);
   };
-  InRadiusTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+  InRadiusTraverser.prototype.traverseChildren_4w85ke$ = function (tree, node) {
     var tmp$;
     tmp$ = node.children;
     for (var i = 0; i !== tmp$.size; ++i) {
       var child = node.children.get_za3lpa$(i);
-      var dSqr = this.pointDistance.nodeSqrDistanceToPoint_m5117s$(child, this.center);
+      var dSqr = this.pointDistance.nodeSqrDistanceToPoint_fpn9fm$(child, this.center);
       if (dSqr < this.radiusSqr) {
-        this.traverseNode_h2y3v6$(tree, child);
+        this.traverseNode_4w85ke$(tree, child);
       }}
   };
-  InRadiusTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+  InRadiusTraverser.prototype.traverseLeaf_4w85ke$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     tmp$ = leaf.nodeRange;
     tmp$_0 = tmp$.first;
@@ -41794,7 +42627,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      if (this.pointDistance.itemSqrDistanceToPoint_54x1zp$(tree, it, this.center) < this.radiusSqr) {
+      if (this.pointDistance.itemSqrDistanceToPoint_xpaqv3$(tree, it, this.center) < this.radiusSqr) {
         this.result.add_11rb$(it);
       }}
   };
@@ -41806,7 +42639,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function BoundingSphereInRadiusTraverser() {
     InRadiusTraverser.call(this);
   }
-  BoundingSphereInRadiusTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+  BoundingSphereInRadiusTraverser.prototype.traverseLeaf_4w85ke$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     tmp$ = leaf.nodeRange;
     tmp$_0 = tmp$.first;
@@ -41819,7 +42652,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var rz = tree.itemAdapter.getSzZ_trkh7z$(it) / 2;
       var x = rx * rx + ry * ry + rz * rz;
       var itRadius = Math_0.sqrt(x);
-      var x_0 = this.pointDistance.itemSqrDistanceToPoint_54x1zp$(tree, it, this.center);
+      var x_0 = this.pointDistance.itemSqrDistanceToPoint_xpaqv3$(tree, it, this.center);
       if (Math_0.sqrt(x_0) - itRadius < this.radius) {
         this.result.add_11rb$(it);
       }}
@@ -41832,36 +42665,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function KNearestTraverser() {
     KNearestTraverser$Companion_getInstance();
     CenterPointTraverser.call(this);
-    this.k_lz5t59$_0 = 10;
-    this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
+    this.k_bmv95v$_0 = 10;
+    this.radiusSqr_dupr2e$_0 = 9.9999998E17;
     this.result = ArrayList_init_0();
-    this.maxDistance_1d7gth$_0 = 0.0;
-    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_4(compareBy$lambda_3(KNearestTraverser$items$lambda)));
-    this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
-    this.childLists_142w3h$_0 = new ChildNodesWithDistance(KNearestTraverser$childLists$lambda(this));
+    this.maxDistance_joa8en$_0 = 0.0;
+    this.items_y9roig$_0 = new PriorityQueue(new Comparator$ObjectLiteral_4(compareBy$lambda_3(KNearestTraverser$items$lambda)));
+    this.itemRecycler_agkmu2$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
+    this.childLists_om7rtf$_0 = new ChildNodesWithDistance(KNearestTraverser$childLists$lambda(this));
   }
   Object.defineProperty(KNearestTraverser.prototype, 'k', {
     get: function () {
-      return this.k_lz5t59$_0;
+      return this.k_bmv95v$_0;
     },
     set: function (k) {
-      this.k_lz5t59$_0 = k;
+      this.k_bmv95v$_0 = k;
     }
   });
   Object.defineProperty(KNearestTraverser.prototype, 'radiusSqr', {
     get: function () {
-      return this.radiusSqr_9tgcx0$_0;
+      return this.radiusSqr_dupr2e$_0;
     },
     set: function (radiusSqr) {
-      this.radiusSqr_9tgcx0$_0 = radiusSqr;
+      this.radiusSqr_dupr2e$_0 = radiusSqr;
     }
   });
   Object.defineProperty(KNearestTraverser.prototype, 'maxDistance', {
     get: function () {
-      return this.maxDistance_1d7gth$_0;
+      return this.maxDistance_joa8en$_0;
     },
     set: function (maxDistance) {
-      this.maxDistance_1d7gth$_0 = maxDistance;
+      this.maxDistance_joa8en$_0 = maxDistance;
     }
   });
   KNearestTraverser.prototype.setup_w8bw21$$default = function (center, k, maxRadius) {
@@ -41875,22 +42708,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       maxRadius = KNearestTraverser$Companion_getInstance().MAX_RADIUS;
     return callback$default ? callback$default(center, k, maxRadius) : this.setup_w8bw21$$default(center, k, maxRadius);
   };
-  KNearestTraverser.prototype.traverse_m6hlto$ = function (tree) {
-    CenterPointTraverser.prototype.traverse_m6hlto$.call(this, tree);
+  KNearestTraverser.prototype.traverse_7efza$ = function (tree) {
+    CenterPointTraverser.prototype.traverse_7efza$.call(this, tree);
     this.result.clear();
     this.maxDistance = 0.0;
-    if (!this.items_3hjtdu$_0.isEmpty()) {
-      var x = this.items_3hjtdu$_0.peek().dSqr;
+    if (!this.items_y9roig$_0.isEmpty()) {
+      var x = this.items_y9roig$_0.peek().dSqr;
       this.maxDistance = Math_0.sqrt(x);
-      while (!this.items_3hjtdu$_0.isEmpty()) {
+      while (!this.items_y9roig$_0.isEmpty()) {
         var $receiver = this.result;
-        var element = this.items_3hjtdu$_0.poll().item;
+        var element = this.items_y9roig$_0.poll().item;
         $receiver.add_11rb$(element);
       }
-    }this.itemRecycler_b63bes$_0.recycleAll();
+    }this.itemRecycler_agkmu2$_0.recycleAll();
   };
-  KNearestTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
-    var $this = this.childLists_142w3h$_0;
+  KNearestTraverser.prototype.traverseChildren_4w85ke$ = function (tree, node) {
+    var $this = this.childLists_om7rtf$_0;
     var n = node.children.size;
     var $this_0 = $this.childListRecycler;
     var item = $this_0.get();
@@ -41910,28 +42743,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }var tmp$_0, tmp$_1;
     tmp$_0 = node.children;
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      item.get_za3lpa$(i_0).setChildNode_m31f86$(node.children.get_za3lpa$(i_0));
+      item.get_za3lpa$(i_0).setChildNode_wy56ps$(node.children.get_za3lpa$(i_0));
     }
-    this.childLists_142w3h$_0.sortByDistance_ntxjn6$(item);
+    this.childLists_om7rtf$_0.sortByDistance_pjnhek$(item);
     tmp$_1 = node.children;
     for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
       var tmp$_2;
-      if (this.items_3hjtdu$_0.size < this.k) {
+      if (this.items_y9roig$_0.size < this.k) {
         tmp$_2 = this.radiusSqr;
       } else {
-        tmp$_2 = this.items_3hjtdu$_0.peek().dSqr;
+        tmp$_2 = this.items_y9roig$_0.peek().dSqr;
       }
       var maxDist = tmp$_2;
       var child = item.get_za3lpa$(i_1);
       if (child.dist < maxDist) {
-        this.traverseNode_h2y3v6$(tree, ensureNotNull(child.node));
+        this.traverseNode_4w85ke$(tree, ensureNotNull(child.node));
       } else {
         break;
       }
     }
     $this_0.recycle_trkh7z$(item);
   };
-  KNearestTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+  KNearestTraverser.prototype.traverseLeaf_4w85ke$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     tmp$ = leaf.nodeRange;
     tmp$_0 = tmp$.first;
@@ -41939,33 +42772,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      var dSqr = this.pointDistance.itemSqrDistanceToPoint_54x1zp$(tree, it, this.center);
-      if (dSqr < this.radiusSqr && (this.items_3hjtdu$_0.size < this.k || dSqr < this.items_3hjtdu$_0.peek().dSqr)) {
-        this.insert_2aiobd$_0(it, dSqr);
+      var dSqr = this.pointDistance.itemSqrDistanceToPoint_xpaqv3$(tree, it, this.center);
+      if (dSqr < this.radiusSqr && (this.items_y9roig$_0.size < this.k || dSqr < this.items_y9roig$_0.peek().dSqr)) {
+        this.insert_i928fj$_0(it, dSqr);
       }}
   };
-  KNearestTraverser.prototype.insert_2aiobd$_0 = function (value, dSqr) {
+  KNearestTraverser.prototype.insert_i928fj$_0 = function (value, dSqr) {
     var tmp$;
-    if (this.items_3hjtdu$_0.size === this.k) {
-      tmp$ = this.items_3hjtdu$_0.poll();
+    if (this.items_y9roig$_0.size === this.k) {
+      tmp$ = this.items_y9roig$_0.poll();
     } else {
-      tmp$ = this.itemRecycler_b63bes$_0.get();
+      tmp$ = this.itemRecycler_agkmu2$_0.get();
     }
     var insItem = tmp$;
-    this.items_3hjtdu$_0.plusAssign_11rb$(insItem.set_mv9gn0$(value, dSqr));
+    this.items_y9roig$_0.plusAssign_11rb$(insItem.set_mv9gn0$(value, dSqr));
   };
   function KNearestTraverser$Item() {
-    this.item_zg5hxs$_0 = this.item_zg5hxs$_0;
+    this.item_bwsg1y$_0 = this.item_bwsg1y$_0;
     this.dSqr = 0.0;
   }
   Object.defineProperty(KNearestTraverser$Item.prototype, 'item', {
     get: function () {
-      if (this.item_zg5hxs$_0 == null)
+      if (this.item_bwsg1y$_0 == null)
         return throwUPAE('item');
-      return this.item_zg5hxs$_0;
+      return this.item_bwsg1y$_0;
     },
     set: function (item) {
-      this.item_zg5hxs$_0 = item;
+      this.item_bwsg1y$_0 = item;
     }
   });
   KNearestTraverser$Item.prototype.set_mv9gn0$ = function (item, dSqr) {
@@ -42001,7 +42834,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function KNearestTraverser$childLists$lambda(this$KNearestTraverser) {
     return function (it) {
-      return this$KNearestTraverser.pointDistance.nodeSqrDistanceToPoint_m5117s$(it, this$KNearestTraverser.center);
+      return this$KNearestTraverser.pointDistance.nodeSqrDistanceToPoint_fpn9fm$(it, this$KNearestTraverser.center);
     };
   }
   KNearestTraverser.$metadata$ = {
@@ -42012,34 +42845,34 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function NearestToRayTraverser() {
     SpatialTreeTraverser.call(this);
     this.ray = new Ray();
-    this.nearest_pgibj6$_0 = null;
-    this.distance_w4zyjn$_0 = 0.0;
-    this.distanceSqr_n4v5rx$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    this.nearest_75fjy0$_0 = null;
+    this.distance_vfh9yx$_0 = 0.0;
+    this.distanceSqr_1nwg87$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.rayDistance = new NearestToRayTraverser$rayDistance$ObjectLiteral();
-    this.childLists_pq2ts1$_0 = new ChildNodesWithDistance(NearestToRayTraverser$childLists$lambda(this));
+    this.childLists_3dbot1$_0 = new ChildNodesWithDistance(NearestToRayTraverser$childLists$lambda(this));
   }
   Object.defineProperty(NearestToRayTraverser.prototype, 'nearest', {
     get: function () {
-      return this.nearest_pgibj6$_0;
+      return this.nearest_75fjy0$_0;
     },
     set: function (nearest) {
-      this.nearest_pgibj6$_0 = nearest;
+      this.nearest_75fjy0$_0 = nearest;
     }
   });
   Object.defineProperty(NearestToRayTraverser.prototype, 'distance', {
     get: function () {
-      return this.distance_w4zyjn$_0;
+      return this.distance_vfh9yx$_0;
     },
     set: function (distance) {
-      this.distance_w4zyjn$_0 = distance;
+      this.distance_vfh9yx$_0 = distance;
     }
   });
   Object.defineProperty(NearestToRayTraverser.prototype, 'distanceSqr', {
     get: function () {
-      return this.distanceSqr_n4v5rx$_0;
+      return this.distanceSqr_1nwg87$_0;
     },
     set: function (distanceSqr) {
-      this.distanceSqr_n4v5rx$_0 = distanceSqr;
+      this.distanceSqr_1nwg87$_0 = distanceSqr;
     }
   });
   NearestToRayTraverser.prototype.setup_nvyeur$ = function (ray) {
@@ -42048,8 +42881,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.distanceSqr = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     return this;
   };
-  NearestToRayTraverser.prototype.traverse_m6hlto$ = function (tree) {
-    SpatialTreeTraverser.prototype.traverse_m6hlto$.call(this, tree);
+  NearestToRayTraverser.prototype.traverse_7efza$ = function (tree) {
+    SpatialTreeTraverser.prototype.traverse_7efza$.call(this, tree);
     var tmp$;
     if (this.distanceSqr !== kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
       var x = this.distanceSqr;
@@ -42058,8 +42891,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$ = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.distance = tmp$;
   };
-  NearestToRayTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
-    var $this = this.childLists_pq2ts1$_0;
+  NearestToRayTraverser.prototype.traverseChildren_4w85ke$ = function (tree, node) {
+    var $this = this.childLists_3dbot1$_0;
     var n = node.children.size;
     var $this_0 = $this.childListRecycler;
     var item = $this_0.get();
@@ -42079,21 +42912,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }var tmp$_0, tmp$_1;
     tmp$_0 = node.children;
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      item.get_za3lpa$(i_0).setChildNode_m31f86$(node.children.get_za3lpa$(i_0));
+      item.get_za3lpa$(i_0).setChildNode_wy56ps$(node.children.get_za3lpa$(i_0));
     }
-    this.childLists_pq2ts1$_0.sortByDistance_ntxjn6$(item);
+    this.childLists_3dbot1$_0.sortByDistance_pjnhek$(item);
     tmp$_1 = node.children;
     for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
       var child = item.get_za3lpa$(i_1);
       if (child.dist < this.distanceSqr) {
-        this.traverseNode_h2y3v6$(tree, ensureNotNull(child.node));
+        this.traverseNode_4w85ke$(tree, ensureNotNull(child.node));
       } else {
         break;
       }
     }
     $this_0.recycle_trkh7z$(item);
   };
-  NearestToRayTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+  NearestToRayTraverser.prototype.traverseLeaf_4w85ke$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     tmp$ = leaf.nodeRange;
     tmp$_0 = tmp$.first;
@@ -42101,7 +42934,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      var dSqr = this.rayDistance.itemSqrDistanceToRay_t0er6w$(tree, it, this.ray);
+      var dSqr = this.rayDistance.itemSqrDistanceToRay_bo5c3m$(tree, it, this.ray);
       if (dSqr < this.distanceSqr) {
         this.nearest = it;
         this.distanceSqr = dSqr;
@@ -42115,7 +42948,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function NearestToRayTraverser$childLists$lambda(this$NearestToRayTraverser) {
     return function (it) {
-      return this$NearestToRayTraverser.rayDistance.nodeSqrDistanceToRay_4lohg5$(it, this$NearestToRayTraverser.ray);
+      return this$NearestToRayTraverser.rayDistance.nodeSqrDistanceToRay_m0emyn$(it, this$NearestToRayTraverser.ray);
     };
   }
   NearestToRayTraverser.$metadata$ = {
@@ -42129,7 +42962,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function NearestEdgeToRayTraverser_init$ObjectLiteral() {
   }
-  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.itemSqrDistanceToRay_t0er6w$ = function (tree, item, ray) {
+  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.itemSqrDistanceToRay_bo5c3m$ = function (tree, item, ray) {
     return item.rayDistanceSqr_nvyeur$(ray);
   };
   NearestEdgeToRayTraverser_init$ObjectLiteral.$metadata$ = {
@@ -42156,14 +42989,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     NearestToRayTraverser.prototype.setup_nvyeur$.call(this, ray);
     return this;
   };
-  TriangleHitTraverser.prototype.traverse_m6hlto$ = function (tree) {
-    NearestToRayTraverser.prototype.traverse_m6hlto$.call(this, tree);
+  TriangleHitTraverser.prototype.traverse_7efza$ = function (tree) {
+    NearestToRayTraverser.prototype.traverse_7efza$.call(this, tree);
     if (this.isHit) {
       this.hitPoint.set_czzhiu$(this.ray.direction).scale_mx4ult$(this.distance).add_czzhiu$(this.ray.origin);
     }};
   function TriangleHitTraverser_init$ObjectLiteral() {
   }
-  TriangleHitTraverser_init$ObjectLiteral.prototype.itemSqrDistanceToRay_t0er6w$ = function (tree, item, ray) {
+  TriangleHitTraverser_init$ObjectLiteral.prototype.itemSqrDistanceToRay_bo5c3m$ = function (tree, item, ray) {
     var tmp$;
     var dist = item.hitDistance_nvyeur$(ray);
     if (dist < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
@@ -42187,8 +43020,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.childListRecycler = new ObjectPool(ChildNodesWithDistance$childListRecycler$lambda);
     this.childComparator = new Comparator$ObjectLiteral_4(compareBy$lambda_3(ChildNodesWithDistance$childComparator$lambda));
   }
-  ChildNodesWithDistance.prototype.use_5wl3jr$ = defineInlineFunction('kool.de.fabmax.kool.util.ChildNodesWithDistance.use_5wl3jr$', wrapFunction(function () {
-    var ChildNodesWithDistance$ChildNodesWithDistance$Child_init = _.de.fabmax.kool.util.ChildNodesWithDistance.Child;
+  ChildNodesWithDistance.prototype.use_swptr5$ = defineInlineFunction('kool.de.fabmax.kool.util.spatial.ChildNodesWithDistance.use_swptr5$', wrapFunction(function () {
+    var ChildNodesWithDistance$ChildNodesWithDistance$Child_init = _.de.fabmax.kool.util.spatial.ChildNodesWithDistance.Child;
     var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
     return function (n, block) {
       var $this = this.childListRecycler;
@@ -42210,7 +43043,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $this.recycle_trkh7z$(item);
     };
   }));
-  ChildNodesWithDistance.prototype.sortByDistance_ntxjn6$ = function (childList) {
+  ChildNodesWithDistance.prototype.sortByDistance_pjnhek$ = function (childList) {
     sortWith(childList, this.childComparator);
   };
   function ChildNodesWithDistance$Child($outer, dist, node) {
@@ -42218,7 +43051,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dist = dist;
     this.node = node;
   }
-  ChildNodesWithDistance$Child.prototype.setChildNode_m31f86$ = function (node) {
+  ChildNodesWithDistance$Child.prototype.setChildNode_wy56ps$ = function (node) {
     this.node = node;
     this.dist = this.$outer.childDist(node);
   };
@@ -43431,6 +44264,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Viewport',
     interfaces: []
   };
+  function Viewport_init($this) {
+    $this = $this || Object.create(Viewport.prototype);
+    Viewport.call($this, 0, 0, 0, 0);
+    return $this;
+  }
   function createDefaultContext() {
     return createContext(new JsContext$InitProps());
   }
@@ -43603,8 +44441,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function OffscreenPass2dImpl(offscreenPass) {
     this.offscreenPass = offscreenPass;
     var tmp$, tmp$_0;
-    this.colorTexture = (tmp$ = this.offscreenPass.setup.extColorTexture) != null ? tmp$ : new OffscreenPass2dImpl$OffscreenTexture(this);
-    this.depthTexture = (tmp$_0 = this.offscreenPass.setup.extDepthTexture) != null ? tmp$_0 : new OffscreenPass2dImpl$OffscreenDepthTexture(this);
+    this.colorTexture = (tmp$ = this.offscreenPass.setup.extColorTexture) != null ? tmp$ : new Texture(void 0, void 0, null);
+    this.depthTexture = (tmp$_0 = this.offscreenPass.setup.extDepthTexture) != null ? tmp$_0 : new Texture(void 0, void 0, null);
     this.isExtColorTexture = this.offscreenPass.setup.extColorTexture != null;
     this.isExtDepthTexture = this.offscreenPass.setup.extDepthTexture != null;
     this.fbos_0 = ArrayList_init_0();
@@ -43613,52 +44451,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.colorTex_0 = null;
     this.depthTex_0 = null;
   }
-  OffscreenPass2dImpl.prototype.create_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-    var gl = ctx.gl_8be2vx$;
-    if (this.offscreenPass.setup.colorRenderTarget === 1) {
-      if (!this.isExtColorTexture && this.colorTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
-        (Kotlin.isType(tmp$ = this.colorTexture, OffscreenPass2dImpl$OffscreenTexture) ? tmp$ : throwCCE()).create_44a5h0$(ctx);
-      } else if (this.isExtColorTexture) {
-        tmp$_0 = this.colorTexture.loadedTexture;
-        if (tmp$_0 == null) {
-          return;
-        }var extColorTex = tmp$_0;
-        this.colorTex_0 = (Kotlin.isType(tmp$_1 = extColorTex, LoadedTextureWebGl) ? tmp$_1 : throwCCE()).texture;
-      }}if (this.offscreenPass.setup.depthRenderTarget === 1) {
-      if (!this.isExtDepthTexture && this.depthTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
-        (Kotlin.isType(tmp$_2 = this.depthTexture, OffscreenPass2dImpl$OffscreenDepthTexture) ? tmp$_2 : throwCCE()).create_44a5h0$(ctx);
-      } else if (this.isExtDepthTexture) {
-        tmp$_3 = this.depthTexture.loadedTexture;
-        if (tmp$_3 == null) {
-          return;
-        }var extDepthTex = tmp$_3;
-        this.depthTex_0 = (Kotlin.isType(tmp$_4 = extDepthTex, LoadedTextureWebGl) ? tmp$_4 : throwCCE()).texture;
-      }}tmp$_5 = this.offscreenPass.mipLevels;
-    for (var i = 0; i < tmp$_5; i++) {
-      var fbo = gl.createFramebuffer();
-      this.fbos_0.add_11rb$(fbo);
-      gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
-      if (this.offscreenPass.setup.colorRenderTarget === 1) {
-        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.colorTex_0, i);
-      } else {
-        var rbo = gl.createRenderbuffer();
-        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
-        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, get_glInternalFormat(this.offscreenPass.colorFormat), this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
-        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.RENDERBUFFER, rbo);
-        this.rbos_0.add_11rb$(rbo);
-      }
-      if (this.offscreenPass.setup.depthRenderTarget === 1) {
-        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTex_0, i);
-      } else {
-        var rbo_0 = gl.createRenderbuffer();
-        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo_0);
-        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
-        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo_0);
-        this.rbos_0.add_11rb$(rbo_0);
-      }
+  OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
+    if (!this.isCreated_0) {
+      this.create_0(ctx);
+    }if (this.isCreated_0) {
+      var b = this.offscreenPass.targetMipLevel;
+      var mipLevel = Math_0.max(0, b);
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
+      ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
+      this.copyToTextures_0(mipLevel, ctx);
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+    }};
+  OffscreenPass2dImpl.prototype.copyToTextures_0 = function (mipLevel, ctx) {
+    var tmp$;
+    ctx.gl_8be2vx$.readBuffer(WebGLRenderingContext.COLOR_ATTACHMENT0);
+    tmp$ = this.offscreenPass.copyTargetsColor;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+      var copyTarget = this.offscreenPass.copyTargetsColor.get_za3lpa$(i);
+      var width = (tmp$_1 = (tmp$_0 = copyTarget.loadedTexture) != null ? tmp$_0.width : null) != null ? tmp$_1 : 0;
+      var height = (tmp$_3 = (tmp$_2 = copyTarget.loadedTexture) != null ? tmp$_2.height : null) != null ? tmp$_3 : 0;
+      if (width !== this.offscreenPass.texWidth || height !== this.offscreenPass.texHeight) {
+        (tmp$_4 = copyTarget.loadedTexture) != null ? (tmp$_4.dispose(), Unit) : null;
+        this.createCopyTexColor_0(copyTarget, ctx);
+      }var target = Kotlin.isType(tmp$_5 = copyTarget.loadedTexture, LoadedTextureWebGl) ? tmp$_5 : throwCCE();
+      ctx.gl_8be2vx$.bindTexture(WebGLRenderingContext.TEXTURE_2D, target.texture);
+      ctx.gl_8be2vx$.copyTexSubImage2D(WebGLRenderingContext.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height);
     }
-    this.isCreated_0 = true;
   };
   OffscreenPass2dImpl.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -43690,67 +44509,96 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dispose_aemszp$(ctx);
     this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
-  OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
-    if (!this.isCreated_0) {
-      this.create_0(ctx);
-    }if (this.isCreated_0) {
-      var mipLevel = this.offscreenPass.targetMipLevel;
-      var fboIdx = mipLevel < 0 ? 0 : mipLevel;
-      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
-      ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
-      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
-    }};
-  function OffscreenPass2dImpl$OffscreenTexture($outer) {
-    this.$outer = $outer;
-    Texture.call(this, void 0, void 0, null);
-  }
-  OffscreenPass2dImpl$OffscreenTexture.prototype.create_44a5h0$ = function (ctx) {
+  OffscreenPass2dImpl.prototype.create_0 = function (ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     var gl = ctx.gl_8be2vx$;
-    var intFormat = get_glInternalFormat(this.$outer.offscreenPass.colorFormat);
-    var width = this.$outer.offscreenPass.texWidth;
-    var height = this.$outer.offscreenPass.texHeight;
-    this.$outer.colorTex_0 = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.$outer.colorTex_0);
-    gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.$outer.offscreenPass.mipLevels, intFormat, width, height);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR_MIPMAP_LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.$outer.offscreenPass.colorFormat), 1, this.$outer.offscreenPass.mipLevels);
-    this.loadedTexture = new LoadedTextureWebGl(ctx, this.$outer.colorTex_0, estSize);
-    this.loadingState = Texture$LoadingState$LOADED_getInstance();
+    if (this.offscreenPass.setup.colorRenderTarget === 1) {
+      if (!this.isExtColorTexture && this.colorTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
+        this.createColorTex_0(ctx);
+      } else if (this.isExtColorTexture) {
+        tmp$ = this.colorTexture.loadedTexture;
+        if (tmp$ == null) {
+          return;
+        }var extColorTex = tmp$;
+        this.colorTex_0 = (Kotlin.isType(tmp$_0 = extColorTex, LoadedTextureWebGl) ? tmp$_0 : throwCCE()).texture;
+      }}if (this.offscreenPass.setup.depthRenderTarget === 1) {
+      if (!this.isExtDepthTexture && this.depthTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
+        this.createDepthTex_0(ctx);
+      } else if (this.isExtDepthTexture) {
+        tmp$_1 = this.depthTexture.loadedTexture;
+        if (tmp$_1 == null) {
+          return;
+        }var extDepthTex = tmp$_1;
+        this.depthTex_0 = (Kotlin.isType(tmp$_2 = extDepthTex, LoadedTextureWebGl) ? tmp$_2 : throwCCE()).texture;
+      }}tmp$_3 = this.offscreenPass.mipLevels;
+    for (var i = 0; i < tmp$_3; i++) {
+      var fbo = gl.createFramebuffer();
+      this.fbos_0.add_11rb$(fbo);
+      gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
+      if (this.offscreenPass.setup.colorRenderTarget === 1) {
+        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.colorTex_0, i);
+      } else {
+        var rbo = gl.createRenderbuffer();
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, get_glInternalFormat(this.offscreenPass.colorFormat), this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.RENDERBUFFER, rbo);
+        this.rbos_0.add_11rb$(rbo);
+      }
+      if (this.offscreenPass.setup.depthRenderTarget === 1) {
+        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTex_0, i);
+      } else {
+        var rbo_0 = gl.createRenderbuffer();
+        gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo_0);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo_0);
+        this.rbos_0.add_11rb$(rbo_0);
+      }
+    }
+    this.isCreated_0 = true;
   };
-  OffscreenPass2dImpl$OffscreenTexture.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenTexture',
-    interfaces: [Texture]
+  OffscreenPass2dImpl.prototype.createCopyTexColor_0 = function ($receiver, ctx) {
+    var intFormat = get_glInternalFormat($receiver.props.format);
+    var width = this.offscreenPass.texWidth;
+    var height = this.offscreenPass.texHeight;
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 1, this.offscreenPass.mipLevels);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$($receiver.props);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+    $receiver.loadedTexture = tex;
+    $receiver.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
-  function OffscreenPass2dImpl$OffscreenDepthTexture($outer) {
-    this.$outer = $outer;
-    Texture.call(this, void 0, void 0, null);
-  }
-  OffscreenPass2dImpl$OffscreenDepthTexture.prototype.create_44a5h0$ = function (ctx) {
-    var gl = ctx.gl_8be2vx$;
+  OffscreenPass2dImpl.prototype.createColorTex_0 = function (ctx) {
+    var intFormat = get_glInternalFormat(this.offscreenPass.colorFormat);
+    var width = this.offscreenPass.texWidth;
+    var height = this.offscreenPass.texHeight;
+    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$LINEAR_getInstance(), FilterMethod$LINEAR_getInstance(), this.offscreenPass.mipLevels > 1, 1);
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 1, this.offscreenPass.mipLevels);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$(samplerProps);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+    this.colorTex_0 = tex.texture;
+    this.colorTexture.loadedTexture = tex;
+    this.colorTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
+  };
+  OffscreenPass2dImpl.prototype.createDepthTex_0 = function (ctx) {
     var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
-    var width = this.$outer.offscreenPass.texWidth;
-    var height = this.$outer.offscreenPass.texHeight;
-    this.$outer.depthTex_0 = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.$outer.depthTex_0);
-    gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.$outer.offscreenPass.mipLevels, intFormat, width, height);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, WebGLRenderingContext.LESS);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.$outer.offscreenPass.mipLevels);
-    this.loadedTexture = new LoadedTextureWebGl(ctx, this.$outer.depthTex_0, estSize);
-    this.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
-  OffscreenPass2dImpl$OffscreenDepthTexture.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenDepthTexture',
-    interfaces: [Texture]
+    var width = this.offscreenPass.texWidth;
+    var height = this.offscreenPass.texHeight;
+    var filterMethod = this.offscreenPass.setup.isUsedAsShadowMap ? FilterMethod$LINEAR_getInstance() : FilterMethod$NEAREST_getInstance();
+    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, filterMethod, filterMethod, this.offscreenPass.mipLevels > 1, 1);
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.offscreenPass.mipLevels);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$(samplerProps);
+    if (filterMethod === FilterMethod$LINEAR_getInstance()) {
+      ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
+      ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, WebGLRenderingContext.LESS);
+    }ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+    this.depthTex_0 = tex.texture;
+    this.depthTexture.loadedTexture = tex;
+    this.depthTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPass2dImpl.$metadata$ = {
     kind: Kind_CLASS,
@@ -43805,7 +44653,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (!this.isCreated_0) {
       this.create_0(ctx);
     }ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbo_0);
-    ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
+    ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
   };
   OffscreenPass2dMrtImpl.prototype.create_0 = function (ctx) {
@@ -43832,41 +44680,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   OffscreenPass2dMrtImpl.prototype.createColorTex_0 = function (ctx) {
     var tmp$;
-    var gl = ctx.gl_8be2vx$;
     tmp$ = this.glColorTexs_0;
     for (var i = 0; i !== tmp$.length; ++i) {
       var colorFormat = this.offscreenPass.texFormats.get_za3lpa$(i);
       var intFormat = get_glInternalFormat(colorFormat);
       var width = this.offscreenPass.texWidth;
       var height = this.offscreenPass.texHeight;
-      this.glColorTexs_0[i] = gl.createTexture();
-      gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.glColorTexs_0[i]);
-      gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-      gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
-      gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
-      gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.NEAREST);
-      gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.NEAREST);
+      var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), this.offscreenPass.mipLevels > 1, 1);
       var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(colorFormat), 1, this.offscreenPass.mipLevels);
-      this.colorTextures.get_za3lpa$(i).loadedTexture = new LoadedTextureWebGl(ctx, this.glColorTexs_0[i], estSize);
+      var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+      tex.setSize_vux9f0$(width, height);
+      tex.applySamplerProps_xetyfc$(samplerProps);
+      ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+      this.glColorTexs_0[i] = tex.texture;
+      this.colorTextures.get_za3lpa$(i).loadedTexture = tex;
       this.colorTextures.get_za3lpa$(i).loadingState = Texture$LoadingState$LOADED_getInstance();
     }
   };
   OffscreenPass2dMrtImpl.prototype.createDepthTex_0 = function (ctx) {
-    var gl = ctx.gl_8be2vx$;
     var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
     var width = this.offscreenPass.texWidth;
     var height = this.offscreenPass.texHeight;
-    this.glDepthTex_0 = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.glDepthTex_0);
-    gl.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, WebGLRenderingContext.LESS);
+    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), this.offscreenPass.mipLevels > 1, 1);
     var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.offscreenPass.mipLevels);
-    this.depthTexture.loadedTexture = new LoadedTextureWebGl(ctx, this.glDepthTex_0, estSize);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$(samplerProps);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+    this.glDepthTex_0 = tex.texture;
+    this.depthTexture.loadedTexture = tex;
     this.depthTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPass2dMrtImpl.$metadata$ = {
@@ -43877,18 +44719,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function OffscreenPassCubeImpl(offscreenPass) {
     OffscreenPassCubeImpl$Companion_getInstance();
     this.offscreenPass = offscreenPass;
-    this.texture = new OffscreenPassCubeImpl$OffscreenTextureCube(this);
+    this.texture = new CubeMapTexture('offscreen_cube_tex', new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), FilterMethod$LINEAR_getInstance(), FilterMethod$LINEAR_getInstance(), this.offscreenPass.mipLevels > 1, 1), null);
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
     this.isCreated_0 = false;
+    this.offscreenTex_0 = null;
   }
   OffscreenPassCubeImpl.prototype.create_0 = function (ctx) {
-    var tmp$, tmp$_0;
+    var tmp$;
     var gl = ctx.gl_8be2vx$;
-    Kotlin.isType(tmp$ = this.texture, OffscreenPassCubeImpl$OffscreenTextureCube) ? tmp$ : throwCCE();
-    this.texture.create_44a5h0$(ctx);
-    tmp$_0 = this.offscreenPass.mipLevels;
-    for (var i = 0; i < tmp$_0; i++) {
+    this.createColorTex_44a5h0$(ctx);
+    tmp$ = this.offscreenPass.mipLevels;
+    for (var i = 0; i < tmp$; i++) {
       var fbo = gl.createFramebuffer();
       var rbo = gl.createRenderbuffer();
       gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
@@ -43926,19 +44768,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
   OffscreenPassCubeImpl.prototype.draw_44a5h0$ = function (ctx) {
-    var tmp$;
     if (!this.isCreated_0) {
       this.create_0(ctx);
-    }Kotlin.isType(tmp$ = this.texture, OffscreenPassCubeImpl$OffscreenTextureCube) ? tmp$ : throwCCE();
-    var mipLevel = this.offscreenPass.targetMipLevel;
+    }var mipLevel = this.offscreenPass.targetMipLevel;
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     this.offscreenPass.setMipViewport_za3lpa$(mipLevel);
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
     for (var i = 0; i < 6; i++) {
       var view = OffscreenPassCubeImpl$Companion_getInstance().VIEWS_0[i];
       var queue = this.offscreenPass.drawQueues[view.index];
-      ctx.gl_8be2vx$.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i | 0, this.texture.offscreenTex, fboIdx);
-      ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(queue);
+      ctx.gl_8be2vx$.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i | 0, this.offscreenTex_0, fboIdx);
+      ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(queue);
     }
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
   };
@@ -43988,32 +44828,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new OffscreenPassCubeImpl$Companion();
     }return OffscreenPassCubeImpl$Companion_instance;
   }
-  function OffscreenPassCubeImpl$OffscreenTextureCube($outer) {
-    this.$outer = $outer;
-    CubeMapTexture.call(this, 'offscreen_cube_tex', new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance()), null);
-    this.offscreenTex = null;
-  }
-  OffscreenPassCubeImpl$OffscreenTextureCube.prototype.create_44a5h0$ = function (ctx) {
-    var gl = ctx.gl_8be2vx$;
-    var intFormat = get_glInternalFormat(this.$outer.offscreenPass.colorFormat);
-    var width = this.$outer.offscreenPass.texWidth;
-    var height = this.$outer.offscreenPass.texHeight;
-    this.offscreenTex = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_CUBE_MAP, this.offscreenTex);
-    gl.texStorage2D(WebGLRenderingContext.TEXTURE_CUBE_MAP, this.$outer.offscreenPass.mipLevels, intFormat, width, height);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_WRAP_S, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_WRAP_T, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGL2RenderingContext.TEXTURE_WRAP_R, WebGLRenderingContext.CLAMP_TO_EDGE);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_MIN_FILTER, WebGLRenderingContext.LINEAR_MIPMAP_LINEAR);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_CUBE_MAP, WebGLRenderingContext.TEXTURE_MAG_FILTER, WebGLRenderingContext.LINEAR);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.$outer.offscreenPass.colorFormat), 6, this.$outer.offscreenPass.mipLevels);
-    this.loadedTexture = new LoadedTextureWebGl(ctx, this.offscreenTex, estSize);
-    this.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
-  OffscreenPassCubeImpl$OffscreenTextureCube.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenTextureCube',
-    interfaces: [CubeMapTexture]
+  OffscreenPassCubeImpl.prototype.createColorTex_44a5h0$ = function (ctx) {
+    var intFormat = get_glInternalFormat(this.offscreenPass.colorFormat);
+    var width = this.offscreenPass.texWidth;
+    var height = this.offscreenPass.texHeight;
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 6, this.offscreenPass.mipLevels);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_CUBE_MAP, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$(this.texture.props);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_CUBE_MAP, this.offscreenPass.mipLevels, intFormat, width, height);
+    this.offscreenTex_0 = tex.texture;
+    this.texture.loadedTexture = tex;
+    this.texture.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPassCubeImpl.$metadata$ = {
     kind: Kind_CLASS,
@@ -44992,7 +45818,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         if (scene.offscreenPasses.get_za3lpa$(j).isEnabled) {
           this.drawOffscreen_0(scene.offscreenPasses.get_za3lpa$(j));
         }}
-      this.queueRenderer_8be2vx$.renderQueue_21v2u5$(scene.mainRenderPass.drawQueue);
+      this.queueRenderer_8be2vx$.renderQueue_e0goaf$(scene.mainRenderPass.drawQueue);
     }
     if (!this.afterRenderActions_8be2vx$.isEmpty()) {
       var tmp$_1;
@@ -45521,7 +46347,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
     }
   };
-  CompiledShader.prototype.bindInstance_m0ahst$ = function (cmd) {
+  CompiledShader.prototype.bindInstance_ye1q9v$ = function (cmd) {
     var tmp$;
     var pipelineInst = ensureNotNull(cmd.pipeline);
     var $receiver = this.instances_0;
@@ -45536,7 +46362,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_0 = value;
     }
     var inst = tmp$_0;
-    if (inst.bindInstance_m0ahst$(cmd)) {
+    if (inst.bindInstance_ye1q9v$(cmd)) {
       tmp$ = inst;
     } else {
       tmp$ = null;
@@ -45653,7 +46479,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.add_11rb$(element);
       this.nextTexUnit_0 = this.nextTexUnit_0 + tmp$.size | 0;
     }};
-  CompiledShader$ShaderInstance.prototype.bindInstance_m0ahst$ = function (drawCmd) {
+  CompiledShader$ShaderInstance.prototype.bindInstance_ye1q9v$ = function (drawCmd) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
     tmp$ = this.pushConstants_0;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -45874,13 +46700,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'CompiledShader',
     interfaces: []
   };
-  function LoadedTextureWebGl(ctx, texture, estimatedSize) {
+  function LoadedTextureWebGl(ctx, target, texture, estimatedSize) {
     LoadedTextureWebGl$Companion_getInstance();
     this.ctx = ctx;
+    this.target = target;
     this.texture = texture;
     var tmp$;
     this.texId = (tmp$ = LoadedTextureWebGl$Companion_getInstance().nextTexId_0, LoadedTextureWebGl$Companion_getInstance().nextTexId_0 = tmp$.inc(), tmp$);
     this.isDestroyed_hoph69$_0 = false;
+    this.width_8gbh1k$_0 = 0;
+    this.height_d6ao4v$_0 = 0;
     this.ctx.engineStats.textureAllocated_yhmem3$(this.texId, estimatedSize);
   }
   Object.defineProperty(LoadedTextureWebGl.prototype, 'isDestroyed', {
@@ -45891,10 +46720,91 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.isDestroyed_hoph69$_0 = isDestroyed;
     }
   });
+  Object.defineProperty(LoadedTextureWebGl.prototype, 'width', {
+    get: function () {
+      return this.width_8gbh1k$_0;
+    },
+    set: function (width) {
+      this.width_8gbh1k$_0 = width;
+    }
+  });
+  Object.defineProperty(LoadedTextureWebGl.prototype, 'height', {
+    get: function () {
+      return this.height_d6ao4v$_0;
+    },
+    set: function (height) {
+      this.height_d6ao4v$_0 = height;
+    }
+  });
+  LoadedTextureWebGl.prototype.setSize_vux9f0$ = function (width, height) {
+    this.width = width;
+    this.height = height;
+  };
+  LoadedTextureWebGl.prototype.applySamplerProps_xetyfc$ = function (props) {
+    var gl = this.ctx.gl_8be2vx$;
+    gl.bindTexture(this.target, this.texture);
+    gl.texParameteri(this.target, WebGLRenderingContext.TEXTURE_MIN_FILTER, this.glMinFilterMethod_0(props.minFilter, props.mipMapping));
+    gl.texParameteri(this.target, WebGLRenderingContext.TEXTURE_MAG_FILTER, this.glMagFilterMethod_0(props.magFilter));
+    gl.texParameteri(this.target, WebGLRenderingContext.TEXTURE_WRAP_S, this.glAddressMode_0(props.addressModeU));
+    gl.texParameteri(this.target, WebGLRenderingContext.TEXTURE_WRAP_T, this.glAddressMode_0(props.addressModeV));
+    var a = props.maxAnisotropy;
+    var b = this.ctx.glCapabilities.maxAnisotropy;
+    var anisotropy = Math_0.min(a, b);
+    if (anisotropy > 1) {
+      gl.texParameteri(this.target, this.ctx.glCapabilities.glTextureMaxAnisotropyExt, anisotropy);
+    }};
   LoadedTextureWebGl.prototype.dispose = function () {
     this.isDestroyed = true;
     this.ctx.gl_8be2vx$.deleteTexture(this.texture);
     this.ctx.engineStats.textureDeleted_s8cxhz$(this.texId);
+  };
+  LoadedTextureWebGl.prototype.glMinFilterMethod_0 = function ($receiver, mipMapping) {
+    var tmp$;
+    switch ($receiver.name) {
+      case 'NEAREST':
+        tmp$ = mipMapping ? WebGLRenderingContext.NEAREST_MIPMAP_NEAREST : WebGLRenderingContext.NEAREST;
+        break;
+      case 'LINEAR':
+        tmp$ = mipMapping ? WebGLRenderingContext.LINEAR_MIPMAP_LINEAR : WebGLRenderingContext.LINEAR;
+        break;
+      default:tmp$ = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    return tmp$;
+  };
+  LoadedTextureWebGl.prototype.glMagFilterMethod_0 = function ($receiver) {
+    var tmp$;
+    switch ($receiver.name) {
+      case 'NEAREST':
+        tmp$ = WebGLRenderingContext.NEAREST;
+        break;
+      case 'LINEAR':
+        tmp$ = WebGLRenderingContext.LINEAR;
+        break;
+      default:tmp$ = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    return tmp$;
+  };
+  LoadedTextureWebGl.prototype.glAddressMode_0 = function ($receiver) {
+    var tmp$;
+    switch ($receiver.name) {
+      case 'CLAMP_TO_BORDER':
+        tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
+        break;
+      case 'CLAMP_TO_EDGE':
+        tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
+        break;
+      case 'MIRRORED_REPEAT':
+        tmp$ = WebGLRenderingContext.MIRRORED_REPEAT;
+        break;
+      case 'REPEAT':
+        tmp$ = WebGLRenderingContext.REPEAT;
+        break;
+      default:tmp$ = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    return tmp$;
   };
   function LoadedTextureWebGl$Companion() {
     LoadedTextureWebGl$Companion_instance = this;
@@ -46336,7 +47246,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.shaderMgr_0.deleteShader_lfrgcb$(element);
     }
   };
-  QueueRendererWebGl.prototype.renderQueue_21v2u5$ = function (queue) {
+  QueueRendererWebGl.prototype.renderQueue_e0goaf$ = function (queue) {
     var tmp$, tmp$_0;
     var $receiver = queue.renderPass;
     var tmp$_1, tmp$_2, tmp$_3, tmp$_4;
@@ -46367,7 +47277,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var tmp$_5;
         this.glAttribs_0.setupPipelineAttribs_lfrgcb$(tmp$_0);
         if (cmd.mesh.geometry.numIndices > 0) {
-          if ((tmp$_5 = this.shaderMgr_0.setupShader_m0ahst$(cmd)) != null) {
+          if ((tmp$_5 = this.shaderMgr_0.setupShader_ye1q9v$(cmd)) != null) {
             if (tmp$_5.primitiveType !== 0 && tmp$_5.indexType !== 0) {
               var insts = cmd.mesh.instances;
               if (insts == null) {
@@ -46722,7 +47632,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.ctx.gl_8be2vx$;
     }
   });
-  ShaderManager.prototype.setupShader_m0ahst$ = function (cmd) {
+  ShaderManager.prototype.setupShader_ye1q9v$ = function (cmd) {
     var tmp$;
     var pipeline = ensureNotNull(cmd.pipeline);
     var $receiver = this.shaders;
@@ -46740,7 +47650,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       (tmp$ = this.currentShader) != null ? (tmp$.unUse(), Unit) : null;
       this.currentShader = shader;
       shader.use();
-    }return shader.bindInstance_m0ahst$(cmd);
+    }return shader.bindInstance_ye1q9v$(cmd);
   };
   ShaderManager.prototype.deleteShader_lfrgcb$ = function (pipeline) {
     var shader = this.shaders.get_11rb$(pipeline);
@@ -46847,8 +47757,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   TextureLoader.prototype.loadTextureCube_0 = function (ctx, props, img) {
     var gl = ctx.gl_8be2vx$;
-    var tex = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_CUBE_MAP, tex);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_CUBE_MAP, gl.createTexture(), this.estimateTexSize_0(img));
+    tex.setSize_vux9f0$(img.width, img.height);
+    tex.applySamplerProps_xetyfc$(props);
     this.texImage2d_0(gl, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X, img.right);
     this.texImage2d_0(gl, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X, img.left);
     this.texImage2d_0(gl, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y, img.up);
@@ -46857,86 +47768,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.texImage2d_0(gl, WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front);
     if (props.mipMapping) {
       gl.generateMipmap(WebGLRenderingContext.TEXTURE_CUBE_MAP);
-    }var a = img.width;
-    var b = img.height;
-    var x = Math_0.max(a, b);
-    var x_0 = Math_0.log2(x);
-    var mipLevels = numberToInt(Math_0.floor(x_0)) + 1 | 0;
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(img.right.width, img.right.height, get_pxSize(img.format), 6, mipLevels);
-    return new LoadedTextureWebGl(ctx, tex, estSize);
+    }return tex;
   };
   TextureLoader.prototype.loadTexture2d_0 = function (ctx, props, img) {
     var gl = ctx.gl_8be2vx$;
-    var tex = gl.createTexture();
-    gl.bindTexture(WebGLRenderingContext.TEXTURE_2D, tex);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, gl.createTexture(), this.estimateTexSize_0(img));
+    tex.setSize_vux9f0$(img.width, img.height);
+    tex.applySamplerProps_xetyfc$(props);
     this.texImage2d_0(gl, WebGLRenderingContext.TEXTURE_2D, img);
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MIN_FILTER, this.glMinFilterMethod_0(props.minFilter, props.mipMapping));
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_MAG_FILTER, this.glMagFilterMethod_0(props.magFilter));
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_S, this.glAddressMode_0(props.addressModeU));
-    gl.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGLRenderingContext.TEXTURE_WRAP_T, this.glAddressMode_0(props.addressModeV));
-    if (props.maxAnisotropy > 1 && ctx.glCapabilities.maxAnisotropy > 1.0) {
-      var tmp$ = WebGLRenderingContext.TEXTURE_2D;
-      var tmp$_0 = ctx.glCapabilities.glTextureMaxAnisotropyExt;
-      var a = props.maxAnisotropy;
-      var b = ctx.glCapabilities.maxAnisotropy;
-      gl.texParameteri(tmp$, tmp$_0, Math_0.min(a, b));
-    }if (props.mipMapping) {
+    if (props.mipMapping) {
       gl.generateMipmap(WebGLRenderingContext.TEXTURE_2D);
-    }var a_0 = img.width;
-    var b_0 = img.height;
-    var x = Math_0.max(a_0, b_0);
+    }return tex;
+  };
+  TextureLoader.prototype.estimateTexSize_0 = function ($receiver) {
+    var layers = Kotlin.isType($receiver, CubeMapTextureData) ? 6 : 1;
+    var a = $receiver.width;
+    var b = $receiver.height;
+    var x = Math_0.max(a, b);
     var x_0 = Math_0.log2(x);
     var mipLevels = numberToInt(Math_0.floor(x_0)) + 1 | 0;
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(img.width, img.height, get_pxSize(img.format), 1, mipLevels);
-    return new LoadedTextureWebGl(ctx, tex, estSize);
-  };
-  TextureLoader.prototype.glMinFilterMethod_0 = function ($receiver, mipMapping) {
-    var tmp$;
-    switch ($receiver.name) {
-      case 'NEAREST':
-        tmp$ = mipMapping ? WebGLRenderingContext.NEAREST_MIPMAP_NEAREST : WebGLRenderingContext.NEAREST;
-        break;
-      case 'LINEAR':
-        tmp$ = mipMapping ? WebGLRenderingContext.LINEAR_MIPMAP_LINEAR : WebGLRenderingContext.LINEAR;
-        break;
-      default:tmp$ = Kotlin.noWhenBranchMatched();
-        break;
-    }
-    return tmp$;
-  };
-  TextureLoader.prototype.glMagFilterMethod_0 = function ($receiver) {
-    var tmp$;
-    switch ($receiver.name) {
-      case 'NEAREST':
-        tmp$ = WebGLRenderingContext.NEAREST;
-        break;
-      case 'LINEAR':
-        tmp$ = WebGLRenderingContext.LINEAR;
-        break;
-      default:tmp$ = Kotlin.noWhenBranchMatched();
-        break;
-    }
-    return tmp$;
-  };
-  TextureLoader.prototype.glAddressMode_0 = function ($receiver) {
-    var tmp$;
-    switch ($receiver.name) {
-      case 'CLAMP_TO_BORDER':
-        tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
-        break;
-      case 'CLAMP_TO_EDGE':
-        tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
-        break;
-      case 'MIRRORED_REPEAT':
-        tmp$ = WebGLRenderingContext.MIRRORED_REPEAT;
-        break;
-      case 'REPEAT':
-        tmp$ = WebGLRenderingContext.REPEAT;
-        break;
-      default:tmp$ = Kotlin.noWhenBranchMatched();
-        break;
-    }
-    return tmp$;
+    return Texture$Companion_getInstance().estimatedTexSize_4qozqa$($receiver.width, $receiver.height, get_pxSize($receiver.format), layers, mipLevels);
   };
   TextureLoader.prototype.texImage2d_0 = function (gl, target, data) {
     var tmp$;
@@ -47342,13 +48193,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$kool.LoadedAsset = LoadedAsset;
   package$kool.LoadedRawAsset = LoadedRawAsset;
   package$kool.LoadedTextureAsset = LoadedTextureAsset;
-  var package$drawqueue = package$kool.drawqueue || (package$kool.drawqueue = {});
-  package$drawqueue.DrawCommand = DrawCommand;
-  package$drawqueue.DrawQueue = DrawQueue;
-  Object.defineProperty(SceneSetup, 'Companion', {
-    get: SceneSetup$Companion_getInstance
-  });
-  package$drawqueue.SceneSetup = SceneSetup;
   package$kool.EngineStats = EngineStats;
   InputManager.Pointer = InputManager$Pointer;
   Object.defineProperty(InputManager$BufferedPointerInput$UpdateState, 'STARTED', {
@@ -47734,6 +48578,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: DescriptorType$UNIFORM_BUFFER_getInstance
   });
   package$pipeline.DescriptorType = DescriptorType;
+  var package$drawqueue = package$pipeline.drawqueue || (package$pipeline.drawqueue = {});
+  package$drawqueue.DrawCommand = DrawCommand;
+  package$drawqueue.DrawQueue = DrawQueue;
+  Object.defineProperty(SceneSetup, 'Companion', {
+    get: SceneSetup$Companion_getInstance
+  });
+  package$drawqueue.SceneSetup = SceneSetup;
   package$pipeline.LoadedTexture = LoadedTexture;
   package$pipeline.OffscreenRenderPass = OffscreenRenderPass;
   OffscreenRenderPass2d.Setup = OffscreenRenderPass2d$Setup;
@@ -47857,7 +48708,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.SubtractNode = SubtractNode;
   package$shadermodel.DivideNode = DivideNode;
   package$shadermodel.MultiplyNode = MultiplyNode;
+  package$shadermodel.MixNode = MixNode;
+  package$shadermodel.VecFromColorNode = VecFromColorNode;
   package$shadermodel.NormalizeNode = NormalizeNode;
+  package$shadermodel.ReflectNode = ReflectNode;
   package$shadermodel.ModelVar = ModelVar;
   package$shadermodel.ModelVar1f = ModelVar1f;
   package$shadermodel.ModelVar2f = ModelVar2f;
@@ -47915,7 +48769,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.PushConstantNode3f = PushConstantNode3f;
   package$shadermodel.PushConstantNode4f = PushConstantNode4f;
   package$shadermodel.PushConstantNodeColor = PushConstantNodeColor;
+  package$shadermodel.PushConstantNode1i = PushConstantNode1i;
+  package$shadermodel.PushConstantNode2i = PushConstantNode2i;
+  package$shadermodel.PushConstantNode3i = PushConstantNode3i;
+  package$shadermodel.PushConstantNode4i = PushConstantNode4i;
   package$shadermodel.TextureSamplerNode = TextureSamplerNode;
+  package$shadermodel.NoiseTextureSamplerNode = NoiseTextureSamplerNode;
   package$shadermodel.CubeMapSamplerNode = CubeMapSamplerNode;
   package$shadermodel.EquiRectSamplerNode = EquiRectSamplerNode;
   package$shadermodel.AoMapSampleNode = AoMapSampleNode;
@@ -48080,7 +48939,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.UniformMat4fv = UniformMat4fv;
   package$pipeline.Uniform1i_init_19mbxw$ = Uniform1i_init;
   package$pipeline.Uniform1i = Uniform1i;
+  package$pipeline.Uniform2i_init_4vvif4$ = Uniform2i_init;
+  package$pipeline.Uniform2i = Uniform2i;
+  package$pipeline.Uniform3i_init_3k309t$ = Uniform3i_init;
+  package$pipeline.Uniform3i = Uniform3i;
+  package$pipeline.Uniform4i_init_c01iyq$ = Uniform4i_init;
+  package$pipeline.Uniform4i = Uniform4i;
   package$pipeline.Uniform1iv = Uniform1iv;
+  package$pipeline.Uniform2iv = Uniform2iv;
+  package$pipeline.Uniform3iv = Uniform3iv;
+  package$pipeline.Uniform4iv = Uniform4iv;
   VertexLayout.Binding = VertexLayout$Binding;
   VertexLayout.VertexAttribute = VertexLayout$VertexAttribute;
   VertexLayout.Builder = VertexLayout$Builder;
@@ -48093,38 +48961,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$pipeline.InputRate = InputRate;
   package$kool.toString_lcymw2$ = toString_0;
-  var package$scene = package$kool.scene || (package$kool.scene = {});
-  var package$animation = package$scene.animation || (package$scene.animation = {});
-  package$animation.Animation = Animation;
-  package$animation.AnimationChannel = AnimationChannel;
-  package$animation.TranslationAnimationChannel = TranslationAnimationChannel;
-  package$animation.RotationAnimationChannel = RotationAnimationChannel;
-  package$animation.ScaleAnimationChannel = ScaleAnimationChannel;
-  package$animation.WeightAnimationChannel = WeightAnimationChannel;
-  package$animation.AnimationNode = AnimationNode;
-  package$animation.AnimatedTransformGroup = AnimatedTransformGroup;
-  package$animation.MorphAnimatedMesh = MorphAnimatedMesh;
-  Object.defineProperty(AnimationKey$Interpolation, 'LINEAR', {
-    get: AnimationKey$Interpolation$LINEAR_getInstance
-  });
-  Object.defineProperty(AnimationKey$Interpolation, 'STEP', {
-    get: AnimationKey$Interpolation$STEP_getInstance
-  });
-  Object.defineProperty(AnimationKey$Interpolation, 'CUBICSPLINE', {
-    get: AnimationKey$Interpolation$CUBICSPLINE_getInstance
-  });
-  AnimationKey.Interpolation = AnimationKey$Interpolation;
-  package$animation.AnimationKey = AnimationKey;
-  package$animation.RotationKey = RotationKey;
-  package$animation.CubicRotationKey = CubicRotationKey;
-  package$animation.TranslationKey = TranslationKey;
-  package$animation.CubicTranslationKey = CubicTranslationKey;
-  package$animation.ScaleKey = ScaleKey;
-  package$animation.CubicScaleKey = CubicScaleKey;
-  package$animation.WeightKey = WeightKey;
-  package$animation.CubicWeightKey = CubicWeightKey;
-  Skin.SkinNode = Skin$SkinNode;
-  package$animation.Skin = Skin;
   Object.defineProperty(Camera$ProjCorrectionMode, 'NONE', {
     get: Camera$ProjCorrectionMode$NONE_getInstance
   });
@@ -48135,6 +48971,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: Camera$ProjCorrectionMode$OFFSCREEN_getInstance
   });
   Camera.ProjCorrectionMode = Camera$ProjCorrectionMode;
+  var package$scene = package$kool.scene || (package$kool.scene = {});
   package$scene.Camera = Camera;
   package$scene.OrthographicCamera = OrthographicCamera;
   PerspectiveCamera.Proxy = PerspectiveCamera$Proxy;
@@ -48299,18 +49136,49 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$ui.theme_vvurn$ = theme;
   package$ui.ThemeBuilder = ThemeBuilder;
   package$ui.ThemeOrCustomProp = ThemeOrCustomProp;
+  var package$util = package$kool.util || (package$kool.util = {});
+  var package$animation = package$util.animation || (package$util.animation = {});
+  package$animation.Animation = Animation;
+  package$animation.AnimationChannel = AnimationChannel;
+  package$animation.TranslationAnimationChannel = TranslationAnimationChannel;
+  package$animation.RotationAnimationChannel = RotationAnimationChannel;
+  package$animation.ScaleAnimationChannel = ScaleAnimationChannel;
+  package$animation.WeightAnimationChannel = WeightAnimationChannel;
+  package$animation.AnimationNode = AnimationNode;
+  package$animation.AnimatedTransformGroup = AnimatedTransformGroup;
+  package$animation.MorphAnimatedMesh = MorphAnimatedMesh;
+  Object.defineProperty(AnimationKey$Interpolation, 'LINEAR', {
+    get: AnimationKey$Interpolation$LINEAR_getInstance
+  });
+  Object.defineProperty(AnimationKey$Interpolation, 'STEP', {
+    get: AnimationKey$Interpolation$STEP_getInstance
+  });
+  Object.defineProperty(AnimationKey$Interpolation, 'CUBICSPLINE', {
+    get: AnimationKey$Interpolation$CUBICSPLINE_getInstance
+  });
+  AnimationKey.Interpolation = AnimationKey$Interpolation;
+  package$animation.AnimationKey = AnimationKey;
+  package$animation.RotationKey = RotationKey;
+  package$animation.CubicRotationKey = CubicRotationKey;
+  package$animation.TranslationKey = TranslationKey;
+  package$animation.CubicTranslationKey = CubicTranslationKey;
+  package$animation.ScaleKey = ScaleKey;
+  package$animation.CubicScaleKey = CubicScaleKey;
+  package$animation.WeightKey = WeightKey;
+  package$animation.CubicWeightKey = CubicWeightKey;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
   });
-  var package$util = package$kool.util || (package$kool.util = {});
-  package$util.Animator = Animator;
-  package$util.LinearAnimator = LinearAnimator;
-  package$util.CosAnimator = CosAnimator;
-  package$util.InterpolatedValue = InterpolatedValue;
-  package$util.InterpolatedFloat = InterpolatedFloat;
-  package$util.InterpolatedColor = InterpolatedColor;
-  package$util.SpringDamperFloat = SpringDamperFloat;
-  package$util.SpringDamperDouble = SpringDamperDouble;
+  package$animation.Animator = Animator;
+  package$animation.LinearAnimator = LinearAnimator;
+  package$animation.CosAnimator = CosAnimator;
+  package$animation.InterpolatedValue = InterpolatedValue;
+  package$animation.InterpolatedFloat = InterpolatedFloat;
+  package$animation.InterpolatedColor = InterpolatedColor;
+  package$animation.SpringDamperFloat = SpringDamperFloat;
+  package$animation.SpringDamperDouble = SpringDamperDouble;
+  Skin.SkinNode = Skin$SkinNode;
+  package$animation.Skin = Skin;
   Object.defineProperty(AmbientOcclusionPass, 'Companion', {
     get: AmbientOcclusionPass$Companion_getInstance
   });
@@ -48382,6 +49250,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: DeferredOutputShader$Companion_getInstance
   });
   package$deferred.DeferredOutputShader = DeferredOutputShader;
+  package$deferred.deferredPbrShader_skmpm9$ = deferredPbrShader;
   Object.defineProperty(DeferredPbrShader, 'Companion', {
     get: DeferredPbrShader$Companion_getInstance
   });
@@ -48403,6 +49272,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   PbrSceneShader.DeferredPbrConfig = PbrSceneShader$DeferredPbrConfig;
   package$deferred.PbrSceneShader = PbrSceneShader;
+  package$deferred.ScreenSpaceRayTraceNode = ScreenSpaceRayTraceNode;
   package$util.Disposable = Disposable;
   package$util.uiFont_a4r08d$ = uiFont;
   package$util.FontProps = FontProps;
@@ -48631,8 +49501,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.Usage = Usage;
   InstancedLodController.Instance = InstancedLodController$Instance;
   package$util.InstancedLodController = InstancedLodController;
-  KdTree.KdNode = KdTree$KdNode;
-  package$util.KdTree = KdTree;
   package$util.LineString = LineString;
   Log.prototype.Level = Log$Level;
   Object.defineProperty(Log$Level, 'TRACE', {
@@ -48684,11 +49552,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.ObjectPool = ObjectPool;
   AutoRecycler.Context = AutoRecycler$Context;
   package$util.AutoRecycler = AutoRecycler;
-  OcTree.OcNode = OcTree$OcNode;
-  Object.defineProperty(OcTree, 'Companion', {
-    get: OcTree$Companion_getInstance
-  });
-  package$util.OcTree = OcTree;
   package$util.PerfTimer = PerfTimer;
   package$kool.now = now;
   package$kool.toString_j6vyb1$ = toString_1;
@@ -48701,51 +49564,59 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.SimpleShadowMap = SimpleShadowMap;
   CascadedShadowMap.MapRange = CascadedShadowMap$MapRange;
   package$util.CascadedShadowMap = CascadedShadowMap;
-  package$util.pointKdTree_ffk80x$ = pointKdTree;
-  package$util.pointOcTree_aygcrt$ = pointOcTree;
-  package$util.triangleKdTree_olctmm$ = triangleKdTree;
-  package$util.triangleKdTree_4kw5be$ = triangleKdTree_0;
-  package$util.triangleOcTree_8pbc9u$ = triangleOcTree;
-  package$util.triangleOcTree_olctmm$ = triangleOcTree_0;
-  package$util.edgeKdTree_dvmecb$ = edgeKdTree;
-  package$util.edgeOcTree_oxvlct$ = edgeOcTree;
-  package$util.ItemAdapter = ItemAdapter;
-  Object.defineProperty(package$util, 'Vec3fAdapter', {
+  KdTree.KdNode = KdTree$KdNode;
+  var package$spatial = package$util.spatial || (package$util.spatial = {});
+  package$spatial.KdTree = KdTree;
+  OcTree.OcNode = OcTree$OcNode;
+  Object.defineProperty(OcTree, 'Companion', {
+    get: OcTree$Companion_getInstance
+  });
+  package$spatial.OcTree = OcTree;
+  package$spatial.pointKdTree_ffk80x$ = pointKdTree;
+  package$spatial.pointOcTree_aygcrt$ = pointOcTree;
+  package$spatial.triangleKdTree_olctmm$ = triangleKdTree;
+  package$spatial.triangleKdTree_uvzo00$ = triangleKdTree_0;
+  package$spatial.triangleOcTree_2baat4$ = triangleOcTree;
+  package$spatial.triangleOcTree_olctmm$ = triangleOcTree_0;
+  package$spatial.edgeKdTree_jn4zy3$ = edgeKdTree;
+  package$spatial.edgeOcTree_yfdkwd$ = edgeOcTree;
+  package$spatial.ItemAdapter = ItemAdapter;
+  Object.defineProperty(package$spatial, 'Vec3fAdapter', {
     get: Vec3fAdapter_getInstance
   });
-  Object.defineProperty(package$util, 'EdgeAdapter', {
+  Object.defineProperty(package$spatial, 'EdgeAdapter', {
     get: EdgeAdapter_getInstance
   });
-  Object.defineProperty(package$util, 'TriangleAdapter', {
+  Object.defineProperty(package$spatial, 'TriangleAdapter', {
     get: TriangleAdapter_getInstance
   });
   Object.defineProperty(Edge, 'Companion', {
     get: Edge$Companion_getInstance
   });
-  package$util.Edge = Edge;
+  package$spatial.Edge = Edge;
   Object.defineProperty(Triangle, 'Companion', {
     get: Triangle$Companion_getInstance
   });
-  package$util.Triangle_init_olctmm$ = Triangle_init;
-  package$util.Triangle = Triangle;
+  package$spatial.Triangle_init_olctmm$ = Triangle_init;
+  package$spatial.Triangle = Triangle;
   SpatialTree.Node = SpatialTree$Node;
-  package$util.SpatialTree = SpatialTree;
-  package$util.PointDistance = PointDistance;
-  package$util.BoundingSphereDistance = BoundingSphereDistance;
-  package$util.RayDistance = RayDistance;
-  package$util.SpatialTreeTraverser = SpatialTreeTraverser;
-  package$util.CenterPointTraverser = CenterPointTraverser;
-  package$util.InRadiusTraverser = InRadiusTraverser;
-  package$util.BoundingSphereInRadiusTraverser = BoundingSphereInRadiusTraverser;
+  package$spatial.SpatialTree = SpatialTree;
+  package$spatial.PointDistance = PointDistance;
+  package$spatial.BoundingSphereDistance = BoundingSphereDistance;
+  package$spatial.RayDistance = RayDistance;
+  package$spatial.SpatialTreeTraverser = SpatialTreeTraverser;
+  package$spatial.CenterPointTraverser = CenterPointTraverser;
+  package$spatial.InRadiusTraverser = InRadiusTraverser;
+  package$spatial.BoundingSphereInRadiusTraverser = BoundingSphereInRadiusTraverser;
   Object.defineProperty(KNearestTraverser, 'Companion', {
     get: KNearestTraverser$Companion_getInstance
   });
-  package$util.KNearestTraverser = KNearestTraverser;
-  package$util.NearestToRayTraverser = NearestToRayTraverser;
-  package$util.NearestEdgeToRayTraverser = NearestEdgeToRayTraverser;
-  package$util.TriangleHitTraverser = TriangleHitTraverser;
+  package$spatial.KNearestTraverser = KNearestTraverser;
+  package$spatial.NearestToRayTraverser = NearestToRayTraverser;
+  package$spatial.NearestEdgeToRayTraverser = NearestEdgeToRayTraverser;
+  package$spatial.TriangleHitTraverser = TriangleHitTraverser;
   ChildNodesWithDistance.Child = ChildNodesWithDistance$Child;
-  package$util.ChildNodesWithDistance = ChildNodesWithDistance;
+  package$spatial.ChildNodesWithDistance = ChildNodesWithDistance;
   Object.defineProperty(TouchGestureEvaluator, 'Companion', {
     get: TouchGestureEvaluator$Companion_getInstance
   });
@@ -48764,6 +49635,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   VertexView.Vec3iView = VertexView$Vec3iView;
   VertexView.Vec4iView = VertexView$Vec4iView;
   package$util.VertexView = VertexView;
+  package$util.Viewport_init = Viewport_init;
   package$util.Viewport = Viewport;
   package$kool.createDefaultContext = createDefaultContext;
   package$kool.createContext_s8od96$ = createContext;
@@ -48859,17 +49731,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OcTreeEdgeHandler.prototype.distinctTriangleEdges = HalfEdgeMesh$EdgeHandler.prototype.distinctTriangleEdges;
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
-  AnimatedTransformGroup.prototype.setWeights_q3cr5i$ = AnimationNode.prototype.setWeights_q3cr5i$;
-  MorphAnimatedMesh.prototype.initTransform = AnimationNode.prototype.initTransform;
-  MorphAnimatedMesh.prototype.setTranslation_czzhiw$ = AnimationNode.prototype.setTranslation_czzhiw$;
-  MorphAnimatedMesh.prototype.setRotation_czzhi1$ = AnimationNode.prototype.setRotation_czzhi1$;
-  MorphAnimatedMesh.prototype.setScale_czzhiw$ = AnimationNode.prototype.setScale_czzhiw$;
   MeshRayTest$Companion$nopTest$ObjectLiteral.prototype.onMeshDataChanged_f1jspk$ = MeshRayTest.prototype.onMeshDataChanged_f1jspk$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
   BlankComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
   BlankComponentUi.prototype.dispose_aemszp$ = ComponentUi.prototype.dispose_aemszp$;
+  AnimatedTransformGroup.prototype.setWeights_q3cr5i$ = AnimationNode.prototype.setWeights_q3cr5i$;
+  MorphAnimatedMesh.prototype.initTransform = AnimationNode.prototype.initTransform;
+  MorphAnimatedMesh.prototype.setTranslation_czzhiw$ = AnimationNode.prototype.setTranslation_czzhiw$;
+  MorphAnimatedMesh.prototype.setRotation_czzhi1$ = AnimationNode.prototype.setRotation_czzhi1$;
+  MorphAnimatedMesh.prototype.setScale_czzhiw$ = AnimationNode.prototype.setScale_czzhiw$;
   GltfAccessor$Sparse$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   GltfAccessor$SparseIndices$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   GltfAccessor$SparseValues$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
@@ -48892,7 +49764,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   GltfSkin$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   GltfTexture$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   GltfTextureInfo$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
+  Vec3fAdapter.prototype.setNode_kvimhn$ = ItemAdapter.prototype.setNode_kvimhn$;
   EdgeAdapter.prototype.getCenterX_trkh7z$ = ItemAdapter.prototype.getCenterX_trkh7z$;
   EdgeAdapter.prototype.getCenterY_trkh7z$ = ItemAdapter.prototype.getCenterY_trkh7z$;
   EdgeAdapter.prototype.getCenterZ_trkh7z$ = ItemAdapter.prototype.getCenterZ_trkh7z$;
@@ -48900,7 +49772,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   EdgeAdapter.prototype.getSzY_trkh7z$ = ItemAdapter.prototype.getSzY_trkh7z$;
   EdgeAdapter.prototype.getSzZ_trkh7z$ = ItemAdapter.prototype.getSzZ_trkh7z$;
   EdgeAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
-  EdgeAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
+  EdgeAdapter.prototype.setNode_kvimhn$ = ItemAdapter.prototype.setNode_kvimhn$;
   TriangleAdapter.prototype.getCenterX_trkh7z$ = ItemAdapter.prototype.getCenterX_trkh7z$;
   TriangleAdapter.prototype.getCenterY_trkh7z$ = ItemAdapter.prototype.getCenterY_trkh7z$;
   TriangleAdapter.prototype.getCenterZ_trkh7z$ = ItemAdapter.prototype.getCenterZ_trkh7z$;
@@ -48908,14 +49780,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   TriangleAdapter.prototype.getSzY_trkh7z$ = ItemAdapter.prototype.getSzY_trkh7z$;
   TriangleAdapter.prototype.getSzZ_trkh7z$ = ItemAdapter.prototype.getSzZ_trkh7z$;
   TriangleAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
-  TriangleAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
-  BoundingSphereDistance.prototype.nodeSqrDistanceToPoint_m5117s$ = PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$;
-  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.nodeSqrDistanceToPoint_m5117s$ = PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$;
-  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.itemSqrDistanceToPoint_54x1zp$ = PointDistance.prototype.itemSqrDistanceToPoint_54x1zp$;
-  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
-  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.itemSqrDistanceToRay_t0er6w$ = RayDistance.prototype.itemSqrDistanceToRay_t0er6w$;
-  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
-  TriangleHitTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
+  TriangleAdapter.prototype.setNode_kvimhn$ = ItemAdapter.prototype.setNode_kvimhn$;
+  BoundingSphereDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$ = PointDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$;
+  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.nodeSqrDistanceToPoint_fpn9fm$ = PointDistance.prototype.nodeSqrDistanceToPoint_fpn9fm$;
+  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.itemSqrDistanceToPoint_xpaqv3$ = PointDistance.prototype.itemSqrDistanceToPoint_xpaqv3$;
+  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.nodeSqrDistanceToRay_m0emyn$ = RayDistance.prototype.nodeSqrDistanceToRay_m0emyn$;
+  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.itemSqrDistanceToRay_bo5c3m$ = RayDistance.prototype.itemSqrDistanceToRay_bo5c3m$;
+  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_m0emyn$ = RayDistance.prototype.nodeSqrDistanceToRay_m0emyn$;
+  TriangleHitTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_m0emyn$ = RayDistance.prototype.nodeSqrDistanceToRay_m0emyn$;
   ShaderGeneratorImplWebGl$CodeGen.prototype.sampleTexture2d_buzeal$ = CodeGenerator.prototype.sampleTexture2d_buzeal$;
   ShaderGeneratorImplWebGl$CodeGen.prototype.sampleTextureCube_buzeal$ = CodeGenerator.prototype.sampleTextureCube_buzeal$;
   GenericBuffer.prototype.removeAt_za3lpa$ = Buffer.prototype.removeAt_za3lpa$;
@@ -48936,6 +49808,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   MixedBufferImpl.prototype.putUint16_gmedm2$ = MixedBuffer.prototype.putUint16_gmedm2$;
   MixedBufferImpl.prototype.putUint32_q5rwfd$ = MixedBuffer.prototype.putUint32_q5rwfd$;
   MixedBufferImpl.prototype.putFloat32_q3cr5i$ = MixedBuffer.prototype.putFloat32_q3cr5i$;
+  MixedBufferImpl.prototype.putInt8_s8j3t7$ = MixedBuffer.prototype.putInt8_s8j3t7$;
+  MixedBufferImpl.prototype.putInt8_fqrh44$ = MixedBuffer.prototype.putInt8_fqrh44$;
+  MixedBufferImpl.prototype.putInt8_mj6st8$ = MixedBuffer.prototype.putInt8_mj6st8$;
+  MixedBufferImpl.prototype.putInt8_ay2i3f$ = MixedBuffer.prototype.putInt8_ay2i3f$;
+  MixedBufferImpl.prototype.putInt16_mq22fl$ = MixedBuffer.prototype.putInt16_mq22fl$;
+  MixedBufferImpl.prototype.putInt16_gmedm2$ = MixedBuffer.prototype.putInt16_gmedm2$;
+  MixedBufferImpl.prototype.putInt16_359eei$ = MixedBuffer.prototype.putInt16_359eei$;
+  MixedBufferImpl.prototype.putInt16_8k344i$ = MixedBuffer.prototype.putInt16_8k344i$;
+  MixedBufferImpl.prototype.putInt32_za3lpa$ = MixedBuffer.prototype.putInt32_za3lpa$;
+  MixedBufferImpl.prototype.putInt32_q5rwfd$ = MixedBuffer.prototype.putInt32_q5rwfd$;
+  MixedBufferImpl.prototype.putInt32_nd5v6f$ = MixedBuffer.prototype.putInt32_nd5v6f$;
+  MixedBufferImpl.prototype.putInt32_7hqxcs$ = MixedBuffer.prototype.putInt32_7hqxcs$;
   MixedBufferImpl.prototype.removeAt_za3lpa$ = MixedBuffer.prototype.removeAt_za3lpa$;
   DEG_2_RAD = math.PI / 180.0;
   RAD_2_DEG = 180.0 / math.PI;

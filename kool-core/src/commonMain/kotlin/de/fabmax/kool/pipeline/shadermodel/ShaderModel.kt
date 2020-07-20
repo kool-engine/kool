@@ -256,6 +256,16 @@ class ShaderModel(val modelInfo: String = "") {
         fun pushConstantNode4f(u: Uniform4f) = addNode(PushConstantNode4f(u, stage))
         fun pushConstantNodeColor(u: UniformColor) = addNode(PushConstantNodeColor(u, stage))
 
+        fun pushConstantNode1i(name: String) = addNode(PushConstantNode1i(Uniform1i(name), stage))
+        fun pushConstantNode2i(name: String) = addNode(PushConstantNode2i(Uniform2i(name), stage))
+        fun pushConstantNode3i(name: String) = addNode(PushConstantNode3i(Uniform3i(name), stage))
+        fun pushConstantNode4i(name: String) = addNode(PushConstantNode4i(Uniform4i(name), stage))
+
+        fun pushConstantNode1i(u: Uniform1i) = addNode(PushConstantNode1i(u, stage))
+        fun pushConstantNode2i(u: Uniform2i) = addNode(PushConstantNode2i(u, stage))
+        fun pushConstantNode3i(u: Uniform3i) = addNode(PushConstantNode3i(u, stage))
+        fun pushConstantNode4i(u: Uniform4i) = addNode(PushConstantNode4i(u, stage))
+
         fun morphWeightsNode(nWeights: Int) = addNode(MorphWeightsNode(nWeights, stage))
 
         fun getMorphWeightNode(iWeight: Int, morphWeightsNode: MorphWeightsNode) =

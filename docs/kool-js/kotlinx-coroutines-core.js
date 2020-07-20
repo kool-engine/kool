@@ -54,14 +54,15 @@
   var startCoroutine_0 = Kotlin.kotlin.coroutines.startCoroutine_3a617i$;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
-  var Long$Companion$MAX_VALUE = Kotlin.Long.MAX_VALUE;
-  var L0 = Kotlin.Long.ZERO;
-  var L4294967296 = new Kotlin.Long(0, 1);
+  var Duration = Kotlin.kotlin.time.Duration;
   var L1 = Kotlin.Long.ONE;
+  var coerceAtLeast = Kotlin.kotlin.ranges.coerceAtLeast_2p08ub$;
+  var L0 = Kotlin.Long.ZERO;
+  var Long$Companion$MAX_VALUE = Kotlin.Long.MAX_VALUE;
+  var L4294967296 = new Kotlin.Long(0, 1);
   var L1000000 = Kotlin.Long.fromInt(1000000);
   var L9223372036854 = new Kotlin.Long(2077252342, 2147);
   var L4611686018427387903 = new Kotlin.Long(-1, 1073741823);
-  var coerceAtLeast = Kotlin.kotlin.ranges.coerceAtLeast_2p08ub$;
   var ensureNotNull = Kotlin.ensureNotNull;
   var Comparable = Kotlin.kotlin.Comparable;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
@@ -89,6 +90,7 @@
   var indexOf = Kotlin.kotlin.collections.indexOf_mjy6jw$;
   var arrayCopy = Kotlin.kotlin.collections.arrayCopy;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
+  var copyOf = Kotlin.kotlin.collections.copyOf_8ujjk8$;
   var asIterable = Kotlin.kotlin.collections.asIterable_us0mfu$;
   var ArithmeticException_init = Kotlin.kotlin.ArithmeticException;
   var L3458764513820540928 = new Kotlin.Long(0, 805306368);
@@ -100,7 +102,6 @@
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
   var toLongOrNull = Kotlin.kotlin.text.toLongOrNull_pdl1vz$;
   var fill = Kotlin.kotlin.collections.fill_jfbbbd$;
-  var copyOf = Kotlin.kotlin.collections.copyOf_8ujjk8$;
   var createCoroutineUnintercepted_0 = Kotlin.kotlin.coroutines.intrinsics.createCoroutineUnintercepted_x18nsh$;
   var shuffle = Kotlin.kotlin.collections.shuffle_vvxzk3$;
   var L2147483647 = Kotlin.Long.fromInt(2147483647);
@@ -229,8 +230,6 @@
   AddLastDesc.prototype.constructor = AddLastDesc;
   AbstractSendChannel$SendBufferedDesc.prototype = Object.create(AddLastDesc.prototype);
   AbstractSendChannel$SendBufferedDesc.prototype.constructor = AbstractSendChannel$SendBufferedDesc;
-  AbstractSendChannel$SendConflatedDesc.prototype = Object.create(AbstractSendChannel$SendBufferedDesc.prototype);
-  AbstractSendChannel$SendConflatedDesc.prototype.constructor = AbstractSendChannel$SendConflatedDesc;
   RemoveFirstDesc.prototype = Object.create(AbstractAtomicDesc.prototype);
   RemoveFirstDesc.prototype.constructor = RemoveFirstDesc;
   AbstractSendChannel$TryOfferDesc.prototype = Object.create(RemoveFirstDesc.prototype);
@@ -285,6 +284,8 @@
   ProducerCoroutine.prototype.constructor = ProducerCoroutine;
   RendezvousChannel.prototype = Object.create(AbstractChannel.prototype);
   RendezvousChannel.prototype.constructor = RendezvousChannel;
+  SafeFlow.prototype = Object.create(AbstractFlow.prototype);
+  SafeFlow.prototype.constructor = SafeFlow;
   ChannelFlowBuilder.prototype = Object.create(ChannelFlow.prototype);
   ChannelFlowBuilder.prototype.constructor = ChannelFlowBuilder;
   CallbackFlowBuilder.prototype = Object.create(ChannelFlowBuilder.prototype);
@@ -307,6 +308,8 @@
   ChannelLimitedFlowMerge.prototype.constructor = ChannelLimitedFlowMerge;
   AtomicOp.prototype = Object.create(OpDescriptor.prototype);
   AtomicOp.prototype.constructor = AtomicOp;
+  Segment.prototype = Object.create(ConcurrentLinkedListNode.prototype);
+  Segment.prototype.constructor = Segment;
   DispatchedContinuation.prototype = Object.create(DispatchedTask.prototype);
   DispatchedContinuation.prototype.constructor = DispatchedContinuation;
   SelectBuilderImpl$SelectOnCancelling.prototype = Object.create(JobCancellingNode.prototype);
@@ -331,10 +334,8 @@
   MutexImpl$LockCont.prototype.constructor = MutexImpl$LockCont;
   MutexImpl$LockSelect.prototype = Object.create(MutexImpl$LockWaiter.prototype);
   MutexImpl$LockSelect.prototype.constructor = MutexImpl$LockSelect;
-  MutexImpl$UnlockOp.prototype = Object.create(OpDescriptor.prototype);
+  MutexImpl$UnlockOp.prototype = Object.create(AtomicOp.prototype);
   MutexImpl$UnlockOp.prototype.constructor = MutexImpl$UnlockOp;
-  SemaphoreImpl.prototype = Object.create(SegmentQueue.prototype);
-  SemaphoreImpl.prototype.constructor = SemaphoreImpl;
   CancelSemaphoreAcquisitionHandler.prototype = Object.create(CancelHandler.prototype);
   CancelSemaphoreAcquisitionHandler.prototype.constructor = CancelSemaphoreAcquisitionHandler;
   SemaphoreSegment.prototype = Object.create(Segment.prototype);
@@ -471,6 +472,7 @@
   function suspendCancellableCoroutine$lambda(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -1043,6 +1045,7 @@
   function suspendCancellableCoroutine$lambda_0(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -1093,6 +1096,7 @@
   function suspendCancellableCoroutine$lambda(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl_init(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -1249,9 +1253,10 @@
   return Kotlin.isType(this.state_8be2vx$, CancelledContinuation);
 }});
   CancellableContinuationImpl.prototype.initCancellability = function() {
+  this.setupCancellation_0();
 };
   CancellableContinuationImpl.prototype.isReusable_0 = function() {
-  return Kotlin.isType(this.delegate, DispatchedContinuation) && this.delegate.isReusable;
+  return Kotlin.isType(this.delegate, DispatchedContinuation) && this.delegate.isReusable_pmw987$(this);
 };
   CancellableContinuationImpl.prototype.resetState_8be2vx$ = function() {
   var state = this._state_0;
@@ -2100,6 +2105,12 @@
   function ensureActive($receiver) {
     ensureActive_1($receiver.coroutineContext);
   }
+  function currentCoroutineContext(continuation) {
+    return continuation.context;
+  }
+  defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.currentCoroutineContext', function(continuation) {
+  return Kotlin.coroutineReceiver().context;
+});
   function CoroutineStart(name, ordinal) {
     Enum.call(this);
     this.name$ = name;
@@ -2211,6 +2222,7 @@
   function suspendCancellableCoroutine$lambda_1(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -2246,9 +2258,15 @@
       return;
     return suspendCancellableCoroutine$lambda_1(delay$lambda(timeMillis))(continuation);
   }
+  function delay_0(duration, continuation) {
+    return delay(toDelayMillis(duration), continuation);
+  }
   function get_delay($receiver) {
     var tmp$, tmp$_0;
     return (tmp$_0 = Kotlin.isType(tmp$ = $receiver.get_j3r2sn$(ContinuationInterceptor.Key), Delay) ? tmp$ : null) != null ? tmp$_0 : get_DefaultDelay();
+  }
+  function toDelayMillis($receiver) {
+    return $receiver.compareTo_11rb$(Duration.Companion.ZERO) > 0 ? coerceAtLeast($receiver.toLongMilliseconds(), L1) : L0;
   }
   function EventLoop() {
     CoroutineDispatcher.call(this);
@@ -2259,7 +2277,7 @@
   EventLoop.prototype.processNextEvent = function() {
   if (!this.processUnconfinedEvent()) 
     return Long$Companion$MAX_VALUE;
-  return this.nextTime;
+  return L0;
 };
   Object.defineProperty(EventLoop.prototype, 'isEmpty', {
   get: function() {
@@ -2483,9 +2501,8 @@
   return tmp$;
 };
   EventLoopImplBase.prototype.processNextEvent = function() {
-  var tmp$;
   if (this.processUnconfinedEvent()) 
-    return this.nextTime;
+    return L0;
   var delayed = this._delayed_0;
   if (delayed != null && !delayed.isEmpty) {
     var now = nanoTime();
@@ -2495,13 +2512,13 @@
         removeFirstIf_26v81m$break:
           do {
             var block$result;
-            var tmp$_0;
-            tmp$_0 = delayed.firstImpl();
-            if (tmp$_0 == null) {
+            var tmp$;
+            tmp$ = delayed.firstImpl();
+            if (tmp$ == null) {
               removeFirstIf_26v81m$result = null;
               break removeFirstIf_26v81m$break;
             }
-            var first = tmp$_0;
+            var first = tmp$;
             var predicate$result;
             if (first.timeToExecute_s8cxhz$(now)) {
               predicate$result = this.enqueueImpl_0(first);
@@ -2519,7 +2536,11 @@
           break loop_label;
       }
   }
-    (tmp$ = this.dequeue_0()) != null ? (tmp$.run() , Unit) : null;
+  var task = this.dequeue_0();
+  if (task != null) {
+    task.run();
+    return L0;
+  }
   return this.nextTime;
 };
   EventLoopImplBase.prototype.dispatch_5bn72i$ = function(context, block) {
@@ -3056,6 +3077,7 @@
   function suspendCancellableCoroutine$lambda_2(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -4739,6 +4761,9 @@
       throw TimeoutCancellationException_init('Timed out immediately');
     return withTimeout$lambda(timeMillis, block)(continuation);
   }
+  function withTimeout_0(timeout, block, continuation) {
+    return withTimeout(toDelayMillis(timeout), block, continuation);
+  }
   function withTimeoutOrNull$lambda(closure$timeMillis, closure$coroutine, closure$block) {
     return function(uCont) {
   var timeoutCoroutine = new TimeoutCoroutine(closure$timeMillis, uCont);
@@ -4823,6 +4848,9 @@
       return instance;
     else 
       return instance.doResume(null);
+  }
+  function withTimeoutOrNull_0(timeout, block, continuation) {
+    return withTimeoutOrNull(toDelayMillis(timeout), block, continuation);
   }
   function setupTimeout(coroutine, block) {
     var cont = coroutine.uCont;
@@ -5065,21 +5093,6 @@
   kind: Kind_CLASS, 
   simpleName: 'SendBufferedDesc', 
   interfaces: [AddLastDesc]};
-  AbstractSendChannel.prototype.describeSendConflated_0 = function(element) {
-  return new AbstractSendChannel$SendConflatedDesc(this.queue_0, element);
-};
-  function AbstractSendChannel$SendConflatedDesc(queue, element) {
-    AbstractSendChannel$SendBufferedDesc.call(this, queue, element);
-  }
-  AbstractSendChannel$SendConflatedDesc.prototype.finishOnSuccess_bpl3tg$ = function(affected, next) {
-  var tmp$, tmp$_0;
-  AbstractSendChannel$SendBufferedDesc.prototype.finishOnSuccess_bpl3tg$.call(this, affected, next);
-    (tmp$_0 = Kotlin.isType(tmp$ = affected, AbstractSendChannel$SendBuffered) ? tmp$ : null) != null ? tmp$_0.remove() : null;
-};
-  AbstractSendChannel$SendConflatedDesc.$metadata$ = {
-  kind: Kind_CLASS, 
-  simpleName: 'SendConflatedDesc', 
-  interfaces: [AbstractSendChannel$SendBufferedDesc]};
   Object.defineProperty(AbstractSendChannel.prototype, 'isClosedForSend', {
   get: function() {
   return this.closedForSend_0 != null;
@@ -6469,11 +6482,13 @@
   get: function() {
   throw IllegalStateException_init('Should not be used'.toString());
 }});
-  ArrayBroadcastChannel$Subscriber.prototype.onCancelIdempotent_6taknv$ = function(wasClosed) {
+  ArrayBroadcastChannel$Subscriber.prototype.close_dbl4no$$default = function(cause) {
+  var wasClosed = this.close_dbl4no$(cause, AbstractChannel.prototype.close_dbl4no$$default.bind(this));
   if (wasClosed) {
     this.broadcastChannel_0.updateHead_0(void 0, this);
     this.subHead = this.broadcastChannel_0.tail_0;
   }
+  return wasClosed;
 };
   ArrayBroadcastChannel$Subscriber.prototype.checkOffer = function() {
   var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -6858,6 +6873,21 @@
   kind: Kind_CLASS, 
   simpleName: 'ArrayChannel', 
   interfaces: [AbstractChannel]};
+  CoroutineExceptionHandler$ObjectLiteral.prototype = Object.create(AbstractCoroutineContextElement.prototype);
+  CoroutineExceptionHandler$ObjectLiteral.prototype.constructor = CoroutineExceptionHandler$ObjectLiteral;
+  function CoroutineExceptionHandler$ObjectLiteral(closure$handler, key) {
+    this.closure$handler = closure$handler;
+    AbstractCoroutineContextElement.call(this, key);
+  }
+  CoroutineExceptionHandler$ObjectLiteral.prototype.handleException_1ur55u$ = function(context, exception) {
+  this.closure$handler(context, exception);
+};
+  CoroutineExceptionHandler$ObjectLiteral.$metadata$ = {
+  kind: Kind_CLASS, 
+  interfaces: [CoroutineExceptionHandler_0, AbstractCoroutineContextElement]};
+  function broadcast$lambda(f, f_0) {
+    return Unit;
+  }
   function Coroutine$broadcast$lambda(this$broadcast_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
@@ -6921,7 +6951,7 @@
   }
 } while (true);
 };
-  function broadcast$lambda(this$broadcast_0) {
+  function broadcast$lambda_0(this$broadcast_0) {
     return function($receiver_0, continuation_0, suspended) {
   var instance = new Coroutine$broadcast$lambda(this$broadcast_0, $receiver_0, this, continuation_0);
   if (suspended) 
@@ -6935,7 +6965,8 @@
       capacity = 1;
     if (start === void 0) 
       start = CoroutineStart$LAZY_getInstance();
-    return broadcast_0(GlobalScope_getInstance(), Dispatchers_getInstance().Unconfined, capacity, start, consumes($receiver), broadcast$lambda($receiver));
+    var scope = plus(plus(GlobalScope_getInstance(), Dispatchers_getInstance().Unconfined), new CoroutineExceptionHandler$ObjectLiteral(broadcast$lambda, CoroutineExceptionHandler_0.Key));
+    return broadcast_0(scope, void 0, capacity, start, consumes($receiver), broadcast$lambda_0($receiver));
   }
   function broadcast_0($receiver, context, capacity, start, onCompletion, block) {
     if (context === void 0) 
@@ -6974,8 +7005,9 @@
   this.cancelInternal_tcv7n7$(cause != null ? cause : new JobCancellationException(null != null ? null : this.cancellationExceptionMessage(), null, this));
 };
   BroadcastCoroutine.prototype.cancelInternal_tcv7n7$ = function(cause) {
-  this._channel_0.cancel_m4sck1$(this.toCancellationException_rg9tb7$(cause));
-  this.cancelCoroutine_dbl4no$(cause);
+  var exception = this.toCancellationException_rg9tb7$(cause);
+  this._channel_0.cancel_m4sck1$(exception);
+  this.cancelCoroutine_dbl4no$(exception);
 };
   BroadcastCoroutine.prototype.onCompleted_11rb$ = function(value) {
   this._channel_0.close_dbl4no$();
@@ -6984,6 +7016,11 @@
   var processed = this._channel_0.close_dbl4no$(cause);
   if (!processed && !handled) 
     handleCoroutineException(this.context, cause);
+};
+  BroadcastCoroutine.prototype.close_dbl4no$$default = function(cause) {
+  var result = this._channel_0.close_dbl4no$(cause);
+  this.start();
+  return result;
 };
   Object.defineProperty(BroadcastCoroutine.prototype, 'isClosedForSend', {
   get: function() {
@@ -6997,9 +7034,6 @@
   get: function() {
   return this._channel_0.onSend;
 }});
-  BroadcastCoroutine.prototype.close_dbl4no$$default = function(cause) {
-  return this._channel_0.close_dbl4no$$default(cause);
-};
   BroadcastCoroutine.prototype.invokeOnClose_f05bi3$ = function(handler) {
   return this._channel_0.invokeOnClose_f05bi3$(handler);
 };
@@ -18086,6 +18120,7 @@
   function suspendCancellableCoroutine$lambda_3(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -18304,56 +18339,40 @@
     return new SafeFlow(block);
   }
   function SafeFlow(block) {
+    AbstractFlow.call(this);
     this.block_0 = block;
   }
-  function Coroutine$collect_42ocv1$_0($this, collector_0, continuation_0) {
+  function Coroutine$collectSafely_42ocv1$($this, collector_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
-    this.exceptionState_0 = 5;
+    this.exceptionState_0 = 1;
     this.$this = $this;
-    this.local$safeCollector = void 0;
     this.local$collector = collector_0;
   }
-  Coroutine$collect_42ocv1$_0.$metadata$ = {
+  Coroutine$collectSafely_42ocv1$.$metadata$ = {
   kind: Kotlin.Kind.CLASS, 
   simpleName: null, 
   interfaces: [CoroutineImpl]};
-  Coroutine$collect_42ocv1$_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$collect_42ocv1$_0.prototype.constructor = Coroutine$collect_42ocv1$_0;
-  Coroutine$collect_42ocv1$_0.prototype.doResume = function() {
+  Coroutine$collectSafely_42ocv1$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$collectSafely_42ocv1$.prototype.constructor = Coroutine$collectSafely_42ocv1$;
+  Coroutine$collectSafely_42ocv1$.prototype.doResume = function() {
   do try {
     switch (this.state_0) {
       case 0:
-        this.local$safeCollector = new SafeCollector(this.local$collector, this.context);
-        this.exceptionState_0 = 3;
-        this.state_0 = 1;
-        this.result_0 = this.$this.block_0(this.local$safeCollector, this);
+        this.state_0 = 2;
+        this.result_0 = this.$this.block_0(this.local$collector, this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
       case 1:
-        this.exceptionState_0 = 5;
-        this.finallyPath_0 = [2];
-        this.state_0 = 4;
-        continue;
+        throw this.exception_0;
       case 2:
         return;
-      case 3:
-        this.finallyPath_0 = [5];
-        this.state_0 = 4;
-        continue;
-      case 4:
-        this.exceptionState_0 = 5;
-        this.local$safeCollector.releaseIntercepted();
-        this.state_0 = this.finallyPath_0.shift();
-        continue;
-      case 5:
-        throw this.exception_0;
       default:
-        this.state_0 = 5;
+        this.state_0 = 1;
         throw new Error('State Machine Unreachable execution');
     }
   }  catch (e) {
-  if (this.state_0 === 5) {
+  if (this.state_0 === 1) {
     this.exceptionState_0 = this.state_0;
     throw e;
   } else {
@@ -18362,8 +18381,8 @@
   }
 } while (true);
 };
-  SafeFlow.prototype.collect_42ocv1$ = function(collector_0, continuation_0, suspended) {
-  var instance = new Coroutine$collect_42ocv1$_0(this, collector_0, continuation_0);
+  SafeFlow.prototype.collectSafely_42ocv1$ = function(collector_0, continuation_0, suspended) {
+  var instance = new Coroutine$collectSafely_42ocv1$(this, collector_0, continuation_0);
   if (suspended) 
     return instance;
   else 
@@ -18372,7 +18391,7 @@
   SafeFlow.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'SafeFlow', 
-  interfaces: [Flow]};
+  interfaces: [AbstractFlow]};
   function Coroutine$asFlow$lambda(this$asFlow_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
@@ -19313,19 +19332,19 @@
   function unsafeFlow$ObjectLiteral_0(closure$block) {
     this.closure$block = closure$block;
   }
-  function Coroutine$collect_42ocv1$_1($this, collector_0, continuation_0) {
+  function Coroutine$collect_42ocv1$_0($this, collector_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
     this.$this = $this;
     this.local$collector = collector_0;
   }
-  Coroutine$collect_42ocv1$_1.$metadata$ = {
+  Coroutine$collect_42ocv1$_0.$metadata$ = {
   kind: Kotlin.Kind.CLASS, 
   simpleName: null, 
   interfaces: [CoroutineImpl]};
-  Coroutine$collect_42ocv1$_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$collect_42ocv1$_1.prototype.constructor = Coroutine$collect_42ocv1$_1;
-  Coroutine$collect_42ocv1$_1.prototype.doResume = function() {
+  Coroutine$collect_42ocv1$_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$collect_42ocv1$_0.prototype.constructor = Coroutine$collect_42ocv1$_0;
+  Coroutine$collect_42ocv1$_0.prototype.doResume = function() {
   do try {
     switch (this.state_0) {
       case 0:
@@ -19353,7 +19372,7 @@
 } while (true);
 };
   unsafeFlow$ObjectLiteral_0.prototype.collect_42ocv1$ = function(collector_0, continuation_0, suspended) {
-  var instance = new Coroutine$collect_42ocv1$_1(this, collector_0, continuation_0);
+  var instance = new Coroutine$collect_42ocv1$_0(this, collector_0, continuation_0);
   if (suspended) 
     return instance;
   else 
@@ -19508,19 +19527,19 @@
     tmp$ = ChannelFlow.prototype.produceImpl_gkk88$.call(this, scope);
   return tmp$;
 };
-  function Coroutine$collect_42ocv1$_2($this, collector_0, continuation_0) {
+  function Coroutine$collect_42ocv1$_1($this, collector_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
     this.$this = $this;
     this.local$collector = collector_0;
   }
-  Coroutine$collect_42ocv1$_2.$metadata$ = {
+  Coroutine$collect_42ocv1$_1.$metadata$ = {
   kind: Kotlin.Kind.CLASS, 
   simpleName: null, 
   interfaces: [CoroutineImpl]};
-  Coroutine$collect_42ocv1$_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$collect_42ocv1$_2.prototype.constructor = Coroutine$collect_42ocv1$_2;
-  Coroutine$collect_42ocv1$_2.prototype.doResume = function() {
+  Coroutine$collect_42ocv1$_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$collect_42ocv1$_1.prototype.constructor = Coroutine$collect_42ocv1$_1;
+  Coroutine$collect_42ocv1$_1.prototype.doResume = function() {
   do try {
     switch (this.state_0) {
       case 0:
@@ -19563,7 +19582,7 @@
 } while (true);
 };
   ChannelAsFlow.prototype.collect_42ocv1$ = function(collector_0, continuation_0, suspended) {
-  var instance = new Coroutine$collect_42ocv1$_2(this, collector_0, continuation_0);
+  var instance = new Coroutine$collect_42ocv1$_1(this, collector_0, continuation_0);
   if (suspended) 
     return instance;
   else 
@@ -19644,20 +19663,20 @@
   interfaces: []};
   function AbstractFlow() {
   }
-  function Coroutine$collect_42ocv1$_3($this, collector_0, continuation_0) {
+  function Coroutine$collect_42ocv1$_2($this, collector_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 5;
     this.$this = $this;
     this.local$safeCollector = void 0;
     this.local$collector = collector_0;
   }
-  Coroutine$collect_42ocv1$_3.$metadata$ = {
+  Coroutine$collect_42ocv1$_2.$metadata$ = {
   kind: Kotlin.Kind.CLASS, 
   simpleName: null, 
   interfaces: [CoroutineImpl]};
-  Coroutine$collect_42ocv1$_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$collect_42ocv1$_3.prototype.constructor = Coroutine$collect_42ocv1$_3;
-  Coroutine$collect_42ocv1$_3.prototype.doResume = function() {
+  Coroutine$collect_42ocv1$_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$collect_42ocv1$_2.prototype.constructor = Coroutine$collect_42ocv1$_2;
+  Coroutine$collect_42ocv1$_2.prototype.doResume = function() {
   do try {
     switch (this.state_0) {
       case 0:
@@ -19701,7 +19720,7 @@
 } while (true);
 };
   AbstractFlow.prototype.collect_42ocv1$ = function(collector_0, continuation_0, suspended) {
-  var instance = new Coroutine$collect_42ocv1$_3(this, collector_0, continuation_0);
+  var instance = new Coroutine$collect_42ocv1$_2(this, collector_0, continuation_0);
   if (suspended) 
     return instance;
   else 
@@ -20679,6 +20698,287 @@
   function switchMap($receiver, transform) {
     return transformLatest($receiver, flatMapLatest$lambda(transform));
   }
+  function suspendCancellableCoroutine$lambda_4(closure$block) {
+    return function(uCont) {
+  var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
+  closure$block(cancellable);
+  return cancellable.getResult();
+};
+  }
+  function StateFlow() {
+  }
+  StateFlow.$metadata$ = {
+  kind: Kind_INTERFACE, 
+  simpleName: 'StateFlow', 
+  interfaces: [Flow]};
+  function MutableStateFlow() {
+  }
+  MutableStateFlow.$metadata$ = {
+  kind: Kind_INTERFACE, 
+  simpleName: 'MutableStateFlow', 
+  interfaces: [StateFlow]};
+  function MutableStateFlow_0(value) {
+    return new StateFlowImpl(value != null ? value : NULL);
+  }
+  var NONE;
+  var PENDING;
+  var INITIAL_SIZE;
+  function StateFlowSlot() {
+    this._state_0 = null;
+  }
+  StateFlowSlot.prototype.allocate = function() {
+  if (this._state_0 != null) 
+    return false;
+  this._state_0 = NONE;
+  return true;
+};
+  StateFlowSlot.prototype.free = function() {
+  this._state_0 = null;
+};
+  StateFlowSlot.prototype.makePending = function() {
+  var $receiver = this._state_0;
+  while (true) {
+    var state = this._state_0;
+    var tmp$;
+    if (state == null) 
+      return;
+    else if (state === PENDING) 
+      return;
+    else if (state === NONE) {
+      if ((function(scope) {
+  return scope._state_0 === state ? function() {
+  scope._state_0 = PENDING;
+  return true;
+}() : false;
+})(this)) 
+        return;
+    } else {
+      if ((function(scope) {
+  return scope._state_0 === state ? function() {
+  scope._state_0 = NONE;
+  return true;
+}() : false;
+})(this)) {
+        (Kotlin.isType(tmp$ = state, CancellableContinuationImpl) ? tmp$ : throwCCE()).resumeWith_tl1gpc$(new Result(Unit));
+        return;
+      }
+    }
+  }
+};
+  StateFlowSlot.prototype.takePending = function() {
+  return ensureNotNull((function(scope) {
+  var oldValue = scope._state_0;
+  scope._state_0 = NONE;
+  return oldValue;
+})(this)) === PENDING;
+};
+  function StateFlowSlot$awaitPending$lambda(this$StateFlowSlot) {
+    return function(cont) {
+  if ((function(scope) {
+  return this$StateFlowSlot._state_0 === NONE ? function() {
+  this$StateFlowSlot._state_0 = cont;
+  return true;
+}() : false;
+})(this)) 
+    return;
+  cont.resumeWith_tl1gpc$(new Result(Unit));
+  return Unit;
+};
+  }
+  StateFlowSlot.prototype.awaitPending = function(continuation) {
+  return suspendCancellableCoroutine$lambda_4(StateFlowSlot$awaitPending$lambda(this))(continuation);
+};
+  StateFlowSlot.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'StateFlowSlot', 
+  interfaces: []};
+  function StateFlowImpl(initialValue) {
+    this._state_0 = initialValue;
+    this.sequence_0 = 0;
+    this.slots_0 = Kotlin.newArray(2, null);
+    this.nSlots_0 = 0;
+    this.nextIndex_0 = 0;
+  }
+  Object.defineProperty(StateFlowImpl.prototype, 'value', {
+  get: function() {
+  var value = this._state_0;
+  var tmp$, tmp$_0;
+  return value === NULL ? (tmp$ = null) == null || Kotlin.isType(tmp$, Any) ? tmp$ : throwCCE() : (tmp$_0 = value) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE();
+}, 
+  set: function(value) {
+  var tmp$, tmp$_0;
+  var curSequence = {
+  v: 0};
+  var curSlots = {
+  v: this.slots_0};
+  var newState = value != null ? value : NULL;
+  var oldState = this._state_0;
+  if (equals(oldState, newState)) 
+    return;
+  this._state_0 = newState;
+  curSequence.v = this.sequence_0;
+  if ((curSequence.v & 1) === 0) {
+    curSequence.v = curSequence.v + 1 | 0;
+    this.sequence_0 = curSequence.v;
+  } else {
+    this.sequence_0 = curSequence.v + 2 | 0;
+    return;
+  }
+  curSlots.v = this.slots_0;
+  while (true) {
+    tmp$ = curSlots.v;
+    for (tmp$_0 = 0; tmp$_0 !== tmp$.length; ++tmp$_0) {
+      var col = tmp$[tmp$_0];
+            col != null ? (col.makePending() , Unit) : null;
+    }
+    if (this.sequence_0 === curSequence.v) {
+      this.sequence_0 = curSequence.v + 1 | 0;
+      return;
+    }
+    curSequence.v = this.sequence_0;
+    curSlots.v = this.slots_0;
+  }
+}});
+  function Coroutine$collect_42ocv1$_3($this, collector_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 8;
+    this.$this = $this;
+    this.local$slot = void 0;
+    this.local$prevState = void 0;
+    this.local$newState = void 0;
+    this.local$collector = collector_0;
+  }
+  Coroutine$collect_42ocv1$_3.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$collect_42ocv1$_3.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$collect_42ocv1$_3.prototype.constructor = Coroutine$collect_42ocv1$_3;
+  Coroutine$collect_42ocv1$_3.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$slot = this.$this.allocateSlot_0();
+        this.local$prevState = null;
+        this.exceptionState_0 = 6;
+        this.state_0 = 1;
+        continue;
+      case 1:
+        this.local$newState = this.$this._state_0;
+        if (this.local$prevState == null || !equals(this.local$newState, this.local$prevState)) {
+          var tmp$, tmp$_0;
+          this.state_0 = 2;
+          this.result_0 = this.local$collector.emit_11rb$(this.local$newState === NULL ? (tmp$ = null) == null || Kotlin.isType(tmp$, Any) ? tmp$ : throwCCE() : (tmp$_0 = this.local$newState) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE(), this);
+          if (this.result_0 === COROUTINE_SUSPENDED) 
+            return COROUTINE_SUSPENDED;
+          continue;
+        } else {
+          this.state_0 = 3;
+          continue;
+        }
+      case 2:
+        this.local$prevState = this.local$newState;
+        this.state_0 = 3;
+        continue;
+      case 3:
+        if (!this.local$slot.takePending()) {
+          this.state_0 = 4;
+          this.result_0 = this.local$slot.awaitPending(this);
+          if (this.result_0 === COROUTINE_SUSPENDED) 
+            return COROUTINE_SUSPENDED;
+          continue;
+        } else {
+          this.state_0 = 5;
+          continue;
+        }
+      case 4:
+        this.state_0 = 5;
+        continue;
+      case 5:
+        this.state_0 = 1;
+        continue;
+      case 6:
+        this.finallyPath_0 = [8];
+        this.state_0 = 7;
+        continue;
+      case 7:
+        this.exceptionState_0 = 8;
+        this.$this.freeSlot_0(this.local$slot);
+        this.state_0 = this.finallyPath_0.shift();
+        continue;
+      case 8:
+        throw this.exception_0;
+      default:
+        this.state_0 = 8;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 8) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  StateFlowImpl.prototype.collect_42ocv1$ = function(collector_0, continuation_0, suspended) {
+  var instance = new Coroutine$collect_42ocv1$_3(this, collector_0, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  StateFlowImpl.prototype.allocateSlot_0 = function() {
+  var tmp$;
+  var size = this.slots_0.length;
+  if (this.nSlots_0 >= size) 
+    this.slots_0 = copyOf(this.slots_0, 2 * size | 0);
+  var index = {
+  v: this.nextIndex_0};
+  var slot;
+  while (true) {
+    var tmp$_0;
+    if ((tmp$ = this.slots_0[index.v]) != null) 
+      tmp$_0 = tmp$;
+    else {
+      var $receiver = new StateFlowSlot();
+      this.slots_0[index.v] = $receiver;
+      tmp$_0 = $receiver;
+    }
+    slot = tmp$_0;
+    index.v = index.v + 1 | 0;
+    if (index.v >= this.slots_0.length) 
+      index.v = 0;
+    if (slot.allocate()) 
+      break;
+  }
+  this.nextIndex_0 = index.v;
+  this.nSlots_0 = this.nSlots_0 + 1 | 0;
+  return slot;
+};
+  StateFlowImpl.prototype.freeSlot_0 = function(slot) {
+  slot.free();
+  this.nSlots_0 = this.nSlots_0 - 1 | 0;
+};
+  StateFlowImpl.prototype.fuse_s4tm7$$default = function(context, capacity) {
+  var tmp$;
+  switch (capacity) {
+    case -1:
+    case 0:
+      tmp$ = this;
+      break;
+    default:
+      tmp$ = new ChannelFlowOperatorImpl(this, context, capacity);
+      break;
+  }
+  return tmp$;
+};
+  StateFlowImpl.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'StateFlowImpl', 
+  interfaces: [FusibleFlow, MutableStateFlow]};
   function Continuation$ObjectLiteral(closure$context, closure$resumeWith) {
     this.closure$context = closure$context;
     this.closure$resumeWith = closure$resumeWith;
@@ -20697,6 +20997,19 @@
     var tmp$, tmp$_0;
     return (tmp$_0 = Kotlin.isType(tmp$ = $receiver, ChannelFlow) ? tmp$ : null) != null ? tmp$_0 : new ChannelFlowOperatorImpl($receiver);
   }
+  function FusibleFlow() {
+  }
+  FusibleFlow.prototype.fuse_s4tm7$ = function(context, capacity, callback$default) {
+  if (context === void 0) 
+    context = coroutines.EmptyCoroutineContext;
+  if (capacity === void 0) 
+    capacity = -3;
+  return callback$default ? callback$default(context, capacity) : this.fuse_s4tm7$$default(context, capacity);
+};
+  FusibleFlow.$metadata$ = {
+  kind: Kind_INTERFACE, 
+  simpleName: 'FusibleFlow', 
+  interfaces: [Flow]};
   function ChannelFlow(context, capacity) {
     this.context = context;
     this.capacity = capacity;
@@ -20757,11 +21070,7 @@
   get: function() {
   return this.capacity === -3 ? -2 : this.capacity;
 }});
-  ChannelFlow.prototype.update_s4tm7$ = function(context, capacity) {
-  if (context === void 0) 
-    context = coroutines.EmptyCoroutineContext;
-  if (capacity === void 0) 
-    capacity = -3;
+  ChannelFlow.prototype.fuse_s4tm7$$default = function(context, capacity) {
   var tmp$;
   var newContext = context.plus_1fupul$(this.context);
   if (this.capacity === -3) 
@@ -20853,7 +21162,7 @@
   ChannelFlow.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'ChannelFlow', 
-  interfaces: [Flow]};
+  interfaces: [FusibleFlow]};
   function ChannelFlowOperator(flow, context, capacity) {
     ChannelFlow.call(this, context, capacity);
     this.flow = flow;
@@ -23126,11 +23435,16 @@
   function buffer($receiver, capacity) {
     if (capacity === void 0) 
       capacity = -2;
+    var tmp$;
     if (!(capacity >= 0 || capacity === -2 || capacity === -1)) {
       var message = 'Buffer size should be non-negative, BUFFERED, or CONFLATED, but was ' + capacity;
       throw IllegalArgumentException_init(message.toString());
     }
-    return Kotlin.isType($receiver, ChannelFlow) ? $receiver.update_s4tm7$(void 0, capacity) : new ChannelFlowOperatorImpl($receiver, void 0, capacity);
+    if (Kotlin.isType($receiver, FusibleFlow)) 
+      tmp$ = $receiver.fuse_s4tm7$(void 0, capacity);
+    else 
+      tmp$ = new ChannelFlowOperatorImpl($receiver, void 0, capacity);
+    return tmp$;
   }
   function conflate($receiver) {
     return buffer($receiver, -1);
@@ -23140,11 +23454,115 @@
     checkFlowContext(context);
     if (equals(context, coroutines.EmptyCoroutineContext)) 
       tmp$ = $receiver;
-    else if (Kotlin.isType($receiver, ChannelFlow)) 
-      tmp$ = $receiver.update_s4tm7$(context);
+    else if (Kotlin.isType($receiver, FusibleFlow)) 
+      tmp$ = $receiver.fuse_s4tm7$(context);
     else 
       tmp$ = new ChannelFlowOperatorImpl($receiver, context);
     return tmp$;
+  }
+  function Coroutine$cancellable$lambda$lambda(this$_0, it_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$this$ = this$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$cancellable$lambda$lambda.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$cancellable$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$cancellable$lambda$lambda.prototype.constructor = Coroutine$cancellable$lambda$lambda;
+  Coroutine$cancellable$lambda$lambda.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.result_0 = this.context;
+        ensureActive_1(this.result_0);
+        this.state_0 = 2;
+        this.result_0 = this.local$this$.emit_11rb$(this.local$it, this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        throw this.exception_0;
+      case 2:
+        return this.result_0;
+      default:
+        this.state_0 = 1;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 1) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function cancellable$lambda$lambda(this$_0) {
+    return function(it_0, continuation_0, suspended) {
+  var instance = new Coroutine$cancellable$lambda$lambda(this$_0, it_0, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function Coroutine$cancellable$lambda(this$cancellable_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$cancellable = this$cancellable_0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$cancellable$lambda.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$cancellable$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$cancellable$lambda.prototype.constructor = Coroutine$cancellable$lambda;
+  Coroutine$cancellable$lambda.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.state_0 = 2;
+        this.result_0 = this.local$this$cancellable.collect_42ocv1$(new collect$ObjectLiteral_1(cancellable$lambda$lambda(this.local$$receiver)), this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        throw this.exception_0;
+      case 2:
+        return this.result_0;
+      default:
+        this.state_0 = 1;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 1) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function cancellable$lambda(this$cancellable_0) {
+    return function($receiver_0, continuation_0, suspended) {
+  var instance = new Coroutine$cancellable$lambda(this$cancellable_0, $receiver_0, this, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function cancellable($receiver) {
+    if (Kotlin.isType($receiver, AbstractFlow)) 
+      return $receiver;
+    return new unsafeFlow$ObjectLiteral_3(cancellable$lambda($receiver));
   }
   function Coroutine$flowWith$lambda$lambda(this$_0, value_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -23214,7 +23632,8 @@
   do try {
     switch (this.state_0) {
       case 0:
-        var originalContext = this.context.minusKey_yeqjby$(Job$Key_getInstance());
+        this.result_0 = this.context;
+        var originalContext = this.result_0.minusKey_yeqjby$(Job$Key_getInstance());
         var prepared = buffer(flowOn(this.local$closure$source, originalContext), this.local$closure$bufferSize);
         this.state_0 = 2;
         this.result_0 = buffer(flowOn(this.local$closure$builder(prepared), this.local$closure$flowContext), this.local$closure$bufferSize).collect_42ocv1$(new collect$ObjectLiteral_1(flowWith$lambda$lambda(this.local$$receiver)), this);
@@ -23585,6 +24004,9 @@
     }
     return scopedFlow(debounce$lambda($receiver, timeoutMillis));
   }
+  function debounce_0($receiver, timeout) {
+    return debounce($receiver, toDelayMillis(timeout));
+  }
   function Coroutine$sample$lambda$lambda$lambda(this$_0, value_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
@@ -23951,6 +24373,9 @@
     }
     return produce($receiver, void 0, 0, fixedPeriodTicker$lambda(initialDelayMillis, delayMillis));
   }
+  function sample_0($receiver, period) {
+    return sample($receiver, toDelayMillis(period));
+  }
   function collect$ObjectLiteral_3(closure$action) {
     this.closure$action = closure$action;
   }
@@ -24130,7 +24555,10 @@
     return it;
   }
   function distinctUntilChanged($receiver) {
-    return distinctUntilChangedBy($receiver, distinctUntilChanged$lambda);
+    if (Kotlin.isType($receiver, StateFlow)) 
+      return $receiver;
+    else 
+      return distinctUntilChangedBy($receiver, distinctUntilChanged$lambda);
   }
   function distinctUntilChanged$lambda_0(it) {
     return it;
@@ -24381,6 +24809,15 @@
   unsafeFlow$ObjectLiteral_5.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [Flow]};
+  function collect$ObjectLiteral_4(closure$action) {
+    this.closure$action = closure$action;
+  }
+  collect$ObjectLiteral_4.prototype.emit_11rb$ = function(value, continuation) {
+  return this.closure$action(value, continuation);
+};
+  collect$ObjectLiteral_4.$metadata$ = {
+  kind: Kind_CLASS, 
+  interfaces: [FlowCollector]};
   var transform = defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.flow.transform_ig04k9$', wrapFunction(function() {
   var Unit = Kotlin.kotlin.Unit;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
@@ -24697,7 +25134,8 @@
   do try {
     switch (this.state_0) {
       case 0:
-        this.local$safeCollector = new SafeCollector(this.local$$receiver, this.context);
+        this.result_0 = this.context;
+        this.local$safeCollector = new SafeCollector(this.local$$receiver, this.result_0);
         this.exceptionState_0 = 4;
         this.state_0 = 1;
         this.result_0 = this.local$closure$action(this.local$safeCollector, this);
@@ -24757,13 +25195,10 @@
   function Coroutine$onCompletion$lambda(this$onCompletion_0, closure$action_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
-    this.exceptionState_0 = 10;
+    this.exceptionState_0 = 7;
     this.local$this$onCompletion = this$onCompletion_0;
     this.local$closure$action = closure$action_0;
-    this.local$tmp$ = void 0;
     this.local$e = void 0;
-    this.local$exception = void 0;
-    this.local$safeCollector = void 0;
     this.local$$receiver = $receiver_0;
   }
   Coroutine$onCompletion$lambda.$metadata$ = {
@@ -24778,21 +25213,20 @@
       case 0:
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = catchImpl(this.local$this$onCompletion, this.local$$receiver, this);
+        this.result_0 = this.local$this$onCompletion.collect_42ocv1$(this.local$$receiver, this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
       case 1:
-        this.local$tmp$ = this.result_0;
-        this.exceptionState_0 = 10;
+        this.exceptionState_0 = 7;
         this.state_0 = 5;
         continue;
       case 2:
-        this.exceptionState_0 = 10;
+        this.exceptionState_0 = 7;
         this.local$e = this.exception_0;
         if (Kotlin.isType(this.local$e, Throwable)) {
           this.state_0 = 3;
-          this.result_0 = invokeSafely(new ThrowingCollector(this.local$e), this.local$closure$action, null, this);
+          this.result_0 = invokeSafely(new ThrowingCollector(this.local$e), this.local$closure$action, this.local$e, this);
           if (this.result_0 === COROUTINE_SUSPENDED) 
             return COROUTINE_SUSPENDED;
           continue;
@@ -24805,43 +25239,22 @@
         this.state_0 = 5;
         continue;
       case 5:
-        this.local$exception = this.local$tmp$;
-        this.local$safeCollector = new SafeCollector(this.local$$receiver, this.context);
-        this.exceptionState_0 = 8;
+        this.result_0 = this.context;
         this.state_0 = 6;
-        this.result_0 = invokeSafely(this.local$safeCollector, this.local$closure$action, this.local$exception, this);
+        this.result_0 = invokeSafely(new SafeCollector(this.local$$receiver, this.result_0), this.local$closure$action, null, this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
       case 6:
-        this.exceptionState_0 = 10;
-        this.finallyPath_0 = [7];
-        this.state_0 = 9;
-        continue;
+        return this.result_0;
       case 7:
-        var tmp$;
-        if (this.local$exception != null) {
-          throw this.local$exception;
-        } else 
-          tmp$ = null;
-        return tmp$;
-      case 8:
-        this.finallyPath_0 = [10];
-        this.state_0 = 9;
-        continue;
-      case 9:
-        this.exceptionState_0 = 10;
-        this.local$safeCollector.releaseIntercepted();
-        this.state_0 = this.finallyPath_0.shift();
-        continue;
-      case 10:
         throw this.exception_0;
       default:
-        this.state_0 = 10;
+        this.state_0 = 7;
         throw new Error('State Machine Unreachable execution');
     }
   }  catch (e) {
-  if (this.state_0 === 10) {
+  if (this.state_0 === 7) {
     this.exceptionState_0 = this.state_0;
     throw e;
   } else {
@@ -24861,6 +25274,147 @@
   }
   function onCompletion($receiver, action) {
     return new unsafeFlow$ObjectLiteral_5(onCompletion$lambda($receiver, action));
+  }
+  function Coroutine$onEmpty$lambda$lambda(closure$isEmpty_0, this$_0, it_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$closure$isEmpty = closure$isEmpty_0;
+    this.local$this$ = this$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$onEmpty$lambda$lambda.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$onEmpty$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$onEmpty$lambda$lambda.prototype.constructor = Coroutine$onEmpty$lambda$lambda;
+  Coroutine$onEmpty$lambda$lambda.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$closure$isEmpty.v = false;
+        this.state_0 = 2;
+        this.result_0 = this.local$this$.emit_11rb$(this.local$it, this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        throw this.exception_0;
+      case 2:
+        return this.result_0;
+      default:
+        this.state_0 = 1;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 1) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function onEmpty$lambda$lambda(closure$isEmpty_0, this$_0) {
+    return function(it_0, continuation_0, suspended) {
+  var instance = new Coroutine$onEmpty$lambda$lambda(closure$isEmpty_0, this$_0, it_0, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function Coroutine$onEmpty$lambda(this$onEmpty_0, closure$action_0, $receiver_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 8;
+    this.local$this$onEmpty = this$onEmpty_0;
+    this.local$closure$action = closure$action_0;
+    this.local$isEmpty = void 0;
+    this.local$collector = void 0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$onEmpty$lambda.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$onEmpty$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$onEmpty$lambda.prototype.constructor = Coroutine$onEmpty$lambda;
+  Coroutine$onEmpty$lambda.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$isEmpty = {
+  v: true};
+        this.state_0 = 1;
+        this.result_0 = this.local$this$onEmpty.collect_42ocv1$(new collect$ObjectLiteral_4(onEmpty$lambda$lambda(this.local$isEmpty, this.local$$receiver)), this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        if (this.local$isEmpty.v) {
+          this.result_0 = this.context;
+          this.local$collector = new SafeCollector(this.local$$receiver, this.result_0);
+          this.exceptionState_0 = 6;
+          this.state_0 = 2;
+          this.result_0 = this.local$closure$action(this.local$collector, this);
+          if (this.result_0 === COROUTINE_SUSPENDED) 
+            return COROUTINE_SUSPENDED;
+          continue;
+        } else {
+          this.state_0 = 5;
+          continue;
+        }
+      case 2:
+        this.exceptionState_0 = 8;
+        this.finallyPath_0 = [3];
+        this.state_0 = 7;
+        this.$returnValue = Unit;
+        continue;
+      case 3:
+        return this.$returnValue;
+      case 4:
+        this.state_0 = 5;
+        continue;
+      case 5:
+        return Unit;
+      case 6:
+        this.finallyPath_0 = [8];
+        this.state_0 = 7;
+        continue;
+      case 7:
+        this.exceptionState_0 = 8;
+        this.local$collector.releaseIntercepted();
+        this.state_0 = this.finallyPath_0.shift();
+        continue;
+      case 8:
+        throw this.exception_0;
+      default:
+        this.state_0 = 8;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 8) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function onEmpty$lambda(this$onEmpty_0, closure$action_0) {
+    return function($receiver_0, continuation_0, suspended) {
+  var instance = new Coroutine$onEmpty$lambda(this$onEmpty_0, closure$action_0, $receiver_0, this, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function onEmpty($receiver, action) {
+    return new unsafeFlow$ObjectLiteral_5(onEmpty$lambda($receiver, action));
   }
   function ThrowingCollector(e) {
     this.e_0 = e;
@@ -25035,13 +25589,13 @@
   unsafeFlow$ObjectLiteral_6.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [Flow]};
-  function collect$ObjectLiteral_4(closure$action) {
+  function collect$ObjectLiteral_5(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_4.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_5.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_4.$metadata$ = {
+  collect$ObjectLiteral_5.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function Coroutine$catch$lambda(this$catch_0, closure$action_0, $receiver_0, controller, continuation_0) {
@@ -25510,7 +26064,7 @@
   v: null};
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_4(catchImpl$lambda(this.local$collector, this.local$fromDownstream)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_5(catchImpl$lambda(this.local$collector, this.local$fromDownstream)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -25570,13 +26124,13 @@
   function isSameExceptionAs($receiver, other) {
     return other != null && equals(unwrap(other), unwrap($receiver));
   }
-  function collect$ObjectLiteral_5(closure$action) {
+  function collect$ObjectLiteral_6(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_5.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_6.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_5.$metadata$ = {
+  collect$ObjectLiteral_6.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function unsafeFlow$ObjectLiteral_7(closure$block) {
@@ -25708,7 +26262,7 @@
         var skipped = {
   v: 0};
         this.state_0 = 2;
-        this.result_0 = this.local$this$drop.collect_42ocv1$(new collect$ObjectLiteral_5(drop$lambda$lambda(skipped, this.local$closure$count, this.local$$receiver)), this);
+        this.result_0 = this.local$this$drop.collect_42ocv1$(new collect$ObjectLiteral_6(drop$lambda$lambda(skipped, this.local$closure$count, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -25844,7 +26398,7 @@
         var matched = {
   v: false};
         this.state_0 = 2;
-        this.result_0 = this.local$this$dropWhile.collect_42ocv1$(new collect$ObjectLiteral_5(dropWhile$lambda$lambda(matched, this.local$$receiver, this.local$closure$predicate)), this);
+        this.result_0 = this.local$this$dropWhile.collect_42ocv1$(new collect$ObjectLiteral_6(dropWhile$lambda$lambda(matched, this.local$$receiver, this.local$closure$predicate)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -25962,7 +26516,7 @@
   v: 0};
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = this.local$this$take.collect_42ocv1$(new collect$ObjectLiteral_5(take$lambda$lambda(consumed, this.local$closure$count, this.local$$receiver)), this);
+        this.result_0 = this.local$this$take.collect_42ocv1$(new collect$ObjectLiteral_6(take$lambda$lambda(consumed, this.local$closure$count, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -26140,7 +26694,7 @@
       case 0:
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = this.local$this$takeWhile.collect_42ocv1$(new collect$ObjectLiteral_5(takeWhile$lambda$lambda(this.local$closure$predicate, this.local$$receiver)), this);
+        this.result_0 = this.local$this$takeWhile.collect_42ocv1$(new collect$ObjectLiteral_6(takeWhile$lambda$lambda(this.local$closure$predicate, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -26186,6 +26740,15 @@
   }
   function takeWhile_0($receiver, predicate) {
     return new unsafeFlow$ObjectLiteral_7(takeWhile$lambda_0(predicate, $receiver));
+  }
+  function flowOn_0($receiver, context) {
+    return noImpl();
+  }
+  function conflate_0($receiver) {
+    return noImpl();
+  }
+  function distinctUntilChanged_1($receiver) {
+    return noImpl();
   }
   function unsafeFlow$ObjectLiteral_8(closure$block) {
     this.closure$block = closure$block;
@@ -26394,13 +26957,13 @@
     return instance.doResume(null);
 };
   }
-  function collect$ObjectLiteral_6(closure$action) {
+  function collect$ObjectLiteral_7(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_6.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_7.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_6.$metadata$ = {
+  collect$ObjectLiteral_7.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function unsafeFlow$ObjectLiteral_9(closure$block) {
@@ -26531,7 +27094,7 @@
     switch (this.state_0) {
       case 0:
         this.state_0 = 2;
-        this.result_0 = this.local$this$flattenConcat.collect_42ocv1$(new collect$ObjectLiteral_6(flattenConcat$lambda$lambda(this.local$$receiver)), this);
+        this.result_0 = this.local$this$flattenConcat.collect_42ocv1$(new collect$ObjectLiteral_7(flattenConcat$lambda$lambda(this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -26860,13 +27423,13 @@
     return instance.doResume(null);
 };
   }
-  function collect$ObjectLiteral_7(closure$action) {
+  function collect$ObjectLiteral_8(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_7.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_8.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_7.$metadata$ = {
+  collect$ObjectLiteral_8.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function unsafeFlow$ObjectLiteral_11(closure$block) {
@@ -28283,7 +28846,7 @@
         var index = {
   v: 0};
         this.state_0 = 2;
-        this.result_0 = this.local$this$withIndex.collect_42ocv1$(new collect$ObjectLiteral_7(withIndex$lambda$lambda(index, this.local$$receiver)), this);
+        this.result_0 = this.local$this$withIndex.collect_42ocv1$(new collect$ObjectLiteral_8(withIndex$lambda$lambda(index, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -28464,7 +29027,7 @@
         throw this.exception_0;
       case 2:
         this.state_0 = 3;
-        this.result_0 = this.local$this$scan.collect_42ocv1$(new collect$ObjectLiteral_7(scan$lambda$lambda(this.local$closure$operation, this.local$accumulator, this.local$$receiver)), this);
+        this.result_0 = this.local$this$scan.collect_42ocv1$(new collect$ObjectLiteral_8(scan$lambda$lambda(this.local$closure$operation, this.local$accumulator, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -28588,7 +29151,7 @@
         var accumulator = {
   v: NULL};
         this.state_0 = 2;
-        this.result_0 = this.local$this$scanReduce.collect_42ocv1$(new collect$ObjectLiteral_7(scanReduce$lambda$lambda(accumulator, this.local$closure$operation, this.local$$receiver)), this);
+        this.result_0 = this.local$this$scanReduce.collect_42ocv1$(new collect$ObjectLiteral_8(scanReduce$lambda$lambda(accumulator, this.local$closure$operation, this.local$$receiver)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -30808,13 +31371,13 @@
   function zip_1($receiver, other, transform) {
     return zipImpl($receiver, other, transform);
   }
-  function collect$ObjectLiteral_8(closure$action) {
+  function collect$ObjectLiteral_9(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_8.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_9.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_8.$metadata$ = {
+  collect$ObjectLiteral_9.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function collectIndexed$ObjectLiteral(closure$action) {
@@ -30888,7 +31451,7 @@
     return launch(scope, void 0, void 0, launchIn$lambda($receiver));
   }
   function collect_0($receiver, action, continuation) {
-    return $receiver.collect_42ocv1$(new collect$ObjectLiteral_8(action), continuation);
+    return $receiver.collect_42ocv1$(new collect$ObjectLiteral_9(action), continuation);
   }
   defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.flow.collect_706ovd$', wrapFunction(function() {
   var Kind_CLASS = Kotlin.Kind.CLASS;
@@ -30988,13 +31551,13 @@
   Kotlin.suspendCall(flow.collect_42ocv1$($receiver, Kotlin.coroutineReceiver()));
   return Kotlin.coroutineResult(Kotlin.coroutineReceiver());
 });
-  function collect$ObjectLiteral_9(closure$action) {
+  function collect$ObjectLiteral_10(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_9.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_10.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_9.$metadata$ = {
+  collect$ObjectLiteral_10.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function toList_0($receiver, destination, continuation) {
@@ -31066,7 +31629,7 @@
     switch (this.state_0) {
       case 0:
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_9(toCollection$lambda(this.local$destination)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_10(toCollection$lambda(this.local$destination)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31095,13 +31658,13 @@
     else 
       return instance.doResume(null);
   }
-  function collect$ObjectLiteral_10(closure$action) {
+  function collect$ObjectLiteral_11(closure$action) {
     this.closure$action = closure$action;
   }
-  collect$ObjectLiteral_10.prototype.emit_11rb$ = function(value, continuation) {
+  collect$ObjectLiteral_11.prototype.emit_11rb$ = function(value, continuation) {
   return this.closure$action(value, continuation);
 };
-  collect$ObjectLiteral_10.$metadata$ = {
+  collect$ObjectLiteral_11.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function Coroutine$count$lambda(closure$i_0, it_0, continuation_0) {
@@ -31164,7 +31727,7 @@
         this.local$i = {
   v: 0};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_10(count$lambda(this.local$i)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(count$lambda(this.local$i)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31269,7 +31832,7 @@
         this.local$i = {
   v: 0};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_10(count$lambda_0(this.local$predicate, this.local$i)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(count$lambda_0(this.local$predicate, this.local$i)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31298,15 +31861,6 @@
     else 
       return instance.doResume(null);
   }
-  function collect$ObjectLiteral_11(closure$action) {
-    this.closure$action = closure$action;
-  }
-  collect$ObjectLiteral_11.prototype.emit_11rb$ = function(value, continuation) {
-  return this.closure$action(value, continuation);
-};
-  collect$ObjectLiteral_11.$metadata$ = {
-  kind: Kind_CLASS, 
-  interfaces: [FlowCollector]};
   function collect$ObjectLiteral_12(closure$action) {
     this.closure$action = closure$action;
   }
@@ -31314,6 +31868,15 @@
   return this.closure$action(value, continuation);
 };
   collect$ObjectLiteral_12.$metadata$ = {
+  kind: Kind_CLASS, 
+  interfaces: [FlowCollector]};
+  function collect$ObjectLiteral_13(closure$action) {
+    this.closure$action = closure$action;
+  }
+  collect$ObjectLiteral_13.prototype.emit_11rb$ = function(value, continuation) {
+  return this.closure$action(value, continuation);
+};
+  collect$ObjectLiteral_13.$metadata$ = {
   kind: Kind_CLASS, 
   interfaces: [FlowCollector]};
   function Coroutine$fold$lambda(closure$operation_0, closure$accumulator_0, value_0, continuation_0) {
@@ -31447,7 +32010,7 @@
         this.local$accumulator = {
   v: NULL};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(reduce$lambda(this.local$accumulator, this.local$operation)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(reduce$lambda(this.local$accumulator, this.local$operation)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31499,7 +32062,7 @@
         this.local$accumulator = {
   v: this.local$initial};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(fold$lambda(this.local$operation, this.local$accumulator)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_13(fold$lambda(this.local$operation, this.local$accumulator)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31664,7 +32227,7 @@
         this.local$result = {
   v: NULL};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(single$lambda(this.local$result)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(single$lambda(this.local$result)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31759,7 +32322,7 @@
         this.local$result = {
   v: null};
         this.state_0 = 2;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(singleOrNull$lambda(this.local$result)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(singleOrNull$lambda(this.local$result)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31852,7 +32415,7 @@
   v: NULL};
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(first$lambda(this.local$result)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(first$lambda(this.local$result)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -31969,7 +32532,7 @@
   v: NULL};
         this.exceptionState_0 = 2;
         this.state_0 = 1;
-        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_11(first$lambda_0(this.local$predicate, this.local$result)), this);
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(first$lambda_0(this.local$predicate, this.local$result)), this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -32006,6 +32569,223 @@
 };
   function first_2($receiver_0, predicate_0, continuation_0, suspended) {
     var instance = new Coroutine$first_2($receiver_0, predicate_0, continuation_0);
+    if (suspended) 
+      return instance;
+    else 
+      return instance.doResume(null);
+  }
+  function Coroutine$firstOrNull$lambda(closure$result_0, value_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$closure$result = closure$result_0;
+    this.local$value = value_0;
+  }
+  Coroutine$firstOrNull$lambda.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$firstOrNull$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$firstOrNull$lambda.prototype.constructor = Coroutine$firstOrNull$lambda;
+  Coroutine$firstOrNull$lambda.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$closure$result.v = this.local$value;
+        throw new AbortFlowException(NopCollector_getInstance());
+      case 1:
+        throw this.exception_0;
+      default:
+        this.state_0 = 1;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 1) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function firstOrNull$lambda(closure$result_0) {
+    return function(value_0, continuation_0, suspended) {
+  var instance = new Coroutine$firstOrNull$lambda(closure$result_0, value_0, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function Coroutine$firstOrNull_1($receiver_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 4;
+    this.local$result = void 0;
+    this.local$$receiver = $receiver_0;
+  }
+  Coroutine$firstOrNull_1.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$firstOrNull_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$firstOrNull_1.prototype.constructor = Coroutine$firstOrNull_1;
+  Coroutine$firstOrNull_1.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$result = {
+  v: null};
+        this.exceptionState_0 = 2;
+        this.state_0 = 1;
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(firstOrNull$lambda(this.local$result)), this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        this.exceptionState_0 = 4;
+        this.state_0 = 3;
+        continue;
+      case 2:
+        this.exceptionState_0 = 4;
+        var e = this.exception_0;
+        if (!Kotlin.isType(e, AbortFlowException)) 
+          throw e;
+        this.state_0 = 3;
+        continue;
+      case 3:
+        return this.local$result.v;
+      case 4:
+        throw this.exception_0;
+      default:
+        this.state_0 = 4;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 4) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function firstOrNull_1($receiver_0, continuation_0, suspended) {
+    var instance = new Coroutine$firstOrNull_1($receiver_0, continuation_0);
+    if (suspended) 
+      return instance;
+    else 
+      return instance.doResume(null);
+  }
+  function Coroutine$firstOrNull$lambda_0(closure$predicate_0, closure$result_0, value_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$closure$predicate = closure$predicate_0;
+    this.local$closure$result = closure$result_0;
+    this.local$value = value_0;
+  }
+  Coroutine$firstOrNull$lambda_0.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$firstOrNull$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$firstOrNull$lambda_0.prototype.constructor = Coroutine$firstOrNull$lambda_0;
+  Coroutine$firstOrNull$lambda_0.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.state_0 = 2;
+        this.result_0 = this.local$closure$predicate(this.local$value, this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        throw this.exception_0;
+      case 2:
+        if (this.result_0) {
+          this.local$closure$result.v = this.local$value;
+          throw new AbortFlowException(NopCollector_getInstance());
+        }
+        return Unit;
+      default:
+        this.state_0 = 1;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 1) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function firstOrNull$lambda_0(closure$predicate_0, closure$result_0) {
+    return function(value_0, continuation_0, suspended) {
+  var instance = new Coroutine$firstOrNull$lambda_0(closure$predicate_0, closure$result_0, value_0, continuation_0);
+  if (suspended) 
+    return instance;
+  else 
+    return instance.doResume(null);
+};
+  }
+  function Coroutine$firstOrNull_2($receiver_0, predicate_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 4;
+    this.local$result = void 0;
+    this.local$$receiver = $receiver_0;
+    this.local$predicate = predicate_0;
+  }
+  Coroutine$firstOrNull_2.$metadata$ = {
+  kind: Kotlin.Kind.CLASS, 
+  simpleName: null, 
+  interfaces: [CoroutineImpl]};
+  Coroutine$firstOrNull_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$firstOrNull_2.prototype.constructor = Coroutine$firstOrNull_2;
+  Coroutine$firstOrNull_2.prototype.doResume = function() {
+  do try {
+    switch (this.state_0) {
+      case 0:
+        this.local$result = {
+  v: null};
+        this.exceptionState_0 = 2;
+        this.state_0 = 1;
+        this.result_0 = this.local$$receiver.collect_42ocv1$(new collect$ObjectLiteral_12(firstOrNull$lambda_0(this.local$predicate, this.local$result)), this);
+        if (this.result_0 === COROUTINE_SUSPENDED) 
+          return COROUTINE_SUSPENDED;
+        continue;
+      case 1:
+        this.exceptionState_0 = 4;
+        this.state_0 = 3;
+        continue;
+      case 2:
+        this.exceptionState_0 = 4;
+        var e = this.exception_0;
+        if (!Kotlin.isType(e, AbortFlowException)) 
+          throw e;
+        this.state_0 = 3;
+        continue;
+      case 3:
+        return this.local$result.v;
+      case 4:
+        throw this.exception_0;
+      default:
+        this.state_0 = 4;
+        throw new Error('State Machine Unreachable execution');
+    }
+  }  catch (e) {
+  if (this.state_0 === 4) {
+    this.exceptionState_0 = this.state_0;
+    throw e;
+  } else {
+    this.state_0 = this.exceptionState_0;
+    this.exception_0 = e;
+  }
+} while (true);
+};
+  function firstOrNull_2($receiver_0, predicate_0, continuation_0, suspended) {
+    var instance = new Coroutine$firstOrNull_2($receiver_0, predicate_0, continuation_0);
     if (suspended) 
       return instance;
     else 
@@ -32138,6 +32918,348 @@
   simpleName: 'AtomicDesc', 
   interfaces: []};
   var RETRY_ATOMIC;
+  var findSegmentInternal = wrapFunction(function() {
+  var ConcurrentLinkedListNode = _.kotlinx.coroutines.internal.ConcurrentLinkedListNode;
+  var throwCCE = Kotlin.throwCCE;
+  return function($receiver, id, createNewSegment) {
+  var cur = $receiver;
+  while (cur.id.compareTo_11rb$(id) < 0 || cur.removed) {
+    var it = cur.nextOrClosed_0;
+    var block$result;
+    var tmp$;
+    if (it === CLOSED) {
+      return new SegmentOrClosed(CLOSED);
+    } else {
+      block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+    }
+    var next = block$result;
+    if (next != null) {
+      cur = next;
+      continue;
+    }
+    var newTail = createNewSegment(cur.id.add(Kotlin.Long.fromInt(1)), cur);
+    if (cur.trySetNext_tbkwy$(newTail)) {
+      if (cur.removed) 
+        cur.remove();
+      cur = newTail;
+    }
+  }
+  return new SegmentOrClosed(cur);
+};
+});
+  function moveForward($receiver, to) {
+    var loop$result;
+    while (true) {
+      var cur = $receiver;
+      if (cur.id.compareTo_11rb$(to.id) >= 0) 
+        return true;
+      if (!to.tryIncPointers_8be2vx$()) 
+        return false;
+      if ((function(scope) {
+  return $receiver === cur ? function() {
+  $receiver = to;
+  return true;
+}() : false;
+})(this)) {
+        if (cur.decPointers_8be2vx$()) 
+          cur.remove();
+        return true;
+      }
+      if (to.decPointers_8be2vx$()) 
+        to.remove();
+    }
+    return loop$result;
+  }
+  var findSegmentAndMoveForward = defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.internal.findSegmentAndMoveForward_t76u85$', wrapFunction(function() {
+  var ConcurrentLinkedListNode = _.kotlinx.coroutines.internal.ConcurrentLinkedListNode;
+  var throwCCE = Kotlin.throwCCE;
+  return function($receiver, id, startFrom, createNewSegment) {
+  loop_label:
+    while (true) {
+      var findSegmentInternal$result;
+      findSegmentInternal$break:
+        do {
+          var cur = startFrom;
+          while (cur.id.compareTo_11rb$(id) < 0 || cur.removed) {
+            var it = cur.nextOrClosed_0;
+            var block$result;
+            var tmp$;
+            if (it === CLOSED) {
+              findSegmentInternal$result = new SegmentOrClosed(CLOSED);
+              break findSegmentInternal$break;
+            } else {
+              block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+            }
+            var next = block$result;
+            if (next != null) {
+              cur = next;
+              continue;
+            }
+            var newTail = createNewSegment(cur.id.add(Kotlin.Long.fromInt(1)), cur);
+            if (cur.trySetNext_tbkwy$(newTail)) {
+              if (cur.removed) 
+                cur.remove();
+              cur = newTail;
+            }
+          }
+          findSegmentInternal$result = new SegmentOrClosed(cur);
+        } while (false);
+      var s = findSegmentInternal$result;
+      var tmp$_0 = s.isClosed;
+      if (!tmp$_0) {
+        var to = s.segment;
+        var moveForward$result;
+        moveForward$break:
+          do {
+            var loop$result;
+            while (true) {
+              var cur_0 = $receiver;
+              if (cur_0.id.compareTo_11rb$(to.id) >= 0) {
+                moveForward$result = true;
+                break moveForward$break;
+              }
+              if (!to.tryIncPointers_8be2vx$()) {
+                moveForward$result = false;
+                break moveForward$break;
+              }
+              if ((function(scope) {
+  return $receiver === cur_0 ? function() {
+  $receiver = to;
+  return true;
+}() : false;
+})(this)) {
+                if (cur_0.decPointers_8be2vx$()) 
+                  cur_0.remove();
+                moveForward$result = true;
+                break moveForward$break;
+              }
+              if (to.decPointers_8be2vx$()) 
+                to.remove();
+            }
+            moveForward$result = loop$result;
+          } while (false);
+        tmp$_0 = moveForward$result;
+      }
+      if (tmp$_0) 
+        return s;
+    }
+};
+}));
+  function close($receiver) {
+    var cur = {
+  v: $receiver};
+    while (true) {
+      var it = cur.v.nextOrClosed_0;
+      var block$result;
+      var tmp$;
+      if (it === CLOSED) {
+        return cur.v;
+      } else {
+        block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+      }
+      var next = block$result;
+      if (next === null) {
+        if (cur.v.markAsClosed()) 
+          return cur.v;
+      } else {
+        cur.v = next;
+      }
+    }
+  }
+  function ConcurrentLinkedListNode(prev) {
+    this._next_0 = null;
+    this._prev_0 = prev;
+  }
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'nextOrClosed_0', {
+  get: function() {
+  return this._next_0;
+}});
+  ConcurrentLinkedListNode.prototype.nextOrIfClosed_xz258k$ = defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.internal.ConcurrentLinkedListNode.nextOrIfClosed_xz258k$', wrapFunction(function() {
+  var ConcurrentLinkedListNode = _.kotlinx.coroutines.internal.ConcurrentLinkedListNode;
+  var throwCCE = Kotlin.throwCCE;
+  return function(onClosedAction) {
+  var it = this.nextOrClosed_0;
+  var block$result;
+  var tmp$;
+  if (it === CLOSED) {
+    block$result = onClosedAction();
+  } else {
+    block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+  }
+  return block$result;
+};
+}));
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'next', {
+  get: function() {
+  var it = this.nextOrClosed_0;
+  var block$result;
+  var tmp$;
+  if (it === CLOSED) {
+    return null;
+  } else {
+    block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+  }
+  return block$result;
+}});
+  ConcurrentLinkedListNode.prototype.trySetNext_tbkwy$ = function(value) {
+  return (function(scope) {
+  return scope._next_0 == null ? function() {
+  scope._next_0 = value;
+  return true;
+}() : false;
+})(this);
+};
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'isTail', {
+  get: function() {
+  return this.next == null;
+}});
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'prev', {
+  get: function() {
+  return this._prev_0;
+}});
+  ConcurrentLinkedListNode.prototype.cleanPrev = function() {
+  this._prev_0 = null;
+};
+  ConcurrentLinkedListNode.prototype.markAsClosed = function() {
+  return (function(scope) {
+  return scope._next_0 == null ? function() {
+  scope._next_0 = CLOSED;
+  return true;
+}() : false;
+})(this);
+};
+  ConcurrentLinkedListNode.prototype.remove = function() {
+  while (true) {
+    var prev = this.leftmostAliveNode_0;
+    var next = this.rightmostAliveNode_0;
+    next._prev_0 = prev;
+    if (prev !== null) 
+      prev._next_0 = next;
+    if (next.removed) 
+      continue;
+    if (prev !== null && prev.removed) 
+      continue;
+    return;
+  }
+};
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'leftmostAliveNode_0', {
+  get: function() {
+  var cur = this.prev;
+  while (cur !== null && cur.removed) 
+    cur = cur._prev_0;
+  return cur;
+}});
+  Object.defineProperty(ConcurrentLinkedListNode.prototype, 'rightmostAliveNode_0', {
+  get: function() {
+  var cur = ensureNotNull(this.next);
+  while (cur.removed) 
+    cur = ensureNotNull(cur.next);
+  return cur;
+}});
+  ConcurrentLinkedListNode.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'ConcurrentLinkedListNode', 
+  interfaces: []};
+  function Segment(id, prev, pointers) {
+    ConcurrentLinkedListNode.call(this, prev);
+    this.id = id;
+    this.cleanedAndPointers_0 = pointers << 16;
+  }
+  Object.defineProperty(Segment.prototype, 'removed', {
+  get: function() {
+  return this.cleanedAndPointers_0 === this.maxSlots && !this.isTail;
+}});
+  Segment.prototype.tryIncPointers_8be2vx$ = function() {
+  var $receiver = this.cleanedAndPointers_0;
+  var addConditionally$result;
+  addConditionally$break:
+    do {
+      while (true) {
+        var cur = this.cleanedAndPointers_0;
+        if (!(cur !== this.maxSlots || this.isTail)) {
+          addConditionally$result = false;
+          break addConditionally$break;
+        }
+        if ((function(scope) {
+  return scope.cleanedAndPointers_0 === cur ? function() {
+  scope.cleanedAndPointers_0 = cur + 65536 | 0;
+  return true;
+}() : false;
+})(this)) {
+          addConditionally$result = true;
+          break addConditionally$break;
+        }
+      }
+    } while (false);
+  return addConditionally$result;
+};
+  Segment.prototype.decPointers_8be2vx$ = function() {
+  return (function(scope) {
+  scope.cleanedAndPointers_0 += -65536;
+  return scope.cleanedAndPointers_0;
+})(this) === this.maxSlots && !this.isTail;
+};
+  Segment.prototype.onSlotCleaned = function() {
+  if ((function(scope) {
+  return ++scope.cleanedAndPointers_0;
+})(this) === this.maxSlots && !this.isTail) 
+    this.remove();
+};
+  Segment.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'Segment', 
+  interfaces: [ConcurrentLinkedListNode]};
+  function addConditionally($receiver, delta, condition) {
+    while (true) {
+      var cur = $receiver;
+      if (!condition(cur)) 
+        return false;
+      if ((function(scope) {
+  return $receiver === cur ? function() {
+  $receiver = cur + delta | 0;
+  return true;
+}() : false;
+})(this)) 
+        return true;
+    }
+  }
+  function SegmentOrClosed(value) {
+    this.value_0 = value;
+  }
+  Object.defineProperty(SegmentOrClosed.prototype, 'isClosed', {
+  get: function() {
+  return this.value_0 === CLOSED;
+}});
+  Object.defineProperty(SegmentOrClosed.prototype, 'segment', {
+  get: function() {
+  var tmp$;
+  var tmp$_0;
+  if (this.value_0 === CLOSED) {
+    throw IllegalStateException_init('Does not contain segment'.toString());
+  } else 
+    tmp$_0 = Kotlin.isType(tmp$ = this.value_0, Segment) ? tmp$ : throwCCE();
+  return tmp$_0;
+}});
+  SegmentOrClosed.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'SegmentOrClosed', 
+  interfaces: []};
+  SegmentOrClosed.prototype.unbox = function() {
+  return this.value_0;
+};
+  SegmentOrClosed.prototype.toString = function() {
+  return 'SegmentOrClosed(value=' + Kotlin.toString(this.value_0) + ')';
+};
+  SegmentOrClosed.prototype.hashCode = function() {
+  var result = 0;
+  result = result * 31 + Kotlin.hashCode(this.value_0) | 0;
+  return result;
+};
+  SegmentOrClosed.prototype.equals = function(other) {
+  return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.value_0, other.value_0))));
+};
+  var POINTERS_SHIFT;
+  var CLOSED;
   var DispatchedContinuation$resumeCancellableWith$lambda = wrapFunction(function() {
   var Job = _.kotlinx.coroutines.Job;
   var Result = Kotlin.kotlin.Result;
@@ -32191,10 +33313,17 @@
   var tmp$;
   return Kotlin.isType(tmp$ = this._reusableCancellableContinuation_0, CancellableContinuationImpl) ? tmp$ : null;
 }});
-  Object.defineProperty(DispatchedContinuation.prototype, 'isReusable', {
-  get: function() {
-  return this._reusableCancellableContinuation_0 != null;
-}});
+  DispatchedContinuation.prototype.isReusable_pmw987$ = function(requester) {
+  var tmp$;
+  tmp$ = this._reusableCancellableContinuation_0;
+  if (tmp$ == null) {
+    return false;
+  }
+  var value = tmp$;
+  if (Kotlin.isType(value, CancellableContinuationImpl)) 
+    return value === requester;
+  return true;
+};
   DispatchedContinuation.prototype.claimReusableCancellableContinuation = function() {
   var $receiver = this._reusableCancellableContinuation_0;
   while (true) {
@@ -32662,16 +33791,9 @@
   }
   function resume($receiver, delegate, useMode) {
     var tmp$, tmp$_0;
-    var tmp$_1, tmp$_2;
     var state = $receiver.takeState();
     var exception = (tmp$ = $receiver.getExceptionalResult_8ea4ql$(state)) != null ? recoverStackTrace(tmp$, delegate) : null;
-    if (exception != null) {
-      tmp$_1 = new Result(createFailure(exception));
-    } else {
-      Result.Companion;
-      tmp$_1 = new Result((tmp$_0 = state) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE());
-    }
-    var result = tmp$_1;
+    var result = exception != null ? new Result(createFailure(exception)) : new Result($receiver.getSuccessfulResult_tpy1pm$(state));
     switch (useMode) {
       case 0:
         delegate.resumeWith_tl1gpc$(result);
@@ -32680,7 +33802,7 @@
         resumeCancellableWith(delegate, result);
         break;
       case 2:
-        var $this = Kotlin.isType(tmp$_2 = delegate, DispatchedContinuation) ? tmp$_2 : throwCCE();
+        var $this = Kotlin.isType(tmp$_0 = delegate, DispatchedContinuation) ? tmp$_0 : throwCCE();
         $this.context;
         $this.continuation.resumeWith_tl1gpc$(result);
         break;
@@ -33222,185 +34344,6 @@
   kind: Kind_CLASS, 
   simpleName: 'ContextScope', 
   interfaces: [CoroutineScope]};
-  function SegmentQueue() {
-    this._head_0 = null;
-    this._tail_0 = null;
-    var initialSegment = this.newSegment_jwyshq$(L0);
-    this._head_0 = initialSegment;
-    this._tail_0 = initialSegment;
-  }
-  Object.defineProperty(SegmentQueue.prototype, 'head_0', {
-  get: function() {
-  return this._head_0;
-}});
-  Object.defineProperty(SegmentQueue.prototype, 'tail_0', {
-  get: function() {
-  return this._tail_0;
-}});
-  SegmentQueue.prototype.newSegment_jwyshq$ = function(id, prev, callback$default) {
-  if (prev === void 0) 
-    prev = null;
-  return callback$default ? callback$default(id, prev) : this.newSegment_jwyshq$$default(id, prev);
-};
-  SegmentQueue.prototype.getSegment_0 = function(startFrom, id) {
-  var tmp$;
-  var cur = startFrom;
-  while (cur.id.compareTo_11rb$(id) < 0) {
-    var curNext = cur.next;
-    if (curNext == null) {
-      var newTail = this.newSegment_jwyshq$(cur.id.add(Kotlin.Long.fromInt(1)), cur);
-      if (cur.casNext_zbhc0$(null, newTail)) {
-        if (cur.removed) {
-          cur.remove();
-        }
-        this.moveTailForward_0(newTail);
-        tmp$ = newTail;
-      } else {
-        tmp$ = ensureNotNull(cur.next);
-      }
-      curNext = tmp$;
-    }
-    cur = curNext;
-  }
-  if (!equals(cur.id, id)) 
-    return null;
-  return cur;
-};
-  SegmentQueue.prototype.getSegmentAndMoveHead_0 = function(startFrom, id) {
-  var tmp$;
-  if (equals(startFrom.id, id)) 
-    return startFrom;
-  tmp$ = this.getSegment_0(startFrom, id);
-  if (tmp$ == null) {
-    return null;
-  }
-  var s = tmp$;
-  this.moveHeadForward_0(s);
-  return s;
-};
-  SegmentQueue.prototype.moveHeadForward_0 = function(new_0) {
-  var $receiver = this._head_0;
-  while (true) {
-    var curHead = this._head_0;
-    if (curHead.id.compareTo_11rb$(new_0.id) > 0) 
-      return;
-    if ((function(scope) {
-  return scope._head_0 === curHead ? function() {
-  scope._head_0 = new_0;
-  return true;
-}() : false;
-})(this)) {
-      new_0.prev = null;
-      return;
-    }
-  }
-};
-  SegmentQueue.prototype.moveTailForward_0 = function(new_0) {
-  var $receiver = this._tail_0;
-  while (true) {
-    var curTail = this._tail_0;
-    if (curTail.id.compareTo_11rb$(new_0.id) > 0) 
-      return;
-    if ((function(scope) {
-  return scope._tail_0 === curTail ? function() {
-  scope._tail_0 = new_0;
-  return true;
-}() : false;
-})(this)) 
-      return;
-  }
-};
-  SegmentQueue.$metadata$ = {
-  kind: Kind_CLASS, 
-  simpleName: 'SegmentQueue', 
-  interfaces: []};
-  function Segment(id, prev) {
-    this.id = id;
-    this._next_0 = null;
-    this.prev = null;
-    this.prev = prev;
-  }
-  Object.defineProperty(Segment.prototype, 'next', {
-  get: function() {
-  return this._next_0;
-}});
-  Segment.prototype.casNext_zbhc0$ = function(expected, value) {
-  return (function(scope) {
-  return scope._next_0 === expected ? function() {
-  scope._next_0 = value;
-  return true;
-}() : false;
-})(this);
-};
-  Segment.prototype.remove = function() {
-  var tmp$, tmp$_0, tmp$_1, tmp$_2;
-  tmp$ = this._next_0;
-  if (tmp$ == null) {
-    return;
-  }
-  var next = tmp$;
-  tmp$_0 = this.prev;
-  if (tmp$_0 == null) {
-    return;
-  }
-  var prev = tmp$_0;
-  prev.moveNextToRight_0(next);
-  while (prev.removed) {
-    tmp$_1 = prev.prev;
-    if (tmp$_1 == null) {
-      break;
-    }
-    prev = tmp$_1;
-    prev.moveNextToRight_0(next);
-  }
-  next.movePrevToLeft_0(prev);
-  while (next.removed) {
-    tmp$_2 = next.next;
-    if (tmp$_2 == null) {
-      break;
-    }
-    next = tmp$_2;
-    next.movePrevToLeft_0(prev);
-  }
-};
-  Segment.prototype.moveNextToRight_0 = function(next) {
-  var tmp$;
-  while (true) {
-    var curNext = Kotlin.isType(tmp$ = this._next_0, Segment) ? tmp$ : throwCCE();
-    if (next.id.compareTo_11rb$(curNext.id) <= 0) 
-      return;
-    if ((function(scope) {
-  return scope._next_0 === curNext ? function() {
-  scope._next_0 = next;
-  return true;
-}() : false;
-})(this)) 
-      return;
-  }
-};
-  Segment.prototype.movePrevToLeft_0 = function(prev) {
-  var tmp$;
-  while (true) {
-    tmp$ = this.prev;
-    if (tmp$ == null) {
-      return;
-    }
-    var curPrev = tmp$;
-    if (curPrev.id.compareTo_11rb$(prev.id) <= 0) 
-      return;
-    if ((function(scope) {
-  return scope.prev === curPrev ? function() {
-  scope.prev = prev;
-  return true;
-}() : false;
-})(this)) 
-      return;
-  }
-};
-  Segment.$metadata$ = {
-  kind: Kind_CLASS, 
-  simpleName: 'Segment', 
-  interfaces: []};
   function Symbol(symbol) {
     this.symbol = symbol;
   }
@@ -33907,6 +34850,9 @@
   kind: Kind_INTERFACE, 
   simpleName: 'SelectBuilder', 
   interfaces: []};
+  function onTimeout($receiver, timeout, block) {
+    $receiver.onTimeout_7xvrws$(toDelayMillis(timeout), block);
+  }
   function SelectClause0() {
   }
   SelectClause0.$metadata$ = {
@@ -33956,6 +34902,7 @@
   return Kotlin.coroutineResult(Kotlin.coroutineReceiver());
 };
 }));
+  var NOT_SELECTED;
   var ALREADY_SELECTED;
   var UNDECIDED_1;
   var RESUMED_1;
@@ -33975,7 +34922,7 @@
   function SelectBuilderImpl(uCont) {
     LinkedListHead.call(this);
     this.uCont_0 = uCont;
-    this._state_0 = this;
+    this._state_0 = NOT_SELECTED;
     this._result_0 = UNDECIDED_1;
     this._parentHandle_0 = null;
   }
@@ -34158,7 +35105,7 @@
   var loop$result;
   while (true) {
     var state = this._state_0;
-    if (state === this) 
+    if (state === NOT_SELECTED) 
       return false;
     else if (Kotlin.isType(state, OpDescriptor)) 
       state.perform_s8jyv4$(this);
@@ -34206,10 +35153,10 @@
       var state = this._state_0;
       action$break:
         do {
-          if (state === this) {
+          if (state === NOT_SELECTED) {
             if (otherOp == null) {
               if (!(function(scope) {
-  return scope._state_0 === scope ? function() {
+  return scope._state_0 === NOT_SELECTED ? function() {
   scope._state_0 = null;
   return true;
 }() : false;
@@ -34218,7 +35165,7 @@
             } else {
               var pairSelectOp = new SelectBuilderImpl$PairSelectOp(otherOp);
               if (!(function(scope) {
-  return scope._state_0 === scope ? function() {
+  return scope._state_0 === NOT_SELECTED ? function() {
   scope._state_0 = pairSelectOp;
   return true;
 }() : false;
@@ -34257,7 +35204,7 @@
   var impl = Kotlin.isType(tmp$ = affected, SelectBuilderImpl) ? tmp$ : throwCCE();
   this.otherOp.finishPrepare();
   var decision = this.otherOp.atomicOp.decide_s8jyv4$(null);
-  var update = decision == null ? this.otherOp.desc : impl;
+  var update = decision == null ? this.otherOp.desc : NOT_SELECTED;
   (function(scope) {
   return impl._state_0 === scope ? function() {
   impl._state_0 = update;
@@ -34278,8 +35225,7 @@
   return (new SelectBuilderImpl$AtomicSelectOp(this, desc)).perform_s8jyv4$(null);
 };
   SelectBuilderImpl.prototype.toString = function() {
-  var state = this._state_0;
-  return 'SelectInstance(state=' + (state === this ? 'this' : toString(state)) + ', result=' + toString(this._result_0) + ')';
+  return 'SelectInstance(state=' + toString(this._state_0) + ', result=' + toString(this._result_0) + ')';
 };
   function SelectBuilderImpl$AtomicSelectOp(impl, desc) {
     AtomicOp.call(this);
@@ -34322,9 +35268,9 @@
       return null;
     else if (Kotlin.isType(state, OpDescriptor)) 
       state.perform_s8jyv4$(this.impl);
-    else if (state === this.impl) {
+    else if (state === NOT_SELECTED) {
       if ((function(scope) {
-  return scope.impl._state_0 === scope.impl ? function() {
+  return scope.impl._state_0 === NOT_SELECTED ? function() {
   scope.impl._state_0 = scope;
   return true;
 }() : false;
@@ -34337,14 +35283,14 @@
   SelectBuilderImpl$AtomicSelectOp.prototype.undoPrepare_0 = function() {
   (function(scope) {
   return scope.impl._state_0 === scope ? function() {
-  scope.impl._state_0 = scope.impl;
+  scope.impl._state_0 = NOT_SELECTED;
   return true;
 }() : false;
 })(this);
 };
   SelectBuilderImpl$AtomicSelectOp.prototype.completeSelect_0 = function(failure) {
   var selectSuccess = failure == null;
-  var update = selectSuccess ? null : this.impl;
+  var update = selectSuccess ? null : NOT_SELECTED;
   if ((function(scope) {
   return scope.impl._state_0 === scope ? function() {
   scope.impl._state_0 = update;
@@ -35116,29 +36062,25 @@
   simpleName: 'LockSelect', 
   interfaces: [MutexImpl$LockWaiter]};
   function MutexImpl$UnlockOp(queue) {
-    OpDescriptor.call(this);
+    AtomicOp.call(this);
     this.queue = queue;
   }
-  Object.defineProperty(MutexImpl$UnlockOp.prototype, 'atomicOp', {
-  get: function() {
-  return null;
-}});
-  MutexImpl$UnlockOp.prototype.perform_s8jyv4$ = function(affected) {
-  var tmp$;
-  var success = this.queue.isEmpty;
-  var update = success ? EMPTY_UNLOCKED : this.queue;
+  MutexImpl$UnlockOp.prototype.prepare_11rb$ = function(affected) {
+  return this.queue.isEmpty ? null : UNLOCK_FAIL;
+};
+  MutexImpl$UnlockOp.prototype.complete_19pj23$ = function(affected, failure) {
+  var update = failure == null ? EMPTY_UNLOCKED : this.queue;
   (function(scope) {
-  return (Kotlin.isType(tmp$ = affected, MutexImpl) ? tmp$ : throwCCE())._state_0 === scope ? function() {
-  (Kotlin.isType(tmp$ = affected, MutexImpl) ? tmp$ : throwCCE())._state_0 = update;
+  return affected._state_0 === scope ? function() {
+  affected._state_0 = update;
   return true;
 }() : false;
 })(this);
-  return affected._state_0 === this.queue ? UNLOCK_FAIL : null;
 };
   MutexImpl$UnlockOp.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'UnlockOp', 
-  interfaces: [OpDescriptor]};
+  interfaces: [AtomicOp]};
   MutexImpl.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'MutexImpl', 
@@ -35233,8 +36175,11 @@
   }
 });
   function SemaphoreImpl(permits, acquiredPermits) {
-    SegmentQueue.call(this);
     this.permits_0 = permits;
+    this.head_0 = null;
+    this.deqIdx_0 = L0;
+    this.tail_0 = null;
+    this.enqIdx_0 = L0;
     var tmp$;
     if (!(this.permits_0 > 0)) {
       var message = 'Semaphore should have at least 1 permit, but had ' + this.permits_0;
@@ -35245,13 +36190,11 @@
       var message_0 = SemaphoreImpl_init$lambda(this)();
       throw IllegalArgumentException_init(message_0.toString());
     }
+    var s = new SemaphoreSegment(L0, null, 2);
+    this.head_0 = s;
+    this.tail_0 = s;
     this._availablePermits_0 = this.permits_0 - acquiredPermits | 0;
-    this.enqIdx_0 = L0;
-    this.deqIdx_0 = L0;
   }
-  SemaphoreImpl.prototype.newSegment_jwyshq$$default = function(id, prev) {
-  return new SemaphoreSegment(id, prev);
-};
   Object.defineProperty(SemaphoreImpl.prototype, 'availablePermits', {
   get: function() {
   var a = this._availablePermits_0;
@@ -35300,7 +36243,7 @@
         throw this.exception_0;
       case 2:
         this.state_0 = 3;
-        this.result_0 = this.$this.addToQueueAndSuspend_0(this);
+        this.result_0 = this.$this.acquireSlowPath_0(this);
         if (this.result_0 === COROUTINE_SUSPENDED) 
           return COROUTINE_SUSPENDED;
         continue;
@@ -35327,100 +36270,279 @@
   else 
     return instance.doResume(null);
 };
-  SemaphoreImpl.prototype.release = function() {
-  var p = this.incPermits();
-  if (p >= 0) 
-    return;
-  this.resumeNextFromQueue_8be2vx$();
+  function SemaphoreImpl$acquireSlowPath$lambda(this$SemaphoreImpl) {
+    return function(cont) {
+  while (true) {
+    if (this$SemaphoreImpl.addAcquireToQueue_0(cont)) 
+      return;
+    var p = (function(scope) {
+  return this$SemaphoreImpl._availablePermits_0--;
+})(this);
+    if (p > 0) {
+      cont.resumeWith_tl1gpc$(new Result(Unit));
+      return;
+    }
+  }
+  return Unit;
 };
-  SemaphoreImpl.prototype.incPermits = function() {
-  var $receiver = this._availablePermits_0;
-  var getAndUpdate$result;
-  getAndUpdate$break:
-    do {
-      while (true) {
-        var cur = this._availablePermits_0;
-        if (!(cur < this.permits_0)) {
-          var message = 'The number of released permits cannot be greater than ' + this.permits_0;
-          throw IllegalStateException_init(message.toString());
-        }
-        var upd = cur + 1 | 0;
-        if ((function(scope) {
+  }
+  SemaphoreImpl.prototype.acquireSlowPath_0 = function(continuation) {
+  return suspendAtomicCancellableCoroutineReusable$lambda_2(SemaphoreImpl$acquireSlowPath$lambda(this))(continuation);
+};
+  SemaphoreImpl.prototype.release = function() {
+  loop_label:
+    while (true) {
+      var $receiver = this._availablePermits_0;
+      var getAndUpdate$result;
+      getAndUpdate$break:
+        do {
+          while (true) {
+            var cur = this._availablePermits_0;
+            if (!(cur < this.permits_0)) {
+              var message = 'The number of released permits cannot be greater than ' + this.permits_0;
+              throw IllegalStateException_init(message.toString());
+            }
+            var upd = cur + 1 | 0;
+            if ((function(scope) {
   return scope._availablePermits_0 === cur ? function() {
   scope._availablePermits_0 = upd;
   return true;
 }() : false;
 })(this)) {
-          getAndUpdate$result = cur;
-          break getAndUpdate$break;
-        }
-      }
-    } while (false);
-  return getAndUpdate$result;
+              getAndUpdate$result = cur;
+              break getAndUpdate$break;
+            }
+          }
+        } while (false);
+      var p = getAndUpdate$result;
+      if (p >= 0) 
+        return;
+      if (this.tryResumeNextFromQueue_0()) 
+        return;
+    }
 };
-  function SemaphoreImpl$addToQueueAndSuspend$lambda(this$SemaphoreImpl) {
-    return function(cont) {
-  var last = this$SemaphoreImpl.tail_0;
+  SemaphoreImpl.prototype.addAcquireToQueue_0 = function(cont) {
+  var curTail = this.tail_0;
   var enqIdx = (function(scope) {
-  var oldValue = this$SemaphoreImpl.enqIdx_0;
-  this$SemaphoreImpl.enqIdx_0 = this$SemaphoreImpl.enqIdx_0.inc();
+  var oldValue = scope.enqIdx_0;
+  scope.enqIdx_0 = scope.enqIdx_0.inc();
   return oldValue;
 })(this);
-  var segment = this$SemaphoreImpl.getSegment_0(last, enqIdx.div(Kotlin.Long.fromInt(SEGMENT_SIZE)));
+  var $receiver = this.tail_0;
+  var id = enqIdx.div(Kotlin.Long.fromInt(SEGMENT_SIZE));
+  var findSegmentAndMoveForward$result;
+  findSegmentAndMoveForward$break:
+    do {
+      loop_label:
+        while (true) {
+          var findSegmentInternal$result;
+          findSegmentInternal$break:
+            do {
+              var cur = curTail;
+              while (cur.id.compareTo_11rb$(id) < 0 || cur.removed) {
+                var it = cur.nextOrClosed_0;
+                var block$result;
+                var tmp$;
+                if (it === CLOSED) {
+                  findSegmentInternal$result = new SegmentOrClosed(CLOSED);
+                  break findSegmentInternal$break;
+                } else {
+                  block$result = (tmp$ = it) == null || Kotlin.isType(tmp$, ConcurrentLinkedListNode) ? tmp$ : throwCCE();
+                }
+                var next = block$result;
+                if (next != null) {
+                  cur = next;
+                  continue;
+                }
+                var newTail = createSegment(cur.id.add(Kotlin.Long.fromInt(1)), cur);
+                if (cur.trySetNext_tbkwy$(newTail)) {
+                  if (cur.removed) 
+                    cur.remove();
+                  cur = newTail;
+                }
+              }
+              findSegmentInternal$result = new SegmentOrClosed(cur);
+            } while (false);
+          var s = findSegmentInternal$result;
+          var tmp$_0 = s.isClosed;
+          if (!tmp$_0) {
+            var to = s.segment;
+            var moveForward$result;
+            moveForward$break:
+              do {
+                var loop$result;
+                while (true) {
+                  var cur_0 = this.tail_0;
+                  if (cur_0.id.compareTo_11rb$(to.id) >= 0) {
+                    moveForward$result = true;
+                    break moveForward$break;
+                  }
+                  if (!to.tryIncPointers_8be2vx$()) {
+                    moveForward$result = false;
+                    break moveForward$break;
+                  }
+                  if ((function(scope) {
+  return scope.tail_0 === cur_0 ? function() {
+  scope.tail_0 = to;
+  return true;
+}() : false;
+})(this)) {
+                    if (cur_0.decPointers_8be2vx$()) 
+                      cur_0.remove();
+                    moveForward$result = true;
+                    break moveForward$break;
+                  }
+                  if (to.decPointers_8be2vx$()) 
+                    to.remove();
+                }
+                moveForward$result = loop$result;
+              } while (false);
+            tmp$_0 = moveForward$result;
+          }
+          if (tmp$_0) {
+            findSegmentAndMoveForward$result = s;
+            break findSegmentAndMoveForward$break;
+          }
+        }
+    } while (false);
+  var segment = findSegmentAndMoveForward$result.segment;
   var i = enqIdx.modulo(Kotlin.Long.fromInt(SEGMENT_SIZE)).toInt();
-  var tmp$ = segment === null;
-  if (!tmp$) {
-    tmp$ = segment.acquirers[i] === RESUMED_2;
-  }
-  var tmp$_0 = tmp$;
-  if (!tmp$_0) {
-    tmp$_0 = !(function(scope) {
+  if ((function(scope) {
   return segment.acquirers[i] == null ? function() {
   segment.acquirers[i] = cont;
   return true;
 }() : false;
-})(this);
+})(this)) {
+    cont.invokeOnCancellation_f05bi3$(new CancelSemaphoreAcquisitionHandler(segment, i));
+    return true;
   }
-  if (tmp$_0) {
+  var expected = PERMIT;
+  var value = TAKEN;
+  if ((function(scope) {
+  return segment.acquirers[i] === expected ? function() {
+  segment.acquirers[i] = value;
+  return true;
+}() : false;
+})(this)) {
     cont.resumeWith_tl1gpc$(new Result(Unit));
-    return;
+    return true;
   }
-  cont.invokeOnCancellation_f05bi3$(new CancelSemaphoreAcquisitionHandler(this$SemaphoreImpl, segment, i));
-  return Unit;
+  return false;
 };
-  }
-  SemaphoreImpl.prototype.addToQueueAndSuspend_0 = function(continuation) {
-  return suspendAtomicCancellableCoroutineReusable$lambda_2(SemaphoreImpl$addToQueueAndSuspend$lambda(this))(continuation);
-};
-  SemaphoreImpl.prototype.resumeNextFromQueue_8be2vx$ = function() {
-  var tmp$, tmp$_0;
-  try_again:
-    while (true) {
-      var first = this.head_0;
-      var deqIdx = (function(scope) {
+  SemaphoreImpl.prototype.tryResumeNextFromQueue_0 = function() {
+  var tmp$;
+  var curHead = this.head_0;
+  var deqIdx = (function(scope) {
   var oldValue = scope.deqIdx_0;
   scope.deqIdx_0 = scope.deqIdx_0.inc();
   return oldValue;
 })(this);
-      tmp$ = this.getSegmentAndMoveHead_0(first, deqIdx.div(Kotlin.Long.fromInt(SEGMENT_SIZE)));
-      if (tmp$ == null) {
-        continue try_again;
-      }
-      var segment = tmp$;
-      var i = deqIdx.modulo(Kotlin.Long.fromInt(SEGMENT_SIZE)).toInt();
-      var value = RESUMED_2;
-      var cont = (function(scope) {
+  var id = deqIdx.div(Kotlin.Long.fromInt(SEGMENT_SIZE));
+  var $receiver = this.head_0;
+  var findSegmentAndMoveForward$result;
+  findSegmentAndMoveForward$break:
+    do {
+      loop_label:
+        while (true) {
+          var findSegmentInternal$result;
+          findSegmentInternal$break:
+            do {
+              var cur = curHead;
+              while (cur.id.compareTo_11rb$(id) < 0 || cur.removed) {
+                var it = cur.nextOrClosed_0;
+                var block$result;
+                var tmp$_0;
+                if (it === CLOSED) {
+                  findSegmentInternal$result = new SegmentOrClosed(CLOSED);
+                  break findSegmentInternal$break;
+                } else {
+                  block$result = (tmp$_0 = it) == null || Kotlin.isType(tmp$_0, ConcurrentLinkedListNode) ? tmp$_0 : throwCCE();
+                }
+                var next = block$result;
+                if (next != null) {
+                  cur = next;
+                  continue;
+                }
+                var newTail = createSegment(cur.id.add(Kotlin.Long.fromInt(1)), cur);
+                if (cur.trySetNext_tbkwy$(newTail)) {
+                  if (cur.removed) 
+                    cur.remove();
+                  cur = newTail;
+                }
+              }
+              findSegmentInternal$result = new SegmentOrClosed(cur);
+            } while (false);
+          var s = findSegmentInternal$result;
+          var tmp$_1 = s.isClosed;
+          if (!tmp$_1) {
+            var to = s.segment;
+            var moveForward$result;
+            moveForward$break:
+              do {
+                var loop$result;
+                while (true) {
+                  var cur_0 = this.head_0;
+                  if (cur_0.id.compareTo_11rb$(to.id) >= 0) {
+                    moveForward$result = true;
+                    break moveForward$break;
+                  }
+                  if (!to.tryIncPointers_8be2vx$()) {
+                    moveForward$result = false;
+                    break moveForward$break;
+                  }
+                  if ((function(scope) {
+  return scope.head_0 === cur_0 ? function() {
+  scope.head_0 = to;
+  return true;
+}() : false;
+})(this)) {
+                    if (cur_0.decPointers_8be2vx$()) 
+                      cur_0.remove();
+                    moveForward$result = true;
+                    break moveForward$break;
+                  }
+                  if (to.decPointers_8be2vx$()) 
+                    to.remove();
+                }
+                moveForward$result = loop$result;
+              } while (false);
+            tmp$_1 = moveForward$result;
+          }
+          if (tmp$_1) {
+            findSegmentAndMoveForward$result = s;
+            break findSegmentAndMoveForward$break;
+          }
+        }
+    } while (false);
+  var segment = findSegmentAndMoveForward$result.segment;
+  segment.cleanPrev();
+  if (segment.id.compareTo_11rb$(id) > 0) 
+    return false;
+  var i = deqIdx.modulo(Kotlin.Long.fromInt(SEGMENT_SIZE)).toInt();
+  var value = PERMIT;
+  var cellState = (function(scope) {
   var oldValue = segment.acquirers[i];
   segment.acquirers[i] = value;
   return oldValue;
 })(this);
-      if (cont === null) 
-        return;
-      if (cont === CANCELLED) 
-        continue try_again;
-      (Kotlin.isType(tmp$_0 = cont, CancellableContinuation) ? tmp$_0 : throwCCE()).resumeWith_tl1gpc$(new Result(Unit));
-      return;
+  if (cellState === null) {
+    var times = MAX_SPIN_CYCLES;
+    for (var index = 0; index < times; index++) {
+      if (segment.acquirers[i] === TAKEN) 
+        return true;
     }
+    var expected = PERMIT;
+    var value_0 = BROKEN;
+    return !(function(scope) {
+  return segment.acquirers[i] === expected ? function() {
+  segment.acquirers[i] = value_0;
+  return true;
+}() : false;
+})(this);
+  } else if (cellState === CANCELLED) 
+    return false;
+  else 
+    return tryResume(Kotlin.isType(tmp$ = cellState, CancellableContinuation) ? tmp$ : throwCCE());
 };
   function SemaphoreImpl_init$lambda(this$SemaphoreImpl) {
     return function() {
@@ -35430,39 +36552,48 @@
   SemaphoreImpl.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'SemaphoreImpl', 
-  interfaces: [SegmentQueue, Semaphore]};
-  function CancelSemaphoreAcquisitionHandler(semaphore, segment, index) {
+  interfaces: [Semaphore]};
+  function tryResume($receiver) {
+    var tmp$;
+    tmp$ = $receiver.tryResume_19pj23$(Unit);
+    if (tmp$ == null) {
+      return false;
+    }
+    var token = tmp$;
+    $receiver.completeResume_za3rmp$(token);
+    return true;
+  }
+  function CancelSemaphoreAcquisitionHandler(segment, index) {
     CancelHandler.call(this);
-    this.semaphore_0 = semaphore;
     this.segment_0 = segment;
     this.index_0 = index;
   }
   CancelSemaphoreAcquisitionHandler.prototype.invoke = function(cause) {
-  var p = this.semaphore_0.incPermits();
-  if (p >= 0) 
-    return;
-  if (this.segment_0.cancel_za3lpa$(this.index_0)) 
-    return;
-  this.semaphore_0.resumeNextFromQueue_8be2vx$();
+  this.segment_0.cancel_za3lpa$(this.index_0);
 };
   CancelSemaphoreAcquisitionHandler.prototype.toString = function() {
-  return 'CancelSemaphoreAcquisitionHandler[' + this.semaphore_0 + ', ' + this.segment_0 + ', ' + this.index_0 + ']';
+  return 'CancelSemaphoreAcquisitionHandler[' + this.segment_0 + ', ' + this.index_0 + ']';
 };
   CancelSemaphoreAcquisitionHandler.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'CancelSemaphoreAcquisitionHandler', 
   interfaces: [CancelHandler]};
-  function SemaphoreSegment(id, prev) {
-    Segment.call(this, id, prev);
-    this.acquirers = Array(SEGMENT_SIZE);
-    this.cancelledSlots_0 = 0;
+  function createSegment(id, prev) {
+    return new SemaphoreSegment(id, prev, 0);
   }
-  Object.defineProperty(SemaphoreSegment.prototype, 'removed', {
+  function SemaphoreSegment(id, prev, pointers) {
+    Segment.call(this, id, prev, pointers);
+    this.acquirers = Array(SEGMENT_SIZE);
+  }
+  Object.defineProperty(SemaphoreSegment.prototype, 'maxSlots', {
   get: function() {
-  return this.cancelledSlots_0 === SEGMENT_SIZE;
+  return SEGMENT_SIZE;
 }});
   SemaphoreSegment.prototype.get_za3lpa$ = function(index) {
   return this.acquirers[index];
+};
+  SemaphoreSegment.prototype.set_6t2rgq$ = function(index, value) {
+  this.acquirers[index] = value;
 };
   SemaphoreSegment.prototype.cas_pv14l2$ = function(index, expected, value) {
   return (function(scope) {
@@ -35481,16 +36612,8 @@
 };
   SemaphoreSegment.prototype.cancel_za3lpa$ = function(index) {
   var value = CANCELLED;
-  var cancelled = (function(scope) {
-  var oldValue = scope.acquirers[index];
-  scope.acquirers[index] = value;
-  return oldValue;
-})(this) !== RESUMED_2;
-  if ((function(scope) {
-  return ++scope.cancelledSlots_0;
-})(this) === SEGMENT_SIZE) 
-    this.remove();
-  return cancelled;
+  this.acquirers[index] = value;
+  this.onSlotCleaned();
 };
   SemaphoreSegment.prototype.toString = function() {
   return 'SemaphoreSegment[id=' + this.id.toString() + ', hashCode=' + hashCode(this) + ']';
@@ -35499,7 +36622,10 @@
   kind: Kind_CLASS, 
   simpleName: 'SemaphoreSegment', 
   interfaces: [Segment]};
-  var RESUMED_2;
+  var MAX_SPIN_CYCLES;
+  var PERMIT;
+  var TAKEN;
+  var BROKEN;
   var CANCELLED;
   var SEGMENT_SIZE;
   function CompletionHandlerBase() {
@@ -35940,9 +37066,10 @@
   kind: Kind_CLASS, 
   simpleName: 'MessageQueue', 
   interfaces: [ArrayQueue]};
-  function suspendCancellableCoroutine$lambda_4(closure$block) {
+  function suspendCancellableCoroutine$lambda_5(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -36047,7 +37174,7 @@
 };
   }
   function await_0($receiver, continuation) {
-    return suspendCancellableCoroutine$lambda_4(await$lambda($receiver))(continuation);
+    return suspendCancellableCoroutine$lambda_5(await$lambda($receiver))(continuation);
   }
   function Runnable() {
   }
@@ -36081,9 +37208,10 @@
   }
   var afterTask = defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.afterTask_o4pqbf$', function($receiver) {
 });
-  function suspendCancellableCoroutine$lambda_5(closure$block) {
+  function suspendCancellableCoroutine$lambda_6(closure$block) {
     return function(uCont) {
   var cancellable = new CancellableContinuationImpl(intercepted(uCont), 1);
+  cancellable.initCancellability();
   closure$block(cancellable);
   return cancellable.getResult();
 };
@@ -36107,7 +37235,7 @@
 };
   }
   function awaitAnimationFrame($receiver, continuation) {
-    return suspendCancellableCoroutine$lambda_5(awaitAnimationFrame$lambda($receiver))(continuation);
+    return suspendCancellableCoroutine$lambda_6(awaitAnimationFrame$lambda($receiver))(continuation);
   }
   function asWindowAnimationQueue($receiver) {
     var tmp$;
@@ -36201,7 +37329,9 @@
   do try {
     switch (this.state_0) {
       case 0:
-        var currentContext = this.context;
+        this.result_0 = this.context;
+        var currentContext = this.result_0;
+        ensureActive_1(currentContext);
         if (this.$this.lastEmissionContext_0 !== currentContext) {
           checkContext(this.$this, currentContext);
           this.$this.lastEmissionContext_0 = currentContext;
@@ -36693,6 +37823,7 @@
   package$coroutines.cancel_jnvdxk$ = cancel;
   package$coroutines.cancel_n4wjt3$ = cancel_0;
   package$coroutines.ensureActive_e9pf1l$ = ensureActive;
+  package$coroutines.currentCoroutineContext = currentCoroutineContext;
   Object.defineProperty(CoroutineStart, 'DEFAULT', {
   get: CoroutineStart$DEFAULT_getInstance});
   Object.defineProperty(CoroutineStart, 'LAZY', {
@@ -36706,7 +37837,9 @@
   package$coroutines.Deferred = Deferred;
   package$coroutines.Delay = Delay;
   package$coroutines.delay_s8cxhz$ = delay;
+  package$coroutines.delay_cgako$ = delay_0;
   package$coroutines.get_delay_tcgsej$ = get_delay;
+  package$coroutines.toDelayMillis_e70jfa$ = toDelayMillis;
   package$coroutines.EventLoop = EventLoop;
   Object.defineProperty(package$coroutines, 'ThreadLocalEventLoop', {
   get: ThreadLocalEventLoop_getInstance});
@@ -36767,7 +37900,9 @@
   package$coroutines.SupervisorJob0_5dx9e$ = SupervisorJob0;
   package$coroutines.supervisorScope_awg8ri$ = supervisorScope;
   package$coroutines.withTimeout_ms3uf5$ = withTimeout;
+  package$coroutines.withTimeout_n51h4u$ = withTimeout_0;
   package$coroutines.withTimeoutOrNull_ms3uf5$ = withTimeoutOrNull;
+  package$coroutines.withTimeoutOrNull_n51h4u$ = withTimeoutOrNull_0;
   package$coroutines.TimeoutCancellationException_init_y4putb$ = TimeoutCancellationException_init;
   package$coroutines.TimeoutCancellationException = TimeoutCancellationException;
   package$coroutines.TimeoutCancellationException_mkhm69$ = TimeoutCancellationException_0;
@@ -36982,6 +38117,7 @@
   package$flow.Flow = Flow;
   package$flow.AbstractFlow = AbstractFlow;
   package$flow.FlowCollector = FlowCollector;
+  package$flow.noImpl_8be2vx$ = noImpl;
   package$flow.observeOn_292dsz$ = observeOn;
   package$flow.publishOn_292dsz$ = publishOn;
   package$flow.subscribeOn_292dsz$ = subscribeOn;
@@ -37014,8 +38150,12 @@
   package$flow.delayFlow_6bsce5$ = delayFlow;
   package$flow.delayEach_6bsce5$ = delayEach;
   package$flow.switchMap_oq6m0l$ = switchMap;
+  package$flow.StateFlow = StateFlow;
+  package$flow.MutableStateFlow = MutableStateFlow;
+  package$flow.MutableStateFlow_mh5how$ = MutableStateFlow_0;
   var package$internal = package$flow.internal || (package$flow.internal = {});
   package$internal.asChannelFlow_4epk71$ = asChannelFlow;
+  package$internal.FusibleFlow = FusibleFlow;
   package$internal.ChannelFlow = ChannelFlow;
   package$internal.ChannelFlowOperator = ChannelFlowOperator;
   package$internal.ChannelFlowOperatorImpl = ChannelFlowOperatorImpl;
@@ -37048,10 +38188,13 @@
   package$flow.buffer_9ty2u6$ = buffer;
   package$flow.conflate_x2ftfk$ = conflate;
   package$flow.flowOn_292dsz$ = flowOn;
+  package$flow.cancellable_x2ftfk$ = cancellable;
   package$flow.flowWith_ihmeij$ = flowWith;
   package$flow.debounce_6bsce5$ = debounce;
+  package$flow.debounce_t1opx4$ = debounce_0;
   package$flow.sample_6bsce5$ = sample;
   package$flow.fixedPeriodTicker_6ac7ym$ = fixedPeriodTicker;
+  package$flow.sample_t1opx4$ = sample_0;
   package$flow.distinctUntilChanged_x2ftfk$ = distinctUntilChanged;
   package$flow.distinctUntilChanged_smh9ad$ = distinctUntilChanged_0;
   package$flow.distinctUntilChangedBy_6betou$ = distinctUntilChangedBy;
@@ -37060,6 +38203,7 @@
   package$flow.unsafeTransform_ig04k9$ = unsafeTransform;
   package$flow.onStart_fev64r$ = onStart;
   package$flow.onCompletion_sp7fh9$ = onCompletion;
+  package$flow.onEmpty_fev64r$ = onEmpty;
   package$flow.onCompletion_lt9f1f$ = onCompletion_0;
   package$flow.catch_xmh1mw$ = catch_0;
   package$flow.onErrorCollect_p7fvlr$ = onErrorCollect;
@@ -37071,6 +38215,9 @@
   package$flow.dropWhile_iskllf$ = dropWhile_0;
   package$flow.take_9ty2u6$ = take_0;
   package$flow.takeWhile_iskllf$ = takeWhile_0;
+  package$flow.flowOn_fyxhik$ = flowOn_0;
+  package$flow.conflate_ldhg21$ = conflate_0;
+  package$flow.distinctUntilChanged_ldhg21$ = distinctUntilChanged_1;
   Object.defineProperty(package$flow, 'DEFAULT_CONCURRENCY_PROPERTY_NAME', {
   get: function() {
   return DEFAULT_CONCURRENCY_PROPERTY_NAME;
@@ -37121,6 +38268,8 @@
   package$flow.singleOrNull_4gngrh$ = singleOrNull_1;
   package$flow.first_x2ftfk$ = first_1;
   package$flow.first_iskllf$ = first_2;
+  package$flow.firstOrNull_4gngrh$ = firstOrNull_1;
+  package$flow.firstOrNull_gtsvp2$ = firstOrNull_2;
   var package$internal_0 = package$coroutines.internal || (package$coroutines.internal = {});
   package$internal_0.ArrayQueue = ArrayQueue;
   package$internal_0.OpDescriptor = OpDescriptor;
@@ -37130,6 +38279,11 @@
   get: function() {
   return RETRY_ATOMIC;
 }});
+  package$internal_0.findSegmentAndMoveForward_t76u85$ = findSegmentAndMoveForward;
+  package$internal_0.close_553gjl$ = close;
+  package$internal_0.ConcurrentLinkedListNode = ConcurrentLinkedListNode;
+  package$internal_0.Segment = Segment;
+  package$internal_0.SegmentOrClosed = SegmentOrClosed;
   Object.defineProperty(package$coroutines, 'REUSABLE_CLAIMED_8be2vx$', {
   get: function() {
   return REUSABLE_CLAIMED;
@@ -37171,8 +38325,6 @@
   package$internal_0.MainDispatcherFactory = MainDispatcherFactory;
   package$internal_0.ScopeCoroutine = ScopeCoroutine;
   package$internal_0.ContextScope = ContextScope;
-  package$internal_0.SegmentQueue = SegmentQueue;
-  package$internal_0.Segment = Segment;
   package$internal_0.Symbol = Symbol;
   package$internal_0.systemProp_t8jjq2$ = systemProp;
   package$internal_0.systemProp_vrsuct$ = systemProp_0;
@@ -37192,11 +38344,16 @@
   package$intrinsics.startUndispatchedOrReturnIgnoreTimeout_nxbeil$ = startUndispatchedOrReturnIgnoreTimeout;
   var package$selects = package$coroutines.selects || (package$coroutines.selects = {});
   package$selects.SelectBuilder = SelectBuilder;
+  package$selects.onTimeout_eqh6pc$ = onTimeout;
   package$selects.SelectClause0 = SelectClause0;
   package$selects.SelectClause1 = SelectClause1;
   package$selects.SelectClause2 = SelectClause2;
   package$selects.SelectInstance = SelectInstance;
   package$selects.select_wd2ujs$ = select;
+  Object.defineProperty(package$selects, 'NOT_SELECTED_8be2vx$', {
+  get: function() {
+  return NOT_SELECTED;
+}});
   Object.defineProperty(package$selects, 'ALREADY_SELECTED_8be2vx$', {
   get: function() {
   return ALREADY_SELECTED;
@@ -37382,6 +38539,8 @@
   ConflatedBroadcastChannel.prototype.close_dbl4no$ = BroadcastChannel.prototype.close_dbl4no$;
   ConflatedBroadcastChannel.prototype.cancel_dbl4no$ = BroadcastChannel.prototype.cancel_dbl4no$;
   ConflatedBroadcastChannel.prototype.cancel_m4sck1$ = BroadcastChannel.prototype.cancel_m4sck1$;
+  ChannelFlow.prototype.fuse_s4tm7$ = FusibleFlow.prototype.fuse_s4tm7$;
+  StateFlowImpl.prototype.fuse_s4tm7$ = FusibleFlow.prototype.fuse_s4tm7$;
   SelectBuilderImpl.prototype.invoke_en0wgx$ = SelectBuilder.prototype.invoke_en0wgx$;
   UnbiasedSelectBuilderImpl.prototype.invoke_en0wgx$ = SelectBuilder.prototype.invoke_en0wgx$;
   MutexImpl.prototype.tryLock_s8jyv4$ = Mutex.prototype.tryLock_s8jyv4$;
@@ -37423,18 +38582,24 @@
   ENQUEUE_FAILED = new Symbol('ENQUEUE_FAILED');
   HANDLER_INVOKED = new Symbol('ON_CLOSE_HANDLER_INVOKED');
   DEFAULT_CLOSE_MESSAGE = 'Channel was closed';
+  NONE = new Symbol('NONE');
+  PENDING = new Symbol('PENDING');
+  INITIAL_SIZE = 2;
   NULL = new Symbol('NULL');
   DONE = new Symbol('DONE');
   DEFAULT_CONCURRENCY_PROPERTY_NAME = 'kotlinx.coroutines.flow.defaultConcurrency';
   DEFAULT_CONCURRENCY = systemProp_0(DEFAULT_CONCURRENCY_PROPERTY_NAME, 16, 1, 2147483647);
   NO_DECISION = new Symbol('NO_DECISION');
   RETRY_ATOMIC = new Symbol('RETRY_ATOMIC');
+  POINTERS_SHIFT = 16;
+  CLOSED = new Symbol('CLOSED');
   UNDEFINED = new Symbol('UNDEFINED');
   REUSABLE_CLAIMED = new Symbol('REUSABLE_CLAIMED');
   MODE_ATOMIC_DEFAULT = 0;
   MODE_CANCELLABLE = 1;
   MODE_UNDISPATCHED = 2;
   REMOVE_PREPARED = new Symbol('REMOVE_PREPARED');
+  NOT_SELECTED = new Symbol('NOT_SELECTED');
   ALREADY_SELECTED = new Symbol('ALREADY_SELECTED');
   UNDECIDED_1 = new Symbol('UNDECIDED');
   RESUMED_1 = new Symbol('RESUMED');
@@ -37447,7 +38612,10 @@
   UNLOCKED = new Symbol('UNLOCKED');
   EMPTY_LOCKED = new Empty_0(LOCKED);
   EMPTY_UNLOCKED = new Empty_0(UNLOCKED);
-  RESUMED_2 = new Symbol('RESUMED');
+  MAX_SPIN_CYCLES = systemProp_0('kotlinx.coroutines.semaphore.maxSpinCycles', 100);
+  PERMIT = new Symbol('PERMIT');
+  TAKEN = new Symbol('TAKEN');
+  BROKEN = new Symbol('BROKEN');
   CANCELLED = new Symbol('CANCELLED');
   SEGMENT_SIZE = systemProp_0('kotlinx.coroutines.semaphore.segmentSize', 16);
   UNDEFINED_0 = 'undefined';

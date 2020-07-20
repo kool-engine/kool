@@ -99,6 +99,12 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             field = value
             ssrSampler?.texture = value
         }
+    private var uMaxIterations: PushConstantNode1i? = null
+    var scrSpcReflectionIterations = 24
+        set(value) {
+            field = value
+            uMaxIterations?.uniform?.value = value
+        }
 
     // Shadow Mapping
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
@@ -140,6 +146,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         ssrSampler?.let { it.texture = scrSpcReflectionMap }
         ssrNoiseSampler = model.findNode<TextureNode>("ssrNoiseTex")?.sampler
         ssrNoiseSampler?.let { it.texture = scrSpcReflectionNoise }
+        uMaxIterations = model.findNode("uMaxIterations")
+        uMaxIterations?.uniform?.value = scrSpcReflectionIterations
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -161,7 +169,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 do {
                     vec.set(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f))
                 } while (vec.length() > 1f)
-                vec.norm().scale(0.5f)
+                vec.norm().scale(0.25f)
                 buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toByte()
                 buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toByte()
                 buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toByte()
@@ -260,6 +268,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                             inRayOrigin = viewPos
                             inRayDirection = roughRayDir
                             inRayOffset = rayOffset
+
+                            maxIterations = pushConstantNode1i("uMaxIterations").output
                         }
                         inReflectionColor = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
                         inReflectionWeight = rayTraceNode.outSampleWeight

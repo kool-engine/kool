@@ -34,7 +34,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "gltfDemo" to DemoEntry("glTF Models") { addAll(gltfDemo(it)) },
             "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
-            "multiShadowDemo" to DemoEntry("Multi Shadow") { addAll(multiLightDemo(it)) },
+            "ssrDemo" to DemoEntry("Reflections") { addAll(multiLightDemo(it)) },
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
             "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },

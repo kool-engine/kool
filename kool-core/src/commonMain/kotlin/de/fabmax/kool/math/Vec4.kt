@@ -515,6 +515,9 @@ open class MutableVec4i(x: Int, y: Int, z: Int, w: Int) : Vec4i(x, y, z, w) {
         get() = this[3]
         set(value) { this[3] = value }
 
+    val array: IntArray
+        get() = fields
+
     constructor() : this(0, 0, 0, 0)
     constructor(f: Int) : this(f, f, f, f)
     constructor(other: Vec4i) : this(other.x, other.y, other.z, other.w)

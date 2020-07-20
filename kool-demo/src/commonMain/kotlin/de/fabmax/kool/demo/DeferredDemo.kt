@@ -77,16 +77,8 @@ class DeferredDemo(ctx: KoolContext) {
         pbrPass = PbrLightingPass(this, mrtPass, cfg)
         pbrPass.makeLightOverlays()
 
-        // main scene only contains a quad used to draw the deferred shading output
-        +textureMesh {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    mirrorTexCoordsY()
-                }
-            }
-            shader = DeferredOutputShader(pbrPass.colorTexture, mrtPass.depthTexture)
-        }
+        // add the quad displaying the final composed scene image to the main scene
+        +pbrPass.createOutputQuad()
 
         onUpdate += { _, ctx ->
             lights.forEach { it.animate(ctx.deltaT) }

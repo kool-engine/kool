@@ -5,12 +5,17 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.pipeline.shading.*
+import de.fabmax.kool.pipeline.BufferedTextureData
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.CubeMapTextureData
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.deferred.*
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
+import de.fabmax.kool.util.ibl.BrdfLutPass
 import kotlin.math.*
 
 fun multiLightDemo(ctx: KoolContext): List<Scene> {
@@ -21,6 +26,8 @@ class MultiLightDemo(ctx: KoolContext) {
     val scenes = mutableListOf<Scene>()
 
     private val mainScene = Scene()
+    private val mrtPass = DeferredMrtPass(mainScene)
+    private lateinit var pbrPass: PbrLightingPass
     private val lights = listOf(
             LightMesh(Color.MD_CYAN),
             LightMesh(Color.MD_RED),
@@ -32,26 +39,27 @@ class MultiLightDemo(ctx: KoolContext) {
     private var lightPower = 500f
     private var lightSaturation = 0.4f
     private var lightRandomness = 0.3f
-    private var isPbrShading = true
+    private var isScrSpcReflections = true
     private var autoRotate = true
     private var showLightIndicators = true
 
     private val colorCycler = Cycler(matColors).apply { index = 1 }
     private var roughness = 0.1f
+    private var metallic = 0.0f
 
     private var bunnyMesh: Mesh? = null
     private var groundMesh: Mesh? = null
 
-    private var modelShader: ModeledShader? = null
+    private var modelShader: DeferredPbrShader? = null
 
     init {
+        for (i in lights.indices) {
+            shadowMaps += SimpleShadowMap(mainScene, i, drawNode = mrtPass.content)
+        }
+
         initMainScene(ctx)
         scenes += mainScene
         scenes += menu(ctx)
-
-        for (i in lights.indices) {
-            shadowMaps += SimpleShadowMap(mainScene, i)
-        }
     }
 
     private fun initMainScene(ctx: KoolContext) {
@@ -61,7 +69,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
                 zoom = 17.0
                 translation.set(0.0, 2.0, 0.0)
-                setMouseRotation(0f, -20f)
+                setMouseRotation(0f, -5f)
                 // let the camera slowly rotate around vertical axis
                 onUpdate += { _, ctx ->
                     if (autoRotate) {
@@ -73,114 +81,92 @@ class MultiLightDemo(ctx: KoolContext) {
             lighting.lights.clear()
             lights.forEach { +it }
             updateLighting()
+        }
 
+        mrtPass.content.apply {
             ctx.assetMgr.launch {
+                val floorAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+                val floorNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+                val floorRoughness = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
+                onDispose += {
+                    floorAlbedo.dispose()
+                    floorNormal.dispose()
+                    floorRoughness.dispose()
+                }
+
+                +textureMesh(isNormalMapped = true) {
+                    generate {
+                        rect {
+                            rotate(-90f, Vec3f.X_AXIS)
+                            size.set(100f, 100f)
+                            origin.set(-size.x / 2, -size.y / 2, 0f)
+                            generateTexCoords(4f)
+                        }
+                    }
+
+                    // ground doesn't need to cast shadows (there's nothing underneath it...)
+                    isCastingShadow = false
+                    groundMesh = this
+
+                    shader = deferredPbrShader {
+                        useAlbedoMap(floorAlbedo)
+                        useNormalMap(floorNormal)
+                        useRoughnessMap(floorRoughness)
+                    }
+                }
+
                 loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")?.let {
                     val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
                     val model = it.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()
-                    applyShaders()
                     +model
-                }
-            }
 
-            +textureMesh(isNormalMapped = true) {
-                generate {
-                    rect {
-                        rotate(-90f, Vec3f.X_AXIS)
-                        size.set(100f, 100f)
-                        origin.set(-size.x / 2, -size.y / 2, 0f)
-                        generateTexCoords(4f)
+                    modelShader = deferredPbrShader {
+                        useStaticAlbedo(colorCycler.current.linColor)
+                        roughness = this@MultiLightDemo.roughness
                     }
-                }
-
-                // ground doesn't need to cast shadows (their's nothing underneath it...)
-                isCastingShadow = false
-                groundMesh = this
-                applyShaders()
-            }
-        }
-    }
-
-    private fun applyShaders() {
-        if (isPbrShading) {
-            applyPbrShaderBunny()
-            applyPbrShaderGround()
-        } else {
-            applyPhongShaderBunny()
-            applyPhongShaderGround()
-        }
-        updateModelColor()
-        updateModelRoughness()
-        updateLighting()
-    }
-
-    private fun applyPbrShaderBunny() {
-        bunnyMesh?.apply {
-            modelShader = pbrShader {
-                albedoSource = Albedo.STATIC_ALBEDO
-                maxLights = this@MultiLightDemo.shadowMaps.size
-                shadowMaps += this@MultiLightDemo.shadowMaps
-            }
-            shader = modelShader
-        }
-    }
-
-    private fun applyPhongShaderBunny() {
-        bunnyMesh?.apply {
-            modelShader = phongShader {
-                albedoSource = Albedo.STATIC_ALBEDO
-                shadowMaps += this@MultiLightDemo.shadowMaps
-            }
-            shader = modelShader
-        }
-    }
-
-    private fun applyPbrShaderGround() {
-        groundMesh?.apply {
-            shader = pbrShader {
-                useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
-                useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
-                shadowMaps += this@MultiLightDemo.shadowMaps
-
-                onDispose += {
-                    albedoMap!!.dispose()
-                    normalMap!!.dispose()
-                    roughnessMap!!.dispose()
+                    bunnyMesh!!.shader = modelShader
                 }
             }
         }
+
+        val bgColor = BufferedTextureData.singleColor(Color(0.15f, 0.15f, 0.15f).toLinear())
+        val brdfLutPass = BrdfLutPass(mainScene)
+        val singleColorEnv = CubeMapTexture { CubeMapTextureData(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor) }
+        mainScene.onDispose += {
+            singleColorEnv.dispose()
+        }
+
+        // setup lighting pass
+        val pbrPassCfg = PbrSceneShader.DeferredPbrConfig().apply {
+            useImageBasedLighting(singleColorEnv, singleColorEnv, brdfLutPass.colorTexture)
+            isScrSpcReflections = true
+            shadowMaps += this@MultiLightDemo.shadowMaps
+        }
+        pbrPass = PbrLightingPass(mainScene, mrtPass, pbrPassCfg)
+        mainScene += pbrPass.createOutputQuad()
     }
 
-    private fun applyPhongShaderGround() {
-        groundMesh?.apply {
-            shader = phongShader {
-                useAlbedoMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
-                useNormalMap("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
-                shininess = 100f
-                shadowMaps += this@MultiLightDemo.shadowMaps
+    private fun updateLighting() {
+        lights.forEachIndexed { i, light ->
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = false
+            }
+            light.disable(mainScene.lighting)
+        }
 
-                onDispose += {
-                    albedoMap!!.dispose()
-                    normalMap!!.dispose()
-                }
+        var pos = 0f
+        val step = 360f / lightCount
+        for (i in 0 until min(lightCount, lights.size)) {
+            lights[i].setup(pos)
+            lights[i].enable(mainScene.lighting)
+            pos += step
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = true
             }
         }
-    }
 
-    private fun updateModelColor() {
-        when (val shader = modelShader) {
-            is PbrShader -> shader.albedo = colorCycler.current.linColor
-            is PhongShader -> shader.albedo = colorCycler.current.linColor.toSrgb()
-        }
-    }
-
-    private fun updateModelRoughness() {
-        when (val shader = modelShader) {
-            is PbrShader -> shader.roughness = roughness
-            is PhongShader -> shader.shininess = (1f - roughness).pow(2) * 100 + 1
-        }
+        lights.forEach { it.updateVisibility() }
     }
 
     private fun menu(ctx: KoolContext) = uiScene {
@@ -198,21 +184,19 @@ class MultiLightDemo(ctx: KoolContext) {
 
             // light setup
             var y = -40f
-            +label("lights") {
+            +label("Lights") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
-                text = "Lights"
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
 
             // light count
             y -= 35f
-            +label("lightCntLbl") {
+            +label("Lights:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Lights:"
             }
             val btnLightCnt = button("lightCnt") {
                 layoutSpec.setOrigin(pcs(45f), dps(y), zero())
@@ -254,10 +238,9 @@ class MultiLightDemo(ctx: KoolContext) {
 
             // light strength / brightness
             y -= 35f
-            +label("lightPowerLbl") {
+            +label("Strength:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Strength:"
             }
             +slider("lightPowerSlider") {
                 layoutSpec.setOrigin(pcs(30f), dps(y), zero())
@@ -271,10 +254,9 @@ class MultiLightDemo(ctx: KoolContext) {
             }
 
             y -= 35f
-            +label("saturationLbl") {
+            +label("Saturation:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
-                text = "Saturation:"
             }
             +slider("saturationSlider") {
                 layoutSpec.setOrigin(pcs(30f), dps(y), zero())
@@ -287,10 +269,9 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
-            +label("randomLbl") {
+            +label("Random:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
-                text = "Random:"
             }
             +slider("randomSlider") {
                 layoutSpec.setOrigin(pcs(30f), dps(y), zero())
@@ -311,46 +292,27 @@ class MultiLightDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 35f
-            val tbPbr: ToggleButton
-            var tbPhong: ToggleButton? = null
-            tbPbr = toggleButton("Physical Based") {
+            +toggleButton("Reflections") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = isPbrShading
+                isEnabled = isScrSpcReflections
                 onClick += { _, _, _ ->
-                    isPbrShading = isEnabled
-                    applyShaders()
-                    tbPhong?.isEnabled = !isEnabled
+                    isScrSpcReflections = isEnabled
+                    pbrPass.sceneShader.scrSpcReflectionIterations = if (isEnabled) 24 else 0
                 }
             }
-            y -= 35f
-            tbPhong = toggleButton("Phong") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = !isPbrShading
-                onClick += { _, _, _ ->
-                    isPbrShading = !isEnabled
-                    applyShaders()
-                    tbPbr.isEnabled = !isEnabled
-                }
-            }
-            +tbPbr
-            +tbPhong
-
             y -= 40f
-            +label("material") {
+            +label("Material") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
-                text = "Material"
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 35f
-            +label("colorLbl") {
+            +label("Color:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Color:"
             }
             val matLabel = button("selected-color") {
                 layoutSpec.setOrigin(pcs(45f), dps(y), zero())
@@ -359,7 +321,7 @@ class MultiLightDemo(ctx: KoolContext) {
 
                 onClick += { _, _, _ ->
                     text = colorCycler.next().name
-                    updateModelColor()
+                    modelShader?.albedo = colorCycler.current.linColor
                 }
             }
             +matLabel
@@ -370,7 +332,7 @@ class MultiLightDemo(ctx: KoolContext) {
 
                 onClick += { _, _, _ ->
                     matLabel.text = colorCycler.prev().name
-                    updateModelColor()
+                    modelShader?.albedo = colorCycler.current.linColor
                 }
             }
             +button("color-right") {
@@ -380,23 +342,35 @@ class MultiLightDemo(ctx: KoolContext) {
 
                 onClick += { _, _, _ ->
                     matLabel.text = colorCycler.next().name
-                    updateModelColor()
+                    modelShader?.albedo = colorCycler.current.linColor
                 }
             }
             y -= 35f
-            +label("roughnessLbl") {
+            +label("Roughness:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Roughness:"
             }
-            +slider("roughhnessSlider") {
+            +slider("roughnessSlider", 0f, 1f, roughness) {
                 layoutSpec.setOrigin(pcs(30f), dps(y), zero())
                 layoutSpec.setSize(pcs(70f), dps(35f), full())
-                value = 10f
 
                 onValueChanged += {
-                    roughness = value / 100f
-                    updateModelRoughness()
+                    roughness = value
+                    modelShader?.roughness = roughness
+                }
+            }
+            y -= 35f
+            +label("Metallic:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            +slider("metallicSlider", 0f, 1f, metallic) {
+                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
+                layoutSpec.setSize(pcs(70f), dps(35f), full())
+
+                onValueChanged += {
+                    metallic = value
+                    modelShader?.metallic = metallic
                 }
             }
 
@@ -428,28 +402,6 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
             }
         }
-    }
-
-    private fun updateLighting() {
-        lights.forEachIndexed { i, light ->
-            if (i < shadowMaps.size) {
-                shadowMaps[i].isShadowMapEnabled = false
-            }
-            light.disable(mainScene.lighting)
-        }
-
-        var pos = 0f
-        val step = 360f / lightCount
-        for (i in 0 until min(lightCount, lights.size)) {
-            lights[i].setup(pos)
-            lights[i].enable(mainScene.lighting)
-            pos += step
-            if (i < shadowMaps.size) {
-                shadowMaps[i].isShadowMapEnabled = true
-            }
-        }
-
-        lights.forEach { it.updateVisibility() }
     }
 
     private inner class LightMesh(val color: Color) : TransformGroup() {
@@ -536,11 +488,7 @@ class MultiLightDemo(ctx: KoolContext) {
             meshPos.set(x, 9f, -z)
             anglePos = angPos
             val color = Color.WHITE.mix(color, lightSaturation, MutableColor())
-            if (isPbrShading) {
-                light.setColor(color.toLinear(), lightPower)
-            } else {
-                light.setColor(color, lightPower / 5f)
-            }
+            light.setColor(color.toLinear(), lightPower)
             lightMeshShader.color = color
             updateSpotAngleMesh()
         }

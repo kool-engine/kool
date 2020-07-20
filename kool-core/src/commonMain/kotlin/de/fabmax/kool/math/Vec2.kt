@@ -398,6 +398,9 @@ open class MutableVec2i(x: Int, y: Int) : Vec2i(x, y) {
         get() = this[1]
         set(value) { fields[1] = value }
 
+    val array: IntArray
+        get() = fields
+
     constructor() : this(0, 0)
     constructor(f: Int) : this(f, f)
     constructor(other: Vec2i) : this(other.x, other.y)

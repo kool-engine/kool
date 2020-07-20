@@ -175,7 +175,43 @@ class Uniform1i(name: String) : Uniform<Int>(0, name) {
     }
 
     override fun putTo(buffer: MixedBuffer) {
-        buffer.putUint32(value)
+        buffer.putInt32(value)
+    }
+}
+
+class Uniform2i(name: String) : Uniform<MutableVec2i>(MutableVec2i(), name) {
+    override val size: Int = 2 * 4
+
+    constructor(initValue: Vec2i, name: String) : this(name) {
+        value.set(initValue)
+    }
+
+    override fun putTo(buffer: MixedBuffer) {
+        buffer.putInt32(value.array)
+    }
+}
+
+class Uniform3i(name: String) : Uniform<MutableVec3i>(MutableVec3i(), name) {
+    override val size: Int = 3 * 4
+
+    constructor(initValue: Vec3i, name: String) : this(name) {
+        value.set(initValue)
+    }
+
+    override fun putTo(buffer: MixedBuffer) {
+        buffer.putInt32(value.array)
+    }
+}
+
+class Uniform4i(name: String) : Uniform<MutableVec4i>(MutableVec4i(), name) {
+    override val size: Int = 4 * 4
+
+    constructor(initValue: Vec4i, name: String) : this(name) {
+        value.set(initValue)
+    }
+
+    override fun putTo(buffer: MixedBuffer) {
+        buffer.putInt32(value.array)
     }
 }
 
@@ -185,11 +221,46 @@ class Uniform1iv(name: String, override val length: Int) : Uniform<IntArray>(Int
 
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
-            buffer.putUint32(value[i])
+            buffer.putInt32(value[i])
             // padding (std140 layout)
-            buffer.putUint32(0)
-            buffer.putUint32(0)
-            buffer.putUint32(0)
+            buffer.putInt32(0)
+            buffer.putInt32(0)
+            buffer.putInt32(0)
+        }
+    }
+}
+
+class Uniform2iv(name: String, override val length: Int) : Uniform<Array<MutableVec2i>>(Array(length) { MutableVec2i() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putInt32(value[i].array)
+            // padding (std140 layout)
+            buffer.putInt32(0)
+            buffer.putInt32(0)
+        }
+    }
+}
+
+class Uniform3iv(name: String, override val length: Int) : Uniform<Array<MutableVec3i>>(Array(length) { MutableVec3i() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putInt32(value[i].array)
+            // padding (std140 layout)
+            buffer.putInt32(0)
+        }
+    }
+}
+
+class Uniform4iv(name: String, override val length: Int) : Uniform<Array<MutableVec4i>>(Array(length) { MutableVec4i() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putInt32(value[i].array)
         }
     }
 }

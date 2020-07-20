@@ -92,14 +92,20 @@ class ScreenSpaceRayTraceNode(val positionTex: TextureNode, graph: ShaderGraph) 
                 }
             }
             
-            ${outRayPos.declare()} = ${name}_rayPos + ${inRayDirection.ref3f()} * ${name}_rayStep;
-            ${outSamplePos.declare()} = projectViewPos($outRayPos);
+            ${outSampleWeight.declare()} = 0.0;
+            ${outRayPos.declare()} = vec3(0.0);
+            ${outSamplePos.declare()} = vec3(0.0);
             
-            ${outSampleWeight.declare()} = 
-                          linearStep(0.0, 0.1, ${outSamplePos}.x) * (1.0 - linearStep(0.9, 1.0, ${outSamplePos}.x))
-                        * linearStep(0.0, 0.1, ${outSamplePos}.y) * (1.0 - linearStep(0.9, 1.0, ${outSamplePos}.y))
-                        * (1.0 - step(0.9999, ${outSamplePos}.z))
-                        * (1.0 - linearStep(0.0, -${name}_rayPos.z / 10.0, abs(${name}_dDepth)));
+            if (${maxIterations.ref1i()} > 0) {
+                $outRayPos = ${name}_rayPos + ${inRayDirection.ref3f()} * ${name}_rayStep;
+                $outSamplePos = projectViewPos($outRayPos);
+                
+                $outSampleWeight = 
+                              linearStep(0.0, 0.1, ${outSamplePos}.x) * (1.0 - linearStep(0.9, 1.0, ${outSamplePos}.x))
+                            * linearStep(0.0, 0.1, ${outSamplePos}.y) * (1.0 - linearStep(0.9, 1.0, ${outSamplePos}.y))
+                            * (1.0 - step(0.9999, ${outSamplePos}.z))
+                            * (1.0 - linearStep(0.0, -${name}_rayPos.z / 10.0, abs(${name}_dDepth)));
+            }
         """)
     }
 }

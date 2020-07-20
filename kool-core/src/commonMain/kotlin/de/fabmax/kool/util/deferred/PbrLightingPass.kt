@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.textureMesh
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, pbrLightingSetup(mrtPass)) {
@@ -43,7 +44,9 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         camera = mrtPass.camera
 
         cfg.useMrtPass(mrtPass)
-        cfg.useScreenSpaceReflections(prevColorTex, true)
+        if (cfg.isScrSpcReflections) {
+            cfg.useScreenSpaceReflections(prevColorTex, true)
+        }
         sceneShader = PbrSceneShader(cfg)
 
         content.apply {
@@ -84,6 +87,16 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         drawNode.dispose(ctx)
         sceneShader.scrSpcReflectionNoise?.dispose()
         super.dispose(ctx)
+    }
+
+    fun createOutputQuad() = textureMesh {
+        isFrustumChecked = false
+        generate {
+            rect {
+                mirrorTexCoordsY()
+            }
+        }
+        shader = DeferredOutputShader(colorTexture, mrtPass.depthTexture)
     }
 
     companion object {

@@ -63,7 +63,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var DeferredMrtPass = $module$kool.de.fabmax.kool.util.deferred.DeferredMrtPass;
   var PbrSceneShader$DeferredPbrConfig = $module$kool.de.fabmax.kool.util.deferred.PbrSceneShader.DeferredPbrConfig;
   var PbrLightingPass = $module$kool.de.fabmax.kool.util.deferred.PbrLightingPass;
-  var DeferredOutputShader = $module$kool.de.fabmax.kool.util.deferred.DeferredOutputShader;
   var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
   var wireframeMesh = $module$kool.de.fabmax.kool.scene.wireframeMesh_hjnvxh$;
   var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
@@ -125,7 +124,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var phongShader = $module$kool.de.fabmax.kool.pipeline.shading.phongShader_avt1hd$;
+  var CubeMapTextureData = $module$kool.de.fabmax.kool.pipeline.CubeMapTextureData;
+  var CubeMapTexture = $module$kool.de.fabmax.kool.pipeline.CubeMapTexture;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -154,10 +154,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var AlphaModeOpaque = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeOpaque;
   var now = $module$kool.de.fabmax.kool.now;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
-  var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
+  var pointKdTree = $module$kool.de.fabmax.kool.util.spatial.pointKdTree_ffk80x$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
+  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.spatial.InRadiusTraverser;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
@@ -1084,20 +1084,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.lightVolumeMesh_k6bbw9$_0 = lightVolumeMesh;
     }
   });
-  function DeferredDemo$makeDeferredScene$lambda$lambda$lambda($receiver) {
-    $receiver.rectProps.defaults().mirrorTexCoordsY();
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
-  }
   function DeferredDemo$makeDeferredScene$lambda$lambda(this$DeferredDemo) {
-    return function ($receiver) {
-      $receiver.isFrustumChecked = false;
-      $receiver.generate_v2sixm$(DeferredDemo$makeDeferredScene$lambda$lambda$lambda);
-      $receiver.shader = new DeferredOutputShader(this$DeferredDemo.pbrPass_0.colorTexture);
-      return Unit;
-    };
-  }
-  function DeferredDemo$makeDeferredScene$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver, f, ctx) {
       var tmp$;
       tmp$ = this$DeferredDemo.lights_0.iterator();
@@ -1108,7 +1095,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function DeferredDemo$makeDeferredScene$lambda$lambda_1(this$DeferredDemo) {
+  function DeferredDemo$makeDeferredScene$lambda$lambda_0(this$DeferredDemo) {
     return function ($receiver, it) {
       this$DeferredDemo.noAoMap_0.dispose();
       return Unit;
@@ -1128,9 +1115,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var cfg = $receiver_0;
     this.pbrPass_0 = new PbrLightingPass($receiver, this.mrtPass_0, cfg);
     this.makeLightOverlays_0(this.pbrPass_0);
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, DeferredDemo$makeDeferredScene$lambda$lambda(this)));
-    $receiver.onUpdate.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_0(this));
-    $receiver.onDispose.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_1(this));
+    $receiver.unaryPlus_uv0sim$(this.pbrPass_0.createOutputQuad());
+    $receiver.onUpdate.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda(this));
+    $receiver.onDispose.add_11rb$(DeferredDemo$makeDeferredScene$lambda$lambda_0(this));
     return $receiver;
   };
   function DeferredDemo$makeLightOverlays$lambda$lambda$lambda($receiver) {
@@ -2059,7 +2046,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('glTF Models', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('multiShadowDemo', new Demo$DemoEntry('Multi Shadow', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7)), to('helloGltfDemo', new Demo$DemoEntry('Hello glTF', true, Demo$demos$lambda_8))]);
+    this.demos_0 = mutableMapOf([to('deferredDemo', new Demo$DemoEntry('Deferred Shading', void 0, Demo$demos$lambda)), to('gltfDemo', new Demo$DemoEntry('glTF Models', void 0, Demo$demos$lambda_0)), to('pbrDemo', new Demo$DemoEntry('PBR Materials', void 0, Demo$demos$lambda_1)), to('aoDemo', new Demo$DemoEntry('Ambient Occlusion', void 0, Demo$demos$lambda_2)), to('ssrDemo', new Demo$DemoEntry('Reflections', void 0, Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Procedural Tree', void 0, Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification', void 0, Demo$demos$lambda_5)), to('instanceDemo', new Demo$DemoEntry('Instanced Drawing', void 0, Demo$demos$lambda_6)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_7)), to('helloGltfDemo', new Demo$DemoEntry('Hello glTF', true, Demo$demos$lambda_8))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -2609,19 +2596,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     else
       return instance.doResume(null);
   };
-  function GltfDemo$makeDeferredContent$lambda$lambda$lambda($receiver) {
-    $receiver.rectProps.defaults().mirrorTexCoordsY();
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
-  }
-  function GltfDemo$makeDeferredContent$lambda$lambda(this$GltfDemo) {
-    return function ($receiver) {
-      $receiver.isFrustumChecked = false;
-      $receiver.generate_v2sixm$(GltfDemo$makeDeferredContent$lambda$lambda$lambda);
-      $receiver.shader = new DeferredOutputShader(this$GltfDemo.pbrPass_0.colorTexture);
-      return Unit;
-    };
-  }
   function Coroutine$makeDeferredContent_0($this, $receiver_0, ctx_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
@@ -2662,7 +2636,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             this.$this.pbrPass_0.content.addNode_xtids1$(new Skybox(ensureNotNull(this.$this.reflMapPass_0).colorTextureCube, 1.0, true), 0);
             var $receiver_0 = this.$this.contentGroupDeferred_0;
             $receiver_0.isFrustumChecked = false;
-            $receiver_0.unaryPlus_uv0sim$(textureMesh(void 0, void 0, GltfDemo$makeDeferredContent$lambda$lambda(this.$this)));
+            $receiver_0.unaryPlus_uv0sim$(this.$this.pbrPass_0.createOutputQuad());
             this.local$$receiver.unaryPlus_uv0sim$($receiver_0);
             return;
           default:this.state_0 = 1;
@@ -3844,37 +3818,50 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     MultiLightDemo$Companion_getInstance();
     this.scenes = ArrayList_init();
     this.mainScene_0 = new Scene_init();
+    this.mrtPass_0 = new DeferredMrtPass(this.mainScene_0);
+    this.pbrPass_it2vcl$_0 = this.pbrPass_it2vcl$_0;
     this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
     this.shadowMaps_0 = ArrayList_init();
     this.lightCount_0 = 4;
     this.lightPower_0 = 500.0;
     this.lightSaturation_0 = 0.4;
     this.lightRandomness_0 = 0.3;
-    this.isPbrShading_0 = true;
+    this.isScrSpcReflections_0 = true;
     this.autoRotate_0 = true;
     this.showLightIndicators_0 = true;
     var $receiver = new Cycler(MultiLightDemo$Companion_getInstance().matColors_0);
     $receiver.index = 1;
     this.colorCycler_0 = $receiver;
     this.roughness_0 = 0.1;
+    this.metallic_0 = 0.0;
     this.bunnyMesh_0 = null;
     this.groundMesh_0 = null;
     this.modelShader_0 = null;
     var tmp$;
-    this.initMainScene_0(ctx);
-    var $receiver_0 = this.scenes;
-    var element = this.mainScene_0;
-    $receiver_0.add_11rb$(element);
-    var $receiver_1 = this.scenes;
-    var element_0 = this.menu_0(ctx);
-    $receiver_1.add_11rb$(element_0);
     tmp$ = this.lights_0;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var $receiver_2 = this.shadowMaps_0;
-      var element_1 = new SimpleShadowMap(this.mainScene_0, i);
-      $receiver_2.add_11rb$(element_1);
+      var $receiver_0 = this.shadowMaps_0;
+      var element = new SimpleShadowMap(this.mainScene_0, i, void 0, this.mrtPass_0.content);
+      $receiver_0.add_11rb$(element);
     }
+    this.initMainScene_0(ctx);
+    var $receiver_1 = this.scenes;
+    var element_0 = this.mainScene_0;
+    $receiver_1.add_11rb$(element_0);
+    var $receiver_2 = this.scenes;
+    var element_1 = this.menu_0(ctx);
+    $receiver_2.add_11rb$(element_1);
   }
+  Object.defineProperty(MultiLightDemo.prototype, 'pbrPass_0', {
+    get: function () {
+      if (this.pbrPass_it2vcl$_0 == null)
+        return throwUPAE('pbrPass');
+      return this.pbrPass_it2vcl$_0;
+    },
+    set: function (pbrPass) {
+      this.pbrPass_it2vcl$_0 = pbrPass;
+    }
+  });
   function MultiLightDemo$initMainScene$lambda$lambda$lambda(this$MultiLightDemo, this$) {
     return function ($receiver, f, ctx) {
       if (this$MultiLightDemo.autoRotate_0) {
@@ -3888,19 +3875,54 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 17.0;
       $receiver.translation.set_yvo9jy$(0.0, 2.0, 0.0);
-      $receiver.setMouseRotation_dleff0$(0.0, -20.0);
+      $receiver.setMouseRotation_dleff0$(0.0, -5.0);
       var $receiver_0 = $receiver.onUpdate;
       var element = MultiLightDemo$initMainScene$lambda$lambda$lambda(this$MultiLightDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$MultiLightDemo_0, this$_0, $receiver_0, controller, continuation_0) {
+  function MultiLightDemo$initMainScene$lambda$lambda$lambda_0(closure$floorAlbedo, closure$floorNormal, closure$floorRoughness) {
+    return function ($receiver, it) {
+      closure$floorAlbedo.dispose();
+      closure$floorNormal.dispose();
+      closure$floorRoughness.dispose();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$initMainScene$lambda$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
+    $receiver_0.size.set_dleff0$(100.0, 100.0);
+    $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2, -$receiver_0.size.y / 2, 0.0);
+    $receiver_0.generateTexCoords_mx4ult$(4.0);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function MultiLightDemo$initMainScene$lambda$lambda$lambda_1(this$MultiLightDemo, closure$floorAlbedo, closure$floorNormal, closure$floorRoughness) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(MultiLightDemo$initMainScene$lambda$lambda$lambda$lambda);
+      $receiver.isCastingShadow = false;
+      this$MultiLightDemo.groundMesh_0 = $receiver;
+      var cfg = new PbrMaterialConfig();
+      var closure$floorAlbedo_0 = closure$floorAlbedo;
+      var closure$floorNormal_0 = closure$floorNormal;
+      var closure$floorRoughness_0 = closure$floorRoughness;
+      cfg.useAlbedoMap_daqygw$(closure$floorAlbedo_0);
+      cfg.useNormalMap_9wkq18$(closure$floorNormal_0);
+      cfg.useRoughnessMap_daqygw$(closure$floorRoughness_0);
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  function Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$_0, this$MultiLightDemo_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$this$MultiLightDemo = this$MultiLightDemo_0;
     this.local$this$ = this$_0;
+    this.local$this$MultiLightDemo = this$MultiLightDemo_0;
+    this.local$floorAlbedo = void 0;
+    this.local$floorNormal = void 0;
     this.local$$receiver = $receiver_0;
   }
   Coroutine$MultiLightDemo$initMainScene$lambda$lambda.$metadata$ = {
@@ -3917,13 +3939,36 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 0:
             var tmp$;
             this.state_0 = 2;
-            this.result_0 = loadGltfFile(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', void 0, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
           case 1:
             throw this.exception_0;
           case 2:
+            this.local$floorAlbedo = this.result_0;
+            this.state_0 = 3;
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', void 0, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            this.local$floorNormal = this.result_0;
+            this.state_0 = 4;
+            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', void 0, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 4:
+            var floorRoughness = this.result_0;
+            this.local$this$.onDispose.add_11rb$(MultiLightDemo$initMainScene$lambda$lambda$lambda_0(this.local$floorAlbedo, this.local$floorNormal, floorRoughness));
+            this.local$this$.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$initMainScene$lambda$lambda$lambda_1(this.local$this$MultiLightDemo, this.local$floorAlbedo, this.local$floorNormal, floorRoughness)));
+            this.state_0 = 5;
+            this.result_0 = loadGltfFile(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/bunny.gltf.gz', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 5:
             var tmp$_0;
             if ((tmp$ = this.result_0) != null) {
               var this$MultiLightDemo = this.local$this$MultiLightDemo;
@@ -3931,8 +3976,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
               var model = tmp$.makeModel_m0hq3v$(modelCfg);
               this$MultiLightDemo.bunnyMesh_0 = first(model.meshes.values);
-              this$MultiLightDemo.applyShaders_0();
               this$.unaryPlus_uv0sim$(model);
+              var cfg = new PbrMaterialConfig();
+              cfg.useStaticAlbedo_d7aj7k$(this$MultiLightDemo.colorCycler_0.current.linColor);
+              cfg.roughness = this$MultiLightDemo.roughness_0;
+              this$MultiLightDemo.modelShader_0 = new DeferredPbrShader(cfg);
+              ensureNotNull(this$MultiLightDemo.bunnyMesh_0).shader = this$MultiLightDemo.modelShader_0;
               tmp$_0 = Unit;
             } else
               tmp$_0 = null;
@@ -3951,30 +4000,62 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function MultiLightDemo$initMainScene$lambda$lambda_0(this$MultiLightDemo_0, this$_0) {
+  function MultiLightDemo$initMainScene$lambda$lambda_0(this$_0, this$MultiLightDemo_0) {
     return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$MultiLightDemo_0, this$_0, $receiver_0, this, continuation_0);
+      var instance = new Coroutine$MultiLightDemo$initMainScene$lambda$lambda(this$_0, this$MultiLightDemo_0, $receiver_0, this, continuation_0);
       if (suspended)
         return instance;
       else
         return instance.doResume(null);
     };
   }
-  function MultiLightDemo$initMainScene$lambda$lambda$lambda_0($receiver) {
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-    $receiver_0.size.set_dleff0$(100.0, 100.0);
-    $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2, -$receiver_0.size.y / 2, 0.0);
-    $receiver_0.generateTexCoords_mx4ult$(4.0);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
+  function Coroutine$MultiLightDemo$initMainScene$lambda(closure$bgColor_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$bgColor = closure$bgColor_0;
   }
-  function MultiLightDemo$initMainScene$lambda$lambda_1(this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(MultiLightDemo$initMainScene$lambda$lambda$lambda_0);
-      $receiver.isCastingShadow = false;
-      this$MultiLightDemo.groundMesh_0 = $receiver;
-      this$MultiLightDemo.applyShaders_0();
+  Coroutine$MultiLightDemo$initMainScene$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$MultiLightDemo$initMainScene$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$MultiLightDemo$initMainScene$lambda.prototype.constructor = Coroutine$MultiLightDemo$initMainScene$lambda;
+  Coroutine$MultiLightDemo$initMainScene$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            return new CubeMapTextureData(this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor);
+          case 1:
+            throw this.exception_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      } catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        } else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function MultiLightDemo$initMainScene$lambda(closure$bgColor_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$MultiLightDemo$initMainScene$lambda(closure$bgColor_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function MultiLightDemo$initMainScene$lambda_0(closure$singleColorEnv) {
+    return function ($receiver, it) {
+      closure$singleColorEnv.dispose();
       return Unit;
     };
   }
@@ -3989,108 +4070,51 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(element);
     }
     this.updateLighting_0();
-    ctx.assetMgr.launch_eln4bt$(MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$initMainScene$lambda$lambda_1(this)));
+    var $receiver_0 = this.mrtPass_0.content;
+    ctx.assetMgr.launch_eln4bt$(MultiLightDemo$initMainScene$lambda$lambda_0($receiver_0, this));
+    var bgColor = BufferedTextureData.Companion.singleColor_d7aj7k$((new Color(0.15, 0.15, 0.15)).toLinear());
+    var brdfLutPass = new BrdfLutPass(this.mainScene_0);
+    var singleColorEnv = new CubeMapTexture(void 0, void 0, MultiLightDemo$initMainScene$lambda(bgColor));
+    this.mainScene_0.onDispose.add_11rb$(MultiLightDemo$initMainScene$lambda_0(singleColorEnv));
+    var $receiver_1 = new PbrSceneShader$DeferredPbrConfig();
+    $receiver_1.useImageBasedLighting_5m8fyp$(singleColorEnv, singleColorEnv, brdfLutPass.colorTexture);
+    $receiver_1.isScrSpcReflections = true;
+    addAll($receiver_1.shadowMaps, this.shadowMaps_0);
+    var pbrPassCfg = $receiver_1;
+    this.pbrPass_0 = new PbrLightingPass(this.mainScene_0, this.mrtPass_0, pbrPassCfg);
+    this.mainScene_0.plusAssign_f1kmr1$(this.pbrPass_0.createOutputQuad());
   };
-  MultiLightDemo.prototype.applyShaders_0 = function () {
-    if (this.isPbrShading_0) {
-      this.applyPbrShaderBunny_0();
-      this.applyPbrShaderGround_0();
-    } else {
-      this.applyPhongShaderBunny_0();
-      this.applyPhongShaderGround_0();
+  MultiLightDemo.prototype.updateLighting_0 = function () {
+    var tmp$;
+    var tmp$_0, tmp$_0_0;
+    var index = 0;
+    tmp$_0 = this.lights_0.iterator();
+    while (tmp$_0.hasNext()) {
+      var item = tmp$_0.next();
+      var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+      if (i < this.shadowMaps_0.size) {
+        this.shadowMaps_0.get_za3lpa$(i).isShadowMapEnabled = false;
+      }item.disable_kc3nav$(this.mainScene_0.lighting);
     }
-    this.updateModelColor_0();
-    this.updateModelRoughness_0();
-    this.updateLighting_0();
+    var pos = 0.0;
+    var step = 360.0 / this.lightCount_0;
+    var a = this.lightCount_0;
+    var b = this.lights_0.size;
+    tmp$ = Math_0.min(a, b);
+    for (var i_0 = 0; i_0 < tmp$; i_0++) {
+      this.lights_0.get_za3lpa$(i_0).setup_mx4ult$(pos);
+      this.lights_0.get_za3lpa$(i_0).enable_kc3nav$(this.mainScene_0.lighting);
+      pos += step;
+      if (i_0 < this.shadowMaps_0.size) {
+        this.shadowMaps_0.get_za3lpa$(i_0).isShadowMapEnabled = true;
+      }}
+    var tmp$_1;
+    tmp$_1 = this.lights_0.iterator();
+    while (tmp$_1.hasNext()) {
+      var element = tmp$_1.next();
+      element.updateVisibility();
+    }
   };
-  function MultiLightDemo$applyPbrShaderBunny$lambda$lambda(this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.maxLights = this$MultiLightDemo.shadowMaps_0.size;
-      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
-      return Unit;
-    };
-  }
-  MultiLightDemo.prototype.applyPbrShaderBunny_0 = function () {
-    var tmp$;
-    if ((tmp$ = this.bunnyMesh_0) != null) {
-      this.modelShader_0 = pbrShader(MultiLightDemo$applyPbrShaderBunny$lambda$lambda(this));
-      tmp$.shader = this.modelShader_0;
-    }};
-  function MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
-      return Unit;
-    };
-  }
-  MultiLightDemo.prototype.applyPhongShaderBunny_0 = function () {
-    var tmp$;
-    if ((tmp$ = this.bunnyMesh_0) != null) {
-      this.modelShader_0 = phongShader(MultiLightDemo$applyPhongShaderBunny$lambda$lambda(this));
-      tmp$.shader = this.modelShader_0;
-    }};
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda(this$) {
-    return function ($receiver, it) {
-      ensureNotNull(this$.albedoMap).dispose();
-      ensureNotNull(this$.normalMap).dispose();
-      ensureNotNull(this$.roughnessMap).dispose();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda(this$MultiLightDemo, this$) {
-    return function ($receiver) {
-      $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg');
-      $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg');
-      $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg');
-      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
-      this$.onDispose.add_11rb$(MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver));
-      return Unit;
-    };
-  }
-  MultiLightDemo.prototype.applyPbrShaderGround_0 = function () {
-    var tmp$;
-    if ((tmp$ = this.groundMesh_0) != null) {
-      tmp$.shader = pbrShader(MultiLightDemo$applyPbrShaderGround$lambda$lambda(this, tmp$));
-    }};
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda(this$) {
-    return function ($receiver, it) {
-      ensureNotNull(this$.albedoMap).dispose();
-      ensureNotNull(this$.normalMap).dispose();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda(this$MultiLightDemo, this$) {
-    return function ($receiver) {
-      $receiver.useAlbedoMap_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg');
-      $receiver.useNormalMap_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg');
-      $receiver.shininess = 100.0;
-      addAll($receiver.shadowMaps, this$MultiLightDemo.shadowMaps_0);
-      this$.onDispose.add_11rb$(MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver));
-      return Unit;
-    };
-  }
-  MultiLightDemo.prototype.applyPhongShaderGround_0 = function () {
-    var tmp$;
-    if ((tmp$ = this.groundMesh_0) != null) {
-      tmp$.shader = phongShader(MultiLightDemo$applyPhongShaderGround$lambda$lambda(this, tmp$));
-    }};
-  MultiLightDemo.prototype.updateModelColor_0 = function () {
-    var shader = this.modelShader_0;
-    if (Kotlin.isType(shader, PbrShader))
-      shader.albedo = this.colorCycler_0.current.linColor;
-    else if (Kotlin.isType(shader, PhongShader))
-      shader.albedo = this.colorCycler_0.current.linColor.toSrgb();
-  };
-  MultiLightDemo.prototype.updateModelRoughness_0 = function () {
-    var shader = this.modelShader_0;
-    if (Kotlin.isType(shader, PbrShader))
-      shader.roughness = this.roughness_0;
-    else if (Kotlin.isType(shader, PhongShader)) {
-      var $receiver = 1.0 - this.roughness_0;
-      shader.shininess = Math_0.pow($receiver, 2) * 100 + 1;
-    }};
   function MultiLightDemo$menu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -4107,7 +4131,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Lights';
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
@@ -4117,7 +4140,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Lights:';
       return Unit;
     };
   }
@@ -4194,7 +4216,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Strength:';
       return Unit;
     };
   }
@@ -4220,7 +4241,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
-      $receiver.text = 'Saturation:';
       return Unit;
     };
   }
@@ -4246,7 +4266,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
-      $receiver.text = 'Random:';
       return Unit;
     };
   }
@@ -4277,145 +4296,149 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$, this$MultiLightDemo, closure$tbPhong) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$, this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
-      var tmp$;
-      this$MultiLightDemo.isPbrShading_0 = this$.isEnabled;
-      this$MultiLightDemo.applyShaders_0();
-      (tmp$ = closure$tbPhong.v) != null ? (tmp$.isEnabled = !this$.isEnabled) : null;
+      this$MultiLightDemo.isScrSpcReflections_0 = this$.isEnabled;
+      this$MultiLightDemo.pbrPass_0.sceneShader.scrSpcReflectionIterations = this$.isEnabled ? 24 : 0;
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_13(closure$y, this$MultiLightDemo, closure$tbPhong) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_13(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$MultiLightDemo.isPbrShading_0;
+      $receiver.isEnabled = this$MultiLightDemo.isScrSpcReflections_0;
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_5($receiver, this$MultiLightDemo, closure$tbPhong);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_5($receiver, this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$, this$MultiLightDemo, closure$tbPbr) {
-    return function ($receiver, f, f_0, f_1) {
-      this$MultiLightDemo.isPbrShading_0 = !this$.isEnabled;
-      this$MultiLightDemo.applyShaders_0();
-      closure$tbPbr.isEnabled = !this$.isEnabled;
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y, this$MultiLightDemo, closure$tbPbr) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = !this$MultiLightDemo.isPbrShading_0;
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6($receiver, this$MultiLightDemo, closure$tbPbr);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_15(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Material';
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_15(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Color:';
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
+      var tmp$;
       $receiver.text = this$MultiLightDemo.colorCycler_0.next().name;
-      this$MultiLightDemo.updateModelColor_0();
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
       $receiver.text = this$MultiLightDemo.colorCycler_0.current.name;
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
   function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel) {
     return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
-      this$MultiLightDemo.updateModelColor_0();
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
       return Unit;
     };
   }
   function MultiLightDemo$menu$lambda$lambda$lambda_18(closure$y, this$MultiLightDemo, closure$matLabel) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = '<';
+      $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
       var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
-      this$MultiLightDemo.updateModelColor_0();
+  function MultiLightDemo$menu$lambda$lambda$lambda_19(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_19(closure$y, this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      var tmp$;
+      this$MultiLightDemo.roughness_0 = $receiver.value;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.roughness = this$MultiLightDemo.roughness_0) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_20(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel);
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_20(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_21(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Roughness:';
       return Unit;
     };
   }
   function MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo) {
     return function ($receiver, it) {
-      this$MultiLightDemo.roughness_0 = $receiver.value / 100.0;
-      this$MultiLightDemo.updateModelRoughness_0();
+      var tmp$;
+      this$MultiLightDemo.metallic_0 = $receiver.value;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.metallic = this$MultiLightDemo.metallic_0) : null;
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_21(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_22(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.value = 10.0;
       var $receiver_0 = $receiver.onValueChanged;
       var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_22(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_23(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -4431,7 +4454,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_23(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_24(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -4449,7 +4472,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_24(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_25(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -4466,49 +4489,46 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-645.0), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(525.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lights', MultiLightDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights', MultiLightDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightCntLbl', MultiLightDemo$menu$lambda$lambda$lambda_2(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights:', MultiLightDemo$menu$lambda$lambda$lambda_2(y)));
       var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_3(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(btnLightCnt);
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_4(y, this$MultiLightDemo, btnLightCnt)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_5(y, this$MultiLightDemo, btnLightCnt)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightPowerLbl', MultiLightDemo$menu$lambda$lambda$lambda_6(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Strength:', MultiLightDemo$menu$lambda$lambda$lambda_6(y)));
       $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('saturationLbl', MultiLightDemo$menu$lambda$lambda$lambda_8(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Saturation:', MultiLightDemo$menu$lambda$lambda$lambda_8(y)));
       $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('saturationSlider', MultiLightDemo$menu$lambda$lambda$lambda_9(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('randomLbl', MultiLightDemo$menu$lambda$lambda$lambda_10(y)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Random:', MultiLightDemo$menu$lambda$lambda$lambda_10(y)));
       $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('randomSlider', MultiLightDemo$menu$lambda$lambda$lambda_11(y, this$MultiLightDemo)));
       y.v -= 40.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Shading', MultiLightDemo$menu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      var tbPbr;
-      var tbPhong = {v: null};
-      tbPbr = this$.toggleButton_6j87po$('Physical Based', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo, tbPhong));
-      y.v -= 35.0;
-      tbPhong.v = this$.toggleButton_6j87po$('Phong', MultiLightDemo$menu$lambda$lambda$lambda_14(y, this$MultiLightDemo, tbPbr));
-      $receiver.unaryPlus_uv0sim$(tbPbr);
-      $receiver.unaryPlus_uv0sim$(tbPhong.v);
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Reflections', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('material', MultiLightDemo$menu$lambda$lambda$lambda_15(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Material', MultiLightDemo$menu$lambda$lambda$lambda_14(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('colorLbl', MultiLightDemo$menu$lambda$lambda$lambda_16(y)));
-      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color:', MultiLightDemo$menu$lambda$lambda$lambda_15(y)));
+      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_16(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(matLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_18(y, this$MultiLightDemo, matLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_19(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_18(y, this$MultiLightDemo, matLabel)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('roughnessLbl', MultiLightDemo$menu$lambda$lambda$lambda_20(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('roughhnessSlider', MultiLightDemo$menu$lambda$lambda$lambda_21(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Roughness:', MultiLightDemo$menu$lambda$lambda$lambda_19(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$MultiLightDemo.roughness_0, MultiLightDemo$menu$lambda$lambda$lambda_20(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Metallic:', MultiLightDemo$menu$lambda$lambda$lambda_21(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('metallicSlider', 0.0, 1.0, this$MultiLightDemo.metallic_0, MultiLightDemo$menu$lambda$lambda$lambda_22(y, this$MultiLightDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', MultiLightDemo$menu$lambda$lambda$lambda_22(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', MultiLightDemo$menu$lambda$lambda$lambda_23(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', MultiLightDemo$menu$lambda$lambda$lambda_23(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', MultiLightDemo$menu$lambda$lambda$lambda_24(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Indicators', MultiLightDemo$menu$lambda$lambda$lambda_24(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Indicators', MultiLightDemo$menu$lambda$lambda$lambda_25(y, this$MultiLightDemo)));
       return Unit;
     };
   }
@@ -4523,37 +4543,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   MultiLightDemo.prototype.menu_0 = function (ctx) {
     return uiScene(void 0, void 0, void 0, MultiLightDemo$menu$lambda(ctx, this));
-  };
-  MultiLightDemo.prototype.updateLighting_0 = function () {
-    var tmp$;
-    var tmp$_0, tmp$_0_0;
-    var index = 0;
-    tmp$_0 = this.lights_0.iterator();
-    while (tmp$_0.hasNext()) {
-      var item = tmp$_0.next();
-      var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-      if (i < this.shadowMaps_0.size) {
-        this.shadowMaps_0.get_za3lpa$(i).isShadowMapEnabled = false;
-      }item.disable_kc3nav$(this.mainScene_0.lighting);
-    }
-    var pos = 0.0;
-    var step = 360.0 / this.lightCount_0;
-    var a = this.lightCount_0;
-    var b = this.lights_0.size;
-    tmp$ = Math_0.min(a, b);
-    for (var i_0 = 0; i_0 < tmp$; i_0++) {
-      this.lights_0.get_za3lpa$(i_0).setup_mx4ult$(pos);
-      this.lights_0.get_za3lpa$(i_0).enable_kc3nav$(this.mainScene_0.lighting);
-      pos += step;
-      if (i_0 < this.shadowMaps_0.size) {
-        this.shadowMaps_0.get_za3lpa$(i_0).isShadowMapEnabled = true;
-      }}
-    var tmp$_1;
-    tmp$_1 = this.lights_0.iterator();
-    while (tmp$_1.hasNext()) {
-      var element = tmp$_1.next();
-      element.updateVisibility();
-    }
   };
   function MultiLightDemo$LightMesh($outer, color) {
     this.$outer = $outer;
@@ -4603,11 +4592,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.meshPos_0.set_y2kzbl$(x_0, 9.0, -z);
     this.anglePos_0 = angPos;
     var color = Color.Companion.WHITE.mix_jpxij3$(this.color, this.$outer.lightSaturation_0, MutableColor_init());
-    if (this.$outer.isPbrShading_0) {
-      this.light.setColor_y83vuj$(color.toLinear(), this.$outer.lightPower_0);
-    } else {
-      this.light.setColor_y83vuj$(color, this.$outer.lightPower_0 / 5.0);
-    }
+    this.light.setColor_y83vuj$(color.toLinear(), this.$outer.lightPower_0);
     this.lightMeshShader_0.color = color;
     this.updateSpotAngleMesh_0();
   };
@@ -9549,7 +9534,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var node = tmp$.next();
       node.influencingPts.clear();
       if (!node.isFinished) {
-        this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence).traverse_m6hlto$(this.attractionPointsTree_0);
+        this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence).traverse_7efza$(this.attractionPointsTree_0);
         tmp$_0 = this.attractionPointTrav_0.result.iterator();
         while (tmp$_0.hasNext()) {
           var attracPt = tmp$_0.next();
@@ -9581,7 +9566,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         if (!node_0.containsChild_15eqn9$(newNode)) {
           node_0.addChild_15eqn9$(newNode);
           newNodes.add_11rb$(newNode);
-          this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_m6hlto$(this.attractionPointsTree_0);
+          this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_7efza$(this.attractionPointsTree_0);
           var tmp$_7;
           tmp$_7 = this.attractionPointTrav_0.result.iterator();
           while (tmp$_7.hasNext()) {
