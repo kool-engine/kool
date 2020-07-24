@@ -1,10 +1,11 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.OffscreenRenderPass2dMrt
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
@@ -12,7 +13,13 @@ import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.Color
 
 class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
-        OffscreenRenderPass2dMrt(TransformGroup(), 1600, 900, if (withEmissive) FORMATS_DEFERRED_EMISSIVE else FORMATS_DEFERRED) {
+        OffscreenRenderPass2d(TransformGroup(), renderPassConfig {
+            name = "DeferredMrtPass"
+            setDynamicSize()
+            setDepthTexture(false)
+            val formats = if (withEmissive) FORMATS_DEFERRED_EMISSIVE else FORMATS_DEFERRED
+            formats.forEach { addColorTexture(it) }
+        }) {
 
     val content = drawNode as TransformGroup
     internal val alphaMeshes = mutableListOf<Mesh>()

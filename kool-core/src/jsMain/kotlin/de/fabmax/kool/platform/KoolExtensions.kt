@@ -1,7 +1,16 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.TexFormat
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
+import org.khronos.webgl.WebGLRenderingContext.Companion.EQUAL
+import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
+import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
+import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
+import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
+import org.khronos.webgl.WebGLRenderingContext.Companion.NEVER
+import org.khronos.webgl.WebGLRenderingContext.Companion.NOTEQUAL
 
 
 val TexFormat.glInternalFormat: Int
@@ -54,4 +63,17 @@ val TexFormat.pxSize: Int
         TexFormat.RG_F16 -> 4
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
+    }
+
+val DepthCompareOp.glOp: Int
+    get() = when(this) {
+        DepthCompareOp.DISABLED -> 0
+        DepthCompareOp.ALWAYS -> ALWAYS
+        DepthCompareOp.NEVER -> NEVER
+        DepthCompareOp.LESS -> LESS
+        DepthCompareOp.LESS_EQUAL -> LEQUAL
+        DepthCompareOp.GREATER -> GREATER
+        DepthCompareOp.GREATER_EQUAL -> GEQUAL
+        DepthCompareOp.EQUAL -> EQUAL
+        DepthCompareOp.NOT_EQUAL -> NOTEQUAL
     }

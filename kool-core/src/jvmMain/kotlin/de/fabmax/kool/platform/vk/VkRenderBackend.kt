@@ -111,10 +111,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         return VkOffscreenPass2d(parentPass)
     }
 
-    override fun createOffscreenPass2dMrt(parentPass: OffscreenPass2dMrtImpl): OffscreenPass2dMrtImpl.BackendImpl {
-        return VkOffscreenPass2dMrt(parentPass)
-    }
-
     override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
         return VkOffscreenPassCube(parentPass)
     }
@@ -437,7 +433,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass) {
             when (offscreenPass) {
                 is OffscreenRenderPass2d -> renderOffscreen2d(commandBuffer, offscreenPass)
-                is OffscreenRenderPass2dMrt -> renderOffscreen2dMrt(commandBuffer, offscreenPass)
                 is OffscreenRenderPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
                 else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
             }
@@ -450,26 +445,12 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
+                offscreenPass.applyViewportMipLevel(offscreenPass.targetMipLevel)
                 setViewport(commandBuffer, offscreenPass.viewport)
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
                 vkCmdEndRenderPass(commandBuffer)
             }
             backendImpl.copyToTextures(commandBuffer, ctx)
-        }
-
-        private fun MemoryStack.renderOffscreen2dMrt(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2dMrt) {
-            offscreenPass.impl.draw(ctx)
-            val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2dMrt
-            backendImpl.renderPass?.let { rp ->
-                val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
-
-                vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
-                setViewport(commandBuffer, offscreenPass.viewport)
-                renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
-                vkCmdEndRenderPass(commandBuffer)
-            }
         }
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
@@ -481,13 +462,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 for (view in cubeRenderPassViews) {
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                    offscreenPass.setMipViewport(offscreenPass.targetMipLevel)
+                    offscreenPass.applyViewportMipLevel(offscreenPass.targetMipLevel)
                     setViewport(commandBuffer, offscreenPass.viewport)
                     renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                     vkCmdEndRenderPass(commandBuffer)
                     backendImpl.copyView(commandBuffer, view)
                 }
-                if (offscreenPass.mipLevels > 1 && offscreenPass.targetMipLevel < 0) {
+                if (offscreenPass.config.mipLevels > 1 && offscreenPass.targetMipLevel < 0) {
                     backendImpl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                 } else {
                     backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)

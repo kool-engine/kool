@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.pipeline.OffscreenPass2dImpl
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.vulkan.VK10.*
@@ -11,16 +10,13 @@ import kotlin.math.roundToInt
 
 class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
     private var isCreated = false
-    private var blockCreation = false
+    private var isCreationBlocked = false
 
     var renderPass: VkOffscreenRenderPass? = null
         private set
 
-    var colorAttachments: VkOffscreenRenderPass.ColorAttachments? = null
-    var depthAttachment: VkOffscreenRenderPass.DepthAttachment? = null
-
     override fun draw(ctx: Lwjgl3Context) {
-        if (!isCreated && !blockCreation) {
+        if (!isCreated && !isCreationBlocked) {
             create(ctx)
         }
     }
@@ -32,8 +28,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         val rp = renderPass ?: return
 
         var mipLevel = 0
-        var width = parentPass.offscreenPass.texWidth
-        var height = parentPass.offscreenPass.texHeight
+        var width = parentPass.offscreenPass.width
+        var height = parentPass.offscreenPass.height
         if (parentPass.offscreenPass.targetMipLevel > 0) {
             width = (width * 0.5.pow(parentPass.offscreenPass.targetMipLevel)).roundToInt()
             height = (height * 0.5.pow(parentPass.offscreenPass.targetMipLevel)).roundToInt()
@@ -46,7 +42,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                 val copyTarget = parentPass.offscreenPass.copyTargetsColor[i]
                 val texWidth = copyTarget.loadedTexture?.width ?: 0
                 val texHeight = copyTarget.loadedTexture?.height ?: 0
-                if (texWidth != parentPass.offscreenPass.texWidth || texHeight != parentPass.offscreenPass.texHeight) {
+                if (texWidth != parentPass.offscreenPass.width || texHeight != parentPass.offscreenPass.height) {
                     copyTarget.loadedTexture?.dispose()
                     copyTarget.createCopyTexColor(ctx)
                 }
@@ -79,47 +75,38 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
     override fun dispose(ctx: Lwjgl3Context) {
         val rp = renderPass
-        val loadedColorTex = parentPass.colorTexture.loadedTexture
-        val loadedDepthTex = parentPass.depthTexture.loadedTexture
-
         isCreated = false
         renderPass = null
 
-        if (!parentPass.isExtColorTexture) {
-            parentPass.colorTexture.clear()
+        parentPass.offscreenPass.colorTextures.forEach { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
         }
-        if (!parentPass.isExtDepthTexture) {
-            parentPass.depthTexture.clear()
+        parentPass.offscreenPass.depthTexture?.let { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
         }
-        colorAttachments = null
-        depthAttachment = null
 
         ctx.runDelayed(3) {
             rp?.destroyNow()
-            if (!parentPass.isExtColorTexture) {
-                loadedColorTex?.dispose()
-            }
-            if (!parentPass.isExtDepthTexture) {
-                loadedDepthTex?.dispose()
-            }
         }
-    }
-
-    private fun Texture.clear() {
-        loadedTexture = null
-        loadingState = Texture.LoadingState.NOT_LOADED
     }
 
     override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
         dispose(ctx)
 
-        if (!parentPass.isExtColorTexture && !parentPass.isExtDepthTexture) {
+        val isProvidedTex = parentPass.offscreenPass.config.colorAttachments.any { it.providedTexture != null }
+                || parentPass.offscreenPass.config.depthAttachment?.providedTexture != null
+
+        if (!isProvidedTex) {
             create(ctx)
 
         } else {
-            blockCreation = true
+            isCreationBlocked = true
             ctx.runDelayed(3) {
-                blockCreation = false
+                isCreationBlocked = false
                 create(ctx)
             }
         }
@@ -127,61 +114,76 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
     private fun create(ctx: Lwjgl3Context) {
         val sys = (ctx.renderBackend as VkRenderBackend).vkSystem
-        parentPass.apply {
-            if (colorAttachments == null) {
-                colorAttachments = if (isExtColorTexture) {
-                    val vkTex = colorTexture.loadedTexture as LoadedTextureVk?
-                    if (vkTex != null) {
-                        VkOffscreenRenderPass.ProvidedColorAttachments(false, listOf(vkTex.textureImage), listOf(vkTex.textureImageView), listOf(vkTex.sampler))
-                    } else {
-                        null
-                    }
-                } else {
-                    VkOffscreenRenderPass.CreatedColorAttachments(sys, offscreenPass.texWidth, offscreenPass.texHeight,
-                            false, listOf(offscreenPass.colorFormat.vkFormat), VK_FILTER_LINEAR)
-                }
+        val cfg = parentPass.offscreenPass.config
+        val width = parentPass.offscreenPass.width
+        val height = parentPass.offscreenPass.height
+
+        var isProvidedColor = false
+        val formats = mutableListOf<TexFormat>()
+        if (cfg.colorRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
+            formats += TexFormat.R
+        } else {
+            isProvidedColor = cfg.colorAttachments[0].providedTexture != null
+            if (cfg.colorAttachments.any { (it.providedTexture != null) != isProvidedColor }) {
+                throw IllegalStateException("Mixed provided / created color attachments are not yet supported [OffscreenRenderPass2d: ${parentPass.offscreenPass.name}]")
             }
+            cfg.colorAttachments.forEach { formats += it.colorFormat }
+        }
 
-            if (depthAttachment == null) {
-                depthAttachment = if (isExtDepthTexture) {
-                    val vkTex = depthTexture.loadedTexture as LoadedTextureVk?
-                    if (vkTex != null) {
-                        VkOffscreenRenderPass.ProvidedDepthAttachment(false, vkTex.textureImage, vkTex.textureImageView, vkTex.sampler)
-                    } else {
-                        null
-                    }
-                } else {
-                    val filterMethod = if (parentPass.offscreenPass.setup.isUsedAsShadowMap) VK_FILTER_LINEAR else VK_FILTER_NEAREST
-                    val depthCompareOp = if (filterMethod == VK_FILTER_LINEAR) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
-                    VkOffscreenRenderPass.CreatedDepthAttachment(sys, offscreenPass.texWidth, offscreenPass.texHeight,
-                            false, filterMethod, depthCompareOp)
-                }
+        val colorAttachments = if (isProvidedColor) {
+            val images = mutableListOf<Image>()
+            val imageViews = mutableListOf<ImageView>()
+            val samplers = mutableListOf<Long>()
+            cfg.colorAttachments.forEach {
+                val vkTex = it.providedTexture!!.loadedTexture as LoadedTextureVk
+                images += vkTex.textureImage
+                imageViews += vkTex.textureImageView
+                samplers += vkTex.sampler
             }
+            VkOffscreenRenderPass.ProvidedColorAttachments(false, images, imageViews, samplers)
+        } else {
+            VkOffscreenRenderPass.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR)
+        }
 
-            val ca = colorAttachments
-            val da = depthAttachment
-            if (ca != null && da != null) {
-                val rp = VkOffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, ca, isExtColorTexture, da, isExtDepthTexture)
-
-                if (!isExtColorTexture) {
-                    createTex(colorTexture, true, rp, sys)
-                }
-                if (!isExtDepthTexture) {
-                    createTex(depthTexture, false, rp, sys)
-                }
-                renderPass = rp
-                isCreated = true
+        val isProvidedDepth = cfg.depthAttachment?.providedTexture != null
+        val depthAttachment = if (cfg.depthRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
+            VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER)
+        } else {
+            if (isProvidedDepth) {
+                val vkTex = cfg.depthAttachment!!.providedTexture!!.loadedTexture as LoadedTextureVk
+                VkOffscreenRenderPass.ProvidedDepthAttachment(false, vkTex.textureImage, vkTex.textureImageView, vkTex.sampler)
+            } else {
+                val depth = cfg.depthAttachment!!
+                val filterMethod = if (depth.minFilter == FilterMethod.LINEAR) VK_FILTER_LINEAR else VK_FILTER_NEAREST
+                val depthCompareOp = if (depth.depthCompareOp != DepthCompareOp.DISABLED) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
+                VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp)
             }
         }
+
+        val rp = VkOffscreenRenderPass(sys, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth)
+        if (!isProvidedColor) {
+            for (i in parentPass.offscreenPass.colorTextures.indices) {
+                createTex(parentPass.offscreenPass.colorTextures[i], i, true, rp, sys)
+            }
+        }
+        if (!isProvidedDepth) {
+            parentPass.offscreenPass.depthTexture?.let {
+                createTex(it, 0, false, rp, sys)
+            }
+        }
+        renderPass = rp
+        isCreated = true
     }
 
-    private fun createTex(tex: Texture, isColor: Boolean, rp: VkOffscreenRenderPass, sys: VkSystem) {
+    private fun createTex(tex: Texture, iAttachment: Int, isColor: Boolean, rp: VkOffscreenRenderPass, sys: VkSystem) {
         tex.apply {
-            loadedTexture = if (isColor) {
-                LoadedTextureVk(sys, rp.texFormat, rp.image, rp.imageView, rp.sampler, true)
+            val vkTex = if (isColor) {
+                LoadedTextureVk(sys, rp.getTexFormat(iAttachment), rp.images[iAttachment], rp.imageViews[iAttachment], rp.samplers[iAttachment], true)
             } else {
                 LoadedTextureVk(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
             }
+            vkTex.setSize(rp.maxWidth, rp.maxHeight)
+            loadedTexture = vkTex
             loadingState = Texture.LoadingState.LOADED
         }
     }
@@ -195,8 +197,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             }
         }
 
-        val width = parentPass.offscreenPass.texWidth
-        val height = parentPass.offscreenPass.texHeight
+        val width = parentPass.offscreenPass.width
+        val height = parentPass.offscreenPass.height
         val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED

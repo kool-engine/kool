@@ -108,7 +108,7 @@ class AoDemo(ctx: KoolContext) {
                     roughness = 0.1f
 
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture)
+                    useImageBasedLighting(irrMapPass.colorTexture, reflMapPass.colorTexture, brdfLutPass.colorTexture)
                 }
                 this.shader = shader
 
@@ -122,6 +122,7 @@ class AoDemo(ctx: KoolContext) {
             }
 
             +textureMesh("ground", isNormalMapped = true) {
+                isCastingShadow = false
                 generate {
                     // generate a cube (as set of rects for better control over tex coords)
                     val texScale = 0.1955f
@@ -200,7 +201,7 @@ class AoDemo(ctx: KoolContext) {
                     useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture)
+                    useImageBasedLighting(irrMapPass.colorTexture, reflMapPass.colorTexture, brdfLutPass.colorTexture)
                     shadowMaps += shadows
 
                     onDispose += {
@@ -222,7 +223,7 @@ class AoDemo(ctx: KoolContext) {
                 }
             }
 
-            this@scene += Skybox(reflMapPass.colorTextureCube, 1f)
+            this@scene += Skybox(reflMapPass.colorTexture!!, 1f)
         }
     }
 
@@ -269,7 +270,7 @@ class AoDemo(ctx: KoolContext) {
             onUpdate += { rp, _ ->
                 val screenSz = 0.33f
                 val scaleX = rp.viewport.width * screenSz
-                val scaleY = scaleX * (aoPipeline.denoisePass.texHeight.toFloat() / aoPipeline.denoisePass.texWidth.toFloat())
+                val scaleY = scaleX * (aoPipeline.denoisePass.height.toFloat() / aoPipeline.denoisePass.width.toFloat())
 
                 setIdentity()
                 val margin = rp.viewport.height * 0.05f

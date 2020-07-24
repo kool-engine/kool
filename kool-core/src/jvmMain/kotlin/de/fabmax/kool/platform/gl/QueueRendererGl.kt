@@ -14,7 +14,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(backend, ctx)
 
-    private val colorBuffer = createFloat32Buffer(4) as Float32BufferImpl
+    private val colorBufferClearVal = createFloat32Buffer(4) as Float32BufferImpl
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {
@@ -26,14 +26,14 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         queue.renderPass.apply {
             glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
-            if (this is OffscreenRenderPass2dMrt) {
-                for (i in 0 until nAttachments) {
+            if (this is OffscreenRenderPass) {
+                for (i in 0 until config.nColorAttachments) {
                     (clearColors[i] ?: clearColor)?.let {
-                        colorBuffer[0] = it.r
-                        colorBuffer[1] = it.g
-                        colorBuffer[2] = it.b
-                        colorBuffer[3] = it.a
-                        glClearBufferfv(GL_COLOR, i, colorBuffer.buffer)
+                        colorBufferClearVal[0] = it.r
+                        colorBufferClearVal[1] = it.g
+                        colorBufferClearVal[2] = it.b
+                        colorBufferClearVal[3] = it.a
+                        glClearBufferfv(GL_COLOR, i, colorBufferClearVal.buffer)
                     }
                 }
                 if (clearDepth) {
@@ -120,28 +120,11 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         private fun setDepthTest(depthCompareOp: DepthCompareOp) {
             if (actDepthTest != depthCompareOp) {
                 actDepthTest = depthCompareOp
-                when (depthCompareOp) {
-                    DepthCompareOp.DISABLED -> glDisable(GL_DEPTH_TEST)
-                    DepthCompareOp.ALWAYS -> {
-                        glEnable(GL_DEPTH_TEST)
-                        glDepthFunc(GL_ALWAYS)
-                    }
-                    DepthCompareOp.LESS -> {
-                        glEnable(GL_DEPTH_TEST)
-                        glDepthFunc(GL_LESS)
-                    }
-                    DepthCompareOp.LESS_EQUAL -> {
-                        glEnable(GL_DEPTH_TEST)
-                        glDepthFunc(GL_LEQUAL)
-                    }
-                    DepthCompareOp.GREATER -> {
-                        glEnable(GL_DEPTH_TEST)
-                        glDepthFunc(GL_GREATER)
-                    }
-                    DepthCompareOp.GREATER_EQUAL -> {
-                        glEnable(GL_DEPTH_TEST)
-                        glDepthFunc(GL_GEQUAL)
-                    }
+                if (depthCompareOp == DepthCompareOp.DISABLED) {
+                    glDisable(GL_DEPTH_TEST)
+                } else {
+                    glEnable(GL_DEPTH_TEST)
+                    glDepthFunc(depthCompareOp.glOp)
                 }
             }
         }

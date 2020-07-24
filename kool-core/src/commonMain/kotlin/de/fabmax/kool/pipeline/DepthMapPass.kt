@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
@@ -9,9 +8,10 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 
 
-open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: Setup = defaultSetup()) :
-        OffscreenRenderPass2d(drawNode, width, height, setup) {
+open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
     private val shadowPipelines = mutableMapOf<Long, Pipeline?>()
+
+    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 
     /**
      * Cull method to use for depth map rendering. If null (the default) the original cull method of meshes is used.
@@ -19,7 +19,6 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
     var cullMethod: CullMethod? = null
 
     init {
-        type = Type.DEPTH
         onAfterCollectDrawCommands += { ctx ->
             // replace regular object shaders by cheaper shadow versions
             drawQueue.commands.forEach {
@@ -35,7 +34,7 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
 
     protected open fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
         // create a minimal dummy shader for each attribute set
-        val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
+        val shadowShader = ModeledShader(ShaderModel("DepthShader").apply {
             vertexStage {
                 var mvpMat = premultipliedMvpNode().outMvpMat
                 if (mesh.instances != null) {
@@ -59,7 +58,7 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
                 }
                 positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
             }
-            fragmentStage { colorOutput(ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f)))) }
+            fragmentStage { colorOutput(constVec4f(Color.RED)) }
         })
         shadowShader.onPipelineSetup += { builder, _, _ ->
             builder.blendMode = BlendMode.DISABLED
@@ -74,17 +73,18 @@ open class DepthMapPass(drawNode: Node, width: Int, height: Int = width, setup: 
     }
 
     companion object {
-        fun defaultSetup(): Setup {
-            return Setup().apply {
-                colorFormat = TexFormat.R
-                colorRenderTarget = RENDER_TARGET_RENDERBUFFER
-                depthRenderTarget = RENDER_TARGET_TEXTURE
-            }
+        fun defaultSetup(width: Int, height: Int) = renderPassConfig {
+            name = "DepthMapPass"
+            setSize(width, height)
+            clearColorTexture()
+            setDepthTexture(false)
         }
     }
 }
 
-class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, linearDepthSetup()) {
+class LinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode, config) {
+
+    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, linearDepthSetup(width, height))
 
     init {
         onAfterCollectDrawCommands += {
@@ -93,7 +93,7 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
     }
 
     override fun createPipeline(mesh: Mesh, culling: CullMethod, ctx: KoolContext): Pipeline? {
-        val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
+        val shadowShader = ModeledShader(ShaderModel("LinearDepth Shader").apply {
             vertexStage {
                 var mvpMat = premultipliedMvpNode().outMvpMat
                 if (mesh.instances != null) {
@@ -141,17 +141,18 @@ class LinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : Dept
     }
 
     companion object {
-        private fun linearDepthSetup(): Setup {
-            return Setup().apply {
-                colorFormat = TexFormat.R_F16
-                colorRenderTarget = RENDER_TARGET_TEXTURE
-                depthRenderTarget = RENDER_TARGET_RENDERBUFFER
-            }
+        fun linearDepthSetup(width: Int, height: Int) = renderPassConfig {
+            name = "LinearDepthMapPass"
+            setSize(width, height)
+            clearDepthTexture()
+            addColorTexture(TexFormat.R_F16)
         }
     }
 }
 
-class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) : DepthMapPass(drawNode, width, height, normalLinearDepthSetup()) {
+class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode, config) {
+
+    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, normalLinearDepthSetup(width, height))
 
     init {
         name = "NormalLinearDepthMapPass"
@@ -166,7 +167,7 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
             return null
         }
 
-        val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
+        val shadowShader = ModeledShader(ShaderModel("NormalLinearDepth Shader").apply {
             val ifNormals: StageInterfaceNode
             vertexStage {
                 val mvpNode = mvpNode()
@@ -232,12 +233,11 @@ class NormalLinearDepthMapPass(drawNode: Node, width: Int, height: Int = width) 
     }
 
     companion object {
-        private fun normalLinearDepthSetup(): Setup {
-            return Setup().apply {
-                colorFormat = TexFormat.RGBA_F16
-                colorRenderTarget = RENDER_TARGET_TEXTURE
-                depthRenderTarget = RENDER_TARGET_RENDERBUFFER
-            }
+        private fun normalLinearDepthSetup(width: Int, height: Int) = renderPassConfig {
+            name = "NormalLinearDepthMapPass"
+            setSize(width, height)
+            clearDepthTexture()
+            addColorTexture(TexFormat.RGBA_F16)
         }
     }
 }

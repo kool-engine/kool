@@ -10,7 +10,13 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import kotlin.math.PI
 
-class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : OffscreenRenderPassCube(Group(), 32, 32, 1, TexFormat.RGBA_F16) {
+class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
+        OffscreenRenderPassCube(Group(), renderPassConfig {
+            setSize(32, 32)
+            addColorTexture(TexFormat.RGBA_F16)
+            clearDepthTexture()
+        }) {
+
     var hdriTexture = hdriTexture
         set(value) {
             irrMapShader?.texture = value

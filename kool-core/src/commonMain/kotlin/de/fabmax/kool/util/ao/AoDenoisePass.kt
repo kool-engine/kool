@@ -8,13 +8,19 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtComponent: String) : OffscreenRenderPass2d(Group(), aoPass.texWidth, aoPass.texHeight, colorFormat = TexFormat.R) {
+class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthComponent: String) :
+        OffscreenRenderPass2d(Group(), renderPassConfig {
+            name = "AoDenoisePass"
+            setSize(aoPass.config.width, aoPass.config.height)
+            addColorTexture(TexFormat.R)
+            clearDepthTexture()
+        }) {
 
     private val uRadius = Uniform1f(1f, "uRadius")
 
     var radius: Float
         get() = uRadius.value
-        set(value) { uRadius.value = value}
+        set(value) { uRadius.value = value }
 
     init {
         (drawNode as Group).apply {
@@ -36,7 +42,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, dephtCo
                         val noisyAo = textureNode("noisyAo")
                         val depth = textureNode("depth")
                         val radius = pushConstantNode1f(uRadius)
-                        val blurNd = addNode(BlurNode(noisyAo, depth, dephtComponent, stage))
+                        val blurNd = addNode(BlurNode(noisyAo, depth, depthComponent, stage))
                         blurNd.inScreenPos = ifTexCoords.output
                         blurNd.radius = radius.output
                         colorOutput(blurNd.outColor)

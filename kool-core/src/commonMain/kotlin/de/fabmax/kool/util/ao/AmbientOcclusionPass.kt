@@ -17,7 +17,12 @@ import kotlin.math.*
 import kotlin.random.Random
 
 class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, height: Int) :
-        OffscreenRenderPass2d(Group(), width, height, TexFormat.R) {
+        OffscreenRenderPass2d(Group(), renderPassConfig {
+            name = "AmbientOcclusionPass"
+            setSize(width, height)
+            clearDepthTexture()
+            addColorTexture(TexFormat.RGBA)
+        }) {
 
     var radius = 1f
     var intensity = 1.5f
@@ -44,6 +49,8 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         mirrorTexCoordsY()
                     }
                 }
+
+                onSkipDraw = { println("ao pass skipped: ${noiseTex.loadingState}, ${noiseTex.loadedTexture?.width}") }
 
                 val model = ShaderModel("AoPass").apply {
                     val ifScreenPos: StageInterfaceNode
@@ -195,7 +202,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
 
                     onUpdate = { _, _ ->
                         uProj.value.set(cam.proj)
-                        uNoiseScale.value.set(texWidth / 4f, texHeight / 4f)
+                        uNoiseScale.value.set(width / 4f, height / 4f)
                         uRadius.value = radius
                         uIntensity.value = intensity
                         uBias.value = bias

@@ -71,7 +71,7 @@ class SingleColorTexture(color: Color) : Texture(
     }
 }
 
-open class CubeMapTexture(name: String? = null, props: TextureProps = TextureProps(), loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)?) :
+open class CubeMapTexture(name: String? = null, props: TextureProps = TextureProps(), loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
         Texture(name, props, loader)
 
 data class TextureProps(
@@ -90,7 +90,6 @@ enum class FilterMethod {
 }
 
 enum class AddressMode {
-    CLAMP_TO_BORDER,
     CLAMP_TO_EDGE,
     MIRRORED_REPEAT,
     REPEAT

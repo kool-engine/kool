@@ -5,13 +5,19 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import kotlin.math.PI
 
 
-class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2d(Group(), 512, 512, TexFormat.RG_F16, 1) {
+class BrdfLutPass(parentScene: Scene) :
+        OffscreenRenderPass2d(Group(), renderPassConfig {
+            setSize(512, 512)
+            addColorTexture(TexFormat.RG_F16)
+            clearDepthTexture()
+        }) {
 
     init {
         clearColor = null

@@ -57,12 +57,28 @@ class DeferredDemo(ctx: KoolContext) {
     }
 
     private fun makeDeferredScene() = scene {
+        +orbitInputTransform {
+            // Set some initial rotation so that we look down on the scene
+            setMouseRotation(0f, -40f)
+            // Add camera to the transform group
+            +camera
+            zoom = 28.0
+            maxZoom = 50.0
+
+            translation.set(0.0, -11.0, 0.0)
+            onUpdate += { _, ctx ->
+                if (autoRotate) {
+                    verticalRotation += ctx.deltaT * 3f
+                }
+            }
+        }
+
         // don't use any global lights
         lighting.lights.clear()
 
         // setup MRT pass: contains actual scene content
         mrtPass = DeferredMrtPass(this)
-        mrtPass.makeContent(this)
+        mrtPass.makeContent()
 
         // setup ambient occlusion pass
         aoPipeline = AoPipeline.createDeferred(this, mrtPass)
@@ -75,10 +91,10 @@ class DeferredDemo(ctx: KoolContext) {
             scrSpcAmbientOcclusionMap = aoPipeline.aoMap
         }
         pbrPass = PbrLightingPass(this, mrtPass, cfg)
-        pbrPass.makeLightOverlays()
 
         // add the quad displaying the final composed scene image to the main scene
         +pbrPass.createOutputQuad()
+        makeLightOverlays()
 
         onUpdate += { _, ctx ->
             lights.forEach { it.animate(ctx.deltaT) }
@@ -88,8 +104,8 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun PbrLightingPass.makeLightOverlays() {
-        content.apply {
+    private fun Scene.makeLightOverlays() {
+        apply {
             lightPositionMesh = colorMesh {
                 isFrustumChecked = false
                 isVisible = true
@@ -105,7 +121,7 @@ class DeferredDemo(ctx: KoolContext) {
             }
             +lightPositionMesh
 
-            lightVolumeMesh = wireframeMesh(dynamicPointLights.mesh.geometry).apply {
+            lightVolumeMesh = wireframeMesh(pbrPass.dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
                 shader = ModeledShader(instancedLightIndicatorModel())
@@ -122,14 +138,17 @@ class DeferredDemo(ctx: KoolContext) {
                 if (lightPositionMesh.isVisible || lightVolumeMesh.isVisible) {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
-                    dynamicPointLights.lightInstances.forEach { light ->
+                    val srgbColor = MutableColor()
+                    pbrPass.dynamicPointLights.lightInstances.forEach { light ->
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
+
+                        light.color.toSrgb(srgbColor)
 
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
                                 put(lightModelMat.matrix)
-                                put(light.color.array)
+                                put(srgbColor.array)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
@@ -137,7 +156,7 @@ class DeferredDemo(ctx: KoolContext) {
                             lightModelMat.scale(s, s, s)
                             lightVolInsts.addInstance {
                                 put(lightModelMat.matrix)
-                                put(light.color.array)
+                                put(srgbColor.array)
                             }
                         }
                     }
@@ -146,24 +165,8 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun DeferredMrtPass.makeContent(scene: Scene) {
+    private fun DeferredMrtPass.makeContent() {
         content.apply {
-            +scene.orbitInputTransform {
-                // Set some initial rotation so that we look down on the scene
-                setMouseRotation(0f, -40f)
-                // Add camera to the transform group
-                +camera
-                zoom = 28.0
-                maxZoom = 50.0
-
-                translation.set(0.0, -11.0, 0.0)
-                onUpdate += { _, ctx ->
-                    if (autoRotate) {
-                        verticalRotation += ctx.deltaT * 3f
-                    }
-                }
-            }
-
             objects = colorMesh {
                 generate {
                     val sphereProtos = mutableListOf<IndexedVertexList>()

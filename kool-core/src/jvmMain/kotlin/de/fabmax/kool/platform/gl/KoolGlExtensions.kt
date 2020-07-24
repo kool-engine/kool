@@ -1,6 +1,8 @@
 package de.fabmax.kool.platform.gl
 
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.TexFormat
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL30
 
 
@@ -54,4 +56,17 @@ val TexFormat.pxSize: Int
         TexFormat.RG_F16 -> 4
         TexFormat.RGB_F16 -> 6
         TexFormat.RGBA_F16 -> 8
+    }
+
+val DepthCompareOp.glOp: Int
+    get() = when(this) {
+        DepthCompareOp.DISABLED -> 0
+        DepthCompareOp.ALWAYS -> GL_ALWAYS
+        DepthCompareOp.NEVER -> GL_NEVER
+        DepthCompareOp.LESS -> GL_LESS
+        DepthCompareOp.LESS_EQUAL -> GL_LEQUAL
+        DepthCompareOp.GREATER -> GL_GREATER
+        DepthCompareOp.GREATER_EQUAL -> GL_GEQUAL
+        DepthCompareOp.EQUAL -> GL_EQUAL
+        DepthCompareOp.NOT_EQUAL -> GL_NOTEQUAL
     }

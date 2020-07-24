@@ -10,7 +10,6 @@ import de.fabmax.kool.util.Viewport
 abstract class RenderPass(val drawNode: Node) {
 
     var name: String? = null
-    var type = Type.COLOR
 
     val dependencies = mutableListOf<RenderPass>()
 
@@ -21,7 +20,8 @@ abstract class RenderPass(val drawNode: Node) {
 
     var isUpdateDrawNode = true
 
-    open val clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
+    var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
+        protected set
     var clearColor: Color?
         get() = clearColors[0]
         set(value) { clearColors[0] = value }
@@ -68,11 +68,6 @@ abstract class RenderPass(val drawNode: Node) {
     }
 
     open fun dispose(ctx: KoolContext) { }
-
-    enum class Type {
-        COLOR,
-        DEPTH
-    }
 }
 
 class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {

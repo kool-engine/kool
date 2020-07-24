@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
 import kotlin.math.min
 import kotlin.math.pow
@@ -17,7 +18,12 @@ interface ShadowMap {
 }
 
 class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) :
-        DepthMapPass(drawNode, mapSize, setup = defaultSetup().apply { isUsedAsShadowMap = true }), ShadowMap {
+        DepthMapPass(drawNode, renderPassConfig {
+            name = "SimpleShadowMap"
+            setSize(mapSize, mapSize)
+            setDepthTexture(true)
+            clearColorTexture()
+        }), ShadowMap {
 
     val lightViewProjMat = Mat4d()
 
@@ -37,6 +43,10 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
     init {
         isUpdateDrawNode = false
         scene.addOffscreenPass(this)
+
+        drawQueue.meshFilter = {
+            it.isCastingShadow
+        }
 
         onBeforeCollectDrawCommands += { ctx ->
             if (lightIndex < scene.lighting.lights.size) {

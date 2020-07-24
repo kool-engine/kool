@@ -122,7 +122,6 @@ object TextureLoader {
 
     private fun AddressMode.vkAddressMode(): Int {
         return when(this) {
-            AddressMode.CLAMP_TO_BORDER -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
             AddressMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
             AddressMode.MIRRORED_REPEAT -> VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
             AddressMode.REPEAT -> VK_SAMPLER_ADDRESS_MODE_REPEAT

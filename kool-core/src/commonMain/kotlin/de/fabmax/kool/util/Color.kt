@@ -31,12 +31,20 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return MutableColor(r, g, b, alpha)
     }
 
-    fun toLinear(): Color = gamma(2.2f)
+    fun toLinear(): MutableColor = gamma(2.2f)
 
-    fun toSrgb(): Color = gamma(1f / 2.2f)
+    fun toLinear(result: MutableColor): MutableColor = gamma(2.2f, result)
 
-    fun gamma(gamma: Float): Color {
-        return Color(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
+    fun toSrgb(): MutableColor = gamma(1f / 2.2f)
+
+    fun toSrgb(result: MutableColor): MutableColor = gamma(1f / 2.2f, result)
+
+    fun gamma(gamma: Float): MutableColor {
+        return gamma(gamma, MutableColor())
+    }
+
+    fun gamma(gamma: Float, result: MutableColor): MutableColor {
+        return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 
     companion object {

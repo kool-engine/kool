@@ -8,7 +8,12 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.textureMesh
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
-        OffscreenRenderPass2d(Group(), mrtPass.texWidth, mrtPass.texHeight, pbrLightingSetup(mrtPass)) {
+        OffscreenRenderPass2d(Group(), renderPassConfig {
+            name = "PbrLightingPass"
+            setSize(mrtPass.config.width, mrtPass.config.height)
+            addColorTexture(TexFormat.RGBA_F16)
+            clearDepthTexture()
+        }) {
 
     val dynamicPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
     val staticPointLights: DeferredPointLights = DeferredPointLights(mrtPass)
@@ -31,7 +36,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         scene.onRenderScene += { ctx ->
             val mapW = mainRenderPass.viewport.width
             val mapH = mainRenderPass.viewport.height
-            if (mapW > 0 && mapH > 0 && (mapW != texWidth || mapH != texHeight)) {
+            if (mapW > 0 && mapH > 0 && (mapW != width || mapH != height)) {
                 mrtPass.resize(mapW, mapH, ctx)
                 resize(mapW, mapH, ctx)
             }
@@ -39,8 +44,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         scene.addOffscreenPass(this)
         dependsOn(mrtPass)
 
-        clearColor = clearColor?.toLinear()
-        clearDepth = false
+        clearColor = null
         camera = mrtPass.camera
 
         cfg.useMrtPass(mrtPass)
@@ -67,13 +71,12 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         }
 
         copyTargetsColor += prevColorTex
-    }
 
-    override fun afterCollectDrawCommands(ctx: KoolContext) {
-        for (i in mrtPass.alphaMeshes.indices) {
-            drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
+        scene.mainRenderPass.onAfterCollectDrawCommands += { ctx ->
+            for (i in mrtPass.alphaMeshes.indices) {
+                scene.mainRenderPass.drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
+            }
         }
-        super.afterCollectDrawCommands(ctx)
     }
 
     fun addSpotLights(maxSpotAngle: Float): DeferredSpotLights {
@@ -96,16 +99,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
                 mirrorTexCoordsY()
             }
         }
-        shader = DeferredOutputShader(colorTexture, mrtPass.depthTexture)
-    }
-
-    companion object {
-        private fun pbrLightingSetup(mrtPass: DeferredMrtPass) = Setup().apply {
-            colorFormat = TexFormat.RGBA_F16
-            colorRenderTarget = RENDER_TARGET_TEXTURE
-            depthRenderTarget = RENDER_TARGET_TEXTURE
-
-            extDepthTexture = mrtPass.depthTexture
-        }
+        shader = DeferredOutputShader(colorTexture!!, mrtPass.depthTexture!!)
     }
 }

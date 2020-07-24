@@ -74,7 +74,6 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
 
     private fun AddressMode.glAddressMode(): Int {
         return when(this) {
-            AddressMode.CLAMP_TO_BORDER -> CLAMP_TO_EDGE
             AddressMode.CLAMP_TO_EDGE -> CLAMP_TO_EDGE
             AddressMode.MIRRORED_REPEAT -> MIRRORED_REPEAT
             AddressMode.REPEAT -> REPEAT

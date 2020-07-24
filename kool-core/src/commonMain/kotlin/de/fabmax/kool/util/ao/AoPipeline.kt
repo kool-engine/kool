@@ -15,7 +15,7 @@ abstract class AoPipeline {
     var size = 0.5f
 
     val aoMap: Texture
-        get() = denoisePass.colorTexture
+        get() = denoisePass.colorTexture!!
 
     var radius: Float
         get() = aoPass.radius
@@ -46,8 +46,8 @@ abstract class AoPipeline {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
-        private var mapWidth = (1600 * size).toInt()
-        private var mapHeight = (900 * size).toInt()
+        private var mapWidth = 0
+        private var mapHeight = 0
 
         init {
             val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
@@ -60,7 +60,7 @@ abstract class AoPipeline {
 
             aoPass = AmbientOcclusionPass(proxyCamera, AoSetup.forward(depthPass), mapWidth, mapHeight)
             aoPass.dependsOn(depthPass)
-            denoisePass = AoDenoisePass(aoPass, depthPass.colorTexture, "a")
+            denoisePass = AoDenoisePass(aoPass, depthPass.colorTexture!!, "a")
             denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
@@ -91,8 +91,8 @@ abstract class AoPipeline {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
-        private var mapWidth = (mrtPass.texWidth * size).toInt()
-        private var mapHeight = (mrtPass.texHeight * size).toInt()
+        private var mapWidth = 0
+        private var mapHeight = 0
 
         init {
             aoPass = AmbientOcclusionPass(mrtPass.camera, AoSetup.deferred(mrtPass), mapWidth, mapHeight)
@@ -104,8 +104,8 @@ abstract class AoPipeline {
             scene.addOffscreenPass(denoisePass)
 
             scene.onRenderScene += { ctx ->
-                val mapW = (mrtPass.texWidth * this@DeferredAoPipeline.size).toInt()
-                val mapH = (mrtPass.texHeight * this@DeferredAoPipeline.size).toInt()
+                val mapW = (mrtPass.width * this@DeferredAoPipeline.size).toInt()
+                val mapH = (mrtPass.height * this@DeferredAoPipeline.size).toInt()
 
                 if (mapW > 0 && mapH > 0 && (mapW != mapWidth || mapH != mapHeight)) {
                     mapWidth = mapW

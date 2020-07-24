@@ -9,7 +9,6 @@ import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 
 class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
-
     private val fbos = mutableListOf<Int>()
     private val rbos = mutableListOf<Int>()
 
@@ -24,7 +23,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val mipLevel = parentPass.offscreenPass.targetMipLevel
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
-        parentPass.offscreenPass.setMipViewport(mipLevel)
+        parentPass.offscreenPass.applyViewportMipLevel(mipLevel)
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
 
         for (i in 0 until 6) {
@@ -43,7 +42,18 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         rbos.forEach { glDeleteRenderbuffers(it) }
         fbos.clear()
         rbos.clear()
-        parentPass.texture.dispose()
+
+        parentPass.offscreenPass.colorTextures.forEach { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
+        }
+        parentPass.offscreenPass.depthTexture?.let { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
+        }
+
         glColorTex = 0
         isCreated = false
     }
@@ -56,13 +66,16 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     private fun create(ctx: Lwjgl3Context) {
         createColorTex(ctx)
 
-        for (i in 0 until parentPass.offscreenPass.mipLevels) {
+        for (i in 0 until parentPass.offscreenPass.config.mipLevels) {
             val fbo = glGenFramebuffers()
             val rbo = glGenRenderbuffers()
 
+            val mipWidth = parentPass.offscreenPass.getMipWidth(i)
+            val mipHeight = parentPass.offscreenPass.getMipHeight(i)
+
             glBindFramebuffer(GL_FRAMEBUFFER, fbo)
             glBindRenderbuffer(GL_RENDERBUFFER, rbo)
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, parentPass.offscreenPass.texWidth shr i, parentPass.offscreenPass.texHeight shr i)
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight)
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)
 
             fbos += fbo
@@ -72,19 +85,21 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     }
 
     private fun createColorTex(ctx: Lwjgl3Context) {
-        val intFormat = parentPass.offscreenPass.colorFormat.glInternalFormat
-        val width = parentPass.offscreenPass.texWidth
-        val height = parentPass.offscreenPass.texHeight
+        val format = parentPass.offscreenPass.config.colorAttachments[0].colorFormat
+        val intFormat = format.glInternalFormat
+        val width = parentPass.offscreenPass.width
+        val height = parentPass.offscreenPass.height
+        val mipLevels = parentPass.offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, parentPass.offscreenPass.colorFormat.pxSize, 6, parentPass.offscreenPass.mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 6, mipLevels)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
         tex.setSize(width, height)
-        tex.applySamplerProps(parentPass.texture.props)
-        glTexStorage2D(GL_TEXTURE_CUBE_MAP, parentPass.offscreenPass.mipLevels, intFormat, width, height)
+        tex.applySamplerProps(parentPass.offscreenPass.colorTexture!!.props)
+        glTexStorage2D(GL_TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
         glColorTex = tex.texture
-        parentPass.texture.loadedTexture = tex
-        parentPass.texture.loadingState = Texture.LoadingState.LOADED
+        parentPass.offscreenPass.colorTexture!!.loadedTexture = tex
+        parentPass.offscreenPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
     }
 
     companion object {

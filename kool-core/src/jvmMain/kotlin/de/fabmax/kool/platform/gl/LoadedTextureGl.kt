@@ -64,7 +64,6 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
 
     private fun AddressMode.glAddressMode(): Int {
         return when(this) {
-            AddressMode.CLAMP_TO_BORDER -> GL30.GL_CLAMP_TO_EDGE
             AddressMode.CLAMP_TO_EDGE -> GL30.GL_CLAMP_TO_EDGE
             AddressMode.MIRRORED_REPEAT -> GL30.GL_MIRRORED_REPEAT
             AddressMode.REPEAT -> GL30.GL_REPEAT

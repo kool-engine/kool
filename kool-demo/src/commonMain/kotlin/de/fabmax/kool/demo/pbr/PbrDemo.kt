@@ -98,10 +98,10 @@ class PbrDemo(val ctx: KoolContext) {
             reflectionMapPass = reflMapPass
             brdfLut = brdfLutPass
 
-            this += Skybox(reflMapPass.colorTextureCube, 1.25f)
+            this += Skybox(reflMapPass.colorTexture!!, 1.25f)
 
             pbrContentCycler.forEach {
-                +it.createContent(this, irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture, ctx)
+                +it.createContent(this, irrMapPass.colorTexture!!, reflMapPass.colorTexture!!, brdfLutPass.colorTexture!!, ctx)
             }
             pbrContentCycler.current.show()
         }

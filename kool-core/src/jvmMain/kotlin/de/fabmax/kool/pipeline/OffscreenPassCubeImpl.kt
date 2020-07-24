@@ -4,16 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3Context
 
 actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
-    actual val texture = CubeMapTexture(
-            "offscreen_cube_tex",
-            TextureProps(
-                    addressModeU = AddressMode.CLAMP_TO_EDGE,
-                    addressModeV = AddressMode.CLAMP_TO_EDGE,
-                    addressModeW = AddressMode.CLAMP_TO_EDGE,
-                    minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
-                    mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1),
-            loader = null)
-
     internal var backendImpl: BackendImpl? = null
 
     fun draw(ctx: Lwjgl3Context) {
@@ -27,7 +17,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         backendImpl?.dispose(ctx as Lwjgl3Context)
     }
 
-    actual fun resize(width: Int, height: Int, ctx: KoolContext) {
+    actual fun applySize(width: Int, height: Int, ctx: KoolContext) {
         backendImpl?.resize(width, height, ctx as Lwjgl3Context)
     }
 

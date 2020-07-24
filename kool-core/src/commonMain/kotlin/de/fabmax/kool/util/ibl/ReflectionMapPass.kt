@@ -10,7 +10,14 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import kotlin.math.PI
 
-class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : OffscreenRenderPassCube(Group(), 256, 256, 7, TexFormat.RGBA_F16) {
+class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) :
+        OffscreenRenderPassCube(Group(), renderPassConfig {
+            setSize(256, 256)
+            mipLevels = 7
+            addColorTexture(TexFormat.RGBA_F16)
+            clearDepthTexture()
+        }) {
+
     var hdriTexture = hdriTexture
         set(value) {
             reflMapShader?.texture = value
@@ -64,9 +71,9 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
-        uRoughness.value = mipIdx.toFloat() / (mipLevels - 1)
+        uRoughness.value = mipIdx.toFloat() / (config.mipLevels - 1)
         targetMipLevel = mipIdx
-        if (++mipIdx >= mipLevels) {
+        if (++mipIdx >= config.mipLevels) {
             parentScene.removeOffscreenPass(this)
         }
         super.collectDrawCommands(ctx)

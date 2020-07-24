@@ -25,11 +25,17 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             deferredCameraNode?.sceneCam = value
         }
 
+    private var depthSampler: TextureSampler? = null
     private var positionAoSampler: TextureSampler? = null
     private var normalRoughnessSampler: TextureSampler? = null
     private var albedoMetalSampler: TextureSampler? = null
     private var emissiveSampler: TextureSampler? = null
 
+    var depth: Texture? = cfg.depth
+        set(value) {
+            field = value
+            depthSampler?.texture = value
+        }
     var positionAo: Texture? = cfg.positionAo
         set(value) {
             field = value
@@ -112,7 +118,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
-        builder.depthTest = DepthCompareOp.DISABLED
+        builder.depthTest = DepthCompareOp.ALWAYS
         builder.blendMode = BlendMode.DISABLED
         super.onPipelineSetup(builder, mesh, ctx)
     }
@@ -121,6 +127,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
 
+        depthSampler = model.findNode<TextureNode>("depth")?.sampler
+        depthSampler?.let { it.texture = depth }
         positionAoSampler = model.findNode<TextureNode>("positionAo")?.sampler
         positionAoSampler?.let { it.texture = positionAo }
         normalRoughnessSampler = model.findNode<TextureNode>("normalRoughness")?.sampler
@@ -189,6 +197,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             }
             fragmentStage {
                 val coord = ifTexCoords.output
+
                 val posAoTex = textureNode("positionAo")
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
                     inPositionAo = textureSamplerNode(posAoTex, coord).outColor
@@ -277,6 +286,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 }
 
                 colorOutput(mat.outColor)
+                val depthSampler = textureSamplerNode(textureNode("depth"), coord)
+                depthOutput(depthSampler.outColor)
             }
         }
     }
@@ -293,6 +304,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         val shadowMaps = mutableListOf<ShadowMap>()
         var lightBacksides = false
 
+        var depth: Texture? = null
         var positionAo: Texture? = null
         var normalRoughness: Texture? = null
         var albedoMetal: Texture? = null
@@ -308,6 +320,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         fun useMrtPass(mrtPass: DeferredMrtPass) {
             sceneCamera = mrtPass.camera
+            depth = mrtPass.depthTexture
             positionAo = mrtPass.positionAo
             normalRoughness = mrtPass.normalRoughness
             albedoMetal = mrtPass.albedoMetal

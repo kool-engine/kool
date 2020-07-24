@@ -44,9 +44,7 @@ open class Group(name: String? = null) : Node(name) {
 
         if (isRendered) {
             for (i in intChildren.indices) {
-                if (renderPass.type != RenderPass.Type.DEPTH || intChildren[i].isCastingShadow) {
-                    intChildren[i].collectDrawCommands(renderPass, ctx)
-                }
+                intChildren[i].collectDrawCommands(renderPass, ctx)
             }
         }
     }

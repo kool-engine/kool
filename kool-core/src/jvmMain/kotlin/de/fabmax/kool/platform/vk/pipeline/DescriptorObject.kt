@@ -65,8 +65,6 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
-    private val loadingTextures = mutableListOf<LoadingTex>()
-
     constructor(binding: Int, sampler2d: TextureSampler) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
     constructor(binding: Int, samplerCube: CubeMapSampler) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
 
@@ -161,6 +159,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                     tex.loadingState = Texture.LoadingState.LOADING_FAILED
                     logE { "Texture loading failed: $ex" }
                 }
+                // do not create LoadedTextureVk yet: we are in the wrong thread
                 isCompleted = true
             }
         }
@@ -175,15 +174,17 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     }
 
     companion object {
-        // todo: integrate texture manager
+        private val loadingTextures = mutableListOf<LoadingTex>()
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureVk>()
 
         private fun getLoadedTex(tex: Texture, texData: TextureData, sys: VkSystem): LoadedTextureVk {
-            loadedTextures.values.removeIf { it.isDestroyed }
-            return loadedTextures.computeIfAbsent(texData) { k ->
-                val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
-                sys.device.addDependingResource(loaded)
-                loaded
+            return synchronized(loadedTextures) {
+                loadedTextures.values.removeIf { it.isDestroyed }
+                loadedTextures.computeIfAbsent(texData) { k ->
+                    val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
+                    sys.device.addDependingResource(loaded)
+                    loaded
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT2
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.glInternalFormat
+import de.fabmax.kool.platform.glOp
 import de.fabmax.kool.platform.pxSize
 import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
@@ -14,24 +15,17 @@ import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_ATTACHMENT
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
-import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
 import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLTexture
 import kotlin.math.max
 
 actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2d) {
-    actual val colorTexture: Texture = offscreenPass.setup.extColorTexture ?: Texture(loader = null)
-    actual val depthTexture: Texture = offscreenPass.setup.extDepthTexture ?: Texture(loader = null)
-
-    val isExtColorTexture = offscreenPass.setup.extColorTexture != null
-    val isExtDepthTexture = offscreenPass.setup.extDepthTexture != null
-
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
     private var isCreated = false
-    private var colorTex: WebGLTexture? = null
+    private var colorTexs = Array<WebGLTexture?>(offscreenPass.config.nColorAttachments) { null }
     private var depthTex: WebGLTexture? = null
 
     fun draw(ctx: JsContext) {
@@ -56,7 +50,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             val copyTarget = offscreenPass.copyTargetsColor[i]
             val width = copyTarget.loadedTexture?.width ?: 0
             val height = copyTarget.loadedTexture?.height ?: 0
-            if (width != offscreenPass.texWidth || height != offscreenPass.texHeight) {
+            if (width != offscreenPass.width || height != offscreenPass.height) {
                 copyTarget.loadedTexture?.dispose()
                 copyTarget.createCopyTexColor(ctx)
             }
@@ -73,18 +67,23 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         fbos.clear()
         rbos.clear()
 
-        if (!isExtColorTexture) {
-            colorTexture.dispose()
+        offscreenPass.colorTextures.forEach { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
         }
-        if (!isExtDepthTexture) {
-            depthTexture.dispose()
+        offscreenPass.depthTexture?.let { tex ->
+            if (tex.loadingState == Texture.LoadingState.LOADED) {
+                tex.dispose()
+            }
         }
-        colorTex = null
+
+        for (i in colorTexs.indices) { colorTexs[i] = null }
         depthTex = null
         isCreated = false
     }
 
-    actual fun resize(width: Int, height: Int, ctx: KoolContext) {
+    actual fun applySize(width: Int, height: Int, ctx: KoolContext) {
         dispose(ctx)
         create(ctx as JsContext)
     }
@@ -92,111 +91,116 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private fun create(ctx: JsContext) {
         val gl = ctx.gl
 
-        if (offscreenPass.setup.colorRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_TEXTURE) {
-            if(!isExtColorTexture && colorTexture.loadingState == Texture.LoadingState.NOT_LOADED) {
-                createColorTex(ctx)
-            } else if (isExtColorTexture) {
-                val extColorTex = colorTexture.loadedTexture ?: return
-                colorTex = (extColorTex as LoadedTextureWebGl).texture
-            }
+        if (offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            createColorTexs(ctx)
         }
-        if (offscreenPass.setup.depthRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_TEXTURE) {
-            if (!isExtDepthTexture && depthTexture.loadingState == Texture.LoadingState.NOT_LOADED) {
-                createDepthTex(ctx)
-            } else if (isExtDepthTexture) {
-                val extDepthTex = depthTexture.loadedTexture ?: return
-                depthTex = (extDepthTex as LoadedTextureWebGl).texture
-            }
+        if (offscreenPass.config.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+            createDepthTex(ctx)
         }
 
-        for (i in 0 until offscreenPass.mipLevels) {
+        for (i in 0 until offscreenPass.config.mipLevels) {
+            val mipWidth = offscreenPass.getMipWidth(i)
+            val mipHeight = offscreenPass.getMipHeight(i)
             val fbo = gl.createFramebuffer()
-            fbos += fbo
             gl.bindFramebuffer(FRAMEBUFFER, fbo)
 
-            if (offscreenPass.setup.colorRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_TEXTURE) {
-                gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, colorTex, i)
+            if (offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
+                colorTexs.forEachIndexed { iAttachment, tex ->
+                    gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0 + iAttachment, TEXTURE_2D, tex, i)
+                }
+                val attachments = IntArray(colorTexs.size) { COLOR_ATTACHMENT0 + it }
+                gl.drawBuffers(attachments)
             } else {
                 val rbo = gl.createRenderbuffer()
                 gl.bindRenderbuffer(RENDERBUFFER, rbo)
-                gl.renderbufferStorage(RENDERBUFFER, offscreenPass.colorFormat.glInternalFormat,
-                        offscreenPass.texWidth shr i, offscreenPass.texHeight shr i)
+                gl.renderbufferStorage(RENDERBUFFER, TexFormat.R.glInternalFormat, mipWidth, mipHeight)
                 gl.framebufferRenderbuffer(FRAMEBUFFER, COLOR_ATTACHMENT0, RENDERBUFFER, rbo)
                 rbos += rbo
             }
 
-            if (offscreenPass.setup.depthRenderTarget == OffscreenRenderPass2d.RENDER_TARGET_TEXTURE) {
+            if (offscreenPass.config.depthRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 gl.framebufferTexture2D(FRAMEBUFFER, DEPTH_ATTACHMENT, TEXTURE_2D, depthTex, i)
             } else {
                 val rbo = gl.createRenderbuffer()
                 gl.bindRenderbuffer(RENDERBUFFER, rbo)
-                gl.renderbufferStorage(RENDERBUFFER, DEPTH_COMPONENT24,
-                        offscreenPass.texWidth shr i, offscreenPass.texHeight shr i)
+                gl.renderbufferStorage(RENDERBUFFER, DEPTH_COMPONENT24, mipWidth, mipHeight)
                 gl.framebufferRenderbuffer(FRAMEBUFFER, DEPTH_ATTACHMENT, RENDERBUFFER, rbo)
                 rbos += rbo
             }
+            fbos += fbo
         }
-
         isCreated = true
+    }
+
+    private fun createColorTexs(ctx: JsContext) {
+        for (i in offscreenPass.colorTextures.indices) {
+            val cfg = offscreenPass.config.colorAttachments[i]
+
+            if (cfg.providedTexture != null) {
+                colorTexs[i] = (cfg.providedTexture.loadedTexture as LoadedTextureWebGl).texture
+
+            } else {
+                val format = cfg.colorFormat
+                val intFormat = format.glInternalFormat
+                val width = offscreenPass.width
+                val height = offscreenPass.height
+                val mipLevels = offscreenPass.config.mipLevels
+
+                val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 1, mipLevels)
+                val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+                tex.setSize(width, height)
+                tex.applySamplerProps(offscreenPass.colorTextures[i].props)
+                ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
+
+                colorTexs[i] = tex.texture
+                offscreenPass.colorTextures[i].loadedTexture = tex
+                offscreenPass.colorTextures[i].loadingState = Texture.LoadingState.LOADED
+            }
+        }
+    }
+
+    private fun createDepthTex(ctx: JsContext) {
+        val cfg = offscreenPass.config.depthAttachment!!
+
+        if (cfg.providedTexture != null) {
+            depthTex = (cfg.providedTexture.loadedTexture as LoadedTextureWebGl).texture
+
+        } else {
+            val intFormat = DEPTH_COMPONENT24
+            val width = offscreenPass.width
+            val height = offscreenPass.height
+            val mipLevels = offscreenPass.config.mipLevels
+            val depthCfg = offscreenPass.config.depthAttachment
+
+            val estSize = Texture.estimatedTexSize(width, height, 4, 1, mipLevels)
+            val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
+            tex.setSize(width, height)
+            tex.applySamplerProps(offscreenPass.depthTexture!!.props)
+            if (depthCfg.depthCompareOp != DepthCompareOp.DISABLED) {
+                ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
+                ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, depthCfg.depthCompareOp.glOp)
+            }
+            ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
+
+            depthTex = tex.texture
+            offscreenPass.depthTexture.loadedTexture = tex
+            offscreenPass.depthTexture.loadingState = Texture.LoadingState.LOADED
+        }
     }
 
     private fun Texture.createCopyTexColor(ctx: JsContext) {
         val intFormat = props.format.glInternalFormat
-        val width = offscreenPass.texWidth
-        val height = offscreenPass.texHeight
+        val width = offscreenPass.width
+        val height = offscreenPass.height
+        val mipLevels = offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 1, mipLevels)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
         tex.setSize(width, height)
         tex.applySamplerProps(props)
-        ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
+        ctx.gl.texStorage2D(TEXTURE_2D, mipLevels, intFormat, width, height)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
-    }
-
-    private fun createColorTex(ctx: JsContext) {
-        val intFormat = offscreenPass.colorFormat.glInternalFormat
-        val width = offscreenPass.texWidth
-        val height = offscreenPass.texHeight
-        val samplerProps = TextureProps(
-                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
-                minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR,
-                mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
-
-        val estSize = Texture.estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
-        tex.setSize(width, height)
-        tex.applySamplerProps(samplerProps)
-        ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
-
-        colorTex = tex.texture
-        colorTexture.loadedTexture = tex
-        colorTexture.loadingState = Texture.LoadingState.LOADED
-    }
-
-    private fun createDepthTex(ctx: JsContext) {
-        val intFormat = DEPTH_COMPONENT24
-        val width = offscreenPass.texWidth
-        val height = offscreenPass.texHeight
-        val filterMethod = if (offscreenPass.setup.isUsedAsShadowMap) FilterMethod.LINEAR else FilterMethod.NEAREST
-        val samplerProps = TextureProps(
-                addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE,
-                minFilter = filterMethod, magFilter = filterMethod,
-                mipMapping = offscreenPass.mipLevels > 1, maxAnisotropy = 1)
-
-        val estSize = Texture.estimatedTexSize(width, height, 4, 1, offscreenPass.mipLevels)
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
-        tex.setSize(width, height)
-        tex.applySamplerProps(samplerProps)
-        if (filterMethod == FilterMethod.LINEAR) {
-            ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
-            ctx.gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
-        }
-        ctx.gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
-
-        depthTex = tex.texture
-        depthTexture.loadedTexture = tex
-        depthTexture.loadingState = Texture.LoadingState.LOADED
     }
 }
 

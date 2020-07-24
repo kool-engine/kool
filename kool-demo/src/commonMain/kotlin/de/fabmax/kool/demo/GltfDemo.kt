@@ -101,6 +101,8 @@ class GltfDemo(ctx: KoolContext) {
                 hdri.dispose()
             }
 
+            +Skybox(reflMapPass!!.colorTexture!!, 1f)
+
             makeDeferredContent(ctx)
             makeForwardContent(ctx)
 
@@ -143,7 +145,6 @@ class GltfDemo(ctx: KoolContext) {
                 SimpleShadowMap(this, 0, 2048, contentGroupForward),
                 SimpleShadowMap(this, 1, 2048, contentGroupForward))
 
-        +Skybox(reflMapPass!!.colorTextureCube, 1f)
         contentGroupForward.setupContentGroup(false, ctx)
         +contentGroupForward
     }
@@ -160,11 +161,10 @@ class GltfDemo(ctx: KoolContext) {
         // setup lighting pass
         val cfg = PbrSceneShader.DeferredPbrConfig().apply {
             useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
-            useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
+            useImageBasedLighting(irrMapPass?.colorTexture, reflMapPass?.colorTexture, brdfLutPass?.colorTexture)
             shadowMaps += shadowsDeferred
         }
         pbrPass = PbrLightingPass(this@makeDeferredContent, mrtPass, cfg)
-        pbrPass.content.addNode(Skybox(reflMapPass!!.colorTextureCube, 1f, true), 0)
 
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
@@ -237,7 +237,7 @@ class GltfDemo(ctx: KoolContext) {
                 if (!isDeferredShading) {
                     shadowMaps += shadowsForward
                     useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
-                    useImageBasedLighting(irrMapPass?.colorTextureCube, reflMapPass?.colorTextureCube, brdfLutPass?.colorTexture)
+                    useImageBasedLighting(irrMapPass?.colorTexture, reflMapPass?.colorTexture, brdfLutPass?.colorTexture)
                 }
 
                 useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
@@ -437,8 +437,8 @@ class GltfDemo(ctx: KoolContext) {
                 val materialCfg = GltfFile.ModelMaterialConfig(
                         shadowMaps = if (isDeferredShading) shadowsDeferred else shadowsForward,
                         scrSpcAmbientOcclusionMap = if (isDeferredShading) aoPipelineDeferred?.aoMap else aoPipelineForward?.aoMap,
-                        iblIrradianceMap = irrMapPass?.colorTextureCube,
-                        iblReflectionMap = reflMapPass?.colorTextureCube,
+                        iblIrradianceMap = irrMapPass?.colorTexture,
+                        iblReflectionMap = reflMapPass?.colorTexture,
                         iblBrdfMap = brdfLutPass?.colorTexture,
                         isDeferredShading = isDeferredShading
                 )

@@ -90,10 +90,13 @@ enum class BlendMode {
 enum class DepthCompareOp {
     DISABLED,
     ALWAYS,
+    NEVER,
     LESS,
     LESS_EQUAL,
     GREATER,
-    GREATER_EQUAL
+    GREATER_EQUAL,
+    EQUAL,
+    NOT_EQUAL
 }
 
 enum class CullMethod {

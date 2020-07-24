@@ -5,8 +5,8 @@ import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
+import de.fabmax.kool.platform.glOp
 import org.khronos.webgl.Float32Array
-import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_BUFFER_BIT
@@ -14,10 +14,6 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_TEST
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRONT
-import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
-import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
 import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
 import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
 import org.khronos.webgl.WebGLRenderingContext.Companion.SRC_ALPHA
@@ -43,8 +39,8 @@ class QueueRendererWebGl(val ctx: JsContext) {
         queue.renderPass.apply {
             ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
-            if (this is OffscreenRenderPass2dMrt) {
-                for (i in 0 until nAttachments) {
+            if (this is OffscreenRenderPass2d) {
+                for (i in 0 until config.nColorAttachments) {
                     (clearColors[i] ?: clearColor)?.let {
                         colorBuffer[0] = it.r
                         colorBuffer[1] = it.g
@@ -137,28 +133,11 @@ class QueueRendererWebGl(val ctx: JsContext) {
         private fun setDepthTest(depthCompareOp: DepthCompareOp) {
             if (depthTest != depthCompareOp) {
                 depthTest = depthCompareOp
-                when (depthCompareOp) {
-                    DepthCompareOp.DISABLED -> gl.disable(DEPTH_TEST)
-                    DepthCompareOp.ALWAYS -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(ALWAYS)
-                    }
-                    DepthCompareOp.LESS -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(LESS)
-                    }
-                    DepthCompareOp.LESS_EQUAL -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(LEQUAL)
-                    }
-                    DepthCompareOp.GREATER -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(GREATER)
-                    }
-                    DepthCompareOp.GREATER_EQUAL -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(GEQUAL)
-                    }
+                if (depthCompareOp == DepthCompareOp.DISABLED) {
+                    gl.disable(DEPTH_TEST)
+                } else {
+                    gl.enable(DEPTH_TEST)
+                    gl.depthFunc(depthCompareOp.glOp)
                 }
             }
         }

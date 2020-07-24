@@ -7,13 +7,14 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 
-open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int, mipLevels: Int, val colorFormat: TexFormat = TexFormat.RGBA) :
-        OffscreenRenderPass(drawNode, texWidth, texHeight, mipLevels) {
+open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRenderPass(drawNode, config) {
 
     internal val impl = OffscreenPassCubeImpl(this)
 
-    val colorTextureCube: CubeMapTexture
-        get() = impl.texture
+    val depthTexture = makeDepthAttachmentTex()
+    val colorTextures = makeColorAttachmentTexs()
+    val colorTexture: CubeMapTexture?
+        get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
     lateinit var onSetupView: ((ViewDirection, KoolContext) -> Unit)
 
@@ -21,6 +22,13 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
 
     init {
         defaultCubeMapCameraConfig()
+
+        if (config.depthRenderTarget == RenderTarget.TEXTURE) {
+            throw RuntimeException("CubeMapDepthTexture not yet implemented")
+        }
+        if (config.colorAttachments.size > 1) {
+            throw RuntimeException("CubeMap multiple render targets not yet implemented")
+        }
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
@@ -34,11 +42,46 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         impl.dispose(ctx)
+
+        ctx.runDelayed(3) {
+            if (config.depthAttachment?.providedTexture == null) {
+                depthTexture?.dispose()
+            }
+            colorTextures.forEachIndexed { i, tex ->
+                if (config.colorAttachments[i].providedTexture == null) {
+                    tex.dispose()
+                }
+            }
+        }
     }
 
-    override fun resize(width: Int, height: Int, ctx: KoolContext) {
-        super.resize(width, height, ctx)
-        impl.resize(width, height, ctx)
+    override fun applySize(width: Int, height: Int, ctx: KoolContext) {
+        super.applySize(width, height, ctx)
+        impl.applySize(width, height, ctx)
+    }
+
+    private fun makeColorAttachmentTexs(): List<CubeMapTexture> {
+        return config.colorAttachments.mapIndexed { i, texCfg ->
+            if (texCfg.isProvided) {
+                texCfg.providedTexture as CubeMapTexture
+            } else {
+                val name = "${name}_color[$i]"
+                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                CubeMapTexture(name, props)
+            }
+        }
+    }
+
+    private fun makeDepthAttachmentTex(): CubeMapTexture? {
+        return config.depthAttachment?.let { texCfg ->
+            if (texCfg.isProvided) {
+                texCfg.providedTexture as CubeMapTexture
+            } else {
+                val name = "${name}_depth"
+                val props = texCfg.getTextureProps(config.mipLevels > 1)
+                CubeMapTexture(name, props)
+            }
+        }
     }
 
     private fun defaultCubeMapCameraConfig() {
@@ -80,9 +123,7 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
 }
 
 expect class OffscreenPassCubeImpl(offscreenPass: OffscreenRenderPassCube) {
-    val texture: CubeMapTexture
-
-    fun resize(width: Int, height: Int, ctx: KoolContext)
+    fun applySize(width: Int, height: Int, ctx: KoolContext)
 
     fun dispose(ctx: KoolContext)
 }

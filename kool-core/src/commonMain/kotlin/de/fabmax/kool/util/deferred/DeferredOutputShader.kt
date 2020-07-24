@@ -10,9 +10,9 @@ import de.fabmax.kool.scene.Mesh
 class DeferredOutputShader(private val pbrOutput: Texture, private val depth: Texture) : ModeledShader(outputModel()) {
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         val textureSampler = model.findNode<TextureNode>("deferredPbrOutput")?.sampler
-        textureSampler!!.texture = pbrOutput
+        textureSampler?.texture = pbrOutput
         val depthSampler = model.findNode<TextureNode>("deferredDepthOutput")?.sampler
-        depthSampler!!.texture = depth
+        depthSampler?.texture = depth
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
