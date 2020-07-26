@@ -75,40 +75,45 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
     override fun dispose(ctx: Lwjgl3Context) {
         val rp = renderPass
+        val colorTexs = parentPass.offscreenPass.colorTextures.map { it.loadedTexture }
+        val depthTex = parentPass.offscreenPass.depthTexture?.loadedTexture
+
         isCreated = false
         renderPass = null
 
-        parentPass.offscreenPass.colorTextures.forEach { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parentPass.offscreenPass.colorTextures.forEachIndexed { i, tex ->
+            if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                tex.clear()
             }
         }
-        parentPass.offscreenPass.depthTexture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
-            }
+        if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+            parentPass.offscreenPass.depthTexture?.clear()
         }
 
         ctx.runDelayed(3) {
             rp?.destroyNow()
+            colorTexs.forEachIndexed { i, loadedTex ->
+                if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                    loadedTex?.dispose()
+                }
+            }
+            if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+                depthTex?.dispose()
+            }
         }
+    }
+
+    private fun Texture.clear() {
+        loadedTexture = null
+        loadingState = Texture.LoadingState.NOT_LOADED
     }
 
     override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
         dispose(ctx)
 
-        val isProvidedTex = parentPass.offscreenPass.config.colorAttachments.any { it.providedTexture != null }
-                || parentPass.offscreenPass.config.depthAttachment?.providedTexture != null
-
-        if (!isProvidedTex) {
-            create(ctx)
-
-        } else {
-            isCreationBlocked = true
-            ctx.runDelayed(3) {
-                isCreationBlocked = false
-                create(ctx)
-            }
+        isCreationBlocked = true
+        ctx.runDelayed(3) {
+            isCreationBlocked = false
         }
     }
 

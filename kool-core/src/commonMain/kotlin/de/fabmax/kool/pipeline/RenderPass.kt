@@ -77,6 +77,7 @@ class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
     var useWindowViewport = true
 
     init {
+        name = "onscreen/${scene.name}"
         lighting = scene.lighting
     }
 

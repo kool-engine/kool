@@ -31,7 +31,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         val mipLevel = offscreenPass.targetMipLevel
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
-        offscreenPass.applyViewportMipLevel(mipLevel)
+        offscreenPass.applyMipViewport(mipLevel)
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
 
         for (i in 0 until 6) {

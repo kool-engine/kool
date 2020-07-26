@@ -86,7 +86,7 @@ class GltfDemo(ctx: KoolContext) {
         }
     }
 
-    private fun makeMainScene(ctx: KoolContext) = scene {
+    private fun makeMainScene(ctx: KoolContext) = scene("gltfDemo") {
         setupLighting()
         setupCamera()
 

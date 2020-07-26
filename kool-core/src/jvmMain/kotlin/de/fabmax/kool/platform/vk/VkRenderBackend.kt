@@ -17,6 +17,7 @@ import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkCommandBuffer
 import java.nio.LongBuffer
 import java.util.*
+import kotlin.math.max
 
 class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
     override val apiName: String
@@ -445,7 +446,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                offscreenPass.applyViewportMipLevel(offscreenPass.targetMipLevel)
+                offscreenPass.applyMipViewport(offscreenPass.targetMipLevel)
                 setViewport(commandBuffer, offscreenPass.viewport)
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
                 vkCmdEndRenderPass(commandBuffer)
@@ -462,7 +463,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 for (view in cubeRenderPassViews) {
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                    offscreenPass.applyViewportMipLevel(offscreenPass.targetMipLevel)
+                    offscreenPass.applyMipViewport(offscreenPass.targetMipLevel)
                     setViewport(commandBuffer, offscreenPass.viewport)
                     renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                     vkCmdEndRenderPass(commandBuffer)
@@ -488,10 +489,15 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 }
 
                 // fixme: make clear values optional (if clear color is null or clearDepth = false)
-                val colorAttachments = renderPass.clearColors.size
+                val colorAttachments = max(1, renderPass.clearColors.size)
                 pClearValues(callocVkClearValueN(colorAttachments + 1) {
                     for (i in 0 until colorAttachments) {
-                        this[i].setColor(renderPass.clearColors[i] ?: Color.BLACK)
+                        val clearColor = if (i < renderPass.clearColors.size) {
+                            renderPass.clearColors[i] ?: Color.BLACK
+                        } else {
+                            Color.BLACK
+                        }
+                        this[i].setColor(clearColor)
                     }
                     this[colorAttachments].depthStencil { it.depth(1f); it.stencil(0) }
                 })

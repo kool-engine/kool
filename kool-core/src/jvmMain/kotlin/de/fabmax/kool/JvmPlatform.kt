@@ -45,7 +45,8 @@ internal object DesktopImpl {
         val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
         Log.printer = { lvl, tag, message ->
             synchronized(dateFmt) {
-                val txt = "${dateFmt.format(System.currentTimeMillis())} ${lvl.indicator}/$tag: $message"
+                val frmTxt = ctx?.let { "|f:${it.frameIdx}" } ?: ""
+                val txt = "${dateFmt.format(System.currentTimeMillis())}$frmTxt ${lvl.indicator}/$tag: $message"
                 if (lvl.level < Log.Level.WARN.level) {
                     println(txt)
                 } else {

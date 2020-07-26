@@ -23,7 +23,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val mipLevel = parentPass.offscreenPass.targetMipLevel
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
-        parentPass.offscreenPass.applyViewportMipLevel(mipLevel)
+        parentPass.offscreenPass.applyMipViewport(mipLevel)
         glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
 
         for (i in 0 until 6) {

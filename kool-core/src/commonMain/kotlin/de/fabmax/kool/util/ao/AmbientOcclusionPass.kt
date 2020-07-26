@@ -50,8 +50,6 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     }
                 }
 
-                onSkipDraw = { println("ao pass skipped: ${noiseTex.loadingState}, ${noiseTex.loadedTexture?.width}") }
-
                 val model = ShaderModel("AoPass").apply {
                     val ifScreenPos: StageInterfaceNode
                     vertexStage {

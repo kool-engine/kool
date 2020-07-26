@@ -27,7 +27,7 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
     init {
         name = config.name
         clearColors = Array(config.nColorAttachments) { null }
-        applyViewportMipLevel(0)
+        applyMipViewport(0)
 
         if (width == 0) {
             // config is set to dynamic width, start with some non-zero value
@@ -47,14 +47,14 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         return if (mipLevel <= 0) height else height shr mipLevel
     }
 
-    fun applyViewportMipLevel(mipLevel: Int) {
+    fun applyMipViewport(mipLevel: Int) {
         viewport.set(0, 0, getMipWidth(mipLevel), getMipHeight(mipLevel))
     }
 
     fun resize(width: Int, height: Int, ctx: KoolContext) {
         if (config.width == 0 && config.height == 0) {
             applySize(width, height, ctx)
-            applyViewportMipLevel(0)
+            applyMipViewport(0)
         } else {
             logE { "OffscreenRenderPass $name cannot be resized: Size is fixed to ${config.width} x ${config.height}" }
         }

@@ -12,6 +12,7 @@ import kotlin.math.max
 
 class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
     private var isCreated = false
+    private var isCreationBlocked = false
 
     var renderPass: VkOffscreenRenderPass? = null
         private set
@@ -21,36 +22,53 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     var sampler: Long = 0L
 
     override fun draw(ctx: Lwjgl3Context) {
-        if (!isCreated) {
+        if (!isCreated && !isCreationBlocked) {
             create(ctx)
-            isCreated = true
         }
     }
 
     override fun dispose(ctx: Lwjgl3Context) {
         val rp = renderPass
+        val colorTexs = parentPass.offscreenPass.colorTextures.map { it.loadedTexture }
+        val depthTex = parentPass.offscreenPass.depthTexture?.loadedTexture
+
         isCreated = false
         renderPass = null
 
-        parentPass.offscreenPass.colorTextures.forEach { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parentPass.offscreenPass.colorTextures.forEachIndexed { i, tex ->
+            if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                tex.clear()
             }
         }
-        parentPass.offscreenPass.depthTexture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
-            }
+        if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+            parentPass.offscreenPass.depthTexture?.clear()
         }
 
         ctx.runDelayed(3) {
             rp?.destroyNow()
+            colorTexs.forEachIndexed { i, loadedTex ->
+                if (!parentPass.offscreenPass.config.colorAttachments[i].isProvided) {
+                    loadedTex?.dispose()
+                }
+            }
+            if (parentPass.offscreenPass.config.depthAttachment?.isProvided == false) {
+                depthTex?.dispose()
+            }
         }
+    }
+
+    private fun Texture.clear() {
+        loadedTexture = null
+        loadingState = Texture.LoadingState.NOT_LOADED
     }
 
     override fun resize(width: Int, height: Int, ctx: Lwjgl3Context) {
         dispose(ctx)
-        create(ctx)
+
+        isCreationBlocked = true
+        ctx.runDelayed(3) {
+            isCreationBlocked = false
+        }
     }
 
     fun transitionTexLayout(commandBuffer: VkCommandBuffer, dstLayout: Int) {
@@ -107,6 +125,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val rp = VkOffscreenRenderPass(sys, cfg.width, cfg.height, true, cfg.colorAttachments[0].colorFormat.vkFormat)
         createTex(rp, sys)
         renderPass = rp
+        isCreated = true
     }
 
     private fun createTex(rp: VkOffscreenRenderPass, sys: VkSystem) {
