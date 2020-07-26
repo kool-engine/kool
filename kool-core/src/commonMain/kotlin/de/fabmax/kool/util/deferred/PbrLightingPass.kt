@@ -73,8 +73,10 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         copyTargetsColor += prevColorTex
 
         scene.mainRenderPass.onAfterCollectDrawCommands += { ctx ->
-            for (i in mrtPass.alphaMeshes.indices) {
-                scene.mainRenderPass.drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
+            if (isEnabled) {
+                for (i in mrtPass.alphaMeshes.indices) {
+                    scene.mainRenderPass.drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
+                }
             }
         }
     }

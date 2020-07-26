@@ -24,13 +24,15 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) :
             field = value
         }
 
-    private var mipIdx = 0
-
     private val uRoughness = Uniform1f(0.5f, "uRoughness")
     private var reflMapShader: ModeledShader.TextureColor? = null
 
     init {
         clearColor = null
+
+        onSetupMipLevel = { mipLevel, _ ->
+            uRoughness.value = mipLevel.toFloat() / (config.mipLevels - 1)
+        }
 
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS)) {
@@ -65,22 +67,17 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) :
 
         update()
 
+        // this pass only needs to be rendered once, remove it immediately after first render
+        onAfterCollectDrawCommands += {
+            parentScene.removeOffscreenPass(this)
+        }
+
         parentScene.onDispose += { ctx ->
             this@ReflectionMapPass.dispose(ctx)
         }
     }
 
-    override fun collectDrawCommands(ctx: KoolContext) {
-        uRoughness.value = mipIdx.toFloat() / (config.mipLevels - 1)
-        targetMipLevel = mipIdx
-        if (++mipIdx >= config.mipLevels) {
-            parentScene.removeOffscreenPass(this)
-        }
-        super.collectDrawCommands(ctx)
-    }
-
     fun update() {
-        mipIdx = 0
         if (this !in parentScene.offscreenPasses) {
             parentScene.addOffscreenPass(this)
         }

@@ -18,7 +18,6 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLTexture
-import kotlin.math.max
 
 actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2d) {
     private val fbos = mutableListOf<WebGLFramebuffer?>()
@@ -34,11 +33,13 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
 
         if (isCreated) {
-            val mipLevel = max(0, offscreenPass.targetMipLevel)
-
-            ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
-            ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
-            copyToTextures(mipLevel, ctx)
+            for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+                offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+                offscreenPass.applyMipViewport(mipLevel)
+                ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
+                ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
+                copyToTextures(mipLevel, ctx)
+            }
             ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
         }
     }

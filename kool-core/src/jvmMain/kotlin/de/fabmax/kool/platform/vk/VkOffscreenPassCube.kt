@@ -8,7 +8,6 @@ import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import kotlin.math.max
 
 class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPassCubeImpl.BackendImpl {
     private var isCreated = false
@@ -85,10 +84,9 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
     }
 
-    fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenRenderPassCube.ViewDirection) {
+    fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenRenderPassCube.ViewDirection, mipLevel: Int) {
         val rp = renderPass ?: return
 
-        val mipLevel = max(parentPass.offscreenPass.targetMipLevel, 0)
         val width = parentPass.offscreenPass.getMipWidth(mipLevel)
         val height = parentPass.offscreenPass.getMipHeight(mipLevel)
 

@@ -14,7 +14,6 @@ inline fun renderPassConfig(block: OffscreenRenderPass.ConfigBuilder.() -> Unit)
 }
 
 abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderPass(drawNode) {
-    var targetMipLevel = -1
     var isEnabled = true
 
     var width = config.width
@@ -23,6 +22,8 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         protected set
 
     override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
+
+    var onSetupMipLevel: ((Int, KoolContext) -> Unit)? = null
 
     init {
         name = config.name

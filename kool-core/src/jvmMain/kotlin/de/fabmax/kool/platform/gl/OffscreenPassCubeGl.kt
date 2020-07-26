@@ -20,18 +20,18 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
             create(ctx)
         }
 
-        val mipLevel = parentPass.offscreenPass.targetMipLevel
-        val fboIdx = if (mipLevel < 0) 0 else mipLevel
+        val glBackend = ctx.renderBackend as GlRenderBackend
+        for (mipLevel in 0 until parentPass.offscreenPass.config.mipLevels) {
+            parentPass.offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+            parentPass.offscreenPass.applyMipViewport(mipLevel)
+            glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
 
-        parentPass.offscreenPass.applyMipViewport(mipLevel)
-        glBindFramebuffer(GL_FRAMEBUFFER, fbos[fboIdx])
-
-        for (i in 0 until 6) {
-            val view = VIEWS[i]
-            val queue = parentPass.offscreenPass.drawQueues[view.index]
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, fboIdx)
-            val glBackend = ctx.renderBackend as GlRenderBackend
-            glBackend.queueRenderer.renderQueue(queue)
+            for (i in 0 until 6) {
+                val view = VIEWS[i]
+                val queue = parentPass.offscreenPass.drawQueues[view.index]
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, glColorTex, mipLevel)
+                glBackend.queueRenderer.renderQueue(queue)
+            }
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, GL11.GL_NONE)

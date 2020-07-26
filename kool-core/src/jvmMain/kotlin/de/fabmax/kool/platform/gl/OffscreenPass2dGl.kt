@@ -6,7 +6,6 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 import org.lwjgl.opengl.GL43.glCopyImageSubData
-import kotlin.math.max
 
 class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
     private val fbos = mutableListOf<Int>()
@@ -22,12 +21,14 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
 
         if (isCreated) {
-            val mipLevel = max(0, parentPass.offscreenPass.targetMipLevel)
-
-            glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
             val glBackend = ctx.renderBackend as GlRenderBackend
-            glBackend.queueRenderer.renderQueue(parentPass.offscreenPass.drawQueue)
-            copyToTextures(mipLevel, ctx)
+            for (mipLevel in 0 until parentPass.offscreenPass.config.mipLevels) {
+                parentPass.offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+                parentPass.offscreenPass.applyMipViewport(mipLevel)
+                glBindFramebuffer(GL_FRAMEBUFFER, fbos[mipLevel])
+                glBackend.queueRenderer.renderQueue(parentPass.offscreenPass.drawQueue)
+                copyToTextures(mipLevel, ctx)
+            }
             glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE)
         }
     }

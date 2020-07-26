@@ -28,19 +28,18 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             create(ctx)
         }
 
-        val mipLevel = offscreenPass.targetMipLevel
-        val fboIdx = if (mipLevel < 0) 0 else mipLevel
+        for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+            offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
+            offscreenPass.applyMipViewport(mipLevel)
+            ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
 
-        offscreenPass.applyMipViewport(mipLevel)
-        ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
-
-        for (i in 0 until 6) {
-            val view = VIEWS[i]
-            val queue = offscreenPass.drawQueues[view.index]
-            ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, fboIdx)
-            ctx.queueRenderer.renderQueue(queue)
+            for (i in 0 until 6) {
+                val view = VIEWS[i]
+                val queue = offscreenPass.drawQueues[view.index]
+                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, mipLevel)
+                ctx.queueRenderer.renderQueue(queue)
+            }
         }
-
         ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
     }
 

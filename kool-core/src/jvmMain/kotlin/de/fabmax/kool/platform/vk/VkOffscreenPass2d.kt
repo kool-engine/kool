@@ -5,8 +5,6 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import kotlin.math.pow
-import kotlin.math.roundToInt
 
 class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dImpl.BackendImpl {
     private var isCreated = false
@@ -25,16 +23,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         if (parentPass.offscreenPass.copyTargetsColor.isEmpty()) {
             return
         }
+        val mipLevels = parentPass.offscreenPass.config.mipLevels
         val rp = renderPass ?: return
-
-        var mipLevel = 0
-        var width = parentPass.offscreenPass.width
-        var height = parentPass.offscreenPass.height
-        if (parentPass.offscreenPass.targetMipLevel > 0) {
-            width = (width * 0.5.pow(parentPass.offscreenPass.targetMipLevel)).roundToInt()
-            height = (height * 0.5.pow(parentPass.offscreenPass.targetMipLevel)).roundToInt()
-            mipLevel = parentPass.offscreenPass.targetMipLevel
-        }
 
         memStack {
             rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
@@ -48,22 +38,29 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                 }
                 val target = copyTarget.loadedTexture as LoadedTextureVk
 
-                val imageCopy = callocVkImageCopyN(1) {
-                    srcSubresource {
-                        it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                        it.mipLevel(0)
-                        it.baseArrayLayer(0)
-                        it.layerCount(1)
+                val imageCopy = callocVkImageCopyN(mipLevels) {
+                    for (mipLevel in 0 until mipLevels) {
+                        val width = parentPass.offscreenPass.getMipWidth(mipLevel)
+                        val height = parentPass.offscreenPass.getMipHeight(mipLevel)
+
+                        this[mipLevel].apply {
+                            srcSubresource {
+                                it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                                it.mipLevel(mipLevel)
+                                it.baseArrayLayer(0)
+                                it.layerCount(1)
+                            }
+                            srcOffset { it.set(0, 0, 0) }
+                            dstSubresource {
+                                it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                                it.mipLevel(mipLevel)
+                                it.baseArrayLayer(0)
+                                it.layerCount(1)
+                            }
+                            dstOffset { it.set(0, 0, 0) }
+                            extent { it.set(width, height, 1) }
+                        }
                     }
-                    srcOffset { it.set(0, 0, 0) }
-                    dstSubresource {
-                        it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                        it.mipLevel(mipLevel)
-                        it.baseArrayLayer(0)
-                        it.layerCount(1)
-                    }
-                    dstOffset { it.set(0, 0, 0) }
-                    extent { it.set(width, height, 1) }
                 }
                 target.textureImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 vkCmdCopyImage(commandBuffer, rp.image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, target.textureImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
