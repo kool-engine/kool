@@ -268,17 +268,23 @@ class DeferredDemo(ctx: KoolContext) {
             val x = rand.randomI(0 until grp.rows)
             val light = pbrPass.dynamicPointLights.addPointLight {
                 intensity = 1.0f
-                color.set(colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear())
             }
-            val animLight = AnimatedLight(light)
+            val animLight = AnimatedLight(light).apply {
+                startColor = colorMap.current.getColor(lights.size).toLinear()
+                desiredColor = startColor
+                colorMix = 1f
+            }
             lights += animLight
             grp.setupLight(animLight, x, travel, rand.randomF())
         }
+        updateLightColors()
     }
 
     private fun updateLightColors() {
-        lights.forEach {
-            it.light.color.set(colorMap.current.colors[rand.randomI(colorMap.current.colors.indices)].toLinear())
+        lights.forEachIndexed { iLight, it ->
+            it.startColor = it.desiredColor
+            it.desiredColor = colorMap.current.getColor(iLight).toLinear()
+            it.colorMix = 0f
         }
     }
 
@@ -520,16 +526,30 @@ class DeferredDemo(ctx: KoolContext) {
         var travelPos = 0f
         var travelDist = 10f
 
+        var startColor = Color.WHITE
+        var desiredColor = Color.WHITE
+        var colorMix = 0f
+
         fun animate(deltaT: Float) {
             travelPos += deltaT * speed
             if (travelPos > travelDist) {
                 travelPos -= travelDist
             }
             light.position.set(dir).scale(travelPos).add(startPos)
+
+            if (colorMix < 1f) {
+                colorMix += deltaT * 2f
+                if (colorMix > 1f) {
+                    colorMix = 1f
+                }
+                startColor.mix(desiredColor, colorMix, light.color)
+            }
         }
     }
 
-    private class ColorMap(val name: String, val colors: List<Color>)
+    private class ColorMap(val name: String, val colors: List<Color>) {
+        fun getColor(idx: Int): Color = colors[idx % colors.size]
+    }
 
     private fun instancedLightIndicatorModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
         val ifColors: StageInterfaceNode

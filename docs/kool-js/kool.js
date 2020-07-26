@@ -74,16 +74,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var equals = Kotlin.equals;
   var ULong = Kotlin.kotlin.ULong;
   var addAll_0 = Kotlin.kotlin.collections.addAll_ye1y7v$;
-  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
-  var L1 = Kotlin.Long.ONE;
+  var toString = Kotlin.toString;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
+  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
+  var L1 = Kotlin.Long.ONE;
   var StringBuilder_init = Kotlin.kotlin.text.StringBuilder_init;
   var joinToString = Kotlin.kotlin.collections.joinToString_fmv235$;
   var println_0 = Kotlin.kotlin.io.println_s8jyv4$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var substringBefore = Kotlin.kotlin.text.substringBefore_8cymmc$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
-  var toString = Kotlin.toString;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
@@ -130,7 +132,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var contains = Kotlin.kotlin.text.contains_sgbm27$;
   var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
   var decodeToString = Kotlin.kotlin.text.decodeToString_964n91$;
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var getKClass = Kotlin.getKClass;
   var contains_0 = Kotlin.kotlin.collections.contains_2ws7j4$;
   var JsonConfiguration = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.json.JsonConfiguration;
@@ -284,8 +285,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UniformBuffer.prototype.constructor = UniformBuffer;
   DescriptorType.prototype = Object.create(Enum.prototype);
   DescriptorType.prototype.constructor = DescriptorType;
-  OffscreenRenderPass2dMrt.prototype = Object.create(OffscreenRenderPass.prototype);
-  OffscreenRenderPass2dMrt.prototype.constructor = OffscreenRenderPass2dMrt;
+  OffscreenRenderPass$RenderTarget.prototype = Object.create(Enum.prototype);
+  OffscreenRenderPass$RenderTarget.prototype.constructor = OffscreenRenderPass$RenderTarget;
   OffscreenRenderPassCube$ViewDirection.prototype = Object.create(Enum.prototype);
   OffscreenRenderPassCube$ViewDirection.prototype.constructor = OffscreenRenderPassCube$ViewDirection;
   OffscreenRenderPassCube.prototype = Object.create(OffscreenRenderPass.prototype);
@@ -296,8 +297,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DepthCompareOp.prototype.constructor = DepthCompareOp;
   CullMethod.prototype = Object.create(Enum.prototype);
   CullMethod.prototype.constructor = CullMethod;
-  RenderPass$Type.prototype = Object.create(Enum.prototype);
-  RenderPass$Type.prototype.constructor = RenderPass$Type;
   ScreenRenderPass.prototype = Object.create(RenderPass.prototype);
   ScreenRenderPass.prototype.constructor = ScreenRenderPass;
   CodeGenerator$ClipSpaceOrientation.prototype = Object.create(Enum.prototype);
@@ -722,7 +721,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeltaTGraph.prototype.constructor = DeltaTGraph;
   DeferredLightShader.prototype = Object.create(ModeledShader.prototype);
   DeferredLightShader.prototype.constructor = DeferredLightShader;
-  DeferredMrtPass.prototype = Object.create(OffscreenRenderPass2dMrt.prototype);
+  DeferredMrtPass.prototype = Object.create(OffscreenRenderPass2d.prototype);
   DeferredMrtPass.prototype.constructor = DeferredMrtPass;
   DeferredOutputShader.prototype = Object.create(ModeledShader.prototype);
   DeferredOutputShader.prototype.constructor = DeferredOutputShader;
@@ -10265,16 +10264,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Attribute.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.type, other.type)))));
   };
-  function DepthMapPass(drawNode, width, height, setup) {
+  function DepthMapPass(drawNode, config) {
     DepthMapPass$Companion_getInstance();
-    if (height === void 0)
-      height = width;
-    if (setup === void 0)
-      setup = DepthMapPass$Companion_getInstance().defaultSetup();
-    OffscreenRenderPass2d.call(this, drawNode, width, height, setup);
+    OffscreenRenderPass2d.call(this, drawNode, config);
     this.shadowPipelines_j0os6i$_0 = LinkedHashMap_init();
     this.cullMethod = null;
-    this.type = RenderPass$Type$DEPTH_getInstance();
     this.onAfterCollectDrawCommands.add_11rb$(DepthMapPass_init$lambda(this));
   }
   DepthMapPass.prototype.getShadowPipeline_sbx4mf$ = function (mesh, ctx) {
@@ -10301,7 +10295,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   DepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
-    var $receiver = new ShaderModel('shadow shader');
+    var $receiver = new ShaderModel('DepthShader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var tmp$;
     var mvpMat = $receiver_0.premultipliedMvpNode().outMvpMat;
@@ -10332,7 +10326,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           localPos.v = $receiver_0.addNode_ze33is$(localPos.v, posDisplacement.output).output;
         }
       }}$receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos.v, mvpMat).outVec4;
-    (new ShaderModel$FragmentStageBuilder($receiver)).colorOutput_a3v4si$(new ShaderNodeIoVar(new ModelVar4fConst(Vec4f_init(1.0))));
+    var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
+    $receiver_1.colorOutput_a3v4si$($receiver_1.constVec4f_czzhhz$(Color$Companion_getInstance().RED));
     var shadowShader = new ModeledShader($receiver);
     shadowShader.onPipelineSetup.add_11rb$(DepthMapPass$createPipeline$lambda(culling));
     return shadowShader.createPipeline_sbx4mf$(mesh, ctx);
@@ -10349,12 +10344,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function DepthMapPass$Companion() {
     DepthMapPass$Companion_instance = this;
   }
-  DepthMapPass$Companion.prototype.defaultSetup = function () {
-    var $receiver = new OffscreenRenderPass2d$Setup();
-    $receiver.colorFormat = TexFormat$R_getInstance();
-    $receiver.colorRenderTarget = 2;
-    $receiver.depthRenderTarget = 1;
-    return $receiver;
+  DepthMapPass$Companion.prototype.defaultSetup_vux9f0$ = function (width, height) {
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'DepthMapPass';
+    builder.setSize_vux9f0$(width, height);
+    builder.clearColorTexture();
+    builder.setDepthTexture_6taknv$(false);
+    return new OffscreenRenderPass$Config(builder);
   };
   DepthMapPass$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -10384,11 +10380,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DepthMapPass',
     interfaces: [OffscreenRenderPass2d]
   };
-  function LinearDepthMapPass(drawNode, width, height) {
-    LinearDepthMapPass$Companion_getInstance();
+  function DepthMapPass_init(drawNode, width, height, $this) {
     if (height === void 0)
       height = width;
-    DepthMapPass.call(this, drawNode, width, height, LinearDepthMapPass$Companion_getInstance().linearDepthSetup_0());
+    $this = $this || Object.create(DepthMapPass.prototype);
+    DepthMapPass.call($this, drawNode, DepthMapPass$Companion_getInstance().defaultSetup_vux9f0$(width, height));
+    return $this;
+  }
+  function LinearDepthMapPass(drawNode, config) {
+    LinearDepthMapPass$Companion_getInstance();
+    DepthMapPass.call(this, drawNode, config);
     this.onAfterCollectDrawCommands.add_11rb$(LinearDepthMapPass_init$lambda(this));
   }
   function LinearDepthMapPass$createPipeline$lambda(closure$culling) {
@@ -10399,7 +10400,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   LinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
-    var $receiver = new ShaderModel('shadow shader');
+    var $receiver = new ShaderModel('LinearDepth Shader');
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var tmp$;
     var mvpMat = $receiver_0.premultipliedMvpNode().outMvpMat;
@@ -10452,12 +10453,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function LinearDepthMapPass$Companion() {
     LinearDepthMapPass$Companion_instance = this;
   }
-  LinearDepthMapPass$Companion.prototype.linearDepthSetup_0 = function () {
-    var $receiver = new OffscreenRenderPass2d$Setup();
-    $receiver.colorFormat = TexFormat$R_F16_getInstance();
-    $receiver.colorRenderTarget = 1;
-    $receiver.depthRenderTarget = 2;
-    return $receiver;
+  LinearDepthMapPass$Companion.prototype.linearDepthSetup_vux9f0$ = function (width, height) {
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'LinearDepthMapPass';
+    builder.setSize_vux9f0$(width, height);
+    builder.clearDepthTexture();
+    builder.addColorTexture_farcsl$(TexFormat$R_F16_getInstance());
+    return new OffscreenRenderPass$Config(builder);
   };
   LinearDepthMapPass$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -10481,11 +10483,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LinearDepthMapPass',
     interfaces: [DepthMapPass]
   };
-  function NormalLinearDepthMapPass(drawNode, width, height) {
-    NormalLinearDepthMapPass$Companion_getInstance();
+  function LinearDepthMapPass_init(drawNode, width, height, $this) {
     if (height === void 0)
       height = width;
-    DepthMapPass.call(this, drawNode, width, height, NormalLinearDepthMapPass$Companion_getInstance().normalLinearDepthSetup_0());
+    $this = $this || Object.create(LinearDepthMapPass.prototype);
+    LinearDepthMapPass.call($this, drawNode, LinearDepthMapPass$Companion_getInstance().linearDepthSetup_vux9f0$(width, height));
+    return $this;
+  }
+  function NormalLinearDepthMapPass(drawNode, config) {
+    NormalLinearDepthMapPass$Companion_getInstance();
+    DepthMapPass.call(this, drawNode, config);
     this.name = 'NormalLinearDepthMapPass';
     this.onAfterCollectDrawCommands.add_11rb$(NormalLinearDepthMapPass_init$lambda(this));
   }
@@ -10499,7 +10506,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   NormalLinearDepthMapPass.prototype.createPipeline_wgobnr$ = function (mesh, culling, ctx) {
     if (!mesh.geometry.hasAttribute_nm2vx5$(Attribute$Companion_getInstance().NORMALS)) {
       return null;
-    }var $receiver = new ShaderModel('shadow shader');
+    }var $receiver = new ShaderModel('NormalLinearDepth Shader');
     var ifNormals = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var tmp$;
@@ -10578,12 +10585,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function NormalLinearDepthMapPass$Companion() {
     NormalLinearDepthMapPass$Companion_instance = this;
   }
-  NormalLinearDepthMapPass$Companion.prototype.normalLinearDepthSetup_0 = function () {
-    var $receiver = new OffscreenRenderPass2d$Setup();
-    $receiver.colorFormat = TexFormat$RGBA_F16_getInstance();
-    $receiver.colorRenderTarget = 1;
-    $receiver.depthRenderTarget = 2;
-    return $receiver;
+  NormalLinearDepthMapPass$Companion.prototype.normalLinearDepthSetup_0 = function (width, height) {
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'NormalLinearDepthMapPass';
+    builder.setSize_vux9f0$(width, height);
+    builder.clearDepthTexture();
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
+    return new OffscreenRenderPass$Config(builder);
   };
   NormalLinearDepthMapPass$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -10607,6 +10615,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'NormalLinearDepthMapPass',
     interfaces: [DepthMapPass]
   };
+  function NormalLinearDepthMapPass_init(drawNode, width, height, $this) {
+    if (height === void 0)
+      height = width;
+    $this = $this || Object.create(NormalLinearDepthMapPass.prototype);
+    NormalLinearDepthMapPass.call($this, drawNode, NormalLinearDepthMapPass$Companion_getInstance().normalLinearDepthSetup_0(width, height));
+    return $this;
+  }
   function DescriptorSetLayout(set, descriptors) {
     this.set = set;
     this.descriptors = descriptors;
@@ -11061,32 +11076,53 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LoadedTexture',
     interfaces: []
   };
-  function OffscreenRenderPass(drawNode, texWidth, texHeight, mipLevels) {
+  var renderPassConfig = defineInlineFunction('kool.de.fabmax.kool.pipeline.renderPassConfig_horfg9$', wrapFunction(function () {
+    var OffscreenRenderPass$OffscreenRenderPass$ConfigBuilder_init = _.de.fabmax.kool.pipeline.OffscreenRenderPass.ConfigBuilder;
+    var OffscreenRenderPass$OffscreenRenderPass$Config_init = _.de.fabmax.kool.pipeline.OffscreenRenderPass.Config;
+    return function (block) {
+      var builder = new OffscreenRenderPass$OffscreenRenderPass$ConfigBuilder_init();
+      block(builder);
+      return new OffscreenRenderPass$OffscreenRenderPass$Config_init(builder);
+    };
+  }));
+  function OffscreenRenderPass(drawNode, config) {
     RenderPass.call(this, drawNode);
-    this.mipLevels = mipLevels;
-    this.targetMipLevel = -1;
+    this.config = config;
     this.isEnabled = true;
-    this.texWidth_f45css$_0 = texWidth;
-    this.texHeight_xhnti3$_0 = texHeight;
+    this.width_6fsav1$_0 = this.config.width;
+    this.height_4loxs4$_0 = this.config.height;
     var $receiver = new PerspectiveCamera();
     $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
     this.camera_et6fa$_0 = $receiver;
-    this.setMipViewport_za3lpa$(0);
-  }
-  Object.defineProperty(OffscreenRenderPass.prototype, 'texWidth', {
+    this.onSetupMipLevel = null;
+    this.name = this.config.name;
+    var array = Array_0(this.config.nColorAttachments);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = null;
+    }
+    this.clearColors = array;
+    this.applyMipViewport_za3lpa$(0);
+    if (this.width === 0) {
+      this.width = 16;
+    }if (this.height === 0) {
+      this.height = 16;
+    }}
+  Object.defineProperty(OffscreenRenderPass.prototype, 'width', {
     get: function () {
-      return this.texWidth_f45css$_0;
+      return this.width_6fsav1$_0;
     },
-    set: function (texWidth) {
-      this.texWidth_f45css$_0 = texWidth;
+    set: function (width) {
+      this.width_6fsav1$_0 = width;
     }
   });
-  Object.defineProperty(OffscreenRenderPass.prototype, 'texHeight', {
+  Object.defineProperty(OffscreenRenderPass.prototype, 'height', {
     get: function () {
-      return this.texHeight_xhnti3$_0;
+      return this.height_4loxs4$_0;
     },
-    set: function (texHeight) {
-      this.texHeight_xhnti3$_0 = texHeight;
+    set: function (height) {
+      this.height_4loxs4$_0 = height;
     }
   });
   Object.defineProperty(OffscreenRenderPass.prototype, 'camera', {
@@ -11097,169 +11133,310 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.camera_et6fa$_0 = camera;
     }
   });
-  OffscreenRenderPass.prototype.mipWidth_za3lpa$ = function (mipLevel) {
-    var tmp$;
-    if (mipLevel <= 0) {
-      tmp$ = this.texWidth;
-    } else {
-      tmp$ = this.texWidth >> mipLevel;
-    }
-    return tmp$;
+  OffscreenRenderPass.prototype.getMipWidth_za3lpa$ = function (mipLevel) {
+    return mipLevel <= 0 ? this.width : this.width >> mipLevel;
   };
-  OffscreenRenderPass.prototype.mipHeight_za3lpa$ = function (mipLevel) {
-    var tmp$;
-    if (mipLevel <= 0) {
-      tmp$ = this.texHeight;
-    } else {
-      tmp$ = this.texHeight >> mipLevel;
-    }
-    return tmp$;
+  OffscreenRenderPass.prototype.getMipHeight_za3lpa$ = function (mipLevel) {
+    return mipLevel <= 0 ? this.height : this.height >> mipLevel;
   };
-  OffscreenRenderPass.prototype.setMipViewport_za3lpa$ = function (mipLevel) {
-    this.viewport.set_tjonv8$(0, 0, this.mipWidth_za3lpa$(mipLevel), this.mipHeight_za3lpa$(mipLevel));
+  OffscreenRenderPass.prototype.applyMipViewport_za3lpa$ = function (mipLevel) {
+    this.viewport.set_tjonv8$(0, 0, this.getMipWidth_za3lpa$(mipLevel), this.getMipHeight_za3lpa$(mipLevel));
   };
   OffscreenRenderPass.prototype.resize_w70mbp$ = function (width, height, ctx) {
-    this.texWidth = width;
-    this.texHeight = height;
-    this.setMipViewport_za3lpa$(0);
+    if (this.config.width === 0 && this.config.height === 0) {
+      this.applySize_w70mbp$(width, height, ctx);
+      this.applyMipViewport_za3lpa$(0);
+    } else {
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'OffscreenRenderPass ' + toString(this.name) + ' cannot be resized: Size is fixed to ' + this.config.width + ' x ' + this.config.height);
+      }}
   };
+  OffscreenRenderPass.prototype.applySize_w70mbp$ = function (width, height, ctx) {
+    this.width = width;
+    this.height = height;
+  };
+  function OffscreenRenderPass$Config(builder) {
+    this.name = builder.name;
+    this.width = builder.width;
+    this.height = builder.height;
+    this.mipLevels = builder.mipLevels;
+    this.depthRenderTarget = builder.depthRenderTarget;
+    this.colorRenderTarget = builder.colorRenderTarget;
+    var tmp$, tmp$_0, tmp$_1;
+    if (this.depthRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+      tmp$_0 = (tmp$ = builder.depthAttachment) != null ? new OffscreenRenderPass$TextureAttachmentConfig(tmp$) : null;
+    } else {
+      tmp$_0 = null;
+    }
+    this.depthAttachment = tmp$_0;
+    if (this.colorRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+      var $receiver = builder.colorAttachments;
+      var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+      var tmp$_2;
+      tmp$_2 = $receiver.iterator();
+      while (tmp$_2.hasNext()) {
+        var item = tmp$_2.next();
+        destination.add_11rb$(new OffscreenRenderPass$TextureAttachmentConfig(item));
+      }
+      tmp$_1 = destination;
+    } else {
+      tmp$_1 = emptyList();
+    }
+    this.colorAttachments = tmp$_1;
+    this.nColorAttachments = this.colorAttachments.size;
+    if (this.colorRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance() && this.colorAttachments.isEmpty()) {
+      throw IllegalStateException_init('colorAttachments must be configured if colorRenderTarget is TEXTURE');
+    } else {
+      var tmp$_3 = this.colorRenderTarget === OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
+      if (tmp$_3) {
+        tmp$_3 = !builder.colorAttachments.isEmpty();
+      }if (tmp$_3) {
+        var $this = package$util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'colorAttachments are ignored if colorRenderTarget is RENDER_BUFFER');
+        }}}
+    if (this.depthRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance() && this.depthAttachment == null) {
+      throw IllegalStateException_init('depthAttachment must be configured if depthRenderTarget is TEXTURE');
+    } else if (this.depthRenderTarget === OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance() && builder.depthAttachment != null) {
+      var $this_0 = package$util.Log;
+      var level_0 = Log$Level.WARN;
+      var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_0.level >= $this_0.level.level) {
+        $this_0.printer(level_0, tag_0, 'depthAttachment is ignored if depthRenderTarget is RENDER_BUFFER');
+      }}}
+  OffscreenRenderPass$Config.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Config',
+    interfaces: []
+  };
+  function OffscreenRenderPass$ConfigBuilder() {
+    this.name = 'OffscreenRenderPass';
+    this.width = 0;
+    this.height = 0;
+    this.mipLevels = 1;
+    this.colorRenderTarget = OffscreenRenderPass$RenderTarget$TEXTURE_getInstance();
+    this.depthRenderTarget = OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
+    this.colorAttachments = ArrayList_init_0();
+    this.depthAttachment = null;
+  }
+  OffscreenRenderPass$ConfigBuilder.prototype.setDynamicSize = function () {
+    this.width = 0;
+    this.height = 0;
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.setSize_vux9f0$ = function (width, height) {
+    this.width = width;
+    this.height = height;
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.clearDepthTexture = function () {
+    this.depthRenderTarget = OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
+    this.depthAttachment = null;
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.setDepthTexture_6taknv$ = function (usedAsShadowMap) {
+    this.depthRenderTarget = OffscreenRenderPass$RenderTarget$TEXTURE_getInstance();
+    var $receiver = new OffscreenRenderPass$TextureAttachmentConfigBuilder();
+    if (usedAsShadowMap) {
+      $receiver.minFilter = FilterMethod$LINEAR_getInstance();
+      $receiver.magFilter = FilterMethod$LINEAR_getInstance();
+      $receiver.depthCompareOp = DepthCompareOp$LESS_getInstance();
+    } else {
+      $receiver.minFilter = FilterMethod$NEAREST_getInstance();
+      $receiver.magFilter = FilterMethod$NEAREST_getInstance();
+      $receiver.depthCompareOp = DepthCompareOp$DISABLED_getInstance();
+    }
+    this.depthAttachment = $receiver;
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.clearColorTexture = function () {
+    this.colorRenderTarget = OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
+    this.colorAttachments.clear();
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.addColorTexture_farcsl$ = function (format) {
+    this.colorRenderTarget = OffscreenRenderPass$RenderTarget$TEXTURE_getInstance();
+    var tmp$ = this.colorAttachments;
+    var $receiver = new OffscreenRenderPass$TextureAttachmentConfigBuilder();
+    $receiver.colorFormat = format;
+    tmp$.add_11rb$($receiver);
+  };
+  OffscreenRenderPass$ConfigBuilder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ConfigBuilder',
+    interfaces: []
+  };
+  function OffscreenRenderPass$TextureAttachmentConfig(builder) {
+    this.colorFormat = builder.colorFormat;
+    this.minFilter = builder.minFilter;
+    this.magFilter = builder.magFilter;
+    this.addressModeU = builder.addressModeU;
+    this.addressModeV = builder.addressModeV;
+    this.depthCompareOp = builder.depthCompareOp;
+    this.maxAnisotropy = 1;
+    this.providedTexture = builder.providedTexture;
+  }
+  Object.defineProperty(OffscreenRenderPass$TextureAttachmentConfig.prototype, 'isProvided', {
+    get: function () {
+      return this.providedTexture != null;
+    }
+  });
+  OffscreenRenderPass$TextureAttachmentConfig.prototype.getTextureProps_6taknv$ = function (mipMapping) {
+    return new TextureProps(this.colorFormat, this.addressModeU, this.addressModeV, AddressMode$CLAMP_TO_EDGE_getInstance(), this.minFilter, this.magFilter, mipMapping, this.maxAnisotropy);
+  };
+  OffscreenRenderPass$TextureAttachmentConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TextureAttachmentConfig',
+    interfaces: []
+  };
+  function OffscreenRenderPass$TextureAttachmentConfigBuilder() {
+    this.colorFormat = TexFormat$RGBA_getInstance();
+    this.minFilter = FilterMethod$LINEAR_getInstance();
+    this.magFilter = FilterMethod$LINEAR_getInstance();
+    this.addressModeU = AddressMode$CLAMP_TO_EDGE_getInstance();
+    this.addressModeV = AddressMode$CLAMP_TO_EDGE_getInstance();
+    this.depthCompareOp = DepthCompareOp$DISABLED_getInstance();
+    this.providedTexture = null;
+  }
+  OffscreenRenderPass$TextureAttachmentConfigBuilder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TextureAttachmentConfigBuilder',
+    interfaces: []
+  };
+  function OffscreenRenderPass$RenderTarget(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function OffscreenRenderPass$RenderTarget_initFields() {
+    OffscreenRenderPass$RenderTarget_initFields = function () {
+    };
+    OffscreenRenderPass$RenderTarget$TEXTURE_instance = new OffscreenRenderPass$RenderTarget('TEXTURE', 0);
+    OffscreenRenderPass$RenderTarget$RENDER_BUFFER_instance = new OffscreenRenderPass$RenderTarget('RENDER_BUFFER', 1);
+  }
+  var OffscreenRenderPass$RenderTarget$TEXTURE_instance;
+  function OffscreenRenderPass$RenderTarget$TEXTURE_getInstance() {
+    OffscreenRenderPass$RenderTarget_initFields();
+    return OffscreenRenderPass$RenderTarget$TEXTURE_instance;
+  }
+  var OffscreenRenderPass$RenderTarget$RENDER_BUFFER_instance;
+  function OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance() {
+    OffscreenRenderPass$RenderTarget_initFields();
+    return OffscreenRenderPass$RenderTarget$RENDER_BUFFER_instance;
+  }
+  OffscreenRenderPass$RenderTarget.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RenderTarget',
+    interfaces: [Enum]
+  };
+  function OffscreenRenderPass$RenderTarget$values() {
+    return [OffscreenRenderPass$RenderTarget$TEXTURE_getInstance(), OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance()];
+  }
+  OffscreenRenderPass$RenderTarget.values = OffscreenRenderPass$RenderTarget$values;
+  function OffscreenRenderPass$RenderTarget$valueOf(name) {
+    switch (name) {
+      case 'TEXTURE':
+        return OffscreenRenderPass$RenderTarget$TEXTURE_getInstance();
+      case 'RENDER_BUFFER':
+        return OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.pipeline.OffscreenRenderPass.RenderTarget.' + name);
+    }
+  }
+  OffscreenRenderPass$RenderTarget.valueOf_61zpoe$ = OffscreenRenderPass$RenderTarget$valueOf;
   OffscreenRenderPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OffscreenRenderPass',
     interfaces: [RenderPass]
   };
-  function OffscreenRenderPass2d(drawNode, texWidth, texHeight, setup) {
-    OffscreenRenderPass2d$Companion_getInstance();
-    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, setup.mipLevels);
-    this.setup = setup;
+  function OffscreenRenderPass2d(drawNode, config) {
+    OffscreenRenderPass.call(this, drawNode, config);
     this.impl_8be2vx$ = new OffscreenPass2dImpl(this);
-    this.colorFormat = this.setup.colorFormat;
+    this.depthTexture = this.makeDepthAttachmentTex_qnmoqa$_0();
+    this.colorTextures = this.makeColorAttachmentTexs_o5wgst$_0();
     this.copyTargetsColor = ArrayList_init_0();
   }
   Object.defineProperty(OffscreenRenderPass2d.prototype, 'colorTexture', {
     get: function () {
-      if (this.setup.colorRenderTarget === 2) {
-        var $this = package$util.Log;
-        var level = Log$Level.WARN;
-        var tag = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, "Color render target is renderbuffer, colorTexture won't be usable");
-        }}return this.impl_8be2vx$.colorTexture;
+      return !this.colorTextures.isEmpty() ? this.colorTextures.get_za3lpa$(0) : null;
     }
   });
-  Object.defineProperty(OffscreenRenderPass2d.prototype, 'depthTexture', {
-    get: function () {
-      if (this.setup.depthRenderTarget === 2) {
-        var $this = package$util.Log;
-        var level = Log$Level.WARN;
-        var tag = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, "Depth render target is renderbuffer, depthTexture won't be usable");
-        }}return this.impl_8be2vx$.depthTexture;
-    }
-  });
+  function OffscreenRenderPass2d$dispose$lambda(this$OffscreenRenderPass2d) {
+    return function (it) {
+      var tmp$, tmp$_0;
+      if (((tmp$ = this$OffscreenRenderPass2d.config.depthAttachment) != null ? tmp$.providedTexture : null) == null) {
+        (tmp$_0 = this$OffscreenRenderPass2d.depthTexture) != null ? (tmp$_0.dispose(), Unit) : null;
+      }var $receiver = this$OffscreenRenderPass2d.colorTextures;
+      var tmp$_1, tmp$_0_0;
+      var index = 0;
+      tmp$_1 = $receiver.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
+        var this$OffscreenRenderPass2d_0 = this$OffscreenRenderPass2d;
+        var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+        if (!this$OffscreenRenderPass2d_0.config.colorAttachments.get_za3lpa$(i).isProvided) {
+          item.dispose();
+        }}
+      return Unit;
+    };
+  }
   OffscreenRenderPass2d.prototype.dispose_aemszp$ = function (ctx) {
     OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
     this.impl_8be2vx$.dispose_aemszp$(ctx);
+    ctx.runDelayed_hd6vpk$(3, OffscreenRenderPass2d$dispose$lambda(this));
   };
-  OffscreenRenderPass2d.prototype.resize_w70mbp$ = function (width, height, ctx) {
-    OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
-    this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
+  OffscreenRenderPass2d.prototype.applySize_w70mbp$ = function (width, height, ctx) {
+    OffscreenRenderPass.prototype.applySize_w70mbp$.call(this, width, height, ctx);
+    this.impl_8be2vx$.applySize_w70mbp$(width, height, ctx);
   };
-  function OffscreenRenderPass2d$Setup() {
-    this.colorFormat = TexFormat$RGBA_getInstance();
-    this.mipLevels = 1;
-    this.colorRenderTarget = 1;
-    this.depthRenderTarget = 2;
-    this.isUsedAsShadowMap = false;
-    this.extColorTexture = null;
-    this.extDepthTexture = null;
-  }
-  OffscreenRenderPass2d$Setup.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Setup',
-    interfaces: []
+  OffscreenRenderPass2d.prototype.makeColorAttachmentTexs_o5wgst$_0 = function () {
+    var $receiver = this.config.colorAttachments;
+    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var tmp$, tmp$_0;
+    var index = 0;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var item = tmp$.next();
+      var tmp$_1 = destination.add_11rb$;
+      var i = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
+      var transform$result;
+      if (item.isProvided) {
+        transform$result = ensureNotNull(item.providedTexture);
+      } else {
+        var name = toString(this.name) + '_color[' + i + ']';
+        var props = item.getTextureProps_6taknv$(this.config.mipLevels > 1);
+        transform$result = new Texture(name, props);
+      }
+      tmp$_1.call(destination, transform$result);
+    }
+    return destination;
   };
-  function OffscreenRenderPass2d$Companion() {
-    OffscreenRenderPass2d$Companion_instance = this;
-    this.RENDER_TARGET_TEXTURE = 1;
-    this.RENDER_TARGET_RENDERBUFFER = 2;
-  }
-  OffscreenRenderPass2d$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
+  OffscreenRenderPass2d.prototype.makeDepthAttachmentTex_qnmoqa$_0 = function () {
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = this.config.depthAttachment) != null) {
+      var block$result;
+      if (tmp$.isProvided) {
+        block$result = ensureNotNull(tmp$.providedTexture);
+      } else {
+        var name = toString(this.name) + '_depth';
+        var props = tmp$.getTextureProps_6taknv$(this.config.mipLevels > 1);
+        block$result = new Texture(name, props);
+      }
+      tmp$_0 = block$result;
+    } else
+      tmp$_0 = null;
+    return tmp$_0;
   };
-  var OffscreenRenderPass2d$Companion_instance = null;
-  function OffscreenRenderPass2d$Companion_getInstance() {
-    if (OffscreenRenderPass2d$Companion_instance === null) {
-      new OffscreenRenderPass2d$Companion();
-    }return OffscreenRenderPass2d$Companion_instance;
-  }
   OffscreenRenderPass2d.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OffscreenRenderPass2d',
     interfaces: [OffscreenRenderPass]
   };
-  function OffscreenRenderPass2d_init(drawNode, texWidth, texHeight, colorFormat, mipLevels, $this) {
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$RGBA_getInstance();
-    if (mipLevels === void 0)
-      mipLevels = 1;
-    $this = $this || Object.create(OffscreenRenderPass2d.prototype);
-    var $receiver = new OffscreenRenderPass2d$Setup();
-    $receiver.colorFormat = colorFormat;
-    $receiver.mipLevels = mipLevels;
-    OffscreenRenderPass2d.call($this, drawNode, texWidth, texHeight, $receiver);
-    return $this;
-  }
-  function OffscreenRenderPass2dMrt(drawNode, texWidth, texHeight, texFormats) {
-    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, 1);
-    this.texFormats = copy(texFormats);
-    this.nAttachments = texFormats.size;
-    var array = Array_0(this.nAttachments);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = null;
-    }
-    this.clearColors_673gz1$_0 = array;
-    this.impl_8be2vx$ = new OffscreenPass2dMrtImpl(this);
-  }
-  Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'clearColors', {
-    get: function () {
-      return this.clearColors_673gz1$_0;
-    }
-  });
-  Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'colorTextures', {
-    get: function () {
-      return this.impl_8be2vx$.colorTextures;
-    }
-  });
-  Object.defineProperty(OffscreenRenderPass2dMrt.prototype, 'depthTexture', {
-    get: function () {
-      return this.impl_8be2vx$.depthTexture;
-    }
-  });
-  OffscreenRenderPass2dMrt.prototype.dispose_aemszp$ = function (ctx) {
-    OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
-    this.impl_8be2vx$.dispose_aemszp$(ctx);
-  };
-  OffscreenRenderPass2dMrt.prototype.resize_w70mbp$ = function (width, height, ctx) {
-    OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
-    this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
-  };
-  OffscreenRenderPass2dMrt.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenRenderPass2dMrt',
-    interfaces: [OffscreenRenderPass]
-  };
-  function OffscreenRenderPassCube(drawNode, texWidth, texHeight, mipLevels, colorFormat) {
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$RGBA_getInstance();
-    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, mipLevels);
-    this.colorFormat = colorFormat;
+  function OffscreenRenderPassCube(drawNode, config) {
+    OffscreenRenderPass.call(this, drawNode, config);
     this.impl_8be2vx$ = new OffscreenPassCubeImpl(this);
+    this.depthTexture = this.makeDepthAttachmentTex_17p1u7$_0();
+    this.colorTextures = this.makeColorAttachmentTexs_gs6cwg$_0();
     this.onSetupView_3plctr$_0 = this.onSetupView_3plctr$_0;
     var array = Array_0(6);
     var tmp$;
@@ -11269,10 +11446,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.drawQueues = array;
     this.defaultCubeMapCameraConfig_ubu93h$_0();
-  }
-  Object.defineProperty(OffscreenRenderPassCube.prototype, 'colorTextureCube', {
+    if (config.depthRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+      throw RuntimeException_init('CubeMapDepthTexture not yet implemented');
+    }if (config.colorAttachments.size > 1) {
+      throw RuntimeException_init('CubeMap multiple render targets not yet implemented');
+    }}
+  Object.defineProperty(OffscreenRenderPassCube.prototype, 'colorTexture', {
     get: function () {
-      return this.impl_8be2vx$.texture;
+      return !this.colorTextures.isEmpty() ? this.colorTextures.get_za3lpa$(0) : null;
     }
   });
   Object.defineProperty(OffscreenRenderPassCube.prototype, 'onSetupView', {
@@ -11295,13 +11476,74 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       OffscreenRenderPass.prototype.collectDrawCommands_aemszp$.call(this, ctx);
     }
   };
+  function OffscreenRenderPassCube$dispose$lambda(this$OffscreenRenderPassCube) {
+    return function (it) {
+      var tmp$, tmp$_0;
+      if (((tmp$ = this$OffscreenRenderPassCube.config.depthAttachment) != null ? tmp$.providedTexture : null) == null) {
+        (tmp$_0 = this$OffscreenRenderPassCube.depthTexture) != null ? (tmp$_0.dispose(), Unit) : null;
+      }var $receiver = this$OffscreenRenderPassCube.colorTextures;
+      var tmp$_1, tmp$_0_0;
+      var index = 0;
+      tmp$_1 = $receiver.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
+        var this$OffscreenRenderPassCube_0 = this$OffscreenRenderPassCube;
+        var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+        if (this$OffscreenRenderPassCube_0.config.colorAttachments.get_za3lpa$(i).providedTexture == null) {
+          item.dispose();
+        }}
+      return Unit;
+    };
+  }
   OffscreenRenderPassCube.prototype.dispose_aemszp$ = function (ctx) {
     OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
     this.impl_8be2vx$.dispose_aemszp$(ctx);
+    ctx.runDelayed_hd6vpk$(3, OffscreenRenderPassCube$dispose$lambda(this));
   };
-  OffscreenRenderPassCube.prototype.resize_w70mbp$ = function (width, height, ctx) {
-    OffscreenRenderPass.prototype.resize_w70mbp$.call(this, width, height, ctx);
-    this.impl_8be2vx$.resize_w70mbp$(width, height, ctx);
+  OffscreenRenderPassCube.prototype.applySize_w70mbp$ = function (width, height, ctx) {
+    OffscreenRenderPass.prototype.applySize_w70mbp$.call(this, width, height, ctx);
+    this.impl_8be2vx$.applySize_w70mbp$(width, height, ctx);
+  };
+  OffscreenRenderPassCube.prototype.makeColorAttachmentTexs_gs6cwg$_0 = function () {
+    var $receiver = this.config.colorAttachments;
+    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var tmp$, tmp$_0;
+    var index = 0;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var item = tmp$.next();
+      var tmp$_1 = destination.add_11rb$;
+      var i = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
+      var transform$result;
+      var tmp$_2;
+      if (item.isProvided) {
+        transform$result = Kotlin.isType(tmp$_2 = item.providedTexture, CubeMapTexture) ? tmp$_2 : throwCCE();
+      } else {
+        var name = toString(this.name) + '_color[' + i + ']';
+        var props = item.getTextureProps_6taknv$(this.config.mipLevels > 1);
+        transform$result = new CubeMapTexture(name, props);
+      }
+      tmp$_1.call(destination, transform$result);
+    }
+    return destination;
+  };
+  OffscreenRenderPassCube.prototype.makeDepthAttachmentTex_17p1u7$_0 = function () {
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = this.config.depthAttachment) != null) {
+      var block$result;
+      var tmp$_1;
+      if (tmp$.isProvided) {
+        block$result = Kotlin.isType(tmp$_1 = tmp$.providedTexture, CubeMapTexture) ? tmp$_1 : throwCCE();
+      } else {
+        var name = toString(this.name) + '_depth';
+        var props = tmp$.getTextureProps_6taknv$(this.config.mipLevels > 1);
+        block$result = new CubeMapTexture(name, props);
+      }
+      tmp$_0 = block$result;
+    } else
+      tmp$_0 = null;
+    return tmp$_0;
   };
   function OffscreenRenderPassCube$defaultCubeMapCameraConfig$lambda(closure$camDirs, this$OffscreenRenderPassCube) {
     return function (viewDir, f) {
@@ -11633,10 +11875,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
     DepthCompareOp$DISABLED_instance = new DepthCompareOp('DISABLED', 0);
     DepthCompareOp$ALWAYS_instance = new DepthCompareOp('ALWAYS', 1);
-    DepthCompareOp$LESS_instance = new DepthCompareOp('LESS', 2);
-    DepthCompareOp$LESS_EQUAL_instance = new DepthCompareOp('LESS_EQUAL', 3);
-    DepthCompareOp$GREATER_instance = new DepthCompareOp('GREATER', 4);
-    DepthCompareOp$GREATER_EQUAL_instance = new DepthCompareOp('GREATER_EQUAL', 5);
+    DepthCompareOp$NEVER_instance = new DepthCompareOp('NEVER', 2);
+    DepthCompareOp$LESS_instance = new DepthCompareOp('LESS', 3);
+    DepthCompareOp$LESS_EQUAL_instance = new DepthCompareOp('LESS_EQUAL', 4);
+    DepthCompareOp$GREATER_instance = new DepthCompareOp('GREATER', 5);
+    DepthCompareOp$GREATER_EQUAL_instance = new DepthCompareOp('GREATER_EQUAL', 6);
+    DepthCompareOp$EQUAL_instance = new DepthCompareOp('EQUAL', 7);
+    DepthCompareOp$NOT_EQUAL_instance = new DepthCompareOp('NOT_EQUAL', 8);
   }
   var DepthCompareOp$DISABLED_instance;
   function DepthCompareOp$DISABLED_getInstance() {
@@ -11647,6 +11892,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function DepthCompareOp$ALWAYS_getInstance() {
     DepthCompareOp_initFields();
     return DepthCompareOp$ALWAYS_instance;
+  }
+  var DepthCompareOp$NEVER_instance;
+  function DepthCompareOp$NEVER_getInstance() {
+    DepthCompareOp_initFields();
+    return DepthCompareOp$NEVER_instance;
   }
   var DepthCompareOp$LESS_instance;
   function DepthCompareOp$LESS_getInstance() {
@@ -11668,13 +11918,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     DepthCompareOp_initFields();
     return DepthCompareOp$GREATER_EQUAL_instance;
   }
+  var DepthCompareOp$EQUAL_instance;
+  function DepthCompareOp$EQUAL_getInstance() {
+    DepthCompareOp_initFields();
+    return DepthCompareOp$EQUAL_instance;
+  }
+  var DepthCompareOp$NOT_EQUAL_instance;
+  function DepthCompareOp$NOT_EQUAL_getInstance() {
+    DepthCompareOp_initFields();
+    return DepthCompareOp$NOT_EQUAL_instance;
+  }
   DepthCompareOp.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'DepthCompareOp',
     interfaces: [Enum]
   };
   function DepthCompareOp$values() {
-    return [DepthCompareOp$DISABLED_getInstance(), DepthCompareOp$ALWAYS_getInstance(), DepthCompareOp$LESS_getInstance(), DepthCompareOp$LESS_EQUAL_getInstance(), DepthCompareOp$GREATER_getInstance(), DepthCompareOp$GREATER_EQUAL_getInstance()];
+    return [DepthCompareOp$DISABLED_getInstance(), DepthCompareOp$ALWAYS_getInstance(), DepthCompareOp$NEVER_getInstance(), DepthCompareOp$LESS_getInstance(), DepthCompareOp$LESS_EQUAL_getInstance(), DepthCompareOp$GREATER_getInstance(), DepthCompareOp$GREATER_EQUAL_getInstance(), DepthCompareOp$EQUAL_getInstance(), DepthCompareOp$NOT_EQUAL_getInstance()];
   }
   DepthCompareOp.values = DepthCompareOp$values;
   function DepthCompareOp$valueOf(name) {
@@ -11683,6 +11943,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return DepthCompareOp$DISABLED_getInstance();
       case 'ALWAYS':
         return DepthCompareOp$ALWAYS_getInstance();
+      case 'NEVER':
+        return DepthCompareOp$NEVER_getInstance();
       case 'LESS':
         return DepthCompareOp$LESS_getInstance();
       case 'LESS_EQUAL':
@@ -11691,6 +11953,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return DepthCompareOp$GREATER_getInstance();
       case 'GREATER_EQUAL':
         return DepthCompareOp$GREATER_EQUAL_getInstance();
+      case 'EQUAL':
+        return DepthCompareOp$EQUAL_getInstance();
+      case 'NOT_EQUAL':
+        return DepthCompareOp$NOT_EQUAL_getInstance();
       default:throwISE('No enum constant de.fabmax.kool.pipeline.DepthCompareOp.' + name);
     }
   }
@@ -11829,7 +12095,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function RenderPass(drawNode) {
     this.drawNode = drawNode;
     this.name = null;
-    this.type = RenderPass$Type$COLOR_getInstance();
     this.dependencies = ArrayList_init_0();
     this.viewport = new Viewport(0, 0, 0, 0);
     this.lighting = null;
@@ -11849,6 +12114,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(RenderPass.prototype, 'clearColors', {
     get: function () {
       return this.clearColors_ynhttt$_0;
+    },
+    set: function (clearColors) {
+      this.clearColors_ynhttt$_0 = clearColors;
     }
   });
   Object.defineProperty(RenderPass.prototype, 'clearColor', {
@@ -11900,46 +12168,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   RenderPass.prototype.dispose_aemszp$ = function (ctx) {
   };
-  function RenderPass$Type(name, ordinal) {
-    Enum.call(this);
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function RenderPass$Type_initFields() {
-    RenderPass$Type_initFields = function () {
-    };
-    RenderPass$Type$COLOR_instance = new RenderPass$Type('COLOR', 0);
-    RenderPass$Type$DEPTH_instance = new RenderPass$Type('DEPTH', 1);
-  }
-  var RenderPass$Type$COLOR_instance;
-  function RenderPass$Type$COLOR_getInstance() {
-    RenderPass$Type_initFields();
-    return RenderPass$Type$COLOR_instance;
-  }
-  var RenderPass$Type$DEPTH_instance;
-  function RenderPass$Type$DEPTH_getInstance() {
-    RenderPass$Type_initFields();
-    return RenderPass$Type$DEPTH_instance;
-  }
-  RenderPass$Type.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Type',
-    interfaces: [Enum]
-  };
-  function RenderPass$Type$values() {
-    return [RenderPass$Type$COLOR_getInstance(), RenderPass$Type$DEPTH_getInstance()];
-  }
-  RenderPass$Type.values = RenderPass$Type$values;
-  function RenderPass$Type$valueOf(name) {
-    switch (name) {
-      case 'COLOR':
-        return RenderPass$Type$COLOR_getInstance();
-      case 'DEPTH':
-        return RenderPass$Type$DEPTH_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.pipeline.RenderPass.Type.' + name);
-    }
-  }
-  RenderPass$Type.valueOf_61zpoe$ = RenderPass$Type$valueOf;
   RenderPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'RenderPass',
@@ -11949,6 +12177,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     RenderPass.call(this, scene);
     this.scene = scene;
     this.useWindowViewport = true;
+    this.name = 'onscreen/' + toString(this.scene.name);
     this.lighting = this.scene.lighting;
   }
   Object.defineProperty(ScreenRenderPass.prototype, 'camera', {
@@ -18761,6 +18990,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       name = null;
     if (props === void 0)
       props = new TextureProps();
+    if (loader === void 0)
+      loader = null;
     Texture.call(this, name, props, loader);
   }
   CubeMapTexture.$metadata$ = {
@@ -18892,15 +19123,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function AddressMode_initFields() {
     AddressMode_initFields = function () {
     };
-    AddressMode$CLAMP_TO_BORDER_instance = new AddressMode('CLAMP_TO_BORDER', 0);
-    AddressMode$CLAMP_TO_EDGE_instance = new AddressMode('CLAMP_TO_EDGE', 1);
-    AddressMode$MIRRORED_REPEAT_instance = new AddressMode('MIRRORED_REPEAT', 2);
-    AddressMode$REPEAT_instance = new AddressMode('REPEAT', 3);
-  }
-  var AddressMode$CLAMP_TO_BORDER_instance;
-  function AddressMode$CLAMP_TO_BORDER_getInstance() {
-    AddressMode_initFields();
-    return AddressMode$CLAMP_TO_BORDER_instance;
+    AddressMode$CLAMP_TO_EDGE_instance = new AddressMode('CLAMP_TO_EDGE', 0);
+    AddressMode$MIRRORED_REPEAT_instance = new AddressMode('MIRRORED_REPEAT', 1);
+    AddressMode$REPEAT_instance = new AddressMode('REPEAT', 2);
   }
   var AddressMode$CLAMP_TO_EDGE_instance;
   function AddressMode$CLAMP_TO_EDGE_getInstance() {
@@ -18923,13 +19148,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [Enum]
   };
   function AddressMode$values() {
-    return [AddressMode$CLAMP_TO_BORDER_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$MIRRORED_REPEAT_getInstance(), AddressMode$REPEAT_getInstance()];
+    return [AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$MIRRORED_REPEAT_getInstance(), AddressMode$REPEAT_getInstance()];
   }
   AddressMode.values = AddressMode$values;
   function AddressMode$valueOf(name) {
     switch (name) {
-      case 'CLAMP_TO_BORDER':
-        return AddressMode$CLAMP_TO_BORDER_getInstance();
       case 'CLAMP_TO_EDGE':
         return AddressMode$CLAMP_TO_EDGE_getInstance();
       case 'MIRRORED_REPEAT':
@@ -20289,9 +20512,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (this.isRendered) {
       tmp$ = this.intChildren;
       for (var i = 0; i !== tmp$.size; ++i) {
-        if (renderPass.type !== RenderPass$Type$DEPTH_getInstance() || this.intChildren.get_za3lpa$(i).isCastingShadow) {
-          this.intChildren.get_za3lpa$(i).collectDrawCommands_oco14p$(renderPass, ctx);
-        }}
+        this.intChildren.get_za3lpa$(i).collectDrawCommands_oco14p$(renderPass, ctx);
+      }
     }};
   Group.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -24619,7 +24841,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       name = null;
     if (overlay === void 0)
       overlay = true;
-    var $receiver = new Scene(name);
+    var $receiver = new Scene(name != null ? name : 'uiScene');
     var $receiver_0 = new OrthographicCamera();
     $receiver_0.isClipToViewport = true;
     $receiver_0.near = -1000.0;
@@ -26385,18 +26607,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   function AmbientOcclusionPass(screenCam, aoSetup, width, height) {
     AmbientOcclusionPass$Companion_getInstance();
-    OffscreenRenderPass2d_init(new Group(), width, height, TexFormat$R_getInstance(), void 0, this);
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'AmbientOcclusionPass';
+    builder.setSize_vux9f0$(width, height);
+    builder.clearDepthTexture();
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_getInstance());
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.aoSetup = aoSetup;
     this.radius = 1.0;
-    this.intensity = 1.5;
+    this.intensity = 1.25;
+    this.power = 1.5;
     this.bias = 0.05;
     this.kernelSz_cjciej$_0 = 32;
     this.aoUniforms_0 = null;
     this.aoNode_0 = null;
     this.noiseTex_0 = this.makeNoiseTexture_0();
-    var tmp$;
+    var tmp$_0;
     this.clearColor = Color$Companion_getInstance().WHITE;
-    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(AmbientOcclusionPass_init$lambda$lambda$lambda);
     var $receiver_0 = new ShaderModel('AoPass');
@@ -26573,6 +26802,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uNoiseScale = new Uniform2f('uNoiseScale');
     this.uRadius = new Uniform1f('uRadius');
     this.uIntensity = new Uniform1f('uIntensity');
+    this.uPower = new Uniform1f('uPower');
     this.uBias = new Uniform1f('uBias');
   }
   function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda(this$AoUniforms) {
@@ -26607,20 +26837,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_5(this$AoUniforms) {
     return function () {
-      return this$AoUniforms.uBias;
+      return this$AoUniforms.uPower;
     };
   }
   function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_6(this$AoUniforms) {
     return function () {
+      return this$AoUniforms.uBias;
+    };
+  }
+  function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_7(this$AoUniforms) {
+    return function () {
       return this$AoUniforms.uKernelN;
     };
   }
-  function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_7(this$AoUniforms, this$AmbientOcclusionPass) {
+  function AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_8(this$AoUniforms, this$AmbientOcclusionPass) {
     return function (f, f_0) {
       this$AoUniforms.uProj.value.set_d4zu6l$(this$AoUniforms.cam.proj);
-      this$AoUniforms.uNoiseScale.value.set_dleff0$(this$AmbientOcclusionPass.texWidth / 4.0, this$AmbientOcclusionPass.texHeight / 4.0);
+      this$AoUniforms.uNoiseScale.value.set_dleff0$(this$AmbientOcclusionPass.width / 4.0, this$AmbientOcclusionPass.height / 4.0);
       this$AoUniforms.uRadius.value = this$AmbientOcclusionPass.radius;
       this$AoUniforms.uIntensity.value = this$AmbientOcclusionPass.intensity;
+      this$AoUniforms.uPower.value = this$AmbientOcclusionPass.power;
       this$AoUniforms.uBias.value = this$AmbientOcclusionPass.bias;
       if (this$AoUniforms.withInvProj) {
         this$AoUniforms.uInvProj.value.set_d4zu6l$(this$AoUniforms.cam.invProj);
@@ -26638,7 +26874,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_4(this$AoUniforms));
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_5(this$AoUniforms));
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_6(this$AoUniforms));
-      $receiver.onUpdate = AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_7(this$AoUniforms, this$AmbientOcclusionPass);
+      $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_7(this$AoUniforms));
+      $receiver.onUpdate = AmbientOcclusionPass$AoUniforms$setup$lambda$lambda$lambda_8(this$AoUniforms, this$AmbientOcclusionPass);
       return Unit;
     };
   }
@@ -26691,7 +26928,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
   };
   AmbientOcclusionPass$AoNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                if (' + this.inOrigin + '.z > 0.0) {' + '\n' + '                    discard;' + '\n' + '                }' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.aoUniforms.uNoiseScale + ';' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - ' + this.inNormal.ref3f() + ' * dot(rotVec, ' + this.inNormal.ref3f() + '));' + '\n' + '                vec3 bitangent = cross(' + this.inNormal.ref3f() + ', tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, ' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                float bias = ' + this.aoUniforms.uBias + ' * ' + this.aoUniforms.uRadius + ';' + '\n' + '                for (int i = 0; i < ' + this.aoUniforms.uKernelN + '; i++) {' + '\n' + '                    vec3 kernel = tbn * ' + this.aoUniforms.uKernel + '[i];' + '\n' + '                    vec3 samplePos = ' + this.inOrigin + ' + kernel * ' + this.aoUniforms.uRadius + ';' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = ' + this.aoUniforms.uProj + ' * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.' + this.depthComponent + ';' + '\n' + '                    ' + '\n' + '                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(' + this.inOrigin + '.z - sampleDepth) / (4.0 * ' + this.aoUniforms.uRadius + '));' + '\n' + '                    occlusion += (sampleDepth > samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;' + '\n' + '                }' + '\n' + '                occlusion /= float(' + this.aoUniforms.uKernelN + ');' + '\n' + '                float occlFac = clamp(1.0 - occlusion * ' + this.aoUniforms.uIntensity + ', 0.0, 1.0);' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, 0.0, 0.0, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                if (' + this.inOrigin + '.z > 0.0) {' + '\n' + '                    discard;' + '\n' + '                }' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.aoUniforms.uNoiseScale + ';' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - ' + this.inNormal.ref3f() + ' * dot(rotVec, ' + this.inNormal.ref3f() + '));' + '\n' + '                vec3 bitangent = cross(' + this.inNormal.ref3f() + ', tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, ' + this.inNormal.ref3f() + ');' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                float bias = ' + this.aoUniforms.uBias + ' * ' + this.aoUniforms.uRadius + ';' + '\n' + '                for (int i = 0; i < ' + this.aoUniforms.uKernelN + '; i++) {' + '\n' + '                    vec3 kernel = tbn * ' + this.aoUniforms.uKernel + '[i];' + '\n' + '                    vec3 samplePos = ' + this.inOrigin + ' + kernel * ' + this.aoUniforms.uRadius + ';' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = ' + this.aoUniforms.uProj + ' * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0) {' + '\n' + '                        float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.' + this.depthComponent + ';' + '\n' + '                        float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(' + this.inOrigin + '.z - sampleDepth) / (4.0 * ' + this.aoUniforms.uRadius + '));' + '\n' + '                        float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);' + '\n' + '                        occlusion += occlusionInc * rangeCheck;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                occlusion /= float(' + this.aoUniforms.uKernelN + ');' + '\n' + '                float occlFac = pow(clamp(1.0 - occlusion * ' + this.aoUniforms.uIntensity + ', 0.0, 1.0), ' + this.aoUniforms.uPower + ');' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, 0.0, 0.0, 1.0);' + '\n' + '            ');
   };
   AmbientOcclusionPass$AoNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -27016,11 +27253,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
-  function AoDenoisePass(aoPass, depthTexture, dephtComponent) {
-    OffscreenRenderPass2d_init(new Group(), aoPass.texWidth, aoPass.texHeight, TexFormat$R_getInstance(), void 0, this);
+  function AoDenoisePass(aoPass, depthTexture, depthComponent) {
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'AoDenoisePass';
+    builder.setSize_vux9f0$(aoPass.config.width, aoPass.config.height);
+    builder.addColorTexture_farcsl$(TexFormat$R_getInstance());
+    builder.clearDepthTexture();
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.uRadius_0 = Uniform1f_init(1.0, 'uRadius');
-    var tmp$;
-    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var tmp$_0;
+    var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(AoDenoisePass_init$lambda$lambda$lambda);
     var $receiver_0 = new ShaderModel('AoDenoisePass');
@@ -27032,7 +27275,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var noisyAo = $receiver_2.textureNode_61zpoe$('noisyAo');
     var depth = $receiver_2.textureNode_61zpoe$('depth');
     var radius = $receiver_2.pushConstantNode1f_978i2u$(this.uRadius_0);
-    var blurNd = $receiver_2.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, depth, dephtComponent, $receiver_2.stage));
+    var blurNd = $receiver_2.addNode_u9w9by$(new AoDenoisePass$BlurNode(this, noisyAo, depth, depthComponent, $receiver_2.stage));
     blurNd.inScreenPos = ifTexCoords.v.output;
     blurNd.radius = radius.output;
     $receiver_2.colorOutput_a3v4si$(blurNd.outColor);
@@ -27169,7 +27412,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   Object.defineProperty(AoPipeline.prototype, 'aoMap', {
     get: function () {
-      return this.denoisePass.colorTexture;
+      return ensureNotNull(this.denoisePass.colorTexture);
     }
   });
   Object.defineProperty(AoPipeline.prototype, 'radius', {
@@ -27187,6 +27430,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     },
     set: function (value) {
       this.aoPass.intensity = value;
+    }
+  });
+  Object.defineProperty(AoPipeline.prototype, 'power', {
+    get: function () {
+      return this.aoPass.power;
+    },
+    set: function (value) {
+      this.aoPass.power = value;
     }
   });
   Object.defineProperty(AoPipeline.prototype, 'bias', {
@@ -27214,17 +27465,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthPass = null;
     this.aoPass_i8vqld$_0 = null;
     this.denoisePass_wz7oly$_0 = null;
-    this.mapWidth_0 = numberToInt(1600 * this.size);
-    this.mapHeight_0 = numberToInt(900 * this.size);
+    this.mapWidth_0 = 0;
+    this.mapHeight_0 = 0;
     var tmp$;
     var proxyCamera = new PerspectiveCamera$Proxy(Kotlin.isType(tmp$ = scene.camera, PerspectiveCamera) ? tmp$ : throwCCE());
-    this.depthPass = new NormalLinearDepthMapPass(scene, this.mapWidth_0, this.mapHeight_0);
+    this.depthPass = NormalLinearDepthMapPass_init(scene, this.mapWidth_0, this.mapHeight_0);
     this.depthPass.camera = proxyCamera;
     this.depthPass.isUpdateDrawNode = false;
     this.depthPass.onBeforeCollectDrawCommands.add_11rb$(AoPipeline$AoPipeline$ForwardAoPipeline_init$lambda(proxyCamera, scene));
     this.aoPass_i8vqld$_0 = new AmbientOcclusionPass(proxyCamera, AoSetup$Companion_getInstance().forward_xscw1l$(this.depthPass), this.mapWidth_0, this.mapHeight_0);
     this.aoPass.dependsOn_yqp8fe$(this.depthPass);
-    this.denoisePass_wz7oly$_0 = new AoDenoisePass(this.aoPass, this.depthPass.colorTexture, 'a');
+    this.denoisePass_wz7oly$_0 = new AoDenoisePass(this.aoPass, ensureNotNull(this.depthPass.colorTexture), 'a');
     this.denoisePass.dependsOn_yqp8fe$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.depthPass);
     scene.addOffscreenPass_m1c2kf$(this.aoPass);
@@ -27273,8 +27524,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     AoPipeline.call(this);
     this.aoPass_6v2ifx$_0 = null;
     this.denoisePass_mxbezy$_0 = null;
-    this.mapWidth_0 = numberToInt(mrtPass.texWidth * this.size);
-    this.mapHeight_0 = numberToInt(mrtPass.texHeight * this.size);
+    this.mapWidth_0 = 0;
+    this.mapHeight_0 = 0;
     this.aoPass_6v2ifx$_0 = new AmbientOcclusionPass(mrtPass.camera, AoSetup$Companion_getInstance().deferred_u6tred$(mrtPass), this.mapWidth_0, this.mapHeight_0);
     this.aoPass.dependsOn_yqp8fe$(mrtPass);
     this.denoisePass_mxbezy$_0 = new AoDenoisePass(this.aoPass, mrtPass.positionAo, 'z');
@@ -27295,8 +27546,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   function AoPipeline$AoPipeline$DeferredAoPipeline_init$lambda(closure$mrtPass, this$DeferredAoPipeline) {
     return function ($receiver, ctx) {
-      var mapW = numberToInt(closure$mrtPass.texWidth * this$DeferredAoPipeline.size);
-      var mapH = numberToInt(closure$mrtPass.texHeight * this$DeferredAoPipeline.size);
+      var mapW = numberToInt(closure$mrtPass.width * this$DeferredAoPipeline.size);
+      var mapH = numberToInt(closure$mrtPass.height * this$DeferredAoPipeline.size);
       if (mapW > 0 && mapH > 0 && (mapW !== this$DeferredAoPipeline.mapWidth_0 || mapH !== this$DeferredAoPipeline.mapHeight_0)) {
         this$DeferredAoPipeline.mapWidth_0 = mapW;
         this$DeferredAoPipeline.mapHeight_0 = mapH;
@@ -28015,16 +28266,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Color.prototype.toLinear = function () {
     return this.gamma_mx4ult$(2.2);
   };
+  Color.prototype.toLinear_b0h0gw$ = function (result) {
+    return this.gamma_ccloyr$(2.2, result);
+  };
   Color.prototype.toSrgb = function () {
     return this.gamma_mx4ult$(1.0 / 2.2);
   };
+  Color.prototype.toSrgb_b0h0gw$ = function (result) {
+    return this.gamma_ccloyr$(1.0 / 2.2, result);
+  };
   Color.prototype.gamma_mx4ult$ = function (gamma) {
+    return this.gamma_ccloyr$(gamma, MutableColor_init());
+  };
+  Color.prototype.gamma_ccloyr$ = function (gamma, result) {
     var $receiver = this.r;
     var tmp$ = Math_0.pow($receiver, gamma);
     var $receiver_0 = this.g;
     var tmp$_0 = Math_0.pow($receiver_0, gamma);
     var $receiver_1 = this.b;
-    return new Color(tmp$, tmp$_0, Math_0.pow($receiver_1, gamma), this.a);
+    return result.set_7b5o5w$(tmp$, tmp$_0, Math_0.pow($receiver_1, gamma), this.a);
   };
   function Color$Companion() {
     Color$Companion_instance = this;
@@ -29481,12 +29741,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     DeferredMrtPass$Companion_getInstance();
     if (withEmissive === void 0)
       withEmissive = false;
-    OffscreenRenderPass2dMrt.call(this, new TransformGroup(), 1600, 900, withEmissive ? DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED_EMISSIVE : DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED);
+    var tmp$ = new TransformGroup();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    var closure$withEmissive = withEmissive;
+    builder.name = 'DeferredMrtPass';
+    builder.setDynamicSize();
+    builder.setDepthTexture_6taknv$(false);
+    var formats = closure$withEmissive ? DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED_EMISSIVE : DeferredMrtPass$Companion_getInstance().FORMATS_DEFERRED;
+    var tmp$_0;
+    tmp$_0 = formats.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      builder.addColorTexture_farcsl$(element);
+    }
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.withEmissive = withEmissive;
-    var tmp$, tmp$_0;
-    this.content = Kotlin.isType(tmp$ = this.drawNode, TransformGroup) ? tmp$ : throwCCE();
+    var tmp$_1, tmp$_2;
+    this.content = Kotlin.isType(tmp$_1 = this.drawNode, TransformGroup) ? tmp$_1 : throwCCE();
     this.alphaMeshes_8be2vx$ = ArrayList_init_0();
-    var proxyCamera = new PerspectiveCamera$Proxy(Kotlin.isType(tmp$_0 = scene.camera, PerspectiveCamera) ? tmp$_0 : throwCCE());
+    var proxyCamera = new PerspectiveCamera$Proxy(Kotlin.isType(tmp$_2 = scene.camera, PerspectiveCamera) ? tmp$_2 : throwCCE());
     this.camera = proxyCamera;
     this.onBeforeCollectDrawCommands.add_11rb$(DeferredMrtPass_init$lambda(proxyCamera, scene));
     scene.addOffscreenPass_m1c2kf$(this);
@@ -29520,12 +29793,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   DeferredMrtPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
     this.alphaMeshes_8be2vx$.clear();
-    OffscreenRenderPass2dMrt.prototype.collectDrawCommands_aemszp$.call(this, ctx);
+    OffscreenRenderPass2d.prototype.collectDrawCommands_aemszp$.call(this, ctx);
   };
   DeferredMrtPass.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
     var tmp$;
     if (mesh.isOpaque) {
-      tmp$ = OffscreenRenderPass2dMrt.prototype.addMesh_sbx4mf$.call(this, mesh, ctx);
+      tmp$ = OffscreenRenderPass2d.prototype.addMesh_sbx4mf$.call(this, mesh, ctx);
     } else {
       this.alphaMeshes_8be2vx$.add_11rb$(mesh);
       tmp$ = null;
@@ -29534,7 +29807,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   DeferredMrtPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
-    OffscreenRenderPass2dMrt.prototype.dispose_aemszp$.call(this, ctx);
+    OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
   };
   function DeferredMrtPass$Companion() {
     DeferredMrtPass$Companion_instance = this;
@@ -29568,7 +29841,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DeferredMrtPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'DeferredMrtPass',
-    interfaces: [OffscreenRenderPass2dMrt]
+    interfaces: [OffscreenRenderPass2d]
   };
   var ShaderModel$findNode$lambda_6 = wrapFunction(function () {
     var equals = Kotlin.equals;
@@ -29643,7 +29916,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     var textureSampler = (tmp$ = findNode_3klnlw$result) != null ? tmp$.sampler : null;
-    ensureNotNull(textureSampler).texture = this.pbrOutput_0;
+    textureSampler != null ? (textureSampler.texture = this.pbrOutput_0) : null;
     var $this_0 = this.model;
     var name_0 = 'deferredDepthOutput';
     var stage_0;
@@ -29679,7 +29952,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
      while (false);
     var depthSampler = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
-    ensureNotNull(depthSampler).texture = this.depth_0;
+    depthSampler != null ? (depthSampler.texture = this.depth_0) : null;
     ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function DeferredOutputShader$Companion() {
@@ -31053,16 +31326,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: []
   };
   function PbrLightingPass(scene, mrtPass, cfg) {
-    PbrLightingPass$Companion_getInstance();
     if (cfg === void 0)
       cfg = new PbrSceneShader$DeferredPbrConfig();
-    OffscreenRenderPass2d.call(this, new Group(), mrtPass.texWidth, mrtPass.texHeight, PbrLightingPass$Companion_getInstance().pbrLightingSetup_0(mrtPass));
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.name = 'PbrLightingPass';
+    builder.setSize_vux9f0$(mrtPass.config.width, mrtPass.config.height);
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
+    builder.clearDepthTexture();
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.mrtPass = mrtPass;
     this.dynamicPointLights = new DeferredPointLights(this.mrtPass);
     this.staticPointLights = new DeferredPointLights(this.mrtPass);
     this.mutSpotLights_0 = ArrayList_init_0();
-    var tmp$, tmp$_0;
-    this.content = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var tmp$_0;
+    this.content = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     this.sceneShader = null;
     this.prevColorTex = new Texture('PbrLightingPass.prevColorTex', new TextureProps(TexFormat$RGBA_F16_getInstance(), void 0, void 0, void 0, void 0, void 0, false, 1));
     this.dynamicPointLights.isDynamic = true;
@@ -31071,8 +31349,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     scene.onRenderScene.add_11rb$(PbrLightingPass_init$lambda(this));
     scene.addOffscreenPass_m1c2kf$(this);
     this.dependsOn_yqp8fe$(this.mrtPass);
-    this.clearColor = (tmp$_0 = this.clearColor) != null ? tmp$_0.toLinear() : null;
-    this.clearDepth = false;
+    this.clearColor = null;
     this.camera = this.mrtPass.camera;
     cfg.useMrtPass_u6tred$(this.mrtPass);
     if (cfg.isScrSpcReflections) {
@@ -31090,20 +31367,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver_0 = this.copyTargetsColor;
     var element = this.prevColorTex;
     $receiver_0.add_11rb$(element);
+    scene.mainRenderPass.onAfterCollectDrawCommands.add_11rb$(PbrLightingPass_init$lambda_0(this, scene));
   }
   Object.defineProperty(PbrLightingPass.prototype, 'spotLights', {
     get: function () {
       return this.mutSpotLights_0;
     }
   });
-  PbrLightingPass.prototype.afterCollectDrawCommands_aemszp$ = function (ctx) {
-    var tmp$;
-    tmp$ = this.mrtPass.alphaMeshes_8be2vx$;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.drawQueue.addMesh_sbx4mf$(this.mrtPass.alphaMeshes_8be2vx$.get_za3lpa$(i), ctx);
-    }
-    OffscreenRenderPass2d.prototype.afterCollectDrawCommands_aemszp$.call(this, ctx);
-  };
   PbrLightingPass.prototype.addSpotLights_mx4ult$ = function (maxSpotAngle) {
     var lights = new DeferredSpotLights(maxSpotAngle, this.mrtPass);
     this.content.plusAssign_f1kmr1$(lights.mesh);
@@ -31125,40 +31395,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return function ($receiver) {
       $receiver.isFrustumChecked = false;
       $receiver.generate_v2sixm$(PbrLightingPass$createOutputQuad$lambda$lambda);
-      $receiver.shader = new DeferredOutputShader(this$PbrLightingPass.colorTexture, this$PbrLightingPass.mrtPass.depthTexture);
+      $receiver.shader = new DeferredOutputShader(ensureNotNull(this$PbrLightingPass.colorTexture), ensureNotNull(this$PbrLightingPass.mrtPass.depthTexture));
       return Unit;
     };
   }
   PbrLightingPass.prototype.createOutputQuad = function () {
     return textureMesh(void 0, void 0, PbrLightingPass$createOutputQuad$lambda(this));
   };
-  function PbrLightingPass$Companion() {
-    PbrLightingPass$Companion_instance = this;
-  }
-  PbrLightingPass$Companion.prototype.pbrLightingSetup_0 = function (mrtPass) {
-    var $receiver = new OffscreenRenderPass2d$Setup();
-    $receiver.colorFormat = TexFormat$RGBA_F16_getInstance();
-    $receiver.colorRenderTarget = 1;
-    $receiver.depthRenderTarget = 1;
-    $receiver.extDepthTexture = mrtPass.depthTexture;
-    return $receiver;
-  };
-  PbrLightingPass$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var PbrLightingPass$Companion_instance = null;
-  function PbrLightingPass$Companion_getInstance() {
-    if (PbrLightingPass$Companion_instance === null) {
-      new PbrLightingPass$Companion();
-    }return PbrLightingPass$Companion_instance;
-  }
   function PbrLightingPass_init$lambda(this$PbrLightingPass) {
     return function ($receiver, ctx) {
       var mapW = $receiver.mainRenderPass.viewport.width;
       var mapH = $receiver.mainRenderPass.viewport.height;
-      if (mapW > 0 && mapH > 0 && (mapW !== this$PbrLightingPass.texWidth || mapH !== this$PbrLightingPass.texHeight)) {
+      if (mapW > 0 && mapH > 0 && (mapW !== this$PbrLightingPass.width || mapH !== this$PbrLightingPass.height)) {
         this$PbrLightingPass.mrtPass.resize_w70mbp$(mapW, mapH, ctx);
         this$PbrLightingPass.resize_w70mbp$(mapW, mapH, ctx);
       }return Unit;
@@ -31170,6 +31418,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_0.mirrorTexCoordsY();
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
+  }
+  function PbrLightingPass_init$lambda_0(this$PbrLightingPass, closure$scene) {
+    return function (ctx) {
+      var tmp$;
+      if (this$PbrLightingPass.isEnabled) {
+        tmp$ = this$PbrLightingPass.mrtPass.alphaMeshes_8be2vx$;
+        for (var i = 0; i !== tmp$.size; ++i) {
+          closure$scene.mainRenderPass.drawQueue.addMesh_sbx4mf$(this$PbrLightingPass.mrtPass.alphaMeshes_8be2vx$.get_za3lpa$(i), ctx);
+        }
+      }return Unit;
+    };
   }
   PbrLightingPass.$metadata$ = {
     kind: Kind_CLASS,
@@ -31213,10 +31472,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ModeledShader.call(this, model);
     this.deferredCameraNode_0 = null;
     this.sceneCamera_79hi92$_0 = cfg.sceneCamera;
+    this.depthSampler_0 = null;
     this.positionAoSampler_0 = null;
     this.normalRoughnessSampler_0 = null;
     this.albedoMetalSampler_0 = null;
     this.emissiveSampler_0 = null;
+    this.depth_tvzo14$_0 = cfg.depth;
     this.positionAo_xpzjm6$_0 = cfg.positionAo;
     this.normalRoughness_ruv8si$_0 = cfg.normalRoughness;
     this.albedoMetal_4sc1kt$_0 = cfg.albedoMetal;
@@ -31261,6 +31522,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tmp$;
       this.sceneCamera_79hi92$_0 = value;
       (tmp$ = this.deferredCameraNode_0) != null ? (tmp$.sceneCam = value) : null;
+    }
+  });
+  Object.defineProperty(PbrSceneShader.prototype, 'depth', {
+    get: function () {
+      return this.depth_tvzo14$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.depth_tvzo14$_0 = value;
+      (tmp$ = this.depthSampler_0) != null ? (tmp$.texture = value) : null;
     }
   });
   Object.defineProperty(PbrSceneShader.prototype, 'positionAo', {
@@ -31384,31 +31655,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   });
   PbrSceneShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
-    builder.depthTest = DepthCompareOp$DISABLED_getInstance();
+    builder.depthTest = DepthCompareOp$ALWAYS_getInstance();
     builder.blendMode = BlendMode$DISABLED_getInstance();
     ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
   PbrSceneShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25, tmp$_26, tmp$_27;
     var $this = this.model;
     var name = 'deferredCam';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_26;
-      tmp$_26 = $this.stages.values.iterator();
-      while (tmp$_26.hasNext()) {
-        var element = tmp$_26.next();
+      var tmp$_28;
+      tmp$_28 = $this.stages.values.iterator();
+      while (tmp$_28.hasNext()) {
+        var element = tmp$_28.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_27;
+          var tmp$_29;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_28;
-            tmp$_28 = $receiver.iterator();
-            while (tmp$_28.hasNext()) {
-              var element_0 = tmp$_28.next();
+            var tmp$_30;
+            tmp$_30 = $receiver.iterator();
+            while (tmp$_30.hasNext()) {
+              var element_0 = tmp$_30.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, DeferredCameraNode)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -31416,7 +31687,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_27 = firstOrNull$result) == null || Kotlin.isType(tmp$_27, DeferredCameraNode) ? tmp$_27 : throwCCE();
+          var node = (tmp$_29 = firstOrNull$result) == null || Kotlin.isType(tmp$_29, DeferredCameraNode) ? tmp$_29 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -31428,32 +31699,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$ = this.deferredCameraNode_0) != null) {
       tmp$.sceneCam = this.sceneCamera;
     }var $this_0 = this.model;
-    var name_0 = 'positionAo';
     var stage_0;
     var findNode_3klnlw$result_0;
     findNode_3klnlw$break: do {
       stage_0 = ShaderStage.ALL;
-      var tmp$_29;
-      tmp$_29 = $this_0.stages.values.iterator();
-      while (tmp$_29.hasNext()) {
-        var element_1 = tmp$_29.next();
+      var tmp$_31;
+      tmp$_31 = $this_0.stages.values.iterator();
+      while (tmp$_31.hasNext()) {
+        var element_1 = tmp$_31.next();
         if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_30;
+          var tmp$_32;
           var $receiver_0 = element_1.nodes;
           var firstOrNull$result_0;
           firstOrNull$break: do {
-            var tmp$_31;
-            tmp$_31 = $receiver_0.iterator();
-            while (tmp$_31.hasNext()) {
-              var element_2 = tmp$_31.next();
-              if (equals(element_2.name, name_0) && Kotlin.isType(element_2, TextureNode)) {
+            var tmp$_33;
+            tmp$_33 = $receiver_0.iterator();
+            while (tmp$_33.hasNext()) {
+              var element_2 = tmp$_33.next();
+              if (equals(element_2.name, 'depth') && Kotlin.isType(element_2, TextureNode)) {
                 firstOrNull$result_0 = element_2;
                 break firstOrNull$break;
               }}
             firstOrNull$result_0 = null;
           }
            while (false);
-          var node_0 = (tmp$_30 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_30, TextureNode) ? tmp$_30 : throwCCE();
+          var node_0 = (tmp$_32 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_32, TextureNode) ? tmp$_32 : throwCCE();
           if (node_0 != null) {
             findNode_3klnlw$result_0 = node_0;
             break findNode_3klnlw$break;
@@ -31461,36 +31731,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_0 = null;
     }
      while (false);
-    this.positionAoSampler_0 = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
-    if ((tmp$_1 = this.positionAoSampler_0) != null) {
-      tmp$_1.texture = this.positionAo;
+    this.depthSampler_0 = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.sampler : null;
+    if ((tmp$_1 = this.depthSampler_0) != null) {
+      tmp$_1.texture = this.depth;
     }var $this_1 = this.model;
-    var name_1 = 'normalRoughness';
+    var name_0 = 'positionAo';
     var stage_1;
     var findNode_3klnlw$result_1;
     findNode_3klnlw$break: do {
       stage_1 = ShaderStage.ALL;
-      var tmp$_32;
-      tmp$_32 = $this_1.stages.values.iterator();
-      while (tmp$_32.hasNext()) {
-        var element_3 = tmp$_32.next();
+      var tmp$_34;
+      tmp$_34 = $this_1.stages.values.iterator();
+      while (tmp$_34.hasNext()) {
+        var element_3 = tmp$_34.next();
         if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_33;
+          var tmp$_35;
           var $receiver_1 = element_3.nodes;
           var firstOrNull$result_1;
           firstOrNull$break: do {
-            var tmp$_34;
-            tmp$_34 = $receiver_1.iterator();
-            while (tmp$_34.hasNext()) {
-              var element_4 = tmp$_34.next();
-              if (equals(element_4.name, name_1) && Kotlin.isType(element_4, TextureNode)) {
+            var tmp$_36;
+            tmp$_36 = $receiver_1.iterator();
+            while (tmp$_36.hasNext()) {
+              var element_4 = tmp$_36.next();
+              if (equals(element_4.name, name_0) && Kotlin.isType(element_4, TextureNode)) {
                 firstOrNull$result_1 = element_4;
                 break firstOrNull$break;
               }}
             firstOrNull$result_1 = null;
           }
            while (false);
-          var node_1 = (tmp$_33 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_33, TextureNode) ? tmp$_33 : throwCCE();
+          var node_1 = (tmp$_35 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_35, TextureNode) ? tmp$_35 : throwCCE();
           if (node_1 != null) {
             findNode_3klnlw$result_1 = node_1;
             break findNode_3klnlw$break;
@@ -31498,36 +31768,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_1 = null;
     }
      while (false);
-    this.normalRoughnessSampler_0 = (tmp$_2 = findNode_3klnlw$result_1) != null ? tmp$_2.sampler : null;
-    if ((tmp$_3 = this.normalRoughnessSampler_0) != null) {
-      tmp$_3.texture = this.normalRoughness;
+    this.positionAoSampler_0 = (tmp$_2 = findNode_3klnlw$result_1) != null ? tmp$_2.sampler : null;
+    if ((tmp$_3 = this.positionAoSampler_0) != null) {
+      tmp$_3.texture = this.positionAo;
     }var $this_2 = this.model;
-    var name_2 = 'albedoMetal';
+    var name_1 = 'normalRoughness';
     var stage_2;
     var findNode_3klnlw$result_2;
     findNode_3klnlw$break: do {
       stage_2 = ShaderStage.ALL;
-      var tmp$_35;
-      tmp$_35 = $this_2.stages.values.iterator();
-      while (tmp$_35.hasNext()) {
-        var element_5 = tmp$_35.next();
+      var tmp$_37;
+      tmp$_37 = $this_2.stages.values.iterator();
+      while (tmp$_37.hasNext()) {
+        var element_5 = tmp$_37.next();
         if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_36;
+          var tmp$_38;
           var $receiver_2 = element_5.nodes;
           var firstOrNull$result_2;
           firstOrNull$break: do {
-            var tmp$_37;
-            tmp$_37 = $receiver_2.iterator();
-            while (tmp$_37.hasNext()) {
-              var element_6 = tmp$_37.next();
-              if (equals(element_6.name, name_2) && Kotlin.isType(element_6, TextureNode)) {
+            var tmp$_39;
+            tmp$_39 = $receiver_2.iterator();
+            while (tmp$_39.hasNext()) {
+              var element_6 = tmp$_39.next();
+              if (equals(element_6.name, name_1) && Kotlin.isType(element_6, TextureNode)) {
                 firstOrNull$result_2 = element_6;
                 break firstOrNull$break;
               }}
             firstOrNull$result_2 = null;
           }
            while (false);
-          var node_2 = (tmp$_36 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_36, TextureNode) ? tmp$_36 : throwCCE();
+          var node_2 = (tmp$_38 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_38, TextureNode) ? tmp$_38 : throwCCE();
           if (node_2 != null) {
             findNode_3klnlw$result_2 = node_2;
             break findNode_3klnlw$break;
@@ -31535,36 +31805,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_2 = null;
     }
      while (false);
-    this.albedoMetalSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
-    if ((tmp$_5 = this.albedoMetalSampler_0) != null) {
-      tmp$_5.texture = this.albedoMetal;
+    this.normalRoughnessSampler_0 = (tmp$_4 = findNode_3klnlw$result_2) != null ? tmp$_4.sampler : null;
+    if ((tmp$_5 = this.normalRoughnessSampler_0) != null) {
+      tmp$_5.texture = this.normalRoughness;
     }var $this_3 = this.model;
-    var name_3 = 'emissive';
+    var name_2 = 'albedoMetal';
     var stage_3;
     var findNode_3klnlw$result_3;
     findNode_3klnlw$break: do {
       stage_3 = ShaderStage.ALL;
-      var tmp$_38;
-      tmp$_38 = $this_3.stages.values.iterator();
-      while (tmp$_38.hasNext()) {
-        var element_7 = tmp$_38.next();
+      var tmp$_40;
+      tmp$_40 = $this_3.stages.values.iterator();
+      while (tmp$_40.hasNext()) {
+        var element_7 = tmp$_40.next();
         if ((element_7.stage.mask & stage_3.mask) !== 0) {
-          var tmp$_39;
+          var tmp$_41;
           var $receiver_3 = element_7.nodes;
           var firstOrNull$result_3;
           firstOrNull$break: do {
-            var tmp$_40;
-            tmp$_40 = $receiver_3.iterator();
-            while (tmp$_40.hasNext()) {
-              var element_8 = tmp$_40.next();
-              if (equals(element_8.name, name_3) && Kotlin.isType(element_8, TextureNode)) {
+            var tmp$_42;
+            tmp$_42 = $receiver_3.iterator();
+            while (tmp$_42.hasNext()) {
+              var element_8 = tmp$_42.next();
+              if (equals(element_8.name, name_2) && Kotlin.isType(element_8, TextureNode)) {
                 firstOrNull$result_3 = element_8;
                 break firstOrNull$break;
               }}
             firstOrNull$result_3 = null;
           }
            while (false);
-          var node_3 = (tmp$_39 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_39, TextureNode) ? tmp$_39 : throwCCE();
+          var node_3 = (tmp$_41 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_41, TextureNode) ? tmp$_41 : throwCCE();
           if (node_3 != null) {
             findNode_3klnlw$result_3 = node_3;
             break findNode_3klnlw$break;
@@ -31572,36 +31842,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_3 = null;
     }
      while (false);
-    this.emissiveSampler_0 = (tmp$_6 = findNode_3klnlw$result_3) != null ? tmp$_6.sampler : null;
-    if ((tmp$_7 = this.emissiveSampler_0) != null) {
-      tmp$_7.texture = this.emissive;
+    this.albedoMetalSampler_0 = (tmp$_6 = findNode_3klnlw$result_3) != null ? tmp$_6.sampler : null;
+    if ((tmp$_7 = this.albedoMetalSampler_0) != null) {
+      tmp$_7.texture = this.albedoMetal;
     }var $this_4 = this.model;
-    var name_4 = 'uAmbient';
+    var name_3 = 'emissive';
     var stage_4;
     var findNode_3klnlw$result_4;
     findNode_3klnlw$break: do {
       stage_4 = ShaderStage.ALL;
-      var tmp$_41;
-      tmp$_41 = $this_4.stages.values.iterator();
-      while (tmp$_41.hasNext()) {
-        var element_9 = tmp$_41.next();
+      var tmp$_43;
+      tmp$_43 = $this_4.stages.values.iterator();
+      while (tmp$_43.hasNext()) {
+        var element_9 = tmp$_43.next();
         if ((element_9.stage.mask & stage_4.mask) !== 0) {
-          var tmp$_42;
+          var tmp$_44;
           var $receiver_4 = element_9.nodes;
           var firstOrNull$result_4;
           firstOrNull$break: do {
-            var tmp$_43;
-            tmp$_43 = $receiver_4.iterator();
-            while (tmp$_43.hasNext()) {
-              var element_10 = tmp$_43.next();
-              if (equals(element_10.name, name_4) && Kotlin.isType(element_10, PushConstantNodeColor)) {
+            var tmp$_45;
+            tmp$_45 = $receiver_4.iterator();
+            while (tmp$_45.hasNext()) {
+              var element_10 = tmp$_45.next();
+              if (equals(element_10.name, name_3) && Kotlin.isType(element_10, TextureNode)) {
                 firstOrNull$result_4 = element_10;
                 break firstOrNull$break;
               }}
             firstOrNull$result_4 = null;
           }
            while (false);
-          var node_4 = (tmp$_42 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_42, PushConstantNodeColor) ? tmp$_42 : throwCCE();
+          var node_4 = (tmp$_44 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_44, TextureNode) ? tmp$_44 : throwCCE();
           if (node_4 != null) {
             findNode_3klnlw$result_4 = node_4;
             break findNode_3klnlw$break;
@@ -31609,35 +31879,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_4 = null;
     }
      while (false);
-    this.uAmbient_0 = findNode_3klnlw$result_4;
-    (tmp$_10 = (tmp$_9 = (tmp$_8 = this.uAmbient_0) != null ? tmp$_8.uniform : null) != null ? tmp$_9.value : null) != null ? tmp$_10.set_czzhhz$(this.ambient) : null;
-    var $this_5 = this.model;
-    var name_5 = 'irradianceMap';
+    this.emissiveSampler_0 = (tmp$_8 = findNode_3klnlw$result_4) != null ? tmp$_8.sampler : null;
+    if ((tmp$_9 = this.emissiveSampler_0) != null) {
+      tmp$_9.texture = this.emissive;
+    }var $this_5 = this.model;
+    var name_4 = 'uAmbient';
     var stage_5;
     var findNode_3klnlw$result_5;
     findNode_3klnlw$break: do {
       stage_5 = ShaderStage.ALL;
-      var tmp$_44;
-      tmp$_44 = $this_5.stages.values.iterator();
-      while (tmp$_44.hasNext()) {
-        var element_11 = tmp$_44.next();
+      var tmp$_46;
+      tmp$_46 = $this_5.stages.values.iterator();
+      while (tmp$_46.hasNext()) {
+        var element_11 = tmp$_46.next();
         if ((element_11.stage.mask & stage_5.mask) !== 0) {
-          var tmp$_45;
+          var tmp$_47;
           var $receiver_5 = element_11.nodes;
           var firstOrNull$result_5;
           firstOrNull$break: do {
-            var tmp$_46;
-            tmp$_46 = $receiver_5.iterator();
-            while (tmp$_46.hasNext()) {
-              var element_12 = tmp$_46.next();
-              if (equals(element_12.name, name_5) && Kotlin.isType(element_12, CubeMapNode)) {
+            var tmp$_48;
+            tmp$_48 = $receiver_5.iterator();
+            while (tmp$_48.hasNext()) {
+              var element_12 = tmp$_48.next();
+              if (equals(element_12.name, name_4) && Kotlin.isType(element_12, PushConstantNodeColor)) {
                 firstOrNull$result_5 = element_12;
                 break firstOrNull$break;
               }}
             firstOrNull$result_5 = null;
           }
            while (false);
-          var node_5 = (tmp$_45 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_45, CubeMapNode) ? tmp$_45 : throwCCE();
+          var node_5 = (tmp$_47 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_47, PushConstantNodeColor) ? tmp$_47 : throwCCE();
           if (node_5 != null) {
             findNode_3klnlw$result_5 = node_5;
             break findNode_3klnlw$break;
@@ -31645,36 +31916,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_5 = null;
     }
      while (false);
-    this.irradianceMapSampler_0 = (tmp$_11 = findNode_3klnlw$result_5) != null ? tmp$_11.sampler : null;
-    if ((tmp$_12 = this.irradianceMapSampler_0) != null) {
-      tmp$_12.texture = this.irradianceMap;
-    }var $this_6 = this.model;
-    var name_6 = 'reflectionMap';
+    this.uAmbient_0 = findNode_3klnlw$result_5;
+    (tmp$_12 = (tmp$_11 = (tmp$_10 = this.uAmbient_0) != null ? tmp$_10.uniform : null) != null ? tmp$_11.value : null) != null ? tmp$_12.set_czzhhz$(this.ambient) : null;
+    var $this_6 = this.model;
+    var name_5 = 'irradianceMap';
     var stage_6;
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
       stage_6 = ShaderStage.ALL;
-      var tmp$_47;
-      tmp$_47 = $this_6.stages.values.iterator();
-      while (tmp$_47.hasNext()) {
-        var element_13 = tmp$_47.next();
+      var tmp$_49;
+      tmp$_49 = $this_6.stages.values.iterator();
+      while (tmp$_49.hasNext()) {
+        var element_13 = tmp$_49.next();
         if ((element_13.stage.mask & stage_6.mask) !== 0) {
-          var tmp$_48;
+          var tmp$_50;
           var $receiver_6 = element_13.nodes;
           var firstOrNull$result_6;
           firstOrNull$break: do {
-            var tmp$_49;
-            tmp$_49 = $receiver_6.iterator();
-            while (tmp$_49.hasNext()) {
-              var element_14 = tmp$_49.next();
-              if (equals(element_14.name, name_6) && Kotlin.isType(element_14, CubeMapNode)) {
+            var tmp$_51;
+            tmp$_51 = $receiver_6.iterator();
+            while (tmp$_51.hasNext()) {
+              var element_14 = tmp$_51.next();
+              if (equals(element_14.name, name_5) && Kotlin.isType(element_14, CubeMapNode)) {
                 firstOrNull$result_6 = element_14;
                 break firstOrNull$break;
               }}
             firstOrNull$result_6 = null;
           }
            while (false);
-          var node_6 = (tmp$_48 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_48, CubeMapNode) ? tmp$_48 : throwCCE();
+          var node_6 = (tmp$_50 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_50, CubeMapNode) ? tmp$_50 : throwCCE();
           if (node_6 != null) {
             findNode_3klnlw$result_6 = node_6;
             break findNode_3klnlw$break;
@@ -31682,35 +31952,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_6 = null;
     }
      while (false);
-    this.reflectionMapSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
-    if ((tmp$_14 = this.reflectionMapSampler_0) != null) {
-      tmp$_14.texture = this.reflectionMap;
+    this.irradianceMapSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
+    if ((tmp$_14 = this.irradianceMapSampler_0) != null) {
+      tmp$_14.texture = this.irradianceMap;
     }var $this_7 = this.model;
+    var name_6 = 'reflectionMap';
     var stage_7;
     var findNode_3klnlw$result_7;
     findNode_3klnlw$break: do {
       stage_7 = ShaderStage.ALL;
-      var tmp$_50;
-      tmp$_50 = $this_7.stages.values.iterator();
-      while (tmp$_50.hasNext()) {
-        var element_15 = tmp$_50.next();
+      var tmp$_52;
+      tmp$_52 = $this_7.stages.values.iterator();
+      while (tmp$_52.hasNext()) {
+        var element_15 = tmp$_52.next();
         if ((element_15.stage.mask & stage_7.mask) !== 0) {
-          var tmp$_51;
+          var tmp$_53;
           var $receiver_7 = element_15.nodes;
           var firstOrNull$result_7;
           firstOrNull$break: do {
-            var tmp$_52;
-            tmp$_52 = $receiver_7.iterator();
-            while (tmp$_52.hasNext()) {
-              var element_16 = tmp$_52.next();
-              if (equals(element_16.name, 'brdfLut') && Kotlin.isType(element_16, TextureNode)) {
+            var tmp$_54;
+            tmp$_54 = $receiver_7.iterator();
+            while (tmp$_54.hasNext()) {
+              var element_16 = tmp$_54.next();
+              if (equals(element_16.name, name_6) && Kotlin.isType(element_16, CubeMapNode)) {
                 firstOrNull$result_7 = element_16;
                 break firstOrNull$break;
               }}
             firstOrNull$result_7 = null;
           }
            while (false);
-          var node_7 = (tmp$_51 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_51, TextureNode) ? tmp$_51 : throwCCE();
+          var node_7 = (tmp$_53 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_53, CubeMapNode) ? tmp$_53 : throwCCE();
           if (node_7 != null) {
             findNode_3klnlw$result_7 = node_7;
             break findNode_3klnlw$break;
@@ -31718,35 +31989,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_7 = null;
     }
      while (false);
-    this.brdfLutSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
-    if ((tmp$_16 = this.brdfLutSampler_0) != null) {
-      tmp$_16.texture = this.brdfLut;
+    this.reflectionMapSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
+    if ((tmp$_16 = this.reflectionMapSampler_0) != null) {
+      tmp$_16.texture = this.reflectionMap;
     }var $this_8 = this.model;
     var stage_8;
     var findNode_3klnlw$result_8;
     findNode_3klnlw$break: do {
       stage_8 = ShaderStage.ALL;
-      var tmp$_53;
-      tmp$_53 = $this_8.stages.values.iterator();
-      while (tmp$_53.hasNext()) {
-        var element_17 = tmp$_53.next();
+      var tmp$_55;
+      tmp$_55 = $this_8.stages.values.iterator();
+      while (tmp$_55.hasNext()) {
+        var element_17 = tmp$_55.next();
         if ((element_17.stage.mask & stage_8.mask) !== 0) {
-          var tmp$_54;
+          var tmp$_56;
           var $receiver_8 = element_17.nodes;
           var firstOrNull$result_8;
           firstOrNull$break: do {
-            var tmp$_55;
-            tmp$_55 = $receiver_8.iterator();
-            while (tmp$_55.hasNext()) {
-              var element_18 = tmp$_55.next();
-              if (equals(element_18.name, 'ssaoMap') && Kotlin.isType(element_18, TextureNode)) {
+            var tmp$_57;
+            tmp$_57 = $receiver_8.iterator();
+            while (tmp$_57.hasNext()) {
+              var element_18 = tmp$_57.next();
+              if (equals(element_18.name, 'brdfLut') && Kotlin.isType(element_18, TextureNode)) {
                 firstOrNull$result_8 = element_18;
                 break firstOrNull$break;
               }}
             firstOrNull$result_8 = null;
           }
            while (false);
-          var node_8 = (tmp$_54 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_54, TextureNode) ? tmp$_54 : throwCCE();
+          var node_8 = (tmp$_56 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_56, TextureNode) ? tmp$_56 : throwCCE();
           if (node_8 != null) {
             findNode_3klnlw$result_8 = node_8;
             break findNode_3klnlw$break;
@@ -31754,35 +32025,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_8 = null;
     }
      while (false);
-    this.ssaoSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
-    if ((tmp$_18 = this.ssaoSampler_0) != null) {
-      tmp$_18.texture = this.scrSpcAmbientOcclusionMap;
+    this.brdfLutSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
+    if ((tmp$_18 = this.brdfLutSampler_0) != null) {
+      tmp$_18.texture = this.brdfLut;
     }var $this_9 = this.model;
     var stage_9;
     var findNode_3klnlw$result_9;
     findNode_3klnlw$break: do {
       stage_9 = ShaderStage.ALL;
-      var tmp$_56;
-      tmp$_56 = $this_9.stages.values.iterator();
-      while (tmp$_56.hasNext()) {
-        var element_19 = tmp$_56.next();
+      var tmp$_58;
+      tmp$_58 = $this_9.stages.values.iterator();
+      while (tmp$_58.hasNext()) {
+        var element_19 = tmp$_58.next();
         if ((element_19.stage.mask & stage_9.mask) !== 0) {
-          var tmp$_57;
+          var tmp$_59;
           var $receiver_9 = element_19.nodes;
           var firstOrNull$result_9;
           firstOrNull$break: do {
-            var tmp$_58;
-            tmp$_58 = $receiver_9.iterator();
-            while (tmp$_58.hasNext()) {
-              var element_20 = tmp$_58.next();
-              if (equals(element_20.name, 'ssrMap') && Kotlin.isType(element_20, TextureNode)) {
+            var tmp$_60;
+            tmp$_60 = $receiver_9.iterator();
+            while (tmp$_60.hasNext()) {
+              var element_20 = tmp$_60.next();
+              if (equals(element_20.name, 'ssaoMap') && Kotlin.isType(element_20, TextureNode)) {
                 firstOrNull$result_9 = element_20;
                 break firstOrNull$break;
               }}
             firstOrNull$result_9 = null;
           }
            while (false);
-          var node_9 = (tmp$_57 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_57, TextureNode) ? tmp$_57 : throwCCE();
+          var node_9 = (tmp$_59 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_59, TextureNode) ? tmp$_59 : throwCCE();
           if (node_9 != null) {
             findNode_3klnlw$result_9 = node_9;
             break findNode_3klnlw$break;
@@ -31790,36 +32061,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_9 = null;
     }
      while (false);
-    this.ssrSampler_0 = (tmp$_19 = findNode_3klnlw$result_9) != null ? tmp$_19.sampler : null;
-    if ((tmp$_20 = this.ssrSampler_0) != null) {
-      tmp$_20.texture = this.scrSpcReflectionMap;
+    this.ssaoSampler_0 = (tmp$_19 = findNode_3klnlw$result_9) != null ? tmp$_19.sampler : null;
+    if ((tmp$_20 = this.ssaoSampler_0) != null) {
+      tmp$_20.texture = this.scrSpcAmbientOcclusionMap;
     }var $this_10 = this.model;
-    var name_7 = 'ssrNoiseTex';
     var stage_10;
     var findNode_3klnlw$result_10;
     findNode_3klnlw$break: do {
       stage_10 = ShaderStage.ALL;
-      var tmp$_59;
-      tmp$_59 = $this_10.stages.values.iterator();
-      while (tmp$_59.hasNext()) {
-        var element_21 = tmp$_59.next();
+      var tmp$_61;
+      tmp$_61 = $this_10.stages.values.iterator();
+      while (tmp$_61.hasNext()) {
+        var element_21 = tmp$_61.next();
         if ((element_21.stage.mask & stage_10.mask) !== 0) {
-          var tmp$_60;
+          var tmp$_62;
           var $receiver_10 = element_21.nodes;
           var firstOrNull$result_10;
           firstOrNull$break: do {
-            var tmp$_61;
-            tmp$_61 = $receiver_10.iterator();
-            while (tmp$_61.hasNext()) {
-              var element_22 = tmp$_61.next();
-              if (equals(element_22.name, name_7) && Kotlin.isType(element_22, TextureNode)) {
+            var tmp$_63;
+            tmp$_63 = $receiver_10.iterator();
+            while (tmp$_63.hasNext()) {
+              var element_22 = tmp$_63.next();
+              if (equals(element_22.name, 'ssrMap') && Kotlin.isType(element_22, TextureNode)) {
                 firstOrNull$result_10 = element_22;
                 break firstOrNull$break;
               }}
             firstOrNull$result_10 = null;
           }
            while (false);
-          var node_10 = (tmp$_60 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_60, TextureNode) ? tmp$_60 : throwCCE();
+          var node_10 = (tmp$_62 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_62, TextureNode) ? tmp$_62 : throwCCE();
           if (node_10 != null) {
             findNode_3klnlw$result_10 = node_10;
             break findNode_3klnlw$break;
@@ -31827,36 +32097,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_10 = null;
     }
      while (false);
-    this.ssrNoiseSampler_0 = (tmp$_21 = findNode_3klnlw$result_10) != null ? tmp$_21.sampler : null;
-    if ((tmp$_22 = this.ssrNoiseSampler_0) != null) {
-      tmp$_22.texture = this.scrSpcReflectionNoise;
+    this.ssrSampler_0 = (tmp$_21 = findNode_3klnlw$result_10) != null ? tmp$_21.sampler : null;
+    if ((tmp$_22 = this.ssrSampler_0) != null) {
+      tmp$_22.texture = this.scrSpcReflectionMap;
     }var $this_11 = this.model;
-    var name_8 = 'uMaxIterations';
+    var name_7 = 'ssrNoiseTex';
     var stage_11;
     var findNode_3klnlw$result_11;
     findNode_3klnlw$break: do {
       stage_11 = ShaderStage.ALL;
-      var tmp$_62;
-      tmp$_62 = $this_11.stages.values.iterator();
-      while (tmp$_62.hasNext()) {
-        var element_23 = tmp$_62.next();
+      var tmp$_64;
+      tmp$_64 = $this_11.stages.values.iterator();
+      while (tmp$_64.hasNext()) {
+        var element_23 = tmp$_64.next();
         if ((element_23.stage.mask & stage_11.mask) !== 0) {
-          var tmp$_63;
+          var tmp$_65;
           var $receiver_11 = element_23.nodes;
           var firstOrNull$result_11;
           firstOrNull$break: do {
-            var tmp$_64;
-            tmp$_64 = $receiver_11.iterator();
-            while (tmp$_64.hasNext()) {
-              var element_24 = tmp$_64.next();
-              if (equals(element_24.name, name_8) && Kotlin.isType(element_24, PushConstantNode1i)) {
+            var tmp$_66;
+            tmp$_66 = $receiver_11.iterator();
+            while (tmp$_66.hasNext()) {
+              var element_24 = tmp$_66.next();
+              if (equals(element_24.name, name_7) && Kotlin.isType(element_24, TextureNode)) {
                 firstOrNull$result_11 = element_24;
                 break firstOrNull$break;
               }}
             firstOrNull$result_11 = null;
           }
            while (false);
-          var node_11 = (tmp$_63 = firstOrNull$result_11) == null || Kotlin.isType(tmp$_63, PushConstantNode1i) ? tmp$_63 : throwCCE();
+          var node_11 = (tmp$_65 = firstOrNull$result_11) == null || Kotlin.isType(tmp$_65, TextureNode) ? tmp$_65 : throwCCE();
           if (node_11 != null) {
             findNode_3klnlw$result_11 = node_11;
             break findNode_3klnlw$break;
@@ -31864,47 +32134,84 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_11 = null;
     }
      while (false);
-    this.uMaxIterations_0 = findNode_3klnlw$result_11;
-    (tmp$_24 = (tmp$_23 = this.uMaxIterations_0) != null ? tmp$_23.uniform : null) != null ? (tmp$_24.value = this.scrSpcReflectionIterations) : null;
+    this.ssrNoiseSampler_0 = (tmp$_23 = findNode_3klnlw$result_11) != null ? tmp$_23.sampler : null;
+    if ((tmp$_24 = this.ssrNoiseSampler_0) != null) {
+      tmp$_24.texture = this.scrSpcReflectionNoise;
+    }var $this_12 = this.model;
+    var name_8 = 'uMaxIterations';
+    var stage_12;
+    var findNode_3klnlw$result_12;
+    findNode_3klnlw$break: do {
+      stage_12 = ShaderStage.ALL;
+      var tmp$_67;
+      tmp$_67 = $this_12.stages.values.iterator();
+      while (tmp$_67.hasNext()) {
+        var element_25 = tmp$_67.next();
+        if ((element_25.stage.mask & stage_12.mask) !== 0) {
+          var tmp$_68;
+          var $receiver_12 = element_25.nodes;
+          var firstOrNull$result_12;
+          firstOrNull$break: do {
+            var tmp$_69;
+            tmp$_69 = $receiver_12.iterator();
+            while (tmp$_69.hasNext()) {
+              var element_26 = tmp$_69.next();
+              if (equals(element_26.name, name_8) && Kotlin.isType(element_26, PushConstantNode1i)) {
+                firstOrNull$result_12 = element_26;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_12 = null;
+          }
+           while (false);
+          var node_12 = (tmp$_68 = firstOrNull$result_12) == null || Kotlin.isType(tmp$_68, PushConstantNode1i) ? tmp$_68 : throwCCE();
+          if (node_12 != null) {
+            findNode_3klnlw$result_12 = node_12;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_12 = null;
+    }
+     while (false);
+    this.uMaxIterations_0 = findNode_3klnlw$result_12;
+    (tmp$_26 = (tmp$_25 = this.uMaxIterations_0) != null ? tmp$_25.uniform : null) != null ? (tmp$_26.value = this.scrSpcReflectionIterations) : null;
     if (this.isReceivingShadow_0) {
-      tmp$_25 = this.depthSamplers_0;
-      loop_label: for (var i = 0; i !== tmp$_25.length; ++i) {
-        var tmp$_65;
-        var $this_12 = this.model;
+      tmp$_27 = this.depthSamplers_0;
+      loop_label: for (var i = 0; i !== tmp$_27.length; ++i) {
+        var tmp$_70;
+        var $this_13 = this.model;
         var name_9 = 'depthMap_' + i;
-        var stage_12;
-        var findNode_3klnlw$result_12;
+        var stage_13;
+        var findNode_3klnlw$result_13;
         findNode_3klnlw$break: do {
-          stage_12 = ShaderStage.ALL;
-          var tmp$_66;
-          tmp$_66 = $this_12.stages.values.iterator();
-          while (tmp$_66.hasNext()) {
-            var element_25 = tmp$_66.next();
-            if ((element_25.stage.mask & stage_12.mask) !== 0) {
-              var tmp$_67;
-              var $receiver_12 = element_25.nodes;
-              var firstOrNull$result_12;
+          stage_13 = ShaderStage.ALL;
+          var tmp$_71;
+          tmp$_71 = $this_13.stages.values.iterator();
+          while (tmp$_71.hasNext()) {
+            var element_27 = tmp$_71.next();
+            if ((element_27.stage.mask & stage_13.mask) !== 0) {
+              var tmp$_72;
+              var $receiver_13 = element_27.nodes;
+              var firstOrNull$result_13;
               firstOrNull$break: do {
-                var tmp$_68;
-                tmp$_68 = $receiver_12.iterator();
-                while (tmp$_68.hasNext()) {
-                  var element_26 = tmp$_68.next();
-                  if (equals(element_26.name, name_9) && Kotlin.isType(element_26, TextureNode)) {
-                    firstOrNull$result_12 = element_26;
+                var tmp$_73;
+                tmp$_73 = $receiver_13.iterator();
+                while (tmp$_73.hasNext()) {
+                  var element_28 = tmp$_73.next();
+                  if (equals(element_28.name, name_9) && Kotlin.isType(element_28, TextureNode)) {
+                    firstOrNull$result_13 = element_28;
                     break firstOrNull$break;
                   }}
-                firstOrNull$result_12 = null;
+                firstOrNull$result_13 = null;
               }
                while (false);
-              var node_12 = (tmp$_67 = firstOrNull$result_12) == null || Kotlin.isType(tmp$_67, TextureNode) ? tmp$_67 : throwCCE();
-              if (node_12 != null) {
-                findNode_3klnlw$result_12 = node_12;
+              var node_13 = (tmp$_72 = firstOrNull$result_13) == null || Kotlin.isType(tmp$_72, TextureNode) ? tmp$_72 : throwCCE();
+              if (node_13 != null) {
+                findNode_3klnlw$result_13 = node_13;
                 break findNode_3klnlw$break;
               }}}
-          findNode_3klnlw$result_12 = null;
+          findNode_3klnlw$result_13 = null;
         }
          while (false);
-        var sampler = (tmp$_65 = findNode_3klnlw$result_12) != null ? tmp$_65.sampler : null;
+        var sampler = (tmp$_70 = findNode_3klnlw$result_13) != null ? tmp$_70.sampler : null;
         this.depthSamplers_0[i] = sampler;
         this.shadowMaps_0[i].setupSampler_s70oj3$(sampler);
       }
@@ -32069,6 +32376,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver_3.inReflectionWeight = rayTraceNode.outSampleWeight;
     }var mat = $receiver_3;
     $receiver_1.colorOutput_a3v4si$(mat.outColor);
+    var depthSampler = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('depth'), coord);
+    $receiver_1.depthOutput_r20yfm$(depthSampler.outColor);
     return $receiver;
   };
   PbrSceneShader$Companion.$metadata$ = {
@@ -32091,6 +32400,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.maxLights = 4;
     this.shadowMaps = ArrayList_init_0();
     this.lightBacksides = false;
+    this.depth = null;
     this.positionAo = null;
     this.normalRoughness = null;
     this.albedoMetal = null;
@@ -32104,6 +32414,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   PbrSceneShader$DeferredPbrConfig.prototype.useMrtPass_u6tred$ = function (mrtPass) {
     this.sceneCamera = mrtPass.camera;
+    this.depth = mrtPass.depthTexture;
     this.positionAo = mrtPass.positionAo;
     this.normalRoughness = mrtPass.normalRoughness;
     this.albedoMetal = mrtPass.albedoMetal;
@@ -38371,8 +38682,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.index, other.index) && Kotlin.equals(this.strength, other.strength) && Kotlin.equals(this.texCoord, other.texCoord) && Kotlin.equals(this.scale, other.scale)))));
   };
   function BrdfLutPass(parentScene) {
-    OffscreenRenderPass2d_init(new Group(), 512, 512, TexFormat$RG_F16_getInstance(), 1, this);
-    var tmp$;
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.setSize_vux9f0$(512, 512);
+    builder.addColorTexture_farcsl$(TexFormat$RG_F16_getInstance());
+    builder.clearDepthTexture();
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
+    var tmp$_0;
     this.clearColor = null;
     var $receiver = new OrthographicCamera();
     $receiver.projCorrectionMode = Camera$ProjCorrectionMode$OFFSCREEN_getInstance();
@@ -38382,7 +38698,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.top = 1.0;
     $receiver.bottom = 0.0;
     this.camera = $receiver;
-    var $receiver_0 = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver_0 = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(BrdfLutPass_init$lambda$lambda$lambda);
     var $receiver_1 = new ShaderModel('BRDF LUT');
@@ -38450,13 +38766,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [OffscreenRenderPass2d]
   };
   function IrradianceMapPass(parentScene, hdriTexture) {
-    OffscreenRenderPassCube.call(this, new Group(), 32, 32, 1, TexFormat$RGBA_F16_getInstance());
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.setSize_vux9f0$(32, 32);
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
+    builder.clearDepthTexture();
+    OffscreenRenderPassCube.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.parentScene_0 = parentScene;
     this.hdriTexture_bh5ebn$_0 = hdriTexture;
     this.irrMapShader_0 = null;
-    var tmp$;
+    var tmp$_0;
     this.clearColor = null;
-    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.generate_v2sixm$(IrradianceMapPass_init$lambda$lambda$lambda);
     var texName = 'colorTex';
@@ -38549,15 +38870,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [OffscreenRenderPassCube]
   };
   function ReflectionMapPass(parentScene, hdriTexture) {
-    OffscreenRenderPassCube.call(this, new Group(), 256, 256, 7, TexFormat$RGBA_F16_getInstance());
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    builder.setSize_vux9f0$(256, 256);
+    builder.mipLevels = 7;
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
+    builder.clearDepthTexture();
+    OffscreenRenderPassCube.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.parentScene = parentScene;
     this.hdriTexture_al3q84$_0 = hdriTexture;
-    this.mipIdx_0 = 0;
     this.uRoughness_0 = Uniform1f_init(0.5, 'uRoughness');
     this.reflMapShader_0 = null;
-    var tmp$;
+    var tmp$_0;
     this.clearColor = null;
-    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    this.onSetupMipLevel = ReflectionMapPass_init$lambda(this);
+    var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.isFrustumChecked = false;
     mesh.generate_v2sixm$(ReflectionMapPass_init$lambda$lambda$lambda);
@@ -38582,7 +38909,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     mesh.shader = this.reflMapShader_0;
     $receiver.unaryPlus_uv0sim$(mesh);
     this.update();
-    this.parentScene.onDispose.add_11rb$(ReflectionMapPass_init$lambda(this));
+    this.onAfterCollectDrawCommands.add_11rb$(ReflectionMapPass_init$lambda_0(this));
+    this.parentScene.onDispose.add_11rb$(ReflectionMapPass_init$lambda_1(this));
   }
   Object.defineProperty(ReflectionMapPass.prototype, 'hdriTexture', {
     get: function () {
@@ -38594,15 +38922,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.hdriTexture_al3q84$_0 = value;
     }
   });
-  ReflectionMapPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
-    this.uRoughness_0.value = this.mipIdx_0 / (this.mipLevels - 1 | 0);
-    this.targetMipLevel = this.mipIdx_0;
-    if ((this.mipIdx_0 = this.mipIdx_0 + 1 | 0, this.mipIdx_0) >= this.mipLevels) {
-      this.parentScene.removeOffscreenPass_m1c2kf$(this);
-    }OffscreenRenderPassCube.prototype.collectDrawCommands_aemszp$.call(this, ctx);
-  };
   ReflectionMapPass.prototype.update = function () {
-    this.mipIdx_0 = 0;
     if (!this.parentScene.offscreenPasses.contains_11rb$(this)) {
       this.parentScene.addOffscreenPass_m1c2kf$(this);
     }};
@@ -38634,6 +38954,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ConvoluteReflectionNode',
     interfaces: [ShaderNode]
   };
+  function ReflectionMapPass_init$lambda(this$ReflectionMapPass) {
+    return function (mipLevel, f) {
+      this$ReflectionMapPass.uRoughness_0.value = mipLevel / (this$ReflectionMapPass.config.mipLevels - 1 | 0);
+      return Unit;
+    };
+  }
   function ReflectionMapPass_init$lambda$lambda$lambda($receiver) {
     $receiver.cubeProps.defaults().centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
@@ -38643,7 +38969,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
-  function ReflectionMapPass_init$lambda(this$ReflectionMapPass) {
+  function ReflectionMapPass_init$lambda_0(this$ReflectionMapPass) {
+    return function (it) {
+      this$ReflectionMapPass.parentScene.removeOffscreenPass_m1c2kf$(this$ReflectionMapPass);
+      return Unit;
+    };
+  }
+  function ReflectionMapPass_init$lambda_1(this$ReflectionMapPass) {
     return function ($receiver, ctx) {
       this$ReflectionMapPass.dispose_aemszp$(ctx);
       return Unit;
@@ -41222,11 +41554,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (drawNode === void 0)
       drawNode = scene;
     var tmp$ = drawNode;
-    var tmp$_0 = mapSize;
-    var tmp$_1 = void 0;
-    var $receiver = DepthMapPass$Companion_getInstance().defaultSetup();
-    $receiver.isUsedAsShadowMap = true;
-    DepthMapPass.call(this, tmp$, tmp$_0, tmp$_1, $receiver);
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    var closure$mapSize = mapSize;
+    builder.name = 'SimpleShadowMap';
+    builder.setSize_vux9f0$(closure$mapSize, closure$mapSize);
+    builder.setDepthTexture_6taknv$(true);
+    builder.clearColorTexture();
+    DepthMapPass.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.scene = scene;
     this.lightIndex = lightIndex;
     this.lightViewProjMat = new Mat4d();
@@ -41239,7 +41573,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.sceneFrustumBounds_0 = new BoundingBox();
     this.isUpdateDrawNode = false;
     this.scene.addOffscreenPass_m1c2kf$(this);
-    this.onBeforeCollectDrawCommands.add_11rb$(SimpleShadowMap_init$lambda(this));
+    this.drawQueue.meshFilter = SimpleShadowMap_init$lambda;
+    this.onBeforeCollectDrawCommands.add_11rb$(SimpleShadowMap_init$lambda_0(this));
   }
   Object.defineProperty(SimpleShadowMap.prototype, 'isShadowMapEnabled', {
     get: function () {
@@ -41321,7 +41656,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.add_czzhiu$(far.lowerRight);
     $receiver.isBatchUpdate = wasBatchUpdate;
   };
-  function SimpleShadowMap_init$lambda(this$SimpleShadowMap) {
+  function SimpleShadowMap_init$lambda(it) {
+    return it.isCastingShadow;
+  }
+  function SimpleShadowMap_init$lambda_0(this$SimpleShadowMap) {
     return function (ctx) {
       if (this$SimpleShadowMap.lightIndex < this$SimpleShadowMap.scene.lighting.lights.size) {
         var light = this$SimpleShadowMap.scene.lighting.lights.get_za3lpa$(this$SimpleShadowMap.lightIndex);
@@ -44440,26 +44778,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function OffscreenPass2dImpl(offscreenPass) {
     this.offscreenPass = offscreenPass;
-    var tmp$, tmp$_0;
-    this.colorTexture = (tmp$ = this.offscreenPass.setup.extColorTexture) != null ? tmp$ : new Texture(void 0, void 0, null);
-    this.depthTexture = (tmp$_0 = this.offscreenPass.setup.extDepthTexture) != null ? tmp$_0 : new Texture(void 0, void 0, null);
-    this.isExtColorTexture = this.offscreenPass.setup.extColorTexture != null;
-    this.isExtDepthTexture = this.offscreenPass.setup.extDepthTexture != null;
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
     this.isCreated_0 = false;
-    this.colorTex_0 = null;
+    var array = Array_0(this.offscreenPass.config.nColorAttachments);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = null;
+    }
+    this.colorTexs_0 = array;
     this.depthTex_0 = null;
   }
   OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
+    var tmp$, tmp$_0;
     if (!this.isCreated_0) {
       this.create_0(ctx);
     }if (this.isCreated_0) {
-      var b = this.offscreenPass.targetMipLevel;
-      var mipLevel = Math_0.max(0, b);
-      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
-      ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
-      this.copyToTextures_0(mipLevel, ctx);
+      tmp$ = this.offscreenPass.config.mipLevels;
+      for (var mipLevel = 0; mipLevel < tmp$; mipLevel++) {
+        (tmp$_0 = this.offscreenPass.onSetupMipLevel) != null ? tmp$_0(mipLevel, ctx) : null;
+        this.offscreenPass.applyMipViewport_za3lpa$(mipLevel);
+        ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
+        ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
+        this.copyToTextures_0(mipLevel, ctx);
+      }
       ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
     }};
   OffscreenPass2dImpl.prototype.copyToTextures_0 = function (mipLevel, ctx) {
@@ -44471,7 +44814,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var copyTarget = this.offscreenPass.copyTargetsColor.get_za3lpa$(i);
       var width = (tmp$_1 = (tmp$_0 = copyTarget.loadedTexture) != null ? tmp$_0.width : null) != null ? tmp$_1 : 0;
       var height = (tmp$_3 = (tmp$_2 = copyTarget.loadedTexture) != null ? tmp$_2.height : null) != null ? tmp$_3 : 0;
-      if (width !== this.offscreenPass.texWidth || height !== this.offscreenPass.texHeight) {
+      if (width !== this.offscreenPass.width || height !== this.offscreenPass.height) {
         (tmp$_4 = copyTarget.loadedTexture) != null ? (tmp$_4.dispose(), Unit) : null;
         this.createCopyTexColor_0(copyTarget, ctx);
       }var target = Kotlin.isType(tmp$_5 = copyTarget.loadedTexture, LoadedTextureWebGl) ? tmp$_5 : throwCCE();
@@ -44480,307 +44823,255 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   };
   OffscreenPass2dImpl.prototype.dispose_aemszp$ = function (ctx) {
-    var tmp$;
+    var tmp$, tmp$_0, tmp$_1;
     Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE();
-    var tmp$_0;
-    tmp$_0 = this.fbos_0.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
+    var tmp$_2;
+    tmp$_2 = this.fbos_0.iterator();
+    while (tmp$_2.hasNext()) {
+      var element = tmp$_2.next();
       ctx.gl_8be2vx$.deleteFramebuffer(element);
     }
-    var tmp$_1;
-    tmp$_1 = this.rbos_0.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_0 = tmp$_1.next();
+    var tmp$_3;
+    tmp$_3 = this.rbos_0.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_0 = tmp$_3.next();
       ctx.gl_8be2vx$.deleteRenderbuffer(element_0);
     }
     this.fbos_0.clear();
     this.rbos_0.clear();
-    if (!this.isExtColorTexture) {
-      this.colorTexture.dispose();
-    }if (!this.isExtDepthTexture) {
-      this.depthTexture.dispose();
-    }this.colorTex_0 = null;
+    var tmp$_4;
+    tmp$_4 = this.offscreenPass.colorTextures.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_1 = tmp$_4.next();
+      if (element_1.loadingState === Texture$LoadingState$LOADED_getInstance()) {
+        element_1.dispose();
+      }}
+    if ((tmp$_0 = this.offscreenPass.depthTexture) != null) {
+      if (tmp$_0.loadingState === Texture$LoadingState$LOADED_getInstance()) {
+        tmp$_0.dispose();
+      }}tmp$_1 = this.colorTexs_0;
+    for (var i = 0; i !== tmp$_1.length; ++i) {
+      this.colorTexs_0[i] = null;
+    }
     this.depthTex_0 = null;
     this.isCreated_0 = false;
   };
-  OffscreenPass2dImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
+  OffscreenPass2dImpl.prototype.applySize_w70mbp$ = function (width, height, ctx) {
     var tmp$;
     this.dispose_aemszp$(ctx);
     this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
   OffscreenPass2dImpl.prototype.create_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var tmp$;
     var gl = ctx.gl_8be2vx$;
-    if (this.offscreenPass.setup.colorRenderTarget === 1) {
-      if (!this.isExtColorTexture && this.colorTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
-        this.createColorTex_0(ctx);
-      } else if (this.isExtColorTexture) {
-        tmp$ = this.colorTexture.loadedTexture;
-        if (tmp$ == null) {
-          return;
-        }var extColorTex = tmp$;
-        this.colorTex_0 = (Kotlin.isType(tmp$_0 = extColorTex, LoadedTextureWebGl) ? tmp$_0 : throwCCE()).texture;
-      }}if (this.offscreenPass.setup.depthRenderTarget === 1) {
-      if (!this.isExtDepthTexture && this.depthTexture.loadingState === Texture$LoadingState$NOT_LOADED_getInstance()) {
-        this.createDepthTex_0(ctx);
-      } else if (this.isExtDepthTexture) {
-        tmp$_1 = this.depthTexture.loadedTexture;
-        if (tmp$_1 == null) {
-          return;
-        }var extDepthTex = tmp$_1;
-        this.depthTex_0 = (Kotlin.isType(tmp$_2 = extDepthTex, LoadedTextureWebGl) ? tmp$_2 : throwCCE()).texture;
-      }}tmp$_3 = this.offscreenPass.mipLevels;
-    for (var i = 0; i < tmp$_3; i++) {
+    if (this.offscreenPass.config.colorRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+      this.createColorTexs_0(ctx);
+    }if (this.offscreenPass.config.depthRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+      this.createDepthTex_0(ctx);
+    }tmp$ = this.offscreenPass.config.mipLevels;
+    for (var i = 0; i < tmp$; i++) {
+      var mipWidth = this.offscreenPass.getMipWidth_za3lpa$(i);
+      var mipHeight = this.offscreenPass.getMipHeight_za3lpa$(i);
       var fbo = gl.createFramebuffer();
-      this.fbos_0.add_11rb$(fbo);
       gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
-      if (this.offscreenPass.setup.colorRenderTarget === 1) {
-        gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_2D, this.colorTex_0, i);
+      if (this.offscreenPass.config.colorRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
+        var $receiver = this.colorTexs_0;
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        for (tmp$_0 = 0; tmp$_0 !== $receiver.length; ++tmp$_0) {
+          var item = $receiver[tmp$_0];
+          var iAttachment = (tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0);
+          gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0 + iAttachment | 0, WebGLRenderingContext.TEXTURE_2D, item, i);
+        }
+        var array = new Int32Array(this.colorTexs_0.length);
+        var tmp$_1;
+        tmp$_1 = array.length - 1 | 0;
+        for (var i_0 = 0; i_0 <= tmp$_1; i_0++) {
+          array[i_0] = WebGLRenderingContext.COLOR_ATTACHMENT0 + i_0 | 0;
+        }
+        var attachments = array;
+        gl.drawBuffers(attachments);
       } else {
         var rbo = gl.createRenderbuffer();
         gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
-        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, get_glInternalFormat(this.offscreenPass.colorFormat), this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, get_glInternalFormat(TexFormat$R_getInstance()), mipWidth, mipHeight);
         gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.RENDERBUFFER, rbo);
         this.rbos_0.add_11rb$(rbo);
       }
-      if (this.offscreenPass.setup.depthRenderTarget === 1) {
+      if (this.offscreenPass.config.depthRenderTarget === OffscreenRenderPass$RenderTarget$TEXTURE_getInstance()) {
         gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.depthTex_0, i);
       } else {
         var rbo_0 = gl.createRenderbuffer();
         gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo_0);
-        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+        gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, mipWidth, mipHeight);
         gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo_0);
         this.rbos_0.add_11rb$(rbo_0);
       }
+      this.fbos_0.add_11rb$(fbo);
     }
     this.isCreated_0 = true;
   };
+  OffscreenPass2dImpl.prototype.createColorTexs_0 = function (ctx) {
+    var tmp$;
+    tmp$ = this.offscreenPass.colorTextures;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0;
+      var cfg = this.offscreenPass.config.colorAttachments.get_za3lpa$(i);
+      if (cfg.providedTexture != null) {
+        this.colorTexs_0[i] = (Kotlin.isType(tmp$_0 = cfg.providedTexture.loadedTexture, LoadedTextureWebGl) ? tmp$_0 : throwCCE()).texture;
+      } else {
+        var format = cfg.colorFormat;
+        var intFormat = get_glInternalFormat(format);
+        var width = this.offscreenPass.width;
+        var height = this.offscreenPass.height;
+        var mipLevels = this.offscreenPass.config.mipLevels;
+        var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(format), 1, mipLevels);
+        var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+        tex.setSize_vux9f0$(width, height);
+        tex.applySamplerProps_xetyfc$(this.offscreenPass.colorTextures.get_za3lpa$(i).props);
+        ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, mipLevels, intFormat, width, height);
+        this.colorTexs_0[i] = tex.texture;
+        this.offscreenPass.colorTextures.get_za3lpa$(i).loadedTexture = tex;
+        this.offscreenPass.colorTextures.get_za3lpa$(i).loadingState = Texture$LoadingState$LOADED_getInstance();
+      }
+    }
+  };
+  OffscreenPass2dImpl.prototype.createDepthTex_0 = function (ctx) {
+    var tmp$;
+    var cfg = ensureNotNull(this.offscreenPass.config.depthAttachment);
+    if (cfg.providedTexture != null) {
+      this.depthTex_0 = (Kotlin.isType(tmp$ = cfg.providedTexture.loadedTexture, LoadedTextureWebGl) ? tmp$ : throwCCE()).texture;
+    } else {
+      var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
+      var width = this.offscreenPass.width;
+      var height = this.offscreenPass.height;
+      var mipLevels = this.offscreenPass.config.mipLevels;
+      var depthCfg = this.offscreenPass.config.depthAttachment;
+      var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, mipLevels);
+      var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
+      tex.setSize_vux9f0$(width, height);
+      tex.applySamplerProps_xetyfc$(ensureNotNull(this.offscreenPass.depthTexture).props);
+      if (depthCfg.depthCompareOp !== DepthCompareOp$DISABLED_getInstance()) {
+        ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
+        ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, get_glOp(depthCfg.depthCompareOp));
+      }ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, mipLevels, intFormat, width, height);
+      this.depthTex_0 = tex.texture;
+      this.offscreenPass.depthTexture.loadedTexture = tex;
+      this.offscreenPass.depthTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
+    }
+  };
   OffscreenPass2dImpl.prototype.createCopyTexColor_0 = function ($receiver, ctx) {
     var intFormat = get_glInternalFormat($receiver.props.format);
-    var width = this.offscreenPass.texWidth;
-    var height = this.offscreenPass.texHeight;
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 1, this.offscreenPass.mipLevels);
+    var width = this.offscreenPass.width;
+    var height = this.offscreenPass.height;
+    var mipLevels = this.offscreenPass.config.mipLevels;
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize($receiver.props.format), 1, mipLevels);
     var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
     tex.setSize_vux9f0$(width, height);
     tex.applySamplerProps_xetyfc$($receiver.props);
-    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, mipLevels, intFormat, width, height);
     $receiver.loadedTexture = tex;
     $receiver.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
-  OffscreenPass2dImpl.prototype.createColorTex_0 = function (ctx) {
-    var intFormat = get_glInternalFormat(this.offscreenPass.colorFormat);
-    var width = this.offscreenPass.texWidth;
-    var height = this.offscreenPass.texHeight;
-    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$LINEAR_getInstance(), FilterMethod$LINEAR_getInstance(), this.offscreenPass.mipLevels > 1, 1);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 1, this.offscreenPass.mipLevels);
-    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
-    tex.setSize_vux9f0$(width, height);
-    tex.applySamplerProps_xetyfc$(samplerProps);
-    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-    this.colorTex_0 = tex.texture;
-    this.colorTexture.loadedTexture = tex;
-    this.colorTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
-  OffscreenPass2dImpl.prototype.createDepthTex_0 = function (ctx) {
-    var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
-    var width = this.offscreenPass.texWidth;
-    var height = this.offscreenPass.texHeight;
-    var filterMethod = this.offscreenPass.setup.isUsedAsShadowMap ? FilterMethod$LINEAR_getInstance() : FilterMethod$NEAREST_getInstance();
-    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, filterMethod, filterMethod, this.offscreenPass.mipLevels > 1, 1);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.offscreenPass.mipLevels);
-    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
-    tex.setSize_vux9f0$(width, height);
-    tex.applySamplerProps_xetyfc$(samplerProps);
-    if (filterMethod === FilterMethod$LINEAR_getInstance()) {
-      ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_MODE, WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE);
-      ctx.gl_8be2vx$.texParameteri(WebGLRenderingContext.TEXTURE_2D, WebGL2RenderingContext.TEXTURE_COMPARE_FUNC, WebGLRenderingContext.LESS);
-    }ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-    this.depthTex_0 = tex.texture;
-    this.depthTexture.loadedTexture = tex;
-    this.depthTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   OffscreenPass2dImpl.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OffscreenPass2dImpl',
     interfaces: []
   };
-  function OffscreenPass2dMrtImpl(offscreenPass) {
+  function OffscreenPassCubeImpl(offscreenPass) {
+    OffscreenPassCubeImpl$Companion_getInstance();
     this.offscreenPass = offscreenPass;
-    var size = this.offscreenPass.nAttachments;
-    var list = ArrayList_init(size);
-    for (var index = 0; index < size; index++) {
-      list.add_11rb$(new Texture(void 0, void 0, null));
-    }
-    this.colorTextures = list;
-    this.depthTexture = new Texture(void 0, void 0, null);
+    this.fbos_0 = ArrayList_init_0();
+    this.rbos_0 = ArrayList_init_0();
     this.isCreated_0 = false;
-    this.fbo_0 = null;
-    var array = Array_0(this.offscreenPass.nAttachments);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = null;
-    }
-    this.glColorTexs_0 = array;
-    this.glDepthTex_0 = null;
+    this.colorTex_0 = null;
   }
-  OffscreenPass2dMrtImpl.prototype.dispose_aemszp$ = function (ctx) {
+  OffscreenPassCubeImpl.prototype.draw_44a5h0$ = function (ctx) {
+    var tmp$, tmp$_0;
+    if (!this.isCreated_0) {
+      this.create_0(ctx);
+    }tmp$ = this.offscreenPass.config.mipLevels;
+    for (var mipLevel = 0; mipLevel < tmp$; mipLevel++) {
+      (tmp$_0 = this.offscreenPass.onSetupMipLevel) != null ? tmp$_0(mipLevel, ctx) : null;
+      this.offscreenPass.applyMipViewport_za3lpa$(mipLevel);
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
+      for (var i = 0; i < 6; i++) {
+        var view = OffscreenPassCubeImpl$Companion_getInstance().VIEWS_0[i];
+        var queue = this.offscreenPass.drawQueues[view.index];
+        ctx.gl_8be2vx$.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i | 0, this.colorTex_0, mipLevel);
+        ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(queue);
+      }
+    }
+    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+  };
+  OffscreenPassCubeImpl.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE();
-    ctx.gl_8be2vx$.deleteFramebuffer(this.fbo_0);
-    this.fbo_0 = null;
     var tmp$_1;
-    tmp$_1 = this.colorTextures.iterator();
+    tmp$_1 = this.fbos_0.iterator();
     while (tmp$_1.hasNext()) {
       var element = tmp$_1.next();
-      element.dispose();
+      ctx.gl_8be2vx$.deleteFramebuffer(element);
     }
-    this.depthTexture.dispose();
-    tmp$_0 = this.glColorTexs_0;
-    for (var i = 0; i !== tmp$_0.length; ++i) {
-      this.glColorTexs_0[i] = null;
+    var tmp$_2;
+    tmp$_2 = this.rbos_0.iterator();
+    while (tmp$_2.hasNext()) {
+      var element_0 = tmp$_2.next();
+      ctx.gl_8be2vx$.deleteRenderbuffer(element_0);
     }
-    this.glDepthTex_0 = null;
+    this.fbos_0.clear();
+    this.rbos_0.clear();
+    var tmp$_3;
+    tmp$_3 = this.offscreenPass.colorTextures.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_1 = tmp$_3.next();
+      if (element_1.loadingState === Texture$LoadingState$LOADED_getInstance()) {
+        element_1.dispose();
+      }}
+    if ((tmp$_0 = this.offscreenPass.depthTexture) != null) {
+      if (tmp$_0.loadingState === Texture$LoadingState$LOADED_getInstance()) {
+        tmp$_0.dispose();
+      }}this.colorTex_0 = null;
     this.isCreated_0 = false;
   };
-  OffscreenPass2dMrtImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
+  OffscreenPassCubeImpl.prototype.applySize_w70mbp$ = function (width, height, ctx) {
     var tmp$;
     this.dispose_aemszp$(ctx);
     this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
   };
-  OffscreenPass2dMrtImpl.prototype.draw_44a5h0$ = function (ctx) {
-    if (!this.isCreated_0) {
-      this.create_0(ctx);
-    }ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbo_0);
-    ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
-    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
-  };
-  OffscreenPass2dMrtImpl.prototype.create_0 = function (ctx) {
-    var tmp$;
-    this.createColorTex_0(ctx);
-    this.createDepthTex_0(ctx);
-    var gl = ctx.gl_8be2vx$;
-    this.fbo_0 = gl.createFramebuffer();
-    gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbo_0);
-    tmp$ = this.glColorTexs_0;
-    for (var i = 0; i !== tmp$.length; ++i) {
-      gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0 + i | 0, WebGLRenderingContext.TEXTURE_2D, this.glColorTexs_0[i], 0);
-    }
-    gl.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.TEXTURE_2D, this.glDepthTex_0, 0);
-    var array = new Int32Array(this.glColorTexs_0.length);
-    var tmp$_0;
-    tmp$_0 = array.length - 1 | 0;
-    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
-      array[i_0] = WebGLRenderingContext.COLOR_ATTACHMENT0 + i_0 | 0;
-    }
-    var attachments = array;
-    gl.drawBuffers(attachments);
-    this.isCreated_0 = true;
-  };
-  OffscreenPass2dMrtImpl.prototype.createColorTex_0 = function (ctx) {
-    var tmp$;
-    tmp$ = this.glColorTexs_0;
-    for (var i = 0; i !== tmp$.length; ++i) {
-      var colorFormat = this.offscreenPass.texFormats.get_za3lpa$(i);
-      var intFormat = get_glInternalFormat(colorFormat);
-      var width = this.offscreenPass.texWidth;
-      var height = this.offscreenPass.texHeight;
-      var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), this.offscreenPass.mipLevels > 1, 1);
-      var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(colorFormat), 1, this.offscreenPass.mipLevels);
-      var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
-      tex.setSize_vux9f0$(width, height);
-      tex.applySamplerProps_xetyfc$(samplerProps);
-      ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-      this.glColorTexs_0[i] = tex.texture;
-      this.colorTextures.get_za3lpa$(i).loadedTexture = tex;
-      this.colorTextures.get_za3lpa$(i).loadingState = Texture$LoadingState$LOADED_getInstance();
-    }
-  };
-  OffscreenPass2dMrtImpl.prototype.createDepthTex_0 = function (ctx) {
-    var intFormat = WebGL2RenderingContext.DEPTH_COMPONENT24;
-    var width = this.offscreenPass.texWidth;
-    var height = this.offscreenPass.texHeight;
-    var samplerProps = new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), this.offscreenPass.mipLevels > 1, 1);
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, 4, 1, this.offscreenPass.mipLevels);
-    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_2D, ctx.gl_8be2vx$.createTexture(), estSize);
-    tex.setSize_vux9f0$(width, height);
-    tex.applySamplerProps_xetyfc$(samplerProps);
-    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_2D, this.offscreenPass.mipLevels, intFormat, width, height);
-    this.glDepthTex_0 = tex.texture;
-    this.depthTexture.loadedTexture = tex;
-    this.depthTexture.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
-  OffscreenPass2dMrtImpl.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenPass2dMrtImpl',
-    interfaces: []
-  };
-  function OffscreenPassCubeImpl(offscreenPass) {
-    OffscreenPassCubeImpl$Companion_getInstance();
-    this.offscreenPass = offscreenPass;
-    this.texture = new CubeMapTexture('offscreen_cube_tex', new TextureProps(void 0, AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), AddressMode$CLAMP_TO_EDGE_getInstance(), FilterMethod$LINEAR_getInstance(), FilterMethod$LINEAR_getInstance(), this.offscreenPass.mipLevels > 1, 1), null);
-    this.fbos_0 = ArrayList_init_0();
-    this.rbos_0 = ArrayList_init_0();
-    this.isCreated_0 = false;
-    this.offscreenTex_0 = null;
-  }
   OffscreenPassCubeImpl.prototype.create_0 = function (ctx) {
     var tmp$;
     var gl = ctx.gl_8be2vx$;
-    this.createColorTex_44a5h0$(ctx);
-    tmp$ = this.offscreenPass.mipLevels;
+    this.createColorTex_0(ctx);
+    tmp$ = this.offscreenPass.config.mipLevels;
     for (var i = 0; i < tmp$; i++) {
       var fbo = gl.createFramebuffer();
       var rbo = gl.createRenderbuffer();
+      var mipWidth = this.offscreenPass.getMipWidth_za3lpa$(i);
+      var mipHeight = this.offscreenPass.getMipHeight_za3lpa$(i);
       gl.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, fbo);
       gl.bindRenderbuffer(WebGLRenderingContext.RENDERBUFFER, rbo);
-      gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, this.offscreenPass.texWidth >> i, this.offscreenPass.texHeight >> i);
+      gl.renderbufferStorage(WebGLRenderingContext.RENDERBUFFER, WebGL2RenderingContext.DEPTH_COMPONENT24, mipWidth, mipHeight);
       gl.framebufferRenderbuffer(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.DEPTH_ATTACHMENT, WebGLRenderingContext.RENDERBUFFER, rbo);
       this.fbos_0.add_11rb$(fbo);
       this.rbos_0.add_11rb$(rbo);
     }
     this.isCreated_0 = true;
   };
-  OffscreenPassCubeImpl.prototype.dispose_aemszp$ = function (ctx) {
-    var tmp$;
-    Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE();
-    var tmp$_0;
-    tmp$_0 = this.fbos_0.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      ctx.gl_8be2vx$.deleteFramebuffer(element);
-    }
-    var tmp$_1;
-    tmp$_1 = this.rbos_0.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_0 = tmp$_1.next();
-      ctx.gl_8be2vx$.deleteRenderbuffer(element_0);
-    }
-    this.fbos_0.clear();
-    this.rbos_0.clear();
-    this.texture.dispose();
-    this.isCreated_0 = false;
-  };
-  OffscreenPassCubeImpl.prototype.resize_w70mbp$ = function (width, height, ctx) {
-    var tmp$;
-    this.dispose_aemszp$(ctx);
-    this.create_0(Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE());
-  };
-  OffscreenPassCubeImpl.prototype.draw_44a5h0$ = function (ctx) {
-    if (!this.isCreated_0) {
-      this.create_0(ctx);
-    }var mipLevel = this.offscreenPass.targetMipLevel;
-    var fboIdx = mipLevel < 0 ? 0 : mipLevel;
-    this.offscreenPass.setMipViewport_za3lpa$(mipLevel);
-    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
-    for (var i = 0; i < 6; i++) {
-      var view = OffscreenPassCubeImpl$Companion_getInstance().VIEWS_0[i];
-      var queue = this.offscreenPass.drawQueues[view.index];
-      ctx.gl_8be2vx$.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i | 0, this.offscreenTex_0, fboIdx);
-      ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(queue);
-    }
-    ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
+  OffscreenPassCubeImpl.prototype.createColorTex_0 = function (ctx) {
+    var format = this.offscreenPass.config.colorAttachments.get_za3lpa$(0).colorFormat;
+    var intFormat = get_glInternalFormat(format);
+    var width = this.offscreenPass.width;
+    var height = this.offscreenPass.height;
+    var mipLevels = this.offscreenPass.config.mipLevels;
+    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(format), 6, mipLevels);
+    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_CUBE_MAP, ctx.gl_8be2vx$.createTexture(), estSize);
+    tex.setSize_vux9f0$(width, height);
+    tex.applySamplerProps_xetyfc$(ensureNotNull(this.offscreenPass.colorTexture).props);
+    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height);
+    this.colorTex_0 = tex.texture;
+    ensureNotNull(this.offscreenPass.colorTexture).loadedTexture = tex;
+    ensureNotNull(this.offscreenPass.colorTexture).loadingState = Texture$LoadingState$LOADED_getInstance();
   };
   function OffscreenPassCubeImpl$Companion() {
     OffscreenPassCubeImpl$Companion_instance = this;
@@ -44828,19 +45119,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       new OffscreenPassCubeImpl$Companion();
     }return OffscreenPassCubeImpl$Companion_instance;
   }
-  OffscreenPassCubeImpl.prototype.createColorTex_44a5h0$ = function (ctx) {
-    var intFormat = get_glInternalFormat(this.offscreenPass.colorFormat);
-    var width = this.offscreenPass.texWidth;
-    var height = this.offscreenPass.texHeight;
-    var estSize = Texture$Companion_getInstance().estimatedTexSize_4qozqa$(width, height, get_pxSize(this.offscreenPass.colorFormat), 6, this.offscreenPass.mipLevels);
-    var tex = new LoadedTextureWebGl(ctx, WebGLRenderingContext.TEXTURE_CUBE_MAP, ctx.gl_8be2vx$.createTexture(), estSize);
-    tex.setSize_vux9f0$(width, height);
-    tex.applySamplerProps_xetyfc$(this.texture.props);
-    ctx.gl_8be2vx$.texStorage2D(WebGLRenderingContext.TEXTURE_CUBE_MAP, this.offscreenPass.mipLevels, intFormat, width, height);
-    this.offscreenTex_0 = tex.texture;
-    this.texture.loadedTexture = tex;
-    this.texture.loadingState = Texture$LoadingState$LOADED_getInstance();
-  };
   OffscreenPassCubeImpl.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OffscreenPassCubeImpl',
@@ -45832,8 +46110,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   JsContext.prototype.drawOffscreen_0 = function (offscreenPass) {
     if (Kotlin.isType(offscreenPass, OffscreenRenderPass2d))
       offscreenPass.impl_8be2vx$.draw_44a5h0$(this);
-    else if (Kotlin.isType(offscreenPass, OffscreenRenderPass2dMrt))
-      offscreenPass.impl_8be2vx$.draw_44a5h0$(this);
     else if (Kotlin.isType(offscreenPass, OffscreenRenderPassCube))
       offscreenPass.impl_8be2vx$.draw_44a5h0$(this);
     else
@@ -46122,6 +46398,29 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         return 6;
       case 'RGBA_F16':
         return 8;
+      default:return Kotlin.noWhenBranchMatched();
+    }
+  }
+  function get_glOp($receiver) {
+    switch ($receiver.name) {
+      case 'DISABLED':
+        return 0;
+      case 'ALWAYS':
+        return WebGLRenderingContext.ALWAYS;
+      case 'NEVER':
+        return WebGLRenderingContext.NEVER;
+      case 'LESS':
+        return WebGLRenderingContext.LESS;
+      case 'LESS_EQUAL':
+        return WebGLRenderingContext.LEQUAL;
+      case 'GREATER':
+        return WebGLRenderingContext.GREATER;
+      case 'GREATER_EQUAL':
+        return WebGLRenderingContext.GEQUAL;
+      case 'EQUAL':
+        return WebGLRenderingContext.EQUAL;
+      case 'NOT_EQUAL':
+        return WebGLRenderingContext.NOTEQUAL;
       default:return Kotlin.noWhenBranchMatched();
     }
   }
@@ -46789,9 +47088,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   LoadedTextureWebGl.prototype.glAddressMode_0 = function ($receiver) {
     var tmp$;
     switch ($receiver.name) {
-      case 'CLAMP_TO_BORDER':
-        tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
-        break;
       case 'CLAMP_TO_EDGE':
         tmp$ = WebGLRenderingContext.CLAMP_TO_EDGE;
         break;
@@ -47251,8 +47547,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = queue.renderPass;
     var tmp$_1, tmp$_2, tmp$_3, tmp$_4;
     this.ctx.gl_8be2vx$.viewport($receiver.viewport.x, $receiver.viewport.y, $receiver.viewport.width, $receiver.viewport.height);
-    if (Kotlin.isType($receiver, OffscreenRenderPass2dMrt)) {
-      tmp$_1 = $receiver.nAttachments;
+    if (Kotlin.isType($receiver, OffscreenRenderPass2d)) {
+      tmp$_1 = $receiver.config.nColorAttachments;
       for (var i = 0; i < tmp$_1; i++) {
         if ((tmp$_3 = (tmp$_2 = $receiver.clearColors[i]) != null ? tmp$_2 : $receiver.clearColor) != null) {
           this.colorBuffer_0[0] = tmp$_3.r;
@@ -47334,30 +47630,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   QueueRendererWebGl$GlAttribs.prototype.setDepthTest_0 = function (depthCompareOp) {
     if (!equals(this.depthTest, depthCompareOp)) {
       this.depthTest = depthCompareOp;
-      switch (depthCompareOp.name) {
-        case 'DISABLED':
-          this.$outer.gl_0.disable(WebGLRenderingContext.DEPTH_TEST);
-          break;
-        case 'ALWAYS':
-          this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
-          this.$outer.gl_0.depthFunc(WebGLRenderingContext.ALWAYS);
-          break;
-        case 'LESS':
-          this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
-          this.$outer.gl_0.depthFunc(WebGLRenderingContext.LESS);
-          break;
-        case 'LESS_EQUAL':
-          this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
-          this.$outer.gl_0.depthFunc(WebGLRenderingContext.LEQUAL);
-          break;
-        case 'GREATER':
-          this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
-          this.$outer.gl_0.depthFunc(WebGLRenderingContext.GREATER);
-          break;
-        case 'GREATER_EQUAL':
-          this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
-          this.$outer.gl_0.depthFunc(WebGLRenderingContext.GEQUAL);
-          break;
+      if (depthCompareOp === DepthCompareOp$DISABLED_getInstance()) {
+        this.$outer.gl_0.disable(WebGLRenderingContext.DEPTH_TEST);
+      } else {
+        this.$outer.gl_0.enable(WebGLRenderingContext.DEPTH_TEST);
+        this.$outer.gl_0.depthFunc(get_glOp(depthCompareOp));
       }
     }};
   QueueRendererWebGl$GlAttribs.prototype.setBlendMode_0 = function (blendMode) {
@@ -48549,14 +48826,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(DepthMapPass, 'Companion', {
     get: DepthMapPass$Companion_getInstance
   });
+  package$pipeline.DepthMapPass_init_br7tm5$ = DepthMapPass_init;
   package$pipeline.DepthMapPass = DepthMapPass;
   Object.defineProperty(LinearDepthMapPass, 'Companion', {
     get: LinearDepthMapPass$Companion_getInstance
   });
+  package$pipeline.LinearDepthMapPass_init_br7tm5$ = LinearDepthMapPass_init;
   package$pipeline.LinearDepthMapPass = LinearDepthMapPass;
   Object.defineProperty(NormalLinearDepthMapPass, 'Companion', {
     get: NormalLinearDepthMapPass$Companion_getInstance
   });
+  package$pipeline.NormalLinearDepthMapPass_init_br7tm5$ = NormalLinearDepthMapPass_init;
   package$pipeline.NormalLinearDepthMapPass = NormalLinearDepthMapPass;
   DescriptorSetLayout.Builder = DescriptorSetLayout$Builder;
   package$pipeline.DescriptorSetLayout = DescriptorSetLayout;
@@ -48587,13 +48867,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$drawqueue.SceneSetup = SceneSetup;
   package$pipeline.LoadedTexture = LoadedTexture;
   package$pipeline.OffscreenRenderPass = OffscreenRenderPass;
-  OffscreenRenderPass2d.Setup = OffscreenRenderPass2d$Setup;
-  Object.defineProperty(OffscreenRenderPass2d, 'Companion', {
-    get: OffscreenRenderPass2d$Companion_getInstance
+  package$pipeline.renderPassConfig_horfg9$ = renderPassConfig;
+  OffscreenRenderPass.Config = OffscreenRenderPass$Config;
+  OffscreenRenderPass.ConfigBuilder = OffscreenRenderPass$ConfigBuilder;
+  OffscreenRenderPass.TextureAttachmentConfig = OffscreenRenderPass$TextureAttachmentConfig;
+  OffscreenRenderPass.TextureAttachmentConfigBuilder = OffscreenRenderPass$TextureAttachmentConfigBuilder;
+  Object.defineProperty(OffscreenRenderPass$RenderTarget, 'TEXTURE', {
+    get: OffscreenRenderPass$RenderTarget$TEXTURE_getInstance
   });
-  package$pipeline.OffscreenRenderPass2d_init_9tkt76$ = OffscreenRenderPass2d_init;
+  Object.defineProperty(OffscreenRenderPass$RenderTarget, 'RENDER_BUFFER', {
+    get: OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance
+  });
+  OffscreenRenderPass.RenderTarget = OffscreenRenderPass$RenderTarget;
   package$pipeline.OffscreenRenderPass2d = OffscreenRenderPass2d;
-  package$pipeline.OffscreenRenderPass2dMrt = OffscreenRenderPass2dMrt;
   Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'FRONT', {
     get: OffscreenRenderPassCube$ViewDirection$FRONT_getInstance
   });
@@ -48639,6 +48925,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(DepthCompareOp, 'ALWAYS', {
     get: DepthCompareOp$ALWAYS_getInstance
   });
+  Object.defineProperty(DepthCompareOp, 'NEVER', {
+    get: DepthCompareOp$NEVER_getInstance
+  });
   Object.defineProperty(DepthCompareOp, 'LESS', {
     get: DepthCompareOp$LESS_getInstance
   });
@@ -48650,6 +48939,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   Object.defineProperty(DepthCompareOp, 'GREATER_EQUAL', {
     get: DepthCompareOp$GREATER_EQUAL_getInstance
+  });
+  Object.defineProperty(DepthCompareOp, 'EQUAL', {
+    get: DepthCompareOp$EQUAL_getInstance
+  });
+  Object.defineProperty(DepthCompareOp, 'NOT_EQUAL', {
+    get: DepthCompareOp$NOT_EQUAL_getInstance
   });
   package$pipeline.DepthCompareOp = DepthCompareOp;
   Object.defineProperty(CullMethod, 'DEFAULT', {
@@ -48667,13 +48962,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.CullMethod = CullMethod;
   PushConstantRange.Builder = PushConstantRange$Builder;
   package$pipeline.PushConstantRange = PushConstantRange;
-  Object.defineProperty(RenderPass$Type, 'COLOR', {
-    get: RenderPass$Type$COLOR_getInstance
-  });
-  Object.defineProperty(RenderPass$Type, 'DEPTH', {
-    get: RenderPass$Type$DEPTH_getInstance
-  });
-  RenderPass.Type = RenderPass$Type;
   package$pipeline.RenderPass = RenderPass;
   package$pipeline.ScreenRenderPass = ScreenRenderPass;
   package$pipeline.Shader = Shader;
@@ -48900,9 +49188,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: FilterMethod$LINEAR_getInstance
   });
   package$pipeline.FilterMethod = FilterMethod;
-  Object.defineProperty(AddressMode, 'CLAMP_TO_BORDER', {
-    get: AddressMode$CLAMP_TO_BORDER_getInstance
-  });
   Object.defineProperty(AddressMode, 'CLAMP_TO_EDGE', {
     get: AddressMode$CLAMP_TO_EDGE_getInstance
   });
@@ -49263,9 +49548,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$deferred.DeferredCameraNode = DeferredCameraNode;
   DeferredSpotLights.SpotLight = DeferredSpotLights$SpotLight;
   package$deferred.DeferredSpotLights = DeferredSpotLights;
-  Object.defineProperty(PbrLightingPass, 'Companion', {
-    get: PbrLightingPass$Companion_getInstance
-  });
   package$deferred.PbrLightingPass = PbrLightingPass;
   Object.defineProperty(PbrSceneShader, 'Companion', {
     get: PbrSceneShader$Companion_getInstance
@@ -49645,7 +49927,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$audio.AudioGenerator = AudioGenerator;
   package$pipeline.OffscreenPass2dImpl = OffscreenPass2dImpl;
-  package$pipeline.OffscreenPass2dMrtImpl = OffscreenPass2dMrtImpl;
   Object.defineProperty(OffscreenPassCubeImpl, 'Companion', {
     get: OffscreenPassCubeImpl$Companion_getInstance
   });
@@ -49671,6 +49952,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$platform.get_glType_my8d90$ = get_glType;
   package$platform.get_glFormat_my8d90$ = get_glFormat;
   package$platform.get_pxSize_my8d90$ = get_pxSize;
+  package$platform.get_glOp_jstu7d$ = get_glOp;
   Object.defineProperty(BufferResource, 'Companion', {
     get: BufferResource$Companion_getInstance
   });

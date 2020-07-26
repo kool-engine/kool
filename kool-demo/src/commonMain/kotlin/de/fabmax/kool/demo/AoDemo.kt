@@ -22,10 +22,7 @@ import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.BrdfLutPass
 import de.fabmax.kool.util.ibl.IrradianceMapPass
 import de.fabmax.kool.util.ibl.ReflectionMapPass
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 fun aoDemo(ctx: KoolContext): List<Scene> {
     val aoDemo = AoDemo(ctx)
@@ -317,14 +314,14 @@ class AoDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val radiusVal = label(aoPipeline.aoPass.radius.toString(2)) {
+            val radiusVal = label(aoPipeline.radius.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +radiusVal
             y -= 35f
-            +slider("radiusSlider", 0.1f, 3f, aoPipeline.aoPass.radius) {
+            +slider("radiusSlider", 0.1f, 3f, aoPipeline.radius) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
@@ -337,14 +334,14 @@ class AoDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val intensityVal = label(aoPipeline.aoPass.intensity.toString(2)) {
+            val intensityVal = label(aoPipeline.intensity.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +intensityVal
             y -= 35f
-            +slider("intensitySlider", 0f, 5f, aoPipeline.aoPass.intensity) {
+            +slider("intensitySlider", 0f, 5f, aoPipeline.intensity) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
@@ -353,23 +350,23 @@ class AoDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
-            +label("Bias:") {
+            +label("Power:") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val biasVal = label(aoPipeline.aoPass.bias.toString(2)) {
+            val powerVal = label(aoPipeline.power.toString(2)) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
-            +biasVal
+            +powerVal
             y -= 35f
-            +slider("biasSlider", -0.5f, 0.5f, aoPipeline.aoPass.bias) {
+            +slider("powerSlider", log(0.2f, 10f), log(5f, 10f), log(aoPipeline.power, 10f)) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
-                    biasVal.text = value.toString(2)
-                    aoPipeline.bias = value
+                    aoPipeline.power = 10f.pow(value)
+                    powerVal.text = aoPipeline.power.toString(2)
                 }
             }
             y -= 35f
@@ -377,14 +374,14 @@ class AoDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val kernelSzVal = label(aoPipeline.aoPass.kernelSz.toString()) {
+            val kernelSzVal = label(aoPipeline.kernelSz.toString()) {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +kernelSzVal
             y -= 35f
-            +slider("kernelSlider", 4f, 128f, aoPipeline.aoPass.kernelSz.toFloat()) {
+            +slider("kernelSlider", 4f, 128f, aoPipeline.kernelSz.toFloat()) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {

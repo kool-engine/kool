@@ -25,7 +25,8 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         }) {
 
     var radius = 1f
-    var intensity = 1.5f
+    var intensity = 1.25f
+    var power = 1.5f
     var bias = 0.05f
     var kernelSz = 32
         set(value) {
@@ -183,6 +184,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         val uNoiseScale = Uniform2f("uNoiseScale")
         val uRadius = Uniform1f("uRadius")
         val uIntensity = Uniform1f("uIntensity")
+        val uPower = Uniform1f("uPower")
         val uBias = Uniform1f("uBias")
 
         override fun setup(shaderGraph: ShaderGraph) {
@@ -195,6 +197,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     +{ uNoiseScale }
                     +{ uRadius }
                     +{ uIntensity }
+                    +{ uPower }
                     +{ uBias }
                     +{ uKernelN }
 
@@ -203,6 +206,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         uNoiseScale.value.set(width / 4f, height / 4f)
                         uRadius.value = radius
                         uIntensity.value = intensity
+                        uPower.value = power
                         uBias.value = bias
 
                         if (withInvProj) {
@@ -271,13 +275,15 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     sampleProj.xyz /= sampleProj.w;
                     sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
                     
-                    float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
-                    
-                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
-                    occlusion += (sampleDepth > samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
+                    if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0) {
+                        float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
+                        float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
+                        float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
+                        occlusion += occlusionInc * rangeCheck;
+                    }
                 }
                 occlusion /= float(${aoUniforms.uKernelN});
-                float occlFac = clamp(1.0 - occlusion * ${aoUniforms.uIntensity}, 0.0, 1.0);
+                float occlFac = pow(clamp(1.0 - occlusion * ${aoUniforms.uIntensity}, 0.0, 1.0), ${aoUniforms.uPower});
                 
                 ${outColor.declare()} = vec4(occlFac, 0.0, 0.0, 1.0);
             """)

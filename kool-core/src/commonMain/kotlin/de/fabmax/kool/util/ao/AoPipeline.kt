@@ -28,6 +28,10 @@ abstract class AoPipeline {
         get() = aoPass.intensity
         set(value) { aoPass.intensity = value }
 
+    var power: Float
+        get() = aoPass.power
+        set(value) { aoPass.power = value }
+
     var bias: Float
         get() = aoPass.bias
         set(value) { aoPass.bias = value }

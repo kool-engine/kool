@@ -258,7 +258,6 @@ dependencies {
 ## What's Next?
 
 I have a few features on my wishlist, which I may (or may not) implement in the future (in no particular order):
-- Screen-space reflections
 - Shadow mapping for point lights
 - Rendering backend for WebGPU
 
