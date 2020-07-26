@@ -6,10 +6,12 @@ object Versions {
     val kotlinSerializationVersion = "0.20.0"
 
     val lwjglVersion = "3.2.3"
-    val lwjglNatives = when (OperatingSystem.current()) {
-        OperatingSystem.LINUX -> "natives-linux"
-        OperatingSystem.MAC_OS -> "natives-macos"
-        else -> "natives-windows"
+    val lwjglNatives = OperatingSystem.current().let {
+        when {
+            it.isLinux -> "natives-linux"
+            it.isMacOsX -> "natives-macos"
+            else -> "natives-windows"
+        }
     }
 }
 
