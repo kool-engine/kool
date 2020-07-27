@@ -1,10 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
@@ -105,12 +102,26 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return tex
     }
 
+    override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture {
+        val tex = Texture(name, props) { texData }
+        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
+        tex.loadingState = Texture.LoadingState.LOADED
+        return tex
+    }
+
     override suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps): CubeMapTexture {
         val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
         val tex = CubeMapTexture(name, props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
+        tex.loadingState = Texture.LoadingState.LOADED
+        return tex
+    }
+
+    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): CubeMapTexture {
+        val tex = CubeMapTexture(name, props) { texData }
+        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }

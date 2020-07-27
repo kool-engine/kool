@@ -8,22 +8,16 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
+class IrradianceMapPass(parentScene: Scene, envMap: CubeMapTexture) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
+            name = "IrradianceMapPass"
             setSize(32, 32)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
-
-    var hdriTexture = hdriTexture
-        set(value) {
-            irrMapShader?.texture = value
-            field = value
-        }
-
-    private var irrMapShader: ModeledShader.TextureColor? = null
 
     init {
         clearColor = null
@@ -35,41 +29,34 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
                 }
 
                 val texName = "colorTex"
-                val model = ShaderModel("Irradiance Convolution Sampler").apply {
+                val model = ShaderModel("IrradianceMapPass").apply {
                     val ifLocalPos: StageInterfaceNode
                     vertexStage {
                         ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
                         positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
-                        val tex = textureNode(texName)
+                        val tex = cubeMapNode(texName)
                         val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
                             inLocalPos = ifLocalPos.output
                         }
                         colorOutput(convNd.outColor)
                     }
                 }
-                irrMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {
+                shader = ModeledShader.CubeMapColor(envMap, texName, model).apply {
                     onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
                 }
-                shader = irrMapShader
             }
         }
 
-        update()
+        parentScene.addOffscreenPass(this)
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterCollectDrawCommands += {
+        onAfterDraw += { ctx ->
+            logD { "Generated irradiance map from cube map: ${envMap.name}" }
             parentScene.removeOffscreenPass(this)
+            ctx.runDelayed(1) { dispose(ctx) }
         }
-
-        parentScene.onDispose += { ctx ->
-            this@IrradianceMapPass.dispose(ctx)
-        }
-    }
-
-    fun update() {
-        parentScene.addOffscreenPass(this)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -77,7 +64,7 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
         super.dispose(ctx)
     }
 
-    private class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
+    private class ConvoluteIrradianceNode(val texture: CubeMapNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
         val outColor = ShaderNodeIoVar(ModelVar4f("convIrradiance_outColor"), this)
@@ -91,22 +78,6 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
         override fun generateCode(generator: CodeGenerator) {
             super.generateCode(generator)
 
-            generator.appendFunction("sampleEquiRect", """
-                const vec2 invAtan = vec2(0.1591, 0.3183);
-                vec3 sampleEquiRect(vec3 texCoord) {
-                    vec3 equiRect_in = normalize(texCoord);
-                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));
-                    uv *= invAtan;
-                    uv += 0.5;
-                    
-                    // decode rgbe
-                    vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv", "0.0")};
-                    vec3 fRgb = rgbe.rgb;
-                    float fExp = rgbe.a * 255.0 - 128.0;
-                    return min(fRgb * pow(2.0, fExp), vec3(${maxLightIntensity.ref1f()}));
-                }
-            """)
-
             val phiMax = 2.0 * PI
             val thetaMax = 0.5 * PI
             generator.appendMain("""
@@ -114,17 +85,18 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) :
                 vec3 up = vec3(0.0, 1.0, 0.0);
                 vec3 right = normalize(cross(up, normal));
                 up = cross(normal, right);
-    
+
                 float sampleDelta = 0.00737;
                 vec3 irradiance = vec3(0.0);
                 int nrSamples = 0; 
-                
+
                 for (float theta = 0.0; theta < $thetaMax; theta += sampleDelta) {
                     float deltaPhi = sampleDelta / sin(theta);
                     for (float phi = 0.0; phi < $phiMax; phi += deltaPhi) {
                         vec3 tempVec = cos(phi) * right + sin(phi) * up;
                         vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;
-                        irradiance += sampleEquiRect(sampleVector).rgb * cos(theta) * 0.6;
+                        vec3 envColor = min(${generator.sampleTextureCube(texture.name, "sampleVector")}.rgb, vec3(${maxLightIntensity.ref1f()}));
+                        irradiance += envColor * cos(theta) * 0.6;
                         nrSamples++;
                     }
                 }

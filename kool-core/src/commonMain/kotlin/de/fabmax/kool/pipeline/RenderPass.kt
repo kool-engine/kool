@@ -32,6 +32,7 @@ abstract class RenderPass(val drawNode: Node) {
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
+    val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
@@ -64,6 +65,12 @@ abstract class RenderPass(val drawNode: Node) {
     protected open fun afterCollectDrawCommands(ctx: KoolContext) {
         for (i in onAfterCollectDrawCommands.indices) {
             onAfterCollectDrawCommands[i](ctx)
+        }
+    }
+
+    open fun afterDraw(ctx: KoolContext) {
+        for (i in onAfterDraw.indices) {
+            onAfterDraw[i](ctx)
         }
     }
 

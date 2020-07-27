@@ -82,7 +82,7 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
     }
 }
 
-class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val decodeRgbe: Boolean = false, val premultiply: Boolean = false) :
         ShaderNode("equi_rect_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
@@ -109,6 +109,14 @@ class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val prem
             generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, name+"_uv", lod.ref1f())};")
         } else {
             generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, name+"_uv")};")
+        }
+
+        if (decodeRgbe) {
+            generator.appendMain("""
+                vec3 ${name}_fRgb = $outColor.rgb;
+                float ${name}_fExp = $outColor.a * 255.0 - 128.0;
+                $outColor = vec4(${name}_fRgb * pow(2.0, ${name}_fExp), 1.0);
+            """)
         }
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")

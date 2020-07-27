@@ -9,11 +9,13 @@ import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 
 class BrdfLutPass(parentScene: Scene) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
+            name = "BrdfLutPass"
             setSize(512, 512)
             addColorTexture(TexFormat.RG_F16)
             clearDepthTexture()
@@ -60,12 +62,10 @@ class BrdfLutPass(parentScene: Scene) :
         parentScene.addOffscreenPass(this)
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterCollectDrawCommands += {
+        onAfterDraw += { ctx ->
+            logD { "Generated BRDF look-up table" }
             parentScene.removeOffscreenPass(this)
-        }
-
-        parentScene.onDispose += { ctx ->
-            this@BrdfLutPass.dispose(ctx)
+            ctx.runDelayed(1) { dispose(ctx) }
         }
     }
 

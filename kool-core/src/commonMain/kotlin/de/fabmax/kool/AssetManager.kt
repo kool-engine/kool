@@ -141,6 +141,10 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps = TextureProps()): CubeMapTexture
 
+    abstract fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture
+
+    abstract fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps = TextureProps(), name: String? = null): CubeMapTexture
+
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {
             val idx = assetPath.indexOf(';')

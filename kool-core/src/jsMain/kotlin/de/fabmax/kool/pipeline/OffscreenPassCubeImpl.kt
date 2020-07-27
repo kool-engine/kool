@@ -33,14 +33,36 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             offscreenPass.applyMipViewport(mipLevel)
             ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
 
-            for (i in 0 until 6) {
-                val view = VIEWS[i]
+            for (face in 0 until 6) {
+                val view = VIEWS[face]
                 val queue = offscreenPass.drawQueues[view.index]
-                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, colorTex, mipLevel)
+                ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + face, colorTex, mipLevel)
                 ctx.queueRenderer.renderQueue(queue)
+                copyToTextures(face, mipLevel, ctx)
             }
         }
         ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
+    }
+
+    private fun copyToTextures(face: Int, mipLevel: Int, ctx: JsContext) {
+        ctx.gl.readBuffer(COLOR_ATTACHMENT0)
+
+        for (i in offscreenPass.copyTargetsColor.indices) {
+            val copyTarget = offscreenPass.copyTargetsColor[i]
+            var width = copyTarget.loadedTexture?.width ?: 0
+            var height = copyTarget.loadedTexture?.height ?: 0
+            if (width != offscreenPass.width || height != offscreenPass.height) {
+                copyTarget.loadedTexture?.dispose()
+                copyTarget.createCopyTexColor(ctx)
+                width = copyTarget.loadedTexture!!.width
+                height = copyTarget.loadedTexture!!.height
+            }
+            width = width shr mipLevel
+            height = height shr mipLevel
+            val target = copyTarget.loadedTexture as LoadedTextureWebGl
+            ctx.gl.bindTexture(TEXTURE_CUBE_MAP, target.texture)
+            ctx.gl.copyTexSubImage2D(TEXTURE_CUBE_MAP_POSITIVE_X + face, mipLevel, 0, 0, 0, 0, width, height)
+        }
     }
 
     actual fun dispose(ctx: KoolContext) {
@@ -110,6 +132,21 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         colorTex = tex.texture
         offscreenPass.colorTexture!!.loadedTexture = tex
         offscreenPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
+    }
+
+    private fun Texture.createCopyTexColor(ctx: JsContext) {
+        val intFormat = props.format.glInternalFormat
+        val width = offscreenPass.width
+        val height = offscreenPass.height
+        val mipLevels = offscreenPass.config.mipLevels
+
+        val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 6, mipLevels)
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
+        tex.setSize(width, height)
+        tex.applySamplerProps(props)
+        ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
+        loadedTexture = tex
+        loadingState = Texture.LoadingState.LOADED
     }
 
     companion object {

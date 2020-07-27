@@ -12,6 +12,8 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -42,24 +44,23 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var windStrength = 1f
 
     val treeScene = scene {
-        val backLightDirection = Vec3f(1f, -1.5f, 1f)
         val sunLightDirection = Vec3f(-1f, -1.5f, -1f)
         lighting.lights.apply {
             clear()
             add(Light()
                     .setDirectional(sunLightDirection.norm(MutableVec3f()))
-                    //.setColor(Color.RED, 3f))
-                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 3f))
-
-            add(Light()
-                    .setDirectional(backLightDirection.norm(MutableVec3f()))
-                    //.setColor(Color.GREEN, 3f))
-                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.25f))
+                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 5f))
         }
-
         val shadowMaps = mutableListOf(CascadedShadowMap(this, 0, mapSize = 2048).apply { maxRange = 50f })
+        val bgGradient = ColorGradient(
+                0.0f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
+                0.5f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.25f),
+                1.0f to Color.fromHex("3295FF").mix(Color.BLACK, 0.5f)
+        )
+        val envMaps = EnvironmentHelper.gradientColorEnvironment(this, bgGradient, ctx)
 
-        +makeTreeGroundGrid(10, shadowMaps)
+        +makeTreeGroundGrid(10, shadowMaps, envMaps)
+        +Skybox(envMaps.reflectionMap)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
@@ -76,7 +77,9 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 useOcclusionMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
                 useNormalMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg")
+                useImageBasedLighting(envMaps)
                 this.shadowMaps.addAll(shadowMaps)
+                roughness = 1f
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             shader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
@@ -110,7 +113,8 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrMaterialConfig().apply {
                 useAlbedoMap("${Demo.pbrBasePath}/leaf.png")
-                roughness = 0.5f
+                useImageBasedLighting(envMaps)
+                roughness = 1f
                 alphaMode = AlphaModeMask(0.5f)
                 cullMethod = CullMethod.NO_CULLING
                 this.shadowMaps.addAll(shadowMaps)
@@ -551,7 +555,7 @@ private fun treePbrModel(cfg: PbrMaterialConfig) = ShaderModel("treePbrModel()")
     }
 }
 
-private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>): Node {
+private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>, envMaps: EnvironmentMaps): Node {
     val groundExt = cells / 2
 
     return textureMesh(isNormalMapped = true) {
@@ -583,6 +587,7 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>):
             useRoughnessMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")
             useOcclusionMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
             useDisplacementMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
+            useImageBasedLighting(envMaps)
             this.shadowMaps.addAll(shadowMaps)
 
             onDispose += {

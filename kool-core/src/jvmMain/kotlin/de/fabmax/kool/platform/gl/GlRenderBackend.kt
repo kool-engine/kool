@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL11C.glGetString
 import org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
+import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 import org.lwjgl.system.MemoryUtil
 
 class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
@@ -91,6 +92,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         glCapabilities.maxTexUnits = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
     }
 
     override fun getWindowViewport(result: Viewport) {
@@ -103,17 +105,22 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             ctx.disposablePipelines.clear()
         }
 
+        for (j in ctx.backgroundPasses.indices) {
+            if (ctx.backgroundPasses[j].isEnabled) {
+                drawOffscreen(ctx.backgroundPasses[j])
+                ctx.backgroundPasses[j].afterDraw(ctx)
+            }
+        }
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
-
             for (j in scene.offscreenPasses.indices) {
                 if (scene.offscreenPasses[j].isEnabled) {
                     drawOffscreen(scene.offscreenPasses[j])
+                    scene.offscreenPasses[j].afterDraw(ctx)
                 }
             }
-
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
-
+            scene.mainRenderPass.afterDraw(ctx)
         }
 
         if (afterRenderActions.isNotEmpty()) {
@@ -136,20 +143,14 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         // for now we leave the cleanup to the system...
     }
 
-    override fun loadTex2d(tex: Texture, data: BufferedTextureData, recv: (Texture) -> Unit) {
-        ctx.runOnMainThread {
-            tex.loadedTexture = TextureLoader.loadTexture(ctx, tex.props, data)
-            tex.loadingState = Texture.LoadingState.LOADED
-            recv(tex)
-        }
+    override fun loadTex2d(tex: Texture, data: TextureData) {
+        tex.loadedTexture = TextureLoader.loadTexture(ctx, tex.props, data)
+        tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData, recv: (CubeMapTexture) -> Unit) {
-        ctx.runOnMainThread {
-            tex.loadedTexture = TextureLoader.loadTexture(ctx, tex.props, data)
-            tex.loadingState = Texture.LoadingState.LOADED
-            recv(tex)
-        }
+    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData) {
+        tex.loadedTexture = TextureLoader.loadTexture(ctx, tex.props, data)
+        tex.loadingState = Texture.LoadingState.LOADED
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {

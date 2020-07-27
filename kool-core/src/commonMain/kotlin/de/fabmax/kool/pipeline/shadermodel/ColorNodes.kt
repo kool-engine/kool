@@ -22,7 +22,7 @@ class ColorAlphaNode(graph: ShaderGraph) : ShaderNode("colorAlphaNode_${graph.ne
 
 class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("colorPreMult_${graph.nextNodeId}", graph) {
     var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
-    val outColor = ShaderNodeIoVar(ModelVar4f("preMultColor_$nodeId"), this)
+    val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -34,10 +34,10 @@ class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("colorPreMult_${grap
     }
 }
 
-class GammaNode(graph: ShaderGraph) : ShaderNode("Pre-Multiply Color", graph) {
+class GammaNode(graph: ShaderGraph) : ShaderNode("gamma_${graph.nextNodeId}", graph) {
     var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     var inGamma = ShaderNodeIoVar(ModelVar1fConst(1f / 2.2f))
-    val outColor = ShaderNodeIoVar(ModelVar4f("preMultColor_$nodeId"), this)
+    val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)

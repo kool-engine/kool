@@ -3,8 +3,6 @@ package de.fabmax.kool.demo.pbr
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -12,6 +10,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
 
 class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
@@ -80,12 +79,12 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext): TransformGroup {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
         content = transformGroup {
             isVisible = false
 
-            val ibl = makeSpheres(true, irradianceMap, reflectionMap, brdfLut)
-            val nonIbl = makeSpheres(false, irradianceMap, reflectionMap, brdfLut).apply { isVisible = false }
+            val ibl = makeSpheres(true, envMaps)
+            val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
 
             +ibl
             +nonIbl
@@ -96,7 +95,17 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
         return content!!
     }
 
-    private fun makeSpheres(withIbl: Boolean, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture) = group {
+    override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
+        iblContent?.children?.forEach {
+            it as Mesh
+            val pbrShader = it.shader as PbrShader
+            pbrShader.irradianceMap = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
+            pbrShader.brdfLut = envMaps.brdfLut
+        }
+    }
+
+    private fun makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps) = group {
         val nRows = 7
         val nCols = 7
         val spacing = 2.5f
@@ -118,7 +127,7 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
                         roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                         metallic = y / (nRows - 1).toFloat()
                         if (withIbl) {
-                            useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
+                            useImageBasedLighting(envMaps)
                         }
                     }
                     this.shader = shader

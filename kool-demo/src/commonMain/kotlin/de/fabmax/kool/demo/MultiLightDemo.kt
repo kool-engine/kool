@@ -5,9 +5,6 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.CubeMapTextureData
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -15,7 +12,7 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.*
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
-import de.fabmax.kool.util.ibl.BrdfLutPass
+import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.*
 
 fun multiLightDemo(ctx: KoolContext): List<Scene> {
@@ -68,6 +65,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 +camera
                 zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
                 zoom = 17.0
+                maxZoom = 50.0
                 translation.set(0.0, 2.0, 0.0)
                 setMouseRotation(0f, -5f)
                 // let the camera slowly rotate around vertical axis
@@ -130,21 +128,16 @@ class MultiLightDemo(ctx: KoolContext) {
             }
         }
 
-        val bgColor = BufferedTextureData.singleColor(Color(0.15f, 0.15f, 0.15f).toLinear())
-        val brdfLutPass = BrdfLutPass(mainScene)
-        val singleColorEnv = CubeMapTexture { CubeMapTextureData(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor) }
-        mainScene.onDispose += {
-            singleColorEnv.dispose()
-        }
-
         // setup lighting pass
+        val envMaps = EnvironmentHelper.singleColorEnvironment(mainScene, Color(0.15f, 0.15f, 0.15f))
         val pbrPassCfg = PbrSceneShader.DeferredPbrConfig().apply {
-            useImageBasedLighting(singleColorEnv, singleColorEnv, brdfLutPass.colorTexture)
+            useImageBasedLighting(envMaps)
             isScrSpcReflections = true
             shadowMaps += this@MultiLightDemo.shadowMaps
         }
         pbrPass = PbrLightingPass(mainScene, mrtPass, pbrPassCfg)
         mainScene += pbrPass.createOutputQuad()
+        mainScene += Skybox(envMaps.reflectionMap, 1f)
     }
 
     private fun updateLighting() {
@@ -292,7 +285,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 35f
-            +toggleButton("Reflections") {
+            +toggleButton("Screen-Space Reflections") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = isScrSpcReflections

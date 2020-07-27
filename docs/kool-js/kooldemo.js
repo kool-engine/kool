@@ -7,15 +7,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_uj7ww7$;
   var SimpleShadowMap = $module$kool.de.fabmax.kool.util.SimpleShadowMap;
   var AoPipeline = $module$kool.de.fabmax.kool.util.ao.AoPipeline;
-  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
-  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
+  var ibl = $module$kool.de.fabmax.kool.util.ibl;
   var GltfFile$ModelGenerateConfig = $module$kool.de.fabmax.kool.util.gltf.GltfFile.ModelGenerateConfig;
   var loadGltfModel = $module$kool.de.fabmax.kool.util.gltf.loadGltfModel_aln4ac$;
   var ensureNotNull = Kotlin.ensureNotNull;
   var first = Kotlin.kotlin.collections.first_7wnvza$;
-  var IrradianceMapPass = $module$kool.de.fabmax.kool.util.ibl.IrradianceMapPass;
-  var ReflectionMapPass = $module$kool.de.fabmax.kool.util.ibl.ReflectionMapPass;
-  var BrdfLutPass = $module$kool.de.fabmax.kool.util.ibl.BrdfLutPass;
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
@@ -125,12 +121,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var CubeMapTextureData = $module$kool.de.fabmax.kool.pipeline.CubeMapTextureData;
-  var CubeMapTexture = $module$kool.de.fabmax.kool.pipeline.CubeMapTexture;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
+  var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
-  var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
+  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
+  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
   var Array_0 = Array;
   var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
@@ -146,6 +142,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
+  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var AlphaModeMask = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeMask;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
@@ -262,13 +259,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$envMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
       addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
       $receiver.roughness = 0.1;
       $receiver.useScreenSpaceAmbientOcclusion_vv6xll$(this$AoDemo.aoPipeline_0.aoMap);
-      $receiver.useImageBasedLighting_5m8fyp$(closure$irrMapPass.colorTexture, closure$reflMapPass.colorTexture, closure$brdfLutPass.colorTexture);
+      $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
       return Unit;
     };
   }
@@ -282,10 +279,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda_0(closure$teapotMesh, this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda_0(closure$teapotMesh, this$AoDemo, closure$envMaps) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda(closure$teapotMesh));
-      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
+      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_0(this$AoDemo, closure$envMaps));
       $receiver.shader = shader;
       var $receiver_0 = $receiver.onUpdate;
       var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_1(this$AoDemo, shader);
@@ -359,29 +356,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda(this$, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
       (tmp$_0 = this$.occlusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
       (tmp$_1 = this$.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
       (tmp$_2 = this$.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
-      closure$hdriMap.dispose();
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, this$, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$envMaps, this$) {
     return function ($receiver) {
       $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_diff_2k.jpg');
       $receiver.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_AO_2k.jpg');
       $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_Nor_2k.jpg');
       $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_planks_03/brown_planks_03_rough_2k.jpg');
       $receiver.useScreenSpaceAmbientOcclusion_vv6xll$(this$AoDemo.aoPipeline_0.aoMap);
-      $receiver.useImageBasedLighting_5m8fyp$(closure$irrMapPass.colorTexture, closure$reflMapPass.colorTexture, closure$brdfLutPass.colorTexture);
+      $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
       addAll($receiver.shadowMaps, this$AoDemo.shadows_0);
-      var $receiver_0 = this$.onDispose;
-      var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver, closure$hdriMap);
-      $receiver_0.add_11rb$(element);
+      this$.onDispose.add_11rb$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
@@ -395,11 +389,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, closure$hdriMap) {
+  function AoDemo$makeMainScene$lambda$lambda$lambda_1(this$AoDemo, closure$envMaps) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AoDemo));
-      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass, $receiver, closure$hdriMap));
+      var shader = pbrShader(AoDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AoDemo, closure$envMaps, $receiver));
       $receiver.shader = shader;
       var $receiver_0 = $receiver.onUpdate;
       var element = AoDemo$makeMainScene$lambda$lambda$lambda$lambda_4(this$AoDemo, shader);
@@ -413,7 +407,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.exceptionState_0 = 1;
     this.local$this$ = this$_0;
     this.local$this$AoDemo = this$AoDemo_0;
-    this.local$hdriMap = void 0;
+    this.local$envMaps = void 0;
     this.local$$receiver = $receiver_0;
   }
   Coroutine$AoDemo$makeMainScene$lambda$lambda.$metadata$ = {
@@ -428,16 +422,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       try {
         switch (this.state_0) {
           case 0:
-            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
             this.state_0 = 2;
-            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, this);
+            this.result_0 = ibl.EnvironmentHelper.hdriEnvironment_cj1d96$(this.local$this$, Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', this.local$$receiver, void 0, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
           case 1:
             throw this.exception_0;
           case 2:
-            this.local$hdriMap = this.result_0;
+            this.local$envMaps = this.result_0;
             var modelCfg = new GltfFile$ModelGenerateConfig(true, false);
             this.state_0 = 3;
             this.result_0 = loadGltfModel(this.local$$receiver, Demo$Companion_getInstance().modelBasePath + '/teapot.gltf.gz', modelCfg, void 0, this);
@@ -447,12 +440,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 3:
             var model = ensureNotNull(this.result_0);
             var teapotMesh = first(model.meshes.values);
-            var irrMapPass = new IrradianceMapPass(this.local$this$, this.local$hdriMap);
-            var reflMapPass = new ReflectionMapPass(this.local$this$, this.local$hdriMap);
-            var brdfLutPass = new BrdfLutPass(this.local$this$);
-            this.local$this$.unaryPlus_uv0sim$(colorMesh('teapots', AoDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this.local$this$AoDemo, irrMapPass, reflMapPass, brdfLutPass)));
-            this.local$this$.unaryPlus_uv0sim$(textureMesh('ground', true, AoDemo$makeMainScene$lambda$lambda$lambda_1(this.local$this$AoDemo, irrMapPass, reflMapPass, brdfLutPass, this.local$hdriMap)));
-            return this.local$this$.plusAssign_f1kmr1$(new Skybox(ensureNotNull(reflMapPass.colorTexture), 1.0)), Unit;
+            this.local$this$.unaryPlus_uv0sim$(colorMesh('teapots', AoDemo$makeMainScene$lambda$lambda$lambda_0(teapotMesh, this.local$this$AoDemo, this.local$envMaps)));
+            this.local$this$.unaryPlus_uv0sim$(textureMesh('ground', true, AoDemo$makeMainScene$lambda$lambda$lambda_1(this.local$this$AoDemo, this.local$envMaps)));
+            return this.local$this$.plusAssign_f1kmr1$(new Skybox(this.local$envMaps.reflectionMap, 1.0)), Unit;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -2390,9 +2380,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
     this.camTranslationTarget_0 = null;
     this.trackModel_0 = false;
-    this.irrMapPass_0 = null;
-    this.reflMapPass_0 = null;
-    this.brdfLutPass_0 = null;
+    this.envMaps_wlbbl4$_0 = this.envMaps_wlbbl4$_0;
     this.shadowsForward_0 = ArrayList_init();
     this.aoPipelineForward_0 = null;
     this.contentGroupForward_0 = new TransformGroup();
@@ -2417,6 +2405,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.orbitTransform_w8joii$_0 = orbitTransform;
     }
   });
+  Object.defineProperty(GltfDemo.prototype, 'envMaps_0', {
+    get: function () {
+      if (this.envMaps_wlbbl4$_0 == null)
+        return throwUPAE('envMaps');
+      return this.envMaps_wlbbl4$_0;
+    },
+    set: function (envMaps) {
+      this.envMaps_wlbbl4$_0 = envMaps;
+    }
+  });
   Object.defineProperty(GltfDemo.prototype, 'mrtPass_0', {
     get: function () {
       if (this.mrtPass_y63tp0$_0 == null)
@@ -2437,12 +2435,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.pbrPass_tlnz23$_0 = pbrPass;
     }
   });
-  function GltfDemo$makeMainScene$lambda$lambda$lambda(closure$hdri) {
-    return function ($receiver, it) {
-      closure$hdri.dispose();
-      return Unit;
-    };
-  }
   function Coroutine$GltfDemo$makeMainScene$lambda$lambda(this$_0, this$GltfDemo_0, closure$ctx_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
@@ -2464,21 +2456,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       try {
         switch (this.state_0) {
           case 0:
-            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
             this.state_0 = 2;
-            this.result_0 = this.local$$receiver.loadAndPrepareTexture_va0f2y$(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', hdriTexProps, this);
+            this.result_0 = ibl.EnvironmentHelper.hdriEnvironment_cj1d96$(this.local$this$, Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', this.local$$receiver, void 0, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
           case 1:
             throw this.exception_0;
           case 2:
-            var hdri = this.result_0;
-            this.local$this$GltfDemo.irrMapPass_0 = new IrradianceMapPass(this.local$this$, hdri);
-            this.local$this$GltfDemo.reflMapPass_0 = new ReflectionMapPass(this.local$this$, hdri);
-            this.local$this$GltfDemo.brdfLutPass_0 = new BrdfLutPass(this.local$this$);
-            this.local$this$.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda$lambda(hdri));
-            this.local$this$.unaryPlus_uv0sim$(new Skybox(ensureNotNull(ensureNotNull(this.local$this$GltfDemo.reflMapPass_0).colorTexture), 1.0));
+            this.local$this$GltfDemo.envMaps_0 = this.result_0;
+            this.local$this$.unaryPlus_uv0sim$(new Skybox(this.local$this$GltfDemo.envMaps_0.reflectionMap, 1.0));
             this.state_0 = 3;
             this.result_0 = this.local$this$GltfDemo.makeDeferredContent_0(this.local$this$, this.local$closure$ctx, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
@@ -2651,9 +2638,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             throw this.exception_0;
           case 2:
             var $receiver = new PbrSceneShader$DeferredPbrConfig();
-            var tmp$, tmp$_0, tmp$_1, tmp$_2;
+            var tmp$;
             $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this.$this.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
-            $receiver.useImageBasedLighting_5m8fyp$((tmp$_0 = this.$this.irrMapPass_0) != null ? tmp$_0.colorTexture : null, (tmp$_1 = this.$this.reflMapPass_0) != null ? tmp$_1.colorTexture : null, (tmp$_2 = this.$this.brdfLutPass_0) != null ? tmp$_2.colorTexture : null);
+            $receiver.useImageBasedLighting_wwmv4k$(this.$this.envMaps_0);
             addAll($receiver.shadowMaps, this.$this.shadowsDeferred_0);
             var cfg = $receiver;
             this.$this.pbrPass_0 = new PbrLightingPass(this.local$$receiver, this.$this.mrtPass_0, cfg);
@@ -2768,11 +2755,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $receiver_0 = new PbrMaterialConfig();
       var closure$isDeferredShading_0 = closure$isDeferredShading;
       var this$GltfDemo_0 = this$GltfDemo;
-      var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+      var tmp$_0;
       if (!closure$isDeferredShading_0) {
         addAll($receiver_0.shadowMaps, this$GltfDemo_0.shadowsForward_0);
         $receiver_0.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$_0 = this$GltfDemo_0.aoPipelineForward_0) != null ? tmp$_0.aoMap : null);
-        $receiver_0.useImageBasedLighting_5m8fyp$((tmp$_1 = this$GltfDemo_0.irrMapPass_0) != null ? tmp$_1.colorTexture : null, (tmp$_2 = this$GltfDemo_0.reflMapPass_0) != null ? tmp$_2.colorTexture : null, (tmp$_3 = this$GltfDemo_0.brdfLutPass_0) != null ? tmp$_3.colorTexture : null);
+        $receiver_0.useImageBasedLighting_wwmv4k$(this$GltfDemo_0.envMaps_0);
       }$receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Color2.jpg');
       $receiver_0.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_Normal.jpg');
       $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/Fabric030/Fabric030_1K_AmbientOcclusion.jpg');
@@ -3150,14 +3137,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             if ((tmp$ = this.result_0) != null) {
               this.$this.$outer;
               var this$GltfDemo = this.$this.$outer;
-              var tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-              var materialCfg = new GltfFile$ModelMaterialConfig(this.local$isDeferredShading ? this$GltfDemo.shadowsDeferred_0 : this$GltfDemo.shadowsForward_0, this.local$isDeferredShading ? (tmp$_0 = this$GltfDemo.aoPipelineDeferred_0) != null ? tmp$_0.aoMap : null : (tmp$_1 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_1.aoMap : null, (tmp$_2 = this$GltfDemo.irrMapPass_0) != null ? tmp$_2.colorTexture : null, (tmp$_3 = this$GltfDemo.reflMapPass_0) != null ? tmp$_3.colorTexture : null, (tmp$_4 = this$GltfDemo.brdfLutPass_0) != null ? tmp$_4.colorTexture : null, this.local$isDeferredShading);
+              var tmp$_0, tmp$_1;
+              var materialCfg = new GltfFile$ModelMaterialConfig(this.local$isDeferredShading ? this$GltfDemo.shadowsDeferred_0 : this$GltfDemo.shadowsForward_0, this.local$isDeferredShading ? (tmp$_0 = this$GltfDemo.aoPipelineDeferred_0) != null ? tmp$_0.aoMap : null : (tmp$_1 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_1.aoMap : null, this$GltfDemo.envMaps_0.irradianceMap, this$GltfDemo.envMaps_0.reflectionMap, this$GltfDemo.envMaps_0.brdfLut, this.local$isDeferredShading);
               var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, materialCfg, true, true, true, true, void 0, true);
               var $receiver = tmp$.makeModel_m0hq3v$(modelCfg);
-              var tmp$_5;
+              var tmp$_2;
               $receiver.translate_czzhiu$(this.$this.translation);
               $receiver.scale_mx4ult$(this.$this.scale);
-              (tmp$_5 = $receiver.findNode_61zpoe$('Ground')) != null ? (tmp$_5.isVisible = false) : null;
+              (tmp$_2 = $receiver.findNode_61zpoe$('Ground')) != null ? (tmp$_2.isVisible = false) : null;
               $receiver.enableAnimation_za3lpa$(0);
               $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, $receiver));
               this.$this.model = $receiver;
@@ -3897,6 +3884,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 17.0;
+      $receiver.maxZoom = 50.0;
       $receiver.translation.set_yvo9jy$(0.0, 2.0, 0.0);
       $receiver.setMouseRotation_dleff0$(0.0, -5.0);
       var $receiver_0 = $receiver.onUpdate;
@@ -4032,56 +4020,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         return instance.doResume(null);
     };
   }
-  function Coroutine$MultiLightDemo$initMainScene$lambda(closure$bgColor_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$closure$bgColor = closure$bgColor_0;
-  }
-  Coroutine$MultiLightDemo$initMainScene$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$MultiLightDemo$initMainScene$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$MultiLightDemo$initMainScene$lambda.prototype.constructor = Coroutine$MultiLightDemo$initMainScene$lambda;
-  Coroutine$MultiLightDemo$initMainScene$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            return new CubeMapTextureData(this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor, this.local$closure$bgColor);
-          case 1:
-            throw this.exception_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function MultiLightDemo$initMainScene$lambda(closure$bgColor_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$MultiLightDemo$initMainScene$lambda(closure$bgColor_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  function MultiLightDemo$initMainScene$lambda_0(closure$singleColorEnv) {
-    return function ($receiver, it) {
-      closure$singleColorEnv.dispose();
-      return Unit;
-    };
-  }
   MultiLightDemo.prototype.initMainScene_0 = function (ctx) {
     var $receiver = this.mainScene_0;
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, MultiLightDemo$initMainScene$lambda$lambda($receiver, this)));
@@ -4095,17 +4033,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.updateLighting_0();
     var $receiver_0 = this.mrtPass_0.content;
     ctx.assetMgr.launch_eln4bt$(MultiLightDemo$initMainScene$lambda$lambda_0($receiver_0, this));
-    var bgColor = BufferedTextureData.Companion.singleColor_d7aj7k$((new Color(0.15, 0.15, 0.15)).toLinear());
-    var brdfLutPass = new BrdfLutPass(this.mainScene_0);
-    var singleColorEnv = new CubeMapTexture(void 0, void 0, MultiLightDemo$initMainScene$lambda(bgColor));
-    this.mainScene_0.onDispose.add_11rb$(MultiLightDemo$initMainScene$lambda_0(singleColorEnv));
+    var envMaps = ibl.EnvironmentHelper.singleColorEnvironment_6zt5da$(this.mainScene_0, new Color(0.15, 0.15, 0.15));
     var $receiver_1 = new PbrSceneShader$DeferredPbrConfig();
-    $receiver_1.useImageBasedLighting_5m8fyp$(singleColorEnv, singleColorEnv, brdfLutPass.colorTexture);
+    $receiver_1.useImageBasedLighting_wwmv4k$(envMaps);
     $receiver_1.isScrSpcReflections = true;
     addAll($receiver_1.shadowMaps, this.shadowMaps_0);
     var pbrPassCfg = $receiver_1;
     this.pbrPass_0 = new PbrLightingPass(this.mainScene_0, this.mrtPass_0, pbrPassCfg);
     this.mainScene_0.plusAssign_f1kmr1$(this.pbrPass_0.createOutputQuad());
+    this.mainScene_0.plusAssign_f1kmr1$(new Skybox(envMaps.reflectionMap, 1.0));
   };
   MultiLightDemo.prototype.updateLighting_0 = function () {
     var tmp$;
@@ -4531,7 +4467,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       y.v -= 40.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Shading', MultiLightDemo$menu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Reflections', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Screen-Space Reflections', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
       y.v -= 40.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Material', MultiLightDemo$menu$lambda$lambda$lambda_14(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -4836,11 +4772,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
     (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
   };
-  function ColorGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
+  function ColorGridContent$createContent$lambda(closure$envMaps, this$ColorGridContent) {
     return function ($receiver) {
       $receiver.isVisible = false;
-      var ibl = this$ColorGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$ColorGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var ibl = this$ColorGridContent.makeSpheres_0(true, closure$envMaps);
+      var $receiver_0 = this$ColorGridContent.makeSpheres_0(false, closure$envMaps);
       $receiver_0.isVisible = false;
       var nonIbl = $receiver_0;
       $receiver.unaryPlus_uv0sim$(ibl);
@@ -4850,10 +4786,25 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  ColorGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, ColorGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
+  ColorGridContent.prototype.createContent_wo93gw$ = function (scene, envMaps, ctx) {
+    this.content = transformGroup(void 0, ColorGridContent$createContent$lambda(envMaps, this));
     return ensureNotNull(this.content);
   };
+  ColorGridContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
+    var tmp$, tmp$_0;
+    if ((tmp$_0 = (tmp$ = this.iblContent_0) != null ? tmp$.children : null) != null) {
+      var tmp$_1;
+      tmp$_1 = tmp$_0.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
+        var tmp$_2, tmp$_3;
+        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
+        var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
+        pbrShader.irradianceMap = envMaps.irradianceMap;
+        pbrShader.reflectionMap = envMaps.reflectionMap;
+        pbrShader.brdfLut = envMaps.brdfLut;
+      }
+    }};
   function ColorGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
     return function ($receiver) {
       var closure$nCols_0 = closure$nCols;
@@ -4869,18 +4820,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function ColorGridContent$makeSpheres$lambda$lambda$lambda_0(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+  function ColorGridContent$makeSpheres$lambda$lambda$lambda_0(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$environmentMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
       $receiver.albedo = closure$colors.get_za3lpa$((Kotlin.imul(closure$y, closure$nCols) + closure$x | 0) % closure$colors.size).toLinear();
       $receiver.roughness = 0.1;
       $receiver.metallic = 0.0;
       if (closure$withIbl) {
-        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+        $receiver.useImageBasedLighting_wwmv4k$(closure$environmentMaps);
       }return Unit;
     };
   }
-  function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
+  function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$environmentMaps, this$ColorGridContent) {
     return function ($receiver) {
       var nRows = 4;
       var nCols = 5;
@@ -4901,14 +4852,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
           var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init_0(attributes), null);
+          var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
-          var closure$irradianceMap_0 = closure$irradianceMap;
-          var closure$reflectionMap_0 = closure$reflectionMap;
-          var closure$brdfLut_0 = closure$brdfLut;
+          var closure$environmentMaps_0 = closure$environmentMaps;
           var this$ColorGridContent_0 = this$ColorGridContent;
           mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda_0(colors, y, nCols, x, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
+          var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda_0(colors, y, nCols, x, closure$withIbl_0, closure$environmentMaps_0));
           mesh.shader = shader;
           this$ColorGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
@@ -4917,8 +4866,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  ColorGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, ColorGridContent$makeSpheres$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this));
+  ColorGridContent.prototype.makeSpheres_0 = function (withIbl, environmentMaps) {
+    return group(void 0, ColorGridContent$makeSpheres$lambda(withIbl, environmentMaps, this));
   };
   ColorGridContent.$metadata$ = {
     kind: Kind_CLASS,
@@ -4933,9 +4882,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.ctx = ctx;
     this.scenes = ArrayList_init();
     this.contentScene_0 = null;
-    this.irradianceMapPass_0 = null;
-    this.reflectionMapPass_0 = null;
-    this.brdfLut_0 = null;
+    this.skybox_56jct1$_0 = this.skybox_56jct1$_0;
+    this.envMaps_chisr5$_0 = this.envMaps_chisr5$_0;
     this.lightCycler_0 = new Cycler(PbrDemo$Companion_getInstance().lightSetups_0);
     this.hdriCycler_0 = new Cycler(PbrDemo$Companion_getInstance().hdriTextures_0);
     var array = Array_0(PbrDemo$Companion_getInstance().hdriTextures_0.size);
@@ -4958,6 +4906,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var element_0 = this.pbrMenu_0();
     $receiver_0.add_11rb$(element_0);
   }
+  Object.defineProperty(PbrDemo.prototype, 'skybox_0', {
+    get: function () {
+      if (this.skybox_56jct1$_0 == null)
+        return throwUPAE('skybox');
+      return this.skybox_56jct1$_0;
+    },
+    set: function (skybox) {
+      this.skybox_56jct1$_0 = skybox;
+    }
+  });
+  Object.defineProperty(PbrDemo.prototype, 'envMaps_0', {
+    get: function () {
+      if (this.envMaps_chisr5$_0 == null)
+        return throwUPAE('envMaps');
+      return this.envMaps_chisr5$_0;
+    },
+    set: function (envMaps) {
+      this.envMaps_chisr5$_0 = envMaps;
+    }
+  });
   Object.defineProperty(PbrDemo.prototype, 'autoRotate_0', {
     get: function () {
       return this.autoRotate_4vo62z$_0;
@@ -4991,14 +4959,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function PbrDemo$setupScene$lambda$lambda_0(this$, this$PbrDemo) {
-    return function (tex) {
-      var irrMapPass = new IrradianceMapPass(this$, tex);
-      var reflMapPass = new ReflectionMapPass(this$, tex);
-      var brdfLutPass = new BrdfLutPass(this$);
-      this$PbrDemo.irradianceMapPass_0 = irrMapPass;
-      this$PbrDemo.reflectionMapPass_0 = reflMapPass;
-      this$PbrDemo.brdfLut_0 = brdfLutPass;
-      this$.plusAssign_f1kmr1$(new Skybox(ensureNotNull(reflMapPass.colorTexture), 1.25));
+    return function (hdri) {
+      this$PbrDemo.envMaps_0 = ibl.EnvironmentHelper.hdriEnvironment_wm5s1y$(this$, hdri, false);
+      this$PbrDemo.skybox_0 = new Skybox(this$PbrDemo.envMaps_0.reflectionMap, 1.25);
+      this$.plusAssign_f1kmr1$(this$PbrDemo.skybox_0);
       var $receiver = this$PbrDemo.pbrContentCycler_0;
       var tmp$;
       tmp$ = $receiver.iterator();
@@ -5006,7 +4970,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var element = tmp$.next();
         var this$_0 = this$;
         var this$PbrDemo_0 = this$PbrDemo;
-        this$_0.unaryPlus_uv0sim$(element.createContent_wb8610$(this$_0, ensureNotNull(irrMapPass.colorTexture), ensureNotNull(reflMapPass.colorTexture), ensureNotNull(brdfLutPass.colorTexture), this$PbrDemo_0.ctx));
+        this$_0.unaryPlus_uv0sim$(element.createContent_wo93gw$(this$_0, this$PbrDemo_0.envMaps_0, this$PbrDemo_0.ctx));
       }
       this$PbrDemo.pbrContentCycler_0.current.show();
       return Unit;
@@ -5333,16 +5297,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   PbrDemo.prototype.pbrMenu_0 = function () {
     return uiScene(void 0, void 0, void 0, PbrDemo$pbrMenu$lambda(this));
   };
+  function PbrDemo$updateHdri$lambda$lambda$lambda(closure$oldEnvMap) {
+    return function (it) {
+      closure$oldEnvMap.dispose();
+      return Unit;
+    };
+  }
   function PbrDemo$updateHdri$lambda(this$PbrDemo) {
     return function (tex) {
-      var tmp$, tmp$_0;
-      if ((tmp$ = this$PbrDemo.irradianceMapPass_0) != null) {
-        tmp$.hdriTexture = tex;
-        tmp$.update();
-      }if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
-        tmp$_0.hdriTexture = tex;
-        tmp$_0.update();
-      }return Unit;
+      var $receiver = this$PbrDemo.envMaps_0;
+      this$PbrDemo.ctx.runDelayed_hd6vpk$(1, PbrDemo$updateHdri$lambda$lambda$lambda($receiver));
+      this$PbrDemo.envMaps_0 = ibl.EnvironmentHelper.hdriEnvironment_wm5s1y$(this$PbrDemo.contentScene_0, tex, false);
+      this$PbrDemo.skybox_0.environmentTex = this$PbrDemo.envMaps_0.reflectionMap;
+      var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.updateEnvironmentMap_wwmv4k$(this$PbrDemo.envMaps_0);
+      }
+      return Unit;
     };
   }
   PbrDemo.prototype.updateHdri_0 = function (idx) {
@@ -5411,13 +5385,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       recv(tex);
     }
   };
-  function PbrDemo$EnvironmentMap(hdriPath, name) {
+  function PbrDemo$Hdri(hdriPath, name) {
     this.hdriPath = hdriPath;
     this.name = name;
   }
-  PbrDemo$EnvironmentMap.$metadata$ = {
+  PbrDemo$Hdri.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'EnvironmentMap',
+    simpleName: 'Hdri',
     interfaces: []
   };
   function PbrDemo$LightSetup(name, setup) {
@@ -5453,7 +5427,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrDemo$Companion() {
     PbrDemo$Companion_instance = this;
     this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/syferfontein_0d_clear_1k.rgbe.png', 'South Africa'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', 'Mossy Forest')]);
+    this.hdriTextures_0 = listOf([new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/syferfontein_0d_clear_1k.rgbe.png', 'South Africa'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', 'Mossy Forest')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
     this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
@@ -5539,18 +5513,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function PbrDemo_init$lambda_3(this$PbrDemo, closure$nextHdriKeyListener, closure$prevHdriKeyListener) {
     return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1;
       this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$nextHdriKeyListener);
       this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$prevHdriKeyListener);
       var $receiver_0 = this$PbrDemo.loadedHdris_0;
-      var tmp$_2;
-      for (tmp$_2 = 0; tmp$_2 !== $receiver_0.length; ++tmp$_2) {
-        var element = $receiver_0[tmp$_2];
+      var tmp$;
+      for (tmp$ = 0; tmp$ !== $receiver_0.length; ++tmp$) {
+        var element = $receiver_0[tmp$];
         element != null ? (element.dispose(), Unit) : null;
       }
-      (tmp$ = this$PbrDemo.irradianceMapPass_0) != null ? (tmp$.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
-      (tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null ? (tmp$_0.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
-      (tmp$_1 = this$PbrDemo.brdfLut_0) != null ? (tmp$_1.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
+      this$PbrDemo.envMaps_0.dispose();
       return Unit;
     };
   }
@@ -5694,11 +5665,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  function PbrMaterialContent$createContent$lambda(closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent) {
+  function PbrMaterialContent$createContent$lambda(closure$scene, closure$envMaps, this$PbrMaterialContent) {
     return function ($receiver) {
       $receiver.isVisible = false;
-      var ibl = this$PbrMaterialContent.makeSphere_0(true, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$PbrMaterialContent.makeSphere_0(false, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var ibl = this$PbrMaterialContent.makeSphere_0(true, closure$scene, closure$envMaps);
+      var $receiver_0 = this$PbrMaterialContent.makeSphere_0(false, closure$scene, closure$envMaps);
       $receiver_0.isVisible = false;
       var nonIbl = $receiver_0;
       $receiver.unaryPlus_uv0sim$(ibl);
@@ -5711,10 +5682,25 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  PbrMaterialContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, PbrMaterialContent$createContent$lambda(scene, irradianceMap, reflectionMap, brdfLut, this));
+  PbrMaterialContent.prototype.createContent_wo93gw$ = function (scene, envMaps, ctx) {
+    this.content = transformGroup(void 0, PbrMaterialContent$createContent$lambda(scene, envMaps, this));
     return ensureNotNull(this.content);
   };
+  PbrMaterialContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
+    var tmp$, tmp$_0;
+    if ((tmp$_0 = (tmp$ = this.iblContent_0) != null ? tmp$.children : null) != null) {
+      var tmp$_1;
+      tmp$_1 = tmp$_0.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
+        var tmp$_2, tmp$_3;
+        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
+        var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
+        pbrShader.irradianceMap = envMaps.irradianceMap;
+        pbrShader.reflectionMap = envMaps.reflectionMap;
+        pbrShader.brdfLut = envMaps.brdfLut;
+      }
+    }};
   function PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda($receiver) {
     $receiver.texCoord.x = $receiver.texCoord.x * 4;
     $receiver.texCoord.y = $receiver.texCoord.y * 2;
@@ -5728,7 +5714,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.uvSphere_mojs8w$($receiver.sphereProps);
     return Unit;
   }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isNormalMapped = true;
@@ -5738,7 +5724,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isDisplacementMapped = true;
       $receiver.displacementStrength = 0.25;
       if (closure$withIbl) {
-        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+        $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
       }return Unit;
     };
   }
@@ -5753,10 +5739,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
+  function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
-      var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut));
+      var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$envMaps));
       $receiver.shader = shader;
       this$PbrMaterialContent.shaders_0.add_11rb$(shader);
       this$PbrMaterialContent.updatePbrMaterial_0();
@@ -5766,14 +5752,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrMaterialContent$makeSphere$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
+  function PbrMaterialContent$makeSphere$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene) {
     return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene)));
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene)));
       return Unit;
     };
   }
-  PbrMaterialContent.prototype.makeSphere_0 = function (withIbl, scene, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, PbrMaterialContent$makeSphere$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this, scene));
+  PbrMaterialContent.prototype.makeSphere_0 = function (withIbl, scene, envMaps) {
+    return group(void 0, PbrMaterialContent$makeSphere$lambda(withIbl, envMaps, this, scene));
   };
   function PbrMaterialContent$MaterialMaps(name, albedo, normal, roughness, metallic, ao, displacement) {
     this.name = name;
@@ -7713,11 +7699,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
     (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
   };
-  function RoughnesMetalGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$RoughnesMetalGridContent) {
+  function RoughnesMetalGridContent$createContent$lambda(closure$envMaps, this$RoughnesMetalGridContent) {
     return function ($receiver) {
       $receiver.isVisible = false;
-      var ibl = this$RoughnesMetalGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$RoughnesMetalGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var ibl = this$RoughnesMetalGridContent.makeSpheres_0(true, closure$envMaps);
+      var $receiver_0 = this$RoughnesMetalGridContent.makeSpheres_0(false, closure$envMaps);
       $receiver_0.isVisible = false;
       var nonIbl = $receiver_0;
       $receiver.unaryPlus_uv0sim$(ibl);
@@ -7727,10 +7713,25 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  RoughnesMetalGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, RoughnesMetalGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
+  RoughnesMetalGridContent.prototype.createContent_wo93gw$ = function (scene, envMaps, ctx) {
+    this.content = transformGroup(void 0, RoughnesMetalGridContent$createContent$lambda(envMaps, this));
     return ensureNotNull(this.content);
   };
+  RoughnesMetalGridContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
+    var tmp$, tmp$_0;
+    if ((tmp$_0 = (tmp$ = this.iblContent_0) != null ? tmp$.children : null) != null) {
+      var tmp$_1;
+      tmp$_1 = tmp$_0.iterator();
+      while (tmp$_1.hasNext()) {
+        var element = tmp$_1.next();
+        var tmp$_2, tmp$_3;
+        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
+        var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
+        pbrShader.irradianceMap = envMaps.irradianceMap;
+        pbrShader.reflectionMap = envMaps.reflectionMap;
+        pbrShader.brdfLut = envMaps.brdfLut;
+      }
+    }};
   function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
     return function ($receiver) {
       var closure$nCols_0 = closure$nCols;
@@ -7746,7 +7747,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
       $receiver.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
@@ -7754,11 +7755,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.roughness = Math_0.max(a, 0.05);
       $receiver.metallic = closure$y / (closure$nRows - 1 | 0);
       if (closure$withIbl) {
-        $receiver.useImageBasedLighting_5m8fyp$(closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+        $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
       }return Unit;
     };
   }
-  function RoughnesMetalGridContent$makeSpheres$lambda(this$RoughnesMetalGridContent, closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+  function RoughnesMetalGridContent$makeSpheres$lambda(this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       var nRows = 7;
       var nCols = 7;
@@ -7766,14 +7767,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
           var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init_0(attributes), null);
+          var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
           var closure$withIbl_0 = closure$withIbl;
-          var closure$irradianceMap_0 = closure$irradianceMap;
-          var closure$reflectionMap_0 = closure$reflectionMap;
-          var closure$brdfLut_0 = closure$brdfLut;
+          var closure$envMaps_0 = closure$envMaps;
           mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent_0, x, nCols, y, nRows, closure$withIbl_0, closure$irradianceMap_0, closure$reflectionMap_0, closure$brdfLut_0));
+          var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent_0, x, nCols, y, nRows, closure$withIbl_0, closure$envMaps_0));
           mesh.shader = shader;
           this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
           $receiver.unaryPlus_uv0sim$(mesh);
@@ -7782,8 +7781,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(this, withIbl, irradianceMap, reflectionMap, brdfLut));
+  RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, envMaps) {
+    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(this, withIbl, envMaps));
   };
   function RoughnesMetalGridContent$MatColor(name, linColor) {
     this.name = name;
@@ -7844,7 +7843,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.models = LinkedHashMap_init();
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
-    this.dispModel = new Mesh_init(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.dispModel = new Mesh(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
     this.simplifcationGrade = 1.0;
     this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
@@ -8608,18 +8607,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda(closure$treeGen, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda(closure$treeGen, closure$envMaps, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
       var $receiver_0 = new PbrMaterialConfig();
+      var closure$envMaps_0 = closure$envMaps;
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_baseColor.jpg');
       $receiver_0.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_ambientOcclusion.jpg');
       $receiver_0.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_normal.jpg');
       $receiver_0.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_roughness.jpg');
+      $receiver_0.useImageBasedLighting_wwmv4k$(closure$envMaps_0);
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
+      $receiver_0.roughness = 1.0;
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda($receiver_1));
@@ -8737,15 +8739,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda_0(closure$treeGen, closure$envMaps, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_1(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
       var $receiver_0 = new PbrMaterialConfig();
+      var closure$envMaps_0 = closure$envMaps;
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/leaf.png');
-      $receiver_0.roughness = 0.5;
+      $receiver_0.useImageBasedLighting_wwmv4k$(closure$envMaps_0);
+      $receiver_0.roughness = 1.0;
       $receiver_0.alphaMode = new AlphaModeMask(0.5);
       $receiver_0.cullMethod = CullMethod.NO_CULLING;
       $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
@@ -9189,18 +9193,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var windAnimationPos = {v: 0.0};
     var windStrength = {v: 1.0};
     var $receiver = new Scene_init(null);
-    var backLightDirection = new Vec3f(1.0, -1.5, 1.0);
     var sunLightDirection = new Vec3f(-1.0, -1.5, -1.0);
     var $receiver_0 = $receiver.lighting.lights;
     $receiver_0.clear();
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(sunLightDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 3.0));
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(backLightDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 0.25));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(sunLightDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 5.0));
     var $receiver_1 = new CascadedShadowMap($receiver, 0, void 0, void 0, 2048);
     $receiver_1.maxRange = 50.0;
     var shadowMaps = mutableListOf([$receiver_1]);
-    $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, shadowMaps, windSpeed, windAnimationPos, windStrength));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, shadowMaps, windAnimationPos, windStrength));
+    var bgGradient = new ColorGradient([to(0.0, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.75)), to(0.5, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.25)), to(1.0, Color.Companion.fromHex_61zpoe$('3295FF').mix_y83vuj$(Color.Companion.BLACK, 0.5))]);
+    var envMaps = ibl.EnvironmentHelper.gradientColorEnvironment_hfkvyz$($receiver, bgGradient, ctx);
+    $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps, envMaps));
+    $receiver.unaryPlus_uv0sim$(new Skybox(envMaps.reflectionMap));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, envMaps, shadowMaps, windSpeed, windAnimationPos, windStrength));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, envMaps, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_1($receiver, autoRotate)));
@@ -9455,29 +9460,30 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, this$) {
+  function makeTreeGroundGrid$lambda$lambda_0(closure$envMaps, closure$shadowMaps, this$) {
     return function ($receiver) {
       $receiver.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg');
       $receiver.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg');
       $receiver.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg');
       $receiver.useOcclusionMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg');
       $receiver.useDisplacementMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg');
+      $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
       $receiver.shadowMaps.addAll_brywnq$(closure$shadowMaps);
       this$.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
-  function makeTreeGroundGrid$lambda(closure$groundExt, closure$shadowMaps) {
+  function makeTreeGroundGrid$lambda(closure$groundExt, closure$envMaps, closure$shadowMaps) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(makeTreeGroundGrid$lambda$lambda(closure$groundExt));
-      $receiver.shader = pbrShader(makeTreeGroundGrid$lambda$lambda_0(closure$shadowMaps, $receiver));
+      $receiver.shader = pbrShader(makeTreeGroundGrid$lambda$lambda_0(closure$envMaps, closure$shadowMaps, $receiver));
       return Unit;
     };
   }
-  function makeTreeGroundGrid(cells, shadowMaps) {
+  function makeTreeGroundGrid(cells, shadowMaps, envMaps) {
     var groundExt = cells / 2 | 0;
-    return textureMesh(void 0, true, makeTreeGroundGrid$lambda(groundExt, shadowMaps));
+    return textureMesh(void 0, true, makeTreeGroundGrid$lambda(groundExt, envMaps, shadowMaps));
   }
   function TreeGenerator(distribution, baseTop, baseBot, primaryLightDir, random) {
     if (baseTop === void 0)

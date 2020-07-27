@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.platform.Lwjgl3Context
 
 class RenderPassGraph {
 
@@ -15,7 +15,9 @@ class RenderPassGraph {
     private val remainingPasses = mutableSetOf<RenderPass>()
     private val addedPasses = mutableSetOf<RenderPass>()
 
-    fun updateGraph(scenes: List<Scene>) {
+    fun updateGraph(ctx: Lwjgl3Context) {
+        val scenes = ctx.scenes
+
         groupPool += groups
         groups.clear()
 
@@ -23,6 +25,12 @@ class RenderPassGraph {
         addedPasses.clear()
 
         // collect all offscreen render passes of all scenes (onscreen passes are handled separately)
+        for (j in ctx.backgroundPasses.indices) {
+            val offscreen = ctx.backgroundPasses[j]
+            if (offscreen.isEnabled) {
+                remainingPasses.add(offscreen)
+            }
+        }
         for (i in scenes.indices) {
             val scene = scenes[i]
             for (j in scene.offscreenPasses.indices) {

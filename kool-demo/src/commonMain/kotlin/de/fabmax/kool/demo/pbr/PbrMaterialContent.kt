@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
@@ -14,6 +13,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
     val matCycler = Cycler(materials).apply { index = 3 }
@@ -105,12 +105,12 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext): TransformGroup {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
         content = transformGroup {
             isVisible = false
 
-            val ibl = makeSphere(true, scene, irradianceMap, reflectionMap, brdfLut)
-            val nonIbl = makeSphere(false, scene, irradianceMap, reflectionMap, brdfLut).apply { isVisible = false }
+            val ibl = makeSphere(true, scene, envMaps)
+            val nonIbl = makeSphere(false, scene, envMaps).apply { isVisible = false }
 
             +ibl
             +nonIbl
@@ -127,7 +127,17 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         return content!!
     }
 
-    private fun makeSphere(withIbl: Boolean, scene: Scene, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture) = group {
+    override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
+        iblContent?.children?.forEach {
+            it as Mesh
+            val pbrShader = it.shader as PbrShader
+            pbrShader.irradianceMap = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
+            pbrShader.brdfLut = envMaps.brdfLut
+        }
+    }
+
+    private fun makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = group {
         +textureMesh(isNormalMapped = true) {
             generate {
                 vertexModFun = {
@@ -149,7 +159,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
                 isDisplacementMapped = true
                 displacementStrength = 0.25f
                 if (withIbl) {
-                    useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
+                    useImageBasedLighting(envMaps)
                 }
             }
             this.shader = shader

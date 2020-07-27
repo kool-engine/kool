@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class PbrMaterialConfig {
     // shader configuration
@@ -141,6 +142,10 @@ class PbrMaterialConfig {
     fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
         this.scrSpcAmbientOcclusionMap = ssaoMap
         isScrSpcAmbientOcclusion = true
+    }
+
+    fun useImageBasedLighting(environmentMaps: EnvironmentMaps) {
+        useImageBasedLighting(environmentMaps.irradianceMap, environmentMaps.reflectionMap, environmentMaps.brdfLut)
     }
 
     fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {

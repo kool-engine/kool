@@ -49,12 +49,16 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 
         for (i in offscreenPass.copyTargetsColor.indices) {
             val copyTarget = offscreenPass.copyTargetsColor[i]
-            val width = copyTarget.loadedTexture?.width ?: 0
-            val height = copyTarget.loadedTexture?.height ?: 0
+            var width = copyTarget.loadedTexture?.width ?: 0
+            var height = copyTarget.loadedTexture?.height ?: 0
             if (width != offscreenPass.width || height != offscreenPass.height) {
                 copyTarget.loadedTexture?.dispose()
                 copyTarget.createCopyTexColor(ctx)
+                width = copyTarget.loadedTexture!!.width
+                height = copyTarget.loadedTexture!!.height
             }
+            width = width shr mipLevel
+            height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureWebGl
             ctx.gl.bindTexture(TEXTURE_2D, target.texture)
             ctx.gl.copyTexSubImage2D(TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)

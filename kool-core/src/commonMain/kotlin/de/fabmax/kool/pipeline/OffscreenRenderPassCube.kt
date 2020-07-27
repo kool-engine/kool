@@ -16,6 +16,8 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     val colorTexture: CubeMapTexture?
         get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
+    val copyTargetsColor = mutableListOf<CubeMapTexture>()
+
     lateinit var onSetupView: ((ViewDirection, KoolContext) -> Unit)
 
     val drawQueues = Array(6) { DrawQueue(this) }

@@ -2,7 +2,6 @@ package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
-import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30.*
 import org.lwjgl.opengl.GL42.glTexStorage2D
 import org.lwjgl.opengl.GL43.glCopyImageSubData
@@ -34,26 +33,26 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
     }
 
     private fun copyToTextures(mipLevel: Int, ctx: Lwjgl3Context) {
-        if (parentPass.offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.RENDER_BUFFER) {
-            GL11.glReadBuffer(GL_COLOR_ATTACHMENT0)
-        }
-
         for (i in parentPass.offscreenPass.copyTargetsColor.indices) {
             val copyTarget = parentPass.offscreenPass.copyTargetsColor[i]
-            val width = copyTarget.loadedTexture?.width ?: 0
-            val height = copyTarget.loadedTexture?.height ?: 0
+            var width = copyTarget.loadedTexture?.width ?: 0
+            var height = copyTarget.loadedTexture?.height ?: 0
             if (width != parentPass.offscreenPass.width || height != parentPass.offscreenPass.height) {
                 copyTarget.loadedTexture?.dispose()
                 copyTarget.createCopyTexColor(ctx)
+                width = copyTarget.loadedTexture!!.width
+                height = copyTarget.loadedTexture!!.height
             }
+            width = width shr mipLevel
+            height = height shr mipLevel
             val target = copyTarget.loadedTexture as LoadedTextureGl
 
             if (parentPass.offscreenPass.config.colorRenderTarget == OffscreenRenderPass.RenderTarget.TEXTURE) {
                 glCopyImageSubData(glColorTexs[0], GL_TEXTURE_2D, mipLevel, 0, 0, 0,
                     target.texture, GL_TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
             } else {
-                glBindTexture(GL_TEXTURE_2D, target.texture)
-                glCopyTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
+                glCopyImageSubData(rbos[mipLevel], GL_RENDERBUFFER, 0, 0, 0, 0,
+                        target.texture, GL_TEXTURE_2D, mipLevel, 0, 0, 0, width, height, 1)
             }
         }
     }

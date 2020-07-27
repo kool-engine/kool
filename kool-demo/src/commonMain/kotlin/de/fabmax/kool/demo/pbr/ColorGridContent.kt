@@ -2,8 +2,6 @@ package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -11,6 +9,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
     private val shaders = mutableListOf<PbrShader>()
@@ -74,12 +73,12 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext): TransformGroup {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
         content = transformGroup {
             isVisible = false
 
-            val ibl = makeSpheres(true, irradianceMap, reflectionMap, brdfLut)
-            val nonIbl = makeSpheres(false, irradianceMap, reflectionMap, brdfLut).apply { isVisible = false }
+            val ibl = makeSpheres(true, envMaps)
+            val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
 
             +ibl
             +nonIbl
@@ -90,7 +89,17 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
         return content!!
     }
 
-    private fun makeSpheres(withIbl: Boolean, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture) = group {
+    override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
+        iblContent?.children?.forEach {
+            it as Mesh
+            val pbrShader = it.shader as PbrShader
+            pbrShader.irradianceMap = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
+            pbrShader.brdfLut = envMaps.brdfLut
+        }
+    }
+
+    private fun makeSpheres(withIbl: Boolean, environmentMaps: EnvironmentMaps) = group {
         val nRows = 4
         val nCols = 5
         val spacing = 4.5f
@@ -122,7 +131,7 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
                         roughness = 0.1f
                         metallic = 0f
                         if (withIbl) {
-                            useImageBasedLighting(irradianceMap, reflectionMap, brdfLut)
+                            useImageBasedLighting(environmentMaps)
                         }
                     }
                     this.shader = shader

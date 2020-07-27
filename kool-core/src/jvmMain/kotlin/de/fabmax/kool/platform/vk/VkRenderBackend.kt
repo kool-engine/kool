@@ -90,22 +90,16 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         result.set(0, windowHeight, windowWidth, -windowHeight)
     }
 
-    override fun loadTex2d(tex: Texture, data: BufferedTextureData, recv: (Texture) -> Unit) {
-        ctx.runOnMainThread {
-            tex.loadedTexture = TextureLoader.loadTexture(vkSystem, tex.props, data)
-            tex.loadingState = Texture.LoadingState.LOADED
-            vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
-            recv(tex)
-        }
+    override fun loadTex2d(tex: Texture, data: TextureData) {
+        tex.loadedTexture = TextureLoader.loadTexture(vkSystem, tex.props, data)
+        tex.loadingState = Texture.LoadingState.LOADED
+        vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
     }
 
-    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData, recv: (CubeMapTexture) -> Unit) {
-        ctx.runOnMainThread {
-            tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
-            tex.loadingState = Texture.LoadingState.LOADED
-            vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
-            recv(tex)
-        }
+    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData) {
+        tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
+        tex.loadingState = Texture.LoadingState.LOADED
+        vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
@@ -187,7 +181,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
              * generally better. Note that VkSemaphore-based synchronization can only be done across vkQueueSubmit()
              * calls, so you may be forced to split work up into multiple submits.
              */
-            renderPassGraph.updateGraph(ctx.scenes)
+            renderPassGraph.updateGraph(ctx)
             semaPool.reclaimAll(imageIndex)
 
             for (iGrp in renderPassGraph.groups.indices) {
@@ -248,6 +242,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, fence[0]) == VK_SUCCESS)
                     } else {
                         check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, 0L) == VK_SUCCESS)
+                    }
+
+                    for (i in group.renderPasses.indices) {
+                        group.renderPasses[i].afterDraw(ctx)
                     }
                 }
             }
@@ -441,8 +439,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
         private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2d) {
             offscreenPass.impl.draw(ctx)
-            val backendImpl = offscreenPass.impl.backendImpl as VkOffscreenPass2d
-            backendImpl.renderPass?.let { rp ->
+            val vkPass2d = offscreenPass.impl.backendImpl as VkOffscreenPass2d
+            vkPass2d.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
                 for (mipLevel in 0 until offscreenPass.config.mipLevels) {
@@ -454,16 +452,16 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     vkCmdEndRenderPass(commandBuffer)
                 }
             }
-            backendImpl.copyToTextures(commandBuffer, ctx)
+            vkPass2d.copyToTextures(commandBuffer, ctx)
         }
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
             offscreenPass.impl.draw(ctx)
-            val vkCubePass = offscreenPass.impl.backendImpl as VkOffscreenPassCube
-            vkCubePass.renderPass?.let { rp ->
+            val vkPassCube = offscreenPass.impl.backendImpl as VkOffscreenPassCube
+            vkPassCube.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
-                vkCubePass.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
                 for (mipLevel in 0 until offscreenPass.config.mipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)
@@ -472,11 +470,12 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         setViewport(commandBuffer, offscreenPass.viewport)
                         renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                         vkCmdEndRenderPass(commandBuffer)
-                        vkCubePass.copyView(commandBuffer, view, mipLevel)
+                        vkPassCube.copyView(commandBuffer, view, mipLevel)
                     }
                 }
-                vkCubePass.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                vkPassCube.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             }
+            vkPassCube.copyToTextures(commandBuffer, ctx)
         }
     }
 

@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.platform.vk.util.vkFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
@@ -14,12 +15,37 @@ import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoader {
+    fun createCubeTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
+        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
+
+        val imgConfig = Image.Config()
+        imgConfig.width = width
+        imgConfig.height = height
+        imgConfig.mipLevels = mipLevels
+        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
+        imgConfig.format = format.vkFormat
+        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+        imgConfig.arrayLayers = 6
+        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+
+        val textureImage = Image(sys, imgConfig)
+        val textureImageView =  ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
+                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
+        val sampler = createSampler(sys, props, textureImage)
+
+        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
+        tex.setSize(width, height)
+        return tex
+    }
+
     fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: CubeMapTextureData) : LoadedTextureVk {
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
-        //val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
+        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -37,29 +63,17 @@ object TextureLoader {
             logW { "Mip-map generation for cube maps not yet implemented" }
         }
 
-        val imgConfig = Image.Config()
-        imgConfig.width = width
-        imgConfig.height = height
-        imgConfig.mipLevels = 1 // todo: mipLevels
-        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = dstFmt.vkFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
-        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-        imgConfig.arrayLayers = 6
-        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
-        val textureImage = Image(sys, imgConfig)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyCubeBufferToImage(sys, stagingBuffer, textureImage, width, height)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        val tex = createCubeTexture(sys, props, width, height, dstFmt)
+        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        copyCubeBufferToImage(sys, stagingBuffer, tex.textureImage, width, height)
         stagingBuffer.destroy()
 
-        val textureImageView = ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
-                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
-
-        val sampler = createSampler(sys, props, textureImage)
-        val tex = LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
-        tex.setSize(width, height)
+        if (mipLevels > 1) {
+            logE { "Mipmap generation for cube maps not yet supported" }
+            //tex.textureImage.generateMipmaps(sys)
+        } else {
+            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        }
         return tex
     }
 
@@ -85,7 +99,7 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTexture(sys: VkSystem, props: TextureProps, img: BufferedTextureData) : LoadedTextureVk {
+    fun loadTexture(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
         val width = img.width
         val height = img.height
         val dstFmt = checkFormat(img.format)
@@ -166,9 +180,13 @@ object TextureLoader {
     }
 
     private fun reshape(dstFormat: TexFormat, img: TextureData): ByteBuffer {
+        val imgData = img.data as Uint8BufferImpl
+
+        // make sure buffer position is at 0
+        imgData.buffer.rewind()
+
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
-                val imgData = img.data as Uint8BufferImpl
                 val reshaped = createUint8Buffer(img.width * img.height * 4)
                 for (i in 0 until img.width * img.height) {
                     reshaped[i*4+0] = imgData[i*3+0]
@@ -181,7 +199,7 @@ object TextureLoader {
                 throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
             }
         }
-        return (img.data as Uint8BufferImpl).buffer
+        return imgData.buffer
     }
 
     private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int) {

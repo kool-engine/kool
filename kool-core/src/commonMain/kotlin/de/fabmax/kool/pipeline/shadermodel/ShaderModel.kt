@@ -292,8 +292,8 @@ class ShaderModel(val modelInfo: String = "") {
             return sampler
         }
 
-        fun equiRectSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): EquiRectSamplerNode {
-            val texSampler = addNode(EquiRectSamplerNode(texNode, stage, premultiply))
+        fun equiRectSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, decodeRgbe: Boolean = false, premultiply: Boolean = false): EquiRectSamplerNode {
+            val texSampler = addNode(EquiRectSamplerNode(texNode, stage, decodeRgbe, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }

@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureProps
@@ -14,9 +13,8 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.ibl.BrdfLutPass
-import de.fabmax.kool.util.ibl.IrradianceMapPass
-import de.fabmax.kool.util.ibl.ReflectionMapPass
+import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import de.fabmax.kool.util.uiFont
 
 /**
@@ -32,10 +30,8 @@ class PbrDemo(val ctx: KoolContext) {
     val scenes = mutableListOf<Scene>()
 
     private val contentScene: Scene
-
-    private var irradianceMapPass: IrradianceMapPass? = null
-    private var reflectionMapPass: ReflectionMapPass? = null
-    private var brdfLut: BrdfLutPass? = null
+    private lateinit var skybox: Skybox
+    private lateinit var envMaps: EnvironmentMaps
 
     private val lightCycler = Cycler(lightSetups)
     private val hdriCycler = Cycler(hdriTextures)
@@ -65,9 +61,7 @@ class PbrDemo(val ctx: KoolContext) {
             ctx.inputMgr.removeKeyListener(prevHdriKeyListener)
 
             loadedHdris.forEach { it?.dispose() }
-            irradianceMapPass?.dispose(ctx)
-            reflectionMapPass?.dispose(ctx)
-            brdfLut?.dispose(ctx)
+            envMaps.dispose()
         }
 
         scenes += contentScene
@@ -90,18 +84,13 @@ class PbrDemo(val ctx: KoolContext) {
             zoom = 20.0
         }
 
-        loadHdri(hdriCycler.index) { tex ->
-            val irrMapPass = IrradianceMapPass(this, tex)
-            val reflMapPass = ReflectionMapPass(this, tex)
-            val brdfLutPass = BrdfLutPass(this)
-            irradianceMapPass = irrMapPass
-            reflectionMapPass = reflMapPass
-            brdfLut = brdfLutPass
-
-            this += Skybox(reflMapPass.colorTexture!!, 1.25f)
+        loadHdri(hdriCycler.index) { hdri ->
+            envMaps = EnvironmentHelper.hdriEnvironment(this, hdri, false)
+            skybox = Skybox(envMaps.reflectionMap, 1.25f)
+            this += skybox
 
             pbrContentCycler.forEach {
-                +it.createContent(this, irrMapPass.colorTexture!!, reflMapPass.colorTexture!!, brdfLutPass.colorTexture!!, ctx)
+                +it.createContent(this, envMaps, ctx)
             }
             pbrContentCycler.current.show()
         }
@@ -284,14 +273,10 @@ class PbrDemo(val ctx: KoolContext) {
 
     private fun updateHdri(idx: Int) {
         loadHdri(idx) { tex ->
-            irradianceMapPass?.let {
-                it.hdriTexture = tex
-                it.update()
-            }
-            reflectionMapPass?.let {
-                it.hdriTexture = tex
-                it.update()
-            }
+            envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
+            envMaps = EnvironmentHelper.hdriEnvironment(contentScene, tex, false)
+            skybox.environmentTex = envMaps.reflectionMap
+            pbrContentCycler.forEach { it.updateEnvironmentMap(envMaps) }
         }
     }
 
@@ -308,7 +293,7 @@ class PbrDemo(val ctx: KoolContext) {
         }
     }
 
-    private class EnvironmentMap(val hdriPath: String, val name: String)
+    private class Hdri(val hdriPath: String, val name: String)
 
     private class LightSetup(val name: String, val setup: Scene.() -> Unit)
 
@@ -329,7 +314,8 @@ class PbrDemo(val ctx: KoolContext) {
 
         abstract fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float)
         abstract fun setUseImageBasedLighting(enabled: Boolean)
-        abstract fun createContent(scene: Scene, irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext): TransformGroup
+        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup
+        abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
     }
 
     companion object {
@@ -340,11 +326,11 @@ class PbrDemo(val ctx: KoolContext) {
                 mipMapping = true)
 
         private val hdriTextures = listOf(
-                EnvironmentMap("${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
-                EnvironmentMap("${Demo.envMapBasePath}/circus_arena_1k.rgbe.png", "Circus"),
-                EnvironmentMap("${Demo.envMapBasePath}/newport_loft.rgbe.png", "Loft"),
-                EnvironmentMap("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
-                EnvironmentMap("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
+                Hdri("${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
+                Hdri("${Demo.envMapBasePath}/circus_arena_1k.rgbe.png", "Circus"),
+                Hdri("${Demo.envMapBasePath}/newport_loft.rgbe.png", "Loft"),
+                Hdri("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
+                Hdri("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
         )
 
         private const val lightStrength = 250f

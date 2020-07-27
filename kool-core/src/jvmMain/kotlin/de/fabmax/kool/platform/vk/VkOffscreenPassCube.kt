@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.Texture
@@ -23,6 +24,58 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
     override fun draw(ctx: Lwjgl3Context) {
         if (!isCreated && !isCreationBlocked) {
             create(ctx)
+        }
+    }
+
+    fun copyToTextures(commandBuffer: VkCommandBuffer, ctx: Lwjgl3Context) {
+        if (parentPass.offscreenPass.copyTargetsColor.isEmpty()) {
+            return
+        }
+        val mipLevels = parentPass.offscreenPass.config.mipLevels
+
+        memStack {
+            image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+            for (i in parentPass.offscreenPass.copyTargetsColor.indices) {
+                val copyTarget = parentPass.offscreenPass.copyTargetsColor[i]
+                val texWidth = copyTarget.loadedTexture?.width ?: 0
+                val texHeight = copyTarget.loadedTexture?.height ?: 0
+                if (texWidth != parentPass.offscreenPass.width || texHeight != parentPass.offscreenPass.height) {
+                    copyTarget.loadedTexture?.dispose()
+                    copyTarget.createCopyTexColor(ctx)
+                }
+                val target = copyTarget.loadedTexture as LoadedTextureVk
+
+                val imageCopy = callocVkImageCopyN(mipLevels * 6) {
+                    for (mipLevel in 0 until mipLevels) {
+                        val width = parentPass.offscreenPass.getMipWidth(mipLevel)
+                        val height = parentPass.offscreenPass.getMipHeight(mipLevel)
+
+                        for (face in 0 until 6) {
+                            this[mipLevel * 6 + face].apply {
+                                srcSubresource {
+                                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                                    it.mipLevel(mipLevel)
+                                    it.baseArrayLayer(face)
+                                    it.layerCount(1)
+                                }
+                                srcOffset { it.set(0, 0, 0) }
+                                dstSubresource {
+                                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                                    it.mipLevel(mipLevel)
+                                    it.baseArrayLayer(face)
+                                    it.layerCount(1)
+                                }
+                                dstOffset { it.set(0, 0, 0) }
+                                extent { it.set(width, height, 1) }
+                            }
+                        }
+                    }
+                }
+                target.textureImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                vkCmdCopyImage(commandBuffer, image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, target.textureImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+                target.textureImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            }
+            image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         }
     }
 
@@ -153,6 +206,23 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
             loadedTexture = loadedTex
             loadingState = Texture.LoadingState.LOADING
         }
+    }
+
+    private fun CubeMapTexture.createCopyTexColor(ctx: Lwjgl3Context) {
+        val vkBackend = ctx.renderBackend as VkRenderBackend
+        val prev = loadedTexture
+        if (prev != null) {
+            ctx.runDelayed(3) {
+                prev.dispose()
+            }
+        }
+
+        val width = parentPass.offscreenPass.width
+        val height = parentPass.offscreenPass.height
+        val tex = TextureLoader.createCubeTexture(vkBackend.vkSystem, props, width, height)
+        loadedTexture = tex
+        loadingState = Texture.LoadingState.LOADED
+        vkBackend.vkSystem.device.addDependingResource(tex)
     }
 
     private fun createSampler(sys: VkSystem, texImage: Image): Long {

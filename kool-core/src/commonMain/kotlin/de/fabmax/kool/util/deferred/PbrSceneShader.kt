@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -341,6 +342,10 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             if (generateNoiseTex) {
                 scrSpcReflectionNoise = generateScrSpcReflectionNoiseTex()
             }
+        }
+
+        fun useImageBasedLighting(environmentMaps: EnvironmentMaps) {
+            useImageBasedLighting(environmentMaps.irradianceMap, environmentMaps.reflectionMap, environmentMaps.brdfLut)
         }
 
         fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {

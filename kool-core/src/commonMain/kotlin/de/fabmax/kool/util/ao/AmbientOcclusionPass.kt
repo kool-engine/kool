@@ -275,7 +275,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     sampleProj.xyz /= sampleProj.w;
                     sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
                     
-                    if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0) {
+                    if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
                         float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
                         float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
                         float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);

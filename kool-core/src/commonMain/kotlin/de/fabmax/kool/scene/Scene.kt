@@ -27,6 +27,7 @@ open class Scene(name: String? = null) : Group(name) {
     val mainRenderPass = ScreenRenderPass(this)
 
     private val mutOffscreenPasses = mutableListOf<OffscreenRenderPass>()
+    private val addOffscreenPasses = mutableListOf<OffscreenRenderPass>()
     private val remOffscreenPasses = mutableListOf<OffscreenRenderPass>()
     val offscreenPasses: List<OffscreenRenderPass>
         get() = mutOffscreenPasses
@@ -46,13 +47,22 @@ open class Scene(name: String? = null) : Group(name) {
     private val disposables = mutableListOf<Disposable>()
 
     fun addOffscreenPass(pass: OffscreenRenderPass) {
-        if (pass !in offscreenPasses) {
-            mutOffscreenPasses += pass
-        }
+        addOffscreenPasses += pass
     }
 
     fun removeOffscreenPass(pass: OffscreenRenderPass) {
         remOffscreenPasses += pass
+    }
+
+    private fun addOffscreenPasses() {
+        if (addOffscreenPasses.isNotEmpty()) {
+            addOffscreenPasses.forEach {
+                if (it !in mutOffscreenPasses) {
+                    mutOffscreenPasses += it
+                }
+            }
+            addOffscreenPasses.clear()
+        }
     }
 
     private fun removeOffscreenPasses() {
@@ -65,6 +75,7 @@ open class Scene(name: String? = null) : Group(name) {
     fun renderScene(ctx: KoolContext) {
         // remove all offscreen passes that were scheduled for removal in last frame
         removeOffscreenPasses()
+        addOffscreenPasses()
 
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)

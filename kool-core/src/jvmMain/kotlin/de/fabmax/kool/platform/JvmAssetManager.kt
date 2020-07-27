@@ -10,7 +10,7 @@ import java.util.*
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
@@ -121,9 +121,12 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture {
         val tex = Texture(assetPathToName(assetPath), props) { it.loadTextureData(assetPath) }
-        val data = loadTextureData(assetPath) as BufferedTextureData
+        val data = loadTextureData(assetPath)
         val deferred = CompletableDeferred<Texture>(job)
-        (ctx as Lwjgl3Context).renderBackend.loadTex2d(tex, data) { deferred.complete(it) }
+        ctx.runOnMainThread {
+            ctx.renderBackend.loadTex2d(tex, data)
+            deferred.complete(tex)
+        }
         return deferred.await()
     }
 
@@ -133,8 +136,23 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         val tex = CubeMapTexture(name, props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
         val deferred = CompletableDeferred<CubeMapTexture>(job)
-        (ctx as Lwjgl3Context).renderBackend.loadTexCube(tex, data) { deferred.complete(it) }
+        ctx.runOnMainThread {
+            ctx.renderBackend.loadTex2d(tex, data)
+            deferred.complete(tex)
+        }
         return deferred.await()
+    }
+
+    override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture {
+        val tex = Texture(name, props) { texData }
+        ctx.renderBackend.loadTex2d(tex, texData)
+        return tex
+    }
+
+    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): CubeMapTexture {
+        val tex = CubeMapTexture(name, props) { texData }
+        ctx.renderBackend.loadTexCube(tex, texData)
+        return tex
     }
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {

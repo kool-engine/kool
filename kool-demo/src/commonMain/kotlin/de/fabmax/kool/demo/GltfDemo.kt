@@ -2,8 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
@@ -17,9 +15,8 @@ import de.fabmax.kool.util.deferred.PbrLightingPass
 import de.fabmax.kool.util.deferred.PbrSceneShader
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
-import de.fabmax.kool.util.ibl.BrdfLutPass
-import de.fabmax.kool.util.ibl.IrradianceMapPass
-import de.fabmax.kool.util.ibl.ReflectionMapPass
+import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -59,9 +56,7 @@ class GltfDemo(ctx: KoolContext) {
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
 
-    private var irrMapPass: IrradianceMapPass? = null
-    private var reflMapPass: ReflectionMapPass? = null
-    private var brdfLutPass: BrdfLutPass? = null
+    private lateinit var envMaps: EnvironmentMaps
 
     private val shadowsForward = mutableListOf<ShadowMap>()
     private var aoPipelineForward: AoPipeline? = null
@@ -91,17 +86,19 @@ class GltfDemo(ctx: KoolContext) {
         setupCamera()
 
         ctx.assetMgr.launch {
-            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-            val hdri = loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps)
-            irrMapPass = IrradianceMapPass(this@scene, hdri)
-            reflMapPass = ReflectionMapPass(this@scene, hdri)
-            brdfLutPass = BrdfLutPass(this@scene)
+//            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
+//            val hdri = loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps)
+//            irrMapPass = IrradianceMapPass(this@scene, hdri)
+//            reflMapPass = ReflectionMapPass(this@scene, hdri)
+//            brdfLutPass = BrdfLutPass(this@scene)
+//
+//            onDispose += {
+//                hdri.dispose()
+//            }
+            envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
 
-            onDispose += {
-                hdri.dispose()
-            }
-
-            +Skybox(reflMapPass!!.colorTexture!!, 1f)
+            //+Skybox(reflMapPass!!.colorTexture!!, 1f)
+            +Skybox(envMaps.reflectionMap, 1f)
 
             makeDeferredContent(ctx)
             makeForwardContent(ctx)
@@ -161,7 +158,7 @@ class GltfDemo(ctx: KoolContext) {
         // setup lighting pass
         val cfg = PbrSceneShader.DeferredPbrConfig().apply {
             useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
-            useImageBasedLighting(irrMapPass?.colorTexture, reflMapPass?.colorTexture, brdfLutPass?.colorTexture)
+            useImageBasedLighting(envMaps)
             shadowMaps += shadowsDeferred
         }
         pbrPass = PbrLightingPass(this@makeDeferredContent, mrtPass, cfg)
@@ -237,7 +234,7 @@ class GltfDemo(ctx: KoolContext) {
                 if (!isDeferredShading) {
                     shadowMaps += shadowsForward
                     useScreenSpaceAmbientOcclusion(aoPipelineForward?.aoMap)
-                    useImageBasedLighting(irrMapPass?.colorTexture, reflMapPass?.colorTexture, brdfLutPass?.colorTexture)
+                    useImageBasedLighting(envMaps)
                 }
 
                 useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
@@ -437,9 +434,9 @@ class GltfDemo(ctx: KoolContext) {
                 val materialCfg = GltfFile.ModelMaterialConfig(
                         shadowMaps = if (isDeferredShading) shadowsDeferred else shadowsForward,
                         scrSpcAmbientOcclusionMap = if (isDeferredShading) aoPipelineDeferred?.aoMap else aoPipelineForward?.aoMap,
-                        iblIrradianceMap = irrMapPass?.colorTexture,
-                        iblReflectionMap = reflMapPass?.colorTexture,
-                        iblBrdfMap = brdfLutPass?.colorTexture,
+                        iblIrradianceMap = envMaps.irradianceMap,
+                        iblReflectionMap = envMaps.reflectionMap,
+                        iblBrdfMap = envMaps.brdfLut,
                         isDeferredShading = isDeferredShading
                 )
                 val modelCfg = GltfFile.ModelGenerateConfig(

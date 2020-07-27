@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
@@ -55,6 +56,9 @@ abstract class KoolContext {
         private set
 
     val scenes: MutableList<Scene> = mutableListOf()
+    private val backgroundScene = Scene("backgroundScene")
+    val backgroundPasses: List<OffscreenRenderPass>
+        get() = backgroundScene.offscreenPasses
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
     internal val disposablePipelines = mutableListOf<Pipeline>()
@@ -80,6 +84,14 @@ abstract class KoolContext {
 
     internal fun disposePipeline(pipeline: Pipeline) {
         disposablePipelines += pipeline
+    }
+
+    fun addBackgroundRenderPass(renderPass: OffscreenRenderPass) {
+        backgroundScene.addOffscreenPass(renderPass)
+    }
+
+    fun removeBackgroundRenderPass(renderPass: OffscreenRenderPass) {
+        backgroundScene.removeOffscreenPass(renderPass)
     }
 
     protected fun render(dt: Double) {
@@ -115,19 +127,14 @@ abstract class KoolContext {
             }
         }
 
+        backgroundScene.renderScene(this)
+
         // draw scene contents (back to front)
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
                 scenes[i].renderScene(this)
             }
         }
-    }
-
-    fun applyRenderingHints() {
-        // apply scene specific hints (shadow map type, etc.)
-        //scenes.forEach { it.onRenderingHintsChanged(this) }
-        // regenerate shaders
-        //shaderMgr.onRenderingHintsChanged(this)
     }
 
     private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)

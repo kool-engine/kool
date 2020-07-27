@@ -5,9 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -19,9 +17,7 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
-import de.fabmax.kool.util.ibl.BrdfLutPass
-import de.fabmax.kool.util.ibl.IrradianceMapPass
-import de.fabmax.kool.util.ibl.ReflectionMapPass
+import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.*
 
 fun aoDemo(ctx: KoolContext): List<Scene> {
@@ -71,16 +67,11 @@ class AoDemo(ctx: KoolContext) {
         }
 
         ctx.assetMgr.launch {
-            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-            val hdriMap = loadAndPrepareTexture("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", hdriTexProps)
+            val envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
 
             val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
             val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
             val teapotMesh = model.meshes.values.first()
-
-            val irrMapPass = IrradianceMapPass(this@scene, hdriMap)
-            val reflMapPass = ReflectionMapPass(this@scene, hdriMap)
-            val brdfLutPass = BrdfLutPass(this@scene)
 
             +colorMesh("teapots") {
                 generate {
@@ -105,7 +96,7 @@ class AoDemo(ctx: KoolContext) {
                     roughness = 0.1f
 
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(irrMapPass.colorTexture, reflMapPass.colorTexture, brdfLutPass.colorTexture)
+                    useImageBasedLighting(envMaps)
                 }
                 this.shader = shader
 
@@ -198,7 +189,7 @@ class AoDemo(ctx: KoolContext) {
                     useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(irrMapPass.colorTexture, reflMapPass.colorTexture, brdfLutPass.colorTexture)
+                    useImageBasedLighting(envMaps)
                     shadowMaps += shadows
 
                     onDispose += {
@@ -206,7 +197,6 @@ class AoDemo(ctx: KoolContext) {
                         occlusionMap?.dispose()
                         normalMap?.dispose()
                         roughnessMap?.dispose()
-                        hdriMap.dispose()
                     }
                 }
                 this.shader = shader
@@ -220,7 +210,7 @@ class AoDemo(ctx: KoolContext) {
                 }
             }
 
-            this@scene += Skybox(reflMapPass.colorTexture!!, 1f)
+            this@scene += Skybox(envMaps.reflectionMap, 1f)
         }
     }
 
