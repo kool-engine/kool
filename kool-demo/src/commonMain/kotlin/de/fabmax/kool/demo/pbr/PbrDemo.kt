@@ -5,17 +5,15 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
-import de.fabmax.kool.util.uiFont
 
 /**
  * @author fabmax
@@ -37,7 +35,9 @@ class PbrDemo(val ctx: KoolContext) {
     private val hdriCycler = Cycler(hdriTextures)
     private val loadedHdris = Array<Texture?>(hdriTextures.size) { null }
 
-    private val pbrContentCycler = Cycler(listOf(PbrMaterialContent(), ColorGridContent(), RoughnesMetalGridContent()))
+    private val sphereProto = SphereProto()
+    private val pbrContentCycler = Cycler(listOf(
+            PbrMaterialContent(sphereProto), ColorGridContent(sphereProto), RoughnesMetalGridContent(sphereProto)))
 
     private var autoRotate = true
         set(value) {
@@ -318,12 +318,39 @@ class PbrDemo(val ctx: KoolContext) {
         abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
     }
 
+    class SphereProto {
+        val detailSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.NORMALS, Attribute.TANGENTS)
+        val simpleSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
+
+        init {
+            MeshBuilder(detailSphere).apply {
+                vertexModFun = {
+                    texCoord.x *= 4
+                    texCoord.y *= 2
+                }
+                uvSphere {
+                    steps = 700
+                    radius = 7f
+                }
+            }
+            detailSphere.generateTangents()
+
+            MeshBuilder(simpleSphere).apply {
+                uvSphere {
+                    steps = 100
+                    radius = 1f
+                }
+            }
+        }
+    }
+
     companion object {
         // HDRIs are encoded as RGBE images, use nearest sampling to not mess up the exponent
         private val hdriTexProps = TextureProps(
                 minFilter = FilterMethod.NEAREST,
                 magFilter = FilterMethod.NEAREST,
-                mipMapping = true)
+                mipMapping = false,
+                maxAnisotropy = 1)
 
         private val hdriTextures = listOf(
                 Hdri("${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),

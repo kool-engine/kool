@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.ibl
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderModel
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
@@ -10,15 +11,14 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
-import kotlin.math.log2
 
-class HdriEnvGenerator(parentScene: Scene, hdriTexture: Texture, size: Int = 512) :
+class HdriCubeGenerator(parentScene: Scene, hdriTexture: Texture, size: Int = 512) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "HdriEnvGenerator"
             setSize(size, size)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
-            mipLevels = log2(size.toDouble()).toInt()
+            addMipLevels()
         }) {
 
     private val uMipLevel = Uniform1f(0.0f, "uMipLevel")
@@ -56,8 +56,6 @@ class HdriEnvGenerator(parentScene: Scene, hdriTexture: Texture, size: Int = 512
             }
         }
 
-        parentScene.addOffscreenPass(this)
-
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
             logD { "Generated cube map from HDRI: ${hdriTexture.name}" }
@@ -66,5 +64,10 @@ class HdriEnvGenerator(parentScene: Scene, hdriTexture: Texture, size: Int = 512
                 dispose(ctx)
             }
         }
+    }
+
+    override fun dispose(ctx: KoolContext) {
+        drawNode.dispose(ctx)
+        super.dispose(ctx)
     }
 }

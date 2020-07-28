@@ -476,6 +476,7 @@ private fun treePbrModel(cfg: PbrMaterialConfig) = ShaderModel("treePbrModel()")
                 val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
                 gammaNode(albedoSampler.outColor).outColor
             }
+            Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
         }
 
         (cfg.alphaMode as? AlphaModeMask)?.let { mask ->

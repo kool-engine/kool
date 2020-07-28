@@ -14,7 +14,7 @@ fun pbrShader(cfgBlock: PbrMaterialConfig.() -> Unit): PbrShader {
     return PbrShader(cfg)
 }
 
-class PbrShader(cfg: PbrMaterialConfig = PbrMaterialConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
+class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend
@@ -311,6 +311,7 @@ class PbrShader(cfg: PbrMaterialConfig = PbrMaterialConfig(), model: ShaderModel
                             albedoLin.outColor
                         }
                     }
+                    Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
                 (cfg.alphaMode as? AlphaModeMask)?.let { mask ->

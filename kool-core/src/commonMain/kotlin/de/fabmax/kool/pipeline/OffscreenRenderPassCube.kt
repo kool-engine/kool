@@ -33,6 +33,12 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
+    fun copyColor(): CubeMapTexture {
+        val tex = CubeMapTexture("$name-${copyTargetsColor.size}", getColorTexProps())
+        copyTargetsColor += tex
+        return tex
+    }
+
     override fun collectDrawCommands(ctx: KoolContext) {
         for (v in ViewDirection.values()) {
             drawQueue = drawQueues[v.index]

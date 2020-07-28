@@ -115,6 +115,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
+  var PhongShader$PhongConfig = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader.PhongConfig;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var InstancedLodController$Instance = $module$kool.de.fabmax.kool.util.InstancedLodController.Instance;
@@ -3504,7 +3505,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if (i === 0) {
         this.modelCenter_0.set_czzhiu$(mesh.geometry.bounds.center);
         this.modelRadius_0 = mesh.geometry.bounds.max.distance_czzhiu$(mesh.geometry.bounds.center);
-      }mesh.shader = new PhongShader(void 0, this.instanceColorPhongModel_0());
+      }mesh.shader = new PhongShader(new PhongShader$PhongConfig(), this.instanceColorPhongModel_0());
       mesh.isFrustumChecked = false;
       this.lods_0.get_za3lpa$(i).mesh = mesh;
       mesh.instances = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), this.lods_0.get_za3lpa$(i).maxInsts);
@@ -4669,8 +4670,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'MultiLightDemo',
     interfaces: []
   };
-  function ColorGridContent() {
+  function ColorGridContent(sphereProto) {
     PbrDemo$PbrContent.call(this, 'Color Grid');
+    this.sphereProto = sphereProto;
     this.shaders_0 = ArrayList_init();
     this.iblContent_0 = null;
     this.nonIblContent_0 = null;
@@ -4805,22 +4807,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         pbrShader.brdfLut = envMaps.brdfLut;
       }
     }};
-  function ColorGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
-    return function ($receiver) {
-      var closure$nCols_0 = closure$nCols;
-      var closure$x_0 = closure$x;
-      var closure$spacing_0 = closure$spacing;
-      var closure$nRows_0 = closure$nRows;
-      var closure$y_0 = closure$y;
-      var $receiver_0 = $receiver.sphereProps.uvDefaults();
-      $receiver_0.steps = 100;
-      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((closure$nRows_0 - 1 | 0) * 0.5 - closure$y_0) * closure$spacing_0, 0.0);
-      $receiver_0.radius = 1.5;
-      $receiver.uvSphere_mojs8w$($receiver.sphereProps);
-      return Unit;
-    };
-  }
-  function ColorGridContent$makeSpheres$lambda$lambda$lambda_0(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$environmentMaps) {
+  function ColorGridContent$makeSpheres$lambda$lambda$lambda$lambda(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$environmentMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
       $receiver.albedo = closure$colors.get_za3lpa$((Kotlin.imul(closure$y, closure$nCols) + closure$x | 0) % closure$colors.size).toLinear();
@@ -4831,7 +4818,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$environmentMaps, this$ColorGridContent) {
+  function ColorGridContent$makeSpheres$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y, this$ColorGridContent, closure$colors, closure$withIbl, closure$environmentMaps) {
+    return function ($receiver) {
+      $receiver.translate_y2kzbl$(((-(closure$nCols - 1 | 0) | 0) * 0.5 + closure$x) * closure$spacing, ((closure$nRows - 1 | 0) * 0.5 - closure$y) * closure$spacing, 0.0);
+      $receiver.scale_mx4ult$(1.5);
+      var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+      var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
+      var this$ColorGridContent_0 = this$ColorGridContent;
+      var closure$colors_0 = closure$colors;
+      var closure$y_0 = closure$y;
+      var closure$nCols_0 = closure$nCols;
+      var closure$x_0 = closure$x;
+      var closure$withIbl_0 = closure$withIbl;
+      var closure$environmentMaps_0 = closure$environmentMaps;
+      mesh.geometry.addGeometry_r7nl2o$(this$ColorGridContent_0.sphereProto.simpleSphere);
+      var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda$lambda(closure$colors_0, closure$y_0, closure$nCols_0, closure$x_0, closure$withIbl_0, closure$environmentMaps_0));
+      mesh.shader = shader;
+      this$ColorGridContent_0.shaders_0.add_11rb$(shader);
+      $receiver.unaryPlus_uv0sim$(mesh);
+      return Unit;
+    };
+  }
+  function ColorGridContent$makeSpheres$lambda(this$ColorGridContent, closure$withIbl, closure$environmentMaps) {
     return function ($receiver) {
       var nRows = 4;
       var nCols = 5;
@@ -4851,23 +4859,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       colors.add_11rb$(element_2);
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
-          var closure$withIbl_0 = closure$withIbl;
-          var closure$environmentMaps_0 = closure$environmentMaps;
-          var this$ColorGridContent_0 = this$ColorGridContent;
-          mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda_0(colors, y, nCols, x, closure$withIbl_0, closure$environmentMaps_0));
-          mesh.shader = shader;
-          this$ColorGridContent_0.shaders_0.add_11rb$(shader);
-          $receiver.unaryPlus_uv0sim$(mesh);
+          $receiver.unaryPlus_uv0sim$(transformGroup(void 0, ColorGridContent$makeSpheres$lambda$lambda(nCols, x, spacing, nRows, y, this$ColorGridContent, colors, closure$withIbl, closure$environmentMaps)));
         }
       }
       return Unit;
     };
   }
   ColorGridContent.prototype.makeSpheres_0 = function (withIbl, environmentMaps) {
-    return group(void 0, ColorGridContent$makeSpheres$lambda(withIbl, environmentMaps, this));
+    return group(void 0, ColorGridContent$makeSpheres$lambda(this, withIbl, environmentMaps));
   };
   ColorGridContent.$metadata$ = {
     kind: Kind_CLASS,
@@ -4893,7 +4892,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       array[i] = null;
     }
     this.loadedHdris_0 = array;
-    this.pbrContentCycler_0 = new Cycler(listOf([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
+    this.sphereProto_0 = new PbrDemo$SphereProto();
+    this.pbrContentCycler_0 = new Cycler(listOf([new PbrMaterialContent(this.sphereProto_0), new ColorGridContent(this.sphereProto_0), new RoughnesMetalGridContent(this.sphereProto_0)]));
     this.autoRotate_4vo62z$_0 = true;
     var nextHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-25, 'Next environment map', PbrDemo_init$lambda, PbrDemo_init$lambda_0(this));
     var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
@@ -5424,9 +5424,35 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'PbrContent',
     interfaces: []
   };
+  function PbrDemo$SphereProto() {
+    this.detailSphere = IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.TEXTURE_COORDS, Attribute.Companion.NORMALS, Attribute.Companion.TANGENTS]);
+    this.simpleSphere = IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+    var $receiver = new MeshBuilder(this.detailSphere);
+    $receiver.vertexModFun = PbrDemo$PbrDemo$SphereProto_init$lambda$lambda;
+    var $receiver_0 = $receiver.sphereProps.uvDefaults();
+    $receiver_0.steps = 700;
+    $receiver_0.radius = 7.0;
+    $receiver.uvSphere_mojs8w$($receiver.sphereProps);
+    this.detailSphere.generateTangents_mx4ult$();
+    var $receiver_1 = new MeshBuilder(this.simpleSphere);
+    var $receiver_2 = $receiver_1.sphereProps.uvDefaults();
+    $receiver_2.steps = 100;
+    $receiver_2.radius = 1.0;
+    $receiver_1.uvSphere_mojs8w$($receiver_1.sphereProps);
+  }
+  function PbrDemo$PbrDemo$SphereProto_init$lambda$lambda($receiver) {
+    $receiver.texCoord.x = $receiver.texCoord.x * 4;
+    $receiver.texCoord.y = $receiver.texCoord.y * 2;
+    return Unit;
+  }
+  PbrDemo$SphereProto.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SphereProto',
+    interfaces: []
+  };
   function PbrDemo$Companion() {
     PbrDemo$Companion_instance = this;
-    this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
+    this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, false, 1);
     this.hdriTextures_0 = listOf([new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/syferfontein_0d_clear_1k.rgbe.png', 'South Africa'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai'), new PbrDemo$Hdri(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', 'Mossy Forest')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
@@ -5530,9 +5556,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'PbrDemo',
     interfaces: []
   };
-  function PbrMaterialContent() {
+  function PbrMaterialContent(sphereProto) {
     PbrMaterialContent$Companion_getInstance();
     PbrDemo$PbrContent.call(this, 'PBR Material');
+    this.sphereProto = sphereProto;
     var $receiver = new Cycler(PbrMaterialContent$Companion_getInstance().materials_0);
     $receiver.index = 3;
     this.matCycler = $receiver;
@@ -5701,20 +5728,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         pbrShader.brdfLut = envMaps.brdfLut;
       }
     }};
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda($receiver) {
-    $receiver.texCoord.x = $receiver.texCoord.x * 4;
-    $receiver.texCoord.y = $receiver.texCoord.y * 2;
-    return Unit;
-  }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda($receiver) {
-    $receiver.vertexModFun = PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda;
-    var $receiver_0 = $receiver.sphereProps.uvDefaults();
-    $receiver_0.steps = 700;
-    $receiver_0.radius = 7.0;
-    $receiver.uvSphere_mojs8w$($receiver.sphereProps);
-    return Unit;
-  }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$envMaps) {
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda(closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isNormalMapped = true;
@@ -5728,7 +5742,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_1(this$PbrMaterialContent) {
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent) {
     return function ($receiver, it) {
       var tmp$;
       tmp$ = this$PbrMaterialContent.matCycler.iterator();
@@ -5739,27 +5753,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene) {
+  function PbrMaterialContent$makeSphere$lambda$lambda(this$PbrMaterialContent, closure$withIbl, closure$envMaps, closure$scene) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
-      var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(closure$withIbl, closure$envMaps));
+      $receiver.geometry.addGeometry_r7nl2o$(this$PbrMaterialContent.sphereProto.detailSphere);
+      var shader = pbrShader(PbrMaterialContent$makeSphere$lambda$lambda$lambda(closure$withIbl, closure$envMaps));
       $receiver.shader = shader;
       this$PbrMaterialContent.shaders_0.add_11rb$(shader);
       this$PbrMaterialContent.updatePbrMaterial_0();
       var $receiver_0 = closure$scene.onDispose;
-      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_1(this$PbrMaterialContent);
+      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function PbrMaterialContent$makeSphere$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene) {
+  function PbrMaterialContent$makeSphere$lambda(this$PbrMaterialContent, closure$withIbl, closure$envMaps, closure$scene) {
     return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$envMaps, this$PbrMaterialContent, closure$scene)));
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(this$PbrMaterialContent, closure$withIbl, closure$envMaps, closure$scene)));
       return Unit;
     };
   }
   PbrMaterialContent.prototype.makeSphere_0 = function (withIbl, scene, envMaps) {
-    return group(void 0, PbrMaterialContent$makeSphere$lambda(withIbl, envMaps, this, scene));
+    return group(void 0, PbrMaterialContent$makeSphere$lambda(this, withIbl, envMaps, scene));
   };
   function PbrMaterialContent$MaterialMaps(name, albedo, normal, roughness, metallic, ao, displacement) {
     this.name = name;
@@ -7583,9 +7597,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'PbrMaterialContent',
     interfaces: [PbrDemo$PbrContent]
   };
-  function RoughnesMetalGridContent() {
+  function RoughnesMetalGridContent(sphereProto) {
     RoughnesMetalGridContent$Companion_getInstance();
     PbrDemo$PbrContent.call(this, 'Roughness / Metal');
+    this.sphereProto = sphereProto;
     this.colors_0 = new Cycler(RoughnesMetalGridContent$Companion_getInstance().matColors_0);
     this.shaders_0 = ArrayList_init();
     this.iblContent_0 = null;
@@ -7732,22 +7747,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         pbrShader.brdfLut = envMaps.brdfLut;
       }
     }};
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
-    return function ($receiver) {
-      var closure$nCols_0 = closure$nCols;
-      var closure$x_0 = closure$x;
-      var closure$spacing_0 = closure$spacing;
-      var closure$nRows_0 = closure$nRows;
-      var closure$y_0 = closure$y;
-      var $receiver_0 = $receiver.sphereProps.uvDefaults();
-      $receiver_0.steps = 100;
-      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((-(closure$nRows_0 - 1 | 0) | 0) * 0.5 + closure$y_0) * closure$spacing_0, 0.0);
-      $receiver_0.radius = 1.0;
-      $receiver.uvSphere_mojs8w$($receiver.sphereProps);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$envMaps) {
+  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
       $receiver.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
@@ -7759,6 +7759,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }return Unit;
     };
   }
+  function RoughnesMetalGridContent$makeSpheres$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y, this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps) {
+    return function ($receiver) {
+      $receiver.translate_y2kzbl$(((-(closure$nCols - 1 | 0) | 0) * 0.5 + closure$x) * closure$spacing, ((-(closure$nRows - 1 | 0) | 0) * 0.5 + closure$y) * closure$spacing, 0.0);
+      var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+      var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
+      var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
+      var closure$x_0 = closure$x;
+      var closure$nCols_0 = closure$nCols;
+      var closure$y_0 = closure$y;
+      var closure$nRows_0 = closure$nRows;
+      var closure$withIbl_0 = closure$withIbl;
+      var closure$envMaps_0 = closure$envMaps;
+      mesh.geometry.addGeometry_r7nl2o$(this$RoughnesMetalGridContent_0.sphereProto.simpleSphere);
+      var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent_0, closure$x_0, closure$nCols_0, closure$y_0, closure$nRows_0, closure$withIbl_0, closure$envMaps_0));
+      mesh.shader = shader;
+      this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
+      $receiver.unaryPlus_uv0sim$(mesh);
+      return Unit;
+    };
+  }
   function RoughnesMetalGridContent$makeSpheres$lambda(this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps) {
     return function ($receiver) {
       var nRows = 7;
@@ -7766,16 +7786,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var spacing = 2.5;
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
-          var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
-          var closure$withIbl_0 = closure$withIbl;
-          var closure$envMaps_0 = closure$envMaps;
-          mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda_0(this$RoughnesMetalGridContent_0, x, nCols, y, nRows, closure$withIbl_0, closure$envMaps_0));
-          mesh.shader = shader;
-          this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
-          $receiver.unaryPlus_uv0sim$(mesh);
+          $receiver.unaryPlus_uv0sim$(transformGroup(void 0, RoughnesMetalGridContent$makeSpheres$lambda$lambda(nCols, x, spacing, nRows, y, this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps)));
         }
       }
       return Unit;
@@ -9315,6 +9326,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
         tmp$_4 = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor).outColor;
         break;
+      case 'CUBE_MAP_ALBEDO':
+        throw IllegalStateException_init('CUBE_MAP_ALBEDO is not allowed for PbrShader');
       default:tmp$_4 = Kotlin.noWhenBranchMatched();
         break;
     }
@@ -10325,6 +10338,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$pbr.ColorGridContent = ColorGridContent;
   package$pbr.pbrDemoScene_aemszp$ = pbrDemoScene;
   PbrDemo.PbrContent = PbrDemo$PbrContent;
+  PbrDemo.SphereProto = PbrDemo$SphereProto;
   Object.defineProperty(PbrDemo, 'Companion', {
     get: PbrDemo$Companion_getInstance
   });

@@ -186,7 +186,6 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                     }
                 }
             }
-
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = texture.loadedTexture as LoadedTextureWebGl

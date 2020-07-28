@@ -13,7 +13,7 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
 
-class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
+class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Roughness / Metal") {
     private val colors = Cycler(matColors)
 
     private val shaders = mutableListOf<PbrShader>()
@@ -112,26 +112,23 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
 
         for (y in 0 until nRows) {
             for (x in 0 until nCols) {
-                +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                    generate {
-                        uvSphere {
-                            steps = 100
-                            center.set((-(nCols - 1) * 0.5f + x) * spacing, (-(nRows - 1) * 0.5f + y) * spacing, 0f)
-                            radius = 1f
-                        }
-                    }
+                +transformGroup {
+                    translate((-(nCols - 1) * 0.5f + x) * spacing, (-(nRows - 1) * 0.5f + y) * spacing, 0f)
+                    +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                        geometry.addGeometry(sphereProto.simpleSphere)
 
-                    val shader = pbrShader {
-                        albedoSource = Albedo.STATIC_ALBEDO
-                        albedo = colors.current.linColor
-                        roughness = max(x / (nCols - 1).toFloat(), 0.05f)
-                        metallic = y / (nRows - 1).toFloat()
-                        if (withIbl) {
-                            useImageBasedLighting(envMaps)
+                        val shader = pbrShader {
+                            albedoSource = Albedo.STATIC_ALBEDO
+                            albedo = colors.current.linColor
+                            roughness = max(x / (nCols - 1).toFloat(), 0.05f)
+                            metallic = y / (nRows - 1).toFloat()
+                            if (withIbl) {
+                                useImageBasedLighting(envMaps)
+                            }
                         }
+                        this.shader = shader
+                        shaders += shader
                     }
-                    this.shader = shader
-                    shaders += shader
                 }
             }
         }

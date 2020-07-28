@@ -207,7 +207,8 @@ class VkOffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int,
         override fun freeResources() { }
     }
 
-    class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, colorFormats: List<Int>, filterMethod: Int) :
+    class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
+                                  colorFormats: List<Int>, filterMethod: Int) :
             ColorAttachments(isCopied, colorFormats) {
         override val colorImages: List<Image>
         override val colorImageViews: List<ImageView>

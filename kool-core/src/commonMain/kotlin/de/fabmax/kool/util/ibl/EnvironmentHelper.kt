@@ -30,65 +30,63 @@ object EnvironmentHelper {
                 maps.dispose()
             }
         }
+
+        scene.addOffscreenPass(brdfLutPass)
+
         return maps
     }
 
     fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, ctx: KoolContext, autoDispose: Boolean = true): EnvironmentMaps {
-        val gradientPass = GradientEnvGenerator(gradient, ctx)
-
-        val irrMapPass = IrradianceMapPass(scene, gradientPass.colorTexture!!)
-        irrMapPass.dependsOn(gradientPass)
-        val irrMap = CubeMapTexture("gradientEnv-irradiance", irrMapPass.config.colorAttachments[0].getTextureProps(false))
-        irrMapPass.copyTargetsColor += irrMap
-
-        val reflMapPass = ReflectionMapPass(scene, gradientPass.colorTexture!!)
-        reflMapPass.dependsOn(gradientPass)
-        val reflMap = CubeMapTexture("gradientEnv-reflection", reflMapPass.config.colorAttachments[0].getTextureProps(true))
-        reflMapPass.copyTargetsColor += reflMap
-
+        val gradientPass = GradientEnvGenerator(scene, gradient, ctx)
+        val irrMapPass = IrradianceMapPass.irradianceMapFromCube(scene, gradientPass.colorTexture!!)
+        val reflMapPass = ReflectionMapPass.reflectionMapFromCube(scene, gradientPass.colorTexture!!)
         val brdfLutPass = BrdfLutPass(scene)
-        val brdfLut = Texture("gradientEnv-brdf", brdfLutPass.config.colorAttachments[0].getTextureProps(false))
-        brdfLutPass.copyTargetsColor += brdfLut
 
-        val maps = EnvironmentMaps(irrMap, reflMap, brdfLut)
+        irrMapPass.dependsOn(gradientPass)
+        reflMapPass.dependsOn(gradientPass)
+
+        val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor())
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
             }
         }
+
+        scene.addOffscreenPass(gradientPass)
+        scene.addOffscreenPass(irrMapPass)
+        scene.addOffscreenPass(reflMapPass)
+        scene.addOffscreenPass(brdfLutPass)
+
         return maps
     }
 
     suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: AssetManager, autoDispose: Boolean = true): EnvironmentMaps {
-        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
+        val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
         val hdri = assetManager.loadAndPrepareTexture(hdriPath, hdriTexProps)
         return hdriEnvironment(scene, hdri, autoDispose)
     }
 
     fun hdriEnvironment(scene: Scene, hdri: Texture, autoDispose: Boolean = true): EnvironmentMaps {
-        val hdriPass = HdriEnvGenerator(scene, hdri, 256)
-        val hdriCube = hdriPass.colorTexture!!
-
+        val rgbeDecoder = RgbeDecoder(scene, hdri)
+        val irrMapPass = IrradianceMapPass.irradianceMapFromHdri(scene, rgbeDecoder.colorTexture!!)
+        val reflMapPass = ReflectionMapPass.reflectionMapFromHdri(scene, rgbeDecoder.colorTexture!!)
         val brdfLutPass = BrdfLutPass(scene)
-        val brdfLut = Texture("hdriEnv-brdf", brdfLutPass.config.colorAttachments[0].getTextureProps(false))
-        brdfLutPass.copyTargetsColor += brdfLut
 
-        val irrMapPass = IrradianceMapPass(scene, hdriCube)
-        irrMapPass.dependsOn(hdriPass)
-        val irrMap = CubeMapTexture("hdriEnv-irradiance", irrMapPass.config.colorAttachments[0].getTextureProps(false))
-        irrMapPass.copyTargetsColor += irrMap
+        irrMapPass.dependsOn(rgbeDecoder)
+        reflMapPass.dependsOn(rgbeDecoder)
 
-        val reflMapPass = ReflectionMapPass(scene, hdriCube)
-        reflMapPass.dependsOn(hdriPass)
-        val reflMap = CubeMapTexture("hdriEnv-reflection", reflMapPass.config.colorAttachments[0].getTextureProps(true))
-        reflMapPass.copyTargetsColor += reflMap
-
-        val maps = EnvironmentMaps(irrMap, reflMap, brdfLut)
+        val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor())
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
             }
         }
+
+        scene.addOffscreenPass(rgbeDecoder)
+        scene.addOffscreenPass(irrMapPass)
+        scene.addOffscreenPass(reflMapPass)
+        scene.addOffscreenPass(brdfLutPass)
+
         return maps
     }
 

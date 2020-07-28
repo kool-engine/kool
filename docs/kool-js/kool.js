@@ -513,6 +513,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PbrShader.prototype.constructor = PbrShader;
   PhongShader.prototype = Object.create(ModeledShader.prototype);
   PhongShader.prototype.constructor = PhongShader;
+  UnlitShader.prototype = Object.create(ModeledShader.prototype);
+  UnlitShader.prototype.constructor = UnlitShader;
   TexFormat.prototype = Object.create(Enum.prototype);
   TexFormat.prototype.constructor = TexFormat;
   Texture$LoadingState.prototype = Object.create(Enum.prototype);
@@ -763,8 +765,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   BrdfLutPass.prototype.constructor = BrdfLutPass;
   GradientEnvGenerator.prototype = Object.create(OffscreenRenderPassCube.prototype);
   GradientEnvGenerator.prototype.constructor = GradientEnvGenerator;
-  HdriEnvGenerator.prototype = Object.create(OffscreenRenderPassCube.prototype);
-  HdriEnvGenerator.prototype.constructor = HdriEnvGenerator;
+  HdriCubeGenerator.prototype = Object.create(OffscreenRenderPassCube.prototype);
+  HdriCubeGenerator.prototype.constructor = HdriCubeGenerator;
+  EnvCubeSamplerNode.prototype = Object.create(ShaderNode.prototype);
+  EnvCubeSamplerNode.prototype.constructor = EnvCubeSamplerNode;
+  EnvEquiRectSamplerNode.prototype = Object.create(ShaderNode.prototype);
+  EnvEquiRectSamplerNode.prototype.constructor = EnvEquiRectSamplerNode;
+  RgbeDecoderNode.prototype = Object.create(ShaderNode.prototype);
+  RgbeDecoderNode.prototype.constructor = RgbeDecoderNode;
   IrradianceMapPass$ConvoluteIrradianceNode.prototype = Object.create(ShaderNode.prototype);
   IrradianceMapPass$ConvoluteIrradianceNode.prototype.constructor = IrradianceMapPass$ConvoluteIrradianceNode;
   IrradianceMapPass.prototype = Object.create(OffscreenRenderPassCube.prototype);
@@ -773,6 +781,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ReflectionMapPass$ConvoluteReflectionNode.prototype.constructor = ReflectionMapPass$ConvoluteReflectionNode;
   ReflectionMapPass.prototype = Object.create(OffscreenRenderPassCube.prototype);
   ReflectionMapPass.prototype.constructor = ReflectionMapPass;
+  RgbeDecoder.prototype = Object.create(OffscreenRenderPass2d.prototype);
+  RgbeDecoder.prototype.constructor = RgbeDecoder;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
   Usage.prototype = Object.create(Enum.prototype);
@@ -4923,6 +4933,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else
       return $receiver;
   });
+  function getNumMipLevels(texWidth, texHeight) {
+    var x = Math_0.max(texWidth, texHeight);
+    var x_0 = Math_0.log2(x);
+    return numberToInt(Math_0.floor(x_0)) + 1 | 0;
+  }
   function triArea(va, vb, vc) {
     var xAB = vb.x - va.x;
     var yAB = vb.y - va.y;
@@ -11162,6 +11177,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.camera_et6fa$_0 = camera;
     }
   });
+  OffscreenRenderPass.prototype.getColorTexProps_za3lpa$ = function (colorAttachment) {
+    if (colorAttachment === void 0)
+      colorAttachment = 0;
+    var props = this.config.colorAttachments.get_za3lpa$(colorAttachment).getTextureProps_6taknv$(this.config.mipLevels > 1);
+    return props;
+  };
   OffscreenRenderPass.prototype.getMipWidth_za3lpa$ = function (mipLevel) {
     return mipLevel <= 0 ? this.width : this.width >> mipLevel;
   };
@@ -11192,6 +11213,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.width = builder.width;
     this.height = builder.height;
     this.mipLevels = builder.mipLevels;
+    this.drawMipLevels = builder.drawMipLevels;
     this.depthRenderTarget = builder.depthRenderTarget;
     this.colorRenderTarget = builder.colorRenderTarget;
     var tmp$, tmp$_0, tmp$_1;
@@ -11248,6 +11270,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.width = 0;
     this.height = 0;
     this.mipLevels = 1;
+    this.drawMipLevels = true;
     this.colorRenderTarget = OffscreenRenderPass$RenderTarget$TEXTURE_getInstance();
     this.depthRenderTarget = OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
     this.colorAttachments = ArrayList_init_0();
@@ -11260,6 +11283,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OffscreenRenderPass$ConfigBuilder.prototype.setSize_vux9f0$ = function (width, height) {
     this.width = width;
     this.height = height;
+  };
+  OffscreenRenderPass$ConfigBuilder.prototype.addMipLevels_ydzd23$ = function (width, height, drawMipLevels) {
+    if (width === void 0)
+      width = this.width;
+    if (height === void 0)
+      height = this.height;
+    if (drawMipLevels === void 0)
+      drawMipLevels = true;
+    this.mipLevels = getNumMipLevels(width, height);
+    this.drawMipLevels = drawMipLevels;
   };
   OffscreenRenderPass$ConfigBuilder.prototype.clearDepthTexture = function () {
     this.depthRenderTarget = OffscreenRenderPass$RenderTarget$RENDER_BUFFER_getInstance();
@@ -11389,6 +11422,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return !this.colorTextures.isEmpty() ? this.colorTextures.get_za3lpa$(0) : null;
     }
   });
+  OffscreenRenderPass2d.prototype.copyColor = function () {
+    var tex = new Texture(toString(this.name) + '-' + this.copyTargetsColor.size, this.getColorTexProps_za3lpa$());
+    this.copyTargetsColor.add_11rb$(tex);
+    return tex;
+  };
   function OffscreenRenderPass2d$dispose$lambda(this$OffscreenRenderPass2d) {
     return function (it) {
       var tmp$, tmp$_0;
@@ -11496,6 +11534,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.onSetupView_3plctr$_0 = onSetupView;
     }
   });
+  OffscreenRenderPassCube.prototype.copyColor = function () {
+    var tex = new CubeMapTexture(toString(this.name) + '-' + this.copyTargetsColor.size, this.getColorTexProps_za3lpa$());
+    this.copyTargetsColor.add_11rb$(tex);
+    return tex;
+  };
   OffscreenRenderPassCube.prototype.collectDrawCommands_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     tmp$ = OffscreenRenderPassCube$ViewDirection$values();
@@ -14511,12 +14554,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_1.depthMap = depthMapNd;
     return $receiver_1;
   };
-  ShaderModel$FragmentStageBuilder.prototype.unlitMaterialNode_r20yfm$ = function (albedo) {
-    if (albedo === void 0)
-      albedo = null;
+  ShaderModel$FragmentStageBuilder.prototype.unlitMaterialNode_r20yfm$ = function (color) {
+    if (color === void 0)
+      color = null;
     var mat = this.addNode_u9w9by$(new UnlitMaterialNode(this.stage));
-    if (albedo != null) {
-      mat.inColor = albedo;
+    if (color != null) {
+      mat.inColor = color;
     }return mat;
   };
   ShaderModel$FragmentStageBuilder.prototype.phongMaterialNode_8rwtp1$ = function (albedo, normal, fragPos, camPos, lightNode) {
@@ -16272,9 +16315,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function Albedo_initFields() {
     Albedo_initFields = function () {
     };
-    Albedo$STATIC_ALBEDO_instance = new Albedo('STATIC_ALBEDO', 0);
-    Albedo$TEXTURE_ALBEDO_instance = new Albedo('TEXTURE_ALBEDO', 1);
-    Albedo$VERTEX_ALBEDO_instance = new Albedo('VERTEX_ALBEDO', 2);
+    Albedo$CUBE_MAP_ALBEDO_instance = new Albedo('CUBE_MAP_ALBEDO', 0);
+    Albedo$STATIC_ALBEDO_instance = new Albedo('STATIC_ALBEDO', 1);
+    Albedo$TEXTURE_ALBEDO_instance = new Albedo('TEXTURE_ALBEDO', 2);
+    Albedo$VERTEX_ALBEDO_instance = new Albedo('VERTEX_ALBEDO', 3);
+  }
+  var Albedo$CUBE_MAP_ALBEDO_instance;
+  function Albedo$CUBE_MAP_ALBEDO_getInstance() {
+    Albedo_initFields();
+    return Albedo$CUBE_MAP_ALBEDO_instance;
   }
   var Albedo$STATIC_ALBEDO_instance;
   function Albedo$STATIC_ALBEDO_getInstance() {
@@ -16297,11 +16346,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [Enum]
   };
   function Albedo$values() {
-    return [Albedo$STATIC_ALBEDO_getInstance(), Albedo$TEXTURE_ALBEDO_getInstance(), Albedo$VERTEX_ALBEDO_getInstance()];
+    return [Albedo$CUBE_MAP_ALBEDO_getInstance(), Albedo$STATIC_ALBEDO_getInstance(), Albedo$TEXTURE_ALBEDO_getInstance(), Albedo$VERTEX_ALBEDO_getInstance()];
   }
   Albedo.values = Albedo$values;
   function Albedo$valueOf(name) {
     switch (name) {
+      case 'CUBE_MAP_ALBEDO':
+        return Albedo$CUBE_MAP_ALBEDO_getInstance();
       case 'STATIC_ALBEDO':
         return Albedo$STATIC_ALBEDO_getInstance();
       case 'TEXTURE_ALBEDO':
@@ -16909,8 +16960,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function PbrShader(cfg, model) {
     PbrShader$Companion_getInstance();
-    if (cfg === void 0)
-      cfg = new PbrMaterialConfig();
     if (model === void 0)
       model = PbrShader$Companion_getInstance().defaultPbrModel_2ufela$(cfg);
     ModeledShader.call(this, model);
@@ -17965,6 +18014,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }
 
         break;
+      case 'CUBE_MAP_ALBEDO':
+        throw IllegalStateException_init('CUBE_MAP_ALBEDO is not allowed for PbrShader');
       default:tmp$_10 = Kotlin.noWhenBranchMatched();
         break;
     }
@@ -18170,8 +18221,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function PhongShader(cfg, model) {
     PhongShader$Companion_getInstance();
-    if (cfg === void 0)
-      cfg = new PhongShader$PhongConfig();
     if (model === void 0)
       model = PhongShader$Companion_getInstance().defaultPhongModel_m663ta$(cfg);
     ModeledShader.call(this, model);
@@ -18567,6 +18616,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       case 'TEXTURE_ALBEDO':
         tmp$_3 = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output, false).outColor;
         break;
+      case 'CUBE_MAP_ALBEDO':
+        throw IllegalStateException_init('CUBE_MAP_ALBEDO is not allowed for PbrShader');
       default:tmp$_3 = Kotlin.noWhenBranchMatched();
         break;
     }
@@ -18638,6 +18689,342 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'PhongShader',
     interfaces: [ModeledShader]
+  };
+  var ShaderModel$findNode$lambda_2 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
+  var unlitShader = defineInlineFunction('kool.de.fabmax.kool.pipeline.shading.unlitShader_8lu9cf$', wrapFunction(function () {
+    var UnlitMaterialConfig_init = _.de.fabmax.kool.pipeline.shading.UnlitMaterialConfig;
+    var UnlitShader_init = _.de.fabmax.kool.pipeline.shading.UnlitShader;
+    return function (block) {
+      var cfg = new UnlitMaterialConfig_init();
+      block(cfg);
+      return new UnlitShader_init(cfg);
+    };
+  }));
+  function UnlitShader(cfg, model) {
+    UnlitShader$Companion_getInstance();
+    if (model === void 0)
+      model = UnlitShader$Companion_getInstance().defaultUnlitModel_ws3dmo$(cfg);
+    ModeledShader.call(this, model);
+    this.cullMethod_0 = cfg.cullMethod;
+    this.isBlending_0 = Kotlin.isType(cfg.alphaMode, AlphaModeBlend);
+    this.uColor_0 = null;
+    this.color_l79ks7$_0 = cfg.color;
+    this.colorSampler_0 = null;
+    this.colorMap_h0jju9$_0 = cfg.colorMap;
+    this.colorCubeSampler_0 = null;
+    this.colorCubeMap_moycys$_0 = cfg.colorCubeMap;
+  }
+  Object.defineProperty(UnlitShader.prototype, 'color', {
+    get: function () {
+      return this.color_l79ks7$_0;
+    },
+    set: function (value) {
+      var tmp$, tmp$_0, tmp$_1;
+      this.color_l79ks7$_0 = value;
+      (tmp$_1 = (tmp$_0 = (tmp$ = this.uColor_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
+    }
+  });
+  Object.defineProperty(UnlitShader.prototype, 'colorMap', {
+    get: function () {
+      return this.colorMap_h0jju9$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.colorMap_h0jju9$_0 = value;
+      (tmp$ = this.colorSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  Object.defineProperty(UnlitShader.prototype, 'colorCubeMap', {
+    get: function () {
+      return this.colorCubeMap_moycys$_0;
+    },
+    set: function (value) {
+      var tmp$;
+      this.colorCubeMap_moycys$_0 = value;
+      (tmp$ = this.colorCubeSampler_0) != null ? (tmp$.texture = value) : null;
+    }
+  });
+  UnlitShader.prototype.onPipelineSetup_x08qbx$ = function (builder, mesh, ctx) {
+    builder.cullMethod = this.cullMethod_0;
+    builder.blendMode = this.isBlending_0 ? BlendMode$BLEND_PREMULTIPLIED_ALPHA_getInstance() : BlendMode$DISABLED_getInstance();
+    ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
+  };
+  UnlitShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var $this = this.model;
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$_4;
+      tmp$_4 = $this.stages.values.iterator();
+      while (tmp$_4.hasNext()) {
+        var element = tmp$_4.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_5;
+          var $receiver = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_6;
+            tmp$_6 = $receiver.iterator();
+            while (tmp$_6.hasNext()) {
+              var element_0 = tmp$_6.next();
+              if (equals(element_0.name, 'uColor') && Kotlin.isType(element_0, PushConstantNodeColor)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_5 = firstOrNull$result) == null || Kotlin.isType(tmp$_5, PushConstantNodeColor) ? tmp$_5 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    this.uColor_0 = findNode_3klnlw$result;
+    (tmp$_1 = (tmp$_0 = (tmp$ = this.uColor_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(this.color) : null;
+    var $this_0 = this.model;
+    var stage_0;
+    var findNode_3klnlw$result_0;
+    findNode_3klnlw$break: do {
+      stage_0 = ShaderStage.ALL;
+      var tmp$_7;
+      tmp$_7 = $this_0.stages.values.iterator();
+      while (tmp$_7.hasNext()) {
+        var element_1 = tmp$_7.next();
+        if ((element_1.stage.mask & stage_0.mask) !== 0) {
+          var tmp$_8;
+          var $receiver_0 = element_1.nodes;
+          var firstOrNull$result_0;
+          firstOrNull$break: do {
+            var tmp$_9;
+            tmp$_9 = $receiver_0.iterator();
+            while (tmp$_9.hasNext()) {
+              var element_2 = tmp$_9.next();
+              if (equals(element_2.name, 'tColor') && Kotlin.isType(element_2, TextureNode)) {
+                firstOrNull$result_0 = element_2;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_0 = null;
+          }
+           while (false);
+          var node_0 = (tmp$_8 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_8, TextureNode) ? tmp$_8 : throwCCE();
+          if (node_0 != null) {
+            findNode_3klnlw$result_0 = node_0;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_0 = null;
+    }
+     while (false);
+    this.colorSampler_0 = (tmp$_2 = findNode_3klnlw$result_0) != null ? tmp$_2.sampler : null;
+    if ((tmp$_3 = this.colorSampler_0) != null) {
+      tmp$_3.texture = this.colorMap;
+    }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
+  };
+  function UnlitShader$Companion() {
+    UnlitShader$Companion_instance = this;
+  }
+  UnlitShader$Companion.prototype.defaultUnlitModel_ws3dmo$ = function (cfg) {
+    var $receiver = new ShaderModel('defaultPbrModel()');
+    var ifColors = {v: null};
+    var ifTexCoords = {v: null};
+    var ifFragPos = {v: null};
+    var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var modelMat;
+    var mvpMat;
+    var mvpNode = $receiver_0.mvpNode();
+    if (cfg.isInstanced) {
+      modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    } else {
+      modelMat = mvpNode.outModelMat;
+      mvpMat = mvpNode.outMvpMat;
+    }
+    if (cfg.isSkinned) {
+      var skinNd = $receiver_0.skinTransformNode_78eraa$($receiver_0.attrJoints().output, $receiver_0.attrWeights().output, cfg.maxJoints);
+      modelMat = $receiver_0.multiplyNode_ze33is$(modelMat, skinNd.outJointMat).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpMat, skinNd.outJointMat).output;
+    }if (cfg.requiresTexCoords()) {
+      tmp$ = $receiver_0.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    } else {
+      tmp$ = null;
+    }
+    ifTexCoords.v = tmp$;
+    if (cfg.colorSource === Albedo$VERTEX_ALBEDO_getInstance()) {
+      tmp$_0 = $receiver_0.stageInterfaceNode_iikjwn$('ifColors', $receiver_0.attrColors().output);
+    } else {
+      tmp$_0 = null;
+    }
+    ifColors.v = tmp$_0;
+    if (!cfg.morphAttributes.isEmpty()) {
+      tmp$_1 = $receiver_0.morphWeightsNode_za3lpa$(cfg.morphAttributes.size);
+    } else {
+      tmp$_1 = null;
+    }
+    var morphWeights = tmp$_1;
+    var localPos = {v: $receiver_0.attrPositions().output};
+    var $receiver_1 = cfg.morphAttributes;
+    var destination = ArrayList_init_0();
+    var tmp$_3;
+    tmp$_3 = $receiver_1.iterator();
+    while (tmp$_3.hasNext()) {
+      var element = tmp$_3.next();
+      if (startsWith(element.name, Attribute$Companion_getInstance().POSITIONS.name))
+        destination.add_11rb$(element);
+    }
+    var tmp$_4;
+    tmp$_4 = destination.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_0 = tmp$_4.next();
+      var weight = $receiver_0.getMorphWeightNode_dcktnw$(cfg.morphAttributes.indexOf_11rb$(element_0), ensureNotNull(morphWeights));
+      var posDisplacement = $receiver_0.multiplyNode_ze33is$($receiver_0.attributeNode_nm2vx5$(element_0).output, weight.outWeight);
+      localPos.v = $receiver_0.addNode_ze33is$(localPos.v, posDisplacement.output).output;
+    }
+    if (cfg.colorSource === Albedo$CUBE_MAP_ALBEDO_getInstance()) {
+      var worldPos = $receiver_0.vec3TransformNode_vid4wo$(localPos.v, modelMat, 1.0).outVec3;
+      tmp$_2 = $receiver_0.stageInterfaceNode_iikjwn$('ifFragPos', worldPos);
+    } else {
+      tmp$_2 = null;
+    }
+    ifFragPos.v = tmp$_2;
+    $receiver_0.positionOutput = $receiver_0.vec4TransformNode_9krp9t$(localPos.v, mvpMat).outVec4;
+    var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver);
+    var tmp$_5, tmp$_6, tmp$_7;
+    switch (cfg.colorSource.name) {
+      case 'VERTEX_ALBEDO':
+        tmp$_5 = ensureNotNull(ifColors.v).output;
+        break;
+      case 'STATIC_ALBEDO':
+        tmp$_5 = $receiver_2.pushConstantNodeColor_61zpoe$('uColor').output;
+        break;
+      case 'TEXTURE_ALBEDO':
+        var colorSampler = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$('tColor'), ensureNotNull(ifTexCoords.v).output);
+        if (cfg.isMultiplyColorMap) {
+          var fac = $receiver_2.pushConstantNodeColor_61zpoe$('uColor').output;
+          tmp$_5 = $receiver_2.multiplyNode_ze33is$(colorSampler.outColor, fac).output;
+        } else {
+          tmp$_5 = colorSampler.outColor;
+        }
+
+        break;
+      case 'CUBE_MAP_ALBEDO':
+        var colorSampler_0 = $receiver_2.cubeMapSamplerNode_2z3a2t$($receiver_2.cubeMapNode_61zpoe$('tCubeColor'), ensureNotNull(ifFragPos.v).output);
+        if (cfg.isMultiplyColorMap) {
+          var fac_0 = $receiver_2.pushConstantNodeColor_61zpoe$('uColor').output;
+          tmp$_5 = $receiver_2.multiplyNode_ze33is$(colorSampler_0.outColor, fac_0).output;
+        } else {
+          tmp$_5 = colorSampler_0.outColor;
+        }
+
+        break;
+      default:tmp$_5 = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    var color = {v: tmp$_5};
+    if ((tmp$_7 = Kotlin.isType(tmp$_6 = cfg.alphaMode, AlphaModeMask) ? tmp$_6 : null) != null) {
+      $receiver_2.discardAlpha_ze33is$($receiver_2.splitNode_500t7j$(color.v, 'a').output, $receiver_2.constFloat_mx4ult$(tmp$_7.cutOff));
+    }if (!Kotlin.isType(cfg.alphaMode, AlphaModeBlend)) {
+      color.v = $receiver_2.combineXyzWNode_ze33is$(color.v, $receiver_2.constFloat_mx4ult$(1.0)).output;
+    }$receiver_2.colorOutput_a3v4si$($receiver_2.unlitMaterialNode_r20yfm$(color.v).outColor);
+    return $receiver;
+  };
+  UnlitShader$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var UnlitShader$Companion_instance = null;
+  function UnlitShader$Companion_getInstance() {
+    if (UnlitShader$Companion_instance === null) {
+      new UnlitShader$Companion();
+    }return UnlitShader$Companion_instance;
+  }
+  UnlitShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'UnlitShader',
+    interfaces: [ModeledShader]
+  };
+  function UnlitMaterialConfig() {
+    this.colorSource = Albedo$VERTEX_ALBEDO_getInstance();
+    this.isMultiplyColorMap = false;
+    this.isInstanced = false;
+    this.isSkinned = false;
+    this.maxJoints = 64;
+    this.morphAttributes = ArrayList_init_0();
+    this.cullMethod = CullMethod$CULL_BACK_FACES_getInstance();
+    this.alphaMode = new AlphaModeOpaque();
+    this.color = Color$Companion_getInstance().GRAY;
+    this.colorMap = null;
+    this.colorCubeMap = null;
+  }
+  UnlitMaterialConfig.prototype.useStaticColor_d7aj7k$ = function (color) {
+    this.colorSource = Albedo$STATIC_ALBEDO_getInstance();
+    this.color = color;
+  };
+  UnlitMaterialConfig.prototype.useColorMap_ivxn3r$ = function (colorMap, isMultiplyColorMap) {
+    if (isMultiplyColorMap === void 0)
+      isMultiplyColorMap = false;
+    this.useColorMap_daqygw$(Texture_init(colorMap), isMultiplyColorMap);
+  };
+  UnlitMaterialConfig.prototype.useColorMap_daqygw$ = function (colorMap, isMultiplyColorMap) {
+    if (isMultiplyColorMap === void 0)
+      isMultiplyColorMap = false;
+    this.colorMap = colorMap;
+    this.isMultiplyColorMap = isMultiplyColorMap;
+    this.colorSource = Albedo$TEXTURE_ALBEDO_getInstance();
+  };
+  UnlitMaterialConfig.prototype.useColorCubeMap_ivxn3r$ = function (colorCubeMap, isMultiplyColorMap) {
+    if (isMultiplyColorMap === void 0)
+      isMultiplyColorMap = false;
+    this.useColorMap_daqygw$(new CubeMapTexture(colorCubeMap), isMultiplyColorMap);
+  };
+  UnlitMaterialConfig.prototype.useColorCubeMap_a54iyn$ = function (colorCubeMap, isMultiplyColorMap) {
+    if (isMultiplyColorMap === void 0)
+      isMultiplyColorMap = false;
+    this.colorCubeMap = colorCubeMap;
+    this.isMultiplyColorMap = isMultiplyColorMap;
+    this.colorSource = Albedo$CUBE_MAP_ALBEDO_getInstance();
+  };
+  UnlitMaterialConfig.prototype.requiresTexCoords = function () {
+    return this.colorSource === Albedo$TEXTURE_ALBEDO_getInstance();
+  };
+  UnlitMaterialConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'UnlitMaterialConfig',
+    interfaces: []
   };
   function Std140Layout(uniforms) {
     this.elements_0 = ArrayList_init_0();
@@ -25041,7 +25428,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'UiRoot',
     interfaces: [Node]
   };
-  var ShaderModel$findNode$lambda_2 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_3 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -26585,7 +26972,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Skin',
     interfaces: []
   };
-  var ShaderModel$findNode$lambda_3 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_4 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -26792,7 +27179,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       buf.set_6t1wet$((i * 4 | 0) + 3 | 0, 1);
     }
     var data = new BufferedTextureData(buf, 4, 4, TexFormat$RGBA_getInstance());
-    var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance());
+    var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1);
     return new Texture('ao_noise_tex', texProps, AmbientOcclusionPass$makeNoiseTexture$lambda(data));
   };
   AmbientOcclusionPass.prototype.dispose_aemszp$ = function (ctx) {
@@ -27233,7 +27620,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'AoSetup',
     interfaces: []
   };
-  var ShaderModel$findNode$lambda_4 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_5 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -29393,7 +29780,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeltaTGraph',
     interfaces: [UiComponent]
   };
-  var ShaderModel$findNode$lambda_5 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_6 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -29853,7 +30240,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredMrtPass',
     interfaces: [OffscreenRenderPass2d]
   };
-  var ShaderModel$findNode$lambda_6 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -29997,7 +30384,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'DeferredOutputShader',
     interfaces: [ModeledShader]
   };
-  var ShaderModel$findNode$lambda_7 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_8 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -30779,6 +31166,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }
 
         break;
+      case 'CUBE_MAP_ALBEDO':
+        throw IllegalStateException_init('CUBE_MAP_ALBEDO is not allowed for PbrShader');
       default:tmp$_9 = Kotlin.noWhenBranchMatched();
         break;
     }
@@ -31445,7 +31834,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'PbrLightingPass',
     interfaces: [OffscreenRenderPass2d]
   };
-  var ShaderModel$findNode$lambda_8 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_9 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -32293,7 +32682,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       buf.set_6t1wet$((i * 4 | 0) + 3 | 0, toByte(rand.randomI_n8acyv$(new IntRange(0, 255))));
     }
     var data = new BufferedTextureData(buf, sz, sz, TexFormat$RGBA_getInstance());
-    var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance());
+    var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1);
     return new Texture('ssr_noise_tex', texProps, PbrSceneShader$Companion$generateScrSpcReflectionNoiseTex$lambda(data));
   };
   PbrSceneShader$Companion.prototype.defaultDeferredPbrModel_ijjr66$ = function (cfg) {
@@ -38728,7 +39117,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var model = $receiver_1;
     mesh.shader = new ModeledShader(model);
     $receiver_0.unaryPlus_uv0sim$(mesh);
-    parentScene.addOffscreenPass_m1c2kf$(this);
     this.onAfterDraw.add_11rb$(BrdfLutPass_init$lambda(this, parentScene));
   }
   BrdfLutPass.prototype.dispose_aemszp$ = function (ctx) {
@@ -38850,7 +39238,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var maps = new EnvironmentMaps(cubeTex, cubeTex, brdfLut);
     if (autoDispose) {
       scene.onDispose.add_11rb$(EnvironmentHelper$singleColorEnvironment$lambda_0(maps));
-    }return maps;
+    }scene.addOffscreenPass_m1c2kf$(brdfLutPass);
+    return maps;
   };
   function EnvironmentHelper$gradientColorEnvironment$lambda(closure$maps) {
     return function ($receiver, it) {
@@ -38861,22 +39250,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   EnvironmentHelper.prototype.gradientColorEnvironment_hfkvyz$ = function (scene, gradient, ctx, autoDispose) {
     if (autoDispose === void 0)
       autoDispose = true;
-    var gradientPass = new GradientEnvGenerator(gradient, ctx);
-    var irrMapPass = new IrradianceMapPass(scene, ensureNotNull(gradientPass.colorTexture));
-    irrMapPass.dependsOn_yqp8fe$(gradientPass);
-    var irrMap = new CubeMapTexture('gradientEnv-irradiance', irrMapPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(false));
-    irrMapPass.copyTargetsColor.add_11rb$(irrMap);
-    var reflMapPass = new ReflectionMapPass(scene, ensureNotNull(gradientPass.colorTexture));
-    reflMapPass.dependsOn_yqp8fe$(gradientPass);
-    var reflMap = new CubeMapTexture('gradientEnv-reflection', reflMapPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(true));
-    reflMapPass.copyTargetsColor.add_11rb$(reflMap);
+    var gradientPass = new GradientEnvGenerator(scene, gradient, ctx);
+    var irrMapPass = IrradianceMapPass$Companion_getInstance().irradianceMapFromCube_53y80y$(scene, ensureNotNull(gradientPass.colorTexture));
+    var reflMapPass = ReflectionMapPass$Companion_getInstance().reflectionMapFromCube_53y80y$(scene, ensureNotNull(gradientPass.colorTexture));
     var brdfLutPass = new BrdfLutPass(scene);
-    var brdfLut = new Texture('gradientEnv-brdf', brdfLutPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(false));
-    brdfLutPass.copyTargetsColor.add_11rb$(brdfLut);
-    var maps = new EnvironmentMaps(irrMap, reflMap, brdfLut);
+    irrMapPass.dependsOn_yqp8fe$(gradientPass);
+    reflMapPass.dependsOn_yqp8fe$(gradientPass);
+    var maps = new EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor());
     if (autoDispose) {
       scene.onDispose.add_11rb$(EnvironmentHelper$gradientColorEnvironment$lambda(maps));
-    }return maps;
+    }scene.addOffscreenPass_m1c2kf$(gradientPass);
+    scene.addOffscreenPass_m1c2kf$(irrMapPass);
+    scene.addOffscreenPass_m1c2kf$(reflMapPass);
+    scene.addOffscreenPass_m1c2kf$(brdfLutPass);
+    return maps;
   };
   function Coroutine$hdriEnvironment_cj1d96$($this, scene_0, hdriPath_0, assetManager_0, autoDispose_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -38901,7 +39288,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           case 0:
             if (this.local$autoDispose === void 0)
               this.local$autoDispose = true;
-            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), true);
+            var hdriTexProps = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1);
             this.state_0 = 2;
             this.result_0 = this.local$assetManager.loadAndPrepareTexture_va0f2y$(this.local$hdriPath, hdriTexProps, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
@@ -38942,23 +39329,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   EnvironmentHelper.prototype.hdriEnvironment_wm5s1y$ = function (scene, hdri, autoDispose) {
     if (autoDispose === void 0)
       autoDispose = true;
-    var hdriPass = new HdriEnvGenerator(scene, hdri, 256);
-    var hdriCube = ensureNotNull(hdriPass.colorTexture);
+    var rgbeDecoder = new RgbeDecoder(scene, hdri);
+    var irrMapPass = IrradianceMapPass$Companion_getInstance().irradianceMapFromHdri_tstyqb$(scene, ensureNotNull(rgbeDecoder.colorTexture));
+    var reflMapPass = ReflectionMapPass$Companion_getInstance().reflectionMapFromHdri_tstyqb$(scene, ensureNotNull(rgbeDecoder.colorTexture));
     var brdfLutPass = new BrdfLutPass(scene);
-    var brdfLut = new Texture('hdriEnv-brdf', brdfLutPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(false));
-    brdfLutPass.copyTargetsColor.add_11rb$(brdfLut);
-    var irrMapPass = new IrradianceMapPass(scene, hdriCube);
-    irrMapPass.dependsOn_yqp8fe$(hdriPass);
-    var irrMap = new CubeMapTexture('hdriEnv-irradiance', irrMapPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(false));
-    irrMapPass.copyTargetsColor.add_11rb$(irrMap);
-    var reflMapPass = new ReflectionMapPass(scene, hdriCube);
-    reflMapPass.dependsOn_yqp8fe$(hdriPass);
-    var reflMap = new CubeMapTexture('hdriEnv-reflection', reflMapPass.config.colorAttachments.get_za3lpa$(0).getTextureProps_6taknv$(true));
-    reflMapPass.copyTargetsColor.add_11rb$(reflMap);
-    var maps = new EnvironmentMaps(irrMap, reflMap, brdfLut);
+    irrMapPass.dependsOn_yqp8fe$(rgbeDecoder);
+    reflMapPass.dependsOn_yqp8fe$(rgbeDecoder);
+    var maps = new EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor());
     if (autoDispose) {
       scene.onDispose.add_11rb$(EnvironmentHelper$hdriEnvironment$lambda(maps));
-    }return maps;
+    }scene.addOffscreenPass_m1c2kf$(rgbeDecoder);
+    scene.addOffscreenPass_m1c2kf$(irrMapPass);
+    scene.addOffscreenPass_m1c2kf$(reflMapPass);
+    scene.addOffscreenPass_m1c2kf$(brdfLutPass);
+    return maps;
   };
   EnvironmentHelper.$metadata$ = {
     kind: Kind_OBJECT,
@@ -38986,7 +39370,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'EnvironmentMaps',
     interfaces: []
   };
-  function GradientEnvGenerator(gradient, ctx, size) {
+  function GradientEnvGenerator(scene, gradient, ctx, size) {
     if (size === void 0)
       size = 128;
     var tmp$ = new Group();
@@ -39000,8 +39384,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.gradientTex_0 = this.makeGradientTex_0(gradient, size * 2 | 0, ctx);
     var tmp$_0;
     (Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE()).unaryPlus_uv0sim$(textureMesh(void 0, void 0, GradientEnvGenerator_init$lambda$lambda(this)));
-    ctx.addBackgroundRenderPass_m1c2kf$(this);
-    this.onAfterDraw.add_11rb$(GradientEnvGenerator_init$lambda(this, ctx));
+    this.onAfterDraw.add_11rb$(GradientEnvGenerator_init$lambda(this, scene, ctx));
   }
   GradientEnvGenerator.prototype.makeGradientTex_0 = function (gradient, size, ctx) {
     var buf = createUint8Buffer(size * 4 | 0);
@@ -39050,12 +39433,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function GradientEnvGenerator_init$lambda$lambda_0(closure$ctx, this$GradientEnvGenerator) {
     return function (it) {
-      println_0('gradient disposed');
       this$GradientEnvGenerator.dispose_aemszp$(closure$ctx);
       return Unit;
     };
   }
-  function GradientEnvGenerator_init$lambda(this$GradientEnvGenerator, closure$ctx) {
+  function GradientEnvGenerator_init$lambda(this$GradientEnvGenerator, closure$scene, closure$ctx) {
     return function (it) {
       var $receiver = this$GradientEnvGenerator;
       var $this = package$util.Log;
@@ -39063,7 +39445,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
       if (level.level >= $this.level.level) {
         $this.printer(level, tag, 'Generated gradient cube map');
-      }closure$ctx.removeBackgroundRenderPass_m1c2kf$(this$GradientEnvGenerator);
+      }closure$scene.removeOffscreenPass_m1c2kf$(this$GradientEnvGenerator);
       closure$ctx.runDelayed_hd6vpk$(1, GradientEnvGenerator_init$lambda$lambda_0(closure$ctx, this$GradientEnvGenerator));
       return Unit;
     };
@@ -39073,7 +39455,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'GradientEnvGenerator',
     interfaces: [OffscreenRenderPassCube]
   };
-  function HdriEnvGenerator(parentScene, hdriTexture, size) {
+  function HdriCubeGenerator(parentScene, hdriTexture, size) {
     if (size === void 0)
       size = 512;
     var tmp$ = new Group();
@@ -39083,15 +39465,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     builder.setSize_vux9f0$(closure$size, closure$size);
     builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
     builder.clearDepthTexture();
-    builder.mipLevels = numberToInt(Math_0.log2(closure$size));
+    builder.addMipLevels_ydzd23$();
     OffscreenRenderPassCube.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     this.uMipLevel_0 = Uniform1f_init(0.0, 'uMipLevel');
     var tmp$_0;
-    this.onSetupMipLevel = HdriEnvGenerator_init$lambda(this);
+    this.onSetupMipLevel = HdriCubeGenerator_init$lambda(this);
     var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.isFrustumChecked = false;
-    mesh.generate_v2sixm$(HdriEnvGenerator_init$lambda$lambda$lambda);
+    mesh.generate_v2sixm$(HdriCubeGenerator_init$lambda$lambda$lambda);
     var texName = 'colorTex';
     var $receiver_0 = new ShaderModel('HdriEnvGenerator');
     var ifLocalPos = {v: null};
@@ -39106,52 +39488,107 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(equiRectSampler.outColor);
     var model = $receiver_0;
     var $receiver_4 = new ModeledShader$TextureColor(hdriTexture, texName, model);
-    $receiver_4.onPipelineSetup.add_11rb$(HdriEnvGenerator_init$lambda$lambda$lambda$lambda);
+    $receiver_4.onPipelineSetup.add_11rb$(HdriCubeGenerator_init$lambda$lambda$lambda$lambda);
     mesh.shader = $receiver_4;
     $receiver.unaryPlus_uv0sim$(mesh);
-    parentScene.addOffscreenPass_m1c2kf$(this);
-    this.onAfterDraw.add_11rb$(HdriEnvGenerator_init$lambda_0(hdriTexture, this, parentScene));
+    this.onAfterDraw.add_11rb$(HdriCubeGenerator_init$lambda_0(hdriTexture, this, parentScene));
   }
-  function HdriEnvGenerator_init$lambda(this$HdriEnvGenerator) {
+  HdriCubeGenerator.prototype.dispose_aemszp$ = function (ctx) {
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPassCube.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  function HdriCubeGenerator_init$lambda(this$HdriCubeGenerator) {
     return function (mipLevel, f) {
-      this$HdriEnvGenerator.uMipLevel_0.value = mipLevel;
+      this$HdriCubeGenerator.uMipLevel_0.value = mipLevel;
       return Unit;
     };
   }
-  function HdriEnvGenerator_init$lambda$lambda$lambda($receiver) {
+  function HdriCubeGenerator_init$lambda$lambda$lambda($receiver) {
     $receiver.cubeProps.defaults().centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function HdriEnvGenerator_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
+  function HdriCubeGenerator_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
     builder.cullMethod = CullMethod$NO_CULLING_getInstance();
     return Unit;
   }
-  function HdriEnvGenerator_init$lambda$lambda(closure$ctx, this$HdriEnvGenerator) {
+  function HdriCubeGenerator_init$lambda$lambda(closure$ctx, this$HdriCubeGenerator) {
     return function (it) {
-      this$HdriEnvGenerator.dispose_aemszp$(closure$ctx);
+      this$HdriCubeGenerator.dispose_aemszp$(closure$ctx);
       return Unit;
     };
   }
-  function HdriEnvGenerator_init$lambda_0(closure$hdriTexture, this$HdriEnvGenerator, closure$parentScene) {
+  function HdriCubeGenerator_init$lambda_0(closure$hdriTexture, this$HdriCubeGenerator, closure$parentScene) {
     return function (ctx) {
-      var $receiver = this$HdriEnvGenerator;
+      var $receiver = this$HdriCubeGenerator;
       var $this = package$util.Log;
       var level = Log$Level.DEBUG;
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
       if (level.level >= $this.level.level) {
         $this.printer(level, tag, 'Generated cube map from HDRI: ' + toString(closure$hdriTexture.name));
-      }closure$parentScene.removeOffscreenPass_m1c2kf$(this$HdriEnvGenerator);
-      ctx.runDelayed_hd6vpk$(1, HdriEnvGenerator_init$lambda$lambda(ctx, this$HdriEnvGenerator));
+      }closure$parentScene.removeOffscreenPass_m1c2kf$(this$HdriCubeGenerator);
+      ctx.runDelayed_hd6vpk$(1, HdriCubeGenerator_init$lambda$lambda(ctx, this$HdriCubeGenerator));
       return Unit;
     };
   }
-  HdriEnvGenerator.$metadata$ = {
+  HdriCubeGenerator.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'HdriEnvGenerator',
+    simpleName: 'HdriCubeGenerator',
     interfaces: [OffscreenRenderPassCube]
   };
-  function IrradianceMapPass(parentScene, envMap) {
+  function EnvCubeSamplerNode(texture, graph) {
+    ShaderNode.call(this, 'envCubeSampler', graph);
+    this.texture = texture;
+    this.maxLightIntensity = new ShaderNodeIoVar(new ModelVar1fConst(5000.0));
+  }
+  EnvCubeSamplerNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_lhtstx$(this.texture);
+  };
+  EnvCubeSamplerNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendFunction_puj7f4$('sampleEnv', '\n' + '                vec3 sampleEnv(vec3 texCoord, float mipLevel) {' + '\n' + '                    vec3 envColor = ' + generator.sampleTextureCube_buzeal$(this.texture.name, 'texCoord', 'mipLevel') + '.rgb;' + '\n' + '                    return min(envColor, vec3(' + this.maxLightIntensity.ref1f() + '));' + '\n' + '                }' + '\n' + '            ');
+  };
+  EnvCubeSamplerNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EnvCubeSamplerNode',
+    interfaces: [ShaderNode]
+  };
+  function EnvEquiRectSamplerNode(texture, graph) {
+    ShaderNode.call(this, 'envEquiRectSampler', graph);
+    this.texture = texture;
+  }
+  EnvEquiRectSamplerNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_lhtstx$(this.texture);
+  };
+  EnvEquiRectSamplerNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendFunction_puj7f4$('sampleEnv', '\n' + '                vec3 sampleEnv(vec3 texCoord, float mipLevel) {' + '\n' + '                    vec3 equiRect_in = normalize(texCoord);' + '\n' + '                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));' + '\n' + '                    uv *= vec2(0.1591, 0.3183);' + '\n' + '                    uv += 0.5;' + '\n' + '                    return ' + generator.sampleTexture2d_buzeal$(this.texture.name, 'uv', 'mipLevel') + '.rgb;' + '\n' + '                }' + '\n' + '            ');
+  };
+  EnvEquiRectSamplerNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EnvEquiRectSamplerNode',
+    interfaces: [ShaderNode]
+  };
+  function RgbeDecoderNode(graph) {
+    ShaderNode.call(this, 'rgbeDecoder', graph);
+    this.inRgbe = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO));
+    this.maxLightIntensity = new ShaderNodeIoVar(new ModelVar1fConst(20.0));
+    this.outColor = new ShaderNodeIoVar(new ModelVar3f('decodedRgbe'), this);
+  }
+  RgbeDecoderNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inRgbe, this.maxLightIntensity]);
+  };
+  RgbeDecoderNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('\n' + '                vec3 fRgb = ' + this.inRgbe.ref3f() + ';' + '\n' + '                float fExp = ' + this.inRgbe.ref4f() + '.a * 255.0 - 128.0;' + '\n' + '                ' + this.outColor.declare() + ' = min(fRgb * pow(2.0, fExp), vec3(' + this.maxLightIntensity.ref1f() + '));' + '\n' + '            ');
+  };
+  RgbeDecoderNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RgbeDecoderNode',
+    interfaces: [ShaderNode]
+  };
+  function IrradianceMapPass(parentScene, hdriMap, cubeMap) {
+    IrradianceMapPass$Companion_getInstance();
     var tmp$ = new Group();
     var builder = new OffscreenRenderPass$ConfigBuilder();
     builder.name = 'IrradianceMapPass';
@@ -39171,46 +39608,72 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ifLocalPos.v = $receiver_1.stageInterfaceNode_iikjwn$('ifLocalPos', $receiver_1.attrPositions().output);
     $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
-    var tex = $receiver_2.cubeMapNode_61zpoe$(texName);
-    var $receiver_3 = $receiver_2.addNode_u9w9by$(new IrradianceMapPass$ConvoluteIrradianceNode(tex, $receiver_2.stage));
+    if (hdriMap != null) {
+      $receiver_2.addNode_u9w9by$(new EnvEquiRectSamplerNode($receiver_2.textureNode_61zpoe$(texName), $receiver_2.stage));
+    } else {
+      $receiver_2.addNode_u9w9by$(new EnvCubeSamplerNode($receiver_2.cubeMapNode_61zpoe$(texName), $receiver_2.stage));
+    }
+    var $receiver_3 = $receiver_2.addNode_u9w9by$(new IrradianceMapPass$ConvoluteIrradianceNode($receiver_2.stage));
     $receiver_3.inLocalPos = ifLocalPos.v.output;
     var convNd = $receiver_3;
     $receiver_2.colorOutput_a3v4si$(convNd.outColor);
     var model = $receiver_0;
-    var $receiver_4 = new ModeledShader$CubeMapColor(envMap, texName, model);
-    $receiver_4.onPipelineSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
-    mesh.shader = $receiver_4;
+    if (hdriMap != null) {
+      var $receiver_4 = new ModeledShader$TextureColor(hdriMap, texName, model);
+      $receiver_4.onPipelineSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
+      mesh.shader = $receiver_4;
+    } else {
+      var $receiver_5 = new ModeledShader$CubeMapColor(cubeMap, texName, model);
+      $receiver_5.onPipelineSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda_0);
+      mesh.shader = $receiver_5;
+    }
     $receiver.unaryPlus_uv0sim$(mesh);
-    parentScene.addOffscreenPass_m1c2kf$(this);
-    this.onAfterDraw.add_11rb$(IrradianceMapPass_init$lambda(envMap, this, parentScene));
+    this.onAfterDraw.add_11rb$(IrradianceMapPass_init$lambda(hdriMap, this, cubeMap, parentScene));
   }
   IrradianceMapPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPassCube.prototype.dispose_aemszp$.call(this, ctx);
   };
-  function IrradianceMapPass$ConvoluteIrradianceNode(texture, graph) {
+  function IrradianceMapPass$ConvoluteIrradianceNode(graph) {
     ShaderNode.call(this, 'convIrradiance', graph);
-    this.texture = texture;
     this.inLocalPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
-    this.maxLightIntensity = new ShaderNodeIoVar(new ModelVar1fConst(5000.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('convIrradiance_outColor'), this);
   }
   IrradianceMapPass$ConvoluteIrradianceNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_7qvs0d$(this.inLocalPos);
-    this.dependsOn_lhtstx$(this.texture);
   };
   IrradianceMapPass$ConvoluteIrradianceNode.prototype.generateCode_626509$ = function (generator) {
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
     var phiMax = 2.0 * math.PI;
     var thetaMax = 0.5 * math.PI;
-    generator.appendMain_61zpoe$('\n' + '                vec3 normal = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 up = vec3(0.0, 1.0, 0.0);' + '\n' + '                vec3 right = normalize(cross(up, normal));' + '\n' + '                up = cross(normal, right);' + '\n' + '\n' + '                float sampleDelta = 0.00737;' + '\n' + '                vec3 irradiance = vec3(0.0);' + '\n' + '                int nrSamples = 0; ' + '\n' + '\n' + '                for (float theta = 0.0; theta < ' + thetaMax + '; theta += sampleDelta) {' + '\n' + '                    float deltaPhi = sampleDelta / sin(theta);' + '\n' + '                    for (float phi = 0.0; phi < ' + phiMax + '; phi += deltaPhi) {' + '\n' + '                        vec3 tempVec = cos(phi) * right + sin(phi) * up;' + '\n' + '                        vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;' + '\n' + '                        vec3 envColor = min(' + generator.sampleTextureCube_buzeal$(this.texture.name, 'sampleVector') + '.rgb, vec3(' + this.maxLightIntensity.ref1f() + '));' + '\n' + '                        irradiance += envColor * cos(theta) * 0.6;' + '\n' + '                        nrSamples++;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                irradiance = irradiance * ' + math.PI + ' / float(nrSamples);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(irradiance, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                vec3 normal = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 up = vec3(0.0, 1.0, 0.0);' + '\n' + '                vec3 right = normalize(cross(up, normal));' + '\n' + '                up = cross(normal, right);' + '\n' + '\n' + '                float sampleDelta = 0.00737;' + '\n' + '                vec3 irradiance = vec3(0.0);' + '\n' + '                int nrSamples = 0; ' + '\n' + '\n' + '                for (float theta = 0.0; theta < ' + thetaMax + '; theta += sampleDelta) {' + '\n' + '                    float deltaPhi = sampleDelta / sin(theta);' + '\n' + '                    for (float phi = 0.0; phi < ' + phiMax + '; phi += deltaPhi) {' + '\n' + '                        vec3 tempVec = cos(phi) * right + sin(phi) * up;' + '\n' + '                        vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;' + '\n' + '                        vec3 envColor = sampleEnv(sampleVector, 0.0);' + '\n' + '                        irradiance += envColor * cos(theta) * 0.6;' + '\n' + '                        nrSamples++;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                irradiance = irradiance * ' + math.PI + ' / float(nrSamples);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(irradiance, 1.0);' + '\n' + '            ');
   };
   IrradianceMapPass$ConvoluteIrradianceNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ConvoluteIrradianceNode',
     interfaces: [ShaderNode]
   };
+  function IrradianceMapPass$Companion() {
+    IrradianceMapPass$Companion_instance = this;
+  }
+  IrradianceMapPass$Companion.prototype.irradianceMapFromHdri_tstyqb$ = function (scene, hdri) {
+    return new IrradianceMapPass(scene, hdri, null);
+  };
+  IrradianceMapPass$Companion.prototype.irradianceMapFromCube_53y80y$ = function (scene, cube) {
+    return new IrradianceMapPass(scene, null, cube);
+  };
+  IrradianceMapPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var IrradianceMapPass$Companion_instance = null;
+  function IrradianceMapPass$Companion_getInstance() {
+    if (IrradianceMapPass$Companion_instance === null) {
+      new IrradianceMapPass$Companion();
+    }return IrradianceMapPass$Companion_instance;
+  }
   function IrradianceMapPass_init$lambda$lambda$lambda($receiver) {
     $receiver.cubeProps.defaults().centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
@@ -39220,21 +39683,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
+  function IrradianceMapPass_init$lambda$lambda$lambda$lambda_0(builder, f, f_0) {
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+    return Unit;
+  }
   function IrradianceMapPass_init$lambda$lambda(closure$ctx, this$IrradianceMapPass) {
     return function (it) {
       this$IrradianceMapPass.dispose_aemszp$(closure$ctx);
       return Unit;
     };
   }
-  function IrradianceMapPass_init$lambda(closure$envMap, this$IrradianceMapPass, closure$parentScene) {
+  function IrradianceMapPass_init$lambda(closure$hdriMap, this$IrradianceMapPass, closure$cubeMap, closure$parentScene) {
     return function (ctx) {
-      var $receiver = this$IrradianceMapPass;
-      var $this = package$util.Log;
-      var level = Log$Level.DEBUG;
-      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Generated irradiance map from cube map: ' + toString(closure$envMap.name));
-      }closure$parentScene.removeOffscreenPass_m1c2kf$(this$IrradianceMapPass);
+      if (closure$hdriMap != null) {
+        var $receiver = this$IrradianceMapPass;
+        var $this = package$util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Generated irradiance map from HDRI: ' + toString(closure$hdriMap.name));
+        }} else {
+        var $receiver_0 = this$IrradianceMapPass;
+        var $this_0 = package$util.Log;
+        var level_0 = Log$Level.DEBUG;
+        var tag_0 = Kotlin.getKClassFromExpression($receiver_0).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          var tmp$ = $this_0.printer;
+          var closure$cubeMap_0 = closure$cubeMap;
+          tmp$.call($this_0, level_0, tag_0, 'Generated irradiance map from cube map: ' + toString(closure$cubeMap_0 != null ? closure$cubeMap_0.name : null));
+        }}
+      closure$parentScene.removeOffscreenPass_m1c2kf$(this$IrradianceMapPass);
       ctx.runDelayed_hd6vpk$(1, IrradianceMapPass_init$lambda$lambda(ctx, this$IrradianceMapPass));
       return Unit;
     };
@@ -39244,7 +39722,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'IrradianceMapPass',
     interfaces: [OffscreenRenderPassCube]
   };
-  function ReflectionMapPass(parentScene, envMap) {
+  function ReflectionMapPass(parentScene, hdriMap, cubeMap) {
+    ReflectionMapPass$Companion_getInstance();
     var tmp$ = new Group();
     var builder = new OffscreenRenderPass$ConfigBuilder();
     builder.name = 'ReflectionMapPass';
@@ -39270,28 +39749,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ifLocalPos.v = $receiver_1.stageInterfaceNode_iikjwn$('ifLocalPos', $receiver_1.attrPositions().output);
     $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outVec4;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
-    var roughness = $receiver_2.pushConstantNode1f_978i2u$(this.uRoughness_0);
-    var tex = $receiver_2.cubeMapNode_61zpoe$(texName);
-    var $receiver_3 = $receiver_2.addNode_u9w9by$(new ReflectionMapPass$ConvoluteReflectionNode(tex, $receiver_2.stage));
+    if (hdriMap != null) {
+      $receiver_2.addNode_u9w9by$(new EnvEquiRectSamplerNode($receiver_2.textureNode_61zpoe$(texName), $receiver_2.stage));
+    } else {
+      $receiver_2.addNode_u9w9by$(new EnvCubeSamplerNode($receiver_2.cubeMapNode_61zpoe$(texName), $receiver_2.stage));
+    }
+    var $receiver_3 = $receiver_2.addNode_u9w9by$(new ReflectionMapPass$ConvoluteReflectionNode($receiver_2.stage));
     $receiver_3.inLocalPos = ifLocalPos.v.output;
-    $receiver_3.inRoughness = roughness.output;
+    $receiver_3.inRoughness = $receiver_2.pushConstantNode1f_978i2u$(this.uRoughness_0).output;
     var convNd = $receiver_3;
     $receiver_2.colorOutput_a3v4si$(convNd.outColor);
     var model = $receiver_0;
-    var $receiver_4 = new ModeledShader$CubeMapColor(envMap, texName, model);
-    $receiver_4.onPipelineSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
-    mesh.shader = $receiver_4;
+    if (hdriMap != null) {
+      var $receiver_4 = new ModeledShader$TextureColor(hdriMap, texName, model);
+      $receiver_4.onPipelineSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
+      mesh.shader = $receiver_4;
+    } else {
+      var $receiver_5 = new ModeledShader$CubeMapColor(cubeMap, texName, model);
+      $receiver_5.onPipelineSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda_0);
+      mesh.shader = $receiver_5;
+    }
     $receiver.unaryPlus_uv0sim$(mesh);
-    this.parentScene.addOffscreenPass_m1c2kf$(this);
-    this.onAfterDraw.add_11rb$(ReflectionMapPass_init$lambda_0(envMap, this));
+    this.onAfterDraw.add_11rb$(ReflectionMapPass_init$lambda_0(hdriMap, this, cubeMap));
   }
   ReflectionMapPass.prototype.dispose_aemszp$ = function (ctx) {
     this.drawNode.dispose_aemszp$(ctx);
     OffscreenRenderPassCube.prototype.dispose_aemszp$.call(this, ctx);
   };
-  function ReflectionMapPass$ConvoluteReflectionNode(texture, graph) {
+  function ReflectionMapPass$ConvoluteReflectionNode(graph) {
     ShaderNode.call(this, 'convIrradiance', graph);
-    this.texture = texture;
     this.inLocalPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
     this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
     this.maxLightIntensity = new ShaderNodeIoVar(new ModelVar1fConst(5000.0));
@@ -39301,18 +39787,37 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_7qvs0d$(this.inLocalPos);
     this.dependsOn_7qvs0d$(this.maxLightIntensity);
-    this.dependsOn_lhtstx$(this.texture);
   };
   ReflectionMapPass$ConvoluteReflectionNode.prototype.generateCode_626509$ = function (generator) {
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
     generator.appendFunction_puj7f4$('reflMapFuncs', '\n                float RadicalInverse_VdC(uint bits) {\n                    bits = (bits << 16u) | (bits >> 16u);\n                    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);\n                    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);\n                    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);\n                    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);\n                    return float(bits) * 2.3283064365386963e-10; // / 0x100000000\n                }\n                \n                vec2 Hammersley(uint i, uint N) {\n                    return vec2(float(i)/float(N), RadicalInverse_VdC(i));\n                }\n                \n                vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness) {\n                    float a = roughness*roughness;\n                    \n                    float phi = 2.0 * 3.141592653589793 * Xi.x;\n                    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));\n                    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);\n                    \n                    // from spherical coordinates to cartesian coordinates\n                    vec3 H;\n                    H.x = cos(phi) * sinTheta;\n                    H.y = sin(phi) * sinTheta;\n                    H.z = cosTheta;\n                    \n                    // from tangent-space vector to world-space sample vector\n                    vec3 up = abs(N.z) < 0.9999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n                    vec3 tangent = normalize(cross(up, N));\n                    vec3 bitangent = cross(N, tangent);\n                    \n                    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;\n                    return normalize(sampleVec);\n                }\n            ');
-    generator.appendMain_61zpoe$('\n' + '                vec3 N = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 R = N;' + '\n' + '                vec3 V = R;' + '\n' + '                ' + '\n' + '                float mipLevel = ' + this.inRoughness.ref1f() + ' * 16.0;' + '\n' + '                uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));' + '\n' + '                float totalWeight = 0.0;' + '\n' + '                vec3 prefilteredColor = vec3(0.0);' + '\n' + '                for(uint i = 0u; i < SAMPLE_COUNT; ++i) {' + '\n' + '                    vec2 Xi = Hammersley(i, SAMPLE_COUNT);' + '\n' + '                    vec3 H  = ImportanceSampleGGX(Xi, N, ' + this.inRoughness.ref1f() + ');' + '\n' + '                    vec3 L  = normalize(2.0 * dot(V, H) * H - V);' + '\n' + '            ' + '\n' + '                    float NdotL = max(dot(N, L), 0.0);' + '\n' + '                    if(NdotL > 0.0) {' + '\n' + '                        //prefilteredColor += sampleEquiRect(L, mipLevel).rgb * NdotL;' + '\n' + '                        prefilteredColor += ' + generator.sampleTextureCube_buzeal$(this.texture.name, 'L', 'mipLevel') + '.rgb * NdotL;' + '\n' + '                        totalWeight += NdotL;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                prefilteredColor = prefilteredColor / totalWeight;' + '\n' + '                ' + this.outColor.declare() + ' = vec4(prefilteredColor, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                vec3 N = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 R = N;' + '\n' + '                vec3 V = R;' + '\n' + '                ' + '\n' + '                float mipLevel = ' + this.inRoughness.ref1f() + ' * 16.0;' + '\n' + '                uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));' + '\n' + '                float totalWeight = 0.0;' + '\n' + '                vec3 prefilteredColor = vec3(0.0);' + '\n' + '                for(uint i = 0u; i < SAMPLE_COUNT; ++i) {' + '\n' + '                    vec2 Xi = Hammersley(i, SAMPLE_COUNT);' + '\n' + '                    vec3 H  = ImportanceSampleGGX(Xi, N, ' + this.inRoughness.ref1f() + ');' + '\n' + '                    vec3 L  = normalize(2.0 * dot(V, H) * H - V);' + '\n' + '            ' + '\n' + '                    float NdotL = max(dot(N, L), 0.0);' + '\n' + '                    if(NdotL > 0.0) {' + '\n' + '                        prefilteredColor += sampleEnv(L, mipLevel) * NdotL;' + '\n' + '                        totalWeight += NdotL;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                prefilteredColor = prefilteredColor / totalWeight;' + '\n' + '                ' + this.outColor.declare() + ' = vec4(prefilteredColor, 1.0);' + '\n' + '            ');
   };
   ReflectionMapPass$ConvoluteReflectionNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ConvoluteReflectionNode',
     interfaces: [ShaderNode]
   };
+  function ReflectionMapPass$Companion() {
+    ReflectionMapPass$Companion_instance = this;
+  }
+  ReflectionMapPass$Companion.prototype.reflectionMapFromHdri_tstyqb$ = function (scene, hdri) {
+    return new ReflectionMapPass(scene, hdri, null);
+  };
+  ReflectionMapPass$Companion.prototype.reflectionMapFromCube_53y80y$ = function (scene, cube) {
+    return new ReflectionMapPass(scene, null, cube);
+  };
+  ReflectionMapPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ReflectionMapPass$Companion_instance = null;
+  function ReflectionMapPass$Companion_getInstance() {
+    if (ReflectionMapPass$Companion_instance === null) {
+      new ReflectionMapPass$Companion();
+    }return ReflectionMapPass$Companion_instance;
+  }
   function ReflectionMapPass_init$lambda(this$ReflectionMapPass) {
     return function (mipLevel, f) {
       this$ReflectionMapPass.uRoughness_0.value = mipLevel / (this$ReflectionMapPass.config.mipLevels - 1 | 0);
@@ -39328,21 +39833,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
+  function ReflectionMapPass_init$lambda$lambda$lambda$lambda_0(builder, f, f_0) {
+    builder.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+    return Unit;
+  }
   function ReflectionMapPass_init$lambda$lambda(closure$ctx, this$ReflectionMapPass) {
     return function (it) {
       this$ReflectionMapPass.dispose_aemszp$(closure$ctx);
       return Unit;
     };
   }
-  function ReflectionMapPass_init$lambda_0(closure$envMap, this$ReflectionMapPass) {
+  function ReflectionMapPass_init$lambda_0(closure$hdriMap, this$ReflectionMapPass, closure$cubeMap) {
     return function (ctx) {
-      var $receiver = this$ReflectionMapPass;
-      var $this = package$util.Log;
-      var level = Log$Level.DEBUG;
-      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Generated reflection map from cube map: ' + toString(closure$envMap.name));
-      }this$ReflectionMapPass.parentScene.removeOffscreenPass_m1c2kf$(this$ReflectionMapPass);
+      if (closure$hdriMap != null) {
+        var $receiver = this$ReflectionMapPass;
+        var $this = package$util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Generated reflection map from HDRI: ' + toString(closure$hdriMap.name));
+        }} else {
+        var $receiver_0 = this$ReflectionMapPass;
+        var $this_0 = package$util.Log;
+        var level_0 = Log$Level.DEBUG;
+        var tag_0 = Kotlin.getKClassFromExpression($receiver_0).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          var tmp$ = $this_0.printer;
+          var closure$cubeMap_0 = closure$cubeMap;
+          tmp$.call($this_0, level_0, tag_0, 'Generated reflection map from cube map: ' + toString(closure$cubeMap_0 != null ? closure$cubeMap_0.name : null));
+        }}
+      this$ReflectionMapPass.parentScene.removeOffscreenPass_m1c2kf$(this$ReflectionMapPass);
       ctx.runDelayed_hd6vpk$(1, ReflectionMapPass_init$lambda$lambda(ctx, this$ReflectionMapPass));
       return Unit;
     };
@@ -39351,6 +39871,82 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     kind: Kind_CLASS,
     simpleName: 'ReflectionMapPass',
     interfaces: [OffscreenRenderPassCube]
+  };
+  function RgbeDecoder(parentScene, hdriTexture) {
+    var tmp$ = new Group();
+    var builder = new OffscreenRenderPass$ConfigBuilder();
+    var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var w = (tmp$_1 = (tmp$_0 = hdriTexture.loadedTexture) != null ? tmp$_0.width : null) != null ? tmp$_1 : 1024;
+    var h = (tmp$_3 = (tmp$_2 = hdriTexture.loadedTexture) != null ? tmp$_2.height : null) != null ? tmp$_3 : 512;
+    var sz = Math_0.max(w, h);
+    builder.name = 'RgbeDecoder';
+    builder.setSize_vux9f0$(sz, sz);
+    builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
+    builder.clearDepthTexture();
+    builder.addMipLevels_ydzd23$(void 0, void 0, false);
+    OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
+    var tmp$_4;
+    (Kotlin.isType(tmp$_4 = this.drawNode, Group) ? tmp$_4 : throwCCE()).unaryPlus_uv0sim$(textureMesh(void 0, void 0, RgbeDecoder_init$lambda$lambda(hdriTexture)));
+    this.onAfterDraw.add_11rb$(RgbeDecoder_init$lambda(hdriTexture, this, parentScene));
+  }
+  RgbeDecoder.prototype.dispose_aemszp$ = function (ctx) {
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPass2d.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  function RgbeDecoder_init$lambda$lambda$lambda($receiver) {
+    $receiver.rectProps.defaults();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function RgbeDecoder_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
+    builder.cullMethod = CullMethod$NO_CULLING_getInstance();
+    return Unit;
+  }
+  function RgbeDecoder_init$lambda$lambda(closure$hdriTexture) {
+    return function ($receiver) {
+      $receiver.isFrustumChecked = false;
+      $receiver.generate_v2sixm$(RgbeDecoder_init$lambda$lambda$lambda);
+      var texName = 'colorTex';
+      var $receiver_0 = new ShaderModel('RgbeDecoder');
+      var ifTexCoords = {v: null};
+      var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
+      ifTexCoords.v = $receiver_1.stageInterfaceNode_iikjwn$('ifTexCoords', $receiver_1.attrTexCoords().output);
+      $receiver_1.positionOutput = $receiver_1.fullScreenQuadPositionNode_r20yfm$($receiver_1.attrTexCoords().output).outQuadPos;
+      var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
+      var $receiver_3 = $receiver_2.addNode_u9w9by$(new RgbeDecoderNode($receiver_2.stage));
+      $receiver_3.inRgbe = $receiver_2.textureSamplerNode_ce41yx$($receiver_2.textureNode_61zpoe$(texName), ifTexCoords.v.output).outColor;
+      var decoded = $receiver_3;
+      $receiver_2.colorOutput_a3v4si$(decoded.outColor);
+      var model = $receiver_0;
+      var $receiver_4 = new ModeledShader$TextureColor(closure$hdriTexture, texName, model);
+      $receiver_4.onPipelineSetup.add_11rb$(RgbeDecoder_init$lambda$lambda$lambda$lambda);
+      $receiver.shader = $receiver_4;
+      return Unit;
+    };
+  }
+  function RgbeDecoder_init$lambda$lambda_0(closure$ctx, this$RgbeDecoder) {
+    return function (it) {
+      this$RgbeDecoder.dispose_aemszp$(closure$ctx);
+      return Unit;
+    };
+  }
+  function RgbeDecoder_init$lambda(closure$hdriTexture, this$RgbeDecoder, closure$parentScene) {
+    return function (ctx) {
+      var $receiver = this$RgbeDecoder;
+      var $this = package$util.Log;
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Converted RGBe to linear: ' + toString(closure$hdriTexture.name));
+      }closure$parentScene.removeOffscreenPass_m1c2kf$(this$RgbeDecoder);
+      ctx.runDelayed_hd6vpk$(1, RgbeDecoder_init$lambda$lambda_0(ctx, this$RgbeDecoder));
+      return Unit;
+    };
+  }
+  RgbeDecoder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RgbeDecoder',
+    interfaces: [OffscreenRenderPass2d]
   };
   function IndexedVertexList(vertexAttributes) {
     IndexedVertexList$Companion_getInstance();
@@ -45146,52 +45742,79 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.offscreenPass = offscreenPass;
     this.fbos_0 = ArrayList_init_0();
     this.rbos_0 = ArrayList_init_0();
+    this.drawMipLevels_0 = this.offscreenPass.config.drawMipLevels;
+    var tmp$;
+    if (this.drawMipLevels_0) {
+      tmp$ = this.offscreenPass.config.mipLevels;
+    } else {
+      tmp$ = 1;
+    }
+    this.renderMipLevels_0 = tmp$;
     this.isCreated_0 = false;
     var array = Array_0(this.offscreenPass.config.nColorAttachments);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
+    var tmp$_0;
+    tmp$_0 = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$_0; i++) {
       array[i] = null;
     }
     this.colorTexs_0 = array;
     this.depthTex_0 = null;
   }
   OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
-    var tmp$, tmp$_0;
+    var tmp$, tmp$_0, tmp$_1;
     if (!this.isCreated_0) {
       this.create_0(ctx);
     }if (this.isCreated_0) {
-      tmp$ = this.offscreenPass.config.mipLevels;
+      tmp$ = this.renderMipLevels_0;
       for (var mipLevel = 0; mipLevel < tmp$; mipLevel++) {
         (tmp$_0 = this.offscreenPass.onSetupMipLevel) != null ? tmp$_0(mipLevel, ctx) : null;
         this.offscreenPass.applyMipViewport_za3lpa$(mipLevel);
         ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
         ctx.queueRenderer_8be2vx$.renderQueue_e0goaf$(this.offscreenPass.drawQueue);
-        this.copyToTextures_0(mipLevel, ctx);
       }
+      if (!this.drawMipLevels_0) {
+        tmp$_1 = this.colorTexs_0;
+        for (var i = 0; i !== tmp$_1.length; ++i) {
+          ctx.gl_8be2vx$.bindTexture(WebGLRenderingContext.TEXTURE_2D, this.colorTexs_0[i]);
+          ctx.gl_8be2vx$.generateMipmap(WebGLRenderingContext.TEXTURE_2D);
+        }
+      }this.copyToTextures_0(ctx);
       ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
     }};
-  OffscreenPass2dImpl.prototype.copyToTextures_0 = function (mipLevel, ctx) {
-    var tmp$;
-    ctx.gl_8be2vx$.readBuffer(WebGLRenderingContext.COLOR_ATTACHMENT0);
-    tmp$ = this.offscreenPass.copyTargetsColor;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-      var copyTarget = this.offscreenPass.copyTargetsColor.get_za3lpa$(i);
-      var width = (tmp$_1 = (tmp$_0 = copyTarget.loadedTexture) != null ? tmp$_0.width : null) != null ? tmp$_1 : 0;
-      var height = (tmp$_3 = (tmp$_2 = copyTarget.loadedTexture) != null ? tmp$_2.height : null) != null ? tmp$_3 : 0;
-      if (width !== this.offscreenPass.width || height !== this.offscreenPass.height) {
-        (tmp$_4 = copyTarget.loadedTexture) != null ? (tmp$_4.dispose(), Unit) : null;
-        this.createCopyTexColor_0(copyTarget, ctx);
-        width = ensureNotNull(copyTarget.loadedTexture).width;
-        height = ensureNotNull(copyTarget.loadedTexture).height;
-      }width = width >> mipLevel;
-      height = height >> mipLevel;
-      var target = Kotlin.isType(tmp$_5 = copyTarget.loadedTexture, LoadedTextureWebGl) ? tmp$_5 : throwCCE();
-      ctx.gl_8be2vx$.bindTexture(WebGLRenderingContext.TEXTURE_2D, target.texture);
-      ctx.gl_8be2vx$.copyTexSubImage2D(WebGLRenderingContext.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height);
+  OffscreenPass2dImpl.prototype.copyToTextures_0 = function (ctx) {
+    var tmp$, tmp$_0, tmp$_1;
+    tmp$ = this.renderMipLevels_0;
+    for (var mipLevel = 0; mipLevel < tmp$; mipLevel++) {
+      ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(mipLevel));
+      ctx.gl_8be2vx$.readBuffer(WebGLRenderingContext.COLOR_ATTACHMENT0);
+      tmp$_0 = this.offscreenPass.copyTargetsColor;
+      for (var i = 0; i !== tmp$_0.size; ++i) {
+        var tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7;
+        var copyTarget = this.offscreenPass.copyTargetsColor.get_za3lpa$(i);
+        var width = (tmp$_3 = (tmp$_2 = copyTarget.loadedTexture) != null ? tmp$_2.width : null) != null ? tmp$_3 : 0;
+        var height = (tmp$_5 = (tmp$_4 = copyTarget.loadedTexture) != null ? tmp$_4.height : null) != null ? tmp$_5 : 0;
+        if (width !== this.offscreenPass.width || height !== this.offscreenPass.height) {
+          (tmp$_6 = copyTarget.loadedTexture) != null ? (tmp$_6.dispose(), Unit) : null;
+          this.createCopyTexColor_0(copyTarget, ctx);
+          width = ensureNotNull(copyTarget.loadedTexture).width;
+          height = ensureNotNull(copyTarget.loadedTexture).height;
+        }width = width >> mipLevel;
+        height = height >> mipLevel;
+        var target = Kotlin.isType(tmp$_7 = copyTarget.loadedTexture, LoadedTextureWebGl) ? tmp$_7 : throwCCE();
+        ctx.gl_8be2vx$.bindTexture(WebGLRenderingContext.TEXTURE_2D, target.texture);
+        ctx.gl_8be2vx$.copyTexSubImage2D(WebGLRenderingContext.TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height);
+      }
     }
-  };
+    if (!this.drawMipLevels_0) {
+      tmp$_1 = this.offscreenPass.copyTargetsColor;
+      for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
+        var tmp$_8;
+        var copyTarget_0 = this.offscreenPass.copyTargetsColor.get_za3lpa$(i_0);
+        var target_0 = Kotlin.isType(tmp$_8 = copyTarget_0.loadedTexture, LoadedTextureWebGl) ? tmp$_8 : throwCCE();
+        ctx.gl_8be2vx$.bindTexture(WebGLRenderingContext.TEXTURE_2D, target_0.texture);
+        ctx.gl_8be2vx$.generateMipmap(WebGLRenderingContext.TEXTURE_2D);
+      }
+    }};
   OffscreenPass2dImpl.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     Kotlin.isType(tmp$ = ctx, JsContext) ? tmp$ : throwCCE();
@@ -47564,7 +48187,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var anisotropy = Math_0.min(a, b);
     if (anisotropy > 1) {
       gl.texParameteri(this.target, this.ctx.glCapabilities.glTextureMaxAnisotropyExt, anisotropy);
-    }};
+    }if (anisotropy > 1 && (props.minFilter === FilterMethod$NEAREST_getInstance() || props.magFilter === FilterMethod$NEAREST_getInstance())) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Texture filtering is NEAREST but anisotropy is ' + anisotropy + ' (> 1)');
+      }}};
   LoadedTextureWebGl.prototype.dispose = function () {
     this.isDestroyed = true;
     this.ctx.gl_8be2vx$.deleteTexture(this.texture);
@@ -49080,6 +49709,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$math.clamp_e4yvb3$ = clamp;
   package$math.clamp_wj6e7o$ = clamp_0;
   package$math.clamp_nig4hr$ = clamp_1;
+  package$math.getNumMipLevels_vux9f0$ = getNumMipLevels;
   package$math.triArea_n440fu$ = triArea;
   package$math.triAspectRatio_n440fu$ = triAspectRatio;
   package$math.barycentricWeights_qvgspy$ = barycentricWeights;
@@ -49608,6 +50238,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Object.defineProperty(ShaderStage, 'ALL', {
     get: ShaderStage$ALL_getInstance
   });
+  Object.defineProperty(Albedo, 'CUBE_MAP_ALBEDO', {
+    get: Albedo$CUBE_MAP_ALBEDO_getInstance
+  });
   Object.defineProperty(Albedo, 'STATIC_ALBEDO', {
     get: Albedo$STATIC_ALBEDO_getInstance
   });
@@ -49644,6 +50277,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   PhongShader.PhongConfig = PhongShader$PhongConfig;
   package$shading.PhongShader = PhongShader;
+  package$shading.unlitShader_8lu9cf$ = unlitShader;
+  Object.defineProperty(UnlitShader, 'Companion', {
+    get: UnlitShader$Companion_getInstance
+  });
+  package$shading.UnlitShader = UnlitShader;
+  package$shading.UnlitMaterialConfig = UnlitMaterialConfig;
   package$pipeline.Std140Layout = Std140Layout;
   Object.defineProperty(TexFormat, 'R', {
     get: TexFormat$R_getInstance
@@ -50274,9 +50913,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   package$ibl.EnvironmentMaps = EnvironmentMaps;
   package$ibl.GradientEnvGenerator = GradientEnvGenerator;
-  package$ibl.HdriEnvGenerator = HdriEnvGenerator;
+  package$ibl.HdriCubeGenerator = HdriCubeGenerator;
+  package$ibl.EnvCubeSamplerNode = EnvCubeSamplerNode;
+  package$ibl.EnvEquiRectSamplerNode = EnvEquiRectSamplerNode;
+  package$ibl.RgbeDecoderNode = RgbeDecoderNode;
+  Object.defineProperty(IrradianceMapPass, 'Companion', {
+    get: IrradianceMapPass$Companion_getInstance
+  });
   package$ibl.IrradianceMapPass = IrradianceMapPass;
+  Object.defineProperty(ReflectionMapPass, 'Companion', {
+    get: ReflectionMapPass$Companion_getInstance
+  });
   package$ibl.ReflectionMapPass = ReflectionMapPass;
+  package$ibl.RgbeDecoder = RgbeDecoder;
   Object.defineProperty(IndexedVertexList, 'Companion', {
     get: IndexedVertexList$Companion_getInstance
   });

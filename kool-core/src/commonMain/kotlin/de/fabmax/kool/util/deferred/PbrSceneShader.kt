@@ -185,7 +185,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 buf[i * 4 + 3] = rand.randomI(0..255).toByte()
             }
             val data = BufferedTextureData(buf, sz, sz, TexFormat.RGBA)
-            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT, minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
+            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
+                    minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
+                    mipMapping = false, maxAnisotropy = 1)
             return Texture("ssr_noise_tex", texProps) { data }
         }
 

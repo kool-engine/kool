@@ -23,6 +23,9 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private val fbos = mutableListOf<WebGLFramebuffer?>()
     private val rbos = mutableListOf<WebGLRenderbuffer?>()
 
+    private val drawMipLevels = offscreenPass.config.drawMipLevels
+    private val renderMipLevels: Int = if (drawMipLevels) { offscreenPass.config.mipLevels } else { 1 }
+
     private var isCreated = false
     private var colorTexs = Array<WebGLTexture?>(offscreenPass.config.nColorAttachments) { null }
     private var depthTex: WebGLTexture? = null
@@ -33,35 +36,51 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
 
         if (isCreated) {
-            for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+            for (mipLevel in 0 until renderMipLevels) {
                 offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                 offscreenPass.applyMipViewport(mipLevel)
                 ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
                 ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
-                copyToTextures(mipLevel, ctx)
             }
+            if (!drawMipLevels) {
+                for (i in colorTexs.indices) {
+                    ctx.gl.bindTexture(TEXTURE_2D, colorTexs[i])
+                    ctx.gl.generateMipmap(TEXTURE_2D)
+                }
+            }
+            copyToTextures(ctx)
             ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
         }
     }
 
-    private fun copyToTextures(mipLevel: Int, ctx: JsContext) {
-        ctx.gl.readBuffer(COLOR_ATTACHMENT0)
-
-        for (i in offscreenPass.copyTargetsColor.indices) {
-            val copyTarget = offscreenPass.copyTargetsColor[i]
-            var width = copyTarget.loadedTexture?.width ?: 0
-            var height = copyTarget.loadedTexture?.height ?: 0
-            if (width != offscreenPass.width || height != offscreenPass.height) {
-                copyTarget.loadedTexture?.dispose()
-                copyTarget.createCopyTexColor(ctx)
-                width = copyTarget.loadedTexture!!.width
-                height = copyTarget.loadedTexture!!.height
+    private fun copyToTextures(ctx: JsContext) {
+        for (mipLevel in 0 until renderMipLevels) {
+            ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[mipLevel])
+            ctx.gl.readBuffer(COLOR_ATTACHMENT0)
+            for (i in offscreenPass.copyTargetsColor.indices) {
+                val copyTarget = offscreenPass.copyTargetsColor[i]
+                var width = copyTarget.loadedTexture?.width ?: 0
+                var height = copyTarget.loadedTexture?.height ?: 0
+                if (width != offscreenPass.width || height != offscreenPass.height) {
+                    copyTarget.loadedTexture?.dispose()
+                    copyTarget.createCopyTexColor(ctx)
+                    width = copyTarget.loadedTexture!!.width
+                    height = copyTarget.loadedTexture!!.height
+                }
+                width = width shr mipLevel
+                height = height shr mipLevel
+                val target = copyTarget.loadedTexture as LoadedTextureWebGl
+                ctx.gl.bindTexture(TEXTURE_2D, target.texture)
+                ctx.gl.copyTexSubImage2D(TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
             }
-            width = width shr mipLevel
-            height = height shr mipLevel
-            val target = copyTarget.loadedTexture as LoadedTextureWebGl
-            ctx.gl.bindTexture(TEXTURE_2D, target.texture)
-            ctx.gl.copyTexSubImage2D(TEXTURE_2D, mipLevel, 0, 0, 0, 0, width, height)
+        }
+        if (!drawMipLevels) {
+            for (i in offscreenPass.copyTargetsColor.indices) {
+                val copyTarget = offscreenPass.copyTargetsColor[i]
+                val target = copyTarget.loadedTexture as LoadedTextureWebGl
+                ctx.gl.bindTexture(TEXTURE_2D, target.texture)
+                ctx.gl.generateMipmap(TEXTURE_2D)
+            }
         }
     }
 

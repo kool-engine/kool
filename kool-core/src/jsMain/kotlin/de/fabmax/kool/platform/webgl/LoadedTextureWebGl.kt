@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.logW
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
@@ -49,6 +50,10 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
         val anisotropy = min(props.maxAnisotropy, ctx.glCapabilities.maxAnisotropy)
         if (anisotropy > 1) {
             gl.texParameteri(target, ctx.glCapabilities.glTextureMaxAnisotropyExt, anisotropy)
+        }
+
+        if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
+            logW { "Texture filtering is NEAREST but anisotropy is $anisotropy (> 1)" }
         }
     }
 

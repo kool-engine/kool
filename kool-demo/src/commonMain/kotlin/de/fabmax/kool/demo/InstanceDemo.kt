@@ -91,7 +91,7 @@ class InstanceDemo(ctx: KoolContext) {
                     modelRadius = geometry.bounds.max.distance(geometry.bounds.center)
                 }
 
-                shader = PhongShader(model = instanceColorPhongModel())
+                shader = PhongShader(PhongShader.PhongConfig(), model = instanceColorPhongModel())
 
                 isFrustumChecked = false
                 lods[i].mesh = this

@@ -15,7 +15,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
-class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
+class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR Material") {
     val matCycler = Cycler(materials).apply { index = 3 }
     val currentMat: MaterialMaps
         get() = matCycler.current
@@ -139,17 +139,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
 
     private fun makeSphere(withIbl: Boolean, scene: Scene, envMaps: EnvironmentMaps) = group {
         +textureMesh(isNormalMapped = true) {
-            generate {
-                vertexModFun = {
-                    texCoord.x *= 4
-                    texCoord.y *= 2
-                }
-                uvSphere {
-                    steps = 700
-                    radius = 7f
-                }
-            }
-
+            geometry.addGeometry(sphereProto.detailSphere)
             val shader = pbrShader{
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true

@@ -15,7 +15,7 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
     return PhongShader(cfg)
 }
 
-class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
+class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend
@@ -159,6 +159,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                     Albedo.TEXTURE_ALBEDO -> {
                         textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false).outColor
                     }
+                    Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
                 val normal = if (cfg.isNormalMapped && ifTangents != null) {

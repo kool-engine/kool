@@ -2,9 +2,7 @@
 
 package de.fabmax.kool.math
 
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.*
 
 const val DEG_2_RAD = PI / 180.0
 const val RAD_2_DEG = 180.0 / PI
@@ -49,6 +47,10 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     this < min -> min
     this > max -> max
     else -> this
+}
+
+fun getNumMipLevels(texWidth: Int, texHeight: Int): Int {
+    return floor(log2(max(texWidth, texHeight).toDouble())).toInt() + 1
 }
 
 fun triArea(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {

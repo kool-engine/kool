@@ -14,6 +14,12 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 
     val copyTargetsColor = mutableListOf<Texture>()
 
+    fun copyColor(): Texture {
+        val tex = Texture("$name-${copyTargetsColor.size}", getColorTexProps())
+        copyTargetsColor += tex
+        return tex
+    }
+
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         impl.dispose(ctx)

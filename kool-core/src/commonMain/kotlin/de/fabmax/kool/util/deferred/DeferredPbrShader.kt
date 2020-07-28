@@ -247,6 +247,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                             albedoLin.outColor
                         }
                     }
+                    Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
                 (cfg.alphaMode as? AlphaModeMask)?.let { mask ->

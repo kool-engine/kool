@@ -59,8 +59,6 @@ class BrdfLutPass(parentScene: Scene) :
             }
         }
 
-        parentScene.addOffscreenPass(this)
-
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
             logD { "Generated BRDF look-up table" }

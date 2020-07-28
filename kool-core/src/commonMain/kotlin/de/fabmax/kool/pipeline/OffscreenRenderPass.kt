@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -40,6 +41,10 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         }
     }
 
+    fun getColorTexProps(colorAttachment: Int = 0): TextureProps {
+        return config.colorAttachments[colorAttachment].getTextureProps(config.mipLevels > 1)
+    }
+
     fun getMipWidth(mipLevel: Int): Int {
         return if (mipLevel <= 0) width else width shr mipLevel
     }
@@ -72,6 +77,7 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         val width = builder.width
         val height = builder.height
         val mipLevels = builder.mipLevels
+        val drawMipLevels = builder.drawMipLevels
 
         val depthRenderTarget = builder.depthRenderTarget
         val colorRenderTarget = builder.colorRenderTarget
@@ -108,6 +114,7 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         var width = 0
         var height = 0
         var mipLevels = 1
+        var drawMipLevels = true
 
         var colorRenderTarget = RenderTarget.TEXTURE
         var depthRenderTarget = RenderTarget.RENDER_BUFFER
@@ -123,6 +130,11 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         fun setSize(width: Int, height: Int) {
             this.width = width
             this.height = height
+        }
+
+        fun addMipLevels(width: Int = this.width, height: Int = this.height, drawMipLevels: Boolean = true) {
+            mipLevels = getNumMipLevels(width, height)
+            this.drawMipLevels = drawMipLevels
         }
 
         fun clearDepthTexture() {

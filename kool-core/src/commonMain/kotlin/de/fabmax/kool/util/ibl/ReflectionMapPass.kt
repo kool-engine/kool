@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
+class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture?, cubeMap: CubeMapTexture?) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "ReflectionMapPass"
             setSize(256, 256)
@@ -43,26 +43,37 @@ class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
                         positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
-                        val roughness = pushConstantNode1f(uRoughness)
-                        val tex = cubeMapNode(texName)
-                        val convNd = addNode(ConvoluteReflectionNode(tex, stage)).apply {
+                        if (hdriMap != null) {
+                            addNode(EnvEquiRectSamplerNode(textureNode(texName), stage))
+                        } else {
+                            addNode(EnvCubeSamplerNode(cubeMapNode(texName), stage))
+                        }
+                        val convNd = addNode(ConvoluteReflectionNode(stage)).apply {
                             inLocalPos = ifLocalPos.output
-                            inRoughness = roughness.output
+                            inRoughness = pushConstantNode1f(uRoughness).output
                         }
                         colorOutput(convNd.outColor)
                     }
                 }
-                shader = ModeledShader.CubeMapColor(envMap, texName, model).apply {
-                    onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
+                if (hdriMap != null) {
+                    shader = ModeledShader.TextureColor(hdriMap, texName, model).apply {
+                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    }
+                } else {
+                    shader = ModeledShader.CubeMapColor(cubeMap, texName, model).apply {
+                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    }
                 }
             }
         }
 
-        parentScene.addOffscreenPass(this)
-
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
-            logD { "Generated reflection map from cube map: ${envMap.name}" }
+            if (hdriMap != null) {
+                logD { "Generated reflection map from HDRI: ${hdriMap.name}" }
+            } else {
+                logD { "Generated reflection map from cube map: ${cubeMap?.name}" }
+            }
             parentScene.removeOffscreenPass(this)
             ctx.runDelayed(1) { dispose(ctx) }
         }
@@ -73,7 +84,7 @@ class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
         super.dispose(ctx)
     }
 
-    private class ConvoluteReflectionNode(val texture: CubeMapNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
+    private class ConvoluteReflectionNode(graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
         var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
@@ -83,7 +94,6 @@ class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
             super.setup(shaderGraph)
             dependsOn(inLocalPos)
             dependsOn(maxLightIntensity)
-            dependsOn(texture)
         }
 
         override fun generateCode(generator: CodeGenerator) {
@@ -142,8 +152,7 @@ class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
             
                     float NdotL = max(dot(N, L), 0.0);
                     if(NdotL > 0.0) {
-                        //prefilteredColor += sampleEquiRect(L, mipLevel).rgb * NdotL;
-                        prefilteredColor += ${generator.sampleTextureCube(texture.name, "L", "mipLevel")}.rgb * NdotL;
+                        prefilteredColor += sampleEnv(L, mipLevel) * NdotL;
                         totalWeight += NdotL;
                     }
                 }
@@ -151,5 +160,10 @@ class ReflectionMapPass(val parentScene: Scene, envMap: CubeMapTexture) :
                 ${outColor.declare()} = vec4(prefilteredColor, 1.0);
             """)
         }
+    }
+
+    companion object {
+        fun reflectionMapFromHdri(scene: Scene, hdri: Texture) = ReflectionMapPass(scene, hdri, null)
+        fun reflectionMapFromCube(scene: Scene, cube: CubeMapTexture) = ReflectionMapPass(scene, null, cube)
     }
 }

@@ -447,9 +447,9 @@ class ShaderModel(val modelInfo: String = "") {
             }
         }
 
-        fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
+        fun unlitMaterialNode(color: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))
-            albedo?.let { mat.inColor = it }
+            color?.let { mat.inColor = it }
             return mat
         }
 

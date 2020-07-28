@@ -8,12 +8,13 @@ import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.createUint8Buffer
 import de.fabmax.kool.util.logD
 
-class GradientEnvGenerator(gradient: ColorGradient, ctx: KoolContext, size: Int = 128) :
+class GradientEnvGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolContext, size: Int = 128) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "GradientEnvGenerator"
             setSize(size, size)
@@ -40,14 +41,11 @@ class GradientEnvGenerator(gradient: ColorGradient, ctx: KoolContext, size: Int 
             }
         }
 
-        ctx.addBackgroundRenderPass(this)
-
         // remove render pass as soon as the gradient texture is loaded and rendered
         onAfterDraw += {
             logD { "Generated gradient cube map" }
-            ctx.removeBackgroundRenderPass(this)
+            scene.removeOffscreenPass(this)
             ctx.runDelayed(1) {
-                println("gradient disposed")
                 dispose(ctx)
             }
         }

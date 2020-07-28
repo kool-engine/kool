@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.platform.vk.util.vkFormat
@@ -78,7 +79,7 @@ object TextureLoader {
     }
 
     fun createTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
-        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
+        val mipLevels = if (props.mipMapping) { getNumMipLevels(width, height) } else { 1 }
 
         val imgConfig = Image.Config()
         imgConfig.width = width

@@ -5,8 +5,10 @@ import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.logW
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL30
+import org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE
+import org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT
 import kotlin.math.min
 
 class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int, estimatedSize: Int) : LoadedTexture {
@@ -40,6 +42,10 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
         if (anisotropy > 1) {
             glTexParameteri(target, backend.glCapabilities.glTextureMaxAnisotropyExt, anisotropy)
         }
+
+        if (anisotropy > 1 && (props.minFilter == FilterMethod.NEAREST || props.magFilter == FilterMethod.NEAREST)) {
+            logW { "Texture filtering is NEAREST but anisotropy is $anisotropy (> 1)" }
+        }
     }
 
     override fun dispose() {
@@ -50,23 +56,23 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
 
     private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {
         return when(this) {
-            FilterMethod.NEAREST -> if (mipMapping) GL30.GL_NEAREST_MIPMAP_NEAREST else GL30.GL_NEAREST
-            FilterMethod.LINEAR -> if (mipMapping) GL30.GL_LINEAR_MIPMAP_LINEAR else GL30.GL_LINEAR
+            FilterMethod.NEAREST -> if (mipMapping) GL_NEAREST_MIPMAP_NEAREST else GL_NEAREST
+            FilterMethod.LINEAR -> if (mipMapping) GL_LINEAR_MIPMAP_LINEAR else GL_LINEAR
         }
     }
 
     private fun FilterMethod.glMagFilterMethod(): Int {
         return when (this) {
-            FilterMethod.NEAREST -> GL30.GL_NEAREST
-            FilterMethod.LINEAR -> GL30.GL_LINEAR
+            FilterMethod.NEAREST -> GL_NEAREST
+            FilterMethod.LINEAR -> GL_LINEAR
         }
     }
 
     private fun AddressMode.glAddressMode(): Int {
         return when(this) {
-            AddressMode.CLAMP_TO_EDGE -> GL30.GL_CLAMP_TO_EDGE
-            AddressMode.MIRRORED_REPEAT -> GL30.GL_MIRRORED_REPEAT
-            AddressMode.REPEAT -> GL30.GL_REPEAT
+            AddressMode.CLAMP_TO_EDGE -> GL_CLAMP_TO_EDGE
+            AddressMode.MIRRORED_REPEAT -> GL_MIRRORED_REPEAT
+            AddressMode.REPEAT -> GL_REPEAT
         }
     }
 

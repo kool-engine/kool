@@ -72,6 +72,14 @@ class RenderPassGraph {
                 }
             }
             if (added == null) {
+                System.err.println("Remaining render passes:")
+                remainingPasses.forEach { rp ->
+                    System.err.println("    ${rp.name}, depends on:")
+                    rp.dependencies.forEach { dep ->
+                        System.err.println("        ${dep.name}")
+                    }
+
+                }
                 throw IllegalStateException("Circular render pass dependency")
             } else {
                 addedPasses += added

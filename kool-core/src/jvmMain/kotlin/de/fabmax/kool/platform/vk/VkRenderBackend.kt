@@ -443,16 +443,20 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             vkPass2d.renderPass?.let { rp ->
                 val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass)
 
-                for (mipLevel in 0 until offscreenPass.config.mipLevels) {
+                vkPass2d.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+                for (mipLevel in 0 until vkPass2d.renderMipLevels) {
                     offscreenPass.onSetupMipLevel?.invoke(mipLevel, ctx)
                     offscreenPass.applyMipViewport(mipLevel)
                     vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                     setViewport(commandBuffer, offscreenPass.viewport)
                     renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
                     vkCmdEndRenderPass(commandBuffer)
+                    vkPass2d.copyMipView(commandBuffer, mipLevel)
                 }
+                vkPass2d.generateMipLevels(commandBuffer)
+                vkPass2d.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                vkPass2d.copyToTextures(commandBuffer, ctx)
             }
-            vkPass2d.copyToTextures(commandBuffer, ctx)
         }
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
