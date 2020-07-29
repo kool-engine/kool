@@ -69,7 +69,6 @@ class PbrDemo(val ctx: KoolContext) {
     }
 
     private fun setupScene() = scene {
-        mainRenderPass.clearColor = null
         lightCycler.current.setup(this)
 
         +orbitInputTransform {
@@ -86,7 +85,7 @@ class PbrDemo(val ctx: KoolContext) {
 
         loadHdri(hdriCycler.index) { hdri ->
             envMaps = EnvironmentHelper.hdriEnvironment(this, hdri, false)
-            skybox = Skybox(envMaps.reflectionMap, 1.25f)
+            skybox = Skybox(envMaps.reflectionMap, 1f)
             this += skybox
 
             pbrContentCycler.forEach {

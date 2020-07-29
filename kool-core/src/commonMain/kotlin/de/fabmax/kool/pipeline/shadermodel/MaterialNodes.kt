@@ -74,7 +74,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
  * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
  */
 class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
-        ShaderNode("PBR IBL Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+        ShaderNode("pbrMaterial", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     var inEmissive: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.BLACK))

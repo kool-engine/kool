@@ -1,20 +1,26 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color Grid") {
     private val shaders = mutableListOf<PbrShader>()
-    private var iblContent: Group? = null
-    private var nonIblContent: Group? = null
+    private var iblContent: Mesh? = null
+    private var nonIblContent: Mesh? = null
 
     override fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float) {
         parent.root.apply {
@@ -76,6 +82,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
         content = transformGroup {
             isVisible = false
+            isFrustumChecked = false
 
             val ibl = makeSpheres(true, envMaps)
             val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
@@ -90,8 +97,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        iblContent?.children?.forEach {
-            it as Mesh
+        iblContent?.let {
             val pbrShader = it.shader as PbrShader
             pbrShader.irradianceMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
@@ -99,7 +105,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         }
     }
 
-    private fun makeSpheres(withIbl: Boolean, environmentMaps: EnvironmentMaps) = group {
+    private fun makeSpheres(withIbl: Boolean, environmentMaps: EnvironmentMaps): Mesh {
         val nRows = 4
         val nCols = 5
         val spacing = 4.5f
@@ -114,29 +120,51 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += Color.MD_BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        for (y in 0 until nRows) {
-            for (x in 0 until nCols) {
-                +transformGroup {
-                    translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
-                    scale(1.5f)
+        return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+            isFrustumChecked = false
+            geometry.addGeometry(sphereProto.simpleSphere)
+            shader = instancedPbrShader(withIbl, environmentMaps).also { shaders += it }
 
-                    +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                        geometry.addGeometry(sphereProto.simpleSphere)
+            instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
+                val mat = Mat4f()
+                for (y in 0 until nRows) {
+                    for (x in 0 until nCols) {
+                        mat.setIdentity()
+                        mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
+                        mat.scale(1.5f)
 
-                        val shader = pbrShader {
-                            albedoSource = Albedo.STATIC_ALBEDO
-                            albedo = colors[(y * nCols + x) % colors.size].toLinear()
-                            roughness = 0.1f
-                            metallic = 0f
-                            if (withIbl) {
-                                useImageBasedLighting(environmentMaps)
-                            }
+                        addInstance {
+                            put(mat.matrix)
+                            put(colors[(y * nCols + x) % colors.size].toLinear().array)
                         }
-                        this.shader = shader
-                        shaders += shader
                     }
                 }
             }
         }
+    }
+
+    private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps): PbrShader {
+        val pbrCfg = PbrMaterialConfig().apply {
+            albedoSource = Albedo.STATIC_ALBEDO
+            roughness = 0.1f
+            metallic = 0f
+            isInstanced = true
+            if (withIbl) {
+                useImageBasedLighting(envMaps)
+            }
+        }
+
+        // use default PBR shader model and replace color input by instance attribute
+        val model = PbrShader.defaultPbrModel(pbrCfg).apply {
+            val ifInstColor: StageInterfaceNode
+            vertexStage {
+                ifInstColor = stageInterfaceNode("ifInstColors", instanceAttributeNode(Attribute.COLORS).output)
+            }
+            fragmentStage {
+                val material = findNode<PbrMaterialNode>("pbrMaterial")!!
+                material.inAlbedo = ifInstColor.output
+            }
+        }
+        return PbrShader(pbrCfg, model)
     }
 }

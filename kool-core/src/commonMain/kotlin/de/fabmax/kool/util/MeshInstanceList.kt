@@ -54,18 +54,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
         dataF = createFloat32Buffer(strideF * maxInstances)
     }
 
-//    private fun increaseDataSizeF(newSize: Int) {
-//        val newData = createFloat32Buffer(newSize)
-//        dataF.flip()
-//        newData.put(dataF)
-//        dataF = newData
-//    }
-
     fun checkBufferSize(reqSpace: Int = 1) {
-//        if (dataF.remaining < instanceSizeF * reqSpace) {
-//            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (numInstances + reqSpace) * instanceSizeF))
-//        }
-
         if (numInstances + reqSpace > maxInstances) {
             throw KoolException("Maximum number of instances exceeded, create with increased maxInstances")
         }
@@ -91,9 +80,6 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
     }
 
     companion object {
-//        private const val INITIAL_SIZE = 1000
-//        private const val GROW_FACTOR = 2.0f
-
         val MODEL_MAT = Attribute("attrib_model_mat", GlslType.MAT_4F)
     }
 }

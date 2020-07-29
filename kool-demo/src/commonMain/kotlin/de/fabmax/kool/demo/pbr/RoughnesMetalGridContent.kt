@@ -2,14 +2,20 @@ package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
 
@@ -17,8 +23,8 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     private val colors = Cycler(matColors)
 
     private val shaders = mutableListOf<PbrShader>()
-    private var iblContent: Group? = null
-    private var nonIblContent: Group? = null
+    private var iblContent: Mesh? = null
+    private var nonIblContent: Mesh? = null
 
     override fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float) {
         parent.root.apply {
@@ -82,6 +88,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
         content = transformGroup {
             isVisible = false
+            isFrustumChecked = false
 
             val ibl = makeSpheres(true, envMaps)
             val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
@@ -96,8 +103,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        iblContent?.children?.forEach {
-            it as Mesh
+        iblContent?.let {
             val pbrShader = it.shader as PbrShader
             pbrShader.irradianceMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
@@ -105,33 +111,61 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         }
     }
 
-    private fun makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps) = group {
+    private fun makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps): Mesh {
         val nRows = 7
         val nCols = 7
         val spacing = 2.5f
 
-        for (y in 0 until nRows) {
-            for (x in 0 until nCols) {
-                +transformGroup {
-                    translate((-(nCols - 1) * 0.5f + x) * spacing, (-(nRows - 1) * 0.5f + y) * spacing, 0f)
-                    +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                        geometry.addGeometry(sphereProto.simpleSphere)
+        return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+            isFrustumChecked = false
+            geometry.addGeometry(sphereProto.simpleSphere)
+            shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
 
-                        val shader = pbrShader {
-                            albedoSource = Albedo.STATIC_ALBEDO
-                            albedo = colors.current.linColor
-                            roughness = max(x / (nCols - 1).toFloat(), 0.05f)
-                            metallic = y / (nRows - 1).toFloat()
-                            if (withIbl) {
-                                useImageBasedLighting(envMaps)
-                            }
+            instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
+                val mat = Mat4f()
+                for (y in 0 until nRows) {
+                    for (x in 0 until nCols) {
+                        mat.setIdentity()
+                        mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
+
+                        addInstance {
+                            put(mat.matrix)
+                            val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
+                            val metallic = y / (nRows - 1).toFloat()
+                            put(roughness)
+                            put(metallic)
+                            put(0f)
+                            put(0f)
                         }
-                        this.shader = shader
-                        shaders += shader
                     }
                 }
             }
         }
+    }
+
+    private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps): PbrShader {
+        val pbrCfg = PbrMaterialConfig().apply {
+            albedoSource = Albedo.STATIC_ALBEDO
+            albedo = colors.current.linColor
+            isInstanced = true
+            if (withIbl) {
+                useImageBasedLighting(envMaps)
+            }
+        }
+
+        // use default PBR shader model and replace color input by instance attribute
+        val model = PbrShader.defaultPbrModel(pbrCfg).apply {
+            val ifInstColor: StageInterfaceNode
+            vertexStage {
+                ifInstColor = stageInterfaceNode("ifInstColors", instanceAttributeNode(Attribute.COLORS).output)
+            }
+            fragmentStage {
+                val material = findNode<PbrMaterialNode>("pbrMaterial")!!
+                material.inRoughness = splitNode(ifInstColor.output, "r").output
+                material.inMetallic = splitNode(ifInstColor.output, "g").output
+            }
+        }
+        return PbrShader(pbrCfg, model)
     }
 
     private data class MatColor(val name: String, val linColor: Color)
