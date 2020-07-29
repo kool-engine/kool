@@ -53,9 +53,11 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         }
         val shadowMaps = mutableListOf(CascadedShadowMap(this, 0, mapSize = 2048).apply { maxRange = 50f })
         val bgGradient = ColorGradient(
-                0.0f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
-                0.5f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.25f),
-                1.0f to Color.fromHex("3295FF").mix(Color.BLACK, 0.5f)
+                0.00f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
+                0.35f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
+                0.45f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.25f),
+                0.90f to Color.fromHex("3295FF").mix(Color.BLACK, 0.45f),
+                1.00f to Color.fromHex("3295FF").mix(Color.BLACK, 0.50f)
         )
         val envMaps = EnvironmentHelper.gradientColorEnvironment(this, bgGradient, ctx)
 

@@ -37,7 +37,7 @@ object EnvironmentHelper {
     }
 
     fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, ctx: KoolContext, autoDispose: Boolean = true): EnvironmentMaps {
-        val gradientPass = GradientEnvGenerator(scene, gradient, ctx)
+        val gradientPass = GradientCubeGenerator(scene, gradient, ctx)
         val irrMapPass = IrradianceMapPass.irradianceMapFromCube(scene, gradientPass.colorTexture!!)
         val reflMapPass = ReflectionMapPass.reflectionMapFromCube(scene, gradientPass.colorTexture!!)
         val brdfLutPass = BrdfLutPass(scene)
