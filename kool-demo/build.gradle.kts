@@ -1,7 +1,3 @@
-plugins {
-    kotlin("multiplatform") version Versions.kotlinVersion
-}
-
 kotlin {
     targets {
         jvm {
@@ -27,6 +23,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(DepsCommon.kotlinCoroutines)
+                implementation(DepsCommon.kotlinSerialization)
                 implementation(project(":kool-core"))
             }
         }
@@ -41,6 +38,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
                 implementation(DepsJvm.kotlinCoroutines)
+                implementation(DepsJvm.kotlinSerialization)
 
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
@@ -55,6 +53,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-js"))
                 implementation(DepsJs.kotlinCoroutines)
+                implementation(DepsJs.kotlinSerialization)
             }
         }
 

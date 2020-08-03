@@ -17,6 +17,7 @@ class ScreenSpaceRayTraceNode(val positionTex: TextureNode, graph: ShaderGraph) 
     val outRayPos = ShaderNodeIoVar(ModelVar3f("${name}_outPos"), this)
     val outSamplePos = ShaderNodeIoVar(ModelVar3f("${name}_outSamplePos"), this)
     val outSampleWeight = ShaderNodeIoVar(ModelVar1f("${name}_outHitWeight"), this)
+    val outCost = ShaderNodeIoVar(ModelVar1f("${name}_outSteps"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -92,6 +93,7 @@ class ScreenSpaceRayTraceNode(val positionTex: TextureNode, graph: ShaderGraph) 
                 }
             }
             
+            ${outCost.declare()} = float(${name}_iSteps) / ${maxIterations.ref1f()};
             ${outSampleWeight.declare()} = 0.0;
             ${outRayPos.declare()} = vec3(0.0);
             ${outSamplePos.declare()} = vec3(0.0);

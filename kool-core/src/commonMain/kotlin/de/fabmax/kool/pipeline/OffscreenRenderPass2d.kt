@@ -15,7 +15,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     val copyTargetsColor = mutableListOf<Texture>()
 
     fun copyColor(): Texture {
-        val tex = Texture("$name-${copyTargetsColor.size}", getColorTexProps())
+        val tex = Texture("$name-copy-${copyTargetsColor.size}", getColorTexProps())
         copyTargetsColor += tex
         return tex
     }

@@ -19,8 +19,7 @@ them via the hamburger button in the upper left corner):
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
 - [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssrDemo): A simple PBR shaded
-  model with enabled screen-space reflections and up to four spot lights with dynamic shadows. Reflections are
-  still a bit noisy.
+  model with screen-space reflections and up to four spot lights with dynamic shadows.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
   simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 - [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=treeDemo): A simple procedural tree generator
@@ -46,7 +45,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Skin / armature mesh animation (vertex shader based)
 - Deferred shading
 - Screen-space ambient occlusion
-- Simple (i.e. noisy) screen-space reflections (deferred shading only)
+- Screen-space reflections (with deferred shading only)
 - Normal, roughness, metallic, ambient occlusion and displacement mapping
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
 - Lighting with multiple point, spot and directional lights

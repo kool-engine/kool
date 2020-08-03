@@ -209,10 +209,11 @@ class ShaderModel(val modelInfo: String = "") {
             return dispMappingNd
         }
 
-        fun gammaNode(inputColor: ShaderNodeIoVar? = null): GammaNode {
-            val gamma = addNode(GammaNode(stage))
-            inputColor?.let { gamma.inColor = it }
-            return gamma
+        fun gammaNode(inputColor: ShaderNodeIoVar? = null, gamma: ShaderNodeIoVar? = null): GammaNode {
+            val gammaNd = addNode(GammaNode(stage))
+            inputColor?.let { gammaNd.inColor = it }
+            gamma?.let { gammaNd.inGamma = it }
+            return gammaNd
         }
 
         fun hdrToLdrNode(inputColor: ShaderNodeIoVar? = null): HdrToLdrNode {

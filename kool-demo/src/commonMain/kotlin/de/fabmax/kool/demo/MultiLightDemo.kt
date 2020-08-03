@@ -5,9 +5,11 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.*
 import de.fabmax.kool.util.gltf.GltfFile
@@ -31,6 +33,7 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_AMBER),
             LightMesh(Color.MD_GREEN))
     private val shadowMaps = mutableListOf<ShadowMap>()
+    private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private var lightCount = 4
     private var lightPower = 500f
@@ -138,6 +141,10 @@ class MultiLightDemo(ctx: KoolContext) {
         pbrPass = PbrLightingPass(mainScene, mrtPass, pbrPassCfg)
         mainScene += pbrPass.createOutputQuad()
         mainScene += Skybox(envMaps.reflectionMap, 1f)
+
+        mainScene.onDispose += {
+            noSsrMap.dispose()
+        }
     }
 
     private fun updateLighting() {
@@ -170,10 +177,34 @@ class MultiLightDemo(ctx: KoolContext) {
             containerUi { BlankComponentUi() }
         }
 
+        val ssrMap = transformGroup {
+            isVisible = false
+            +textureMesh {
+                generate {
+                    rect {
+                        size.set(1f, 1f)
+                        mirrorTexCoordsY()
+                    }
+                }
+                shader = ModeledShader.TextureColor(pbrPass.reflectionDenoisePass?.colorTexture)
+            }
+            onUpdate += { rp, _ ->
+                val screenSz = 0.33f
+                val scaleX = rp.viewport.width * screenSz
+                val scaleY = scaleX * (pbrPass.height.toFloat() / pbrPass.width.toFloat())
+
+                setIdentity()
+                val margin = rp.viewport.height * 0.05f
+                translate(margin, margin, 0f)
+                scale(scaleX, scaleY, 1f)
+            }
+        }
+        +ssrMap
+
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-645f), zero())
-            layoutSpec.setSize(dps(330f), dps(525f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-715f), zero())
+            layoutSpec.setSize(dps(330f), dps(595f), full())
 
             // light setup
             var y = -40f
@@ -261,23 +292,9 @@ class MultiLightDemo(ctx: KoolContext) {
                     updateLighting()
                 }
             }
-            y -= 35f
-            +label("Random:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-            }
-            +slider("randomSlider") {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                value = lightRandomness * 100f
-
-                onValueChanged += {
-                    lightRandomness = value / 100f
-                }
-            }
 
             y -= 40f
-            +label("Shading") {
+            +label("Screen-Space Reflections") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
@@ -285,13 +302,48 @@ class MultiLightDemo(ctx: KoolContext) {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
             y -= 35f
-            +toggleButton("Screen-Space Reflections") {
+            +toggleButton("Enabled") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = isScrSpcReflections
                 onClick += { _, _, _ ->
                     isScrSpcReflections = isEnabled
-                    pbrPass.sceneShader.scrSpcReflectionIterations = if (isEnabled) 24 else 0
+                    pbrPass.reflectionPass?.isEnabled = isEnabled
+                    pbrPass.reflectionDenoisePass?.isEnabled = isEnabled
+                    if (isEnabled) {
+                        pbrPass.sceneShader.scrSpcReflectionMap = pbrPass.reflectionDenoisePass?.colorTexture
+                    } else {
+                        pbrPass.sceneShader.scrSpcReflectionMap = noSsrMap
+                    }
+                }
+            }
+            y -= 35f
+            +toggleButton("Show SSR Map") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = ssrMap.isVisible
+                onStateChange += {
+                    ssrMap.isVisible = isEnabled
+                }
+            }
+            y -= 35f
+            +label("Map Size:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            val mapSzVal = label("${pbrPass.reflectionMapSize.toString(1)} x") {
+                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +mapSzVal
+            y -= 35f
+            +slider("mapSizeSlider", 1f, 10f, pbrPass.reflectionMapSize * 10) {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                onValueChanged += {
+                    pbrPass.reflectionMapSize = value.roundToInt() / 10f
+                    mapSzVal.text = "${pbrPass.reflectionMapSize.toString(1)} x"
                 }
             }
             y -= 40f

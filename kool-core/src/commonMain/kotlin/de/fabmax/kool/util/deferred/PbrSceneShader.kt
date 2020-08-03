@@ -1,15 +1,15 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
-import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 /**
@@ -100,18 +100,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             field = value
             ssrSampler?.texture = value
         }
-    private var ssrNoiseSampler: TextureSampler? = null
-    var scrSpcReflectionNoise: Texture? = cfg.scrSpcReflectionNoise
-        set(value) {
-            field = value
-            ssrSampler?.texture = value
-        }
-    private var uMaxIterations: PushConstantNode1i? = null
-    var scrSpcReflectionIterations = 24
-        set(value) {
-            field = value
-            uMaxIterations?.uniform?.value = value
-        }
 
     // Shadow Mapping
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
@@ -153,10 +141,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
         ssrSampler = model.findNode<TextureNode>("ssrMap")?.sampler
         ssrSampler?.let { it.texture = scrSpcReflectionMap }
-        ssrNoiseSampler = model.findNode<TextureNode>("ssrNoiseTex")?.sampler
-        ssrNoiseSampler?.let { it.texture = scrSpcReflectionNoise }
-        uMaxIterations = model.findNode("uMaxIterations")
-        uMaxIterations?.uniform?.value = scrSpcReflectionIterations
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -169,28 +153,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     }
 
     companion object {
-        fun generateScrSpcReflectionNoiseTex(): Texture {
-            val sz = 64
-            val buf = createUint8Buffer(sz * sz * 4)
-            val rand = Random(0x1deadb0b)
-            val vec = MutableVec3f()
-            for (i in 0 until (sz * sz)) {
-                do {
-                    vec.set(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f))
-                } while (vec.length() > 1f)
-                vec.norm().scale(0.25f)
-                buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toByte()
-                buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toByte()
-                buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toByte()
-                buf[i * 4 + 3] = rand.randomI(0..255).toByte()
-            }
-            val data = BufferedTextureData(buf, sz, sz, TexFormat.RGBA)
-            val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
-                    minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
-                    mipMapping = false, maxAnisotropy = 1)
-            return Texture("ssr_noise_tex", texProps) { data }
-        }
-
         fun defaultDeferredPbrModel(cfg: DeferredPbrConfig) = ShaderModel("defaultDeferredPbrModel()").apply {
             val ifTexCoords: StageInterfaceNode
 
@@ -263,28 +225,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inAmbientOccl = aoFactor
 
                     if (cfg.isScrSpcReflections) {
-                        val ssrNoiseTex = textureNode("ssrNoiseTex")
-                        val noise = noiseTextureSamplerNode(ssrNoiseTex, constVec2i(Vec2i(64, 64))).outNoise
-                        val sceneColorTex = textureNode("ssrMap")
-                        val viewPos = mrtDeMultiplex.outViewPos
-                        val viewDir = normalizeNode(viewPos).output
-                        val rayOffset = splitNode(noise, "a").output
-                        val rayDir = reflectNode(viewDir, normalizeNode(mrtDeMultiplex.outViewNormal).output).outDirection
-
-                        val rayDirNoise = vecFromColorNode(splitNode(noise, "xyz").output).output
-                        val rayDirMod = multiplyNode(rayDirNoise, mrtDeMultiplex.outRoughness).output
-                        val roughRayDir = normalizeNode(addNode(rayDir, rayDirMod).output).output
-
-                        val rayTraceNode = addNode(ScreenSpaceRayTraceNode(posAoTex, stage)).apply {
-                            inProjMat = defCam.outProjMat
-                            inRayOrigin = viewPos
-                            inRayDirection = roughRayDir
-                            inRayOffset = rayOffset
-
-                            maxIterations = pushConstantNode1i("uMaxIterations").output
-                        }
-                        inReflectionColor = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
-                        inReflectionWeight = rayTraceNode.outSampleWeight
+                        val ssr = textureSamplerNode(textureNode("ssrMap"), coord).outColor
+                        inReflectionColor = gammaNode(ssr).outColor
+                        inReflectionWeight = splitNode(ssr, "a").output
                     }
                 }
 
@@ -319,7 +262,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
         var scrSpcAmbientOcclusionMap: Texture? = null
         var scrSpcReflectionMap: Texture? = null
-        var scrSpcReflectionNoise: Texture? = null
 
         fun useMrtPass(mrtPass: DeferredMrtPass) {
             sceneCamera = mrtPass.camera
@@ -338,12 +280,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             isScrSpcAmbientOcclusion = true
         }
 
-        fun useScreenSpaceReflections(ssrMap: Texture?, generateNoiseTex: Boolean) {
+        fun useScreenSpaceReflections(ssrMap: Texture?) {
             this.scrSpcReflectionMap = ssrMap
             isScrSpcReflections = true
-            if (generateNoiseTex) {
-                scrSpcReflectionNoise = generateScrSpcReflectionNoiseTex()
-            }
         }
 
         fun useImageBasedLighting(environmentMaps: EnvironmentMaps) {

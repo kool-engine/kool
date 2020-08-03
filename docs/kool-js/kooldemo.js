@@ -46,8 +46,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var BufferedTextureData = $module$kool.de.fabmax.kool.pipeline.BufferedTextureData;
-  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
+  var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var Math_0 = Math;
   var math = $module$kool.de.fabmax.kool.math;
@@ -123,13 +122,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
-  var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
-  var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
+  var PbrMaterialNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
+  var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
   var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
   var Array_0 = Array;
-  var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
+  var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
+  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
@@ -198,7 +198,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.menu = null;
     this.autoRotate_0 = true;
     this.spotLight_0 = true;
-    this.noAoMap_0 = new Texture(void 0, void 0, AoDemo$noAoMap$lambda);
+    this.noAoMap_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.aoPipeline_953qvj$_0 = this.aoPipeline_953qvj$_0;
     this.shadows_0 = ArrayList_init();
     this.mainScene = this.makeMainScene_0(ctx);
@@ -906,47 +906,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       new AoDemo$Companion();
     }return AoDemo$Companion_instance;
   }
-  function Coroutine$AoDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-  }
-  Coroutine$AoDemo$noAoMap$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$AoDemo$noAoMap$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$AoDemo$noAoMap$lambda.prototype.constructor = Coroutine$AoDemo$noAoMap$lambda;
-  Coroutine$AoDemo$noAoMap$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            return BufferedTextureData.Companion.singleColor_d7aj7k$(Color.Companion.WHITE);
-          case 1:
-            throw this.exception_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function AoDemo$noAoMap$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$AoDemo$noAoMap$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
   AoDemo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AoDemo',
@@ -995,7 +954,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.pbrPass_13qagj$_0 = this.pbrPass_13qagj$_0;
     this.objects_v6o6kw$_0 = this.objects_v6o6kw$_0;
     this.objectShader_kt711w$_0 = this.objectShader_kt711w$_0;
-    this.noAoMap_0 = new Texture(void 0, void 0, DeferredDemo$noAoMap$lambda);
+    this.noAoMap_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.lightPositionMesh_cedig8$_0 = this.lightPositionMesh_cedig8$_0;
     this.lightVolumeMesh_k6bbw9$_0 = this.lightVolumeMesh_k6bbw9$_0;
     this.autoRotate_0 = true;
@@ -1993,47 +1952,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     if (DeferredDemo$Companion_instance === null) {
       new DeferredDemo$Companion();
     }return DeferredDemo$Companion_instance;
-  }
-  function Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-  }
-  Coroutine$DeferredDemo$noAoMap$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$DeferredDemo$noAoMap$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$DeferredDemo$noAoMap$lambda.prototype.constructor = Coroutine$DeferredDemo$noAoMap$lambda;
-  Coroutine$DeferredDemo$noAoMap$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            return BufferedTextureData.Companion.singleColor_d7aj7k$(Color.Companion.WHITE);
-          case 1:
-            throw this.exception_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function DeferredDemo$noAoMap$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$DeferredDemo$noAoMap$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
   }
   DeferredDemo.$metadata$ = {
     kind: Kind_CLASS,
@@ -3833,6 +3751,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.pbrPass_it2vcl$_0 = this.pbrPass_it2vcl$_0;
     this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
     this.shadowMaps_0 = ArrayList_init();
+    this.noSsrMap_0 = new SingleColorTexture(new Color(0.0, 0.0, 0.0, 0.0));
     this.lightCount_0 = 4;
     this.lightPower_0 = 500.0;
     this.lightSaturation_0 = 0.4;
@@ -4021,6 +3940,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         return instance.doResume(null);
     };
   }
+  function MultiLightDemo$initMainScene$lambda(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      this$MultiLightDemo.noSsrMap_0.dispose();
+      return Unit;
+    };
+  }
   MultiLightDemo.prototype.initMainScene_0 = function (ctx) {
     var $receiver = this.mainScene_0;
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, MultiLightDemo$initMainScene$lambda$lambda($receiver, this)));
@@ -4043,6 +3968,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.pbrPass_0 = new PbrLightingPass(this.mainScene_0, this.mrtPass_0, pbrPassCfg);
     this.mainScene_0.plusAssign_f1kmr1$(this.pbrPass_0.createOutputQuad());
     this.mainScene_0.plusAssign_f1kmr1$(new Skybox(envMaps.reflectionMap, 1.0));
+    this.mainScene_0.onDispose.add_11rb$(MultiLightDemo$initMainScene$lambda(this));
   };
   MultiLightDemo.prototype.updateLighting_0 = function () {
     var tmp$;
@@ -4086,7 +4012,44 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.containerUi_2t3ptw$(MultiLightDemo$menu$lambda$lambda$lambda_0);
     return Unit;
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver_0.size.set_dleff0$(1.0, 1.0);
+    $receiver_0.mirrorTexCoordsY();
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_1(this$MultiLightDemo) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.generate_v2sixm$(MultiLightDemo$menu$lambda$lambda$lambda$lambda);
+      $receiver.shader = new ModeledShader$TextureColor((tmp$ = this$MultiLightDemo.pbrPass_0.reflectionDenoisePass) != null ? tmp$.colorTexture : null);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_2(this$MultiLightDemo, this$) {
+    return function ($receiver, rp, f) {
+      var screenSz = 0.33;
+      var scaleX = rp.viewport.width * screenSz;
+      var scaleY = scaleX * (this$MultiLightDemo.pbrPass_0.height / this$MultiLightDemo.pbrPass_0.width);
+      this$.setIdentity();
+      var margin = rp.viewport.height * 0.05;
+      this$.translate_y2kzbl$(margin, margin, 0.0);
+      this$.scale_y2kzbl$(scaleX, scaleY, 1.0);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda_0(this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, MultiLightDemo$menu$lambda$lambda$lambda_1(this$MultiLightDemo)));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda_2(this$MultiLightDemo, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_3(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -4096,14 +4059,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_2(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_4(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -4115,18 +4078,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_3(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_5(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
       $receiver.text = this$MultiLightDemo.lightCount_0.toString();
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -4138,18 +4101,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_4(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_6(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo, closure$btnLightCnt);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -4161,38 +4124,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_5(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_7(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_6(closure$y) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo) {
-    return function ($receiver, it) {
-      this$MultiLightDemo.lightPower_0 = $receiver.value * 10.0;
-      this$MultiLightDemo.updateLighting_0();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_7(closure$y, this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.value = this$MultiLightDemo.lightPower_0 / 10.0;
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo, closure$btnLightCnt);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -4200,13 +4138,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function MultiLightDemo$menu$lambda$lambda$lambda_8(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
   function MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo) {
     return function ($receiver, it) {
-      this$MultiLightDemo.lightSaturation_0 = $receiver.value / 100.0;
+      this$MultiLightDemo.lightPower_0 = $receiver.value * 10.0;
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
@@ -4215,7 +4153,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.value = this$MultiLightDemo.lightSaturation_0 * 100.0;
+      $receiver.value = this$MultiLightDemo.lightPower_0 / 10.0;
       var $receiver_0 = $receiver.onValueChanged;
       var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
@@ -4231,7 +4169,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo) {
     return function ($receiver, it) {
-      this$MultiLightDemo.lightRandomness_0 = $receiver.value / 100.0;
+      this$MultiLightDemo.lightSaturation_0 = $receiver.value / 100.0;
+      this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
   }
@@ -4239,7 +4178,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.value = this$MultiLightDemo.lightRandomness_0 * 100.0;
+      $receiver.value = this$MultiLightDemo.lightSaturation_0 * 100.0;
       var $receiver_0 = $receiver.onValueChanged;
       var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
@@ -4258,8 +4197,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$, this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
+      var tmp$, tmp$_0, tmp$_1;
       this$MultiLightDemo.isScrSpcReflections_0 = this$.isEnabled;
-      this$MultiLightDemo.pbrPass_0.sceneShader.scrSpcReflectionIterations = this$.isEnabled ? 24 : 0;
+      (tmp$ = this$MultiLightDemo.pbrPass_0.reflectionPass) != null ? (tmp$.isEnabled = this$.isEnabled) : null;
+      (tmp$_0 = this$MultiLightDemo.pbrPass_0.reflectionDenoisePass) != null ? (tmp$_0.isEnabled = this$.isEnabled) : null;
+      if (this$.isEnabled) {
+        this$MultiLightDemo.pbrPass_0.sceneShader.scrSpcReflectionMap = (tmp$_1 = this$MultiLightDemo.pbrPass_0.reflectionDenoisePass) != null ? tmp$_1.colorTexture : null;
+      } else {
+        this$MultiLightDemo.pbrPass_0.sceneShader.scrSpcReflectionMap = this$MultiLightDemo.noSsrMap_0;
+      }
       return Unit;
     };
   }
@@ -4274,13 +4220,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(closure$ssrMap) {
+    return function ($receiver) {
+      closure$ssrMap.isVisible = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y, closure$ssrMap) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      $receiver.isEnabled = closure$ssrMap.isVisible;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(closure$ssrMap);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -4291,60 +4244,38 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$;
-      $receiver.text = this$MultiLightDemo.colorCycler_0.next().name;
-      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$mapSzVal) {
+    return function ($receiver, it) {
+      this$MultiLightDemo.pbrPass_0.reflectionMapSize = roundToInt($receiver.value) / 10.0;
+      closure$mapSzVal.text = toString(this$MultiLightDemo.pbrPass_0.reflectionMapSize, 1) + ' x';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo, closure$mapSzVal) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
-      $receiver.text = this$MultiLightDemo.colorCycler_0.current.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo);
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$mapSzVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$;
-      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
-      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_18(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$;
-      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
-      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_18(closure$y, this$MultiLightDemo, closure$matLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel);
-      $receiver_0.add_11rb$(element);
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
@@ -4355,7 +4286,71 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      $receiver.text = this$MultiLightDemo.colorCycler_0.next().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_20(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
+      $receiver.text = this$MultiLightDemo.colorCycler_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_21(closure$y, this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_22(closure$y, this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_23(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_11(this$MultiLightDemo) {
     return function ($receiver, it) {
       var tmp$;
       this$MultiLightDemo.roughness_0 = $receiver.value;
@@ -4363,24 +4358,24 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_20(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_24(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_11(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_21(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_25(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_12(this$MultiLightDemo) {
     return function ($receiver, it) {
       var tmp$;
       this$MultiLightDemo.metallic_0 = $receiver.value;
@@ -4388,17 +4383,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_22(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_26(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_12(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_23(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_27(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -4408,87 +4403,92 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_11(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_13(this$MultiLightDemo) {
     return function ($receiver) {
       this$MultiLightDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_24(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_28(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$MultiLightDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_11(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_13(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_12(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_14(this$MultiLightDemo) {
     return function ($receiver) {
       this$MultiLightDemo.showLightIndicators_0 = $receiver.isEnabled;
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_25(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_29(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$MultiLightDemo.showLightIndicators_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_12(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_14(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda_1(closure$smallFont, this$, this$MultiLightDemo, closure$ssrMap) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-645.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(525.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-715.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(595.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights', MultiLightDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights', MultiLightDemo$menu$lambda$lambda$lambda_3(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights:', MultiLightDemo$menu$lambda$lambda$lambda_2(y)));
-      var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_3(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Lights:', MultiLightDemo$menu$lambda$lambda$lambda_4(y)));
+      var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_5(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(btnLightCnt);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_4(y, this$MultiLightDemo, btnLightCnt)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_5(y, this$MultiLightDemo, btnLightCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_6(y, this$MultiLightDemo, btnLightCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo, btnLightCnt)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Strength:', MultiLightDemo$menu$lambda$lambda$lambda_6(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Strength:', MultiLightDemo$menu$lambda$lambda$lambda_8(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_9(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Saturation:', MultiLightDemo$menu$lambda$lambda$lambda_8(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('saturationSlider', MultiLightDemo$menu$lambda$lambda$lambda_9(y, this$MultiLightDemo)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Random:', MultiLightDemo$menu$lambda$lambda$lambda_10(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('randomSlider', MultiLightDemo$menu$lambda$lambda$lambda_11(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Saturation:', MultiLightDemo$menu$lambda$lambda$lambda_10(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('saturationSlider', MultiLightDemo$menu$lambda$lambda$lambda_11(y, this$MultiLightDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Shading', MultiLightDemo$menu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Screen-Space Reflections', MultiLightDemo$menu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Screen-Space Reflections', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Enabled', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Show SSR Map', MultiLightDemo$menu$lambda$lambda$lambda_14(y, closure$ssrMap)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Map Size:', MultiLightDemo$menu$lambda$lambda$lambda_15(y)));
+      var mapSzVal = this$.label_tokfmu$(toString(this$MultiLightDemo.pbrPass_0.reflectionMapSize, 1) + ' x', MultiLightDemo$menu$lambda$lambda$lambda_16(y));
+      $receiver.unaryPlus_uv0sim$(mapSzVal);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, this$MultiLightDemo.pbrPass_0.reflectionMapSize * 10, MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo, mapSzVal)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Material', MultiLightDemo$menu$lambda$lambda$lambda_14(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Material', MultiLightDemo$menu$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color:', MultiLightDemo$menu$lambda$lambda$lambda_15(y)));
-      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_16(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Color:', MultiLightDemo$menu$lambda$lambda$lambda_19(y)));
+      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_20(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(matLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo, matLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_18(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_21(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_22(y, this$MultiLightDemo, matLabel)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Roughness:', MultiLightDemo$menu$lambda$lambda$lambda_19(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$MultiLightDemo.roughness_0, MultiLightDemo$menu$lambda$lambda$lambda_20(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Roughness:', MultiLightDemo$menu$lambda$lambda$lambda_23(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('roughnessSlider', 0.0, 1.0, this$MultiLightDemo.roughness_0, MultiLightDemo$menu$lambda$lambda$lambda_24(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Metallic:', MultiLightDemo$menu$lambda$lambda$lambda_21(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('metallicSlider', 0.0, 1.0, this$MultiLightDemo.metallic_0, MultiLightDemo$menu$lambda$lambda$lambda_22(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Metallic:', MultiLightDemo$menu$lambda$lambda$lambda_25(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('metallicSlider', 0.0, 1.0, this$MultiLightDemo.metallic_0, MultiLightDemo$menu$lambda$lambda$lambda_26(y, this$MultiLightDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', MultiLightDemo$menu$lambda$lambda$lambda_23(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', MultiLightDemo$menu$lambda$lambda$lambda_27(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', MultiLightDemo$menu$lambda$lambda$lambda_24(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', MultiLightDemo$menu$lambda$lambda$lambda_28(y, this$MultiLightDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Indicators', MultiLightDemo$menu$lambda$lambda$lambda_25(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Light Indicators', MultiLightDemo$menu$lambda$lambda$lambda_29(y, this$MultiLightDemo)));
       return Unit;
     };
   }
@@ -4497,7 +4497,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
       $receiver.theme = theme(UiTheme.Companion.DARK, MultiLightDemo$menu$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', MultiLightDemo$menu$lambda$lambda_0(smallFont, $receiver, this$MultiLightDemo)));
+      var ssrMap = transformGroup(void 0, MultiLightDemo$menu$lambda$lambda_0(this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(ssrMap);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', MultiLightDemo$menu$lambda$lambda_1(smallFont, $receiver, this$MultiLightDemo, ssrMap)));
       return Unit;
     };
   }
@@ -4670,6 +4672,36 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'MultiLightDemo',
     interfaces: []
   };
+  var ShaderModel$findNode$lambda_0 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
   function ColorGridContent(sphereProto) {
     PbrDemo$PbrContent.call(this, 'Color Grid');
     this.sphereProto = sphereProto;
@@ -4777,6 +4809,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function ColorGridContent$createContent$lambda(closure$envMaps, this$ColorGridContent) {
     return function ($receiver) {
       $receiver.isVisible = false;
+      $receiver.isFrustumChecked = false;
       var ibl = this$ColorGridContent.makeSpheres_0(true, closure$envMaps);
       var $receiver_0 = this$ColorGridContent.makeSpheres_0(false, closure$envMaps);
       $receiver_0.isVisible = false;
@@ -4793,80 +4826,110 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return ensureNotNull(this.content);
   };
   ColorGridContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
-    var tmp$, tmp$_0;
-    if ((tmp$_0 = (tmp$ = this.iblContent_0) != null ? tmp$.children : null) != null) {
-      var tmp$_1;
-      tmp$_1 = tmp$_0.iterator();
-      while (tmp$_1.hasNext()) {
-        var element = tmp$_1.next();
-        var tmp$_2, tmp$_3;
-        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
-        var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
-        pbrShader.irradianceMap = envMaps.irradianceMap;
-        pbrShader.reflectionMap = envMaps.reflectionMap;
-        pbrShader.brdfLut = envMaps.brdfLut;
-      }
+    var tmp$;
+    if ((tmp$ = this.iblContent_0) != null) {
+      var tmp$_0;
+      var pbrShader = Kotlin.isType(tmp$_0 = tmp$.shader, PbrShader) ? tmp$_0 : throwCCE();
+      pbrShader.irradianceMap = envMaps.irradianceMap;
+      pbrShader.reflectionMap = envMaps.reflectionMap;
+      pbrShader.brdfLut = envMaps.brdfLut;
     }};
-  function ColorGridContent$makeSpheres$lambda$lambda$lambda$lambda(closure$colors, closure$y, closure$nCols, closure$x, closure$withIbl, closure$environmentMaps) {
-    return function ($receiver) {
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.albedo = closure$colors.get_za3lpa$((Kotlin.imul(closure$y, closure$nCols) + closure$x | 0) % closure$colors.size).toLinear();
-      $receiver.roughness = 0.1;
-      $receiver.metallic = 0.0;
-      if (closure$withIbl) {
-        $receiver.useImageBasedLighting_wwmv4k$(closure$environmentMaps);
-      }return Unit;
-    };
-  }
-  function ColorGridContent$makeSpheres$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y, this$ColorGridContent, closure$colors, closure$withIbl, closure$environmentMaps) {
-    return function ($receiver) {
-      $receiver.translate_y2kzbl$(((-(closure$nCols - 1 | 0) | 0) * 0.5 + closure$x) * closure$spacing, ((closure$nRows - 1 | 0) * 0.5 - closure$y) * closure$spacing, 0.0);
-      $receiver.scale_mx4ult$(1.5);
-      var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-      var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
-      var this$ColorGridContent_0 = this$ColorGridContent;
-      var closure$colors_0 = closure$colors;
-      var closure$y_0 = closure$y;
-      var closure$nCols_0 = closure$nCols;
-      var closure$x_0 = closure$x;
-      var closure$withIbl_0 = closure$withIbl;
-      var closure$environmentMaps_0 = closure$environmentMaps;
-      mesh.geometry.addGeometry_r7nl2o$(this$ColorGridContent_0.sphereProto.simpleSphere);
-      var shader = pbrShader(ColorGridContent$makeSpheres$lambda$lambda$lambda$lambda(closure$colors_0, closure$y_0, closure$nCols_0, closure$x_0, closure$withIbl_0, closure$environmentMaps_0));
-      mesh.shader = shader;
-      this$ColorGridContent_0.shaders_0.add_11rb$(shader);
-      $receiver.unaryPlus_uv0sim$(mesh);
-      return Unit;
-    };
-  }
-  function ColorGridContent$makeSpheres$lambda(this$ColorGridContent, closure$withIbl, closure$environmentMaps) {
-    return function ($receiver) {
-      var nRows = 4;
-      var nCols = 5;
-      var spacing = 4.5;
-      var colors = ArrayList_init();
-      addAll(colors, Color.Companion.MD_COLORS);
-      colors.remove_11rb$(Color.Companion.MD_LIGHT_BLUE);
-      colors.remove_11rb$(Color.Companion.MD_GREY);
-      colors.remove_11rb$(Color.Companion.MD_BLUE_GREY);
-      var element = Color.Companion.WHITE;
-      colors.add_11rb$(element);
-      var element_0 = Color.Companion.MD_GREY;
-      colors.add_11rb$(element_0);
-      var element_1 = Color.Companion.MD_BLUE_GREY;
-      colors.add_11rb$(element_1);
-      var element_2 = new Color(0.1, 0.1, 0.1);
-      colors.add_11rb$(element_2);
-      for (var y = 0; y < nRows; y++) {
-        for (var x = 0; x < nCols; x++) {
-          $receiver.unaryPlus_uv0sim$(transformGroup(void 0, ColorGridContent$makeSpheres$lambda$lambda(nCols, x, spacing, nRows, y, this$ColorGridContent, colors, closure$withIbl, closure$environmentMaps)));
-        }
-      }
-      return Unit;
-    };
-  }
   ColorGridContent.prototype.makeSpheres_0 = function (withIbl, environmentMaps) {
-    return group(void 0, ColorGridContent$makeSpheres$lambda(this, withIbl, environmentMaps));
+    var nRows = 4;
+    var nCols = 5;
+    var spacing = 4.5;
+    var colors = ArrayList_init();
+    addAll(colors, Color.Companion.MD_COLORS);
+    colors.remove_11rb$(Color.Companion.MD_LIGHT_BLUE);
+    colors.remove_11rb$(Color.Companion.MD_GREY);
+    colors.remove_11rb$(Color.Companion.MD_BLUE_GREY);
+    var element = Color.Companion.WHITE;
+    colors.add_11rb$(element);
+    var element_0 = Color.Companion.MD_GREY;
+    colors.add_11rb$(element_0);
+    var element_1 = Color.Companion.MD_BLUE_GREY;
+    colors.add_11rb$(element_1);
+    var element_2 = new Color(0.1, 0.1, 0.1);
+    colors.add_11rb$(element_2);
+    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
+    mesh.isFrustumChecked = false;
+    mesh.geometry.addGeometry_r7nl2o$(this.sphereProto.simpleSphere);
+    var $receiver = this.instancedPbrShader_0(withIbl, environmentMaps);
+    this.shaders_0.add_11rb$($receiver);
+    mesh.shader = $receiver;
+    var $receiver_0 = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), Kotlin.imul(nRows, nCols));
+    var mat = new Mat4f();
+    for (var y = 0; y < nRows; y++) {
+      for (var x = 0; x < nCols; x++) {
+        mat.setIdentity();
+        mat.translate_y2kzbl$(((-(nCols - 1 | 0) | 0) * 0.5 + x) * spacing, ((nRows - 1 | 0) * 0.5 - y) * spacing, 0.0);
+        mat.scale_mx4ult$(1.5);
+        $receiver_0.checkBufferSize_za3lpa$();
+        var szBefore = $receiver_0.dataF.position;
+        var $receiver_1 = $receiver_0.dataF;
+        $receiver_1.put_q3cr5i$(mat.matrix);
+        $receiver_1.put_q3cr5i$(colors.get_za3lpa$((Kotlin.imul(y, nCols) + x | 0) % colors.size).toLinear().array);
+        var growSz = $receiver_0.dataF.position - szBefore | 0;
+        if (growSz !== $receiver_0.instanceSizeF) {
+          throw IllegalStateException_init('Expected data to grow by ' + $receiver_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
+        }$receiver_0.numInstances = $receiver_0.numInstances + 1 | 0;
+        $receiver_0.hasChanged = true;
+      }
+    }
+    mesh.instances = $receiver_0;
+    return mesh;
+  };
+  ColorGridContent.prototype.instancedPbrShader_0 = function (withIbl, envMaps) {
+    var $receiver = new PbrMaterialConfig();
+    $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+    $receiver.roughness = 0.1;
+    $receiver.metallic = 0.0;
+    $receiver.isInstanced = true;
+    if (withIbl) {
+      $receiver.useImageBasedLighting_wwmv4k$(envMaps);
+    }var pbrCfg = $receiver;
+    var $receiver_0 = PbrShader.Companion.defaultPbrModel_2ufela$(pbrCfg);
+    var ifInstColor = {v: null};
+    var $receiver_1 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_0);
+    ifInstColor.v = $receiver_1.stageInterfaceNode_iikjwn$('ifInstColors', $receiver_1.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
+    new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_0);
+    var name = 'pbrMaterial';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$;
+      tmp$ = $receiver_0.stages.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_0;
+          var $receiver_2 = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_1;
+            tmp$_1 = $receiver_2.iterator();
+            while (tmp$_1.hasNext()) {
+              var element_0 = tmp$_1.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, PbrMaterialNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0, PbrMaterialNode) ? tmp$_0 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    var material = ensureNotNull(findNode_3klnlw$result);
+    material.inAlbedo = ifInstColor.v.output;
+    var model = $receiver_0;
+    return new PbrShader(pbrCfg, model);
   };
   ColorGridContent.$metadata$ = {
     kind: Kind_CLASS,
@@ -4961,7 +5024,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrDemo$setupScene$lambda$lambda_0(this$, this$PbrDemo) {
     return function (hdri) {
       this$PbrDemo.envMaps_0 = ibl.EnvironmentHelper.hdriEnvironment_wm5s1y$(this$, hdri, false);
-      this$PbrDemo.skybox_0 = new Skybox(this$PbrDemo.envMaps_0.reflectionMap, 1.25);
+      this$PbrDemo.skybox_0 = new Skybox(this$PbrDemo.envMaps_0.reflectionMap, 1.0);
       this$.plusAssign_f1kmr1$(this$PbrDemo.skybox_0);
       var $receiver = this$PbrDemo.pbrContentCycler_0;
       var tmp$;
@@ -4978,7 +5041,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   PbrDemo.prototype.setupScene_0 = function () {
     var $receiver = new Scene_init(null);
-    $receiver.mainRenderPass.clearColor = null;
     this.lightCycler_0.current.setup($receiver);
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, PbrDemo$setupScene$lambda$lambda($receiver, this)));
     this.loadHdri_0(this.hdriCycler_0.index, PbrDemo$setupScene$lambda$lambda_0($receiver, this));
@@ -5721,7 +5783,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       while (tmp$_1.hasNext()) {
         var element = tmp$_1.next();
         var tmp$_2, tmp$_3;
-        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
+        Kotlin.isType(tmp$_2 = element, Mesh_init) ? tmp$_2 : throwCCE();
         var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
         pbrShader.irradianceMap = envMaps.irradianceMap;
         pbrShader.reflectionMap = envMaps.reflectionMap;
@@ -7597,6 +7659,36 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'PbrMaterialContent',
     interfaces: [PbrDemo$PbrContent]
   };
+  var ShaderModel$findNode$lambda_1 = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }}return Unit;
+      };
+    };
+  });
   function RoughnesMetalGridContent(sphereProto) {
     RoughnesMetalGridContent$Companion_getInstance();
     PbrDemo$PbrContent.call(this, 'Roughness / Metal');
@@ -7717,6 +7809,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function RoughnesMetalGridContent$createContent$lambda(closure$envMaps, this$RoughnesMetalGridContent) {
     return function ($receiver) {
       $receiver.isVisible = false;
+      $receiver.isFrustumChecked = false;
       var ibl = this$RoughnesMetalGridContent.makeSpheres_0(true, closure$envMaps);
       var $receiver_0 = this$RoughnesMetalGridContent.makeSpheres_0(false, closure$envMaps);
       $receiver_0.isVisible = false;
@@ -7733,67 +7826,102 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return ensureNotNull(this.content);
   };
   RoughnesMetalGridContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
-    var tmp$, tmp$_0;
-    if ((tmp$_0 = (tmp$ = this.iblContent_0) != null ? tmp$.children : null) != null) {
-      var tmp$_1;
-      tmp$_1 = tmp$_0.iterator();
-      while (tmp$_1.hasNext()) {
-        var element = tmp$_1.next();
-        var tmp$_2, tmp$_3;
-        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
-        var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
-        pbrShader.irradianceMap = envMaps.irradianceMap;
-        pbrShader.reflectionMap = envMaps.reflectionMap;
-        pbrShader.brdfLut = envMaps.brdfLut;
-      }
+    var tmp$;
+    if ((tmp$ = this.iblContent_0) != null) {
+      var tmp$_0;
+      var pbrShader = Kotlin.isType(tmp$_0 = tmp$.shader, PbrShader) ? tmp$_0 : throwCCE();
+      pbrShader.irradianceMap = envMaps.irradianceMap;
+      pbrShader.reflectionMap = envMaps.reflectionMap;
+      pbrShader.brdfLut = envMaps.brdfLut;
     }};
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent, closure$x, closure$nCols, closure$y, closure$nRows, closure$withIbl, closure$envMaps) {
-    return function ($receiver) {
-      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
-      var a = closure$x / (closure$nCols - 1 | 0);
-      $receiver.roughness = Math_0.max(a, 0.05);
-      $receiver.metallic = closure$y / (closure$nRows - 1 | 0);
-      if (closure$withIbl) {
-        $receiver.useImageBasedLighting_wwmv4k$(closure$envMaps);
-      }return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y, this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps) {
-    return function ($receiver) {
-      $receiver.translate_y2kzbl$(((-(closure$nCols - 1 | 0) | 0) * 0.5 + closure$x) * closure$spacing, ((-(closure$nRows - 1 | 0) | 0) * 0.5 + closure$y) * closure$spacing, 0.0);
-      var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-      var mesh = new Mesh(new IndexedVertexList_init_0(attributes), null);
-      var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
-      var closure$x_0 = closure$x;
-      var closure$nCols_0 = closure$nCols;
-      var closure$y_0 = closure$y;
-      var closure$nRows_0 = closure$nRows;
-      var closure$withIbl_0 = closure$withIbl;
-      var closure$envMaps_0 = closure$envMaps;
-      mesh.geometry.addGeometry_r7nl2o$(this$RoughnesMetalGridContent_0.sphereProto.simpleSphere);
-      var shader = pbrShader(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent_0, closure$x_0, closure$nCols_0, closure$y_0, closure$nRows_0, closure$withIbl_0, closure$envMaps_0));
-      mesh.shader = shader;
-      this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
-      $receiver.unaryPlus_uv0sim$(mesh);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$makeSpheres$lambda(this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps) {
-    return function ($receiver) {
-      var nRows = 7;
-      var nCols = 7;
-      var spacing = 2.5;
-      for (var y = 0; y < nRows; y++) {
-        for (var x = 0; x < nCols; x++) {
-          $receiver.unaryPlus_uv0sim$(transformGroup(void 0, RoughnesMetalGridContent$makeSpheres$lambda$lambda(nCols, x, spacing, nRows, y, this$RoughnesMetalGridContent, closure$withIbl, closure$envMaps)));
-        }
-      }
-      return Unit;
-    };
-  }
   RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, envMaps) {
-    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(this, withIbl, envMaps));
+    var nRows = 7;
+    var nCols = 7;
+    var spacing = 2.5;
+    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
+    mesh.isFrustumChecked = false;
+    mesh.geometry.addGeometry_r7nl2o$(this.sphereProto.simpleSphere);
+    var $receiver = this.instancedPbrShader_0(withIbl, envMaps);
+    this.shaders_0.add_11rb$($receiver);
+    mesh.shader = $receiver;
+    var $receiver_0 = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), Kotlin.imul(nRows, nCols));
+    var mat = new Mat4f();
+    for (var y = 0; y < nRows; y++) {
+      for (var x = 0; x < nCols; x++) {
+        mat.setIdentity();
+        mat.translate_y2kzbl$(((-(nCols - 1 | 0) | 0) * 0.5 + x) * spacing, ((nRows - 1 | 0) * 0.5 - y) * spacing, 0.0);
+        $receiver_0.checkBufferSize_za3lpa$();
+        var szBefore = $receiver_0.dataF.position;
+        var $receiver_1 = $receiver_0.dataF;
+        $receiver_1.put_q3cr5i$(mat.matrix);
+        var a = x / (nCols - 1 | 0);
+        var roughness = Math_0.max(a, 0.05);
+        var metallic = y / (nRows - 1 | 0);
+        $receiver_1.put_mx4ult$(roughness);
+        $receiver_1.put_mx4ult$(metallic);
+        $receiver_1.put_mx4ult$(0.0);
+        $receiver_1.put_mx4ult$(0.0);
+        var growSz = $receiver_0.dataF.position - szBefore | 0;
+        if (growSz !== $receiver_0.instanceSizeF) {
+          throw IllegalStateException_init('Expected data to grow by ' + $receiver_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
+        }$receiver_0.numInstances = $receiver_0.numInstances + 1 | 0;
+        $receiver_0.hasChanged = true;
+      }
+    }
+    mesh.instances = $receiver_0;
+    return mesh;
+  };
+  RoughnesMetalGridContent.prototype.instancedPbrShader_0 = function (withIbl, envMaps) {
+    var $receiver = new PbrMaterialConfig();
+    $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+    $receiver.albedo = this.colors_0.current.linColor;
+    $receiver.isInstanced = true;
+    if (withIbl) {
+      $receiver.useImageBasedLighting_wwmv4k$(envMaps);
+    }var pbrCfg = $receiver;
+    var $receiver_0 = PbrShader.Companion.defaultPbrModel_2ufela$(pbrCfg);
+    var ifInstColor = {v: null};
+    var $receiver_1 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_0);
+    ifInstColor.v = $receiver_1.stageInterfaceNode_iikjwn$('ifInstColors', $receiver_1.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
+    var $receiver_2 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_0);
+    var name = 'pbrMaterial';
+    var stage;
+    var findNode_3klnlw$result;
+    findNode_3klnlw$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$;
+      tmp$ = $receiver_0.stages.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var tmp$_0;
+          var $receiver_3 = element.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_1;
+            tmp$_1 = $receiver_3.iterator();
+            while (tmp$_1.hasNext()) {
+              var element_0 = tmp$_1.next();
+              if (equals(element_0.name, name) && Kotlin.isType(element_0, PbrMaterialNode)) {
+                firstOrNull$result = element_0;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0, PbrMaterialNode) ? tmp$_0 : throwCCE();
+          if (node != null) {
+            findNode_3klnlw$result = node;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result = null;
+    }
+     while (false);
+    var material = ensureNotNull(findNode_3klnlw$result);
+    material.inRoughness = $receiver_2.splitNode_500t7j$(ifInstColor.v.output, 'r').output;
+    material.inMetallic = $receiver_2.splitNode_500t7j$(ifInstColor.v.output, 'g').output;
+    var model = $receiver_0;
+    return new PbrShader(pbrCfg, model);
   };
   function RoughnesMetalGridContent$MatColor(name, linColor) {
     this.name = name;
@@ -7854,7 +7982,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.models = LinkedHashMap_init();
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
-    this.dispModel = new Mesh(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.dispModel = new Mesh_init(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
     this.simplifcationGrade = 1.0;
     this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
@@ -8477,7 +8605,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'SimplificationDemo',
     interfaces: []
   };
-  var ShaderModel$findNode$lambda_0 = wrapFunction(function () {
+  var ShaderModel$findNode$lambda_2 = wrapFunction(function () {
     var equals = Kotlin.equals;
     var throwCCE = Kotlin.throwCCE;
     return function (closure$stage, closure$name, typeClosure$T, isT) {
@@ -9211,7 +9339,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_1 = new CascadedShadowMap($receiver, 0, void 0, void 0, 2048);
     $receiver_1.maxRange = 50.0;
     var shadowMaps = mutableListOf([$receiver_1]);
-    var bgGradient = new ColorGradient([to(0.0, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.75)), to(0.5, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.25)), to(1.0, Color.Companion.fromHex_61zpoe$('3295FF').mix_y83vuj$(Color.Companion.BLACK, 0.5))]);
+    var bgGradient = new ColorGradient([to(0.0, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.75)), to(0.35, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.75)), to(0.45, Color.Companion.fromHex_61zpoe$('B2D7FF').mix_y83vuj$(Color.Companion.BLACK, 0.25)), to(0.9, Color.Companion.fromHex_61zpoe$('3295FF').mix_y83vuj$(Color.Companion.BLACK, 0.45)), to(1.0, Color.Companion.fromHex_61zpoe$('3295FF').mix_y83vuj$(Color.Companion.BLACK, 0.5))]);
     var envMaps = ibl.EnvironmentHelper.gradientColorEnvironment_hfkvyz$($receiver, bgGradient, ctx);
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps, envMaps));
     $receiver.unaryPlus_uv0sim$(new Skybox(envMaps.reflectionMap));
@@ -9324,7 +9452,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         break;
       case 'TEXTURE_ALBEDO':
         var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output);
-        tmp$_4 = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor).outColor;
+        tmp$_4 = $receiver_3.gammaNode_ze33is$(albedoSampler.outColor).outColor;
         break;
       case 'CUBE_MAP_ALBEDO':
         throw IllegalStateException_init('CUBE_MAP_ALBEDO is not allowed for PbrShader');

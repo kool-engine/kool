@@ -4,8 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -32,7 +31,7 @@ class AoDemo(ctx: KoolContext) {
 
     private var autoRotate = true
     private var spotLight = true
-    private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
+    private val noAoMap = SingleColorTexture(Color.WHITE)
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()

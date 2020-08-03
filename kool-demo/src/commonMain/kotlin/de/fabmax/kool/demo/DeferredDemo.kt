@@ -2,7 +2,10 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -29,7 +32,7 @@ class DeferredDemo(ctx: KoolContext) {
 
     private lateinit var objects: Mesh
     private lateinit var objectShader: DeferredPbrShader
-    private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
+    private val noAoMap = SingleColorTexture(Color.WHITE)
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
