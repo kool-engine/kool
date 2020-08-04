@@ -8,9 +8,11 @@ This is my personal pet-project. I have a few demos in place (once loaded, you c
 them via the hamburger button in the upper left corner):
 - [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
   light sources - also includes PBR shading and ambient occlusion.
-- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Two fancy models: Camera Model
-  from [3dModeHaven](https://3dmodelhaven.com/model/?m=Camera_01) and Flight Helmet from 
-  [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet). Moreover, a
+- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Three fancy models:
+  Flight Helmet from 
+  [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet) as well as
+  [Coffee Cart](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) and
+  [Camera Model](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) from 3dModeHaven. Moreover, a
   few feature test models.
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from

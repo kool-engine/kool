@@ -747,6 +747,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ReflectionDenoisePass.prototype.constructor = ReflectionDenoisePass;
   ReflectionPass$ReflectionShader.prototype = Object.create(ModeledShader.prototype);
   ReflectionPass$ReflectionShader.prototype.constructor = ReflectionPass$ReflectionShader;
+  ReflectionPass$DiscardRoughSurfacesNode.prototype = Object.create(ShaderNode.prototype);
+  ReflectionPass$DiscardRoughSurfacesNode.prototype.constructor = ReflectionPass$DiscardRoughSurfacesNode;
   ReflectionPass.prototype = Object.create(OffscreenRenderPass2d.prototype);
   ReflectionPass.prototype.constructor = ReflectionPass;
   ScreenSpaceRayTraceNode.prototype = Object.create(ShaderNode.prototype);
@@ -32732,6 +32734,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     builder.clearDepthTexture();
     OffscreenRenderPass2d.call(this, tmp$, new OffscreenRenderPass$Config(builder));
     var tmp$_0;
+    this.clearColor = new Color(0.0, 0.0, 0.0, 0.0);
     var $receiver = Kotlin.isType(tmp$_0 = this.drawNode, Group) ? tmp$_0 : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(ReflectionDenoisePass_init$lambda$lambda$lambda);
@@ -32748,7 +32751,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.colorOutput_a3v4si$(blurNd.outColor);
     var model = $receiver_0;
     var $receiver_3 = new ModeledShader(model);
-    $receiver_3.onPipelineCreated.add_11rb$(ReflectionDenoisePass_init$lambda$lambda$lambda$lambda(reflectionPass, model, positionAo));
+    $receiver_3.onPipelineSetup.add_11rb$(ReflectionDenoisePass_init$lambda$lambda$lambda$lambda);
+    $receiver_3.onPipelineCreated.add_11rb$(ReflectionDenoisePass_init$lambda$lambda$lambda$lambda_0(reflectionPass, model, positionAo));
     mesh.shader = $receiver_3;
     $receiver.unaryPlus_uv0sim$(mesh);
     this.dependsOn_yqp8fe$(reflectionPass);
@@ -32763,17 +32767,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.noisyRefl = noisyRefl;
     this.depthTex = depthTex;
     this.inScreenPos = new ShaderNodeIoVar(new ModelVar2fConst(Vec2f$Companion_getInstance().ZERO));
-    this.radius = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('colorOut'), this);
   }
   ReflectionDenoisePass$BlurNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     this.dependsOn_lhtstx$(this.noisyRefl);
     this.dependsOn_lhtstx$(this.depthTex);
-    this.dependsOn_8ak6wm$([this.inScreenPos, this.radius]);
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
   };
   ReflectionDenoisePass$BlurNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$('\n' + '                int blurSize = ' + '5' + ';' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyRefl.name + ', 0));' + '\n' + '                float depthOri = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + '.z;' + '\n' + '                float depthThreshold = ' + this.radius.ref1f() + ' * 0.1;' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(0.0);' + '\n' + '                float weight = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 uv = ' + this.inScreenPos.ref2f() + ' + (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        float w = 1.0 - step(depthThreshold, abs(' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'uv') + '.z - depthOri)) * 0.99;' + '\n' + '                        ' + '\n' + '                        ' + this.outColor + ' += ' + generator.sampleTexture2d_buzeal$(this.noisyRefl.name, 'uv') + ' * w;' + '\n' + '                        weight += w;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                ' + this.outColor + ' /= weight;' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                int blurSize = ' + '4' + ';' + '\n' + '                vec2 texelSize = 1.0 / vec2(textureSize(' + this.noisyRefl.name + ', 0));' + '\n' + '                float depthOri = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + '.z;' + '\n' + '                float depthThreshold = max(0.3, depthOri * 0.05);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(0.0);' + '\n' + '                ' + '\n' + '                float weight = 0.0;' + '\n' + '                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);' + '\n' + '                for (int x = 0; x < blurSize; x++) {' + '\n' + '                    for (int y = 0; y < blurSize; y++) {' + '\n' + '                        vec2 uv = ' + this.inScreenPos.ref2f() + ' + (hlim + vec2(float(x), float(y))) * texelSize;' + '\n' + '                        float w = 1.0 - step(depthThreshold, abs(' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'uv') + '.z - depthOri)) * 0.99;' + '\n' + '                        ' + '\n' + '                        ' + this.outColor + ' += ' + generator.sampleTexture2d_buzeal$(this.noisyRefl.name, 'uv') + ' * w;' + '\n' + '                        weight += w;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                ' + this.outColor + ' /= weight;' + '\n' + '            ');
   };
   ReflectionDenoisePass$BlurNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -32787,7 +32789,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function ReflectionDenoisePass_init$lambda$lambda$lambda$lambda(closure$reflectionPass, closure$model, closure$positionAo) {
+  function ReflectionDenoisePass_init$lambda$lambda$lambda$lambda(builder, f, f_0) {
+    builder.depthTest = DepthCompareOp$ALWAYS_getInstance();
+    builder.blendMode = BlendMode$DISABLED_getInstance();
+    return Unit;
+  }
+  function ReflectionDenoisePass_init$lambda$lambda$lambda$lambda_0(closure$reflectionPass, closure$model, closure$positionAo) {
     return function (f, f_0, f_1) {
       var $this = closure$model;
       var name = 'noisyRefl';
@@ -33193,9 +33200,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.inPositionAo = $receiver_1.textureSamplerNode_ce41yx$(posAoTex, coord).outColor;
     $receiver_2.inNormalRough = $receiver_1.textureSamplerNode_ce41yx$($receiver_1.textureNode_61zpoe$('normalRoughness'), coord).outColor;
     var mrtDeMultiplex = $receiver_2;
+    $receiver_1.addNode_u9w9by$(new ReflectionPass$DiscardRoughSurfacesNode($receiver_1.stage)).inRoughness = mrtDeMultiplex.outRoughness;
     var defCam = $receiver_1.addNode_u9w9by$(new DeferredCameraNode($receiver_1.stage));
     var ssrNoiseTex = $receiver_1.textureNode_61zpoe$('ssrNoiseTex');
-    var noise = $receiver_1.noiseTextureSamplerNode_gwl5ki$(ssrNoiseTex, $receiver_1.constVec2i_czzhjm$(new Vec2i(5, 5))).outNoise;
+    var noise = $receiver_1.noiseTextureSamplerNode_gwl5ki$(ssrNoiseTex, $receiver_1.constVec2i_czzhjm$(new Vec2i(4, 4))).outNoise;
     var sceneColorTex = $receiver_1.textureNode_61zpoe$('ssrMap');
     var viewPos = mrtDeMultiplex.outViewPos;
     var viewDir = $receiver_1.normalizeNode_r20yfm$(viewPos).output;
@@ -33263,7 +33271,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   ReflectionPass.prototype.generateScrSpcReflectionNoiseTex_0 = function () {
     var tmp$;
-    var sz = 5;
+    var sz = 4;
     var buf = createUint8Buffer(Kotlin.imul(sz, sz) * 4 | 0);
     var rand = new Random_0(501930763);
     var vec = MutableVec3f_init();
@@ -33283,9 +33291,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var texProps = new TextureProps(TexFormat$RGBA_getInstance(), AddressMode$REPEAT_getInstance(), AddressMode$REPEAT_getInstance(), void 0, FilterMethod$NEAREST_getInstance(), FilterMethod$NEAREST_getInstance(), false, 1);
     return new Texture('ssr_noise_tex', texProps, ReflectionPass$generateScrSpcReflectionNoiseTex$lambda(data));
   };
+  function ReflectionPass$DiscardRoughSurfacesNode(graph) {
+    ShaderNode.call(this, 'discardRough', graph);
+    this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.inThresh = new ShaderNodeIoVar(new ModelVar1fConst(0.49));
+  }
+  ReflectionPass$DiscardRoughSurfacesNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inRoughness, this.inThresh]);
+  };
+  ReflectionPass$DiscardRoughSurfacesNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('if (' + this.inRoughness.ref1f() + ' > ' + this.inThresh.ref1f() + ') discard;');
+  };
+  ReflectionPass$DiscardRoughSurfacesNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DiscardRoughSurfacesNode',
+    interfaces: [ShaderNode]
+  };
   function ReflectionPass$Companion() {
     ReflectionPass$Companion_instance = this;
-    this.NOISE_SIZE = 5;
+    this.NOISE_SIZE = 4;
   }
   ReflectionPass$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -36970,6 +36995,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             mesh.morphWeights = new tmp$_6(sum);
             mesh.isFrustumChecked = false;
           }if (cfg.applyMaterials) {
+            var renderDeferred = {v: cfg.materialConfig.isDeferredShading};
             var useVertexColor = item.attributes.containsKey_11rb$(GltfMesh$Primitive$Companion_getInstance().ATTRIBUTE_COLOR_0);
             var $receiver_2 = new PbrMaterialConfig();
             var tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15;
@@ -36986,7 +37012,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               addAll($receiver_2.morphAttributes, mesh.geometry.getMorphAttributes());
             }var matCfg = cfg.materialConfig;
             var tmp$_16;
-            $receiver_2.isHdrOutput = matCfg.isDeferredShading;
             addAll($receiver_2.shadowMaps, matCfg.shadowMaps);
             if ((tmp$_16 = matCfg.scrSpcAmbientOcclusionMap) != null) {
               $receiver_2.useScreenSpaceAmbientOcclusion_vv6xll$(tmp$_16);
@@ -36994,6 +37019,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             (tmp$_8 = cfg.pbrBlock) != null ? tmp$_8($receiver_2, item) : null;
             if (Kotlin.isType($receiver_2.alphaMode, AlphaModeBlend)) {
               mesh.isOpaque = false;
+              renderDeferred.v = false;
             }if ((tmp$_9 = $receiver_2.albedoMap) != null) {
               var tmp$_17, tmp$_18;
               tmp$_18 = model.textures;
@@ -37030,9 +37056,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
               var key_6 = (tmp$_29 = tmp$_15.name) != null ? tmp$_29 : 'tex_' + model.textures.size;
               tmp$_30.put_xwzc9p$(key_6, tmp$_15);
             }var pbrConfig = $receiver_2;
-            if (cfg.materialConfig.isDeferredShading && mesh.isOpaque) {
+            if (renderDeferred.v) {
+              pbrConfig.isHdrOutput = true;
               mesh.shader = new DeferredPbrShader(pbrConfig);
             } else {
+              pbrConfig.isHdrOutput = false;
               mesh.shader = new PbrShader(pbrConfig);
             }
           }model.meshes.put_xwzc9p$(name, mesh);

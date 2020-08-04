@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
@@ -19,6 +20,7 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 fun gltfDemo(ctx: KoolContext): List<Scene> {
@@ -32,6 +34,8 @@ class GltfDemo(ctx: KoolContext) {
 
     private val foxAnimator = FoxAnimator()
     private val models = Cycler(
+            GltfModel("Coffee Cart", "${Demo.modelBasePath}/CoffeeCart_01.glb",
+                    2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
             GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
@@ -49,6 +53,7 @@ class GltfDemo(ctx: KoolContext) {
 
     private var autoRotate = true
     private var useDeferredPipeline = true
+    private var isScrSpcReflections = true
     private var animationSpeed = .5f
     private var animationTime = 0.0
 
@@ -65,8 +70,11 @@ class GltfDemo(ctx: KoolContext) {
     private val shadowsDeferred = mutableListOf<ShadowMap>()
     private var aoPipelineDeferred: AoPipeline? = null
     private val contentGroupDeferred = TransformGroup()
-    private lateinit var mrtPass: DeferredMrtPass
-    private lateinit var pbrPass: PbrLightingPass
+
+    private var mrtPass: DeferredMrtPass? = null
+    private var pbrPass: PbrLightingPass? = null
+
+    private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     init {
         models.current.isVisible = true
@@ -86,24 +94,18 @@ class GltfDemo(ctx: KoolContext) {
         setupCamera()
 
         ctx.assetMgr.launch {
-//            val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
-//            val hdri = loadAndPrepareTexture("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", hdriTexProps)
-//            irrMapPass = IrradianceMapPass(this@scene, hdri)
-//            reflMapPass = ReflectionMapPass(this@scene, hdri)
-//            brdfLutPass = BrdfLutPass(this@scene)
-//
-//            onDispose += {
-//                hdri.dispose()
-//            }
             envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
 
-            //+Skybox(reflMapPass!!.colorTexture!!, 1f)
             +Skybox(envMaps.reflectionMap, 1f)
 
             makeDeferredContent(ctx)
             makeForwardContent(ctx)
 
             setDeferredPipelineEnabled(useDeferredPipeline)
+        }
+
+        onDispose += {
+            noSsrMap.dispose()
         }
     }
 
@@ -118,8 +120,8 @@ class GltfDemo(ctx: KoolContext) {
             shadowsDeferred.forEach { it.isShadowMapEnabled = true }
             aoPipelineDeferred?.aoPass?.isEnabled = true
             aoPipelineDeferred?.denoisePass?.isEnabled = true
-            mrtPass.isEnabled = true
-            pbrPass.isEnabled = true
+            mrtPass?.isEnabled = true
+            pbrPass?.isEnabled = true
 
         } else {
             contentGroupForward.isVisible = true
@@ -131,8 +133,8 @@ class GltfDemo(ctx: KoolContext) {
             shadowsDeferred.forEach { it.isShadowMapEnabled = false }
             aoPipelineDeferred?.aoPass?.isEnabled = false
             aoPipelineDeferred?.denoisePass?.isEnabled = false
-            mrtPass.isEnabled = false
-            pbrPass.isEnabled = false
+            mrtPass?.isEnabled = false
+            pbrPass?.isEnabled = false
         }
     }
 
@@ -147,7 +149,7 @@ class GltfDemo(ctx: KoolContext) {
     }
 
     private suspend fun Scene.makeDeferredContent(ctx: KoolContext) {
-        mrtPass = DeferredMrtPass(this, true)
+        val mrtPass = DeferredMrtPass(this, true)
         aoPipelineDeferred = AoPipeline.createDeferred(this, mrtPass)
         shadowsDeferred += listOf(
                 SimpleShadowMap(this, 0, 2048, mrtPass.content),
@@ -158,16 +160,20 @@ class GltfDemo(ctx: KoolContext) {
         // setup lighting pass
         val cfg = PbrSceneShader.DeferredPbrConfig().apply {
             useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
+            isScrSpcReflections = this@GltfDemo.isScrSpcReflections
             useImageBasedLighting(envMaps)
             shadowMaps += shadowsDeferred
         }
-        pbrPass = PbrLightingPass(this@makeDeferredContent, mrtPass, cfg)
+        val pbrPass = PbrLightingPass(this, mrtPass, cfg)
 
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
             isFrustumChecked = false
             +pbrPass.createOutputQuad()
         }
+
+        this@GltfDemo.mrtPass = mrtPass
+        this@GltfDemo.pbrPass = pbrPass
     }
 
     private fun Scene.setupCamera() {
@@ -272,8 +278,8 @@ class GltfDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-385f), zero())
-            layoutSpec.setSize(dps(250f), dps(265f), full())
+            layoutSpec.setOrigin(dps(-420f), dps(-490f), zero())
+            layoutSpec.setSize(dps(300f), dps(370f), full())
 
             var y = -40f
             +label("glTF Models") {
@@ -359,6 +365,43 @@ class GltfDemo(ctx: KoolContext) {
                 onStateChange += {
                     useDeferredPipeline = isEnabled
                     setDeferredPipelineEnabled(isEnabled)
+                }
+            }
+            y -= 35f
+            +toggleButton("Screen Space Reflections") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = isScrSpcReflections
+                onClick += { _, _, _ ->
+                    isScrSpcReflections = isEnabled
+                    pbrPass?.reflectionPass?.isEnabled = isEnabled
+                    pbrPass?.reflectionDenoisePass?.isEnabled = isEnabled
+                    if (isEnabled) {
+                        pbrPass?.sceneShader?.scrSpcReflectionMap = pbrPass?.reflectionDenoisePass?.colorTexture
+                    } else {
+                        pbrPass?.sceneShader?.scrSpcReflectionMap = noSsrMap
+                    }
+                }
+            }
+            y -= 35f
+            +label("SSR Map Size:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            val mapSzVal = label("0.5 x") {
+                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +mapSzVal
+            y -= 35f
+            +slider("mapSizeSlider", 1f, 10f, 5f) {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                onValueChanged += {
+                    val sz = value.roundToInt() / 10f
+                    pbrPass?.reflectionMapSize = sz
+                    mapSzVal.text = "${sz.toString(1)} x"
                 }
             }
             y -= 35f

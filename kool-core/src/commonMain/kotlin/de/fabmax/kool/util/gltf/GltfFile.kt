@@ -555,6 +555,7 @@ data class GltfFile(
                     }
 
                     if (cfg.applyMaterials) {
+                        var renderDeferred = cfg.materialConfig.isDeferredShading
                         val useVertexColor = p.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
                         val pbrConfig = PbrMaterialConfig().apply {
                             val material = p.materialRef
@@ -572,7 +573,6 @@ data class GltfFile(
                             }
 
                             cfg.materialConfig.let { matCfg ->
-                                isHdrOutput = matCfg.isDeferredShading
                                 shadowMaps += matCfg.shadowMaps
                                 matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
                                 useImageBasedLighting(matCfg.iblIrradianceMap, matCfg.iblReflectionMap, matCfg.iblBrdfMap)
@@ -581,6 +581,8 @@ data class GltfFile(
 
                             if (alphaMode is AlphaModeBlend) {
                                 mesh.isOpaque = false
+                                // transparent / blended meshes must be rendered in forward pass
+                                renderDeferred = false
                             }
 
                             albedoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
@@ -592,9 +594,11 @@ data class GltfFile(
                             displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                         }
 
-                        if (cfg.materialConfig.isDeferredShading && mesh.isOpaque) {
+                        if (renderDeferred) {
+                            pbrConfig.isHdrOutput = true
                             mesh.shader = DeferredPbrShader(pbrConfig)
                         } else {
+                            pbrConfig.isHdrOutput = false
                             mesh.shader = PbrShader(pbrConfig)
                         }
                     }

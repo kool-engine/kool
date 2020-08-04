@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.util.Color
 
 class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -17,6 +18,8 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
         }) {
 
     init {
+        clearColor = Color(0f, 0f, 0f, 0f)
+
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
@@ -41,6 +44,10 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
                     }
                 }
                 shader = ModeledShader(model).apply {
+                    onPipelineSetup += { builder, _, _ ->
+                        builder.depthTest = DepthCompareOp.ALWAYS
+                        builder.blendMode = BlendMode.DISABLED
+                    }
                     onPipelineCreated += { _, _, _ ->
                         model.findNode<TextureNode>("noisyRefl")!!.sampler.texture = reflectionPass.colorTexture
                         model.findNode<TextureNode>("positionAo")!!.sampler.texture = positionAo
@@ -61,14 +68,11 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
             ShaderNode("blurNode", shaderGraph) {
 
         var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
-        var radius = ShaderNodeIoVar(ModelVar1fConst(1f))
-
         val outColor = ShaderNodeIoVar(ModelVar4f("colorOut"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             dependsOn(noisyRefl)
             dependsOn(depthTex)
-            dependsOn(inScreenPos, radius)
             super.setup(shaderGraph)
         }
 
@@ -77,9 +81,9 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
                 int blurSize = ${ReflectionPass.NOISE_SIZE};
                 vec2 texelSize = 1.0 / vec2(textureSize(${noisyRefl.name}, 0));
                 float depthOri = ${generator.sampleTexture2d(depthTex.name, inScreenPos.ref2f())}.z;
-                float depthThreshold = ${radius.ref1f()} * 0.1;
-                
+                float depthThreshold = max(0.3, depthOri * 0.05);
                 ${outColor.declare()} = vec4(0.0);
+                
                 float weight = 0.0;
                 vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);
                 for (int x = 0; x < blurSize; x++) {

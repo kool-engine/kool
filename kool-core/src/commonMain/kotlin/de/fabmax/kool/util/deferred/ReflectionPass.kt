@@ -96,6 +96,10 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
             }
 
+            addNode(DiscardRoughSurfacesNode(stage)).apply {
+                inRoughness = mrtDeMultiplex.outRoughness
+            }
+
             val defCam = addNode(DeferredCameraNode(stage))
             val ssrNoiseTex = textureNode("ssrNoiseTex")
             val noise = noiseTextureSamplerNode(ssrNoiseTex, constVec2i(Vec2i(NOISE_SIZE, NOISE_SIZE))).outNoise
@@ -147,7 +151,21 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
         return Texture("ssr_noise_tex", texProps) { data }
     }
 
+    private class DiscardRoughSurfacesNode(graph: ShaderGraph) : ShaderNode("discardRough", graph) {
+        var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
+        var inThresh = ShaderNodeIoVar(ModelVar1fConst(0.49f))
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inRoughness, inThresh)
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("if (${inRoughness.ref1f()} > ${inThresh.ref1f()}) discard;")
+        }
+    }
+
     companion object {
-        const val NOISE_SIZE = 5
+        const val NOISE_SIZE = 4
     }
 }
