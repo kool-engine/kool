@@ -113,14 +113,16 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
-            for (j in scene.offscreenPasses.indices) {
-                if (scene.offscreenPasses[j].isEnabled) {
-                    drawOffscreen(scene.offscreenPasses[j])
-                    scene.offscreenPasses[j].afterDraw(ctx)
+            if (scene.isVisible) {
+                for (j in scene.offscreenPasses.indices) {
+                    if (scene.offscreenPasses[j].isEnabled) {
+                        drawOffscreen(scene.offscreenPasses[j])
+                        scene.offscreenPasses[j].afterDraw(ctx)
+                    }
                 }
+                queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                scene.mainRenderPass.afterDraw(ctx)
             }
-            queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
-            scene.mainRenderPass.afterDraw(ctx)
         }
 
         if (afterRenderActions.isNotEmpty()) {

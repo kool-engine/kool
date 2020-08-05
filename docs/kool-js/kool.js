@@ -21191,6 +21191,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.rayTest = MeshRayTest$Companion_getInstance().nopTest();
     this.shader = new ModeledShader$VertexColor();
   }
+  LineMesh.prototype.addLine_nbf24k$ = function (point0, point1, color) {
+    return this.addLine_b8opkg$(point0, color, point1, color);
+  };
   function LineMesh$addLine$lambda(closure$point0, closure$color0, closure$idx0, closure$point1, closure$color1) {
     return function ($receiver) {
       closure$idx0.v = $receiver.addVertex_lv7vxo$(closure$point0, null, closure$color0, null);
@@ -29776,7 +29779,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $this = this.graphBuilder;
     $this.transform.push();
     var tmp$;
-    $this.translate_y2kzbl$(0.0, 0.0, 10.0);
+    $this.translate_y2kzbl$(0.0, 0.0, 0.0);
     tmp$ = numberToInt(this.width);
     for (var i = 1; i <= tmp$; i++) {
       this.graphBuilder.line_s2l86p$(i - 0.5, 0.0, i - 0.5, 1.0, 1.0);
@@ -47653,15 +47656,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     for (var i = 0; i !== tmp$_0.size; ++i) {
       var tmp$_1;
       var scene = this.scenes.get_za3lpa$(i);
-      tmp$_1 = scene.offscreenPasses;
-      for (var j_0 = 0; j_0 !== tmp$_1.size; ++j_0) {
-        if (scene.offscreenPasses.get_za3lpa$(j_0).isEnabled) {
-          this.drawOffscreen_0(scene.offscreenPasses.get_za3lpa$(j_0));
-          scene.offscreenPasses.get_za3lpa$(j_0).afterDraw_aemszp$(this);
-        }}
-      this.queueRenderer_8be2vx$.renderQueue_e0goaf$(scene.mainRenderPass.drawQueue);
-      scene.mainRenderPass.afterDraw_aemszp$(this);
-    }
+      if (scene.isVisible) {
+        tmp$_1 = scene.offscreenPasses;
+        for (var j_0 = 0; j_0 !== tmp$_1.size; ++j_0) {
+          if (scene.offscreenPasses.get_za3lpa$(j_0).isEnabled) {
+            this.drawOffscreen_0(scene.offscreenPasses.get_za3lpa$(j_0));
+            scene.offscreenPasses.get_za3lpa$(j_0).afterDraw_aemszp$(this);
+          }}
+        this.queueRenderer_8be2vx$.renderQueue_e0goaf$(scene.mainRenderPass.drawQueue);
+        scene.mainRenderPass.afterDraw_aemszp$(this);
+      }}
     if (!this.afterRenderActions_8be2vx$.isEmpty()) {
       var tmp$_2;
       tmp$_2 = this.afterRenderActions_8be2vx$.iterator();

@@ -40,6 +40,8 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
     //var isXray = false
     //var lineWidth = 1f
 
+    fun addLine(point0: Vec3f, point1: Vec3f, color: Color) = addLine(point0, color, point1, color)
+
     fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color): Int {
         var idx0 = 0
         geometry.batchUpdate {

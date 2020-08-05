@@ -99,10 +99,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var List = Kotlin.kotlin.collections.List;
   var Map = Kotlin.kotlin.collections.Map;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var Group = $module$kool.de.fabmax.kool.scene.Group;
+  var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
+  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var Vec3d = $module$kool.de.fabmax.kool.math.Vec3d;
   var MutableVec3d_init = $module$kool.de.fabmax.kool.math.MutableVec3d_init_czzhiw$;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
-  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var math_0 = Kotlin.kotlin.math;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var loadGltfFile = $module$kool.de.fabmax.kool.util.gltf.loadGltfFile_7e2ead$;
@@ -124,7 +126,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var PbrMaterialNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList;
-  var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
   var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
   var Array_0 = Array;
@@ -2074,9 +2075,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda(this$, this$Demo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$Demo.dbgOverlay_0.ui.isVisible = this$.isEnabled;
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda(this$Demo) {
+    return function ($receiver) {
+      this$Demo.dbgOverlay_0.ui.isVisible = $receiver.isEnabled;
       return Unit;
     };
   }
@@ -2086,8 +2087,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), full());
       $receiver.text = 'Debug Info';
       $receiver.isEnabled = this$Demo.dbgOverlay_0.ui.isVisible;
-      var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda($receiver, this$Demo);
+      var $receiver_0 = $receiver.onStateChange;
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda(this$Demo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -2287,7 +2288,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.mainScene = null;
     this.menu = null;
     this.foxAnimator_0 = new GltfDemo$FoxAnimator(this);
-    var tmp$ = new GltfDemo$GltfModel(this, 'Coffee Cart', Demo$Companion_getInstance().modelBasePath + '/CoffeeCart_01.glb', 2.0, new Vec3f(0.0, -0.01, 0.0), false, new Vec3d(0.0, 1.25, 0.0), false, 3.5);
+    var tmp$ = new GltfDemo$GltfModel(this, 'Coffee Cart', Demo$Companion_getInstance().modelBasePath + '/CoffeeCart_01.glb', 2.0, new Vec3f(0.0, -0.01, 0.0), false, new Vec3d(0.0, 1.75, 0.0), false, 3.5);
     var tmp$_0 = new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), false, 3.5);
     var tmp$_1 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
     var $receiver = new GltfDemo$GltfModel(this, 'Fox', Demo$Companion_getInstance().modelBasePath + '/fox.glb', 0.01, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), true, 3.5);
@@ -2295,7 +2296,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.models_0 = Cycler_init([tmp$, tmp$_0, tmp$_1, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 0.75, 0.0), false, 3.5)]);
     this.autoRotate_0 = true;
     this.useDeferredPipeline_0 = true;
-    this.isScrSpcReflections_0 = true;
+    this.isAo_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
@@ -2310,6 +2311,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.contentGroupDeferred_0 = new TransformGroup();
     this.mrtPass_0 = null;
     this.pbrPass_0 = null;
+    this.noAoMap_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.noSsrMap_0 = new SingleColorTexture(new Color(0.0, 0.0, 0.0, 0.0));
     this.models_0.current.isVisible = true;
     this.trackModel_0 = this.models_0.current.trackModel;
@@ -2380,7 +2382,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               return COROUTINE_SUSPENDED;
             continue;
           case 4:
-            return this.local$this$GltfDemo.setDeferredPipelineEnabled_0(this.local$this$GltfDemo.useDeferredPipeline_0), Unit;
+            return this.local$this$GltfDemo.setupPipelines_0(), Unit;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -2418,51 +2420,48 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.onDispose.add_11rb$(GltfDemo$makeMainScene$lambda$lambda_0(this));
     return $receiver;
   };
-  GltfDemo.prototype.setDeferredPipelineEnabled_0 = function (flag) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18;
-    if (flag) {
-      this.contentGroupForward_0.isVisible = false;
-      var tmp$_19;
-      tmp$_19 = this.shadowsForward_0.iterator();
-      while (tmp$_19.hasNext()) {
-        var element = tmp$_19.next();
-        element.isShadowMapEnabled = false;
-      }
-      (tmp$_0 = (tmp$ = this.aoPipelineForward_0) != null ? tmp$.aoPass : null) != null ? (tmp$_0.isEnabled = false) : null;
-      (tmp$_2 = (tmp$_1 = this.aoPipelineForward_0) != null ? tmp$_1.denoisePass : null) != null ? (tmp$_2.isEnabled = false) : null;
-      this.contentGroupDeferred_0.isVisible = true;
-      var tmp$_20;
-      tmp$_20 = this.shadowsDeferred_0.iterator();
-      while (tmp$_20.hasNext()) {
-        var element_0 = tmp$_20.next();
-        element_0.isShadowMapEnabled = true;
-      }
-      (tmp$_4 = (tmp$_3 = this.aoPipelineDeferred_0) != null ? tmp$_3.aoPass : null) != null ? (tmp$_4.isEnabled = true) : null;
-      (tmp$_6 = (tmp$_5 = this.aoPipelineDeferred_0) != null ? tmp$_5.denoisePass : null) != null ? (tmp$_6.isEnabled = true) : null;
-      (tmp$_7 = this.mrtPass_0) != null ? (tmp$_7.isEnabled = true) : null;
-      (tmp$_8 = this.pbrPass_0) != null ? (tmp$_8.isEnabled = true) : null;
-    } else {
-      this.contentGroupForward_0.isVisible = true;
-      var tmp$_21;
-      tmp$_21 = this.shadowsForward_0.iterator();
-      while (tmp$_21.hasNext()) {
-        var element_1 = tmp$_21.next();
-        element_1.isShadowMapEnabled = true;
-      }
-      (tmp$_10 = (tmp$_9 = this.aoPipelineForward_0) != null ? tmp$_9.aoPass : null) != null ? (tmp$_10.isEnabled = true) : null;
-      (tmp$_12 = (tmp$_11 = this.aoPipelineForward_0) != null ? tmp$_11.denoisePass : null) != null ? (tmp$_12.isEnabled = true) : null;
-      this.contentGroupDeferred_0.isVisible = false;
-      var tmp$_22;
-      tmp$_22 = this.shadowsDeferred_0.iterator();
-      while (tmp$_22.hasNext()) {
-        var element_2 = tmp$_22.next();
-        element_2.isShadowMapEnabled = false;
-      }
-      (tmp$_14 = (tmp$_13 = this.aoPipelineDeferred_0) != null ? tmp$_13.aoPass : null) != null ? (tmp$_14.isEnabled = false) : null;
-      (tmp$_16 = (tmp$_15 = this.aoPipelineDeferred_0) != null ? tmp$_15.denoisePass : null) != null ? (tmp$_16.isEnabled = false) : null;
-      (tmp$_17 = this.mrtPass_0) != null ? (tmp$_17.isEnabled = false) : null;
-      (tmp$_18 = this.pbrPass_0) != null ? (tmp$_18.isEnabled = false) : null;
+  GltfDemo.prototype.setupPipelines_0 = function () {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15;
+    var defState = this.useDeferredPipeline_0;
+    var fwdState = !defState;
+    this.contentGroupForward_0.isVisible = fwdState;
+    var tmp$_16;
+    tmp$_16 = this.shadowsForward_0.iterator();
+    while (tmp$_16.hasNext()) {
+      var element = tmp$_16.next();
+      element.isShadowMapEnabled = fwdState;
     }
+    (tmp$_0 = (tmp$ = this.aoPipelineForward_0) != null ? tmp$.aoPass : null) != null ? (tmp$_0.isEnabled = (fwdState && this.isAo_0)) : null;
+    (tmp$_2 = (tmp$_1 = this.aoPipelineForward_0) != null ? tmp$_1.denoisePass : null) != null ? (tmp$_2.isEnabled = (fwdState && this.isAo_0)) : null;
+    this.setForwardAoMap_0(this.contentGroupForward_0);
+    this.contentGroupDeferred_0.isVisible = defState;
+    var tmp$_17;
+    tmp$_17 = this.shadowsDeferred_0.iterator();
+    while (tmp$_17.hasNext()) {
+      var element_0 = tmp$_17.next();
+      element_0.isShadowMapEnabled = defState;
+    }
+    (tmp$_4 = (tmp$_3 = this.aoPipelineDeferred_0) != null ? tmp$_3.aoPass : null) != null ? (tmp$_4.isEnabled = (defState && this.isAo_0)) : null;
+    (tmp$_6 = (tmp$_5 = this.aoPipelineDeferred_0) != null ? tmp$_5.denoisePass : null) != null ? (tmp$_6.isEnabled = (defState && this.isAo_0)) : null;
+    (tmp$_7 = this.mrtPass_0) != null ? (tmp$_7.isEnabled = defState) : null;
+    (tmp$_8 = this.pbrPass_0) != null ? (tmp$_8.isEnabled = defState) : null;
+    (tmp$_10 = (tmp$_9 = this.pbrPass_0) != null ? tmp$_9.reflectionPass : null) != null ? (tmp$_10.isEnabled = defState) : null;
+    (tmp$_12 = (tmp$_11 = this.pbrPass_0) != null ? tmp$_11.reflectionDenoisePass : null) != null ? (tmp$_12.isEnabled = defState) : null;
+    (tmp$_15 = (tmp$_14 = this.pbrPass_0) != null ? tmp$_14.sceneShader : null) != null ? (tmp$_15.scrSpcAmbientOcclusionMap = this.isAo_0 ? (tmp$_13 = this.aoPipelineDeferred_0) != null ? tmp$_13.aoMap : null : this.noAoMap_0) : null;
+  };
+  GltfDemo.prototype.setForwardAoMap_0 = function ($receiver) {
+    var tmp$;
+    tmp$ = $receiver.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0;
+      if (Kotlin.isType(element, Group)) {
+        this.setForwardAoMap_0(element);
+      } else if (Kotlin.isType(element, Mesh)) {
+        var shader = element.shader;
+        if (Kotlin.isType(shader, PbrShader)) {
+          shader.scrSpcAmbientOcclusionMap = this.isAo_0 ? (tmp$_0 = this.aoPipelineForward_0) != null ? tmp$_0.aoMap : null : this.noAoMap_0;
+        }}}
   };
   function Coroutine$makeForwardContent_0($this, $receiver_0, ctx_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -2483,7 +2482,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       try {
         switch (this.state_0) {
           case 0:
-            this.$this.aoPipelineForward_0 = AoPipeline.Companion.createForward_ushge7$(this.local$$receiver);
+            var $receiver = AoPipeline.Companion.createForward_ushge7$(this.local$$receiver);
+            $receiver.radius = 0.2;
+            this.$this.aoPipelineForward_0 = $receiver;
             addAll(this.$this.shadowsForward_0, listOf([new SimpleShadowMap(this.local$$receiver, 0, 2048, this.$this.contentGroupForward_0), new SimpleShadowMap(this.local$$receiver, 1, 2048, this.$this.contentGroupForward_0)]));
             this.state_0 = 2;
             this.result_0 = this.$this.setupContentGroup_0(this.$this.contentGroupForward_0, false, this.local$ctx, this);
@@ -2537,7 +2538,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             this.local$mrtPass = new DeferredMrtPass(this.local$$receiver, true);
-            this.$this.aoPipelineDeferred_0 = AoPipeline.Companion.createDeferred_4lrvgg$(this.local$$receiver, this.local$mrtPass);
+            var $receiver = AoPipeline.Companion.createDeferred_4lrvgg$(this.local$$receiver, this.local$mrtPass);
+            $receiver.radius = 0.2;
+            this.$this.aoPipelineDeferred_0 = $receiver;
             addAll(this.$this.shadowsDeferred_0, listOf([new SimpleShadowMap(this.local$$receiver, 0, 2048, this.local$mrtPass.content), new SimpleShadowMap(this.local$$receiver, 1, 2048, this.local$mrtPass.content)]));
             this.state_0 = 2;
             this.result_0 = this.$this.setupContentGroup_0(this.local$mrtPass.content, true, this.local$ctx, this);
@@ -2547,18 +2550,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           case 1:
             throw this.exception_0;
           case 2:
-            var $receiver = new PbrSceneShader$DeferredPbrConfig();
+            var $receiver_0 = new PbrSceneShader$DeferredPbrConfig();
             var tmp$;
-            $receiver.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this.$this.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
-            $receiver.isScrSpcReflections = this.$this.isScrSpcReflections_0;
-            $receiver.useImageBasedLighting_wwmv4k$(this.$this.envMaps_0);
-            addAll($receiver.shadowMaps, this.$this.shadowsDeferred_0);
-            var cfg = $receiver;
+            $receiver_0.useScreenSpaceAmbientOcclusion_vv6xll$((tmp$ = this.$this.aoPipelineDeferred_0) != null ? tmp$.aoMap : null);
+            $receiver_0.isScrSpcReflections = true;
+            $receiver_0.useImageBasedLighting_wwmv4k$(this.$this.envMaps_0);
+            addAll($receiver_0.shadowMaps, this.$this.shadowsDeferred_0);
+            var cfg = $receiver_0;
             var pbrPass = new PbrLightingPass(this.local$$receiver, this.local$mrtPass, cfg);
-            var $receiver_0 = this.$this.contentGroupDeferred_0;
-            $receiver_0.isFrustumChecked = false;
-            $receiver_0.unaryPlus_uv0sim$(pbrPass.createOutputQuad());
-            this.local$$receiver.unaryPlus_uv0sim$($receiver_0);
+            var $receiver_1 = this.$this.contentGroupDeferred_0;
+            $receiver_1.isFrustumChecked = false;
+            $receiver_1.unaryPlus_uv0sim$(pbrPass.createOutputQuad());
+            this.local$$receiver.unaryPlus_uv0sim$($receiver_1);
             this.$this.mrtPass_0 = this.local$mrtPass;
             this.$this.pbrPass_0 = pbrPass;
             return;
@@ -2885,8 +2888,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo) {
     return function ($receiver) {
-      this$GltfDemo.useDeferredPipeline_0 = $receiver.isEnabled;
-      this$GltfDemo.setDeferredPipelineEnabled_0($receiver.isEnabled);
+      this$GltfDemo.isAo_0 = $receiver.isEnabled;
+      this$GltfDemo.setupPipelines_0();
       return Unit;
     };
   }
@@ -2894,24 +2897,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$GltfDemo.useDeferredPipeline_0;
+      $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
       var element = GltfDemo$menu$lambda$lambda$lambda$lambda_3(this$GltfDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda$lambda_4(this$, this$GltfDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8;
-      this$GltfDemo.isScrSpcReflections_0 = this$.isEnabled;
-      (tmp$_0 = (tmp$ = this$GltfDemo.pbrPass_0) != null ? tmp$.reflectionPass : null) != null ? (tmp$_0.isEnabled = this$.isEnabled) : null;
-      (tmp$_2 = (tmp$_1 = this$GltfDemo.pbrPass_0) != null ? tmp$_1.reflectionDenoisePass : null) != null ? (tmp$_2.isEnabled = this$.isEnabled) : null;
-      if (this$.isEnabled) {
-        (tmp$_6 = (tmp$_5 = this$GltfDemo.pbrPass_0) != null ? tmp$_5.sceneShader : null) != null ? (tmp$_6.scrSpcReflectionMap = (tmp$_4 = (tmp$_3 = this$GltfDemo.pbrPass_0) != null ? tmp$_3.reflectionDenoisePass : null) != null ? tmp$_4.colorTexture : null) : null;
-      } else {
-        (tmp$_8 = (tmp$_7 = this$GltfDemo.pbrPass_0) != null ? tmp$_7.sceneShader : null) != null ? (tmp$_8.scrSpcReflectionMap = this$GltfDemo.noSsrMap_0) : null;
-      }
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_4(this$GltfDemo) {
+    return function ($receiver) {
+      this$GltfDemo.useDeferredPipeline_0 = $receiver.isEnabled;
+      this$GltfDemo.setupPipelines_0();
       return Unit;
     };
   }
@@ -2919,21 +2915,45 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$GltfDemo.isScrSpcReflections_0;
-      var $receiver_0 = $receiver.onClick;
-      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_4($receiver, this$GltfDemo);
+      $receiver.isEnabled = this$GltfDemo.useDeferredPipeline_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_4(this$GltfDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_11(closure$y) {
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_5(this$GltfDemo) {
+    return function ($receiver) {
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8;
+      (tmp$_0 = (tmp$ = this$GltfDemo.pbrPass_0) != null ? tmp$.reflectionPass : null) != null ? (tmp$_0.isEnabled = $receiver.isEnabled) : null;
+      (tmp$_2 = (tmp$_1 = this$GltfDemo.pbrPass_0) != null ? tmp$_1.reflectionDenoisePass : null) != null ? (tmp$_2.isEnabled = $receiver.isEnabled) : null;
+      if ($receiver.isEnabled) {
+        (tmp$_6 = (tmp$_5 = this$GltfDemo.pbrPass_0) != null ? tmp$_5.sceneShader : null) != null ? (tmp$_6.scrSpcReflectionMap = (tmp$_4 = (tmp$_3 = this$GltfDemo.pbrPass_0) != null ? tmp$_3.reflectionDenoisePass : null) != null ? tmp$_4.colorTexture : null) : null;
+      } else {
+        (tmp$_8 = (tmp$_7 = this$GltfDemo.pbrPass_0) != null ? tmp$_7.sceneShader : null) != null ? (tmp$_8.scrSpcReflectionMap = this$GltfDemo.noSsrMap_0) : null;
+      }
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_11(closure$y, this$GltfDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = true;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_5(this$GltfDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function GltfDemo$menu$lambda$lambda$lambda_12(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_12(closure$y) {
+  function GltfDemo$menu$lambda$lambda$lambda_13(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -2941,7 +2961,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda$lambda_5(this$GltfDemo, closure$mapSzVal) {
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_6(this$GltfDemo, closure$mapSzVal) {
     return function ($receiver, it) {
       var tmp$;
       var sz = roundToInt($receiver.value) / 10.0;
@@ -2950,29 +2970,29 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_13(closure$y, this$GltfDemo, closure$mapSzVal) {
+  function GltfDemo$menu$lambda$lambda$lambda_14(closure$y, this$GltfDemo, closure$mapSzVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onValueChanged;
-      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_5(this$GltfDemo, closure$mapSzVal);
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_6(this$GltfDemo, closure$mapSzVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda$lambda_6(this$GltfDemo) {
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_7(this$GltfDemo) {
     return function ($receiver) {
       this$GltfDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_14(closure$y, this$GltfDemo) {
+  function GltfDemo$menu$lambda$lambda$lambda_15(closure$y, this$GltfDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$GltfDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_6(this$GltfDemo);
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_7(this$GltfDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -2980,8 +3000,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-420.0), dps(-490.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(300.0), dps(370.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-420.0), dps(-525.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(300.0), dps(405.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('glTF Models', GltfDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -2998,17 +3018,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('speedSlider', 0.0, 1.0, this$GltfDemo.animationSpeed_0, GltfDemo$menu$lambda$lambda$lambda_8(y, speedVal, this$GltfDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Deferred Shading', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Ambient Occlusion', GltfDemo$menu$lambda$lambda$lambda_9(y, this$GltfDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Screen Space Reflections', GltfDemo$menu$lambda$lambda$lambda_10(y, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Deferred Shading', GltfDemo$menu$lambda$lambda$lambda_10(y, this$GltfDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('SSR Map Size:', GltfDemo$menu$lambda$lambda$lambda_11(y)));
-      var mapSzVal = this$.label_tokfmu$('0.5 x', GltfDemo$menu$lambda$lambda$lambda_12(y));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Screen Space Reflections', GltfDemo$menu$lambda$lambda$lambda_11(y, this$GltfDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('SSR Map Size:', GltfDemo$menu$lambda$lambda$lambda_12(y)));
+      var mapSzVal = this$.label_tokfmu$('0.5 x', GltfDemo$menu$lambda$lambda$lambda_13(y));
       $receiver.unaryPlus_uv0sim$(mapSzVal);
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, 5.0, GltfDemo$menu$lambda$lambda$lambda_13(y, this$GltfDemo, mapSzVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('mapSizeSlider', 1.0, 10.0, 5.0, GltfDemo$menu$lambda$lambda$lambda_14(y, this$GltfDemo, mapSzVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_14(y, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', GltfDemo$menu$lambda$lambda$lambda_15(y, this$GltfDemo)));
       return Unit;
     };
   }
@@ -4912,7 +4934,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     colors.add_11rb$(element_1);
     var element_2 = new Color(0.1, 0.1, 0.1);
     colors.add_11rb$(element_2);
-    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
+    var mesh = new Mesh(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
     mesh.isFrustumChecked = false;
     mesh.geometry.addGeometry_r7nl2o$(this.sphereProto.simpleSphere);
     var $receiver = this.instancedPbrShader_0(withIbl, environmentMaps);
@@ -5844,7 +5866,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       while (tmp$_1.hasNext()) {
         var element = tmp$_1.next();
         var tmp$_2, tmp$_3;
-        Kotlin.isType(tmp$_2 = element, Mesh_init) ? tmp$_2 : throwCCE();
+        Kotlin.isType(tmp$_2 = element, Mesh) ? tmp$_2 : throwCCE();
         var pbrShader = Kotlin.isType(tmp$_3 = element.shader, PbrShader) ? tmp$_3 : throwCCE();
         pbrShader.irradianceMap = envMaps.irradianceMap;
         pbrShader.reflectionMap = envMaps.reflectionMap;
@@ -7899,7 +7921,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var nRows = 7;
     var nCols = 7;
     var spacing = 2.5;
-    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
+    var mesh = new Mesh(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS])), null);
     mesh.isFrustumChecked = false;
     mesh.geometry.addGeometry_r7nl2o$(this.sphereProto.simpleSphere);
     var $receiver = this.instancedPbrShader_0(withIbl, envMaps);
@@ -8043,7 +8065,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.models = LinkedHashMap_init();
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
-    this.dispModel = new Mesh_init(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.dispModel = new Mesh(IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
     this.simplifcationGrade = 1.0;
     this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;

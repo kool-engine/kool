@@ -283,7 +283,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         setupBuilder(graphBuilder)
         graphBuilder.color = Color.WHITE
         graphBuilder.withTransform {
-            translate(0f, 0f, 10f)
+            translate(0f, 0f, 0f)
             for (i in 1..width.toInt()) {
                 graphBuilder.line(i - 0.5f, 0f, i - 0.5f, 1f, 1f)
             }

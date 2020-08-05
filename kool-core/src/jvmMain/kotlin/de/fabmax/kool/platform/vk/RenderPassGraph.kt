@@ -33,10 +33,12 @@ class RenderPassGraph {
         }
         for (i in scenes.indices) {
             val scene = scenes[i]
-            for (j in scene.offscreenPasses.indices) {
-                val offscreen = scene.offscreenPasses[j]
-                if (offscreen.isEnabled) {
-                    remainingPasses.add(offscreen)
+            if (scene.isVisible) {
+                for (j in scene.offscreenPasses.indices) {
+                    val offscreen = scene.offscreenPasses[j]
+                    if (offscreen.isEnabled) {
+                        remainingPasses.add(offscreen)
+                    }
                 }
             }
         }
@@ -92,7 +94,9 @@ class RenderPassGraph {
         val onScreenGroup = newGroup(true)
         groups.add(onScreenGroup)
         for (i in scenes.indices) {
-            onScreenGroup += scenes[i].mainRenderPass
+            if (scenes[i].isVisible) {
+                onScreenGroup += scenes[i].mainRenderPass
+            }
         }
 
         for (i in 1 until groups.size) {

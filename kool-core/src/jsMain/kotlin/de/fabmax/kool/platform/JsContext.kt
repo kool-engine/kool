@@ -240,14 +240,16 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         }
         for (i in scenes.indices) {
             val scene = scenes[i]
-            for (j in scene.offscreenPasses.indices) {
-                if (scene.offscreenPasses[j].isEnabled) {
-                    drawOffscreen(scene.offscreenPasses[j])
-                    scene.offscreenPasses[j].afterDraw(this)
+            if (scene.isVisible) {
+                for (j in scene.offscreenPasses.indices) {
+                    if (scene.offscreenPasses[j].isEnabled) {
+                        drawOffscreen(scene.offscreenPasses[j])
+                        scene.offscreenPasses[j].afterDraw(this)
+                    }
                 }
+                queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
+                scene.mainRenderPass.afterDraw(this)
             }
-            queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
-            scene.mainRenderPass.afterDraw(this)
         }
 
         if (afterRenderActions.isNotEmpty()) {

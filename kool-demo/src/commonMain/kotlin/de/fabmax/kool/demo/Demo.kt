@@ -107,7 +107,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 text = "Debug Info"
                 isEnabled = dbgOverlay.ui.isVisible
 
-                onClick += { _,_,_ -> dbgOverlay.ui.isVisible = isEnabled }
+                onStateChange += { dbgOverlay.ui.isVisible = isEnabled }
             }
         }
     }
