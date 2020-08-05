@@ -2297,6 +2297,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.autoRotate_0 = true;
     this.useDeferredPipeline_0 = true;
     this.isAo_0 = true;
+    this.isSsr_0 = true;
     this.animationSpeed_0 = 0.5;
     this.animationTime_0 = 0.0;
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
@@ -2421,33 +2422,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return $receiver;
   };
   GltfDemo.prototype.setupPipelines_0 = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19;
     var defState = this.useDeferredPipeline_0;
     var fwdState = !defState;
     this.contentGroupForward_0.isVisible = fwdState;
-    var tmp$_16;
-    tmp$_16 = this.shadowsForward_0.iterator();
-    while (tmp$_16.hasNext()) {
-      var element = tmp$_16.next();
+    var tmp$_20;
+    tmp$_20 = this.shadowsForward_0.iterator();
+    while (tmp$_20.hasNext()) {
+      var element = tmp$_20.next();
       element.isShadowMapEnabled = fwdState;
     }
     (tmp$_0 = (tmp$ = this.aoPipelineForward_0) != null ? tmp$.aoPass : null) != null ? (tmp$_0.isEnabled = (fwdState && this.isAo_0)) : null;
     (tmp$_2 = (tmp$_1 = this.aoPipelineForward_0) != null ? tmp$_1.denoisePass : null) != null ? (tmp$_2.isEnabled = (fwdState && this.isAo_0)) : null;
     this.setForwardAoMap_0(this.contentGroupForward_0);
     this.contentGroupDeferred_0.isVisible = defState;
-    var tmp$_17;
-    tmp$_17 = this.shadowsDeferred_0.iterator();
-    while (tmp$_17.hasNext()) {
-      var element_0 = tmp$_17.next();
+    var tmp$_21;
+    tmp$_21 = this.shadowsDeferred_0.iterator();
+    while (tmp$_21.hasNext()) {
+      var element_0 = tmp$_21.next();
       element_0.isShadowMapEnabled = defState;
     }
     (tmp$_4 = (tmp$_3 = this.aoPipelineDeferred_0) != null ? tmp$_3.aoPass : null) != null ? (tmp$_4.isEnabled = (defState && this.isAo_0)) : null;
     (tmp$_6 = (tmp$_5 = this.aoPipelineDeferred_0) != null ? tmp$_5.denoisePass : null) != null ? (tmp$_6.isEnabled = (defState && this.isAo_0)) : null;
     (tmp$_7 = this.mrtPass_0) != null ? (tmp$_7.isEnabled = defState) : null;
     (tmp$_8 = this.pbrPass_0) != null ? (tmp$_8.isEnabled = defState) : null;
-    (tmp$_10 = (tmp$_9 = this.pbrPass_0) != null ? tmp$_9.reflectionPass : null) != null ? (tmp$_10.isEnabled = defState) : null;
-    (tmp$_12 = (tmp$_11 = this.pbrPass_0) != null ? tmp$_11.reflectionDenoisePass : null) != null ? (tmp$_12.isEnabled = defState) : null;
+    (tmp$_10 = (tmp$_9 = this.pbrPass_0) != null ? tmp$_9.reflectionPass : null) != null ? (tmp$_10.isEnabled = (defState && this.isSsr_0)) : null;
+    (tmp$_12 = (tmp$_11 = this.pbrPass_0) != null ? tmp$_11.reflectionDenoisePass : null) != null ? (tmp$_12.isEnabled = (defState && this.isSsr_0)) : null;
     (tmp$_15 = (tmp$_14 = this.pbrPass_0) != null ? tmp$_14.sceneShader : null) != null ? (tmp$_15.scrSpcAmbientOcclusionMap = this.isAo_0 ? (tmp$_13 = this.aoPipelineDeferred_0) != null ? tmp$_13.aoMap : null : this.noAoMap_0) : null;
+    (tmp$_19 = (tmp$_18 = this.pbrPass_0) != null ? tmp$_18.sceneShader : null) != null ? (tmp$_19.scrSpcReflectionMap = this.isSsr_0 ? (tmp$_17 = (tmp$_16 = this.pbrPass_0) != null ? tmp$_16.reflectionDenoisePass : null) != null ? tmp$_17.colorTexture : null : this.noSsrMap_0) : null;
   };
   GltfDemo.prototype.setForwardAoMap_0 = function ($receiver) {
     var tmp$;
@@ -2924,14 +2926,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function GltfDemo$menu$lambda$lambda$lambda$lambda_5(this$GltfDemo) {
     return function ($receiver) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8;
-      (tmp$_0 = (tmp$ = this$GltfDemo.pbrPass_0) != null ? tmp$.reflectionPass : null) != null ? (tmp$_0.isEnabled = $receiver.isEnabled) : null;
-      (tmp$_2 = (tmp$_1 = this$GltfDemo.pbrPass_0) != null ? tmp$_1.reflectionDenoisePass : null) != null ? (tmp$_2.isEnabled = $receiver.isEnabled) : null;
-      if ($receiver.isEnabled) {
-        (tmp$_6 = (tmp$_5 = this$GltfDemo.pbrPass_0) != null ? tmp$_5.sceneShader : null) != null ? (tmp$_6.scrSpcReflectionMap = (tmp$_4 = (tmp$_3 = this$GltfDemo.pbrPass_0) != null ? tmp$_3.reflectionDenoisePass : null) != null ? tmp$_4.colorTexture : null) : null;
-      } else {
-        (tmp$_8 = (tmp$_7 = this$GltfDemo.pbrPass_0) != null ? tmp$_7.sceneShader : null) != null ? (tmp$_8.scrSpcReflectionMap = this$GltfDemo.noSsrMap_0) : null;
-      }
+      this$GltfDemo.isSsr_0 = $receiver.isEnabled;
+      this$GltfDemo.setupPipelines_0();
       return Unit;
     };
   }

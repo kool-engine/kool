@@ -21,6 +21,18 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             clearDepthTexture()
         }) {
 
+    private var uRoughThreshLow: PushConstantNode1f? = null
+    var roughnessThresholdLow = 0.5f
+        set(value) {
+            field = value
+            uRoughThreshLow?.uniform?.value = value
+        }
+    private var uRoughThreshHigh: PushConstantNode1f? = null
+    var roughnessThresholdHigh = 0.6f
+        set(value) {
+            field = value
+            uRoughThreshHigh?.uniform?.value = value
+        }
     private var uMaxIterations: PushConstantNode1i? = null
     var scrSpcReflectionIterations = 24
         set(value) {
@@ -75,6 +87,11 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             ssrSampler?.let { it.texture = pbrLightingPass.colorTexture }
             val ssrNoiseSampler = model.findNode<TextureNode>("ssrNoiseTex")?.sampler
             ssrNoiseSampler?.let { it.texture = noiseTex }
+
+            uRoughThreshLow = model.findNode("uRoughThreshLow")
+            uRoughThreshLow?.uniform?.value = roughnessThresholdLow
+            uRoughThreshHigh = model.findNode("uRoughThreshHigh")
+            uRoughThreshHigh?.uniform?.value = roughnessThresholdHigh
             uMaxIterations = model.findNode("uMaxIterations")
             uMaxIterations?.uniform?.value = scrSpcReflectionIterations
         }
@@ -96,8 +113,10 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
             }
 
-            addNode(DiscardRoughSurfacesNode(stage)).apply {
+            val roughnessWeight = addNode(DiscardRoughSurfacesNode(stage)).apply {
                 inRoughness = mrtDeMultiplex.outRoughness
+                inThreshLow = pushConstantNode1f("uRoughThreshLow").output
+                inThreshHigh = pushConstantNode1f("uRoughThreshHigh").output
             }
 
             val defCam = addNode(DeferredCameraNode(stage))
@@ -123,7 +142,7 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             }
 
             val color = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
-            val alpha = rayTraceNode.outSampleWeight
+            val alpha = multiplyNode(rayTraceNode.outSampleWeight, roughnessWeight.outWeight).output
             val srgb = gammaNode(color, constFloat(2.2f)).outColor
             colorOutput(combineXyzWNode(srgb, alpha).output)
         }
@@ -153,15 +172,22 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
 
     private class DiscardRoughSurfacesNode(graph: ShaderGraph) : ShaderNode("discardRough", graph) {
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
-        var inThresh = ShaderNodeIoVar(ModelVar1fConst(0.49f))
+        var inThreshHigh = ShaderNodeIoVar(ModelVar1fConst(0.6f))
+        var inThreshLow = ShaderNodeIoVar(ModelVar1fConst(0.5f))
+
+        var outWeight = ShaderNodeIoVar(ModelVar1f("outRoughWeight"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inRoughness, inThresh)
+            dependsOn(inRoughness, inThreshHigh, inThreshLow)
         }
 
         override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("if (${inRoughness.ref1f()} > ${inThresh.ref1f()}) discard;")
+            generator.appendMain("""
+                if (${inRoughness.ref1f()} > ${inThreshHigh.ref1f()}) discard;
+                ${outWeight.declare()} = 1.0 - (clamp(${inRoughness.ref1f()}, ${inThreshLow.ref1f()}, ${inThreshHigh.ref1f()}) - ${inThreshLow.ref1f()})
+                        / (${inThreshHigh.ref1f()} - ${inThreshLow.ref1f()});
+            """)
         }
     }
 

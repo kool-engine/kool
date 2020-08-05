@@ -54,6 +54,7 @@ class GltfDemo(ctx: KoolContext) {
     private var autoRotate = true
     private var useDeferredPipeline = true
     private var isAo = true
+    private var isSsr = true
     private var animationSpeed = .5f
     private var animationTime = 0.0
 
@@ -126,9 +127,10 @@ class GltfDemo(ctx: KoolContext) {
         aoPipelineDeferred?.denoisePass?.isEnabled = defState && isAo
         mrtPass?.isEnabled = defState
         pbrPass?.isEnabled = defState
-        pbrPass?.reflectionPass?.isEnabled = defState
-        pbrPass?.reflectionDenoisePass?.isEnabled = defState
+        pbrPass?.reflectionPass?.isEnabled = defState && isSsr
+        pbrPass?.reflectionDenoisePass?.isEnabled = defState && isSsr
         pbrPass?.sceneShader?.scrSpcAmbientOcclusionMap = if (isAo) aoPipelineDeferred?.aoMap else noAoMap
+        pbrPass?.sceneShader?.scrSpcReflectionMap = if (isSsr) pbrPass?.reflectionDenoisePass?.colorTexture else noSsrMap
     }
 
     private fun Group.setForwardAoMap() {
@@ -393,13 +395,8 @@ class GltfDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = true
                 onStateChange += {
-                    pbrPass?.reflectionPass?.isEnabled = isEnabled
-                    pbrPass?.reflectionDenoisePass?.isEnabled = isEnabled
-                    if (isEnabled) {
-                        pbrPass?.sceneShader?.scrSpcReflectionMap = pbrPass?.reflectionDenoisePass?.colorTexture
-                    } else {
-                        pbrPass?.sceneShader?.scrSpcReflectionMap = noSsrMap
-                    }
+                    isSsr = isEnabled
+                    setupPipelines()
                 }
             }
             y -= 35f
