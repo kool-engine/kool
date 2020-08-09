@@ -52,5 +52,10 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
             }
             return PushConstantRange(this, hash, pushConstants)
         }
+
+        fun clear() {
+            stages.clear()
+            pushConstants.clear()
+        }
     }
 }

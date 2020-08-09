@@ -58,6 +58,10 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
         fun create(set: Int): DescriptorSetLayout {
             return DescriptorSetLayout(set, List(descriptors.size) { i -> descriptors[i].create(i) })
         }
+
+        fun clear() {
+            descriptors.clear()
+        }
     }
 }
 

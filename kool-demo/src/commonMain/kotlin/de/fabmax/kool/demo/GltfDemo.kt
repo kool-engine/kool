@@ -157,7 +157,7 @@ class GltfDemo(ctx: KoolContext) {
             onUpdate += { _, ctx ->
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
-                    val model = models.current.model
+                    val model = models.current.forwardModel
                     model?.let {
                         val center = model.globalCenter
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
@@ -239,6 +239,25 @@ class GltfDemo(ctx: KoolContext) {
         }
     }
 
+    private fun cycleModel(next: Boolean, ctx: KoolContext) {
+        val oldModel = models.current
+        ctx.runDelayed(1) {
+            oldModel.forwardModel?.dispose(ctx)
+            oldModel.deferredModel?.dispose(ctx)
+        }
+
+        models.current.isVisible = false
+        if (next) {
+            models.next()
+        } else {
+            models.prev()
+        }
+        models.current.isVisible = true
+        orbitTransform.zoom = models.current.zoom
+        camTranslationTarget = models.current.lookAt
+        trackModel = models.current.trackModel
+    }
+
     private fun menu(ctx: KoolContext) = uiScene {
         val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
         val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
@@ -270,13 +289,9 @@ class GltfDemo(ctx: KoolContext) {
             val modelName = button(models.current.name) {
                 layoutSpec.setOrigin(pcs(15f), dps(y), zero())
                 layoutSpec.setSize(pcs(70f), dps(35f), full())
-                onClick += { _, _, _ ->
-                    models.current.isVisible = false
-                    text = models.next().name
-                    models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom
-                    camTranslationTarget = models.current.lookAt
-                    trackModel = models.current.trackModel
+                onClick += { _, _, ctx ->
+                    cycleModel(true, ctx)
+                    text = models.current.name
                 }
             }
             +modelName
@@ -285,13 +300,9 @@ class GltfDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(20f), dps(35f), full())
                 text = "<"
 
-                onClick += { _, _, _ ->
-                    models.current.isVisible = false
-                    modelName.text = models.prev().name
-                    models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom
-                    camTranslationTarget = models.current.lookAt
-                    trackModel = models.current.trackModel
+                onClick += { _, _, ctx ->
+                    cycleModel(false, ctx)
+                    modelName.text = models.current.name
                 }
             }
             +button("nextModel") {
@@ -300,12 +311,8 @@ class GltfDemo(ctx: KoolContext) {
                 text = ">"
 
                 onClick += { _, _, _ ->
-                    models.current.isVisible = false
-                    modelName.text = models.next().name
-                    models.current.isVisible = true
-                    orbitTransform.zoom = models.current.zoom
-                    camTranslationTarget = models.current.lookAt
-                    trackModel = models.current.trackModel
+                    cycleModel(true, ctx)
+                    modelName.text = models.current.name
                 }
             }
             y -= 35f
@@ -440,7 +447,8 @@ class GltfDemo(ctx: KoolContext) {
             val trackModel: Boolean,
             val zoom: Double) {
 
-        var model: Model? = null
+        var forwardModel: Model? = null
+        var deferredModel: Model? = null
         var isVisible: Boolean = false
 
         var animate: Model.(Double, KoolContext) -> Unit = { t, _ ->
@@ -448,6 +456,7 @@ class GltfDemo(ctx: KoolContext) {
         }
 
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
+            var model: Model? = null
             ctx.assetMgr.loadGltfFile(assetPath)?.let {
                 val materialCfg = GltfFile.ModelMaterialConfig(
                         shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
@@ -477,6 +486,11 @@ class GltfDemo(ctx: KoolContext) {
                         animate(animationTime, ctx)
                     }
                 }
+            }
+            if (isDeferredShading) {
+                deferredModel = model
+            } else {
+                forwardModel = model
             }
             return model
         }
