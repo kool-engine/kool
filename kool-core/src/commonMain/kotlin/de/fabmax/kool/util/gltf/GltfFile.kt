@@ -9,10 +9,10 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.AlphaModeBlend
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.animation.*
@@ -143,7 +143,7 @@ data class GltfFile(
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
         val modelAnimations = mutableListOf<Animation>()
-        val modelNodes = mutableMapOf<GltfNode, TransformGroup>()
+        val modelNodes = mutableMapOf<GltfNode, Group>()
         val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh>>()
         val meshMaterials = mutableMapOf<Mesh, GltfMaterial?>()
 
@@ -169,8 +169,8 @@ data class GltfFile(
             return model
         }
 
-        private fun TransformGroup.removeEmpty() {
-            val tgChildren = children.filterIsInstance<TransformGroup>()
+        private fun Group.removeEmpty() {
+            val tgChildren = children.filterIsInstance<Group>()
             tgChildren.forEach {
                 it.removeEmpty()
                 if (it.children.isEmpty()) {
@@ -184,7 +184,7 @@ data class GltfFile(
                 val modelAnim = Animation(anim.name)
                 modelAnimations += modelAnim
 
-                val animNodes = mutableMapOf<TransformGroup, AnimationNode>()
+                val animNodes = mutableMapOf<Group, AnimationNode>()
                 anim.channels.forEach { channel ->
                     val nodeGrp = modelNodes[channel.target.nodeRef]
                     if (nodeGrp != null) {
@@ -423,14 +423,14 @@ data class GltfFile(
             }
         }
 
-        private fun TransformGroup.sortNodesByAlpha(): Float {
+        private fun Group.sortNodesByAlpha(): Float {
             val childAlphas = mutableMapOf<Node, Float>()
             var avgAlpha = 0f
             for (child in children) {
                 var a = 1f
                 if (child is Mesh && !child.isOpaque) {
                     a = 0f
-                } else if (child is TransformGroup) {
+                } else if (child is Group) {
                     a = child.sortNodesByAlpha()
                 }
                 childAlphas[child] = a
@@ -447,8 +447,8 @@ data class GltfFile(
             model.mergeMeshesByMaterial()
         }
 
-        private fun TransformGroup.mergeMeshesByMaterial() {
-            children.filterIsInstance<TransformGroup>().forEach { it.mergeMeshesByMaterial() }
+        private fun Group.mergeMeshesByMaterial() {
+            children.filterIsInstance<Group>().forEach { it.mergeMeshesByMaterial() }
 
             meshesByMaterial.values.forEach { sameMatMeshes ->
                 val mergeMeshes = children.filter { it in sameMatMeshes }.map { it as Mesh }
@@ -471,7 +471,7 @@ data class GltfFile(
             model.applyTransforms(transform, model)
         }
 
-        private fun TransformGroup.applyTransforms(transform: Mat4dStack, rootGroup: TransformGroup) {
+        private fun Group.applyTransforms(transform: Mat4dStack, rootGroup: Group) {
             transform.push()
             transform.mul(this.transform)
 
@@ -490,7 +490,7 @@ data class GltfFile(
                 }
             }
 
-            val childGroups = children.filterIsInstance<TransformGroup>()
+            val childGroups = children.filterIsInstance<Group>()
             childGroups.forEach {
                 it.applyTransforms(transform, rootGroup)
                 removeNode(it)
@@ -499,9 +499,9 @@ data class GltfFile(
             transform.pop()
         }
 
-        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): TransformGroup {
+        private fun GltfNode.makeNode(model: Model, cfg: ModelGenerateConfig): Group {
             val modelNdName = name ?: "node_${model.nodes.size}"
-            val nodeGrp = TransformGroup(modelNdName)
+            val nodeGrp = Group(modelNdName)
             modelNodes[this] = nodeGrp
             model.nodes[modelNdName] = nodeGrp
 
@@ -527,7 +527,7 @@ data class GltfFile(
             return nodeGrp
         }
 
-        private fun GltfNode.createMeshes(model: Model, nodeGrp: TransformGroup, cfg: ModelGenerateConfig) {
+        private fun GltfNode.createMeshes(model: Model, nodeGrp: Group, cfg: ModelGenerateConfig) {
             meshRef?.primitives?.forEachIndexed { index, p ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = p.toGeometry(cfg.generateNormals, accessors)

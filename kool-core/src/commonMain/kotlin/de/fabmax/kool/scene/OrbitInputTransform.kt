@@ -29,7 +29,7 @@ fun Scene.defaultCamTransform() {
     }
 }
 
-open class OrbitInputTransform(scene: Scene, name: String? = null) : TransformGroup(name), Scene.DragHandler {
+open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name), Scene.DragHandler {
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN

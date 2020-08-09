@@ -105,8 +105,8 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
-        content = transformGroup {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group {
+        content = group {
             isVisible = false
 
             val ibl = makeSphere(true, scene, envMaps)

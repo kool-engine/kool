@@ -5,9 +5,9 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.util.animation.Animation
 import de.fabmax.kool.util.animation.Skin
 
-class Model(name: String? = null) : TransformGroup(name) {
+class Model(name: String? = null) : Group(name) {
 
-    val nodes = mutableMapOf<String, TransformGroup>()
+    val nodes = mutableMapOf<String, Group>()
     val meshes = mutableMapOf<String, Mesh>()
     val textures = mutableMapOf<String, Texture>()
 
@@ -47,10 +47,10 @@ class Model(name: String? = null) : TransformGroup(name) {
         printHierarchy("")
     }
 
-    private fun TransformGroup.printHierarchy(indent: String) {
+    private fun Group.printHierarchy(indent: String) {
         println("$indent$name [${children.filterIsInstance<Mesh>().count()} meshes]")
         children.forEach {
-            if (it is TransformGroup) {
+            if (it is Group) {
                 it.printHierarchy("$indent    ")
             } else {
                 println("$indent    ${it.name}")

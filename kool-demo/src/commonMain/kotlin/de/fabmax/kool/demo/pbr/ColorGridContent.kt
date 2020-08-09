@@ -79,8 +79,8 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         nonIblContent?.isVisible = !enabled
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup {
-        content = transformGroup {
+    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group {
+        content = group {
             isVisible = false
             isFrustumChecked = false
 

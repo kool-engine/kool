@@ -1,10 +1,10 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.pipeline.SingleColorTexture
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentMaps
@@ -21,7 +21,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
     val reflectionDenoisePass: ReflectionDenoisePass?
     val shadowMaps: List<ShadowMap>
 
-    val contentGroup: TransformGroup
+    val contentGroup: Group
         get() = mrtPass.content
     val renderOutput: Mesh
 

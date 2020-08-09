@@ -297,7 +297,7 @@ class PbrDemo(val ctx: KoolContext) {
     private class LightSetup(val name: String, val setup: Scene.() -> Unit)
 
     abstract class PbrContent(val name: String) {
-        var content: TransformGroup? = null
+        var content: Group? = null
         var ui: UiContainer? = null
         var autoRotate = true
 
@@ -313,7 +313,7 @@ class PbrDemo(val ctx: KoolContext) {
 
         abstract fun createMenu(parent: UiContainer, smallFont: Font, yPos: Float)
         abstract fun setUseImageBasedLighting(enabled: Boolean)
-        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): TransformGroup
+        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Group
         abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
     }
 

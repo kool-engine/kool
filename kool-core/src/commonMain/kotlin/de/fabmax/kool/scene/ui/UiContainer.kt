@@ -3,8 +3,8 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -17,7 +17,7 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
     protected val posInParent = MutableVec3f()
     var contentScale = 1f
-    var customTransform: TransformGroup.() -> Unit = { }
+    var customTransform: Group.() -> Unit = { }
 
     val scrollOffset: Vec3f get() = scrollOffsetMut
     protected val scrollOffsetMut = MutableVec3f()

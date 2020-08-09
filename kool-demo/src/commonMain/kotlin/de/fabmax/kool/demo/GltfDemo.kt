@@ -57,10 +57,10 @@ class GltfDemo(ctx: KoolContext) {
 
     private val shadowsForward = mutableListOf<ShadowMap>()
     private var aoPipelineForward: AoPipeline? = null
-    private val contentGroupForward = TransformGroup()
+    private val contentGroupForward = Group()
 
     private lateinit var deferredPipeline: DeferredPipeline
-    private val contentGroupDeferred = TransformGroup()
+    private val contentGroupDeferred = Group()
 
     private var animationSpeed = .5f
     private var animationTime = 0.0
@@ -194,7 +194,7 @@ class GltfDemo(ctx: KoolContext) {
         })
     }
 
-    private suspend fun TransformGroup.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
+    private suspend fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
         rotate(-60.0, Vec3d.Y_AXIS)
         onUpdate += { _, _ ->
             if (autoRotate) {

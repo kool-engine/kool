@@ -5,8 +5,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.max
@@ -17,7 +17,7 @@ import kotlin.math.min
  *
  * @author fabmax
  */
-open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
+open class UiComponent(name: String, val root: UiRoot) : Group(name) {
 
     // bounds of this component in local coordinates
     val componentBounds = BoundingBox()

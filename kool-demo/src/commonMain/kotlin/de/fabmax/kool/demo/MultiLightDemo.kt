@@ -181,7 +181,7 @@ class MultiLightDemo(ctx: KoolContext) {
             containerUi { BlankComponentUi() }
         }
 
-        val ssrMap = transformGroup {
+        val ssrMap = group {
             isVisible = false
             +textureMesh {
                 generate {
@@ -453,7 +453,7 @@ class MultiLightDemo(ctx: KoolContext) {
         }
     }
 
-    private inner class LightMesh(val color: Color) : TransformGroup() {
+    private inner class LightMesh(val color: Color) : Group() {
         val light = Light()
 
         private val spotAngleMesh = LineMesh().apply { isCastingShadow = false }

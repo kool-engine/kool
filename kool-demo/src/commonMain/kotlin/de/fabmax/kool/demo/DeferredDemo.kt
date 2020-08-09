@@ -153,7 +153,7 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun TransformGroup.makeContent() {
+    private fun Group.makeContent() {
         objects = colorMesh {
             generate {
                 val sphereProtos = mutableListOf<IndexedVertexList>()
@@ -282,7 +282,7 @@ class DeferredDemo(ctx: KoolContext) {
             containerUi { BlankComponentUi() }
         }
 
-        val mapGroup = transformGroup {
+        val mapGroup = group {
             isVisible = false
 
             val positions = listOf(

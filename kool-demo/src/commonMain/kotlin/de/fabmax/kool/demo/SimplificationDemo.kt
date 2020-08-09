@@ -75,7 +75,7 @@ class SimplificationDemo(ctx: KoolContext) {
             add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(Color.MD_CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
-        +transformGroup {
+        +group {
             +dispModel
             +modelWireframe
 

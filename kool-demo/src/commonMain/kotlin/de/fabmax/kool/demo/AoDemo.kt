@@ -219,7 +219,7 @@ class AoDemo(ctx: KoolContext) {
             containerUi { BlankComponentUi() }
         }
 
-        val aoMap = transformGroup {
+        val aoMap = group {
             isVisible = false
             +textureMesh {
                 generate {

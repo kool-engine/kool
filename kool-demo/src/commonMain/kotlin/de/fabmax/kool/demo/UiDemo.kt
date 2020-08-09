@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.ui.*
 fun uiDemoScene(): Scene = scene("UI Demo") {
     +orbitInputTransform { +camera }
 
-    +transformGroup {
+    +group {
         onUpdate += { _, ctx ->
             setIdentity()
             translate(0f, 0f, -7f)
