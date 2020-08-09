@@ -237,7 +237,7 @@ repositories {
 
 // JVM dependencies
 dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.4.0"
+    implementation "de.fabmax.kool:kool-core-jvm:0.5.0"
 
     // On JVM, lwjgl runtime dependencies have to be included as well
     def lwjglVersion = "3.2.3"

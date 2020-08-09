@@ -88,7 +88,6 @@ kotlin {
     }
 }
 
-
 val publishCredentials = PublishingCredentials("$rootDir/publishingCredentials.properties")
 if (publishCredentials.isAvailable) {
     publishing {
@@ -104,6 +103,12 @@ if (publishCredentials.isAvailable) {
 
         publications {
             publications.filterIsInstance<MavenPublication>().forEach {
+                if (it.name == "kotlinMultiplatform") {
+                    // this is the publication for the common project, which only contains metadata referring to
+                    // the platform-projects. However, we need to add a jar to make the repo happy
+                    it.artifact(tasks["jvmSourcesJar"])
+                }
+
                 it.pom {
                     name.set("kool")
                     description.set("A multiplatform OpenGL / Vulkan graphics engine written in kotlin")
