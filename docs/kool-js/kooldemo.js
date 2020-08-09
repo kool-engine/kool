@@ -213,7 +213,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function AoDemo$makeMainScene$lambda$lambda$lambda(this$AoDemo, closure$ctx, this$) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$AoDemo.autoRotate_0) {
         this$.verticalRotation += closure$ctx.deltaT * 3.0;
       }return Unit;
@@ -491,12 +491,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function AoDemo$menu$lambda$lambda$lambda_2(this$AoDemo, this$) {
-    return function ($receiver, rp, f) {
+    return function ($receiver, it) {
       var screenSz = 0.33;
-      var scaleX = rp.viewport.width * screenSz;
+      var scaleX = it.viewport.width * screenSz;
       var scaleY = scaleX * (this$AoDemo.aoPipeline_0.denoisePass.height / this$AoDemo.aoPipeline_0.denoisePass.width);
       this$.setIdentity();
-      var margin = rp.viewport.height * 0.05;
+      var margin = it.viewport.height * 0.05;
       this$.translate_y2kzbl$(margin, margin, 0.0);
       this$.scale_y2kzbl$(scaleX, scaleY, 1.0);
       return Unit;
@@ -980,9 +980,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function DeferredDemo$makeDeferredScene$lambda$lambda$lambda(this$DeferredDemo, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       if (this$DeferredDemo.autoRotate_0) {
-        this$.verticalRotation += ctx.deltaT * 3.0;
+        this$.verticalRotation += it.deltaT * 3.0;
       }return Unit;
     };
   }
@@ -1000,12 +1000,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function DeferredDemo$makeDeferredScene$lambda$lambda_0(this$DeferredDemo) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, evt) {
       var tmp$;
       tmp$ = this$DeferredDemo.lights_0.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
-        element.animate_mx4ult$(ctx.deltaT);
+        element.animate_mx4ult$(evt.deltaT);
       }
       return Unit;
     };
@@ -1047,7 +1047,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function DeferredDemo$makeLightOverlays$lambda$lambda_0(this$DeferredDemo, closure$lightPosInsts, closure$lightVolInsts, closure$lightModelMat) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$DeferredDemo.lightPositionMesh_0.isVisible || this$DeferredDemo.lightVolumeMesh_0.isVisible) {
         closure$lightPosInsts.clear();
         closure$lightVolInsts.clear();
@@ -1292,11 +1292,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function DeferredDemo$makeMenu$lambda$lambda$lambda_1(this$) {
-    return function ($receiver, rp, f) {
+    return function ($receiver, it) {
       var mapSz = 0.26;
-      var scaleX = rp.viewport.width * mapSz;
-      var scaleY = scaleX * (rp.viewport.height / rp.viewport.width);
-      var margin = rp.viewport.height * 0.05;
+      var scaleX = it.viewport.width * mapSz;
+      var scaleY = scaleX * (it.viewport.height / it.viewport.width);
+      var margin = it.viewport.height * 0.05;
       this$.setIdentity();
       this$.translate_y2kzbl$(margin, margin, 0.0);
       this$.scale_y2kzbl$(scaleX, scaleY, 1.0);
@@ -2487,16 +2487,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return instance.doResume(null);
   };
   function GltfDemo$setupCamera$lambda$lambda(this$GltfDemo, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       var tmp$;
       var translationTarget = {v: this$GltfDemo.camTranslationTarget_0};
       if (this$GltfDemo.trackModel_0) {
-        var model = this$GltfDemo.models_0.current.model;
+        var model = this$GltfDemo.models_0.current.forwardModel;
         if (model != null) {
           var center = model.globalCenter;
           translationTarget.v = new Vec3d(center.x, center.y, center.z);
         }} else if (this$GltfDemo.autoRotate_0) {
-        this$.verticalRotation -= ctx.deltaT * 3.0;
+        this$.verticalRotation -= it.deltaT * 3.0;
       }if ((tmp$ = translationTarget.v) != null) {
         var this$_0 = this$;
         var this$GltfDemo_0 = this$GltfDemo;
@@ -2541,7 +2541,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$_0.add_11rb$($receiver_1);
   };
   function GltfDemo$setupContentGroup$lambda(this$GltfDemo, this$setupContentGroup, closure$ctx) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$GltfDemo.autoRotate_0) {
         this$setupContentGroup.setIdentity();
         this$setupContentGroup.rotate_5820x2$(closure$ctx.time * 3, Vec3d.Companion.Y_AXIS);
@@ -2661,6 +2661,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     else
       return instance.doResume(null);
   };
+  function GltfDemo$cycleModel$lambda(closure$oldModel, closure$ctx) {
+    return function (it) {
+      var tmp$, tmp$_0;
+      (tmp$ = closure$oldModel.forwardModel) != null ? (tmp$.dispose_aemszp$(closure$ctx), Unit) : null;
+      (tmp$_0 = closure$oldModel.deferredModel) != null ? (tmp$_0.dispose_aemszp$(closure$ctx), Unit) : null;
+      return Unit;
+    };
+  }
+  GltfDemo.prototype.cycleModel_0 = function (next, ctx) {
+    var oldModel = this.models_0.current;
+    ctx.runDelayed_hd6vpk$(1, GltfDemo$cycleModel$lambda(oldModel, ctx));
+    this.models_0.current.isVisible = false;
+    if (next) {
+      this.models_0.next();
+    } else {
+      this.models_0.prev();
+    }
+    this.models_0.current.isVisible = true;
+    this.orbitTransform_0.zoom = this.models_0.current.zoom;
+    this.camTranslationTarget_0 = this.models_0.current.lookAt;
+    this.trackModel_0 = this.models_0.current.trackModel;
+  };
   function GltfDemo$menu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -2690,13 +2712,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function GltfDemo$menu$lambda$lambda$lambda$lambda(this$GltfDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$GltfDemo.models_0.current.isVisible = false;
-      $receiver.text = this$GltfDemo.models_0.next().name;
-      this$GltfDemo.models_0.current.isVisible = true;
-      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
-      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
-      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
+    return function ($receiver, f, f_0, ctx) {
+      this$GltfDemo.cycleModel_0(true, ctx);
+      $receiver.text = this$GltfDemo.models_0.current.name;
       return Unit;
     };
   }
@@ -2711,13 +2729,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function GltfDemo$menu$lambda$lambda$lambda$lambda_0(this$GltfDemo, closure$modelName) {
-    return function ($receiver, f, f_0, f_1) {
-      this$GltfDemo.models_0.current.isVisible = false;
-      closure$modelName.text = this$GltfDemo.models_0.prev().name;
-      this$GltfDemo.models_0.current.isVisible = true;
-      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
-      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
-      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
+    return function ($receiver, f, f_0, ctx) {
+      this$GltfDemo.cycleModel_0(false, ctx);
+      closure$modelName.text = this$GltfDemo.models_0.current.name;
       return Unit;
     };
   }
@@ -2732,24 +2746,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda$lambda_1(this$GltfDemo, closure$modelName) {
+  function GltfDemo$menu$lambda$lambda$lambda$lambda_1(closure$ctx, this$GltfDemo, closure$modelName) {
     return function ($receiver, f, f_0, f_1) {
-      this$GltfDemo.models_0.current.isVisible = false;
-      closure$modelName.text = this$GltfDemo.models_0.next().name;
-      this$GltfDemo.models_0.current.isVisible = true;
-      this$GltfDemo.orbitTransform_0.zoom = this$GltfDemo.models_0.current.zoom;
-      this$GltfDemo.camTranslationTarget_0 = this$GltfDemo.models_0.current.lookAt;
-      this$GltfDemo.trackModel_0 = this$GltfDemo.models_0.current.trackModel;
+      this$GltfDemo.cycleModel_0(true, closure$ctx);
+      closure$modelName.text = this$GltfDemo.models_0.current.name;
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda$lambda_5(closure$y, this$GltfDemo, closure$modelName) {
+  function GltfDemo$menu$lambda$lambda$lambda_5(closure$y, closure$ctx, this$GltfDemo, closure$modelName) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_1(this$GltfDemo, closure$modelName);
+      var element = GltfDemo$menu$lambda$lambda$lambda$lambda_1(closure$ctx, this$GltfDemo, closure$modelName);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -2890,7 +2900,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo) {
+  function GltfDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$GltfDemo, closure$ctx) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-420.0), dps(-525.0), zero());
@@ -2903,7 +2913,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var modelName = this$.button_9zrh0o$(this$GltfDemo.models_0.current.name, GltfDemo$menu$lambda$lambda$lambda_3(y, this$GltfDemo));
       $receiver.unaryPlus_uv0sim$(modelName);
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('prevModel', GltfDemo$menu$lambda$lambda$lambda_4(y, this$GltfDemo, modelName)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('nextModel', GltfDemo$menu$lambda$lambda$lambda_5(y, this$GltfDemo, modelName)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('nextModel', GltfDemo$menu$lambda$lambda$lambda_5(y, closure$ctx, this$GltfDemo, modelName)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Animation Speed:', GltfDemo$menu$lambda$lambda$lambda_6(y)));
       var speedVal = this$.label_tokfmu$(toString(this$GltfDemo.animationSpeed_0, 2), GltfDemo$menu$lambda$lambda$lambda_7(y));
@@ -2932,7 +2942,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
       $receiver.theme = theme(UiTheme.Companion.DARK, GltfDemo$menu$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', GltfDemo$menu$lambda$lambda_0(smallFont, $receiver, this$GltfDemo)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', GltfDemo$menu$lambda$lambda_0(smallFont, $receiver, this$GltfDemo, closure$ctx)));
       return Unit;
     };
   }
@@ -2990,14 +3000,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.lookAt = lookAt;
     this.trackModel = trackModel;
     this.zoom = zoom;
-    this.model = null;
+    this.forwardModel = null;
+    this.deferredModel = null;
     this.isVisible = false;
     this.animate = GltfDemo$GltfModel$animate$lambda;
   }
-  function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, this$) {
-    return function ($receiver, f, ctx) {
+  function GltfDemo$GltfModel$load$lambda$lambda$lambda(this$GltfModel, this$GltfDemo, closure$ctx, this$) {
+    return function ($receiver, it) {
       $receiver.isVisible = this$GltfModel.isVisible;
-      this$GltfModel.animate(this$, this$GltfDemo.animationTime_0, ctx);
+      this$GltfModel.animate(this$, this$GltfDemo.animationTime_0, closure$ctx);
       return Unit;
     };
   }
@@ -3005,6 +3016,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     CoroutineImpl.call(this, continuation_0);
     this.exceptionState_0 = 1;
     this.$this = $this;
+    this.local$model = void 0;
     this.local$isDeferredShading = isDeferredShading_0;
     this.local$ctx = ctx_0;
   }
@@ -3021,6 +3033,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         switch (this.state_0) {
           case 0:
             var tmp$;
+            this.local$model = {v: null};
             this.state_0 = 2;
             this.result_0 = loadGltfFile(this.local$ctx.assetMgr, this.$this.assetPath, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
@@ -3041,10 +3054,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               $receiver.scale_mx4ult$(this.$this.scale);
               (tmp$_2 = $receiver.findNode_61zpoe$('Ground')) != null ? (tmp$_2.isVisible = false) : null;
               $receiver.enableAnimation_za3lpa$(0);
-              $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, $receiver));
-              this.$this.model = $receiver;
+              $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, this.local$ctx, $receiver));
+              this.local$model.v = $receiver;
             }
-            return this.$this.model;
+            if (this.local$isDeferredShading) {
+              this.$this.deferredModel = this.local$model.v;
+            } else {
+              this.$this.forwardModel = this.local$model.v;
+            }
+
+            return this.local$model.v;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
@@ -3118,7 +3137,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function GltfDemo_init$lambda(closure$ctx, this$GltfDemo) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       this$GltfDemo.animationTime_0 += closure$ctx.deltaT * this$GltfDemo.animationSpeed_0;
       this$GltfDemo.foxAnimator_0.updatePosition_aemszp$(closure$ctx);
       return Unit;
@@ -3185,8 +3204,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function helloGltfScene$lambda$lambda$lambda$lambda(closure$model) {
-    return function ($receiver, f, ctx) {
-      closure$model.applyAnimation_14dthe$(ctx.time);
+    return function ($receiver, updateEvt) {
+      closure$model.applyAnimation_14dthe$(updateEvt.time);
       return Unit;
     };
   }
@@ -3286,9 +3305,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.add_11rb$(element_0);
   }
   function InstanceDemo$mainScene$lambda$lambda$lambda(this$InstanceDemo, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       if (this$InstanceDemo.isAutoRotate_0) {
-        this$.verticalRotation += ctx.deltaT * 3.0;
+        this$.verticalRotation += it.deltaT * 3.0;
       }return Unit;
     };
   }
@@ -3651,7 +3670,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function InstanceDemo$menu$lambda$lambda$lambda$lambda_4(this$InstanceDemo, closure$i, this$) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1;
       var cnt = this$InstanceDemo.lodController_0.getInstanceCount_za3lpa$(closure$i);
       var tris = Kotlin.imul(cnt, (tmp$_1 = (tmp$_0 = (tmp$ = this$InstanceDemo.lods_0.get_za3lpa$(closure$i).mesh) != null ? tmp$.geometry : null) != null ? tmp$_0.numPrimitives : null) != null ? tmp$_1 : 0);
@@ -3761,9 +3780,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function MultiLightDemo$initMainScene$lambda$lambda$lambda(this$MultiLightDemo, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       if (this$MultiLightDemo.autoRotate_0) {
-        this$.verticalRotation += ctx.deltaT * 3.0;
+        this$.verticalRotation += it.deltaT * 3.0;
       }return Unit;
     };
   }
@@ -3999,12 +4018,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function MultiLightDemo$menu$lambda$lambda$lambda_2(this$) {
-    return function ($receiver, rp, f) {
+    return function ($receiver, it) {
       var screenSz = 0.33;
-      var scaleX = rp.viewport.width * screenSz;
-      var scaleY = scaleX * (rp.viewport.height / rp.viewport.width);
+      var scaleX = it.viewport.width * screenSz;
+      var scaleY = scaleX * (it.viewport.height / it.viewport.width);
       this$.setIdentity();
-      var margin = rp.viewport.height * 0.05;
+      var margin = it.viewport.height * 0.05;
       this$.translate_y2kzbl$(margin, margin, 0.0);
       this$.scale_y2kzbl$(scaleX, scaleY, 1.0);
       return Unit;
@@ -4569,9 +4588,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this$MultiLightDemo, this$LightMesh) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       if (this$MultiLightDemo.autoRotate_0) {
-        this$LightMesh.animPos_0 += ctx.deltaT;
+        this$LightMesh.animPos_0 += it.deltaT;
       }var x = this$LightMesh.animPos_0 / 15 + this$LightMesh.rotOff_0;
       var r = Math_0.cos(x) * this$MultiLightDemo.lightRandomness_0;
       this$LightMesh.light.spotAngle = 60.0 - r * 20.0;
@@ -4973,9 +4992,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function PbrDemo$setupScene$lambda$lambda$lambda(this$PbrDemo, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       if (this$PbrDemo.autoRotate_0) {
-        this$.verticalRotation += ctx.deltaT * 2.0;
+        this$.verticalRotation += this$PbrDemo.ctx.deltaT * 2.0;
       }return Unit;
     };
   }
@@ -5716,14 +5735,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
     (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
   };
-  function PbrMaterialContent$createContent$lambda$lambda(this$PbrMaterialContent, this$) {
-    return function ($receiver, f, ctx) {
+  function PbrMaterialContent$createContent$lambda$lambda(this$PbrMaterialContent, closure$ctx, this$) {
+    return function ($receiver, it) {
       if (this$PbrMaterialContent.autoRotate) {
-        this$.rotate_ad55pp$(-2.0 * ctx.deltaT, Vec3f.Companion.Y_AXIS);
+        this$.rotate_ad55pp$(-2.0 * closure$ctx.deltaT, Vec3f.Companion.Y_AXIS);
       }return Unit;
     };
   }
-  function PbrMaterialContent$createContent$lambda(closure$scene, closure$envMaps, this$PbrMaterialContent) {
+  function PbrMaterialContent$createContent$lambda(closure$scene, closure$envMaps, this$PbrMaterialContent, closure$ctx) {
     return function ($receiver) {
       $receiver.isVisible = false;
       var ibl = this$PbrMaterialContent.makeSphere_0(true, closure$scene, closure$envMaps);
@@ -5735,13 +5754,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this$PbrMaterialContent.iblContent_0 = ibl;
       this$PbrMaterialContent.nonIblContent_0 = nonIbl;
       var $receiver_1 = $receiver.onUpdate;
-      var element = PbrMaterialContent$createContent$lambda$lambda(this$PbrMaterialContent, $receiver);
+      var element = PbrMaterialContent$createContent$lambda$lambda(this$PbrMaterialContent, closure$ctx, $receiver);
       $receiver_1.add_11rb$(element);
       return Unit;
     };
   }
   PbrMaterialContent.prototype.createContent_wo93gw$ = function (scene, envMaps, ctx) {
-    this.content = group(void 0, PbrMaterialContent$createContent$lambda(scene, envMaps, this));
+    this.content = group(void 0, PbrMaterialContent$createContent$lambda(scene, envMaps, this, ctx));
     return ensureNotNull(this.content);
   };
   PbrMaterialContent.prototype.updateEnvironmentMap_wwmv4k$ = function (envMaps) {
@@ -8016,7 +8035,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function SimplificationDemo$mainScene$lambda$lambda$lambda(this$SimplificationDemo, closure$ctx, this$) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$SimplificationDemo.autoRotate) {
         this$.rotate_ad55pp$(closure$ctx.deltaT * 3.0, Vec3f.Companion.Y_AXIS);
       }return Unit;
@@ -8706,16 +8725,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
-    return function ($receiver, f, ctx) {
+  function treeScene$lambda$lambda$lambda_0(closure$ctx, closure$windSpeed, closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
+    return function ($receiver, it) {
       var tmp$, tmp$_0;
-      closure$windAnimationPos.v += ctx.deltaT * closure$windSpeed.v;
+      closure$windAnimationPos.v += closure$ctx.deltaT * closure$windSpeed.v;
       (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
       (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda(closure$treeGen, closure$envMaps, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda(closure$treeGen, closure$envMaps, closure$shadowMaps, closure$ctx, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
       var uWindSpeed = {v: null};
@@ -8736,7 +8755,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_1.onPipelineCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_0($receiver_1, uWindSpeed, uWindStrength));
       $receiver.shader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
-      var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
+      var element = treeScene$lambda$lambda$lambda_0(closure$ctx, closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
       $receiver_2.add_11rb$(element);
       return Unit;
     };
@@ -8840,7 +8859,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       var tmp$, tmp$_0;
       (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
       (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;
@@ -8872,14 +8891,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_3(closure$autoRotate, this$) {
-    return function ($receiver, f, ctx) {
+  function treeScene$lambda$lambda$lambda_3(closure$autoRotate, closure$ctx, this$) {
+    return function ($receiver, it) {
       if (closure$autoRotate.v) {
-        this$.verticalRotation += ctx.deltaT * 3.0;
+        this$.verticalRotation += closure$ctx.deltaT * 3.0;
       }return Unit;
     };
   }
-  function treeScene$lambda$lambda_1(this$, closure$autoRotate) {
+  function treeScene$lambda$lambda_1(this$, closure$autoRotate, closure$ctx) {
     return function ($receiver) {
       var tmp$;
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -8891,7 +8910,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
       (Kotlin.isType(tmp$ = this$.camera, PerspectiveCamera) ? tmp$ : throwCCE()).clipFar = 50.0;
       var $receiver_0 = $receiver.onUpdate;
-      var element = treeScene$lambda$lambda$lambda_3(closure$autoRotate, $receiver);
+      var element = treeScene$lambda$lambda$lambda_3(closure$autoRotate, closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -9312,11 +9331,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var envMaps = ibl.EnvironmentHelper.gradientColorEnvironment_hfkvyz$($receiver, bgGradient, ctx);
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps, envMaps));
     $receiver.unaryPlus_uv0sim$(new Skybox(envMaps.reflectionMap));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, envMaps, shadowMaps, windSpeed, windAnimationPos, windStrength));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, envMaps, shadowMaps, ctx, windSpeed, windAnimationPos, windStrength));
     leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, envMaps, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_1($receiver, autoRotate)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_1($receiver, autoRotate, ctx)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
     var element = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, windSpeed, windStrength, autoRotate));
@@ -10277,11 +10296,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function uiDemoScene$lambda$lambda$lambda(this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, it) {
       this$.setIdentity();
       this$.translate_y2kzbl$(0.0, 0.0, -7.0);
-      this$.rotate_ad55pp$(ctx.time * 60, Vec3f.Companion.X_AXIS);
-      this$.rotate_ad55pp$(ctx.time * 17, Vec3f.Companion.Y_AXIS);
+      this$.rotate_ad55pp$(it.time * 60, Vec3f.Companion.X_AXIS);
+      this$.rotate_ad55pp$(it.time * 17, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
   }

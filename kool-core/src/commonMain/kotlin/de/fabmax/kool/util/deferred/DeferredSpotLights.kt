@@ -39,7 +39,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         }
         shader = DeferredLightShader(lightCfg)
 
-        onUpdate += { _, _ ->
+        onUpdate += {
             if (isDynamic) {
                 updateLightData()
             }

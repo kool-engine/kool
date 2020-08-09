@@ -13,11 +13,11 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
     +orbitInputTransform { +camera }
 
     +group {
-        onUpdate += { _, ctx ->
+        onUpdate += {
             setIdentity()
             translate(0f, 0f, -7f)
-            rotate((ctx.time * 60).toFloat(), Vec3f.X_AXIS)
-            rotate((ctx.time * 17).toFloat(), Vec3f.Y_AXIS)
+            rotate((it.time * 60).toFloat(), Vec3f.X_AXIS)
+            rotate((it.time * 17).toFloat(), Vec3f.Y_AXIS)
         }
         +colorMesh {
             generate {

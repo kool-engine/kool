@@ -414,7 +414,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
                     if (cfg.isScrSpcAmbientOcclusion) {
                         val aoMap = textureNode("ssaoMap")
-                        val aoNode = addNode(AoMapSampleNode(aoMap, graph))
+                        val aoNode = addNode(AoMapSampleNode(aoMap, stage))
                         aoNode.inViewport = mvpFrag.outViewport
 
                         aoFactor = if (!cfg.isOcclusionMapped) {

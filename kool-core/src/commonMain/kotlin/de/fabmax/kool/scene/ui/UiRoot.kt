@@ -107,7 +107,7 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
         isLayoutNeeded = true
     }
 
-    override fun update(renderPass: RenderPass, ctx: KoolContext) {
+    override fun update(updateEvent: RenderPass.UpdateEvent) {
         val viewport = scene.mainRenderPass.viewport
 
         if (isFillViewport &&
@@ -130,19 +130,19 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
                     globalHeight / contentScale,
                     globalDepth / contentScale)
             content.contentScale = contentScale
-            content.doLayout(contentBounds, ctx)
+            content.doLayout(contentBounds, updateEvent.ctx)
         }
 
-        content.update(renderPass, ctx)
-        super.update(renderPass, ctx)
+        content.update(updateEvent)
+        super.update(updateEvent)
 
-        content.updateComponent(ctx)
+        content.updateComponent(updateEvent.ctx)
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
 //        blurHelper?.updateDistortionTexture(this, ctx, bounds)
-        super.collectDrawCommands(renderPass, ctx)
-        content.collectDrawCommands(renderPass, ctx)
+        super.collectDrawCommands(updateEvent)
+        content.collectDrawCommands(updateEvent)
     }
 
     override fun dispose(ctx: KoolContext) {

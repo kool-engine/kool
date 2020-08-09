@@ -91,8 +91,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         pipeline = null
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
-        super.collectDrawCommands(renderPass, ctx)
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        super.collectDrawCommands(updateEvent)
 
         if (!isRendered) {
             // mesh is not visible (either hidden or outside frustum)
@@ -107,7 +107,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-        renderPass.addMesh(this, ctx)
+        updateEvent.renderPass.addMesh(this, updateEvent.ctx)
     }
 
     companion object {

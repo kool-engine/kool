@@ -79,7 +79,7 @@ class GltfDemo(ctx: KoolContext) {
         mainScene = makeMainScene(ctx)
         menu = menu(ctx)
 
-        mainScene.onUpdate += { _, _ ->
+        mainScene.onUpdate += {
             animationTime += ctx.deltaT * animationSpeed
             foxAnimator.updatePosition(ctx)
         }
@@ -154,7 +154,7 @@ class GltfDemo(ctx: KoolContext) {
             zoom = models.current.zoom
             translation.set(models.current.lookAt)
 
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
                     val model = models.current.forwardModel
@@ -163,7 +163,7 @@ class GltfDemo(ctx: KoolContext) {
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
                     }
                 } else if (autoRotate) {
-                    verticalRotation -= ctx.deltaT * 3f
+                    verticalRotation -= it.deltaT * 3f
                 }
 
                 translationTarget?.let {
@@ -196,7 +196,7 @@ class GltfDemo(ctx: KoolContext) {
 
     private suspend fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
         rotate(-60.0, Vec3d.Y_AXIS)
-        onUpdate += { _, _ ->
+        onUpdate += {
             if (autoRotate) {
                 setIdentity()
                 rotate(ctx.time * 3, Vec3d.Y_AXIS)
@@ -481,7 +481,7 @@ class GltfDemo(ctx: KoolContext) {
                     findNode("Ground")?.isVisible = false
 
                     enableAnimation(0)
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         isVisible = this@GltfModel.isVisible
                         animate(animationTime, ctx)
                     }

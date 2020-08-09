@@ -71,9 +71,9 @@ class MultiLightDemo(ctx: KoolContext) {
                 translation.set(0.0, 2.0, 0.0)
                 setMouseRotation(0f, -5f)
                 // let the camera slowly rotate around vertical axis
-                onUpdate += { _, ctx ->
+                onUpdate += {
                     if (autoRotate) {
-                        verticalRotation += ctx.deltaT * 3f
+                        verticalRotation += it.deltaT * 3f
                     }
                 }
             }
@@ -192,13 +192,13 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
                 shader = ModeledShader.TextureColor(deferredPipeline.reflectionDenoisePass?.colorTexture)
             }
-            onUpdate += { rp, _ ->
+            onUpdate += {
                 val screenSz = 0.33f
-                val scaleX = rp.viewport.width * screenSz
-                val scaleY = scaleX * (rp.viewport.height.toFloat() / rp.viewport.width.toFloat())
+                val scaleX = it.viewport.width * screenSz
+                val scaleY = scaleX * (it.viewport.height.toFloat() / it.viewport.width.toFloat())
 
                 setIdentity()
-                val margin = rp.viewport.height * 0.05f
+                val margin = it.viewport.height * 0.05f
                 translate(margin, margin, 0f)
                 scale(scaleX, scaleY, 1f)
             }
@@ -492,9 +492,9 @@ class MultiLightDemo(ctx: KoolContext) {
             +lightMesh
             +spotAngleMesh
 
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 if (autoRotate) {
-                    animPos += ctx.deltaT
+                    animPos += it.deltaT
                 }
 
                 val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness

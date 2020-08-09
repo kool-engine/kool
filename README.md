@@ -139,8 +139,8 @@ fun main() {
     
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
-                    model.onUpdate += { _, ctx ->
-                        model.applyAnimation(ctx.time)
+                    model.onUpdate += { updateEvt ->
+                        model.applyAnimation(updateEvt.time)
                     }
                 }
             }

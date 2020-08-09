@@ -10762,6 +10762,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     return new DescriptorSetLayout(set, list);
   };
+  DescriptorSetLayout$Builder.prototype.clear = function () {
+    this.descriptors.clear();
+  };
   DescriptorSetLayout$Builder.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Builder',
@@ -12167,6 +12170,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     return new PushConstantRange(this, hash.v, pushConstants);
   };
+  PushConstantRange$Builder.prototype.clear = function () {
+    this.stages.clear();
+    this.pushConstants.clear();
+  };
   PushConstantRange$Builder.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Builder',
@@ -12184,6 +12191,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.viewport = new Viewport(0, 0, 0, 0);
     this.lighting = null;
     this.isUpdateDrawNode = true;
+    this.updateEvent_2t7tkj$_0 = null;
     var array = Array_0(1);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -12221,16 +12229,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.drawQueue_mxdtqn$_0 = drawQueue;
     }
   });
+  RenderPass.prototype.updateEvent_nkvecu$_0 = function (ctx) {
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = this.updateEvent_2t7tkj$_0) != null)
+      tmp$_0 = tmp$;
+    else {
+      var $receiver = new RenderPass$UpdateEvent(this, ctx);
+      this.updateEvent_2t7tkj$_0 = $receiver;
+      tmp$_0 = $receiver;
+    }
+    return tmp$_0;
+  };
   RenderPass.prototype.dependsOn_yqp8fe$ = function (renderPass) {
     this.dependencies.add_11rb$(renderPass);
   };
   RenderPass.prototype.update_aemszp$ = function (ctx) {
     if (this.isUpdateDrawNode) {
-      this.drawNode.update_oco14p$(this, ctx);
+      this.drawNode.update_kma0q5$(this.updateEvent_nkvecu$_0(ctx));
     }};
   RenderPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
     this.beforeCollectDrawCommands_aemszp$(ctx);
-    this.drawNode.collectDrawCommands_oco14p$(this, ctx);
+    this.drawNode.collectDrawCommands_kma0q5$(this.updateEvent_nkvecu$_0(ctx));
     this.afterCollectDrawCommands_aemszp$(ctx);
   };
   RenderPass.prototype.addMesh_sbx4mf$ = function (mesh, ctx) {
@@ -12260,6 +12280,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   };
   RenderPass.prototype.dispose_aemszp$ = function (ctx) {
+  };
+  function RenderPass$UpdateEvent(renderPass, ctx) {
+    this.renderPass = renderPass;
+    this.ctx = ctx;
+  }
+  Object.defineProperty(RenderPass$UpdateEvent.prototype, 'time', {
+    get: function () {
+      return this.ctx.time;
+    }
+  });
+  Object.defineProperty(RenderPass$UpdateEvent.prototype, 'deltaT', {
+    get: function () {
+      return this.ctx.deltaT;
+    }
+  });
+  Object.defineProperty(RenderPass$UpdateEvent.prototype, 'frameIndex', {
+    get: function () {
+      return this.ctx.frameIdx;
+    }
+  });
+  Object.defineProperty(RenderPass$UpdateEvent.prototype, 'camera', {
+    get: function () {
+      return this.renderPass.camera;
+    }
+  });
+  Object.defineProperty(RenderPass$UpdateEvent.prototype, 'viewport', {
+    get: function () {
+      return this.renderPass.viewport;
+    }
+  });
+  RenderPass$UpdateEvent.prototype.component1 = function () {
+    return this.renderPass;
+  };
+  RenderPass$UpdateEvent.prototype.component2 = function () {
+    return this.ctx;
+  };
+  RenderPass$UpdateEvent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'UpdateEvent',
+    interfaces: []
   };
   RenderPass.$metadata$ = {
     kind: Kind_CLASS,
@@ -13760,6 +13820,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       throw IllegalStateException_init("Node can only be added to it's parent graph");
     }this.mutNodes.add_11rb$(node);
   };
+  ShaderGraph.prototype.clear = function () {
+    this.descriptorSet.clear();
+    this.pushConstants.clear();
+    this.inputs.clear();
+    this.mutOutputs_rh28ou$_0.clear();
+  };
   ShaderGraph.prototype.setup = function () {
     var tmp$;
     tmp$ = this.nodes.iterator();
@@ -13931,22 +13997,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$ = this.stages.values.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.setup();
+      element.clear();
+    }
+    var tmp$_0;
+    tmp$_0 = this.stages.values.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.setup();
     }
     this.setupAttributes_0(mesh, builder);
     var pushBuilder = new PushConstantRange$Builder();
     var pushUpdateFuns = ArrayList_init_0();
     var descBuilder = new DescriptorSetLayout$Builder();
-    var tmp$_0;
-    tmp$_0 = this.stages.values.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      var tmp$_1;
-      addAll(descBuilder.descriptors, element_0.descriptorSet.descriptors);
-      addAll(pushBuilder.pushConstants, element_0.pushConstants.pushConstants);
-      addAll(pushBuilder.stages, element_0.pushConstants.stages);
-      if ((tmp$_1 = element_0.pushConstants.onUpdate) != null) {
-        pushUpdateFuns.add_11rb$(tmp$_1);
+    var tmp$_1;
+    tmp$_1 = this.stages.values.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      var tmp$_2;
+      addAll(descBuilder.descriptors, element_1.descriptorSet.descriptors);
+      addAll(pushBuilder.pushConstants, element_1.pushConstants.pushConstants);
+      addAll(pushBuilder.stages, element_1.pushConstants.stages);
+      if ((tmp$_2 = element_1.pushConstants.onUpdate) != null) {
+        pushUpdateFuns.add_11rb$(tmp$_2);
       }}
     if (!descBuilder.descriptors.isEmpty()) {
       builder.descriptorSetLayouts.add_11rb$(descBuilder);
@@ -14951,20 +15023,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function CascadedShadowMapNode(shadowMap, vertexGraph, fragmentGraph) {
     ShadowMapNode.call(this);
     this.shadowMap = shadowMap;
+    this.vertexGraph = vertexGraph;
+    this.fragmentGraph = fragmentGraph;
     this.inViewPosition = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
-    this.vertexNode = new CascadedShadowMapTransformNode(this.shadowMap, vertexGraph);
-    this.fragmentNode = new CascadedShadowMapFragmentNode(this.shadowMap, fragmentGraph);
-    this.helperNd_0 = new CascadedShadowMapNode$CascadedShadowHelperNd(this, vertexGraph);
-    this.posLightSpace_0 = new ShaderNodeIoVar(new ModelVar4f('ifPosLightSpace_' + vertexGraph.nextNodeId + '[' + this.shadowMap.numCascades + ']'));
+    this.vertexNode = new CascadedShadowMapTransformNode(this.shadowMap, this.vertexGraph);
+    this.fragmentNode = new CascadedShadowMapFragmentNode(this.shadowMap, this.fragmentGraph);
+    this.helperNd_0 = new CascadedShadowMapNode$CascadedShadowHelperNd(this, this.vertexGraph);
+    this.posLightSpace_0 = new ShaderNodeIoVar(new ModelVar4f('ifPosLightSpace_' + this.vertexGraph.nextNodeId + '[' + this.shadowMap.numCascades + ']'));
     this.ifViewZ_0 = new ShaderNodeIoVar(new ModelVar1f('outViewZ_' + this.helperNd_0.nodeId));
     this.lightIndex = this.shadowMap.lightIndex;
-    vertexGraph.addNode_j0v1fw$(this.helperNd_0);
-    var $receiver = fragmentGraph.inputs;
-    var element = vertexGraph.addStageOutput_ca2n0y$(this.posLightSpace_0.variable, false, this.shadowMap.numCascades);
-    $receiver.add_11rb$(element);
-    var $receiver_0 = fragmentGraph.inputs;
-    var element_0 = vertexGraph.addStageOutput_ca2n0y$(this.ifViewZ_0.variable, false);
-    $receiver_0.add_11rb$(element_0);
+    this.vertexGraph.addNode_j0v1fw$(this.helperNd_0);
     this.fragmentNode.inPosLightSpace = this.posLightSpace_0;
     this.fragmentNode.inViewZ = this.ifViewZ_0;
   }
@@ -15004,6 +15072,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   CascadedShadowMapNode$CascadedShadowHelperNd.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
     this.dependsOn_8ak6wm$([this.$outer.inViewPosition, this.$outer.vertexNode.outPosLightSpace]);
+    var $receiver = this.$outer.fragmentGraph.inputs;
+    var element = this.$outer.vertexGraph.addStageOutput_ca2n0y$(this.$outer.posLightSpace_0.variable, false, this.$outer.shadowMap.numCascades);
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.$outer.fragmentGraph.inputs;
+    var element_0 = this.$outer.vertexGraph.addStageOutput_ca2n0y$(this.$outer.ifViewZ_0.variable, false);
+    $receiver_0.add_11rb$(element_0);
   };
   CascadedShadowMapNode$CascadedShadowHelperNd.prototype.generateCode_626509$ = function (generator) {
     var tmp$;
@@ -18153,7 +18227,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       aoFactor = tmp$_21;
     }if (cfg.isScrSpcAmbientOcclusion) {
       var aoMap = $receiver_5.textureNode_61zpoe$('ssaoMap');
-      var aoNode = $receiver_5.addNode_u9w9by$(new AoMapSampleNode(aoMap, $receiver_6.graph));
+      var aoNode = $receiver_5.addNode_u9w9by$(new AoMapSampleNode(aoMap, $receiver_5.stage));
       aoNode.inViewport = mvpFrag.outViewport;
       if (!cfg.isOcclusionMapped) {
         tmp$_22 = aoNode.outAo;
@@ -20955,16 +21029,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isDirty = true;
     this.isIdentity = false;
   };
-  Group.prototype.update_oco14p$ = function (renderPass, ctx) {
+  Group.prototype.update_kma0q5$ = function (updateEvent) {
     var tmp$;
     this.childrenBounds.clear();
     tmp$ = this.intChildren;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.intChildren.get_za3lpa$(i).update_oco14p$(renderPass, ctx);
+      this.intChildren.get_za3lpa$(i).update_kma0q5$(updateEvent);
       this.childrenBounds.add_ea4od8$(this.intChildren.get_za3lpa$(i).bounds);
     }
     this.setLocalBounds();
-    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
+    Node.prototype.update_kma0q5$.call(this, updateEvent);
     if (!this.bounds.isEmpty && !this.isIdentity) {
       this.tmpBounds_8xwcjs$_0.clear();
       this.tmpBounds_8xwcjs$_0.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_vl4onp$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
@@ -20980,8 +21054,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Group.prototype.setLocalBounds = function () {
     this.bounds.set_ea4od8$(this.childrenBounds);
   };
-  Group.prototype.updateModelMat_oco14p$ = function (renderPass, ctx) {
-    Node.prototype.updateModelMat_oco14p$.call(this, renderPass, ctx);
+  Group.prototype.updateModelMat_kma0q5$ = function (updateEvent) {
+    Node.prototype.updateModelMat_kma0q5$.call(this, updateEvent);
     if (!this.isIdentity) {
       this.modelMat.mul_d4zu6l$(this.transform);
     }};
@@ -21008,13 +21082,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.checkInverse();
     return result.set_d4zu6l$(this.invTransform);
   };
-  Group.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+  Group.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
     var tmp$;
-    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+    Node.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
     if (this.isRendered) {
       tmp$ = this.intChildren;
       for (var i = 0; i !== tmp$.size; ++i) {
-        this.intChildren.get_za3lpa$(i).collectDrawCommands_oco14p$(renderPass, ctx);
+        this.intChildren.get_za3lpa$(i).collectDrawCommands_kma0q5$(updateEvent);
       }
     }};
   Group.prototype.dispose_aemszp$ = function (ctx) {
@@ -21725,15 +21799,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       ctx.disposePipeline_i7l2g2$(tmp$);
     }this.pipeline_fj0dqa$_0 = null;
   };
-  Mesh.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
-    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+  Mesh.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
+    Node.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
     if (!this.isRendered) {
       return;
     }if (this.geometry.hasChanged && !this.geometry.isBatchUpdate) {
       if (this.geometry.isRebuildBoundsOnSync) {
         this.geometry.rebuildBounds();
       }this.rayTest.onMeshDataChanged_f1jspk$(this);
-    }renderPass.addMesh_sbx4mf$(this, ctx);
+    }updateEvent.renderPass.addMesh_sbx4mf$(this, updateEvent.ctx);
   };
   function Mesh$Companion() {
     Mesh$Companion_instance = this;
@@ -22025,31 +22099,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.isFrustumChecked_un4x7a$_0 = isFrustumChecked;
     }
   });
-  Node.prototype.update_oco14p$ = function (renderPass, ctx) {
+  Node.prototype.update_kma0q5$ = function (updateEvent) {
     var tmp$;
     tmp$ = this.onUpdate;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.onUpdate.get_za3lpa$(i)(this, renderPass, ctx);
+      this.onUpdate.get_za3lpa$(i)(this, updateEvent);
     }
-    this.updateModelMat_oco14p$(renderPass, ctx);
+    this.updateModelMat_kma0q5$(updateEvent);
     this.globalCenterMut.set_czzhiu$(this.bounds.center);
     this.globalExtentMut.set_czzhiu$(this.bounds.max);
     this.modelMat.transform_w1lst9$(this.globalCenterMut);
     this.modelMat.transform_w1lst9$(this.globalExtentMut);
     this.globalRadius = this.globalCenter.distance_czzhiu$(this.globalExtentMut);
   };
-  Node.prototype.updateModelMat_oco14p$ = function (renderPass, ctx) {
+  Node.prototype.updateModelMat_kma0q5$ = function (updateEvent) {
     var tmp$, tmp$_0;
     this.modelMat.set_d4zu6l$((tmp$_0 = (tmp$ = this.parent) != null ? tmp$.modelMat : null) != null ? tmp$_0 : Node$Companion_getInstance().MODEL_MAT_IDENTITY_0);
     this.modelMatDirty = true;
   };
-  Node.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+  Node.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
     var tmp$;
-    this.isRendered = this.checkIsVisible_6otzq7$(renderPass.camera, ctx);
+    this.isRendered = this.checkIsVisible_6otzq7$(updateEvent.camera, updateEvent.ctx);
     if (this.isRendered) {
       tmp$ = this.onCollectDrawCommands;
       for (var i = 0; i !== tmp$.size; ++i) {
-        this.onCollectDrawCommands.get_za3lpa$(i)(this, renderPass, ctx);
+        this.onCollectDrawCommands.get_za3lpa$(i)(this, updateEvent);
       }
     }};
   Node.prototype.dispose_aemszp$ = function (ctx) {
@@ -22509,7 +22583,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   OrbitInputTransform$ZoomMethod.valueOf_61zpoe$ = OrbitInputTransform$ZoomMethod$valueOf;
   function OrbitInputTransform_init$lambda(this$OrbitInputTransform) {
-    return function ($receiver, rp, ctx) {
+    return function ($receiver, f) {
+      var rp = f.component1()
+      , ctx = f.component2();
       this$OrbitInputTransform.doCamTransform_kff6gu$_0(rp, ctx);
       return Unit;
     };
@@ -22699,14 +22775,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Scene.prototype.processInput_aemszp$ = function (ctx) {
     this.handleInput_gqm22e$_0(ctx);
   };
-  Scene.prototype.update_oco14p$ = function (renderPass, ctx) {
+  Scene.prototype.update_kma0q5$ = function (updateEvent) {
     var tmp$;
     tmp$ = this.disposables_mcwga4$_0;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.disposables_mcwga4$_0.get_za3lpa$(i).dispose_aemszp$(ctx);
+      this.disposables_mcwga4$_0.get_za3lpa$(i).dispose_aemszp$(updateEvent.ctx);
     }
     this.disposables_mcwga4$_0.clear();
-    Group.prototype.update_oco14p$.call(this, renderPass, ctx);
+    Group.prototype.update_kma0q5$.call(this, updateEvent);
   };
   Scene.prototype.dispose_ipew3$ = function (disposable) {
     this.disposables_mcwga4$_0.add_11rb$(disposable);
@@ -23380,10 +23456,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function DrawerMenu_init$lambda$lambda$lambda$lambda(closure$initFont, this$) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, evt) {
       if (closure$initFont.v) {
         closure$initFont.v = false;
-        this$.font.setCustom_11rb$(titleFont(this$, ctx));
+        this$.font.setCustom_11rb$(titleFont(this$, evt.ctx));
       }return Unit;
     };
   }
@@ -24387,8 +24463,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return this.root.theme.newTextFieldUi_p39bdq$(this);
   };
   function TextField_init$lambda(this$TextField) {
-    return function ($receiver, f, ctx) {
+    return function ($receiver, evt) {
       var tmp$;
+      var ctx = evt.ctx;
       if (!ctx.inputMgr.keyEvents.isEmpty()) {
         tmp$ = ctx.inputMgr.keyEvents.iterator();
         while (tmp$.hasNext()) {
@@ -24956,10 +25033,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UiComponent.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.componentUi(this);
   };
-  UiComponent.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+  UiComponent.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
     if (this.isVisible && this.alpha > 0.0 && !this.bounds.isEmpty) {
-      this.ui.prop.onRender_aemszp$(ctx);
-      Group.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+      this.ui.prop.onRender_aemszp$(updateEvent.ctx);
+      Group.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
     }};
   UiComponent.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
     var tmp$;
@@ -25332,7 +25409,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UiRoot.prototype.requestLayout = function () {
     this.isLayoutNeeded_0 = true;
   };
-  UiRoot.prototype.update_oco14p$ = function (renderPass, ctx) {
+  UiRoot.prototype.update_kma0q5$ = function (updateEvent) {
     var viewport = this.scene.mainRenderPass.viewport;
     if (this.isFillViewport && (this.globalWidth !== viewport.width || this.globalHeight !== viewport.height)) {
       this.globalWidth = viewport.width;
@@ -25345,14 +25422,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         contentScale = 1.0 / (ch.toUnits_dleff0$(this.globalHeight, this.uiDpi) / this.globalHeight);
       }var contentBounds = (new BoundingBox()).set_w8lrqs$(0.0, 0.0, 0.0, this.globalWidth / contentScale, this.globalHeight / contentScale, this.globalDepth / contentScale);
       this.content.contentScale = contentScale;
-      this.content.doLayout_sq5703$(contentBounds, ctx);
-    }this.content.update_oco14p$(renderPass, ctx);
-    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
-    this.content.updateComponent_aemszp$(ctx);
+      this.content.doLayout_sq5703$(contentBounds, updateEvent.ctx);
+    }this.content.update_kma0q5$(updateEvent);
+    Node.prototype.update_kma0q5$.call(this, updateEvent);
+    this.content.updateComponent_aemszp$(updateEvent.ctx);
   };
-  UiRoot.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
-    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
-    this.content.collectDrawCommands_oco14p$(renderPass, ctx);
+  UiRoot.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
+    Node.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
+    this.content.collectDrawCommands_kma0q5$(updateEvent);
   };
   UiRoot.prototype.dispose_aemszp$ = function (ctx) {
     Node.prototype.dispose_aemszp$.call(this, ctx);
@@ -27683,6 +27760,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     mesh_0.generate_v2sixm$(AoDenoisePass_init$lambda$lambda_0);
     var $receiver_3 = new ShaderModel('ClearAoDenoisePass');
     var $receiver_4 = new ShaderModel$VertexStageBuilder($receiver_3);
+    $receiver_4.mvpNode();
     $receiver_4.positionOutput = $receiver_4.fullScreenQuadPositionNode_r20yfm$($receiver_4.attrTexCoords().output).outQuadPos;
     var $receiver_5 = new ShaderModel$FragmentStageBuilder($receiver_3);
     $receiver_5.colorOutput_a3v4si$($receiver_5.constVec4f_czzhhz$(Color$Companion_getInstance().WHITE));
@@ -27717,7 +27795,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.clearAndDisable = false;
       this.denoiseMesh_0.isVisible = false;
       this.clearMesh_0.isVisible = true;
-      ctx.runDelayed_hd6vpk$(1, AoDenoisePass$update$lambda(this));
+      ctx.runDelayed_hd6vpk$(5, AoDenoisePass$update$lambda(this));
     }OffscreenRenderPass2d.prototype.update_aemszp$.call(this, ctx);
   };
   AoDenoisePass.prototype.dispose_aemszp$ = function (ctx) {
@@ -27934,7 +28012,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.aoPass_i8vqld$_0 = new AmbientOcclusionPass(proxyCamera, AoSetup$Companion_getInstance().forward_xscw1l$(this.depthPass), this.mapWidth_0, this.mapHeight_0);
     this.aoPass.dependsOn_yqp8fe$(this.depthPass);
     this.denoisePass_wz7oly$_0 = new AoDenoisePass(this.aoPass, ensureNotNull(this.depthPass.colorTexture), 'a');
-    this.denoisePass.dependsOn_yqp8fe$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.depthPass);
     scene.addOffscreenPass_m1c2kf$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.denoisePass);
@@ -27986,7 +28063,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.aoPass_6v2ifx$_0 = new AmbientOcclusionPass(mrtPass.camera, AoSetup$Companion_getInstance().deferred_u6tred$(mrtPass), this.mapWidth_0, this.mapHeight_0);
     this.aoPass.dependsOn_yqp8fe$(mrtPass);
     this.denoisePass_mxbezy$_0 = new AoDenoisePass(this.aoPass, mrtPass.positionAo, 'z');
-    this.denoisePass.dependsOn_yqp8fe$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.aoPass);
     scene.addOffscreenPass_m1c2kf$(this.denoisePass);
     scene.onRenderScene.add_11rb$(AoPipeline$AoPipeline$DeferredAoPipeline_init$lambda(mrtPass, this));
@@ -29533,8 +29609,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda(this$) {
-    return function ($receiver, f, ctx) {
-      this$.text = toString_1(ctx.fps, 1) + ' fps';
+    return function ($receiver, it) {
+      this$.text = toString_1(it.ctx.fps, 1) + ' fps';
       return Unit;
     };
   }
@@ -29551,13 +29627,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$ctx, closure$i, this$) {
-    return function ($receiver, f, f_0) {
-      this$.text = closure$ctx.getSysInfos().get_za3lpa$(closure$i);
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$i, this$) {
+    return function ($receiver, it) {
+      this$.text = it.ctx.getSysInfos().get_za3lpa$(closure$i);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_2(closure$yOri, closure$width, closure$ctx, closure$i) {
+  function DebugOverlay_init$lambda$lambda$lambda_2(closure$yOri, closure$width, closure$i) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29565,21 +29641,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = '';
       var $receiver_0 = $receiver.onUpdate;
-      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$ctx, closure$i, $receiver);
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$i, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_1(closure$lastWndW, closure$lastWndH, this$) {
-    return function ($receiver, f, ctx) {
-      if (ctx.windowWidth !== closure$lastWndW.v || ctx.windowHeight !== closure$lastWndH.v) {
-        closure$lastWndW.v = ctx.windowWidth;
-        closure$lastWndH.v = ctx.windowHeight;
-        this$.text = 'Viewport: ' + ctx.windowWidth + 'x' + ctx.windowHeight;
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_1(closure$ctx, closure$lastWndW, closure$lastWndH, this$) {
+    return function ($receiver, it) {
+      if (closure$ctx.windowWidth !== closure$lastWndW.v || closure$ctx.windowHeight !== closure$lastWndH.v) {
+        closure$lastWndW.v = closure$ctx.windowWidth;
+        closure$lastWndH.v = closure$ctx.windowHeight;
+        this$.text = 'Viewport: ' + closure$ctx.windowWidth + 'x' + closure$ctx.windowHeight;
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_3(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_3(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29587,29 +29663,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastWndW = {v: -1};
       var lastWndH = {v: -1};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_1(lastWndW, lastWndH, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_1(closure$ctx, lastWndW, lastWndH, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_2(closure$updateT, this$) {
-    return function ($receiver, f, ctx) {
-      closure$updateT.v -= ctx.deltaT;
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_2(closure$ctx, closure$updateT, this$) {
+    return function ($receiver, it) {
+      closure$updateT.v -= closure$ctx.deltaT;
       if (closure$updateT.v < 0) {
         closure$updateT.v += 1.0;
-        var hh = '' + toString(numberToInt(ctx.time / 3600.0));
+        var hh = '' + toString(numberToInt(closure$ctx.time / 3600.0));
         if (hh.length === 1) {
           hh = '0' + hh;
-        }var mm = '' + toString(numberToInt(ctx.time % 3600.0 / 60.0));
+        }var mm = '' + toString(numberToInt(closure$ctx.time % 3600.0 / 60.0));
         if (mm.length === 1) {
           mm = '0' + mm;
-        }var ss = '' + toString(numberToInt(ctx.time % 60.0));
+        }var ss = '' + toString(numberToInt(closure$ctx.time % 60.0));
         if (ss.length === 1) {
           ss = '0' + ss;
         }this$.text = 'Up: ' + hh + ':' + mm + '.' + ss;
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_4(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_4(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29617,14 +29695,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = 'Up: 00:00.00';
       var updateT = {v: 1.0};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_2(updateT, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_2(closure$ctx, updateT, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_3(closure$last, closure$lastMem, this$) {
-    return function ($receiver, f, ctx) {
-      var num = ctx.engineStats.textureAllocations.size;
-      var mem = ctx.engineStats.totalTextureSize.toNumber();
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_3(closure$ctx, closure$last, closure$lastMem, this$) {
+    return function ($receiver, it) {
+      var num = closure$ctx.engineStats.textureAllocations.size;
+      var mem = closure$ctx.engineStats.totalTextureSize.toNumber();
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
@@ -29632,7 +29712,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_5(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_5(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29640,14 +29720,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_3(last, lastMem, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_3(closure$ctx, last, lastMem, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_4(closure$last, closure$lastMem, this$) {
-    return function ($receiver, f, ctx) {
-      var num = ctx.engineStats.bufferAllocations.size;
-      var mem = ctx.engineStats.totalBufferSize.toNumber();
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_4(closure$ctx, closure$last, closure$lastMem, this$) {
+    return function ($receiver, it) {
+      var num = closure$ctx.engineStats.bufferAllocations.size;
+      var mem = closure$ctx.engineStats.totalBufferSize.toNumber();
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
@@ -29655,7 +29737,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_6(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_6(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29663,14 +29745,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_4(last, lastMem, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_4(closure$ctx, last, lastMem, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_5(closure$lastInstances, closure$lastPipelines, this$) {
-    return function ($receiver, f, ctx) {
-      var numPipelines = ctx.engineStats.pipelines.size;
-      var numDrawCmds = ctx.engineStats.numDrawCommands;
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_5(closure$ctx, closure$lastInstances, closure$lastPipelines, this$) {
+    return function ($receiver, it) {
+      var numPipelines = closure$ctx.engineStats.pipelines.size;
+      var numDrawCmds = closure$ctx.engineStats.numDrawCommands;
       if (numDrawCmds !== closure$lastInstances.v || numPipelines !== closure$lastPipelines.v) {
         closure$lastPipelines.v = numPipelines;
         closure$lastInstances.v = numDrawCmds;
@@ -29678,7 +29762,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_7(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_7(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
@@ -29686,27 +29770,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastPipelines = {v: -1};
       var lastInstances = {v: -1};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_5(lastInstances, lastPipelines, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_5(closure$ctx, lastInstances, lastPipelines, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda$lambda_6(closure$lastPrimitives, this$) {
-    return function ($receiver, f, ctx) {
-      var numPrimitives = ctx.engineStats.numPrimitives;
+  function DebugOverlay_init$lambda$lambda$lambda$lambda_6(closure$ctx, closure$lastPrimitives, this$) {
+    return function ($receiver, it) {
+      var numPrimitives = closure$ctx.engineStats.numPrimitives;
       if (numPrimitives !== closure$lastPrimitives.v) {
         closure$lastPrimitives.v = numPrimitives;
         this$.text = numPrimitives.toString() + ' Faces';
       }return Unit;
     };
   }
-  function DebugOverlay_init$lambda$lambda$lambda_8(closure$yOri, closure$width) {
+  function DebugOverlay_init$lambda$lambda$lambda_8(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastPrimitives = {v: -1};
-      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_6(lastPrimitives, $receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = DebugOverlay_init$lambda$lambda$lambda$lambda_6(closure$ctx, lastPrimitives, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -29740,20 +29828,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var yOri = {v: -60.0};
       tmp$ = closure$ctx.getSysInfos();
       for (var i = 0; i !== tmp$.size; ++i) {
-        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblSysInfo_' + i, DebugOverlay_init$lambda$lambda$lambda_2(yOri, width, closure$ctx, i)));
+        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblSysInfo_' + i, DebugOverlay_init$lambda$lambda$lambda_2(yOri, width, i)));
         yOri.v -= 18.0;
       }
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVpSize', DebugOverlay_init$lambda$lambda$lambda_3(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVpSize', DebugOverlay_init$lambda$lambda$lambda_3(yOri, width, closure$ctx)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblUpTime', DebugOverlay_init$lambda$lambda$lambda_4(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblUpTime', DebugOverlay_init$lambda$lambda$lambda_4(yOri, width, closure$ctx)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumTextures', DebugOverlay_init$lambda$lambda$lambda_5(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumTextures', DebugOverlay_init$lambda$lambda$lambda_5(yOri, width, closure$ctx)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumBuffers', DebugOverlay_init$lambda$lambda$lambda_6(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumBuffers', DebugOverlay_init$lambda$lambda$lambda_6(yOri, width, closure$ctx)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumShaders', DebugOverlay_init$lambda$lambda$lambda_7(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumShaders', DebugOverlay_init$lambda$lambda$lambda_7(yOri, width, closure$ctx)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumFaces', DebugOverlay_init$lambda$lambda$lambda_8(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumFaces', DebugOverlay_init$lambda$lambda$lambda_8(yOri, width, closure$ctx)));
       return Unit;
     };
   }
@@ -29782,18 +29870,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.graphMesh.geometry.usage = Usage$DYNAMIC_getInstance();
     this.graphMesh.shader = new UiShader();
   }
-  DeltaTGraph.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+  DeltaTGraph.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
     var color = Color$Companion_getInstance().WHITE;
     if (this.prevDeltaT > 0.05) {
       color = Color$Companion_getInstance().RED;
     } else if (this.prevDeltaT > 0.025) {
       color = Color$Companion_getInstance().YELLOW;
     }this.setCurrentBarColor_d7aj7k$(color);
-    this.prevDeltaT = ctx.deltaT;
+    this.prevDeltaT = updateEvent.deltaT;
     this.graphIdx = (this.graphIdx + 4 | 0) % (numberToInt(this.width) * 4 | 0);
     this.graphVertex.index = this.graphIdx;
     var y0 = this.graphVertex.position.y;
-    var a = ctx.deltaT * 250;
+    var a = updateEvent.deltaT * 250;
     var b = this.height;
     var h = Math_0.min(a, b);
     var tmp$;
@@ -29806,7 +29894,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.graphVertex.position.y = y0 + h;
     this.setCurrentBarColor_d7aj7k$(Color$Companion_getInstance().MAGENTA);
     this.graphGeom.hasChanged = true;
-    UiComponent.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+    UiComponent.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
   };
   DeltaTGraph.prototype.setCurrentBarColor_d7aj7k$ = function (color) {
     this.graphVertex.index = this.graphIdx;
@@ -31672,7 +31760,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return Unit;
   }
   function DeferredPointLights$mesh$lambda$lambda_0(this$DeferredPointLights) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$DeferredPointLights.isDynamic) {
         this$DeferredPointLights.updateLightData();
       }return Unit;
@@ -31945,7 +32033,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function DeferredSpotLights$mesh$lambda$lambda_0(this$DeferredSpotLights) {
-    return function ($receiver, f, f_0) {
+    return function ($receiver, it) {
       if (this$DeferredSpotLights.isDynamic) {
         this$DeferredSpotLights.updateLightData();
       }return Unit;
@@ -41216,18 +41304,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function InstancedLodController$update$lambda(it) {
     return it.camDistance;
   }
-  InstancedLodController.prototype.update_oco14p$ = function (renderPass, ctx) {
+  InstancedLodController.prototype.update_kma0q5$ = function (updateEvent) {
     var tmp$, tmp$_0, tmp$_1;
-    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
+    Node.prototype.update_kma0q5$.call(this, updateEvent);
     tmp$ = this.lods_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.lods_0.get_za3lpa$(i).instances.clear();
     }
-    var cam = renderPass.camera;
+    var cam = updateEvent.camera;
     tmp$_0 = this.instances;
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
       var inst = this.instances.get_za3lpa$(i_0);
-      inst.update_l2cg23$(this, cam, ctx);
+      inst.update_l2cg23$(this, cam, updateEvent.ctx);
       if (inst.isInFrustum) {
         for (var j = get_lastIndex(this.lods_0); j >= 0; j--) {
           if (j === 0 || inst.camDistance > this.lods_0.get_za3lpa$(j - 1 | 0).maxDistance) {
@@ -41247,16 +41335,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           if (i_1 < get_lastIndex(this.lods_0)) {
             this.lods_0.get_za3lpa$(i_1 + 1 | 0).instances.add_11rb$(rmInst);
           }}
-      }lod.updateInstances_2shagh$(i_1, ctx);
-      lod.mesh.update_oco14p$(renderPass, ctx);
+      }lod.updateInstances_2shagh$(i_1, updateEvent.ctx);
+      lod.mesh.update_kma0q5$(updateEvent);
     }
   };
-  InstancedLodController.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+  InstancedLodController.prototype.collectDrawCommands_kma0q5$ = function (updateEvent) {
     var tmp$;
-    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+    Node.prototype.collectDrawCommands_kma0q5$.call(this, updateEvent);
     tmp$ = this.lods_0;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.lods_0.get_za3lpa$(i).mesh.collectDrawCommands_oco14p$(renderPass, ctx);
+      this.lods_0.get_za3lpa$(i).mesh.collectDrawCommands_kma0q5$(updateEvent);
     }
   };
   InstancedLodController.prototype.dispose_aemszp$ = function (ctx) {
@@ -50804,6 +50892,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.CullMethod = CullMethod;
   PushConstantRange.Builder = PushConstantRange$Builder;
   package$pipeline.PushConstantRange = PushConstantRange;
+  RenderPass.UpdateEvent = RenderPass$UpdateEvent;
   package$pipeline.RenderPass = RenderPass;
   package$pipeline.ScreenRenderPass = ScreenRenderPass;
   package$pipeline.Shader = Shader;

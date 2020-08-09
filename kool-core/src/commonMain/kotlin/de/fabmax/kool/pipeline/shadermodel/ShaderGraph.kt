@@ -41,12 +41,14 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
         mutNodes.add(node)
     }
 
-    open fun setup() {
+    open fun clear() {
         descriptorSet.clear()
         pushConstants.clear()
         inputs.clear()
         mutOutputs.clear()
+    }
 
+    open fun setup() {
         nodes.forEach { it.setup(this) }
     }
 

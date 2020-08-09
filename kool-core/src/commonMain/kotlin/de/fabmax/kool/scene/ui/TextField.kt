@@ -20,7 +20,8 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
     val editText = EditableText()
 
     init {
-        onUpdate += { _, ctx ->
+        onUpdate += { evt ->
+            val ctx = evt.ctx
             if (!ctx.inputMgr.keyEvents.isEmpty()) {
                 for (e in ctx.inputMgr.keyEvents) {
                     if (e.isCharTyped) {

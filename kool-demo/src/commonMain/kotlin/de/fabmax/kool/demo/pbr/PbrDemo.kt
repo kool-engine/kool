@@ -74,7 +74,7 @@ class PbrDemo(val ctx: KoolContext) {
         +orbitInputTransform {
             +camera
             // let the camera slowly rotate around vertical axis
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 if (autoRotate) {
                     verticalRotation += ctx.deltaT * 2f
                 }

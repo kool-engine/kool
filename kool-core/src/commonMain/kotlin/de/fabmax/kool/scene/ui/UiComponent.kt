@@ -172,10 +172,10 @@ open class UiComponent(name: String, val root: UiRoot) : Group(name) {
         return root.theme.componentUi(this)
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         if (isVisible && alpha > 0f && !bounds.isEmpty) {
-            ui.prop.onRender(ctx)
-            super.collectDrawCommands(renderPass, ctx)
+            ui.prop.onRender(updateEvent.ctx)
+            super.collectDrawCommands(updateEvent)
         }
     }
 

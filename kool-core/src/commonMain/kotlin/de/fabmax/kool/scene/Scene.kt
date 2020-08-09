@@ -97,12 +97,12 @@ open class Scene(name: String? = null) : Group(name) {
         handleInput(ctx)
     }
 
-    override fun update(renderPass: RenderPass, ctx: KoolContext) {
+    override fun update(updateEvent: RenderPass.UpdateEvent) {
         for (i in disposables.indices) {
-            disposables[i].dispose(ctx)
+            disposables[i].dispose(updateEvent.ctx)
         }
         disposables.clear()
-        super.update(renderPass, ctx)
+        super.update(updateEvent)
     }
 
     fun dispose(disposable: Disposable) {

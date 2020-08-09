@@ -14,8 +14,8 @@ import de.fabmax.kool.util.Disposable
  */
 abstract class Node(val name: String? = null) : Disposable {
 
-    val onUpdate: MutableList<Node.(RenderPass, KoolContext) -> Unit> = mutableListOf()
-    val onCollectDrawCommands: MutableList<Node.(RenderPass, KoolContext) -> Unit> = mutableListOf()
+    val onUpdate: MutableList<Node.(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
+    val onCollectDrawCommands: MutableList<Node.(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
     val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
@@ -88,12 +88,12 @@ abstract class Node(val name: String? = null) : Disposable {
      * Called once on every new frame before draw commands are collected. Implementations should use this method to
      * update their transform matrices, bounding boxes, animation states, etc.
      */
-    open fun update(renderPass: RenderPass, ctx: KoolContext) {
+    open fun update(updateEvent: RenderPass.UpdateEvent) {
         for (i in onUpdate.indices) {
-            onUpdate[i](renderPass, ctx)
+            onUpdate[i](updateEvent)
         }
 
-        updateModelMat(renderPass, ctx)
+        updateModelMat(updateEvent)
 
         // update global center and radius
         globalCenterMut.set(bounds.center)
@@ -103,7 +103,7 @@ abstract class Node(val name: String? = null) : Disposable {
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
-    protected open fun updateModelMat(renderPass: RenderPass, ctx: KoolContext) {
+    protected open fun updateModelMat(updateEvent: RenderPass.UpdateEvent) {
         modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
         modelMatDirty = true
     }
@@ -114,11 +114,11 @@ abstract class Node(val name: String? = null) : Disposable {
      * When this message is called, implementations can, but don't have to, append a DrawCommand to the provided
      * DrawQueue.
      */
-    open fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
-        isRendered = checkIsVisible(renderPass.camera, ctx)
+    open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
         if (isRendered) {
             for (i in onCollectDrawCommands.indices) {
-                onCollectDrawCommands[i](renderPass, ctx)
+                onCollectDrawCommands[i](updateEvent)
             }
         }
     }

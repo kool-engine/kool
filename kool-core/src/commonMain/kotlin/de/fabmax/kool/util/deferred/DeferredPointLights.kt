@@ -41,7 +41,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
         }
         shader = DeferredLightShader(lightCfg)
 
-        onUpdate += { _, _ ->
+        onUpdate += {
             if (isDynamic) {
                 updateLightData()
             }

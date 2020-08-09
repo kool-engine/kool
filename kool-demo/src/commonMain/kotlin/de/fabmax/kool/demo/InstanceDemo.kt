@@ -57,9 +57,9 @@ class InstanceDemo(ctx: KoolContext) {
 
             setMouseRotation(30f, -40f)
 
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 if (isAutoRotate) {
-                    verticalRotation += ctx.deltaT * 3f
+                    verticalRotation += it.deltaT * 3f
                 }
             }
         }
@@ -296,7 +296,7 @@ class InstanceDemo(ctx: KoolContext) {
                     layoutSpec.setOrigin(pcs(80f), dps(y), zero())
                     layoutSpec.setSize(pcs(20f), dps(30f), full())
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                    onUpdate += { _, _ ->
+                    onUpdate += {
                         val cnt = lodController.getInstanceCount(i)
                         val tris = cnt * (lods[i].mesh?.geometry?.numPrimitives ?: 0)
                         text = "$cnt insts / $tris tris"

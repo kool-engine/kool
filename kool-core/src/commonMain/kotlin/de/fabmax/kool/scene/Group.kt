@@ -46,17 +46,17 @@ open class Group(name: String? = null) : Node(name) {
         isIdentity = false
     }
 
-    override fun update(renderPass: RenderPass, ctx: KoolContext) {
+    override fun update(updateEvent: RenderPass.UpdateEvent) {
         // call update on all children and update group bounding box
         childrenBounds.clear()
         for (i in intChildren.indices) {
-            intChildren[i].update(renderPass, ctx)
+            intChildren[i].update(updateEvent)
             childrenBounds.add(intChildren[i].bounds)
         }
         setLocalBounds()
 
         // compute global position and size based on group bounds and current model transform
-        super.update(renderPass, ctx)
+        super.update(updateEvent)
 
         // transform group bounds
         if (!bounds.isEmpty && !isIdentity) {
@@ -77,8 +77,8 @@ open class Group(name: String? = null) : Node(name) {
         bounds.set(childrenBounds)
     }
 
-    override fun updateModelMat(renderPass: RenderPass, ctx: KoolContext) {
-        super.updateModelMat(renderPass, ctx)
+    override fun updateModelMat(updateEvent: RenderPass.UpdateEvent) {
+        super.updateModelMat(updateEvent)
         if (!isIdentity) {
             modelMat.mul(transform)
         }
@@ -114,12 +114,12 @@ open class Group(name: String? = null) : Node(name) {
         return result.set(invTransform)
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
-        super.collectDrawCommands(renderPass, ctx)
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        super.collectDrawCommands(updateEvent)
 
         if (isRendered) {
             for (i in intChildren.indices) {
-                intChildren[i].collectDrawCommands(renderPass, ctx)
+                intChildren[i].collectDrawCommands(updateEvent)
             }
         }
     }

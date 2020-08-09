@@ -19,6 +19,7 @@ abstract class RenderPass(val drawNode: Node) {
     var lighting: Lighting? = null
 
     var isUpdateDrawNode = true
+    private var updateEvent: UpdateEvent? = null
 
     var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
         protected set
@@ -34,19 +35,21 @@ abstract class RenderPass(val drawNode: Node) {
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
+    private fun updateEvent(ctx: KoolContext) = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
+
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
     }
 
     open fun update(ctx: KoolContext) {
         if (isUpdateDrawNode) {
-            drawNode.update(this, ctx)
+            drawNode.update(updateEvent(ctx))
         }
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
         beforeCollectDrawCommands(ctx)
-        drawNode.collectDrawCommands(this, ctx)
+        drawNode.collectDrawCommands(updateEvent(ctx))
         afterCollectDrawCommands(ctx)
     }
 
@@ -75,6 +78,23 @@ abstract class RenderPass(val drawNode: Node) {
     }
 
     open fun dispose(ctx: KoolContext) { }
+
+    class UpdateEvent(val renderPass: RenderPass, val ctx: KoolContext) {
+        val time: Double
+            get() = ctx.time
+        val deltaT: Float
+            get() = ctx.deltaT
+        val frameIndex: Int
+            get() = ctx.frameIdx
+
+        val camera: Camera
+            get() = renderPass.camera
+        val viewport: Viewport
+            get() = renderPass.viewport
+
+        operator fun component1() = renderPass
+        operator fun component2() = ctx
+    }
 }
 
 class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {

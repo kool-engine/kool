@@ -135,7 +135,7 @@ class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${
     }
 }
 
-class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
+class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: ShaderGraph, val fragmentGraph: ShaderGraph) : ShadowMapNode() {
     var inViewPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     var inWorldPos: ShaderNodeIoVar
@@ -164,9 +164,6 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, vertexGraph: Shade
         this.lightIndex = shadowMap.lightIndex
         vertexGraph.addNode(helperNd)
 
-        fragmentGraph.inputs += vertexGraph.addStageOutput(posLightSpace.variable, false, shadowMap.numCascades)
-        fragmentGraph.inputs += vertexGraph.addStageOutput(ifViewZ.variable, false)
-
         fragmentNode.inPosLightSpace = posLightSpace
         fragmentNode.inViewZ = ifViewZ
     }
@@ -175,6 +172,9 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, vertexGraph: Shade
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(inViewPosition, vertexNode.outPosLightSpace)
+
+            fragmentGraph.inputs += vertexGraph.addStageOutput(posLightSpace.variable, false, shadowMap.numCascades)
+            fragmentGraph.inputs += vertexGraph.addStageOutput(ifViewZ.variable, false)
         }
 
         override fun generateCode(generator: CodeGenerator) {

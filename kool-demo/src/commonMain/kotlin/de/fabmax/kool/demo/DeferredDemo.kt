@@ -64,9 +64,9 @@ class DeferredDemo(ctx: KoolContext) {
             maxZoom = 50.0
 
             translation.set(0.0, -11.0, 0.0)
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 if (autoRotate) {
-                    verticalRotation += ctx.deltaT * 3f
+                    verticalRotation += it.deltaT * 3f
                 }
             }
         }
@@ -87,8 +87,8 @@ class DeferredDemo(ctx: KoolContext) {
         +deferredPipeline.renderOutput
         makeLightOverlays()
 
-        onUpdate += { _, ctx ->
-            lights.forEach { it.animate(ctx.deltaT) }
+        onUpdate += { evt ->
+            lights.forEach { it.animate(evt.deltaT) }
         }
     }
 
@@ -122,7 +122,7 @@ class DeferredDemo(ctx: KoolContext) {
             lightVolumeMesh.instances = lightVolInsts
 
             val lightModelMat = Mat4f()
-            onUpdate += { _, _ ->
+            onUpdate += {
                 if (lightPositionMesh.isVisible || lightVolumeMesh.isVisible) {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
@@ -313,11 +313,11 @@ class DeferredDemo(ctx: KoolContext) {
                 }
             }
 
-            onUpdate += { rp, _ ->
+            onUpdate += {
                 val mapSz = 0.26f
-                val scaleX = rp.viewport.width * mapSz
-                val scaleY = scaleX * (rp.viewport.height.toFloat() / rp.viewport.width.toFloat())
-                val margin = rp.viewport.height * 0.05f
+                val scaleX = it.viewport.width * mapSz
+                val scaleY = scaleX * (it.viewport.height.toFloat() / it.viewport.width.toFloat())
+                val margin = it.viewport.height * 0.05f
 
                 setIdentity()
                 translate(margin, margin, 0f)

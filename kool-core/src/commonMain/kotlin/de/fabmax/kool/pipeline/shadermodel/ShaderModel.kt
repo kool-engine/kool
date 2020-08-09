@@ -38,6 +38,7 @@ class ShaderModel(val modelInfo: String = "") {
 
     fun setup(mesh: Mesh, builder: Pipeline.Builder) {
         builder.name = modelInfo
+        stages.values.forEach { it.clear() }
         stages.values.forEach { it.setup() }
         setupAttributes(mesh, builder)
 

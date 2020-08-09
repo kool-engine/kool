@@ -118,7 +118,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
             iblContent = ibl
             nonIblContent = nonIbl
 
-            onUpdate += { _, ctx ->
+            onUpdate += {
                 if (autoRotate) {
                     rotate(-2f * ctx.deltaT, Vec3f.Y_AXIS)
                 }

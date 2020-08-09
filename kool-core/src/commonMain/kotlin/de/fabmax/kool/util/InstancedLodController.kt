@@ -32,8 +32,8 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         lodMesh.parent = this
     }
 
-    override fun update(renderPass: RenderPass, ctx: KoolContext) {
-        super.update(renderPass, ctx)
+    override fun update(updateEvent: RenderPass.UpdateEvent) {
+        super.update(updateEvent)
 
         // clear assigned lods
         for (i in lods.indices) {
@@ -41,10 +41,10 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         }
 
         // assign lod to each instance
-        val cam = renderPass.camera
+        val cam = updateEvent.camera
         for (i in instances.indices) {
             val inst = instances[i]
-            inst.update(this, cam, ctx)
+            inst.update(this, cam, updateEvent.ctx)
 
             if (inst.isInFrustum) {
                 for (j in lods.lastIndex downTo 0) {
@@ -70,16 +70,16 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
                 }
             }
 
-            lod.updateInstances(i, ctx)
-            lod.mesh.update(renderPass, ctx)
+            lod.updateInstances(i, updateEvent.ctx)
+            lod.mesh.update(updateEvent)
         }
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
-        super.collectDrawCommands(renderPass, ctx)
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        super.collectDrawCommands(updateEvent)
 
         for (i in lods.indices) {
-            lods[i].mesh.collectDrawCommands(renderPass, ctx)
+            lods[i].mesh.collectDrawCommands(updateEvent)
         }
     }
 

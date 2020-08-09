@@ -95,7 +95,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
 
         scene.registerDragHandler(this)
 
-        onUpdate += { rp, ctx ->
+        onUpdate += { (rp, ctx) ->
             doCamTransform(rp, ctx)
         }
     }

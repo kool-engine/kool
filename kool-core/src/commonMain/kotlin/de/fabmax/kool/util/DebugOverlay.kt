@@ -69,8 +69,8 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     font.setCustom(UiTheme.DARK_SIMPLE.standardFont(dpi, ctx))
                     textColor.setCustom(root.theme.accentColor)
 
-                    onUpdate += { _, ctx ->
-                        text = "${ctx.fps.toString(1)} fps"
+                    onUpdate += {
+                        text = "${it.ctx.fps.toString(1)} fps"
                     }
                 }
 
@@ -82,8 +82,8 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                         padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                         textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                         text = ""
-                        onUpdate += { _, _ ->
-                            text = ctx.getSysInfos()[i]
+                        onUpdate += {
+                            text = it.ctx.getSysInfos()[i]
                         }
                     }
                     yOri -= 18f
@@ -97,7 +97,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var lastWndW = -1
                     var lastWndH = -1
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
                             lastWndW = ctx.windowWidth
                             lastWndH = ctx.windowHeight
@@ -115,7 +115,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     text = "Up: 00:00.00"
 
                     var updateT = 1f
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         updateT -= ctx.deltaT
                         if (updateT < 0) {
                             updateT += 1f
@@ -147,7 +147,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var last = -1
                     var lastMem = -1.0
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         val num = ctx.engineStats.textureAllocations.size
                         val mem = ctx.engineStats.totalTextureSize.toDouble()
                         if (num != last || mem != lastMem) {
@@ -167,7 +167,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var last = -1
                     var lastMem = -1.0
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         val num = ctx.engineStats.bufferAllocations.size
                         val mem = ctx.engineStats.totalBufferSize.toDouble()
                         if (num != last || mem != lastMem) {
@@ -187,7 +187,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var lastPipelines = -1
                     var lastInstances = -1
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         val numPipelines = ctx.engineStats.pipelines.size
                         val numDrawCmds = ctx.engineStats.numDrawCommands
                         if (numDrawCmds != lastInstances || numPipelines != lastPipelines) {
@@ -206,7 +206,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
                     var lastPrimitives = -1
-                    onUpdate += { _, ctx ->
+                    onUpdate += {
                         val numPrimitives = ctx.engineStats.numPrimitives
                         if (numPrimitives != lastPrimitives) {
                             lastPrimitives = numPrimitives
@@ -242,7 +242,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         graphMesh.shader = UiShader()
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         // set previous bar color according to previous deltaT
         var color = Color.WHITE
         if (prevDeltaT > 0.05f) {
@@ -251,13 +251,13 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
             color = Color.YELLOW
         }
         setCurrentBarColor(color)
-        prevDeltaT = ctx.deltaT
+        prevDeltaT = updateEvent.deltaT
 
         // modify vertices in graph mesh to change line height of current bar
         graphIdx = (graphIdx + 4) % (width.toInt() * 4)
         graphVertex.index = graphIdx
         val y0 = graphVertex.position.y
-        val h = min(ctx.deltaT * 250, height)
+        val h = min(updateEvent.deltaT * 250, height)
         graphVertex.index++
         graphVertex.position.y = y0 + h
         graphVertex.index++
@@ -266,7 +266,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         setCurrentBarColor(Color.MAGENTA)
         graphGeom.hasChanged = true
 
-        super.collectDrawCommands(renderPass, ctx)
+        super.collectDrawCommands(updateEvent)
     }
 
     fun setCurrentBarColor(color: Color) {
