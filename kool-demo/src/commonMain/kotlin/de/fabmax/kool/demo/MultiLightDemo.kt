@@ -11,7 +11,10 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.deferred.*
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.DeferredPipeline
+import de.fabmax.kool.util.deferred.DeferredPipelineConfig
+import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -25,14 +28,13 @@ class MultiLightDemo(ctx: KoolContext) {
     val scenes = mutableListOf<Scene>()
 
     private val mainScene = Scene()
-    private val mrtPass = DeferredMrtPass(mainScene)
-    private lateinit var pbrPass: PbrLightingPass
+    private lateinit var deferredPipeline: DeferredPipeline
+
     private val lights = listOf(
             LightMesh(Color.MD_CYAN),
             LightMesh(Color.MD_RED),
             LightMesh(Color.MD_AMBER),
             LightMesh(Color.MD_GREEN))
-    private val shadowMaps = mutableListOf<ShadowMap>()
     private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private var lightCount = 4
@@ -53,13 +55,10 @@ class MultiLightDemo(ctx: KoolContext) {
     private var modelShader: DeferredPbrShader? = null
 
     init {
-        for (i in lights.indices) {
-            shadowMaps += SimpleShadowMap(mainScene, i, drawNode = mrtPass.content)
-        }
-
         initMainScene(ctx)
         scenes += mainScene
         scenes += menu(ctx)
+        updateLighting()
     }
 
     private fun initMainScene(ctx: KoolContext) {
@@ -80,11 +79,31 @@ class MultiLightDemo(ctx: KoolContext) {
             }
 
             lighting.lights.clear()
-            lights.forEach { +it }
-            updateLighting()
+            lights.forEach {
+                lighting.lights.add(it.light)
+                +it
+            }
         }
 
-        mrtPass.content.apply {
+        val envMaps = EnvironmentHelper.singleColorEnvironment(mainScene, Color(0.15f, 0.15f, 0.15f))
+        val defCfg = DeferredPipelineConfig().apply {
+            isWithEmissive = false
+            isWithAmbientOcclusion = false
+            isWithScreenSpaceReflections = false
+            isWithImageBasedLighting = false
+            isWithScreenSpaceReflections = true
+            useImageBasedLighting(envMaps)
+        }
+        deferredPipeline = DeferredPipeline(mainScene, defCfg)
+
+        mainScene += deferredPipeline.renderOutput
+        mainScene += Skybox(envMaps.reflectionMap, 1f)
+
+        mainScene.onDispose += {
+            noSsrMap.dispose()
+        }
+
+        deferredPipeline.contentGroup.apply {
             ctx.assetMgr.launch {
                 val floorAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 val floorNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
@@ -130,27 +149,12 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
             }
         }
-
-        // setup lighting pass
-        val envMaps = EnvironmentHelper.singleColorEnvironment(mainScene, Color(0.15f, 0.15f, 0.15f))
-        val pbrPassCfg = PbrSceneShader.DeferredPbrConfig().apply {
-            useImageBasedLighting(envMaps)
-            isScrSpcReflections = true
-            shadowMaps += this@MultiLightDemo.shadowMaps
-        }
-        pbrPass = PbrLightingPass(mainScene, mrtPass, pbrPassCfg)
-        mainScene += pbrPass.createOutputQuad()
-        mainScene += Skybox(envMaps.reflectionMap, 1f)
-
-        mainScene.onDispose += {
-            noSsrMap.dispose()
-        }
     }
 
     private fun updateLighting() {
         lights.forEachIndexed { i, light ->
-            if (i < shadowMaps.size) {
-                shadowMaps[i].isShadowMapEnabled = false
+            if (i < deferredPipeline.shadowMaps.size) {
+                deferredPipeline.shadowMaps[i].isShadowMapEnabled = false
             }
             light.disable(mainScene.lighting)
         }
@@ -161,8 +165,8 @@ class MultiLightDemo(ctx: KoolContext) {
             lights[i].setup(pos)
             lights[i].enable(mainScene.lighting)
             pos += step
-            if (i < shadowMaps.size) {
-                shadowMaps[i].isShadowMapEnabled = true
+            if (i < deferredPipeline.shadowMaps.size) {
+                deferredPipeline.shadowMaps[i].isShadowMapEnabled = true
             }
         }
 
@@ -186,12 +190,12 @@ class MultiLightDemo(ctx: KoolContext) {
                         mirrorTexCoordsY()
                     }
                 }
-                shader = ModeledShader.TextureColor(pbrPass.reflectionDenoisePass?.colorTexture)
+                shader = ModeledShader.TextureColor(deferredPipeline.reflectionDenoisePass?.colorTexture)
             }
             onUpdate += { rp, _ ->
                 val screenSz = 0.33f
                 val scaleX = rp.viewport.width * screenSz
-                val scaleY = scaleX * (pbrPass.height.toFloat() / pbrPass.width.toFloat())
+                val scaleY = scaleX * (rp.viewport.height.toFloat() / rp.viewport.width.toFloat())
 
                 setIdentity()
                 val margin = rp.viewport.height * 0.05f
@@ -308,12 +312,12 @@ class MultiLightDemo(ctx: KoolContext) {
                 isEnabled = isScrSpcReflections
                 onClick += { _, _, _ ->
                     isScrSpcReflections = isEnabled
-                    pbrPass.reflectionPass?.isEnabled = isEnabled
-                    pbrPass.reflectionDenoisePass?.isEnabled = isEnabled
+                    deferredPipeline.reflectionPass?.isEnabled = isEnabled
+                    deferredPipeline.reflectionDenoisePass?.isEnabled = isEnabled
                     if (isEnabled) {
-                        pbrPass.sceneShader.scrSpcReflectionMap = pbrPass.reflectionDenoisePass?.colorTexture
+                        deferredPipeline.pbrPass.sceneShader.scrSpcReflectionMap = deferredPipeline.reflectionDenoisePass?.colorTexture
                     } else {
-                        pbrPass.sceneShader.scrSpcReflectionMap = noSsrMap
+                        deferredPipeline.pbrPass.sceneShader.scrSpcReflectionMap = noSsrMap
                     }
                 }
             }
@@ -331,19 +335,19 @@ class MultiLightDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val mapSzVal = label("${pbrPass.reflectionMapSize.toString(1)} x") {
+            val mapSzVal = label("${deferredPipeline.reflectionMapSize.toString(1)} x") {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +mapSzVal
             y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, pbrPass.reflectionMapSize * 10) {
+            +slider("mapSizeSlider", 1f, 10f, deferredPipeline.reflectionMapSize * 10) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
-                    pbrPass.reflectionMapSize = value.roundToInt() / 10f
-                    mapSzVal.text = "${pbrPass.reflectionMapSize.toString(1)} x"
+                    deferredPipeline.reflectionMapSize = value.roundToInt() / 10f
+                    mapSzVal.text = "${deferredPipeline.reflectionMapSize.toString(1)} x"
                 }
             }
             y -= 40f

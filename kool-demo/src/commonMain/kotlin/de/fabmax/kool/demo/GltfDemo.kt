@@ -2,7 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
@@ -10,10 +9,9 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
-import de.fabmax.kool.util.deferred.DeferredMrtPass
 import de.fabmax.kool.util.deferred.DeferredPbrShader
-import de.fabmax.kool.util.deferred.PbrLightingPass
-import de.fabmax.kool.util.deferred.PbrSceneShader
+import de.fabmax.kool.util.deferred.DeferredPipeline
+import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -34,10 +32,10 @@ class GltfDemo(ctx: KoolContext) {
 
     private val foxAnimator = FoxAnimator()
     private val models = Cycler(
-            GltfModel("Coffee Cart", "${Demo.modelBasePath}/CoffeeCart_01.glb",
-                    2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5),
             GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
+            GltfModel("Coffee Cart", "${Demo.modelBasePath}/CoffeeCart_01.glb",
+                    2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5),
             GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
                     20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0),
             GltfModel("Fox", "${Demo.modelBasePath}/fox.glb",
@@ -51,13 +49,6 @@ class GltfDemo(ctx: KoolContext) {
                     0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5)
     )
 
-    private var autoRotate = true
-    private var useDeferredPipeline = true
-    private var isAo = true
-    private var isSsr = true
-    private var animationSpeed = .5f
-    private var animationTime = 0.0
-
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
@@ -68,15 +59,18 @@ class GltfDemo(ctx: KoolContext) {
     private var aoPipelineForward: AoPipeline? = null
     private val contentGroupForward = TransformGroup()
 
-    private val shadowsDeferred = mutableListOf<ShadowMap>()
-    private var aoPipelineDeferred: AoPipeline? = null
+    private lateinit var deferredPipeline: DeferredPipeline
     private val contentGroupDeferred = TransformGroup()
 
-    private var mrtPass: DeferredMrtPass? = null
-    private var pbrPass: PbrLightingPass? = null
-
-    private val noAoMap = SingleColorTexture(Color.WHITE)
-    private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
+    private var animationSpeed = .5f
+    private var animationTime = 0.0
+    private var autoRotate = true
+    private var useDeferredPipeline = true
+    private var isAo = true
+        set(value) {
+            field = value
+            deferredPipeline.isAoEnabled = value
+        }
 
     init {
         models.current.isVisible = true
@@ -105,10 +99,6 @@ class GltfDemo(ctx: KoolContext) {
 
             setupPipelines()
         }
-
-        onDispose += {
-            noSsrMap.dispose()
-        }
     }
 
     private fun setupPipelines() {
@@ -117,33 +107,11 @@ class GltfDemo(ctx: KoolContext) {
 
         contentGroupForward.isVisible = fwdState
         shadowsForward.forEach { it.isShadowMapEnabled = fwdState }
-        aoPipelineForward?.aoPass?.isEnabled = fwdState && isAo
-        aoPipelineForward?.denoisePass?.isEnabled = fwdState && isAo
-        contentGroupForward.setForwardAoMap()
+        aoPipelineForward?.isEnabled = fwdState && isAo
 
         contentGroupDeferred.isVisible = defState
-        shadowsDeferred.forEach { it.isShadowMapEnabled = defState }
-        aoPipelineDeferred?.aoPass?.isEnabled = defState && isAo
-        aoPipelineDeferred?.denoisePass?.isEnabled = defState && isAo
-        mrtPass?.isEnabled = defState
-        pbrPass?.isEnabled = defState
-        pbrPass?.reflectionPass?.isEnabled = defState && isSsr
-        pbrPass?.reflectionDenoisePass?.isEnabled = defState && isSsr
-        pbrPass?.sceneShader?.scrSpcAmbientOcclusionMap = if (isAo) aoPipelineDeferred?.aoMap else noAoMap
-        pbrPass?.sceneShader?.scrSpcReflectionMap = if (isSsr) pbrPass?.reflectionDenoisePass?.colorTexture else noSsrMap
-    }
-
-    private fun Group.setForwardAoMap() {
-        children.forEach { c ->
-            if (c is Group) {
-                c.setForwardAoMap()
-            } else if (c is Mesh) {
-                val shader = c.shader
-                if (shader is PbrShader) {
-                    shader.scrSpcAmbientOcclusionMap = if (isAo) aoPipelineForward?.aoMap else noAoMap
-                }
-            }
-        }
+        deferredPipeline.isEnabled = defState
+        deferredPipeline.isAoEnabled = isAo
     }
 
     private suspend fun Scene.makeForwardContent(ctx: KoolContext) {
@@ -159,33 +127,24 @@ class GltfDemo(ctx: KoolContext) {
     }
 
     private suspend fun Scene.makeDeferredContent(ctx: KoolContext) {
-        val mrtPass = DeferredMrtPass(this, true)
-        aoPipelineDeferred = AoPipeline.createDeferred(this, mrtPass).apply {
+        val defCfg = DeferredPipelineConfig().apply {
+            isWithAmbientOcclusion = true
+            isWithScreenSpaceReflections = true
+            isWithEmissive = true
+            maxGlobalLights = 2
+            useImageBasedLighting(envMaps)
+        }
+        deferredPipeline = DeferredPipeline(this, defCfg)
+        deferredPipeline.aoPipeline?.apply {
             radius = 0.2f
         }
-        shadowsDeferred += listOf(
-                SimpleShadowMap(this, 0, 2048, mrtPass.content),
-                SimpleShadowMap(this, 1, 2048, mrtPass.content))
-
-        mrtPass.content.setupContentGroup(true, ctx)
-
-        // setup lighting pass
-        val cfg = PbrSceneShader.DeferredPbrConfig().apply {
-            useScreenSpaceAmbientOcclusion(aoPipelineDeferred?.aoMap)
-            isScrSpcReflections = true
-            useImageBasedLighting(envMaps)
-            shadowMaps += shadowsDeferred
-        }
-        val pbrPass = PbrLightingPass(this, mrtPass, cfg)
+        deferredPipeline.contentGroup.setupContentGroup(true, ctx)
 
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
             isFrustumChecked = false
-            +pbrPass.createOutputQuad()
+            +deferredPipeline.renderOutput
         }
-
-        this@GltfDemo.mrtPass = mrtPass
-        this@GltfDemo.pbrPass = pbrPass
     }
 
     private fun Scene.setupCamera() {
@@ -370,16 +329,6 @@ class GltfDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
-            +toggleButton("Ambient Occlusion") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = true
-                onStateChange += {
-                    isAo = isEnabled
-                    setupPipelines()
-                }
-            }
-            y -= 35f
             +toggleButton("Deferred Shading") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
@@ -390,12 +339,22 @@ class GltfDemo(ctx: KoolContext) {
                 }
             }
             y -= 35f
+            +toggleButton("Ambient Occlusion") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                isEnabled = true
+                onStateChange += {
+                    isAo = isEnabled
+                    setupPipelines()
+                }
+            }
+            y -= 35f
             +toggleButton("Screen Space Reflections") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = true
                 onStateChange += {
-                    isSsr = isEnabled
+                    deferredPipeline.isSsrEnabled = isEnabled
                     setupPipelines()
                 }
             }
@@ -404,19 +363,19 @@ class GltfDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val mapSzVal = label("0.5 x") {
+            val mapSzVal = label("0.7 x") {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +mapSzVal
             y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, 5f) {
+            +slider("mapSizeSlider", 1f, 10f, 7f) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
                     val sz = value.roundToInt() / 10f
-                    pbrPass?.reflectionMapSize = sz
+                    deferredPipeline.reflectionMapSize = sz
                     mapSzVal.text = "${sz.toString(1)} x"
                 }
             }
@@ -491,11 +450,9 @@ class GltfDemo(ctx: KoolContext) {
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
             ctx.assetMgr.loadGltfFile(assetPath)?.let {
                 val materialCfg = GltfFile.ModelMaterialConfig(
-                        shadowMaps = if (isDeferredShading) shadowsDeferred else shadowsForward,
-                        scrSpcAmbientOcclusionMap = if (isDeferredShading) aoPipelineDeferred?.aoMap else aoPipelineForward?.aoMap,
-                        iblIrradianceMap = envMaps.irradianceMap,
-                        iblReflectionMap = envMaps.reflectionMap,
-                        iblBrdfMap = envMaps.brdfLut,
+                        shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
+                        scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
+                        environmentMaps = envMaps,
                         isDeferredShading = isDeferredShading
                 )
                 val modelCfg = GltfFile.ModelGenerateConfig(

@@ -6,7 +6,9 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.util.Color
 
 class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthComponent: String) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -22,40 +24,95 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
         get() = uRadius.value
         set(value) { uRadius.value = value }
 
-    init {
-        (drawNode as Group).apply {
-            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
+    var clearAndDisable = false
+    private val denoiseMesh: Mesh
+    private val clearMesh: Mesh
 
-                val model = ShaderModel("AoDenoisePass").apply {
-                    val ifTexCoords: StageInterfaceNode
-                    vertexStage {
-                        ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                    }
-                    fragmentStage {
-                        val noisyAo = textureNode("noisyAo")
-                        val depth = textureNode("depth")
-                        val radius = pushConstantNode1f(uRadius)
-                        val blurNd = addNode(BlurNode(noisyAo, depth, depthComponent, stage))
-                        blurNd.inScreenPos = ifTexCoords.output
-                        blurNd.radius = radius.output
-                        colorOutput(blurNd.outColor)
-                    }
+    init {
+        clearColor = Color.BLACK
+
+        denoiseMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            generate {
+                rect {
+                    size.set(1f, 1f)
+                    mirrorTexCoordsY()
                 }
-                shader = ModeledShader(model).apply {
-                    onPipelineCreated += { _, _, _ ->
-                        model.findNode<TextureNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
-                        model.findNode<TextureNode>("depth")!!.sampler.texture = depthTexture
-                    }
+            }
+
+            val model = ShaderModel("AoDenoisePass").apply {
+                val ifTexCoords: StageInterfaceNode
+                vertexStage {
+                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
+                }
+                fragmentStage {
+                    val noisyAo = textureNode("noisyAo")
+                    val depth = textureNode("depth")
+                    val radius = pushConstantNode1f(uRadius)
+                    val blurNd = addNode(BlurNode(noisyAo, depth, depthComponent, stage))
+                    blurNd.inScreenPos = ifTexCoords.output
+                    blurNd.radius = radius.output
+                    colorOutput(blurNd.outColor)
+                }
+            }
+            shader = ModeledShader(model).apply {
+                onPipelineSetup += { builder, _, _ ->
+                    builder.blendMode = BlendMode.DISABLED
+                    builder.depthTest = DepthCompareOp.DISABLED
+                }
+                onPipelineCreated += { _, _, _ ->
+                    model.findNode<TextureNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
+                    model.findNode<TextureNode>("depth")!!.sampler.texture = depthTexture
                 }
             }
         }
+
+        clearMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+            isVisible = false
+            generate {
+                rect {
+                    size.set(1f, 1f)
+                    mirrorTexCoordsY()
+                }
+            }
+
+            val model = ShaderModel("ClearAoDenoisePass").apply {
+                vertexStage {
+                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
+                }
+                fragmentStage {
+                    colorOutput(constVec4f(Color.WHITE))
+                }
+            }
+            shader = ModeledShader(model).apply {
+                onPipelineSetup += { builder, _, _ ->
+                    builder.blendMode = BlendMode.DISABLED
+                    builder.depthTest = DepthCompareOp.DISABLED
+                }
+            }
+        }
+
+        (drawNode as Group).apply {
+            +denoiseMesh
+            +clearMesh
+        }
+    }
+
+    override fun update(ctx: KoolContext) {
+        if (clearAndDisable) {
+            resize(1, 1, ctx)
+            clearAndDisable = false
+            denoiseMesh.isVisible = false
+            clearMesh.isVisible = true
+
+            ctx.runDelayed(1) {
+                isEnabled = false
+                denoiseMesh.isVisible = true
+                clearMesh.isVisible = false
+            }
+        }
+
+        super.update(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -63,7 +120,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
         super.dispose(ctx)
     }
 
-    private inner class BlurNode(val noisyAo: TextureNode, val depth: TextureNode,
+    private class BlurNode(val noisyAo: TextureNode, val depth: TextureNode,
                                  val depthComponent: String, shaderGraph: ShaderGraph) :
             ShaderNode("blurNode", shaderGraph) {
 

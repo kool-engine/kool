@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.util.Color
@@ -65,9 +64,7 @@ class PbrMaterialConfig {
     var metallicMap: Texture? = null
     var occlusionMap: Texture? = null
 
-    var irradianceMap: CubeMapTexture? = null
-    var reflectionMap: CubeMapTexture? = null
-    var brdfLut: Texture? = null
+    var environmentMaps: EnvironmentMaps? = null
 
     var scrSpcAmbientOcclusionMap: Texture? = null
 
@@ -144,15 +141,9 @@ class PbrMaterialConfig {
         isScrSpcAmbientOcclusion = true
     }
 
-    fun useImageBasedLighting(environmentMaps: EnvironmentMaps) {
-        useImageBasedLighting(environmentMaps.irradianceMap, environmentMaps.reflectionMap, environmentMaps.brdfLut)
-    }
-
-    fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {
-        this.irradianceMap = irradianceMap
-        this.reflectionMap = reflectionMap
-        this.brdfLut = brdfLut
-        isImageBasedLighting = irradianceMap != null && reflectionMap != null && brdfLut != null
+    fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
+        this.environmentMaps = environmentMaps
+        isImageBasedLighting = environmentMaps != null
     }
 
     fun requiresTexCoords(): Boolean {

@@ -115,8 +115,9 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
                 for (j in scene.offscreenPasses.indices) {
-                    if (scene.offscreenPasses[j].isEnabled) {
-                        drawOffscreen(scene.offscreenPasses[j])
+                    val pass = scene.offscreenPasses[j]
+                    if (pass.isEnabled) {
+                        drawOffscreen(pass)
                         scene.offscreenPasses[j].afterDraw(ctx)
                     }
                 }

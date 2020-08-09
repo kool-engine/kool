@@ -4,7 +4,6 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.AlphaModeBlend
@@ -18,6 +17,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.animation.*
 import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
@@ -137,9 +137,7 @@ data class GltfFile(
     class ModelMaterialConfig(
             val shadowMaps: List<ShadowMap> = emptyList(),
             val scrSpcAmbientOcclusionMap: Texture? = null,
-            val iblIrradianceMap: CubeMapTexture? = null,
-            val iblReflectionMap: CubeMapTexture? = null,
-            val iblBrdfMap: Texture? = null,
+            val environmentMaps: EnvironmentMaps? = null,
             val isDeferredShading: Boolean = false
     )
 
@@ -575,7 +573,7 @@ data class GltfFile(
                             cfg.materialConfig.let { matCfg ->
                                 shadowMaps += matCfg.shadowMaps
                                 matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
-                                useImageBasedLighting(matCfg.iblIrradianceMap, matCfg.iblReflectionMap, matCfg.iblBrdfMap)
+                                useImageBasedLighting(matCfg.environmentMaps)
                             }
                             cfg.pbrBlock?.invoke(this, p)
 

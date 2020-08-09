@@ -71,17 +71,17 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private var reflectionMapSampler: CubeMapSampler? = null
     private var brdfLutSampler: TextureSampler? = null
 
-    var irradianceMap: CubeMapTexture? = cfg.irradianceMap
+    var irradianceMap: CubeMapTexture? = cfg.environmentMaps?.irradianceMap
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap: CubeMapTexture? = cfg.reflectionMap
+    var reflectionMap: CubeMapTexture? = cfg.environmentMaps?.reflectionMap
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut: Texture? = cfg.brdfLut
+    var brdfLut: Texture? = cfg.environmentMaps?.brdfLut
         set(value) {
             field = value
             brdfLutSampler?.texture = value
@@ -89,13 +89,13 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
     // Screen space AO and Reflection maps
     private var ssaoSampler: TextureSampler? = null
-    var scrSpcAmbientOcclusionMap: Texture? = cfg.scrSpcAmbientOcclusionMap
+    var scrSpcAmbientOcclusionMap: Texture? = null
         set(value) {
             field = value
             ssaoSampler?.texture = value
         }
     private var ssrSampler: TextureSampler? = null
-    var scrSpcReflectionMap: Texture? = cfg.scrSpcReflectionMap
+    var scrSpcReflectionMap: Texture? = null
         set(value) {
             field = value
             ssrSampler?.texture = value
@@ -179,12 +179,15 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
 
-                val lightNode = multiLightNode(cfg.maxLights)
-                cfg.shadowMaps.forEachIndexed { i, map ->
-                    lightNode.inShaodwFacs[i] = when (map) {
-                        is CascadedShadowMap -> deferredCascadedShadoweMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
-                        is SimpleShadowMap -> deferredSimpleShadoweMapNode(map, "depthMap_$i", worldPos).outShadowFac
-                        else -> ShaderNodeIoVar(ModelVar1fConst(1f))
+                var lightNode: LightNode? = null
+                if (cfg.maxLights > 0) {
+                    lightNode = multiLightNode(cfg.maxLights)
+                    cfg.shadowMaps.forEachIndexed { i, map ->
+                        lightNode.inShaodwFacs[i] = when (map) {
+                            is CascadedShadowMap -> deferredCascadedShadoweMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
+                            is SimpleShadowMap -> deferredSimpleShadoweMapNode(map, "depthMap_$i", worldPos).outShadowFac
+                            else -> ShaderNodeIoVar(ModelVar1fConst(1f))
+                        }
                     }
                 }
 
@@ -256,12 +259,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         var albedoMetal: Texture? = null
         var emissive: Texture? = null
 
-        var irradianceMap: CubeMapTexture? = null
-        var reflectionMap: CubeMapTexture? = null
-        var brdfLut: Texture? = null
-
-        var scrSpcAmbientOcclusionMap: Texture? = null
-        var scrSpcReflectionMap: Texture? = null
+        var environmentMaps: EnvironmentMaps? = null
 
         fun useMrtPass(mrtPass: DeferredMrtPass) {
             sceneCamera = mrtPass.camera
@@ -275,25 +273,9 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             }
         }
 
-        fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
-            this.scrSpcAmbientOcclusionMap = ssaoMap
-            isScrSpcAmbientOcclusion = true
-        }
-
-        fun useScreenSpaceReflections(ssrMap: Texture?) {
-            this.scrSpcReflectionMap = ssrMap
-            isScrSpcReflections = true
-        }
-
-        fun useImageBasedLighting(environmentMaps: EnvironmentMaps) {
-            useImageBasedLighting(environmentMaps.irradianceMap, environmentMaps.reflectionMap, environmentMaps.brdfLut)
-        }
-
-        fun useImageBasedLighting(irradianceMap: CubeMapTexture?, reflectionMap: CubeMapTexture?, brdfLut: Texture?) {
-            this.irradianceMap = irradianceMap
-            this.reflectionMap = reflectionMap
-            this.brdfLut = brdfLut
-            isImageBasedLighting = irradianceMap != null && reflectionMap != null && brdfLut != null
+        fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
+            this.environmentMaps = environmentMaps
+            isImageBasedLighting = environmentMaps != null
         }
     }
 }

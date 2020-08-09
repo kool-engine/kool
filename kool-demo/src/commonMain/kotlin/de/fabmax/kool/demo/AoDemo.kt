@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -31,7 +30,6 @@ class AoDemo(ctx: KoolContext) {
 
     private var autoRotate = true
     private var spotLight = true
-    private val noAoMap = SingleColorTexture(Color.WHITE)
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
@@ -60,10 +58,6 @@ class AoDemo(ctx: KoolContext) {
 
         shadows.add(SimpleShadowMap(this, 0, 2048))
         aoPipeline = AoPipeline.createForward(this)
-
-        onDispose += {
-            noAoMap.dispose()
-        }
 
         ctx.assetMgr.launch {
             val envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
@@ -98,14 +92,6 @@ class AoDemo(ctx: KoolContext) {
                     useImageBasedLighting(envMaps)
                 }
                 this.shader = shader
-
-                onUpdate += { _, _ ->
-                    if (aoPipeline.aoPass.isEnabled) {
-                        shader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-                    } else {
-                        shader.scrSpcAmbientOcclusionMap = noAoMap
-                    }
-                }
             }
 
             +textureMesh("ground", isNormalMapped = true) {
@@ -199,14 +185,6 @@ class AoDemo(ctx: KoolContext) {
                     }
                 }
                 this.shader = shader
-
-                onUpdate += { _, _ ->
-                    if (aoPipeline.aoPass.isEnabled) {
-                        shader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-                    } else {
-                        shader.scrSpcAmbientOcclusionMap = noAoMap
-                    }
-                }
             }
 
             this@scene += Skybox(envMaps.reflectionMap, 1f)
@@ -286,7 +264,7 @@ class AoDemo(ctx: KoolContext) {
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 isEnabled = aoPipeline.aoPass.isEnabled
                 onStateChange += {
-                    aoPipeline.setEnabled(isEnabled)
+                    aoPipeline.isEnabled = isEnabled
                 }
             }
             y -= 35f
@@ -383,19 +361,19 @@ class AoDemo(ctx: KoolContext) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
             }
-            val mapSzVal = label("${aoPipeline.size.toString(1)} x") {
+            val mapSzVal = label("${aoPipeline.mapSize.toString(1)} x") {
                 layoutSpec.setOrigin(pcs(75f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
             }
             +mapSzVal
             y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, aoPipeline.size * 10) {
+            +slider("mapSizeSlider", 1f, 10f, aoPipeline.mapSize * 10) {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(35f), full())
                 onValueChanged += {
-                    aoPipeline.size = value.roundToInt() / 10f
-                    mapSzVal.text = "${aoPipeline.size.toString(1)} x"
+                    aoPipeline.mapSize = value.roundToInt() / 10f
+                    mapSzVal.text = "${aoPipeline.mapSize.toString(1)} x"
                 }
             }
 

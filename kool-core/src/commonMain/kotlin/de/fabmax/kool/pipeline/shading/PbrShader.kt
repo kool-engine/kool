@@ -118,17 +118,17 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
     private var reflectionMapSampler: CubeMapSampler? = null
     private var brdfLutSampler: TextureSampler? = null
 
-    var irradianceMap: CubeMapTexture? = cfg.irradianceMap
+    var irradianceMap: CubeMapTexture? = cfg.environmentMaps?.irradianceMap
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap: CubeMapTexture? = cfg.reflectionMap
+    var reflectionMap: CubeMapTexture? = cfg.environmentMaps?.reflectionMap
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut: Texture? = cfg.brdfLut
+    var brdfLut: Texture? = cfg.environmentMaps?.brdfLut
         set(value) {
             field = value
             brdfLutSampler?.texture = value

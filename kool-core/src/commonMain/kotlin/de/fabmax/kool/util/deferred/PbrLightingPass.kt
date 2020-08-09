@@ -9,7 +9,6 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.textureMesh
-import kotlin.math.roundToInt
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -30,10 +29,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
     val sceneShader: PbrSceneShader
 
-    var reflectionMapSize = 0.5f
-    val reflectionPass: ReflectionPass?
-    val reflectionDenoisePass: ReflectionDenoisePass?
-
     init {
         dynamicPointLights.isDynamic = true
         staticPointLights.isDynamic = false
@@ -44,16 +39,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
         scene.addOffscreenPass(this)
         cfg.useMrtPass(mrtPass)
-        if (cfg.isScrSpcReflections) {
-            reflectionPass = ReflectionPass(mrtPass, this)
-            reflectionDenoisePass = ReflectionDenoisePass(reflectionPass, mrtPass.positionAo)
-            scene.addOffscreenPass(reflectionPass)
-            scene.addOffscreenPass(reflectionDenoisePass)
-            cfg.useScreenSpaceReflections(reflectionDenoisePass.colorTexture)
-        } else {
-            reflectionPass = null
-            reflectionDenoisePass = null
-        }
         sceneShader = PbrSceneShader(cfg)
 
         content.apply {
@@ -79,23 +64,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
             if (isEnabled) {
                 for (i in mrtPass.alphaMeshes.indices) {
                     scene.mainRenderPass.drawQueue.addMesh(mrtPass.alphaMeshes[i], ctx)
-                }
-            }
-        }
-        scene.onRenderScene += { ctx ->
-            val mapW = mainRenderPass.viewport.width
-            val mapH = mainRenderPass.viewport.height
-            if (mapW > 0 && mapH > 0 && (mapW != width || mapH != height)) {
-                resize(mapW, mapH, ctx)
-                mrtPass.resize(mapW, mapH, ctx)
-            }
-
-            reflectionPass?.let { rp ->
-                val reflMapW = (mapW * reflectionMapSize).roundToInt()
-                val reflMapH = (mapH * reflectionMapSize).roundToInt()
-                if (reflMapW > 0 && reflMapH > 0 && (reflMapW != rp.width || reflMapH != rp.height)) {
-                    rp.resize(reflMapW, reflMapH, ctx)
-                    reflectionDenoisePass?.resize(reflMapW, reflMapH, ctx)
                 }
             }
         }

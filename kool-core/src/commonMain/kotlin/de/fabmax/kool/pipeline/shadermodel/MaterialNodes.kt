@@ -73,7 +73,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
 /**
  * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
  */
-class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
+class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
         ShaderNode("pbrMaterial", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -167,34 +167,38 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 F0 = vec3(0.04); 
             F0 = mix(F0, albedo, metal);
     
-            vec3 Lo = vec3(0.0);
-            for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
-                // calculate per-light radiance
-                vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
-                vec3 L = normalize(fragToLight);
-                vec3 H = normalize(V + L);
-                vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
-        
-                ${ if (lightBacksides) "N *= sign(dot(N, L));" else "" }
-        
-                // cook-torrance BRDF
-                float NDF = DistributionGGX(N, H, rough); 
-                float G = GeometrySmith(N, V, L, rough);
-                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-                
-                vec3 kS = F;
-                vec3 kD = vec3(1.0) - kS;
-                kD *= 1.0 - metal;
-                
-                vec3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-                vec3 specular = numerator / max(denominator, 0.001);
+            vec3 Lo = vec3(0.0);""")
+
+        if (lightNode != null) {
+            generator.appendMain("""
+                for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
+                    // calculate per-light radiance
+                    vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
+                    vec3 L = normalize(fragToLight);
+                    vec3 H = normalize(V + L);
+                    vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+            
+                    ${if (lightBacksides) "N *= sign(dot(N, L));" else ""}
+            
+                    // cook-torrance BRDF
+                    float NDF = DistributionGGX(N, H, rough); 
+                    float G = GeometrySmith(N, V, L, rough);
+                    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
                     
-                // add to outgoing radiance Lo
-                float NdotL = max(dot(N, L), 0.0);
-                Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
-            }
-            """)
+                    vec3 kS = F;
+                    vec3 kD = vec3(1.0) - kS;
+                    kD *= 1.0 - metal;
+                    
+                    vec3 numerator = NDF * G * F;
+                    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                    vec3 specular = numerator / max(denominator, 0.001);
+                        
+                    // add to outgoing radiance Lo
+                    float NdotL = max(dot(N, L), 0.0);
+                    Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
+                }
+                """)
+        }
 
         if (reflectionMap != null && brdfLut != null) {
             generateFinalIbl(generator, reflectionMap, brdfLut)

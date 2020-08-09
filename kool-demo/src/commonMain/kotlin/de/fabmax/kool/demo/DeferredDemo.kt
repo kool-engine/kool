@@ -5,14 +5,12 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.*
 import kotlin.math.sqrt
 
@@ -26,13 +24,10 @@ class DeferredDemo(ctx: KoolContext) {
     val mainScene: Scene
     val menu: Scene
 
-    private lateinit var aoPipeline: AoPipeline
-    private lateinit var mrtPass: DeferredMrtPass
-    private lateinit var pbrPass: PbrLightingPass
+    private lateinit var deferredPipeline: DeferredPipeline
 
     private lateinit var objects: Mesh
     private lateinit var objectShader: DeferredPbrShader
-    private val noAoMap = SingleColorTexture(Color.WHITE)
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
@@ -79,31 +74,21 @@ class DeferredDemo(ctx: KoolContext) {
         // don't use any global lights
         lighting.lights.clear()
 
-        // setup MRT pass: contains actual scene content
-        mrtPass = DeferredMrtPass(this)
-        mrtPass.makeContent()
-
-        // setup ambient occlusion pass
-        aoPipeline = AoPipeline.createDeferred(this, mrtPass)
-        aoPipeline.intensity = 1.2f
-        aoPipeline.kernelSz = 32
-
-        // setup lighting pass
-        val cfg = PbrSceneShader.DeferredPbrConfig().apply {
-            isScrSpcAmbientOcclusion = true
-            scrSpcAmbientOcclusionMap = aoPipeline.aoMap
+        val defCfg = DeferredPipelineConfig().apply {
+            maxGlobalLights = 0
+            isWithEmissive = false
+            isWithAmbientOcclusion = true
+            isWithScreenSpaceReflections = false
+            isWithImageBasedLighting = false
         }
-        pbrPass = PbrLightingPass(this, mrtPass, cfg)
+        deferredPipeline = DeferredPipeline(this, defCfg)
+        deferredPipeline.contentGroup.makeContent()
 
-        // add the quad displaying the final composed scene image to the main scene
-        +pbrPass.createOutputQuad()
+        +deferredPipeline.renderOutput
         makeLightOverlays()
 
         onUpdate += { _, ctx ->
             lights.forEach { it.animate(ctx.deltaT) }
-        }
-        onDispose += {
-            noAoMap.dispose()
         }
     }
 
@@ -124,7 +109,7 @@ class DeferredDemo(ctx: KoolContext) {
             }
             +lightPositionMesh
 
-            lightVolumeMesh = wireframeMesh(pbrPass.dynamicPointLights.mesh.geometry).apply {
+            lightVolumeMesh = wireframeMesh(deferredPipeline.pbrPass.dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
                 shader = ModeledShader(instancedLightIndicatorModel())
@@ -142,7 +127,7 @@ class DeferredDemo(ctx: KoolContext) {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
                     val srgbColor = MutableColor()
-                    pbrPass.dynamicPointLights.lightInstances.forEach { light ->
+                    deferredPipeline.pbrPass.dynamicPointLights.lightInstances.forEach { light ->
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
 
@@ -168,76 +153,74 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun DeferredMrtPass.makeContent() {
-        content.apply {
-            objects = colorMesh {
-                generate {
-                    val sphereProtos = mutableListOf<IndexedVertexList>()
-                    for (i in 0..10) {
-                        val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
-                        sphereProtos += builder.geometry
-                        builder.apply {
-                            icoSphere {
-                                steps = 3
-                                radius = rand.randomF(0.3f, 0.4f)
-                                center.set(0f, 0.1f + radius, 0f)
-                            }
+    private fun TransformGroup.makeContent() {
+        objects = colorMesh {
+            generate {
+                val sphereProtos = mutableListOf<IndexedVertexList>()
+                for (i in 0..10) {
+                    val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
+                    sphereProtos += builder.geometry
+                    builder.apply {
+                        icoSphere {
+                            steps = 3
+                            radius = rand.randomF(0.3f, 0.4f)
+                            center.set(0f, 0.1f + radius, 0f)
                         }
                     }
+                }
 
-                    for (x in -19..19) {
-                        for (y in -19..19) {
-                            color = Color.WHITE
-                            withTransform {
-                                translate(x.toFloat(), 0f, y.toFloat())
-                                if ((x + 100) % 2 == (y + 100) % 2) {
-                                    cube {
-                                        size.set(rand.randomF(0.6f, 0.8f), rand.randomF(0.6f, 0.95f), rand.randomF(0.6f, 0.8f))
-                                        origin.set(-size.x / 2, 0.1f, -size.z / 2)
-                                    }
-                                } else {
-                                    geometry(sphereProtos[rand.randomI(sphereProtos.indices)])
+                for (x in -19..19) {
+                    for (y in -19..19) {
+                        color = Color.WHITE
+                        withTransform {
+                            translate(x.toFloat(), 0f, y.toFloat())
+                            if ((x + 100) % 2 == (y + 100) % 2) {
+                                cube {
+                                    size.set(rand.randomF(0.6f, 0.8f), rand.randomF(0.6f, 0.95f), rand.randomF(0.6f, 0.8f))
+                                    origin.set(-size.x / 2, 0.1f, -size.z / 2)
                                 }
+                            } else {
+                                geometry(sphereProtos[rand.randomI(sphereProtos.indices)])
                             }
                         }
                     }
                 }
-                val pbrCfg = PbrMaterialConfig().apply {
-                    roughness = 0.15f
-                }
-                objectShader = DeferredPbrShader(pbrCfg)
-                shader = objectShader
             }
-            +objects
+            val pbrCfg = PbrMaterialConfig().apply {
+                roughness = 0.15f
+            }
+            objectShader = DeferredPbrShader(pbrCfg)
+            shader = objectShader
+        }
+        +objects
 
-            +textureMesh(isNormalMapped = true) {
-                generate {
-                    rotate(90f, Vec3f.NEG_X_AXIS)
-                    color = Color.WHITE
-                    rect {
-                        size.set(40f, 40f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
-                        generateTexCoords(30f)
-                    }
+        +textureMesh(isNormalMapped = true) {
+            generate {
+                rotate(90f, Vec3f.NEG_X_AXIS)
+                color = Color.WHITE
+                rect {
+                    size.set(40f, 40f)
+                    origin.set(size.x, size.y, 0f).scale(-0.5f)
+                    generateTexCoords(30f)
                 }
-                val pbrCfg = PbrMaterialConfig().apply {
-                    useAlbedoMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
-                    useNormalMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg")
-                    useRoughnessMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
-                    useMetallicMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-                    useOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
-                }
-                val groundShader = DeferredPbrShader(pbrCfg)
-                shader = groundShader
+            }
+            val pbrCfg = PbrMaterialConfig().apply {
+                useAlbedoMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+                useNormalMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+                useRoughnessMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+                useMetallicMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+                useOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
+            }
+            val groundShader = DeferredPbrShader(pbrCfg)
+            shader = groundShader
 
-                onDispose += {
-                    groundShader.albedoMap?.dispose()
-                    groundShader.occlusionMap?.dispose()
-                    groundShader.normalMap?.dispose()
-                    groundShader.metallicMap?.dispose()
-                    groundShader.roughnessMap?.dispose()
-                    groundShader.displacementMap?.dispose()
-                }
+            onDispose += {
+                groundShader.albedoMap?.dispose()
+                groundShader.occlusionMap?.dispose()
+                groundShader.normalMap?.dispose()
+                groundShader.metallicMap?.dispose()
+                groundShader.roughnessMap?.dispose()
+                groundShader.displacementMap?.dispose()
             }
         }
     }
@@ -258,18 +241,18 @@ class DeferredDemo(ctx: KoolContext) {
 
         if (forced) {
             lights.clear()
-            pbrPass.dynamicPointLights.lightInstances.clear()
+            deferredPipeline.pbrPass.dynamicPointLights.lightInstances.clear()
         } else {
             while (lights.size > lightCount) {
                 lights.removeAt(lights.lastIndex)
-                pbrPass.dynamicPointLights.lightInstances.removeAt(pbrPass.dynamicPointLights.lightInstances.lastIndex)
+                deferredPipeline.pbrPass.dynamicPointLights.lightInstances.removeAt(deferredPipeline.pbrPass.dynamicPointLights.lightInstances.lastIndex)
             }
         }
 
         while (lights.size < lightCount) {
             val grp = lightGroups[rand.randomI(lightGroups.indices)]
             val x = rand.randomI(0 until grp.rows)
-            val light = pbrPass.dynamicPointLights.addPointLight {
+            val light = deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
                 intensity = 1.0f
             }
             val animLight = AnimatedLight(light).apply {
@@ -288,15 +271,6 @@ class DeferredDemo(ctx: KoolContext) {
             it.startColor = it.desiredColor
             it.desiredColor = colorMap.current.getColor(iLight).toLinear()
             it.colorMix = 0f
-        }
-    }
-
-    private fun setAoState(enabled: Boolean) {
-        aoPipeline.setEnabled(enabled)
-        if (enabled) {
-            pbrPass.sceneShader.scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-        } else {
-            pbrPass.sceneShader.scrSpcAmbientOcclusionMap = noAoMap
         }
     }
 
@@ -329,11 +303,11 @@ class DeferredDemo(ctx: KoolContext) {
                     }
 
                     shader = when (i) {
-                        0 -> ModeledShader.TextureColor(mrtPass.albedoMetal, "colorTex", rgbMapColorModel(0f, 1f))
-                        1 -> ModeledShader.TextureColor(mrtPass.normalRoughness, "colorTex", rgbMapColorModel(1f, 0.5f))
-                        2 -> ModeledShader.TextureColor(mrtPass.positionAo, "colorTex", rgbMapColorModel(10f, 0.05f))
-                        3 -> ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", AoDemo.aoMapColorModel())
-                        4 -> MetalRoughAoTex(mrtPass)
+                        0 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.albedoMetal, "colorTex", rgbMapColorModel(0f, 1f))
+                        1 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.normalRoughness, "colorTex", rgbMapColorModel(1f, 0.5f))
+                        2 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.positionAo, "colorTex", rgbMapColorModel(10f, 0.05f))
+                        3 -> ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, "colorTex", AoDemo.aoMapColorModel())
+                        4 -> MetalRoughAoTex(deferredPipeline.mrtPass)
                         else -> ModeledShader.StaticColor(Color.MAGENTA)
                     }
                 }
@@ -461,9 +435,9 @@ class DeferredDemo(ctx: KoolContext) {
             +toggleButton("Ambient Occlusion") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = aoPipeline.aoPass.isEnabled
+                isEnabled = deferredPipeline.aoPipeline?.aoPass?.isEnabled ?: false
                 onStateChange += {
-                    setAoState(isEnabled)
+                    deferredPipeline.isAoEnabled = isEnabled
                 }
             }
 

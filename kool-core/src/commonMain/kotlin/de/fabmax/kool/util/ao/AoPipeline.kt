@@ -12,7 +12,7 @@ abstract class AoPipeline {
     abstract val denoisePass: AoDenoisePass
 
     // ao map size relative to screen resolution
-    var size = 0.5f
+    var mapSize = 0.5f
 
     val aoMap: Texture
         get() = denoisePass.colorTexture!!
@@ -40,9 +40,21 @@ abstract class AoPipeline {
         get() = aoPass.kernelSz
         set(value) { aoPass.kernelSz = value }
 
-    open fun setEnabled(enabled: Boolean) {
-        aoPass.isEnabled = enabled
-        denoisePass.isEnabled = enabled
+    var isEnabled = true
+        set(value) {
+            field = value
+            updateEnabled()
+        }
+
+    protected open fun updateEnabled() {
+        aoPass.isEnabled = isEnabled
+
+        if (isEnabled) {
+            denoisePass.isEnabled = true
+            denoisePass.clearAndDisable = false
+        } else {
+            denoisePass.clearAndDisable = true
+        }
     }
 
     class ForwardAoPipeline(scene: Scene) : AoPipeline() {
@@ -72,22 +84,22 @@ abstract class AoPipeline {
             scene.addOffscreenPass(denoisePass)
 
             scene.onRenderScene += { ctx ->
-                val mapW = (mainRenderPass.viewport.width * this@ForwardAoPipeline.size).toInt()
-                val mapH = (mainRenderPass.viewport.height * this@ForwardAoPipeline.size).toInt()
+                val mapW = (mainRenderPass.viewport.width * mapSize).toInt()
+                val mapH = (mainRenderPass.viewport.height * mapSize).toInt()
 
-                if (mapW > 0 && mapH > 0 && (mapW != mapWidth || mapH != mapHeight)) {
-                    mapWidth = mapW
-                    mapHeight = mapH
+                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
                     depthPass.resize(mapW, mapH, ctx)
                     aoPass.resize(mapW, mapH, ctx)
+                }
+                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
                     denoisePass.resize(mapW, mapH, ctx)
                 }
             }
         }
 
-        override fun setEnabled(enabled: Boolean) {
-            super.setEnabled(enabled)
-            depthPass.isEnabled = enabled
+        override fun updateEnabled() {
+            super.updateEnabled()
+            depthPass.isEnabled = isEnabled
         }
     }
 
@@ -108,13 +120,13 @@ abstract class AoPipeline {
             scene.addOffscreenPass(denoisePass)
 
             scene.onRenderScene += { ctx ->
-                val mapW = (mrtPass.width * this@DeferredAoPipeline.size).toInt()
-                val mapH = (mrtPass.height * this@DeferredAoPipeline.size).toInt()
+                val mapW = (mrtPass.width * mapSize).toInt()
+                val mapH = (mrtPass.height * mapSize).toInt()
 
-                if (mapW > 0 && mapH > 0 && (mapW != mapWidth || mapH != mapHeight)) {
-                    mapWidth = mapW
-                    mapHeight = mapH
+                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
                     aoPass.resize(mapW, mapH, ctx)
+                }
+                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
                     denoisePass.resize(mapW, mapH, ctx)
                 }
             }

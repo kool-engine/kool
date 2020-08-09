@@ -468,7 +468,7 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun pbrMaterialNode(lightNode: LightNode, reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
+        fun pbrMaterialNode(lightNode: LightNode?, reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
                             albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
                             fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null): PbrMaterialNode {
             val mat = addNode(PbrMaterialNode(lightNode, reflectionMap, brdfLut, stage))

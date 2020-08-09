@@ -5,6 +5,7 @@ import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
@@ -57,7 +58,8 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
         viewport.set(0, 0, getMipWidth(mipLevel), getMipHeight(mipLevel))
     }
 
-    fun resize(width: Int, height: Int, ctx: KoolContext) {
+    open fun resize(width: Int, height: Int, ctx: KoolContext) {
+        logD { "OffscreenPass $name resized to $width x $height" }
         if (config.width == 0 && config.height == 0) {
             applySize(width, height, ctx)
             applyMipViewport(0)
