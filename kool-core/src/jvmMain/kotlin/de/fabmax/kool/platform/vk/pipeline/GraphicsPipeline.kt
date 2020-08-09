@@ -26,7 +26,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     init {
         memStack {
             if (pipeline.layout.descriptorSets.size != 1) {
-                TODO("For now only one descriptor set layout is supported")
+                TODO("For now only one descriptor set layout is supported (there are ${pipeline.layout.descriptorSets.size}), render pass: ${koolRenderPass.name}")
             }
             descriptorSetLayout = createDescriptorSetLayout(pipeline.layout.descriptorSets[0])
             descriptorPool = createDescriptorPool(pipeline.layout.descriptorSets[0])

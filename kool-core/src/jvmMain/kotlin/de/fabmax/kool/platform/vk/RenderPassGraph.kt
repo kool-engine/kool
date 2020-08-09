@@ -82,7 +82,7 @@ class RenderPassGraph {
                     }
 
                 }
-                throw IllegalStateException("Circular render pass dependency")
+                break
             } else {
                 addedPasses += added
                 remainingPasses -= added

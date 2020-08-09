@@ -78,6 +78,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
 
             val model = ShaderModel("ClearAoDenoisePass").apply {
                 vertexStage {
+                    // fixme: currently Vulkan pipeline creation fails if a shader has no uniform inputs, add mvpNode as a dummy
+                    mvpNode()
                     positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                 }
                 fragmentStage {
@@ -105,7 +107,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true
 
-            ctx.runDelayed(1) {
+            ctx.runDelayed(5) {
                 isEnabled = false
                 denoiseMesh.isVisible = true
                 clearMesh.isVisible = false

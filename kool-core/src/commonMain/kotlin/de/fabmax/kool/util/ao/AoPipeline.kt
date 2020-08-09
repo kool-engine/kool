@@ -77,7 +77,7 @@ abstract class AoPipeline {
             aoPass = AmbientOcclusionPass(proxyCamera, AoSetup.forward(depthPass), mapWidth, mapHeight)
             aoPass.dependsOn(depthPass)
             denoisePass = AoDenoisePass(aoPass, depthPass.colorTexture!!, "a")
-            denoisePass.dependsOn(aoPass)
+            //denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
             scene.addOffscreenPass(aoPass)
@@ -114,7 +114,7 @@ abstract class AoPipeline {
             aoPass = AmbientOcclusionPass(mrtPass.camera, AoSetup.deferred(mrtPass), mapWidth, mapHeight)
             aoPass.dependsOn(mrtPass)
             denoisePass = AoDenoisePass(aoPass, mrtPass.positionAo, "z")
-            denoisePass.dependsOn(aoPass)
+            //denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(aoPass)
             scene.addOffscreenPass(denoisePass)
