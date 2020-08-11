@@ -3019,7 +3019,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function KoolContext$Companion() {
     KoolContext$Companion_instance = this;
-    this.KOOL_VERSION = '0.6.0-200811.2303';
+    this.KOOL_VERSION = '0.6.0-200812.0032';
   }
   KoolContext$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -12994,6 +12994,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inRoughness = new ShaderNodeIoVar(new ModelVar1fConst(0.1));
     this.inAmbientOccl = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.inIrradiance = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.03)));
+    this.inReflectionStrength = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.inReflectionColor = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inReflectionWeight = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('pbrMat_outColor'), this);
@@ -13027,7 +13028,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendMain_61zpoe$('\n' + '            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.prototype.generateFinalIbl_0 = function (generator, reflectionMap, brdfLut) {
-    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '            prefilteredColor = mix(prefilteredColor, clamp(' + this.inReflectionColor.ref3f() + ', 0.0, 5.0), ' + this.inReflectionWeight.ref1f() + ');' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 reflection = specular * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a + reflection;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
+    generator.appendMain_61zpoe$('\n' + '            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);' + '\n' + '            vec3 kS = F;' + '\n' + '            vec3 kD = 1.0 - kS;' + '\n' + '            kD *= 1.0 - metal;' + '\n' + '            vec3 diffuse = ' + this.inIrradiance.ref3f() + ' * albedo;' + '\n' + '\n' + '            // sample reflection map' + '\n' + '            vec3 R = reflect(-V, N);' + '\n' + '            const float MAX_REFLECTION_LOD = 6.0;' + '\n' + '            vec3 prefilteredColor = ' + generator.sampleTexture2d_buzeal$(reflectionMap.name, 'R', 'rough * MAX_REFLECTION_LOD') + '.rgb;' + '\n' + '            prefilteredColor = mix(prefilteredColor, clamp(' + this.inReflectionColor.ref3f() + ', 0.0, 5.0), ' + this.inReflectionWeight.ref1f() + ');' + '\n' + '\n' + '            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);' + '\n' + '            vec2 envBRDF = ' + generator.sampleTexture2d_buzeal$(brdfLut.name, 'brdfUv') + '.rg;' + '\n' + '            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);' + '\n' + '            vec3 ambient = (kD * diffuse) * ' + this.inAmbientOccl.ref1f() + ';' + '\n' + '            vec3 reflection = specular * ' + this.inAmbientOccl.ref1f() + ' * ' + this.inReflectionStrength.ref1f() + ';' + '\n' + '            vec3 color = (ambient + Lo + ' + this.inEmissive.ref3f() + ') * ' + this.inAlbedo.ref4f() + '.a + reflection;' + '\n' + '            ' + this.outColor.declare() + ' = vec4(color, ' + this.inAlbedo.ref4f() + '.a);' + '\n' + '        ');
   };
   PbrMaterialNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -17167,6 +17168,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.normalStrength = 1.0;
     this.displacementStrength = 0.1;
     this.occlusionStrength = 1.0;
+    this.reflectionStrength = 1.0;
     this.albedoMap = null;
     this.emissiveMap = null;
     this.normalMap = null;
@@ -17340,10 +17342,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uMetallic_0 = null;
     this.uAlbedo_0 = null;
     this.uEmissive_0 = null;
+    this.uReflectionStrength_0 = null;
     this.metallic_3y0qh7$_0 = cfg.metallic;
     this.roughness_6ti3qe$_0 = cfg.roughness;
     this.albedo_iz6fyn$_0 = cfg.albedo;
     this.emissive_ybel2l$_0 = cfg.emissive;
+    this.reflectionStrength_itx8hq$_0 = cfg.reflectionStrength;
     this.albedoSampler_0 = null;
     this.emissiveSampler_0 = null;
     this.normalSampler_0 = null;
@@ -17424,6 +17428,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tmp$, tmp$_0, tmp$_1;
       this.emissive_ybel2l$_0 = value;
       (tmp$_1 = (tmp$_0 = (tmp$ = this.uEmissive_0) != null ? tmp$.uniform : null) != null ? tmp$_0.value : null) != null ? tmp$_1.set_czzhhz$(value) : null;
+    }
+  });
+  Object.defineProperty(PbrShader.prototype, 'reflectionStrength', {
+    get: function () {
+      return this.reflectionStrength_itx8hq$_0;
+    },
+    set: function (value) {
+      var tmp$, tmp$_0;
+      this.reflectionStrength_itx8hq$_0 = value;
+      (tmp$_0 = (tmp$ = this.uReflectionStrength_0) != null ? tmp$.uniform : null) != null ? (tmp$_0.value = value) : null;
     }
   });
   Object.defineProperty(PbrShader.prototype, 'albedoMap', {
@@ -17582,26 +17596,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ModeledShader.prototype.onPipelineSetup_x08qbx$.call(this, builder, mesh, ctx);
   };
   PbrShader.prototype.onPipelineCreated_vp7qhs$ = function (pipeline, mesh, ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25, tmp$_26, tmp$_27, tmp$_28, tmp$_29, tmp$_30, tmp$_31, tmp$_32, tmp$_33, tmp$_34, tmp$_35, tmp$_36;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23, tmp$_24, tmp$_25, tmp$_26, tmp$_27, tmp$_28, tmp$_29, tmp$_30, tmp$_31, tmp$_32, tmp$_33, tmp$_34, tmp$_35, tmp$_36, tmp$_37, tmp$_38;
     var $this = this.model;
     var name = 'uMetallic';
     var stage;
     var findNode_3klnlw$result;
     findNode_3klnlw$break: do {
       stage = ShaderStage.ALL;
-      var tmp$_37;
-      tmp$_37 = $this.stages.values.iterator();
-      while (tmp$_37.hasNext()) {
-        var element = tmp$_37.next();
+      var tmp$_39;
+      tmp$_39 = $this.stages.values.iterator();
+      while (tmp$_39.hasNext()) {
+        var element = tmp$_39.next();
         if ((element.stage.mask & stage.mask) !== 0) {
-          var tmp$_38;
+          var tmp$_40;
           var $receiver = element.nodes;
           var firstOrNull$result;
           firstOrNull$break: do {
-            var tmp$_39;
-            tmp$_39 = $receiver.iterator();
-            while (tmp$_39.hasNext()) {
-              var element_0 = tmp$_39.next();
+            var tmp$_41;
+            tmp$_41 = $receiver.iterator();
+            while (tmp$_41.hasNext()) {
+              var element_0 = tmp$_41.next();
               if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
                 firstOrNull$result = element_0;
                 break firstOrNull$break;
@@ -17609,7 +17623,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$_38 = firstOrNull$result) == null || Kotlin.isType(tmp$_38, PushConstantNode1f) ? tmp$_38 : throwCCE();
+          var node = (tmp$_40 = firstOrNull$result) == null || Kotlin.isType(tmp$_40, PushConstantNode1f) ? tmp$_40 : throwCCE();
           if (node != null) {
             findNode_3klnlw$result = node;
             break findNode_3klnlw$break;
@@ -17626,19 +17640,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_0;
     findNode_3klnlw$break: do {
       stage_0 = ShaderStage.ALL;
-      var tmp$_40;
-      tmp$_40 = $this_0.stages.values.iterator();
-      while (tmp$_40.hasNext()) {
-        var element_1 = tmp$_40.next();
+      var tmp$_42;
+      tmp$_42 = $this_0.stages.values.iterator();
+      while (tmp$_42.hasNext()) {
+        var element_1 = tmp$_42.next();
         if ((element_1.stage.mask & stage_0.mask) !== 0) {
-          var tmp$_41;
+          var tmp$_43;
           var $receiver_0 = element_1.nodes;
           var firstOrNull$result_0;
           firstOrNull$break: do {
-            var tmp$_42;
-            tmp$_42 = $receiver_0.iterator();
-            while (tmp$_42.hasNext()) {
-              var element_2 = tmp$_42.next();
+            var tmp$_44;
+            tmp$_44 = $receiver_0.iterator();
+            while (tmp$_44.hasNext()) {
+              var element_2 = tmp$_44.next();
               if (equals(element_2.name, name_0) && Kotlin.isType(element_2, PushConstantNode1f)) {
                 firstOrNull$result_0 = element_2;
                 break firstOrNull$break;
@@ -17646,7 +17660,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_0 = null;
           }
            while (false);
-          var node_0 = (tmp$_41 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_41, PushConstantNode1f) ? tmp$_41 : throwCCE();
+          var node_0 = (tmp$_43 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_43, PushConstantNode1f) ? tmp$_43 : throwCCE();
           if (node_0 != null) {
             findNode_3klnlw$result_0 = node_0;
             break findNode_3klnlw$break;
@@ -17662,19 +17676,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_1;
     findNode_3klnlw$break: do {
       stage_1 = ShaderStage.ALL;
-      var tmp$_43;
-      tmp$_43 = $this_1.stages.values.iterator();
-      while (tmp$_43.hasNext()) {
-        var element_3 = tmp$_43.next();
+      var tmp$_45;
+      tmp$_45 = $this_1.stages.values.iterator();
+      while (tmp$_45.hasNext()) {
+        var element_3 = tmp$_45.next();
         if ((element_3.stage.mask & stage_1.mask) !== 0) {
-          var tmp$_44;
+          var tmp$_46;
           var $receiver_1 = element_3.nodes;
           var firstOrNull$result_1;
           firstOrNull$break: do {
-            var tmp$_45;
-            tmp$_45 = $receiver_1.iterator();
-            while (tmp$_45.hasNext()) {
-              var element_4 = tmp$_45.next();
+            var tmp$_47;
+            tmp$_47 = $receiver_1.iterator();
+            while (tmp$_47.hasNext()) {
+              var element_4 = tmp$_47.next();
               if (equals(element_4.name, 'uAlbedo') && Kotlin.isType(element_4, PushConstantNodeColor)) {
                 firstOrNull$result_1 = element_4;
                 break firstOrNull$break;
@@ -17682,7 +17696,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_1 = null;
           }
            while (false);
-          var node_1 = (tmp$_44 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_44, PushConstantNodeColor) ? tmp$_44 : throwCCE();
+          var node_1 = (tmp$_46 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_46, PushConstantNodeColor) ? tmp$_46 : throwCCE();
           if (node_1 != null) {
             findNode_3klnlw$result_1 = node_1;
             break findNode_3klnlw$break;
@@ -17698,19 +17712,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var findNode_3klnlw$result_2;
     findNode_3klnlw$break: do {
       stage_2 = ShaderStage.ALL;
-      var tmp$_46;
-      tmp$_46 = $this_2.stages.values.iterator();
-      while (tmp$_46.hasNext()) {
-        var element_5 = tmp$_46.next();
+      var tmp$_48;
+      tmp$_48 = $this_2.stages.values.iterator();
+      while (tmp$_48.hasNext()) {
+        var element_5 = tmp$_48.next();
         if ((element_5.stage.mask & stage_2.mask) !== 0) {
-          var tmp$_47;
+          var tmp$_49;
           var $receiver_2 = element_5.nodes;
           var firstOrNull$result_2;
           firstOrNull$break: do {
-            var tmp$_48;
-            tmp$_48 = $receiver_2.iterator();
-            while (tmp$_48.hasNext()) {
-              var element_6 = tmp$_48.next();
+            var tmp$_50;
+            tmp$_50 = $receiver_2.iterator();
+            while (tmp$_50.hasNext()) {
+              var element_6 = tmp$_50.next();
               if (equals(element_6.name, name_1) && Kotlin.isType(element_6, PushConstantNodeColor)) {
                 firstOrNull$result_2 = element_6;
                 break firstOrNull$break;
@@ -17718,7 +17732,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_2 = null;
           }
            while (false);
-          var node_2 = (tmp$_47 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_47, PushConstantNodeColor) ? tmp$_47 : throwCCE();
+          var node_2 = (tmp$_49 = firstOrNull$result_2) == null || Kotlin.isType(tmp$_49, PushConstantNodeColor) ? tmp$_49 : throwCCE();
           if (node_2 != null) {
             findNode_3klnlw$result_2 = node_2;
             break findNode_3klnlw$break;
@@ -17729,32 +17743,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uEmissive_0 = findNode_3klnlw$result_2;
     (tmp$_6 = (tmp$_5 = (tmp$_4 = this.uEmissive_0) != null ? tmp$_4.uniform : null) != null ? tmp$_5.value : null) != null ? tmp$_6.set_czzhhz$(this.emissive) : null;
     var $this_3 = this.model;
-    var name_2 = 'uAmbient';
+    var name_2 = 'uReflectionStrength';
     var stage_3;
     var findNode_3klnlw$result_3;
     findNode_3klnlw$break: do {
       stage_3 = ShaderStage.ALL;
-      var tmp$_49;
-      tmp$_49 = $this_3.stages.values.iterator();
-      while (tmp$_49.hasNext()) {
-        var element_7 = tmp$_49.next();
+      var tmp$_51;
+      tmp$_51 = $this_3.stages.values.iterator();
+      while (tmp$_51.hasNext()) {
+        var element_7 = tmp$_51.next();
         if ((element_7.stage.mask & stage_3.mask) !== 0) {
-          var tmp$_50;
+          var tmp$_52;
           var $receiver_3 = element_7.nodes;
           var firstOrNull$result_3;
           firstOrNull$break: do {
-            var tmp$_51;
-            tmp$_51 = $receiver_3.iterator();
-            while (tmp$_51.hasNext()) {
-              var element_8 = tmp$_51.next();
-              if (equals(element_8.name, name_2) && Kotlin.isType(element_8, PushConstantNodeColor)) {
+            var tmp$_53;
+            tmp$_53 = $receiver_3.iterator();
+            while (tmp$_53.hasNext()) {
+              var element_8 = tmp$_53.next();
+              if (equals(element_8.name, name_2) && Kotlin.isType(element_8, PushConstantNode1f)) {
                 firstOrNull$result_3 = element_8;
                 break firstOrNull$break;
               }}
             firstOrNull$result_3 = null;
           }
            while (false);
-          var node_3 = (tmp$_50 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_50, PushConstantNodeColor) ? tmp$_50 : throwCCE();
+          var node_3 = (tmp$_52 = firstOrNull$result_3) == null || Kotlin.isType(tmp$_52, PushConstantNode1f) ? tmp$_52 : throwCCE();
           if (node_3 != null) {
             findNode_3klnlw$result_3 = node_3;
             break findNode_3klnlw$break;
@@ -17762,106 +17776,105 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_3 = null;
     }
      while (false);
-    this.uAmbient_0 = findNode_3klnlw$result_3;
-    (tmp$_9 = (tmp$_8 = (tmp$_7 = this.uAmbient_0) != null ? tmp$_7.uniform : null) != null ? tmp$_8.value : null) != null ? tmp$_9.set_czzhhz$(this.ambient) : null;
+    this.uReflectionStrength_0 = findNode_3klnlw$result_3;
+    (tmp$_8 = (tmp$_7 = this.uReflectionStrength_0) != null ? tmp$_7.uniform : null) != null ? (tmp$_8.value = this.reflectionStrength) : null;
+    var $this_4 = this.model;
+    var name_3 = 'uAmbient';
+    var stage_4;
+    var findNode_3klnlw$result_4;
+    findNode_3klnlw$break: do {
+      stage_4 = ShaderStage.ALL;
+      var tmp$_54;
+      tmp$_54 = $this_4.stages.values.iterator();
+      while (tmp$_54.hasNext()) {
+        var element_9 = tmp$_54.next();
+        if ((element_9.stage.mask & stage_4.mask) !== 0) {
+          var tmp$_55;
+          var $receiver_4 = element_9.nodes;
+          var firstOrNull$result_4;
+          firstOrNull$break: do {
+            var tmp$_56;
+            tmp$_56 = $receiver_4.iterator();
+            while (tmp$_56.hasNext()) {
+              var element_10 = tmp$_56.next();
+              if (equals(element_10.name, name_3) && Kotlin.isType(element_10, PushConstantNodeColor)) {
+                firstOrNull$result_4 = element_10;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_4 = null;
+          }
+           while (false);
+          var node_4 = (tmp$_55 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_55, PushConstantNodeColor) ? tmp$_55 : throwCCE();
+          if (node_4 != null) {
+            findNode_3klnlw$result_4 = node_4;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_4 = null;
+    }
+     while (false);
+    this.uAmbient_0 = findNode_3klnlw$result_4;
+    (tmp$_11 = (tmp$_10 = (tmp$_9 = this.uAmbient_0) != null ? tmp$_9.uniform : null) != null ? tmp$_10.value : null) != null ? tmp$_11.set_czzhhz$(this.ambient) : null;
     if (this.isReceivingShadow_0) {
-      tmp$_10 = this.depthSamplers_0;
-      loop_label: for (var i = 0; i !== tmp$_10.length; ++i) {
-        var tmp$_52;
-        var $this_4 = this.model;
-        var name_3 = 'depthMap_' + i;
-        var stage_4;
-        var findNode_3klnlw$result_4;
+      tmp$_12 = this.depthSamplers_0;
+      loop_label: for (var i = 0; i !== tmp$_12.length; ++i) {
+        var tmp$_57;
+        var $this_5 = this.model;
+        var name_4 = 'depthMap_' + i;
+        var stage_5;
+        var findNode_3klnlw$result_5;
         findNode_3klnlw$break: do {
-          stage_4 = ShaderStage.ALL;
-          var tmp$_53;
-          tmp$_53 = $this_4.stages.values.iterator();
-          while (tmp$_53.hasNext()) {
-            var element_9 = tmp$_53.next();
-            if ((element_9.stage.mask & stage_4.mask) !== 0) {
-              var tmp$_54;
-              var $receiver_4 = element_9.nodes;
-              var firstOrNull$result_4;
+          stage_5 = ShaderStage.ALL;
+          var tmp$_58;
+          tmp$_58 = $this_5.stages.values.iterator();
+          while (tmp$_58.hasNext()) {
+            var element_11 = tmp$_58.next();
+            if ((element_11.stage.mask & stage_5.mask) !== 0) {
+              var tmp$_59;
+              var $receiver_5 = element_11.nodes;
+              var firstOrNull$result_5;
               firstOrNull$break: do {
-                var tmp$_55;
-                tmp$_55 = $receiver_4.iterator();
-                while (tmp$_55.hasNext()) {
-                  var element_10 = tmp$_55.next();
-                  if (equals(element_10.name, name_3) && Kotlin.isType(element_10, TextureNode)) {
-                    firstOrNull$result_4 = element_10;
+                var tmp$_60;
+                tmp$_60 = $receiver_5.iterator();
+                while (tmp$_60.hasNext()) {
+                  var element_12 = tmp$_60.next();
+                  if (equals(element_12.name, name_4) && Kotlin.isType(element_12, TextureNode)) {
+                    firstOrNull$result_5 = element_12;
                     break firstOrNull$break;
                   }}
-                firstOrNull$result_4 = null;
+                firstOrNull$result_5 = null;
               }
                while (false);
-              var node_4 = (tmp$_54 = firstOrNull$result_4) == null || Kotlin.isType(tmp$_54, TextureNode) ? tmp$_54 : throwCCE();
-              if (node_4 != null) {
-                findNode_3klnlw$result_4 = node_4;
+              var node_5 = (tmp$_59 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_59, TextureNode) ? tmp$_59 : throwCCE();
+              if (node_5 != null) {
+                findNode_3klnlw$result_5 = node_5;
                 break findNode_3klnlw$break;
               }}}
-          findNode_3klnlw$result_4 = null;
+          findNode_3klnlw$result_5 = null;
         }
          while (false);
-        var sampler = (tmp$_52 = findNode_3klnlw$result_4) != null ? tmp$_52.sampler : null;
+        var sampler = (tmp$_57 = findNode_3klnlw$result_5) != null ? tmp$_57.sampler : null;
         this.depthSamplers_0[i] = sampler;
         this.shadowMaps_0[i].setupSampler_s70oj3$(sampler);
       }
-    }var $this_5 = this.model;
-    var name_4 = 'irradianceMap';
-    var stage_5;
-    var findNode_3klnlw$result_5;
-    findNode_3klnlw$break: do {
-      stage_5 = ShaderStage.ALL;
-      var tmp$_56;
-      tmp$_56 = $this_5.stages.values.iterator();
-      while (tmp$_56.hasNext()) {
-        var element_11 = tmp$_56.next();
-        if ((element_11.stage.mask & stage_5.mask) !== 0) {
-          var tmp$_57;
-          var $receiver_5 = element_11.nodes;
-          var firstOrNull$result_5;
-          firstOrNull$break: do {
-            var tmp$_58;
-            tmp$_58 = $receiver_5.iterator();
-            while (tmp$_58.hasNext()) {
-              var element_12 = tmp$_58.next();
-              if (equals(element_12.name, name_4) && Kotlin.isType(element_12, CubeMapNode)) {
-                firstOrNull$result_5 = element_12;
-                break firstOrNull$break;
-              }}
-            firstOrNull$result_5 = null;
-          }
-           while (false);
-          var node_5 = (tmp$_57 = firstOrNull$result_5) == null || Kotlin.isType(tmp$_57, CubeMapNode) ? tmp$_57 : throwCCE();
-          if (node_5 != null) {
-            findNode_3klnlw$result_5 = node_5;
-            break findNode_3klnlw$break;
-          }}}
-      findNode_3klnlw$result_5 = null;
-    }
-     while (false);
-    this.irradianceMapSampler_0 = (tmp$_11 = findNode_3klnlw$result_5) != null ? tmp$_11.sampler : null;
-    if ((tmp$_12 = this.irradianceMapSampler_0) != null) {
-      tmp$_12.texture = this.irradianceMap;
     }var $this_6 = this.model;
-    var name_5 = 'reflectionMap';
+    var name_5 = 'irradianceMap';
     var stage_6;
     var findNode_3klnlw$result_6;
     findNode_3klnlw$break: do {
       stage_6 = ShaderStage.ALL;
-      var tmp$_59;
-      tmp$_59 = $this_6.stages.values.iterator();
-      while (tmp$_59.hasNext()) {
-        var element_13 = tmp$_59.next();
+      var tmp$_61;
+      tmp$_61 = $this_6.stages.values.iterator();
+      while (tmp$_61.hasNext()) {
+        var element_13 = tmp$_61.next();
         if ((element_13.stage.mask & stage_6.mask) !== 0) {
-          var tmp$_60;
+          var tmp$_62;
           var $receiver_6 = element_13.nodes;
           var firstOrNull$result_6;
           firstOrNull$break: do {
-            var tmp$_61;
-            tmp$_61 = $receiver_6.iterator();
-            while (tmp$_61.hasNext()) {
-              var element_14 = tmp$_61.next();
+            var tmp$_63;
+            tmp$_63 = $receiver_6.iterator();
+            while (tmp$_63.hasNext()) {
+              var element_14 = tmp$_63.next();
               if (equals(element_14.name, name_5) && Kotlin.isType(element_14, CubeMapNode)) {
                 firstOrNull$result_6 = element_14;
                 break firstOrNull$break;
@@ -17869,7 +17882,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_6 = null;
           }
            while (false);
-          var node_6 = (tmp$_60 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_60, CubeMapNode) ? tmp$_60 : throwCCE();
+          var node_6 = (tmp$_62 = firstOrNull$result_6) == null || Kotlin.isType(tmp$_62, CubeMapNode) ? tmp$_62 : throwCCE();
           if (node_6 != null) {
             findNode_3klnlw$result_6 = node_6;
             break findNode_3klnlw$break;
@@ -17877,35 +17890,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_6 = null;
     }
      while (false);
-    this.reflectionMapSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
-    if ((tmp$_14 = this.reflectionMapSampler_0) != null) {
-      tmp$_14.texture = this.reflectionMap;
+    this.irradianceMapSampler_0 = (tmp$_13 = findNode_3klnlw$result_6) != null ? tmp$_13.sampler : null;
+    if ((tmp$_14 = this.irradianceMapSampler_0) != null) {
+      tmp$_14.texture = this.irradianceMap;
     }var $this_7 = this.model;
+    var name_6 = 'reflectionMap';
     var stage_7;
     var findNode_3klnlw$result_7;
     findNode_3klnlw$break: do {
       stage_7 = ShaderStage.ALL;
-      var tmp$_62;
-      tmp$_62 = $this_7.stages.values.iterator();
-      while (tmp$_62.hasNext()) {
-        var element_15 = tmp$_62.next();
+      var tmp$_64;
+      tmp$_64 = $this_7.stages.values.iterator();
+      while (tmp$_64.hasNext()) {
+        var element_15 = tmp$_64.next();
         if ((element_15.stage.mask & stage_7.mask) !== 0) {
-          var tmp$_63;
+          var tmp$_65;
           var $receiver_7 = element_15.nodes;
           var firstOrNull$result_7;
           firstOrNull$break: do {
-            var tmp$_64;
-            tmp$_64 = $receiver_7.iterator();
-            while (tmp$_64.hasNext()) {
-              var element_16 = tmp$_64.next();
-              if (equals(element_16.name, 'brdfLut') && Kotlin.isType(element_16, TextureNode)) {
+            var tmp$_66;
+            tmp$_66 = $receiver_7.iterator();
+            while (tmp$_66.hasNext()) {
+              var element_16 = tmp$_66.next();
+              if (equals(element_16.name, name_6) && Kotlin.isType(element_16, CubeMapNode)) {
                 firstOrNull$result_7 = element_16;
                 break firstOrNull$break;
               }}
             firstOrNull$result_7 = null;
           }
            while (false);
-          var node_7 = (tmp$_63 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_63, TextureNode) ? tmp$_63 : throwCCE();
+          var node_7 = (tmp$_65 = firstOrNull$result_7) == null || Kotlin.isType(tmp$_65, CubeMapNode) ? tmp$_65 : throwCCE();
           if (node_7 != null) {
             findNode_3klnlw$result_7 = node_7;
             break findNode_3klnlw$break;
@@ -17913,35 +17927,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_7 = null;
     }
      while (false);
-    this.brdfLutSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
-    if ((tmp$_16 = this.brdfLutSampler_0) != null) {
-      tmp$_16.texture = this.brdfLut;
+    this.reflectionMapSampler_0 = (tmp$_15 = findNode_3klnlw$result_7) != null ? tmp$_15.sampler : null;
+    if ((tmp$_16 = this.reflectionMapSampler_0) != null) {
+      tmp$_16.texture = this.reflectionMap;
     }var $this_8 = this.model;
     var stage_8;
     var findNode_3klnlw$result_8;
     findNode_3klnlw$break: do {
       stage_8 = ShaderStage.ALL;
-      var tmp$_65;
-      tmp$_65 = $this_8.stages.values.iterator();
-      while (tmp$_65.hasNext()) {
-        var element_17 = tmp$_65.next();
+      var tmp$_67;
+      tmp$_67 = $this_8.stages.values.iterator();
+      while (tmp$_67.hasNext()) {
+        var element_17 = tmp$_67.next();
         if ((element_17.stage.mask & stage_8.mask) !== 0) {
-          var tmp$_66;
+          var tmp$_68;
           var $receiver_8 = element_17.nodes;
           var firstOrNull$result_8;
           firstOrNull$break: do {
-            var tmp$_67;
-            tmp$_67 = $receiver_8.iterator();
-            while (tmp$_67.hasNext()) {
-              var element_18 = tmp$_67.next();
-              if (equals(element_18.name, 'ssaoMap') && Kotlin.isType(element_18, TextureNode)) {
+            var tmp$_69;
+            tmp$_69 = $receiver_8.iterator();
+            while (tmp$_69.hasNext()) {
+              var element_18 = tmp$_69.next();
+              if (equals(element_18.name, 'brdfLut') && Kotlin.isType(element_18, TextureNode)) {
                 firstOrNull$result_8 = element_18;
                 break firstOrNull$break;
               }}
             firstOrNull$result_8 = null;
           }
            while (false);
-          var node_8 = (tmp$_66 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_66, TextureNode) ? tmp$_66 : throwCCE();
+          var node_8 = (tmp$_68 = firstOrNull$result_8) == null || Kotlin.isType(tmp$_68, TextureNode) ? tmp$_68 : throwCCE();
           if (node_8 != null) {
             findNode_3klnlw$result_8 = node_8;
             break findNode_3klnlw$break;
@@ -17949,36 +17963,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_8 = null;
     }
      while (false);
-    this.ssaoSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
-    if ((tmp$_18 = this.ssaoSampler_0) != null) {
-      tmp$_18.texture = this.scrSpcAmbientOcclusionMap;
+    this.brdfLutSampler_0 = (tmp$_17 = findNode_3klnlw$result_8) != null ? tmp$_17.sampler : null;
+    if ((tmp$_18 = this.brdfLutSampler_0) != null) {
+      tmp$_18.texture = this.brdfLut;
     }var $this_9 = this.model;
-    var name_6 = 'uMaterialThickness';
     var stage_9;
     var findNode_3klnlw$result_9;
     findNode_3klnlw$break: do {
       stage_9 = ShaderStage.ALL;
-      var tmp$_68;
-      tmp$_68 = $this_9.stages.values.iterator();
-      while (tmp$_68.hasNext()) {
-        var element_19 = tmp$_68.next();
+      var tmp$_70;
+      tmp$_70 = $this_9.stages.values.iterator();
+      while (tmp$_70.hasNext()) {
+        var element_19 = tmp$_70.next();
         if ((element_19.stage.mask & stage_9.mask) !== 0) {
-          var tmp$_69;
+          var tmp$_71;
           var $receiver_9 = element_19.nodes;
           var firstOrNull$result_9;
           firstOrNull$break: do {
-            var tmp$_70;
-            tmp$_70 = $receiver_9.iterator();
-            while (tmp$_70.hasNext()) {
-              var element_20 = tmp$_70.next();
-              if (equals(element_20.name, name_6) && Kotlin.isType(element_20, PushConstantNode1f)) {
+            var tmp$_72;
+            tmp$_72 = $receiver_9.iterator();
+            while (tmp$_72.hasNext()) {
+              var element_20 = tmp$_72.next();
+              if (equals(element_20.name, 'ssaoMap') && Kotlin.isType(element_20, TextureNode)) {
                 firstOrNull$result_9 = element_20;
                 break firstOrNull$break;
               }}
             firstOrNull$result_9 = null;
           }
            while (false);
-          var node_9 = (tmp$_69 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_69, PushConstantNode1f) ? tmp$_69 : throwCCE();
+          var node_9 = (tmp$_71 = firstOrNull$result_9) == null || Kotlin.isType(tmp$_71, TextureNode) ? tmp$_71 : throwCCE();
           if (node_9 != null) {
             findNode_3klnlw$result_9 = node_9;
             break findNode_3klnlw$break;
@@ -17986,36 +17999,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_9 = null;
     }
      while (false);
-    this.uMaterialThickness_0 = findNode_3klnlw$result_9;
-    if ((tmp$_19 = this.uMaterialThickness_0) != null) {
-      tmp$_19.uniform.value = this.materialThickness;
+    this.ssaoSampler_0 = (tmp$_19 = findNode_3klnlw$result_9) != null ? tmp$_19.sampler : null;
+    if ((tmp$_20 = this.ssaoSampler_0) != null) {
+      tmp$_20.texture = this.scrSpcAmbientOcclusionMap;
     }var $this_10 = this.model;
-    var name_7 = 'tRefractionColor';
+    var name_7 = 'uMaterialThickness';
     var stage_10;
     var findNode_3klnlw$result_10;
     findNode_3klnlw$break: do {
       stage_10 = ShaderStage.ALL;
-      var tmp$_71;
-      tmp$_71 = $this_10.stages.values.iterator();
-      while (tmp$_71.hasNext()) {
-        var element_21 = tmp$_71.next();
+      var tmp$_73;
+      tmp$_73 = $this_10.stages.values.iterator();
+      while (tmp$_73.hasNext()) {
+        var element_21 = tmp$_73.next();
         if ((element_21.stage.mask & stage_10.mask) !== 0) {
-          var tmp$_72;
+          var tmp$_74;
           var $receiver_10 = element_21.nodes;
           var firstOrNull$result_10;
           firstOrNull$break: do {
-            var tmp$_73;
-            tmp$_73 = $receiver_10.iterator();
-            while (tmp$_73.hasNext()) {
-              var element_22 = tmp$_73.next();
-              if (equals(element_22.name, name_7) && Kotlin.isType(element_22, TextureNode)) {
+            var tmp$_75;
+            tmp$_75 = $receiver_10.iterator();
+            while (tmp$_75.hasNext()) {
+              var element_22 = tmp$_75.next();
+              if (equals(element_22.name, name_7) && Kotlin.isType(element_22, PushConstantNode1f)) {
                 firstOrNull$result_10 = element_22;
                 break firstOrNull$break;
               }}
             firstOrNull$result_10 = null;
           }
            while (false);
-          var node_10 = (tmp$_72 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_72, TextureNode) ? tmp$_72 : throwCCE();
+          var node_10 = (tmp$_74 = firstOrNull$result_10) == null || Kotlin.isType(tmp$_74, PushConstantNode1f) ? tmp$_74 : throwCCE();
           if (node_10 != null) {
             findNode_3klnlw$result_10 = node_10;
             break findNode_3klnlw$break;
@@ -18023,35 +18036,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_10 = null;
     }
      while (false);
-    this.refractionColorSampler_0 = (tmp$_20 = findNode_3klnlw$result_10) != null ? tmp$_20.sampler : null;
-    if ((tmp$_21 = this.refractionColorSampler_0) != null) {
-      tmp$_21.texture = this.refractionColorMap;
+    this.uMaterialThickness_0 = findNode_3klnlw$result_10;
+    if ((tmp$_21 = this.uMaterialThickness_0) != null) {
+      tmp$_21.uniform.value = this.materialThickness;
     }var $this_11 = this.model;
+    var name_8 = 'tRefractionColor';
     var stage_11;
     var findNode_3klnlw$result_11;
     findNode_3klnlw$break: do {
       stage_11 = ShaderStage.ALL;
-      var tmp$_74;
-      tmp$_74 = $this_11.stages.values.iterator();
-      while (tmp$_74.hasNext()) {
-        var element_23 = tmp$_74.next();
+      var tmp$_76;
+      tmp$_76 = $this_11.stages.values.iterator();
+      while (tmp$_76.hasNext()) {
+        var element_23 = tmp$_76.next();
         if ((element_23.stage.mask & stage_11.mask) !== 0) {
-          var tmp$_75;
+          var tmp$_77;
           var $receiver_11 = element_23.nodes;
           var firstOrNull$result_11;
           firstOrNull$break: do {
-            var tmp$_76;
-            tmp$_76 = $receiver_11.iterator();
-            while (tmp$_76.hasNext()) {
-              var element_24 = tmp$_76.next();
-              if (equals(element_24.name, 'tAlbedo') && Kotlin.isType(element_24, TextureNode)) {
+            var tmp$_78;
+            tmp$_78 = $receiver_11.iterator();
+            while (tmp$_78.hasNext()) {
+              var element_24 = tmp$_78.next();
+              if (equals(element_24.name, name_8) && Kotlin.isType(element_24, TextureNode)) {
                 firstOrNull$result_11 = element_24;
                 break firstOrNull$break;
               }}
             firstOrNull$result_11 = null;
           }
            while (false);
-          var node_11 = (tmp$_75 = firstOrNull$result_11) == null || Kotlin.isType(tmp$_75, TextureNode) ? tmp$_75 : throwCCE();
+          var node_11 = (tmp$_77 = firstOrNull$result_11) == null || Kotlin.isType(tmp$_77, TextureNode) ? tmp$_77 : throwCCE();
           if (node_11 != null) {
             findNode_3klnlw$result_11 = node_11;
             break findNode_3klnlw$break;
@@ -18059,36 +18073,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_11 = null;
     }
      while (false);
-    this.albedoSampler_0 = (tmp$_22 = findNode_3klnlw$result_11) != null ? tmp$_22.sampler : null;
-    if ((tmp$_23 = this.albedoSampler_0) != null) {
-      tmp$_23.texture = this.albedoMap;
+    this.refractionColorSampler_0 = (tmp$_22 = findNode_3klnlw$result_11) != null ? tmp$_22.sampler : null;
+    if ((tmp$_23 = this.refractionColorSampler_0) != null) {
+      tmp$_23.texture = this.refractionColorMap;
     }var $this_12 = this.model;
-    var name_8 = 'tEmissive';
     var stage_12;
     var findNode_3klnlw$result_12;
     findNode_3klnlw$break: do {
       stage_12 = ShaderStage.ALL;
-      var tmp$_77;
-      tmp$_77 = $this_12.stages.values.iterator();
-      while (tmp$_77.hasNext()) {
-        var element_25 = tmp$_77.next();
+      var tmp$_79;
+      tmp$_79 = $this_12.stages.values.iterator();
+      while (tmp$_79.hasNext()) {
+        var element_25 = tmp$_79.next();
         if ((element_25.stage.mask & stage_12.mask) !== 0) {
-          var tmp$_78;
+          var tmp$_80;
           var $receiver_12 = element_25.nodes;
           var firstOrNull$result_12;
           firstOrNull$break: do {
-            var tmp$_79;
-            tmp$_79 = $receiver_12.iterator();
-            while (tmp$_79.hasNext()) {
-              var element_26 = tmp$_79.next();
-              if (equals(element_26.name, name_8) && Kotlin.isType(element_26, TextureNode)) {
+            var tmp$_81;
+            tmp$_81 = $receiver_12.iterator();
+            while (tmp$_81.hasNext()) {
+              var element_26 = tmp$_81.next();
+              if (equals(element_26.name, 'tAlbedo') && Kotlin.isType(element_26, TextureNode)) {
                 firstOrNull$result_12 = element_26;
                 break firstOrNull$break;
               }}
             firstOrNull$result_12 = null;
           }
            while (false);
-          var node_12 = (tmp$_78 = firstOrNull$result_12) == null || Kotlin.isType(tmp$_78, TextureNode) ? tmp$_78 : throwCCE();
+          var node_12 = (tmp$_80 = firstOrNull$result_12) == null || Kotlin.isType(tmp$_80, TextureNode) ? tmp$_80 : throwCCE();
           if (node_12 != null) {
             findNode_3klnlw$result_12 = node_12;
             break findNode_3klnlw$break;
@@ -18096,35 +18109,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_12 = null;
     }
      while (false);
-    this.emissiveSampler_0 = (tmp$_24 = findNode_3klnlw$result_12) != null ? tmp$_24.sampler : null;
-    if ((tmp$_25 = this.emissiveSampler_0) != null) {
-      tmp$_25.texture = this.emissiveMap;
+    this.albedoSampler_0 = (tmp$_24 = findNode_3klnlw$result_12) != null ? tmp$_24.sampler : null;
+    if ((tmp$_25 = this.albedoSampler_0) != null) {
+      tmp$_25.texture = this.albedoMap;
     }var $this_13 = this.model;
+    var name_9 = 'tEmissive';
     var stage_13;
     var findNode_3klnlw$result_13;
     findNode_3klnlw$break: do {
       stage_13 = ShaderStage.ALL;
-      var tmp$_80;
-      tmp$_80 = $this_13.stages.values.iterator();
-      while (tmp$_80.hasNext()) {
-        var element_27 = tmp$_80.next();
+      var tmp$_82;
+      tmp$_82 = $this_13.stages.values.iterator();
+      while (tmp$_82.hasNext()) {
+        var element_27 = tmp$_82.next();
         if ((element_27.stage.mask & stage_13.mask) !== 0) {
-          var tmp$_81;
+          var tmp$_83;
           var $receiver_13 = element_27.nodes;
           var firstOrNull$result_13;
           firstOrNull$break: do {
-            var tmp$_82;
-            tmp$_82 = $receiver_13.iterator();
-            while (tmp$_82.hasNext()) {
-              var element_28 = tmp$_82.next();
-              if (equals(element_28.name, 'tNormal') && Kotlin.isType(element_28, TextureNode)) {
+            var tmp$_84;
+            tmp$_84 = $receiver_13.iterator();
+            while (tmp$_84.hasNext()) {
+              var element_28 = tmp$_84.next();
+              if (equals(element_28.name, name_9) && Kotlin.isType(element_28, TextureNode)) {
                 firstOrNull$result_13 = element_28;
                 break firstOrNull$break;
               }}
             firstOrNull$result_13 = null;
           }
            while (false);
-          var node_13 = (tmp$_81 = firstOrNull$result_13) == null || Kotlin.isType(tmp$_81, TextureNode) ? tmp$_81 : throwCCE();
+          var node_13 = (tmp$_83 = firstOrNull$result_13) == null || Kotlin.isType(tmp$_83, TextureNode) ? tmp$_83 : throwCCE();
           if (node_13 != null) {
             findNode_3klnlw$result_13 = node_13;
             break findNode_3klnlw$break;
@@ -18132,36 +18146,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_13 = null;
     }
      while (false);
-    this.normalSampler_0 = (tmp$_26 = findNode_3klnlw$result_13) != null ? tmp$_26.sampler : null;
-    if ((tmp$_27 = this.normalSampler_0) != null) {
-      tmp$_27.texture = this.normalMap;
+    this.emissiveSampler_0 = (tmp$_26 = findNode_3klnlw$result_13) != null ? tmp$_26.sampler : null;
+    if ((tmp$_27 = this.emissiveSampler_0) != null) {
+      tmp$_27.texture = this.emissiveMap;
     }var $this_14 = this.model;
-    var name_9 = this.metallicTexName_0;
     var stage_14;
     var findNode_3klnlw$result_14;
     findNode_3klnlw$break: do {
       stage_14 = ShaderStage.ALL;
-      var tmp$_83;
-      tmp$_83 = $this_14.stages.values.iterator();
-      while (tmp$_83.hasNext()) {
-        var element_29 = tmp$_83.next();
+      var tmp$_85;
+      tmp$_85 = $this_14.stages.values.iterator();
+      while (tmp$_85.hasNext()) {
+        var element_29 = tmp$_85.next();
         if ((element_29.stage.mask & stage_14.mask) !== 0) {
-          var tmp$_84;
+          var tmp$_86;
           var $receiver_14 = element_29.nodes;
           var firstOrNull$result_14;
           firstOrNull$break: do {
-            var tmp$_85;
-            tmp$_85 = $receiver_14.iterator();
-            while (tmp$_85.hasNext()) {
-              var element_30 = tmp$_85.next();
-              if (equals(element_30.name, name_9) && Kotlin.isType(element_30, TextureNode)) {
+            var tmp$_87;
+            tmp$_87 = $receiver_14.iterator();
+            while (tmp$_87.hasNext()) {
+              var element_30 = tmp$_87.next();
+              if (equals(element_30.name, 'tNormal') && Kotlin.isType(element_30, TextureNode)) {
                 firstOrNull$result_14 = element_30;
                 break firstOrNull$break;
               }}
             firstOrNull$result_14 = null;
           }
            while (false);
-          var node_14 = (tmp$_84 = firstOrNull$result_14) == null || Kotlin.isType(tmp$_84, TextureNode) ? tmp$_84 : throwCCE();
+          var node_14 = (tmp$_86 = firstOrNull$result_14) == null || Kotlin.isType(tmp$_86, TextureNode) ? tmp$_86 : throwCCE();
           if (node_14 != null) {
             findNode_3klnlw$result_14 = node_14;
             break findNode_3klnlw$break;
@@ -18169,28 +18182,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_14 = null;
     }
      while (false);
-    this.metallicSampler_0 = (tmp$_28 = findNode_3klnlw$result_14) != null ? tmp$_28.sampler : null;
-    if ((tmp$_29 = this.metallicSampler_0) != null) {
-      tmp$_29.texture = this.metallicMap;
+    this.normalSampler_0 = (tmp$_28 = findNode_3klnlw$result_14) != null ? tmp$_28.sampler : null;
+    if ((tmp$_29 = this.normalSampler_0) != null) {
+      tmp$_29.texture = this.normalMap;
     }var $this_15 = this.model;
-    var name_10 = this.roughnessTexName_0;
+    var name_10 = this.metallicTexName_0;
     var stage_15;
     var findNode_3klnlw$result_15;
     findNode_3klnlw$break: do {
       stage_15 = ShaderStage.ALL;
-      var tmp$_86;
-      tmp$_86 = $this_15.stages.values.iterator();
-      while (tmp$_86.hasNext()) {
-        var element_31 = tmp$_86.next();
+      var tmp$_88;
+      tmp$_88 = $this_15.stages.values.iterator();
+      while (tmp$_88.hasNext()) {
+        var element_31 = tmp$_88.next();
         if ((element_31.stage.mask & stage_15.mask) !== 0) {
-          var tmp$_87;
+          var tmp$_89;
           var $receiver_15 = element_31.nodes;
           var firstOrNull$result_15;
           firstOrNull$break: do {
-            var tmp$_88;
-            tmp$_88 = $receiver_15.iterator();
-            while (tmp$_88.hasNext()) {
-              var element_32 = tmp$_88.next();
+            var tmp$_90;
+            tmp$_90 = $receiver_15.iterator();
+            while (tmp$_90.hasNext()) {
+              var element_32 = tmp$_90.next();
               if (equals(element_32.name, name_10) && Kotlin.isType(element_32, TextureNode)) {
                 firstOrNull$result_15 = element_32;
                 break firstOrNull$break;
@@ -18198,7 +18211,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_15 = null;
           }
            while (false);
-          var node_15 = (tmp$_87 = firstOrNull$result_15) == null || Kotlin.isType(tmp$_87, TextureNode) ? tmp$_87 : throwCCE();
+          var node_15 = (tmp$_89 = firstOrNull$result_15) == null || Kotlin.isType(tmp$_89, TextureNode) ? tmp$_89 : throwCCE();
           if (node_15 != null) {
             findNode_3klnlw$result_15 = node_15;
             break findNode_3klnlw$break;
@@ -18206,28 +18219,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_15 = null;
     }
      while (false);
-    this.roughnessSampler_0 = (tmp$_30 = findNode_3klnlw$result_15) != null ? tmp$_30.sampler : null;
-    if ((tmp$_31 = this.roughnessSampler_0) != null) {
-      tmp$_31.texture = this.roughnessMap;
+    this.metallicSampler_0 = (tmp$_30 = findNode_3klnlw$result_15) != null ? tmp$_30.sampler : null;
+    if ((tmp$_31 = this.metallicSampler_0) != null) {
+      tmp$_31.texture = this.metallicMap;
     }var $this_16 = this.model;
-    var name_11 = this.occlusionTexName_0;
+    var name_11 = this.roughnessTexName_0;
     var stage_16;
     var findNode_3klnlw$result_16;
     findNode_3klnlw$break: do {
       stage_16 = ShaderStage.ALL;
-      var tmp$_89;
-      tmp$_89 = $this_16.stages.values.iterator();
-      while (tmp$_89.hasNext()) {
-        var element_33 = tmp$_89.next();
+      var tmp$_91;
+      tmp$_91 = $this_16.stages.values.iterator();
+      while (tmp$_91.hasNext()) {
+        var element_33 = tmp$_91.next();
         if ((element_33.stage.mask & stage_16.mask) !== 0) {
-          var tmp$_90;
+          var tmp$_92;
           var $receiver_16 = element_33.nodes;
           var firstOrNull$result_16;
           firstOrNull$break: do {
-            var tmp$_91;
-            tmp$_91 = $receiver_16.iterator();
-            while (tmp$_91.hasNext()) {
-              var element_34 = tmp$_91.next();
+            var tmp$_93;
+            tmp$_93 = $receiver_16.iterator();
+            while (tmp$_93.hasNext()) {
+              var element_34 = tmp$_93.next();
               if (equals(element_34.name, name_11) && Kotlin.isType(element_34, TextureNode)) {
                 firstOrNull$result_16 = element_34;
                 break firstOrNull$break;
@@ -18235,7 +18248,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_16 = null;
           }
            while (false);
-          var node_16 = (tmp$_90 = firstOrNull$result_16) == null || Kotlin.isType(tmp$_90, TextureNode) ? tmp$_90 : throwCCE();
+          var node_16 = (tmp$_92 = firstOrNull$result_16) == null || Kotlin.isType(tmp$_92, TextureNode) ? tmp$_92 : throwCCE();
           if (node_16 != null) {
             findNode_3klnlw$result_16 = node_16;
             break findNode_3klnlw$break;
@@ -18243,28 +18256,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_16 = null;
     }
      while (false);
-    this.occlusionSampler_0 = (tmp$_32 = findNode_3klnlw$result_16) != null ? tmp$_32.sampler : null;
-    if ((tmp$_33 = this.occlusionSampler_0) != null) {
-      tmp$_33.texture = this.occlusionMap;
+    this.roughnessSampler_0 = (tmp$_32 = findNode_3klnlw$result_16) != null ? tmp$_32.sampler : null;
+    if ((tmp$_33 = this.roughnessSampler_0) != null) {
+      tmp$_33.texture = this.roughnessMap;
     }var $this_17 = this.model;
-    var name_12 = 'tDisplacement';
+    var name_12 = this.occlusionTexName_0;
     var stage_17;
     var findNode_3klnlw$result_17;
     findNode_3klnlw$break: do {
       stage_17 = ShaderStage.ALL;
-      var tmp$_92;
-      tmp$_92 = $this_17.stages.values.iterator();
-      while (tmp$_92.hasNext()) {
-        var element_35 = tmp$_92.next();
+      var tmp$_94;
+      tmp$_94 = $this_17.stages.values.iterator();
+      while (tmp$_94.hasNext()) {
+        var element_35 = tmp$_94.next();
         if ((element_35.stage.mask & stage_17.mask) !== 0) {
-          var tmp$_93;
+          var tmp$_95;
           var $receiver_17 = element_35.nodes;
           var firstOrNull$result_17;
           firstOrNull$break: do {
-            var tmp$_94;
-            tmp$_94 = $receiver_17.iterator();
-            while (tmp$_94.hasNext()) {
-              var element_36 = tmp$_94.next();
+            var tmp$_96;
+            tmp$_96 = $receiver_17.iterator();
+            while (tmp$_96.hasNext()) {
+              var element_36 = tmp$_96.next();
               if (equals(element_36.name, name_12) && Kotlin.isType(element_36, TextureNode)) {
                 firstOrNull$result_17 = element_36;
                 break firstOrNull$break;
@@ -18272,7 +18285,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result_17 = null;
           }
            while (false);
-          var node_17 = (tmp$_93 = firstOrNull$result_17) == null || Kotlin.isType(tmp$_93, TextureNode) ? tmp$_93 : throwCCE();
+          var node_17 = (tmp$_95 = firstOrNull$result_17) == null || Kotlin.isType(tmp$_95, TextureNode) ? tmp$_95 : throwCCE();
           if (node_17 != null) {
             findNode_3klnlw$result_17 = node_17;
             break findNode_3klnlw$break;
@@ -18280,36 +18293,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_17 = null;
     }
      while (false);
-    this.displacementSampler_0 = (tmp$_34 = findNode_3klnlw$result_17) != null ? tmp$_34.sampler : null;
-    if ((tmp$_35 = this.displacementSampler_0) != null) {
-      tmp$_35.texture = this.displacementMap;
+    this.occlusionSampler_0 = (tmp$_34 = findNode_3klnlw$result_17) != null ? tmp$_34.sampler : null;
+    if ((tmp$_35 = this.occlusionSampler_0) != null) {
+      tmp$_35.texture = this.occlusionMap;
     }var $this_18 = this.model;
-    var name_13 = 'uDispStrength';
+    var name_13 = 'tDisplacement';
     var stage_18;
     var findNode_3klnlw$result_18;
     findNode_3klnlw$break: do {
       stage_18 = ShaderStage.ALL;
-      var tmp$_95;
-      tmp$_95 = $this_18.stages.values.iterator();
-      while (tmp$_95.hasNext()) {
-        var element_37 = tmp$_95.next();
+      var tmp$_97;
+      tmp$_97 = $this_18.stages.values.iterator();
+      while (tmp$_97.hasNext()) {
+        var element_37 = tmp$_97.next();
         if ((element_37.stage.mask & stage_18.mask) !== 0) {
-          var tmp$_96;
+          var tmp$_98;
           var $receiver_18 = element_37.nodes;
           var firstOrNull$result_18;
           firstOrNull$break: do {
-            var tmp$_97;
-            tmp$_97 = $receiver_18.iterator();
-            while (tmp$_97.hasNext()) {
-              var element_38 = tmp$_97.next();
-              if (equals(element_38.name, name_13) && Kotlin.isType(element_38, PushConstantNode1f)) {
+            var tmp$_99;
+            tmp$_99 = $receiver_18.iterator();
+            while (tmp$_99.hasNext()) {
+              var element_38 = tmp$_99.next();
+              if (equals(element_38.name, name_13) && Kotlin.isType(element_38, TextureNode)) {
                 firstOrNull$result_18 = element_38;
                 break firstOrNull$break;
               }}
             firstOrNull$result_18 = null;
           }
            while (false);
-          var node_18 = (tmp$_96 = firstOrNull$result_18) == null || Kotlin.isType(tmp$_96, PushConstantNode1f) ? tmp$_96 : throwCCE();
+          var node_18 = (tmp$_98 = firstOrNull$result_18) == null || Kotlin.isType(tmp$_98, TextureNode) ? tmp$_98 : throwCCE();
           if (node_18 != null) {
             findNode_3klnlw$result_18 = node_18;
             break findNode_3klnlw$break;
@@ -18317,9 +18330,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       findNode_3klnlw$result_18 = null;
     }
      while (false);
-    this.uDispStrength_0 = findNode_3klnlw$result_18;
-    if ((tmp$_36 = this.uDispStrength_0) != null) {
-      tmp$_36.uniform.value = this.displacementStrength;
+    this.displacementSampler_0 = (tmp$_36 = findNode_3klnlw$result_18) != null ? tmp$_36.sampler : null;
+    if ((tmp$_37 = this.displacementSampler_0) != null) {
+      tmp$_37.texture = this.displacementMap;
+    }var $this_19 = this.model;
+    var name_14 = 'uDispStrength';
+    var stage_19;
+    var findNode_3klnlw$result_19;
+    findNode_3klnlw$break: do {
+      stage_19 = ShaderStage.ALL;
+      var tmp$_100;
+      tmp$_100 = $this_19.stages.values.iterator();
+      while (tmp$_100.hasNext()) {
+        var element_39 = tmp$_100.next();
+        if ((element_39.stage.mask & stage_19.mask) !== 0) {
+          var tmp$_101;
+          var $receiver_19 = element_39.nodes;
+          var firstOrNull$result_19;
+          firstOrNull$break: do {
+            var tmp$_102;
+            tmp$_102 = $receiver_19.iterator();
+            while (tmp$_102.hasNext()) {
+              var element_40 = tmp$_102.next();
+              if (equals(element_40.name, name_14) && Kotlin.isType(element_40, PushConstantNode1f)) {
+                firstOrNull$result_19 = element_40;
+                break firstOrNull$break;
+              }}
+            firstOrNull$result_19 = null;
+          }
+           while (false);
+          var node_19 = (tmp$_101 = firstOrNull$result_19) == null || Kotlin.isType(tmp$_101, PushConstantNode1f) ? tmp$_101 : throwCCE();
+          if (node_19 != null) {
+            findNode_3klnlw$result_19 = node_19;
+            break findNode_3klnlw$break;
+          }}}
+      findNode_3klnlw$result_19 = null;
+    }
+     while (false);
+    this.uDispStrength_0 = findNode_3klnlw$result_19;
+    if ((tmp$_38 = this.uDispStrength_0) != null) {
+      tmp$_38.uniform.value = this.displacementStrength;
     }ModeledShader.prototype.onPipelineCreated_vp7qhs$.call(this, pipeline, mesh, ctx);
   };
   function PbrShader$Companion() {
@@ -18525,6 +18575,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_6.lightBacksides = cfg.lightBacksides;
     $receiver_6.inFragPos = ifFragPos.v.output;
     $receiver_6.inViewDir = viewDir;
+    $receiver_6.inReflectionStrength = $receiver_5.pushConstantNode1f_61zpoe$('uReflectionStrength').output;
     $receiver_6.inIrradiance = (tmp$_16 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_16 : $receiver_5.pushConstantNodeColor_61zpoe$('uAmbient').output;
     if (cfg.isEmissiveMapped) {
       var emissive = $receiver_5.textureSamplerNode_ce41yx$($receiver_5.textureNode_61zpoe$('tEmissive'), ensureNotNull(ifTexCoords.v).output).outColor;
@@ -30034,7 +30085,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = 'Kool v0.6.0-200811.2303';
+      $receiver.text = 'Kool v0.6.0-200812.0032';
       return Unit;
     };
   }

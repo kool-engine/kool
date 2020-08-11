@@ -26,6 +26,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
     private var uMetallic: PushConstantNode1f? = null
     private var uAlbedo: PushConstantNodeColor? = null
     private var uEmissive: PushConstantNodeColor? = null
+    private var uReflectionStrength: PushConstantNode1f? = null
 
     var metallic = cfg.metallic
         set(value) {
@@ -46,6 +47,11 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
         set(value) {
             field = value
             uEmissive?.uniform?.value?.set(value)
+        }
+    var reflectionStrength = cfg.reflectionStrength
+        set(value) {
+            field = value
+            uReflectionStrength?.uniform?.value = value
         }
 
     // Material maps
@@ -172,6 +178,8 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
         uAlbedo?.uniform?.value?.set(albedo)
         uEmissive = model.findNode("uEmissive")
         uEmissive?.uniform?.value?.set(emissive)
+        uReflectionStrength = model.findNode("uReflectionStrength")
+        uReflectionStrength?.uniform?.value = reflectionStrength
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
@@ -377,6 +385,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     lightBacksides = cfg.lightBacksides
                     inFragPos = ifFragPos.output
                     inViewDir = viewDir
+                    inReflectionStrength = pushConstantNode1f("uReflectionStrength").output
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 

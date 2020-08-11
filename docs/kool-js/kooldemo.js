@@ -128,14 +128,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
   var Array_0 = Array;
   var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
-  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var AlphaModeBlend = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeBlend;
-  var RefractionSamplerNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode;
   var reversed = Kotlin.kotlin.collections.reversed_7wnvza$;
+  var RefractionSamplerNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode;
+  var Profile_init = $module$kool.de.fabmax.kool.util.Profile;
+  var firstOrNull = Kotlin.kotlin.collections.firstOrNull_2p1efm$;
+  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var ColorGradient_init = $module$kool.de.fabmax.kool.util.ColorGradient_init_5tenyj$;
-  var firstOrNull = Kotlin.kotlin.collections.firstOrNull_2p1efm$;
-  var Profile_init = $module$kool.de.fabmax.kool.util.Profile;
   var SimpleShape_init = $module$kool.de.fabmax.kool.util.SimpleShape;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
@@ -185,6 +185,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   PbrMaterialContent.prototype.constructor = PbrMaterialContent;
   RoughnesMetalGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   RoughnesMetalGridContent.prototype.constructor = RoughnesMetalGridContent;
+  Glas.prototype = Object.create(Group.prototype);
+  Glas.prototype.constructor = Glas;
+  Roses.prototype = Object.create(Group.prototype);
+  Roses.prototype.constructor = Roses;
+  Table.prototype = Object.create(Mesh_init.prototype);
+  Table.prototype.constructor = Table;
+  Vase.prototype = Object.create(Mesh_init.prototype);
+  Vase.prototype.constructor = Vase;
   WindNode.prototype = Object.create(ShaderNode.prototype);
   WindNode.prototype.constructor = WindNode;
   TreeGenerator$AttractionPoint.prototype = Object.create(MutableVec3f.prototype);
@@ -7995,13 +8003,230 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       };
     };
   });
+  function Glas(pbrColorOut, ibl) {
+    Glas$Companion_getInstance();
+    Group.call(this);
+    this.pbrColorOut = pbrColorOut;
+    this.ibl = ibl;
+    this.unaryPlus_uv0sim$(this.makeWine_0());
+    this.unaryPlus_uv0sim$(this.makeBody_0());
+    this.unaryPlus_uv0sim$(this.makeShaft_0());
+    this.translate_y2kzbl$(7.5, 0.0, 2.5);
+    this.scale_mx4ult$(0.9);
+  }
+  function Glas$makeBody$lambda$lambda(this$Glas) {
+    return function ($receiver) {
+      this$Glas.makeBodyGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Glas$makeBody$lambda$lambda_0(this$Glas) {
+    return function ($receiver) {
+      $receiver.useImageBasedLighting_po417x$(this$Glas.ibl);
+      $receiver.roughness = 0.0;
+      $receiver.alphaMode = new AlphaModeBlend();
+      $receiver.reflectionStrength = 0.3;
+      return Unit;
+    };
+  }
+  function Glas$makeBody$lambda(this$Glas) {
+    return function ($receiver) {
+      $receiver.isOpaque = false;
+      $receiver.generate_v2sixm$(Glas$makeBody$lambda$lambda(this$Glas));
+      $receiver.shader = pbrShader(Glas$makeBody$lambda$lambda_0(this$Glas));
+      return Unit;
+    };
+  }
+  Glas.prototype.makeBody_0 = function () {
+    return colorMesh(void 0, Glas$makeBody$lambda(this));
+  };
+  function Glas$makeShaft$lambda$lambda(this$Glas) {
+    return function ($receiver) {
+      this$Glas.makeShaftGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  Glas.prototype.makeShaft_0 = function () {
+    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS, Glas$Companion_getInstance().THICKNESS_0])), null);
+    mesh.generate_v2sixm$(Glas$makeShaft$lambda$lambda(this));
+    mesh.isOpaque = false;
+    mesh.shader = this.glasShader_0();
+    return mesh;
+  };
+  function Glas$makeWine$lambda$lambda(this$Glas) {
+    return function ($receiver) {
+      this$Glas.makeWineGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Glas$makeWine$lambda(this$Glas) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(Glas$makeWine$lambda$lambda(this$Glas));
+      var cfg = new PbrMaterialConfig();
+      cfg.roughness = 0.0;
+      cfg.emissive = (new Color(0.3, 0.0, 0.1)).toLinear().withAlpha_mx4ult$(0.8);
+      cfg.useStaticAlbedo_d7aj7k$((new Color(0.3, 0.0, 0.1)).mix_y83vuj$(Color.Companion.BLACK, 0.2).toLinear());
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  Glas.prototype.makeWine_0 = function () {
+    return colorMesh(void 0, Glas$makeWine$lambda(this));
+  };
+  Glas.prototype.makeBodyGeometry_0 = function ($receiver) {
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    $receiver.color = Color.Companion.BLACK.withAlpha_mx4ult$(0.1).toLinear();
+    var profile = new Profile_init();
+    $receiver.circleShape_k80pjh$(profile);
+    var bodyExtrude = reversed(listOf([new Glas$ExtrudeProps(1.3, 9.1, 1.5), new Glas$ExtrudeProps(1.5, 9.3, 1.0), new Glas$ExtrudeProps(3.97, 11.8, 1.0), new Glas$ExtrudeProps(4.2, 12.1, 1.0), new Glas$ExtrudeProps(4.45, 12.6, 1.0), new Glas$ExtrudeProps(4.6, 13.1, 1.0), new Glas$ExtrudeProps(4.65, 13.5, 1.0), new Glas$ExtrudeProps(4.65, 14.5, 1.0), new Glas$ExtrudeProps(4.58, 15.5, 1.0), new Glas$ExtrudeProps(4.42, 17.0, 1.0), new Glas$ExtrudeProps(4.0, 20.0, 1.0), new Glas$ExtrudeProps(3.5, 23.0, 0.5), new Glas$ExtrudeProps(3.475, 23.05, 0.5), new Glas$ExtrudeProps(3.45, 23.0, 0.5), new Glas$ExtrudeProps(3.95, 20.0, 0.5), new Glas$ExtrudeProps(4.37, 17.0, 0.5), new Glas$ExtrudeProps(4.6, 14.5, 0.5), new Glas$ExtrudeProps(4.6, 13.5, 0.5)]));
+    var tmp$;
+    tmp$ = bodyExtrude.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      $receiver.transform.push();
+      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
+      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
+      $receiver.sample_afatab$(profile, void 0, true);
+      $receiver.transform.pop();
+    }
+  };
+  function Glas$makeShaftGeometry$lambda$lambda(closure$thickness) {
+    return function ($receiver) {
+      var tmp$;
+      (tmp$ = $receiver.getFloatAttribute_nm2vx5$(Glas$Companion_getInstance().THICKNESS_0)) != null ? (tmp$.f = closure$thickness.v) : null;
+      return Unit;
+    };
+  }
+  Glas.prototype.makeShaftGeometry_0 = function ($receiver) {
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    $receiver.color = Color.Companion.DARK_GRAY.withAlpha_mx4ult$(0.1).toLinear();
+    var profile = new Profile_init();
+    $receiver.circleShape_k80pjh$(profile);
+    var thickness = {v: 0.5};
+    $receiver.vertexModFun = Glas$makeShaftGeometry$lambda$lambda(thickness);
+    $receiver.transform.push();
+    $receiver.scale_y2kzbl$(4.0, 4.0, 1.0);
+    $receiver.sampleAndFillBottom_afatab$(profile);
+    $receiver.transform.pop();
+    var shaftExtrude = listOf([new Glas$ExtrudeProps(4.1, 0.1, 0.5), new Glas$ExtrudeProps(4.0, 0.2, 0.5), new Glas$ExtrudeProps(2.0, 0.5, 0.75), new Glas$ExtrudeProps(1.5, 0.65, 1.0), new Glas$ExtrudeProps(1.0, 0.95, 1.5), new Glas$ExtrudeProps(0.75, 1.25, 2.0), new Glas$ExtrudeProps(0.5, 2.0, 5.0), new Glas$ExtrudeProps(0.4, 3.0, 20.0), new Glas$ExtrudeProps(0.4, 7.0, 20.0), new Glas$ExtrudeProps(0.5, 8.0, 20.0), new Glas$ExtrudeProps(0.6, 8.25, 2.5), new Glas$ExtrudeProps(0.9, 8.65, 1.0), new Glas$ExtrudeProps(1.3, 9.1, 1.0)]);
+    var tmp$;
+    tmp$ = shaftExtrude.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      $receiver.transform.push();
+      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
+      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
+      thickness.v = element.t;
+      $receiver.sample_afatab$(profile);
+      $receiver.transform.pop();
+    }
+  };
+  Glas.prototype.makeWineGeometry_0 = function ($receiver) {
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    var profile = new Profile_init();
+    $receiver.circleShape_k80pjh$(profile);
+    $receiver.transform.push();
+    $receiver.translate_y2kzbl$(0.0, 0.0, 10.0);
+    $receiver.sampleAndFillBottom_afatab$(profile);
+    $receiver.transform.pop();
+    var wineExtrude = listOf([new Glas$ExtrudeProps(1.28, 9.1, 1.5), new Glas$ExtrudeProps(1.48, 9.3, 3.0), new Glas$ExtrudeProps(3.95, 11.8, 7.0), new Glas$ExtrudeProps(4.18, 12.1, 7.0), new Glas$ExtrudeProps(4.43, 12.6, 7.0), new Glas$ExtrudeProps(4.58, 13.1, 7.0), new Glas$ExtrudeProps(4.63, 13.5, 7.0), new Glas$ExtrudeProps(4.63, 13.5, 7.0), new Glas$ExtrudeProps(4.57, 13.4, 7.0), new Glas$ExtrudeProps(3.0, 13.4, 7.0), new Glas$ExtrudeProps(1.5, 13.4, 7.0), new Glas$ExtrudeProps(0.5, 13.4, 7.0)]);
+    var tmp$;
+    tmp$ = wineExtrude.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      $receiver.transform.push();
+      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
+      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
+      $receiver.sample_afatab$(profile);
+      $receiver.transform.pop();
+    }
+    $receiver.fillTop_pvgy1j$(profile);
+  };
+  Glas.prototype.glasShader_0 = function () {
+    var $receiver = new PbrMaterialConfig();
+    $receiver.useRefraction_vv6xll$(this.pbrColorOut);
+    $receiver.useImageBasedLighting_po417x$(this.ibl);
+    $receiver.roughness = 0.0;
+    $receiver.alphaMode = new AlphaModeBlend();
+    var glasCfg = $receiver;
+    var $receiver_0 = PbrShader.Companion.defaultPbrModel_2ufela$(glasCfg);
+    var ifThickness = {v: null};
+    var $receiver_1 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_0);
+    ifThickness.v = $receiver_1.stageInterfaceNode_iikjwn$('ifThickness', $receiver_1.attributeNode_nm2vx5$(Glas$Companion_getInstance().THICKNESS_0).output);
+    new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_0);
+    var stage;
+    var findNodeByType_vinsr2$result;
+    findNodeByType_vinsr2$break: do {
+      stage = ShaderStage.ALL;
+      var tmp$;
+      tmp$ = $receiver_0.stages.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        if ((element.stage.mask & stage.mask) !== 0) {
+          var $receiver_2 = element.nodes;
+          var destination = ArrayList_init();
+          var tmp$_0;
+          tmp$_0 = $receiver_2.iterator();
+          while (tmp$_0.hasNext()) {
+            var element_0 = tmp$_0.next();
+            if (Kotlin.isType(element_0, RefractionSamplerNode))
+              destination.add_11rb$(element_0);
+          }
+          var node = firstOrNull(destination);
+          if (node != null) {
+            findNodeByType_vinsr2$result = node;
+            break findNodeByType_vinsr2$break;
+          }}}
+      findNodeByType_vinsr2$result = null;
+    }
+     while (false);
+    var refrSampler = findNodeByType_vinsr2$result;
+    refrSampler != null ? (refrSampler.inMaterialThickness = ifThickness.v.output) : null;
+    var glasModel = $receiver_0;
+    return new PbrShader(glasCfg, glasModel);
+  };
+  function Glas$ExtrudeProps(r, h, t) {
+    this.r = r;
+    this.h = h;
+    this.t = t;
+  }
+  Glas$ExtrudeProps.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ExtrudeProps',
+    interfaces: []
+  };
+  function Glas$Companion() {
+    Glas$Companion_instance = this;
+    this.THICKNESS_0 = new Attribute('aMatThickness', GlslType.FLOAT);
+  }
+  Glas$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Glas$Companion_instance = null;
+  function Glas$Companion_getInstance() {
+    if (Glas$Companion_instance === null) {
+      new Glas$Companion();
+    }return Glas$Companion_instance;
+  }
+  Glas.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Glas',
+    interfaces: [Group]
+  };
   function proceduralDemo(ctx) {
     var demo = new ProceduralDemo(ctx);
     return listOf_0(demo.mainScene);
   }
   function ProceduralDemo(ctx) {
     this.mainScene = this.makeScene_aemszp$(ctx);
-    this.attribThickness_0 = new Attribute('aMatThickness', GlslType.FLOAT);
   }
   function ProceduralDemo$makeScene$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
@@ -8012,7 +8237,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function ProceduralDemo$makeScene$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(-20.0, -10.0);
-      $receiver.setMouseTranslation_y2kzbl$(0.0, 14.0, 0.0);
+      $receiver.setMouseTranslation_y2kzbl$(0.0, 16.0, 0.0);
       $receiver.zoom = 40.0;
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.onUpdate.add_11rb$(ProceduralDemo$makeScene$lambda$lambda$lambda($receiver));
@@ -8024,12 +8249,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.5).toLinear(), 3.0);
     return Unit;
   }
-  function Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, this$ProceduralDemo_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$this$ = this$_0;
-    this.local$this$ProceduralDemo = this$ProceduralDemo_0;
     this.local$$receiver = $receiver_0;
   }
   Coroutine$ProceduralDemo$makeScene$lambda$lambda.$metadata$ = {
@@ -8067,15 +8291,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             $receiver_0.useShadowMaps_gdx315$(listOf_0(shadowMap));
             var deferredCfg = $receiver_0;
             var $receiver_1 = new DeferredPipeline(this.local$this$, deferredCfg);
-            var this$ = this.local$this$;
-            var this$ProceduralDemo = this.local$this$ProceduralDemo;
             var tmp$;
             (tmp$ = $receiver_1.aoPipeline) != null ? (tmp$.radius = 0.6) : null;
             var $receiver_2 = $receiver_1.contentGroup;
-            this$ProceduralDemo.makeGlas_b0hvrk$($receiver_2, ensureNotNull($receiver_1.pbrPass.colorTexture), ibl_0, this$);
-            this$ProceduralDemo.makeRose_7mj2f0$($receiver_2, this$);
-            this$ProceduralDemo.makeVase_ygfmyj$($receiver_2);
-            this$ProceduralDemo.makeTable_ygfmyj$($receiver_2);
+            $receiver_2.unaryPlus_uv0sim$(new Glas(ensureNotNull($receiver_1.pbrPass.colorTexture), ibl_0));
+            $receiver_2.unaryPlus_uv0sim$(new Roses());
+            $receiver_2.unaryPlus_uv0sim$(new Vase());
+            $receiver_2.unaryPlus_uv0sim$(new Table());
             var deferredPipeline = $receiver_1;
             shadowMap.drawNode = deferredPipeline.contentGroup;
             return this.local$this$.unaryPlus_uv0sim$(deferredPipeline.renderOutput), Unit;
@@ -8093,9 +8315,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function ProceduralDemo$makeScene$lambda$lambda_1(this$_0, this$ProceduralDemo_0) {
+  function ProceduralDemo$makeScene$lambda$lambda_1(this$_0) {
     return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, this$ProceduralDemo_0, $receiver_0, this, continuation_0);
+      var instance = new Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, $receiver_0, this, continuation_0);
       if (suspended)
         return instance;
       else
@@ -8106,302 +8328,73 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, ProceduralDemo$makeScene$lambda$lambda($receiver)));
     $receiver.lighting.singleLight_q9zcvo$(ProceduralDemo$makeScene$lambda$lambda_0);
-    ctx.assetMgr.launch_eln4bt$(ProceduralDemo$makeScene$lambda$lambda_1($receiver, this));
+    ctx.assetMgr.launch_eln4bt$(ProceduralDemo$makeScene$lambda$lambda_1($receiver));
     return $receiver;
   };
-  function ProceduralDemo$makeGlas$lambda$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeGlasShaftGeometry_w0m2rg$($receiver);
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeGlas$lambda$lambda_0(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeWineGeometry_w0m2rg$($receiver);
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeGlas$lambda$lambda_1(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeGlasBodyGeometry_w0m2rg$($receiver);
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeGlas$lambda$lambda_2(closure$ibl) {
-    return function ($receiver) {
-      $receiver.useImageBasedLighting_po417x$(closure$ibl);
-      $receiver.roughness = 0.0;
-      $receiver.alphaMode = new AlphaModeBlend();
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeGlas$lambda(this$ProceduralDemo, closure$ibl) {
-    return function ($receiver) {
-      $receiver.isOpaque = false;
-      $receiver.generate_v2sixm$(ProceduralDemo$makeGlas$lambda$lambda_1(this$ProceduralDemo));
-      $receiver.shader = pbrShader(ProceduralDemo$makeGlas$lambda$lambda_2(closure$ibl));
-      return Unit;
-    };
-  }
-  ProceduralDemo.prototype.makeGlas_b0hvrk$ = function ($receiver, pbrColorOut, ibl, scene) {
-    var mesh = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS, this.attribThickness_0])), null);
-    mesh.generate_v2sixm$(ProceduralDemo$makeGlas$lambda$lambda(this));
-    mesh.isOpaque = false;
-    mesh.shader = this.glasShader_0(pbrColorOut, ibl);
-    $receiver.unaryPlus_uv0sim$(mesh);
-    var mesh_0 = new Mesh_init(new IndexedVertexList_init_0(listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS, this.attribThickness_0])), null);
-    mesh_0.generate_v2sixm$(ProceduralDemo$makeGlas$lambda$lambda_0(this));
-    var cfg = new PbrMaterialConfig();
-    cfg.roughness = 0.0;
-    cfg.emissive = (new Color(0.3, 0.0, 0.1)).toLinear().withAlpha_mx4ult$(0.8);
-    cfg.useStaticAlbedo_d7aj7k$((new Color(0.3, 0.0, 0.1)).mix_y83vuj$(Color.Companion.BLACK, 0.2).toLinear());
-    mesh_0.shader = new DeferredPbrShader(cfg);
-    $receiver.unaryPlus_uv0sim$(mesh_0);
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, ProceduralDemo$makeGlas$lambda(this, ibl)));
-  };
-  ProceduralDemo.prototype.glasShader_0 = function (pbrColorOut, ibl) {
-    var $receiver = new PbrMaterialConfig();
-    $receiver.useRefraction_vv6xll$(pbrColorOut);
-    $receiver.useImageBasedLighting_po417x$(ibl);
-    $receiver.roughness = 0.0;
-    $receiver.alphaMode = new AlphaModeBlend();
-    var glasCfg = $receiver;
-    var $receiver_0 = PbrShader.Companion.defaultPbrModel_2ufela$(glasCfg);
-    var ifThickness = {v: null};
-    var $receiver_1 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_0);
-    ifThickness.v = $receiver_1.stageInterfaceNode_iikjwn$('ifThickness', $receiver_1.attributeNode_nm2vx5$(this.attribThickness_0).output);
-    new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_0);
-    var stage;
-    var findNodeByType_vinsr2$result;
-    findNodeByType_vinsr2$break: do {
-      stage = ShaderStage.ALL;
-      var tmp$;
-      tmp$ = $receiver_0.stages.values.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        if ((element.stage.mask & stage.mask) !== 0) {
-          var $receiver_2 = element.nodes;
-          var destination = ArrayList_init();
-          var tmp$_0;
-          tmp$_0 = $receiver_2.iterator();
-          while (tmp$_0.hasNext()) {
-            var element_0 = tmp$_0.next();
-            if (Kotlin.isType(element_0, RefractionSamplerNode))
-              destination.add_11rb$(element_0);
-          }
-          var node = firstOrNull(destination);
-          if (node != null) {
-            findNodeByType_vinsr2$result = node;
-            break findNodeByType_vinsr2$break;
-          }}}
-      findNodeByType_vinsr2$result = null;
-    }
-     while (false);
-    var refrSampler = findNodeByType_vinsr2$result;
-    refrSampler != null ? (refrSampler.inMaterialThickness = ifThickness.v.output) : null;
-    var glasModel = $receiver_0;
-    return new PbrShader(glasCfg, glasModel);
-  };
-  function ProceduralDemo$makeRose$lambda$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeRoseGeometry_an79s4$($receiver, 6415168);
-      this$ProceduralDemo.makeRoseGeometry_an79s4$($receiver, 2541685);
-      this$ProceduralDemo.makeRoseGeometry_an79s4$($receiver, 25);
-      this$ProceduralDemo.makeRoseGeometry_an79s4$($receiver, 523947);
-      this$ProceduralDemo.makeRoseGeometry_an79s4$($receiver, 1234);
-      $receiver.geometry.removeDegeneratedTriangles();
-      $receiver.geometry.generateNormals();
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeRose$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(ProceduralDemo$makeRose$lambda$lambda(this$ProceduralDemo));
-      var cfg = new PbrMaterialConfig();
-      cfg.roughness = 0.7;
-      $receiver.shader = new DeferredPbrShader(cfg);
-      return Unit;
-    };
-  }
-  ProceduralDemo.prototype.makeRose_7mj2f0$ = function ($receiver, scene) {
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, ProceduralDemo$makeRose$lambda(this)));
-  };
-  function ProceduralDemo$makeVase$lambda$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeVaseGeometry_w0m2rg$($receiver);
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeVase$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(ProceduralDemo$makeVase$lambda$lambda(this$ProceduralDemo));
-      var cfg = new PbrMaterialConfig();
-      cfg.roughness = 0.3;
-      $receiver.shader = new DeferredPbrShader(cfg);
-      return Unit;
-    };
-  }
-  ProceduralDemo.prototype.makeVase_ygfmyj$ = function ($receiver) {
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, ProceduralDemo$makeVase$lambda(this)));
-  };
-  function ProceduralDemo$makeTable$lambda$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      this$ProceduralDemo.makeTableGeometry_w0m2rg$($receiver);
-      return Unit;
-    };
-  }
-  function ProceduralDemo$makeTable$lambda(this$ProceduralDemo) {
-    return function ($receiver) {
-      $receiver.isCastingShadow = false;
-      $receiver.generate_v2sixm$(ProceduralDemo$makeTable$lambda$lambda(this$ProceduralDemo));
-      var cfg = new PbrMaterialConfig();
-      cfg.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-albedo4.jpg');
-      cfg.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-normal2.jpg');
-      cfg.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-roughness3.jpg');
-      $receiver.shader = new DeferredPbrShader(cfg);
-      return Unit;
-    };
-  }
-  ProceduralDemo.prototype.makeTable_ygfmyj$ = function ($receiver) {
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, ProceduralDemo$makeTable$lambda(this)));
-  };
-  function ProceduralDemo$ExtrudeProps(r, h, t) {
-    this.r = r;
-    this.h = h;
-    this.t = t;
-  }
-  ProceduralDemo$ExtrudeProps.$metadata$ = {
+  ProceduralDemo.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'ExtrudeProps',
+    simpleName: 'ProceduralDemo',
     interfaces: []
   };
-  function ProceduralDemo$makeGlasShaftGeometry$lambda$lambda(closure$thickness, this$ProceduralDemo) {
-    return function ($receiver) {
-      var tmp$;
-      (tmp$ = $receiver.getFloatAttribute_nm2vx5$(this$ProceduralDemo.attribThickness_0)) != null ? (tmp$.f = closure$thickness.v) : null;
-      return Unit;
-    };
+  function Roses() {
+    Group.call(this);
+    this.makeRose_za3lpa$(6415168);
+    this.makeRose_za3lpa$(2541685);
+    this.makeRose_za3lpa$(25);
+    this.makeRose_za3lpa$(523947);
+    this.makeRose_za3lpa$(1234);
   }
-  ProceduralDemo.prototype.makeGlasShaftGeometry_w0m2rg$ = function ($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.translate_y2kzbl$(7.5, 2.5, 0.0);
-    $receiver.color = Color.Companion.DARK_GRAY.withAlpha_mx4ult$(0.1).toLinear();
-    var profile = new Profile_init();
-    $receiver.circleShape_k80pjh$(profile);
-    var thickness = {v: 0.5};
-    $receiver.vertexModFun = ProceduralDemo$makeGlasShaftGeometry$lambda$lambda(thickness, this);
-    $receiver.transform.push();
-    $receiver.scale_y2kzbl$(4.0, 4.0, 1.0);
-    $receiver.sampleAndFillBottom_afatab$(profile);
-    $receiver.transform.pop();
-    var shaftExtrude = listOf([new ProceduralDemo$ExtrudeProps(4.1, 0.1, 0.5), new ProceduralDemo$ExtrudeProps(4.0, 0.2, 0.5), new ProceduralDemo$ExtrudeProps(2.0, 0.5, 0.75), new ProceduralDemo$ExtrudeProps(1.5, 0.65, 1.0), new ProceduralDemo$ExtrudeProps(1.0, 0.95, 1.5), new ProceduralDemo$ExtrudeProps(0.75, 1.25, 2.0), new ProceduralDemo$ExtrudeProps(0.5, 2.0, 5.0), new ProceduralDemo$ExtrudeProps(0.4, 3.0, 20.0), new ProceduralDemo$ExtrudeProps(0.4, 7.0, 20.0), new ProceduralDemo$ExtrudeProps(0.5, 8.0, 20.0), new ProceduralDemo$ExtrudeProps(0.6, 8.25, 2.5), new ProceduralDemo$ExtrudeProps(0.9, 8.65, 1.0), new ProceduralDemo$ExtrudeProps(1.3, 9.1, 1.0)]);
-    var tmp$;
-    tmp$ = shaftExtrude.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      $receiver.transform.push();
-      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
-      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
-      thickness.v = element.t;
-      $receiver.sample_afatab$(profile);
-      $receiver.transform.pop();
-    }
-    $receiver.geometry.removeDegeneratedTriangles();
-    $receiver.geometry.generateNormals();
+  Roses.prototype.makeRose_za3lpa$ = function (seed) {
+    var rose = new Roses$GeneratedRose(seed);
+    this.unaryPlus_uv0sim$(rose.shaftMesh);
+    this.unaryPlus_uv0sim$(rose.leafMesh);
+    this.unaryPlus_uv0sim$(rose.blossomMesh);
   };
-  function ProceduralDemo$makeWineGeometry$lambda$lambda(closure$thickness, this$ProceduralDemo) {
-    return function ($receiver) {
-      var tmp$;
-      (tmp$ = $receiver.getFloatAttribute_nm2vx5$(this$ProceduralDemo.attribThickness_0)) != null ? (tmp$.f = closure$thickness.v) : null;
-      return Unit;
-    };
+  function Roses$GeneratedRose(seed) {
+    this.shaftGrad = new ColorGradient([to(0.0, Color.Companion.MD_BROWN_900.toLinear()), to(0.4, Color.Companion.MD_BROWN.toLinear()), to(1.0, Color.Companion.MD_LIGHT_GREEN_600.toLinear())]);
+    this.blossomLeafGrad = ColorGradient_init([Color.Companion.MD_LIGHT_GREEN_600.toLinear(), Color.Companion.MD_LIGHT_GREEN.mix_y83vuj$(Color.Companion.MD_YELLOW_200, 0.5).toLinear()]);
+    this.shaftMesh = null;
+    this.leafMesh = null;
+    this.blossomMesh = null;
+    this.rand = new Random(seed);
+    this.shaftTopTransform = new Mat4f();
+    this.shaftMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda(this));
+    this.leafMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_0(this));
+    this.blossomMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_1(this));
   }
-  ProceduralDemo.prototype.makeWineGeometry_w0m2rg$ = function ($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.translate_y2kzbl$(7.5, 2.5, 0.0);
-    var profile = new Profile_init();
-    $receiver.circleShape_k80pjh$(profile);
-    var thickness = {v: 1.0};
-    $receiver.vertexModFun = ProceduralDemo$makeWineGeometry$lambda$lambda(thickness, this);
-    $receiver.transform.push();
-    $receiver.translate_y2kzbl$(0.0, 0.0, 10.0);
-    $receiver.sampleAndFillBottom_afatab$(profile);
-    $receiver.transform.pop();
-    var wineExtrude = listOf([new ProceduralDemo$ExtrudeProps(1.28, 9.1, 1.5), new ProceduralDemo$ExtrudeProps(1.48, 9.3, 3.0), new ProceduralDemo$ExtrudeProps(3.95, 11.8, 7.0), new ProceduralDemo$ExtrudeProps(4.18, 12.1, 7.0), new ProceduralDemo$ExtrudeProps(4.43, 12.6, 7.0), new ProceduralDemo$ExtrudeProps(4.58, 13.1, 7.0), new ProceduralDemo$ExtrudeProps(4.63, 13.5, 7.0), new ProceduralDemo$ExtrudeProps(4.63, 14.5, 7.0), new ProceduralDemo$ExtrudeProps(4.56, 15.5, 7.0), new ProceduralDemo$ExtrudeProps(4.56, 15.5, 7.0), new ProceduralDemo$ExtrudeProps(4.5, 15.4, 7.0), new ProceduralDemo$ExtrudeProps(3.0, 15.4, 7.0), new ProceduralDemo$ExtrudeProps(1.5, 15.4, 7.0), new ProceduralDemo$ExtrudeProps(0.5, 15.4, 7.0)]);
-    var tmp$;
-    tmp$ = wineExtrude.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var tmp$_0 = new Color(0.3, 0.0, 0.12);
-      var a = element.t;
-      $receiver.color = tmp$_0.withAlpha_mx4ult$(0.9 + 0.07 * Math_0.min(a, 7.0) / 7.0).toLinear();
-      $receiver.transform.push();
-      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
-      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
-      thickness.v = element.t;
-      $receiver.sample_afatab$(profile);
-      $receiver.transform.pop();
-    }
-    $receiver.fillTop_pvgy1j$(profile);
-    $receiver.geometry.removeDegeneratedTriangles();
-    $receiver.geometry.generateNormals();
-  };
-  ProceduralDemo.prototype.makeGlasBodyGeometry_w0m2rg$ = function ($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.translate_y2kzbl$(7.5, 2.5, 0.0);
-    $receiver.color = Color.Companion.BLACK.withAlpha_mx4ult$(0.1).toLinear();
-    var profile = new Profile_init();
-    $receiver.circleShape_k80pjh$(profile);
-    var bodyExtrude = reversed(listOf([new ProceduralDemo$ExtrudeProps(1.3, 9.1, 1.5), new ProceduralDemo$ExtrudeProps(1.5, 9.3, 1.0), new ProceduralDemo$ExtrudeProps(3.97, 11.8, 1.0), new ProceduralDemo$ExtrudeProps(4.2, 12.1, 1.0), new ProceduralDemo$ExtrudeProps(4.45, 12.6, 1.0), new ProceduralDemo$ExtrudeProps(4.6, 13.1, 1.0), new ProceduralDemo$ExtrudeProps(4.65, 13.5, 1.0), new ProceduralDemo$ExtrudeProps(4.65, 14.5, 1.0), new ProceduralDemo$ExtrudeProps(4.58, 15.5, 1.0), new ProceduralDemo$ExtrudeProps(4.42, 17.0, 1.0), new ProceduralDemo$ExtrudeProps(4.0, 20.0, 1.0), new ProceduralDemo$ExtrudeProps(3.5, 23.0, 0.5), new ProceduralDemo$ExtrudeProps(3.475, 23.05, 0.5), new ProceduralDemo$ExtrudeProps(3.45, 23.0, 0.5), new ProceduralDemo$ExtrudeProps(3.95, 20.0, 0.5), new ProceduralDemo$ExtrudeProps(4.37, 17.0, 0.5), new ProceduralDemo$ExtrudeProps(4.6, 14.5, 0.5), new ProceduralDemo$ExtrudeProps(4.6, 13.5, 0.5)]));
-    var tmp$;
-    tmp$ = bodyExtrude.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      $receiver.transform.push();
-      $receiver.scale_y2kzbl$(element.r, element.r, 1.0);
-      $receiver.translate_y2kzbl$(0.0, 0.0, element.h);
-      $receiver.sample_afatab$(profile, void 0, true);
-      $receiver.transform.pop();
-    }
-    $receiver.geometry.removeDegeneratedTriangles();
-    $receiver.geometry.generateNormals();
-  };
-  ProceduralDemo.prototype.makeRoseGeometry_an79s4$ = function ($receiver, seed, origin) {
+  Roses$GeneratedRose.prototype.makeShaftGeometry_0 = function ($receiver, origin) {
     if (origin === void 0)
-      origin = new Vec3f(-7.5, -2.5, 7.0);
+      origin = new Vec3f(-7.5, -2.5, 10.0);
     $receiver.transform.push();
     $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
     $receiver.translate_czzhiu$(origin);
-    var rand = new Random(seed);
-    var shaftGrad = new ColorGradient([to(0.0, Color.Companion.MD_BROWN_900.toLinear()), to(0.4, Color.Companion.MD_BROWN.toLinear()), to(1.0, Color.Companion.MD_LIGHT_GREEN_600.toLinear())]);
-    var blossomLeafGrad = ColorGradient_init([Color.Companion.MD_LIGHT_GREEN_600.toLinear(), Color.Companion.MD_LIGHT_GREEN.mix_y83vuj$(Color.Companion.MD_YELLOW_200, 0.5).toLinear()]);
     var profile = new Profile_init();
     $receiver.circleShape_k80pjh$(profile, 0.2, 8);
     var steps = 6;
     for (var i = 0; i < steps; i++) {
-      var ax = (new MutableVec3f(rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 1.0), 0.0)).norm();
-      $receiver.rotate_ad55pp$(rand.randomF_dleff0$(0.0, 15.0), ax);
-      var h = rand.randomF_dleff0$(2.0, 4.0);
+      var ax = (new MutableVec3f(this.rand.randomF_dleff0$(-1.0, 1.0), this.rand.randomF_dleff0$(-1.0, 1.0), 0.0)).norm();
+      $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(0.0, 15.0), ax);
+      var h = this.rand.randomF_dleff0$(2.0, 4.0);
       var p = i / steps;
       var sub = 1.0 / steps;
       $receiver.scale_y2kzbl$(0.8, 0.8, 1.0);
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.1);
-      $receiver.color = shaftGrad.getColor_y2kzbl$(p + sub * 0.15).mix_y83vuj$(Color.Companion.BLACK, 0.25);
+      $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.15).mix_y83vuj$(Color.Companion.BLACK, 0.25);
       $receiver.sample_afatab$(profile);
       $receiver.scale_y2kzbl$(0.8, 0.8, 1.0);
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.2);
-      $receiver.color = shaftGrad.getColor_y2kzbl$(p + sub * 0.3);
+      $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.3);
       $receiver.sample_afatab$(profile);
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.4);
-      $receiver.color = shaftGrad.getColor_y2kzbl$(p + sub * 0.55);
+      $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.55);
       $receiver.sample_afatab$(profile);
       $receiver.scale_y2kzbl$(1 / 0.8, 1 / 0.8, 1.0);
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.2);
-      $receiver.color = shaftGrad.getColor_y2kzbl$(p + sub * 0.7).mix_y83vuj$(Color.Companion.BLACK, 0.25);
+      $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.7).mix_y83vuj$(Color.Companion.BLACK, 0.25);
       $receiver.sample_afatab$(profile);
       $receiver.scale_y2kzbl$(1 / 0.8, 1 / 0.8, 1.0);
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.1);
-      $receiver.color = shaftGrad.getColor_y2kzbl$(p + sub * 0.85).mix_y83vuj$(Color.Companion.BLACK, 0.55);
+      $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.85).mix_y83vuj$(Color.Companion.BLACK, 0.55);
       $receiver.sample_afatab$(profile);
     }
     $receiver.translate_y2kzbl$(0.0, 0.0, 0.2);
@@ -8415,29 +8408,35 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.sample_afatab$(profile);
     $receiver.transform.pop();
     $receiver.fillTop_pvgy1j$(profile);
+    this.shaftTopTransform.set_d4zu6j$($receiver.transform);
+    $receiver.transform.pop();
+  };
+  Roses$GeneratedRose.prototype.makeLeafGeometry_0 = function ($receiver) {
+    $receiver.transform.push();
+    $receiver.transform.mul_d4zu6j$(this.shaftTopTransform);
     for (var l = 0; l <= 5; l++) {
       $receiver.transform.push();
       $receiver.scale_y2kzbl$(0.8, 0.8, 0.8);
       $receiver.rotate_ad55pp$(60.0 * l, Vec3f.Companion.Z_AXIS);
-      var profile_0 = new Profile_init();
+      var profile = new Profile_init();
       var ref = ArrayList_init();
       var jit = 0.03;
-      for (var i_0 = 0; i_0 <= 10; i_0++) {
-        var a = (i_0 / 10.0 * 72 - 36) * math.DEG_2_RAD;
-        var seam = i_0 === 5 ? -0.05 : 0.0;
-        if (i_0 === 5) {
+      for (var i = 0; i <= 10; i++) {
+        var a = (i / 10.0 * 72 - 36) * math.DEG_2_RAD;
+        var seam = i === 5 ? -0.05 : 0.0;
+        if (i === 5) {
           var aa = a - 2.0 * math.DEG_2_RAD;
-          var element = new Vec2f(Math_0.cos(aa) - 0.7 + rand.randomF_dleff0$(-jit, jit), Math_0.sin(aa) + rand.randomF_dleff0$(-jit, jit));
+          var element = new Vec2f(Math_0.cos(aa) - 0.7 + this.rand.randomF_dleff0$(-jit, jit), Math_0.sin(aa) + this.rand.randomF_dleff0$(-jit, jit));
           ref.add_11rb$(element);
-        }var element_0 = new Vec2f(Math_0.cos(a) - 0.7 + rand.randomF_dleff0$(-jit, jit) + seam, Math_0.sin(a) + rand.randomF_dleff0$(-jit, jit));
+        }var element_0 = new Vec2f(Math_0.cos(a) - 0.7 + this.rand.randomF_dleff0$(-jit, jit) + seam, Math_0.sin(a) + this.rand.randomF_dleff0$(-jit, jit));
         ref.add_11rb$(element_0);
-        if (i_0 === 5) {
+        if (i === 5) {
           var aa_0 = a + 2.0 * math.DEG_2_RAD;
-          var element_1 = new Vec2f(Math_0.cos(aa_0) - 0.7 + rand.randomF_dleff0$(-jit, jit), Math_0.sin(aa_0) + rand.randomF_dleff0$(-jit, jit));
+          var element_1 = new Vec2f(Math_0.cos(aa_0) - 0.7 + this.rand.randomF_dleff0$(-jit, jit), Math_0.sin(aa_0) + this.rand.randomF_dleff0$(-jit, jit));
           ref.add_11rb$(element_1);
         }}
       var shape = new SimpleShape_init(true);
-      profile_0.shapes.add_11rb$(shape);
+      profile.shapes.add_11rb$(shape);
       var tmp$;
       tmp$ = ref.iterator();
       while (tmp$.hasNext()) {
@@ -8457,178 +8456,146 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$_1 = scales.iterator();
       while (tmp$_1.hasNext()) {
         var item = tmp$_1.next();
-        $receiver.color = blossomLeafGrad.getColor_y2kzbl$(checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0)) / get_lastIndex(scales));
+        $receiver.color = this.blossomLeafGrad.getColor_y2kzbl$(checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0)) / get_lastIndex(scales));
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.3);
-        $receiver.rotate_ad55pp$(100.0 / scales.size + rand.randomF_dleff0$(-8.0, 8.0), Vec3f.Companion.NEG_Y_AXIS);
-        $receiver.rotate_ad55pp$(rand.randomF_dleff0$(-8.0, 8.0), Vec3f.Companion.X_AXIS);
+        $receiver.rotate_ad55pp$(100.0 / scales.size + this.rand.randomF_dleff0$(-8.0, 8.0), Vec3f.Companion.NEG_Y_AXIS);
+        $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(-8.0, 8.0), Vec3f.Companion.X_AXIS);
         $receiver.transform.push();
         $receiver.scale_y2kzbl$(item, item, 1.0);
-        $receiver.sample_afatab$(profile_0);
+        $receiver.sample_afatab$(profile);
         $receiver.transform.pop();
       }
       $receiver.transform.pop();
     }
+    $receiver.transform.pop();
+  };
+  Roses$GeneratedRose.prototype.makeBlossomGeometry_0 = function ($receiver) {
+    $receiver.transform.push();
+    $receiver.transform.mul_d4zu6j$(this.shaftTopTransform);
     var nLeafs = 17;
-    for (var l_0 = 0; l_0 <= nLeafs; l_0++) {
+    for (var l = 0; l <= nLeafs; l++) {
       $receiver.transform.push();
-      var ls = l_0 / nLeafs * 0.8 + 0.2;
+      var ls = l / nLeafs * 0.8 + 0.2;
       $receiver.scale_y2kzbl$(ls, ls, 1.2);
-      $receiver.rotate_ad55pp$(97.0 * l_0, Vec3f.Companion.Z_AXIS);
-      var profile_1 = new Profile_init();
-      var ref_0 = ArrayList_init();
-      var jit_0 = 0.03;
-      for (var i_1 = 0; i_1 <= 10; i_1++) {
-        var a_0 = (i_1 / 10.0 * 120 - 60) * math.DEG_2_RAD;
-        var element_4 = new Vec2f(Math_0.cos(a_0) - 0.9 + rand.randomF_dleff0$(-jit_0, jit_0), Math_0.sin(a_0) + rand.randomF_dleff0$(-jit_0, jit_0));
-        ref_0.add_11rb$(element_4);
+      $receiver.rotate_ad55pp$(97.0 * l, Vec3f.Companion.Z_AXIS);
+      var profile = new Profile_init();
+      var ref = ArrayList_init();
+      var jit = 0.03;
+      for (var i = 0; i <= 10; i++) {
+        var a = (i / 10.0 * 120 - 60) * math.DEG_2_RAD;
+        var element = new Vec2f(Math_0.cos(a) - 0.9 + this.rand.randomF_dleff0$(-jit, jit), Math_0.sin(a) + this.rand.randomF_dleff0$(-jit, jit));
+        ref.add_11rb$(element);
       }
-      var shape_0 = new SimpleShape_init(true);
-      profile_1.shapes.add_11rb$(shape_0);
-      var tmp$_2;
-      tmp$_2 = ref_0.iterator();
-      while (tmp$_2.hasNext()) {
-        var element_5 = tmp$_2.next();
-        shape_0.xy_dleff0$(element_5.x * 1.05, element_5.y * 1.05);
+      var shape = new SimpleShape_init(true);
+      profile.shapes.add_11rb$(shape);
+      var tmp$;
+      tmp$ = ref.iterator();
+      while (tmp$.hasNext()) {
+        var element_0 = tmp$.next();
+        shape.xy_dleff0$(element_0.x * 1.05, element_0.y * 1.05);
       }
-      var tmp$_3;
-      tmp$_3 = reversed(ref_0).iterator();
-      while (tmp$_3.hasNext()) {
-        var element_6 = tmp$_3.next();
-        shape_0.xy_dleff0$(element_6.x, element_6.y);
+      var tmp$_0;
+      tmp$_0 = reversed(ref).iterator();
+      while (tmp$_0.hasNext()) {
+        var element_1 = tmp$_0.next();
+        shape.xy_dleff0$(element_1.x, element_1.y);
       }
       $receiver.rotate_ad55pp$(60.0, Vec3f.Companion.Y_AXIS);
-      var scales_0 = listOf([0.5, 0.9, 1.0, 0.93, 0.8, 0.7, 0.72, 0.8, 0.95, 1.05, 1.0, 0.95, 0.85, 0.5]);
-      var tmp$_4, tmp$_0_1;
-      var index_0 = 0;
-      tmp$_4 = scales_0.iterator();
-      while (tmp$_4.hasNext()) {
-        var item_0 = tmp$_4.next();
-        var i_2 = checkIndexOverflow((tmp$_0_1 = index_0, index_0 = tmp$_0_1 + 1 | 0, tmp$_0_1));
-        var js = item_0 * rand.randomF_dleff0$(0.95, 1.05);
+      var scales = listOf([0.5, 0.9, 1.0, 0.93, 0.8, 0.7, 0.72, 0.8, 0.95, 1.05, 1.0, 0.95, 0.85, 0.5]);
+      var tmp$_1, tmp$_0_0;
+      var index = 0;
+      tmp$_1 = scales.iterator();
+      while (tmp$_1.hasNext()) {
+        var item = tmp$_1.next();
+        var i_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+        var js = item * this.rand.randomF_dleff0$(0.95, 1.05);
         $receiver.color = Color.Companion.RED.toLinear();
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.2);
-        var r = (0.5 - i_2 / scales_0.size) * 20.0;
-        $receiver.rotate_ad55pp$(r + rand.randomF_dleff0$(-5.0, 5.0), Vec3f.Companion.NEG_Y_AXIS);
-        $receiver.rotate_ad55pp$(rand.randomF_dleff0$(-5.0, 5.0), Vec3f.Companion.X_AXIS);
+        var r = (0.5 - i_0 / scales.size) * 20.0;
+        $receiver.rotate_ad55pp$(r + this.rand.randomF_dleff0$(-5.0, 5.0), Vec3f.Companion.NEG_Y_AXIS);
+        $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(-5.0, 5.0), Vec3f.Companion.X_AXIS);
         $receiver.transform.push();
         $receiver.scale_y2kzbl$(js, js, 1.0);
         $receiver.translate_y2kzbl$((1.0 - js) * 0.7, (1.0 - js) * 0.7, 0.0);
-        $receiver.sample_afatab$(profile_1);
+        $receiver.sample_afatab$(profile);
         $receiver.transform.pop();
       }
       $receiver.transform.pop();
     }
     $receiver.transform.pop();
   };
-  ProceduralDemo.prototype.makeVaseGeometry_w0m2rg$ = function ($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.translate_y2kzbl$(-7.5, -2.5, 0.0);
-    $receiver.scale_y2kzbl$(1.7, 1.7, 1.7);
-    $receiver.translate_y2kzbl$(0.0, 0.0, 0.15);
-    var gridGrad = ColorGradient_init([Color.Companion.MD_BROWN, Color.Companion.MD_BLUE_300]);
-    var array = Array_0(10);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = gridGrad.getColor_y2kzbl$(i / 9.0).mix_y83vuj$(Color.Companion.BLACK, 0.3);
-    }
-    var tubeColors = array;
-    var tubeGrad = ColorGradient_init(tubeColors.slice());
-    var profile = new Profile_init();
-    $receiver.circleShape_k80pjh$(profile, 2.2, 60);
-    $receiver.transform.push();
-    for (var i_0 = 0; i_0 <= 1; i_0++) {
-      var invert = i_0 === 1;
-      $receiver.transform.push();
-      $receiver.color = tubeGrad.getColor_y2kzbl$(0.0).toLinear();
-      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
-      $receiver.sample_afatab$(profile, false, invert);
-      $receiver.scale_y2kzbl$(1 / 0.97, 1 / 0.97, 1.0);
-      $receiver.scale_y2kzbl$(0.96, 0.96, 1.0);
-      $receiver.sample_afatab$(profile, void 0, invert);
-      $receiver.scale_y2kzbl$(1 / 0.96, 1 / 0.96, 1.0);
-      $receiver.scale_y2kzbl$(0.95, 0.95, 1.0);
-      for (var j = 0; j <= 20; j++) {
-        $receiver.transform.push();
-        var p = j / 20.0;
-        var x = p * math_0.PI;
-        var s = 1 - Math_0.sin(x) * 0.6;
-        var x_0 = p * math_0.PI;
-        var t = 5.0 - Math_0.cos(x_0) * 5;
-        $receiver.color = tubeGrad.getColor_y2kzbl$(p).toLinear();
-        $receiver.translate_y2kzbl$(0.0, 0.0, t);
-        $receiver.scale_y2kzbl$(s, s, 1.0);
-        $receiver.sample_afatab$(profile, void 0, invert);
-        $receiver.transform.pop();
-        if (j === 0) {
-          $receiver.fillTop_pvgy1j$(profile);
-        }}
-      $receiver.translate_y2kzbl$(0.0, 0.0, 10.0);
-      $receiver.scale_y2kzbl$(1 / 0.95, 1 / 0.95, 1.0);
-      $receiver.scale_y2kzbl$(0.96, 0.96, 1.0);
-      $receiver.sample_afatab$(profile, void 0, invert);
-      $receiver.scale_y2kzbl$(1 / 0.96, 1 / 0.96, 1.0);
-      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
-      $receiver.sample_afatab$(profile, void 0, invert);
-      $receiver.transform.pop();
-      $receiver.translate_y2kzbl$(0.0, 0.0, -0.15);
-      $receiver.scale_y2kzbl$(1.0, 1.0, 10.3 / 10.0);
-    }
-    $receiver.transform.pop();
-    for (var i_1 = 0; i_1 <= 1; i_1++) {
-      $receiver.color = tubeGrad.getColor_y2kzbl$(i_1).toLinear();
-      $receiver.transform.push();
-      $receiver.translate_y2kzbl$(0.0, 0.0, -0.15 + 10.15 * i_1);
-      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
-      $receiver.sample_afatab$(profile, false);
-      $receiver.scale_y2kzbl$(1.0 / 0.97, 1.0 / 0.97, 1.0);
-      $receiver.sample_afatab$(profile);
-      $receiver.translate_y2kzbl$(0.0, 0.0, 0.03);
-      $receiver.scale_y2kzbl$(1.02, 1.02, 1.0);
-      $receiver.sample_afatab$(profile);
-      $receiver.translate_y2kzbl$(0.0, 0.0, 0.09);
-      $receiver.sample_afatab$(profile);
-      $receiver.translate_y2kzbl$(0.0, 0.0, 0.03);
-      $receiver.scale_y2kzbl$(1.0 / 1.02, 1.0 / 1.02, 1.0);
-      $receiver.sample_afatab$(profile);
-      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
-      $receiver.sample_afatab$(profile);
-      $receiver.transform.pop();
-    }
-    var profile_0 = new Profile_init();
-    var shape = new SimpleShape_init(true);
-    profile_0.shapes.add_11rb$(shape);
-    shape.xy_dleff0$(0.8, 1.0);
-    shape.xy_dleff0$(-0.8, 1.0);
-    shape.xy_dleff0$(-1.0, 0.8);
-    shape.xy_dleff0$(-1.0, -0.8);
-    shape.xy_dleff0$(-0.8, -1.0);
-    shape.xy_dleff0$(0.8, -1.0);
-    shape.xy_dleff0$(1.0, -0.8);
-    shape.xy_dleff0$(1.0, 0.8);
-    var n = 50;
-    var cols = 24;
-    for (var c = 0; c < cols; c++) {
-      var rad = 2.0 * math_0.PI * c / cols;
-      for (var i_2 = 0; i_2 <= n; i_2++) {
-        $receiver.transform.push();
-        var p_0 = i_2 / n;
-        var rot = p_0 * 180.0 * (c % 2 === 0 ? 1 : -1);
-        $receiver.color = gridGrad.getColor_y2kzbl$(p_0).toLinear();
-        $receiver.rotate_ad55pp$(rot, Vec3f.Companion.Z_AXIS);
-        var r = 1.0 + (p_0 - 0.5) * (p_0 - 0.5) * 4;
-        $receiver.translate_y2kzbl$(Math_0.cos(rad) * r, Math_0.sin(rad) * r, 0.0);
-        $receiver.translate_y2kzbl$(0.0, 0.0, p_0 * 10.0);
-        $receiver.rotate_ad55pp$(rad * math.RAD_2_DEG, Vec3f.Companion.Z_AXIS);
-        $receiver.scale_y2kzbl$(0.05, 0.05, 1.0);
-        $receiver.sample_afatab$(profile_0, i_2 !== 0);
-        $receiver.transform.pop();
-      }
-    }
-    $receiver.geometry.removeDegeneratedTriangles();
-    $receiver.geometry.generateNormals();
+  function Roses$Roses$GeneratedRose_init$lambda$lambda(this$GeneratedRose) {
+    return function ($receiver) {
+      this$GeneratedRose.makeShaftGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda(this$GeneratedRose) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(Roses$Roses$GeneratedRose_init$lambda$lambda(this$GeneratedRose));
+      var cfg = new PbrMaterialConfig();
+      cfg.roughness = 0.3;
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda$lambda_0(this$GeneratedRose) {
+    return function ($receiver) {
+      this$GeneratedRose.makeLeafGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda_0(this$GeneratedRose) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(Roses$Roses$GeneratedRose_init$lambda$lambda_0(this$GeneratedRose));
+      var cfg = new PbrMaterialConfig();
+      cfg.roughness = 0.5;
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda$lambda_1(this$GeneratedRose) {
+    return function ($receiver) {
+      this$GeneratedRose.makeBlossomGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda_1(this$GeneratedRose) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(Roses$Roses$GeneratedRose_init$lambda$lambda_1(this$GeneratedRose));
+      var cfg = new PbrMaterialConfig();
+      cfg.roughness = 0.8;
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  Roses$GeneratedRose.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GeneratedRose',
+    interfaces: []
   };
-  ProceduralDemo.prototype.makeTableGeometry_w0m2rg$ = function ($receiver) {
+  Roses.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Roses',
+    interfaces: [Group]
+  };
+  function Table() {
+    Mesh_init.call(this, IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.TEXTURE_COORDS, Attribute.Companion.TANGENTS]));
+    this.isCastingShadow = false;
+    this.generate_v2sixm$(Table_init$lambda(this));
+    var cfg = new PbrMaterialConfig();
+    cfg.useAlbedoMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-albedo4.jpg');
+    cfg.useNormalMap_9sobi5$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-normal2.jpg');
+    cfg.useRoughnessMap_ivxn3r$(Demo$Companion_getInstance().pbrBasePath + '/granitesmooth1/granitesmooth1-roughness3.jpg');
+    this.shader = new DeferredPbrShader(cfg);
+  }
+  Table.prototype.makeGeometry_0 = function ($receiver) {
     var tableR = 30.0;
     var r = 1.0;
     $receiver.translate_y2kzbl$(0.0, -r, 0.0);
@@ -8669,13 +8636,152 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.transform.pop();
     }
     $receiver.fillTop_pvgy1j$(profile);
-    $receiver.geometry.removeDegeneratedTriangles();
-    $receiver.geometry.generateNormals();
   };
-  ProceduralDemo.$metadata$ = {
+  function Table_init$lambda(this$Table) {
+    return function ($receiver) {
+      this$Table.makeGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      $receiver.geometry.generateTangents_mx4ult$();
+      return Unit;
+    };
+  }
+  Table.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'ProceduralDemo',
-    interfaces: []
+    simpleName: 'Table',
+    interfaces: [Mesh_init]
+  };
+  function Vase() {
+    Mesh_init.call(this, IndexedVertexList_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.COLORS]));
+    this.generate_v2sixm$(Vase_init$lambda(this));
+    var cfg = new PbrMaterialConfig();
+    cfg.roughness = 0.3;
+    this.shader = new DeferredPbrShader(cfg);
+  }
+  Vase.prototype.makeGeometry_0 = function ($receiver) {
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+    $receiver.translate_y2kzbl$(-7.5, -2.5, 0.0);
+    $receiver.scale_y2kzbl$(1.8, 1.8, 1.8);
+    $receiver.translate_y2kzbl$(0.0, 0.0, 0.15);
+    var gridGrad = ColorGradient_init([Color.Companion.MD_BROWN, Color.Companion.MD_BLUE_300]);
+    var array = Array_0(10);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = gridGrad.getColor_y2kzbl$(i / 9.0).mix_y83vuj$(Color.Companion.BLACK, 0.3);
+    }
+    var tubeColors = array;
+    var tubeGrad = ColorGradient_init(tubeColors.slice());
+    this.makeGrid_0($receiver, gridGrad);
+    this.makeTube_0($receiver, tubeGrad);
+  };
+  Vase.prototype.makeGrid_0 = function ($receiver, gridGrad) {
+    var profile = new Profile_init();
+    var shape = new SimpleShape_init(true);
+    profile.shapes.add_11rb$(shape);
+    shape.xy_dleff0$(0.8, 1.0);
+    shape.xy_dleff0$(-0.8, 1.0);
+    shape.xy_dleff0$(-1.0, 0.8);
+    shape.xy_dleff0$(-1.0, -0.8);
+    shape.xy_dleff0$(-0.8, -1.0);
+    shape.xy_dleff0$(0.8, -1.0);
+    shape.xy_dleff0$(1.0, -0.8);
+    shape.xy_dleff0$(1.0, 0.8);
+    var n = 50;
+    var cols = 24;
+    for (var c = 0; c < cols; c++) {
+      var rad = 2.0 * math_0.PI * c / cols;
+      for (var i = 0; i <= n; i++) {
+        $receiver.transform.push();
+        var p = i / n;
+        var rot = p * 180.0 * (c % 2 === 0 ? 1 : -1);
+        $receiver.color = gridGrad.getColor_y2kzbl$(p).toLinear();
+        $receiver.rotate_ad55pp$(rot, Vec3f.Companion.Z_AXIS);
+        var r = 1.0 + (p - 0.5) * (p - 0.5) * 4;
+        $receiver.translate_y2kzbl$(Math_0.cos(rad) * r, Math_0.sin(rad) * r, 0.0);
+        $receiver.translate_y2kzbl$(0.0, 0.0, p * 10.0);
+        $receiver.rotate_ad55pp$(rad * math.RAD_2_DEG, Vec3f.Companion.Z_AXIS);
+        $receiver.scale_y2kzbl$(0.05, 0.05, 1.0);
+        $receiver.sample_afatab$(profile, i !== 0);
+        $receiver.transform.pop();
+      }
+    }
+  };
+  Vase.prototype.makeTube_0 = function ($receiver, tubeGrad) {
+    var profile = new Profile_init();
+    $receiver.circleShape_k80pjh$(profile, 2.2, 60);
+    $receiver.transform.push();
+    for (var i = 0; i <= 1; i++) {
+      var invert = i === 1;
+      $receiver.transform.push();
+      $receiver.color = tubeGrad.getColor_y2kzbl$(0.0).toLinear();
+      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
+      $receiver.sample_afatab$(profile, false, invert);
+      $receiver.scale_y2kzbl$(1 / 0.97, 1 / 0.97, 1.0);
+      $receiver.scale_y2kzbl$(0.96, 0.96, 1.0);
+      $receiver.sample_afatab$(profile, void 0, invert);
+      $receiver.scale_y2kzbl$(1 / 0.96, 1 / 0.96, 1.0);
+      $receiver.scale_y2kzbl$(0.95, 0.95, 1.0);
+      for (var j = 0; j <= 20; j++) {
+        $receiver.transform.push();
+        var p = j / 20.0;
+        var x = p * math_0.PI;
+        var s = 1 - Math_0.sin(x) * 0.6;
+        var x_0 = p * math_0.PI;
+        var t = 5.0 - Math_0.cos(x_0) * 5;
+        $receiver.color = tubeGrad.getColor_y2kzbl$(p).toLinear();
+        $receiver.translate_y2kzbl$(0.0, 0.0, t);
+        $receiver.scale_y2kzbl$(s, s, 1.0);
+        $receiver.sample_afatab$(profile, void 0, invert);
+        $receiver.transform.pop();
+        if (j === 0) {
+          $receiver.fillTop_pvgy1j$(profile);
+        }}
+      $receiver.translate_y2kzbl$(0.0, 0.0, 10.0);
+      $receiver.scale_y2kzbl$(1 / 0.95, 1 / 0.95, 1.0);
+      $receiver.scale_y2kzbl$(0.96, 0.96, 1.0);
+      $receiver.sample_afatab$(profile, void 0, invert);
+      $receiver.scale_y2kzbl$(1 / 0.96, 1 / 0.96, 1.0);
+      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
+      $receiver.sample_afatab$(profile, void 0, invert);
+      $receiver.transform.pop();
+      $receiver.translate_y2kzbl$(0.0, 0.0, -0.15);
+      $receiver.scale_y2kzbl$(1.0, 1.0, 10.3 / 10.0);
+    }
+    $receiver.transform.pop();
+    for (var i_0 = 0; i_0 <= 1; i_0++) {
+      $receiver.color = tubeGrad.getColor_y2kzbl$(i_0).toLinear();
+      $receiver.transform.push();
+      $receiver.translate_y2kzbl$(0.0, 0.0, -0.15 + 10.15 * i_0);
+      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
+      $receiver.sample_afatab$(profile, false);
+      $receiver.scale_y2kzbl$(1.0 / 0.97, 1.0 / 0.97, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.translate_y2kzbl$(0.0, 0.0, 0.03);
+      $receiver.scale_y2kzbl$(1.02, 1.02, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.translate_y2kzbl$(0.0, 0.0, 0.09);
+      $receiver.sample_afatab$(profile);
+      $receiver.translate_y2kzbl$(0.0, 0.0, 0.03);
+      $receiver.scale_y2kzbl$(1.0 / 1.02, 1.0 / 1.02, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.scale_y2kzbl$(0.97, 0.97, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.transform.pop();
+    }
+  };
+  function Vase_init$lambda(this$Vase) {
+    return function ($receiver) {
+      this$Vase.makeGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  Vase.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vase',
+    interfaces: [Mesh_init]
   };
   function simplificationDemo(ctx) {
     return (new SimplificationDemo(ctx)).scenes;
@@ -11186,8 +11292,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     get: RoughnesMetalGridContent$Companion_getInstance
   });
   package$pbr.RoughnesMetalGridContent = RoughnesMetalGridContent;
-  package$demo.proceduralDemo_aemszp$ = proceduralDemo;
-  package$demo.ProceduralDemo = ProceduralDemo;
+  Object.defineProperty(Glas, 'Companion', {
+    get: Glas$Companion_getInstance
+  });
+  var package$procedural = package$demo.procedural || (package$demo.procedural = {});
+  package$procedural.Glas = Glas;
+  package$procedural.proceduralDemo_aemszp$ = proceduralDemo;
+  package$procedural.ProceduralDemo = ProceduralDemo;
+  package$procedural.Roses = Roses;
+  package$procedural.Table = Table;
+  package$procedural.Vase = Vase;
   package$demo.simplificationDemo_aemszp$ = simplificationDemo;
   package$demo.SimplificationDemo = SimplificationDemo;
   package$demo.treeScene_aemszp$ = treeScene;

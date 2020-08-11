@@ -88,6 +88,7 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
     var inAmbientOccl = ShaderNodeIoVar(ModelVar1fConst(1f))
 
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+    var inReflectionStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inReflectionColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inReflectionWeight = ShaderNodeIoVar(ModelVar1fConst(0f))
 
@@ -237,7 +238,7 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
             vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
             vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
-            vec3 reflection = specular * ${inAmbientOccl.ref1f()};
+            vec3 reflection = specular * ${inAmbientOccl.ref1f()} * ${inReflectionStrength.ref1f()};
             vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a + reflection;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)

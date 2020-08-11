@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.pbr.pbrDemoScene
+import de.fabmax.kool.demo.procedural.proceduralDemo
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.DebugOverlay

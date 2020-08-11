@@ -58,6 +58,7 @@ class PbrMaterialConfig {
     var normalStrength = 1f
     var displacementStrength = 0.1f
     var occlusionStrength = 1f
+    var reflectionStrength = 1f
 
     var albedoMap: Texture? = null
     var emissiveMap: Texture? = null
