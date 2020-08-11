@@ -184,8 +184,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     lightNode = multiLightNode(cfg.maxLights)
                     cfg.shadowMaps.forEachIndexed { i, map ->
                         lightNode.inShaodwFacs[i] = when (map) {
-                            is CascadedShadowMap -> deferredCascadedShadoweMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
-                            is SimpleShadowMap -> deferredSimpleShadoweMapNode(map, "depthMap_$i", worldPos).outShadowFac
+                            is CascadedShadowMap -> deferredCascadedShadowMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
+                            is SimpleShadowMap -> deferredSimpleShadowMapNode(map, "depthMap_$i", worldPos).outShadowFac
                             else -> ShaderNodeIoVar(ModelVar1fConst(1f))
                         }
                     }
@@ -209,7 +209,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
-                    inCamPos = defCam.outCamPos
+                    inViewDir = viewDirNode(defCam.outCamPos, worldPos).output
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 

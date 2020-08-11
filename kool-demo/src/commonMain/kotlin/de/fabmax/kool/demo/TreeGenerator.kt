@@ -139,6 +139,7 @@ class TreeGenerator(val distribution: PointDistribution,
 
     fun buildTrunkMesh(target: MeshBuilder) {
         treeNodes.forEach { it.buildTrunkMesh(target) }
+        target.geometry.removeDegeneratedTriangles()
     }
 
     fun buildLeafMesh(target: MeshBuilder) {
@@ -155,6 +156,7 @@ class TreeGenerator(val distribution: PointDistribution,
                 }
             }
         }
+        target.geometry.removeDegeneratedTriangles()
     }
 
     private fun populateAttractionPoints() {

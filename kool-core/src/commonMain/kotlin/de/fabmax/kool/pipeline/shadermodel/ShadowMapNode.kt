@@ -22,7 +22,7 @@ class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, 
     private val ifPosLightSpace = StageInterfaceNode("posLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
 
     val vertexNode = SimpleShadowMapTransformNode(shadowMap, vertexGraph)
-    val fragmentNode = SimpleShadowMapFragmentNode(fragmentGraph)
+    val fragmentNode = SimpleShadowMapFragmentNode(shadowMap, fragmentGraph)
 
     var inWorldPos: ShaderNodeIoVar
         get() = vertexNode.inWorldPos
@@ -74,9 +74,9 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
     }
 }
 
-class SimpleShadowMapFragmentNode(graph: ShaderGraph) : ShaderNode("shadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph) : ShaderNode("shadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
     var depthMap: TextureNode? = null
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.005f))
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(if (shadowMap.optimizeForDirectionalLight) -0.001f else -0.005f))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)

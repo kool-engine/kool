@@ -4,30 +4,36 @@
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
 WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
 
-This is my personal pet-project. I have a few demos in place (once loaded, you can also switch between
-them via the hamburger button in the upper left corner):
-- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
-  light sources - also includes PBR shading and ambient occlusion.
+This is mostly my personal pet-project. However, if you are curious you might be able to use this for your own projects
+as well (look below for a very short usage guide - that's all the documentation there is) 
+
+I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
+hamburger button in the upper left corner):
+- [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=proceduralDemo): Small test-case for
+  procedural geometry; all geometry is generated in code (textures are regular images though). Also some glass
+  shading (shaft of the wine glass, the wine itself looks odd when shaded with refractions and is therefore opaque)
 - [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Three fancy models:
   Flight Helmet from 
   [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet) as well as
   [Coffee Cart](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) and
   [Camera Model](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) from 3dModeHaven. Moreover, a
   few feature test models.
-- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
-  with image based lighting for various materials and environments (underlying PBR theory from
-  [this](https://learnopengl.com/PBR/Theory) awesome article series).
+- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
+  light sources - also includes PBR shading and ambient occlusion.
 - [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
 - [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssrDemo): A simple PBR shaded
   model with screen-space reflections and up to four spot lights with dynamic shadows.
-- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
-  simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
+- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
+  with image based lighting for various materials and environments (underlying PBR theory from
+  [this](https://learnopengl.com/PBR/Theory) awesome article series).
 - [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=treeDemo): A simple procedural tree generator
   based on a [space colonization algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
 - [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instanceDemo): Instanced rendering
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
+- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
+  simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
 Code for all demos is available in kool-demo sub-project.
 

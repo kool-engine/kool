@@ -52,7 +52,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         mrtPass = DeferredMrtPass(scene, cfg.isWithEmissive)
 
         aoPipeline = if (cfg.isWithAmbientOcclusion) AoPipeline.createDeferred(scene, mrtPass) else null
-        shadowMaps = createShadowMapsFromSceneLights()
+        shadowMaps = cfg.shadowMaps ?: createShadowMapsFromSceneLights()
 
         val lightingCfg = PbrSceneShader.DeferredPbrConfig().apply {
             isWithEmissive = cfg.isWithEmissive
@@ -66,7 +66,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         pbrPass.sceneShader.scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
 
         if (cfg.isWithScreenSpaceReflections) {
-            reflectionPass = ReflectionPass(mrtPass, pbrPass)
+            reflectionPass = ReflectionPass(mrtPass, pbrPass, cfg.baseReflectionStep)
             reflectionDenoisePass = ReflectionDenoisePass(reflectionPass, mrtPass.positionAo)
             pbrPass.sceneShader.scrSpcReflectionMap = reflectionDenoisePass.colorTexture
             scene.addOffscreenPass(reflectionPass)
@@ -138,7 +138,13 @@ class DeferredPipelineConfig {
 
     var maxGlobalLights = 4
     var lightBacksides = false
+    var baseReflectionStep = 0.1f
     var environmentMaps: EnvironmentMaps? = null
+    var shadowMaps: List<ShadowMap>? = null
+
+    fun useShadowMaps(shadowMaps: List<ShadowMap>?) {
+        this.shadowMaps = shadowMaps
+    }
 
     fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
         this.environmentMaps = environmentMaps

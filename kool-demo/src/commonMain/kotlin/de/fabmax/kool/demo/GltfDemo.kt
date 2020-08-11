@@ -131,6 +131,7 @@ class GltfDemo(ctx: KoolContext) {
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = true
             isWithEmissive = true
+            baseReflectionStep = 0.02f
             maxGlobalLights = 2
             useImageBasedLighting(envMaps)
         }

@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -34,11 +34,8 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
     init {
         geometry.primitiveType = PrimitiveType.LINES
         rayTest = MeshRayTest.nopTest()
-        shader = ModeledShader.VertexColor()
+        shader = unlitShader {  }
     }
-
-    //var isXray = false
-    //var lineWidth = 1f
 
     fun addLine(point0: Vec3f, point1: Vec3f, color: Color) = addLine(point0, color, point1, color)
 

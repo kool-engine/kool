@@ -138,4 +138,9 @@ abstract class KoolContext {
     }
 
     private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)
+
+    companion object {
+        // automatically updated by gradle script on build
+        const val KOOL_VERSION = "0.6.0-SNAPSHOT"
+    }
 }

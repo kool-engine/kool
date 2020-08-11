@@ -30,14 +30,15 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val defaultScene = DemoEntry("glTF Models") { addAll(gltfDemo(it)) }
 
     private val demos = mutableMapOf(
-            "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
+            "proceduralDemo" to DemoEntry("Procedural Geometry") { addAll(proceduralDemo(it)) },
             "gltfDemo" to DemoEntry("glTF Models") { addAll(gltfDemo(it)) },
-            "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
+            "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
             "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
             "ssrDemo" to DemoEntry("Reflections") { addAll(multiLightDemo(it)) },
+            "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
             "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
-            "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
             "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
+            "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
 
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) },
             "helloGltfDemo" to DemoEntry("Hello glTF", true) { add(helloGltfScene(it)) }

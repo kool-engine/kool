@@ -36,6 +36,18 @@ class ShaderModel(val modelInfo: String = "") {
         return null
     }
 
+    inline fun <reified T: ShaderNode> findNodeByType(stage: ShaderStage = ShaderStage.ALL): T? {
+        stages.values.forEach {
+            if (it.stage.mask and stage.mask != 0) {
+                val node = it.nodes.filterIsInstance<T>().firstOrNull()
+                if (node != null) {
+                    return node
+                }
+            }
+        }
+        return null
+    }
+
     fun setup(mesh: Mesh, builder: Pipeline.Builder) {
         builder.name = modelInfo
         stages.values.forEach { it.clear() }
@@ -178,6 +190,20 @@ class ShaderModel(val modelInfo: String = "") {
             return nrmNode
         }
 
+        fun viewDirNode(inCamPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null): ViewDirNode {
+            val viewDirNd = addNode(ViewDirNode(stage))
+            inCamPos?.let { viewDirNd.inCamPos = it }
+            inWorldPos?.let { viewDirNd.inWorldPos = it }
+            return viewDirNd
+        }
+
+        fun distanceNode(inA: ShaderNodeIoVar? = null, inB: ShaderNodeIoVar? = null): DistanceNode {
+            val distNode = addNode(DistanceNode(stage))
+            inA?.let { distNode.inA = it }
+            inB?.let { distNode.inB = it }
+            return distNode
+        }
+
         fun normalizeNode(input: ShaderNodeIoVar? = null): NormalizeNode {
             val nrmNode = addNode(NormalizeNode(stage))
             input?.let { nrmNode.input = input }
@@ -189,6 +215,14 @@ class ShaderModel(val modelInfo: String = "") {
             inDirection?.let { reflectNd.inDirection = it }
             inNormal?.let { reflectNd.inNormal = it }
             return reflectNd
+        }
+
+        fun refractNode(inDirection: ShaderNodeIoVar? = null, inNormal: ShaderNodeIoVar? = null, inIor: ShaderNodeIoVar? = null): RefractNode {
+            val refractNd = addNode(RefractNode(stage))
+            inDirection?.let { refractNd.inDirection = it }
+            inNormal?.let { refractNd.inNormal = it }
+            inIor?.let { refractNd.inIor = it }
+            return refractNd
         }
 
         fun normalMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null,
@@ -426,17 +460,23 @@ class ShaderModel(val modelInfo: String = "") {
             return lightNd
         }
 
-        fun deferredSimpleShadoweMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
+        fun screenCoordNode(viewport: ShaderNodeIoVar? = null): ScreenCoordNode {
+            val coordNd = addNode(ScreenCoordNode(stage))
+            viewport?.let { coordNd.inViewport = it }
+            return coordNd
+        }
+
+        fun deferredSimpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
             val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply { isDepthTexture = true }
             val lightSpaceTf = addNode(SimpleShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
-            return addNode(SimpleShadowMapFragmentNode(stage)).apply {
+            return addNode(SimpleShadowMapFragmentNode(shadowMap, stage)).apply {
                 inPosLightSpace = lightSpaceTf.outPosLightSpace
                 depthMap = depthMapNd
             }
         }
 
-        fun deferredCascadedShadoweMapNode(shadowMap: CascadedShadowMap, depthMapName: String,
-                                           viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
+        fun deferredCascadedShadowMapNode(shadowMap: CascadedShadowMap, depthMapName: String,
+                                          viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
             val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply {
                 isDepthTexture = true
                 arraySize = shadowMap.numCascades
@@ -471,11 +511,11 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun pbrMaterialNode(lightNode: LightNode?, reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
                             albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
-                            fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null): PbrMaterialNode {
+                            fragPos: ShaderNodeIoVar? = null, viewDir: ShaderNodeIoVar? = null): PbrMaterialNode {
             val mat = addNode(PbrMaterialNode(lightNode, reflectionMap, brdfLut, stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
-            camPos?.let { mat.inCamPos = it }
+            viewDir?.let { mat.inViewDir = it }
             fragPos?.let { mat.inFragPos = it }
             return mat
         }

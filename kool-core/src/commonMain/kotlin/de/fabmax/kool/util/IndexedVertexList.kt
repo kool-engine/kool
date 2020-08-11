@@ -311,6 +311,31 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
     }
 
+    fun removeDegeneratedTriangles() {
+        val v0 = this[0]
+        val v1 = this[1]
+        val v2 = this[2]
+
+        val fixedIndices = IntArray(numIndices)
+        var iFixed = 0
+        for (i in 0 until numIndices step 3) {
+            v0.index = indices[i]
+            v1.index = indices[i + 1]
+            v2.index = indices[i + 2]
+
+            val a = triArea(v0.position, v1.position, v2.position)
+            if (!a.isNaN() && a > 0f) {
+                fixedIndices[iFixed++] = indices[i]
+                fixedIndices[iFixed++] = indices[i + 1]
+                fixedIndices[iFixed++] = indices[i + 2]
+            }
+        }
+        if (iFixed != numIndices) {
+            indices.clear()
+            indices.put(fixedIndices, 0, iFixed)
+        }
+    }
+
     fun generateNormals() {
         if (!vertexAttributes.contains(Attribute.NORMALS)) {
             return
@@ -346,7 +371,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
             e1.cross(e2, nrm).norm().scale(a)
             if (nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
-                logW { "degenerated triangle" }
+                logW { "degenerated triangle, a = $a" }
             } else {
                 v0.normal += nrm
                 v1.normal += nrm
@@ -410,7 +435,6 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             v0.index = i
 
             if (v0.normal.sqrLength() == 0f) {
-                logW { "singular normal" }
                 v0.normal.set(Vec3f.Y_AXIS)
             }
 
@@ -418,8 +442,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
                 v0.tangent.norm()
                 v0.tangent.w = tangentSign
             } else {
-                logW { "singular tangent" }
-                v0.normal.set(Vec3f.X_AXIS)
+                v0.tangent.set(Vec3f.X_AXIS)
             }
         }
     }

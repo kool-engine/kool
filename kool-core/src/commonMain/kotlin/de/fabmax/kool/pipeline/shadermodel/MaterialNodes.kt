@@ -80,7 +80,7 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
     var inEmissive: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.BLACK))
     var inNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
     var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inViewDir: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
     var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
@@ -97,7 +97,7 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo, inEmissive, inNormal, inFragPos, inCamPos)
+        dependsOn(inAlbedo, inEmissive, inNormal, inFragPos, inViewDir)
         dependsOn(inSpotInnerAngle, inMetallic, inRoughness, inAmbientOccl)
         dependsOn(inIrradiance, inReflectionColor, inReflectionWeight)
         dependsOn(lightNode)
@@ -158,8 +158,8 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
 
         generator.appendMain("""
             vec3 albedo = ${inAlbedo.ref3f()};
-            vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
-            vec3 N = normalize(${inNormal.ref3f()});
+            vec3 V = -${inViewDir.ref3f()};
+            vec3 N = ${inNormal.ref3f()};
             
             float rough = clamp(${inRoughness.ref1f()}, 0.05, 1.0);
             float metal = ${inMetallic.ref1f()};
@@ -236,8 +236,9 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
             vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
             vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-            vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
-            vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a;
+            vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
+            vec3 reflection = specular * ${inAmbientOccl.ref1f()};
+            vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a + reflection;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
     }

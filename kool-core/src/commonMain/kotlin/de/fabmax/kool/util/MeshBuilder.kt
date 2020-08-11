@@ -102,6 +102,57 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         transform[2, 3] = origin.z
     }
 
+    inline fun profile(block: Profile.() -> Unit): Profile {
+        val profile = Profile()
+        profile.block()
+        return profile
+    }
+
+    inline fun ShapeContainer.multiShape(block: MultiShape.() -> Unit): MultiShape {
+        val shape = MultiShape()
+        shapes += shape
+        shape.block()
+        return shape
+    }
+
+    inline fun ShapeContainer.simpleShape(isClosed: Boolean, block: SimpleShape.() -> Unit): SimpleShape {
+        val shape = SimpleShape(isClosed)
+        shapes += shape
+        shape.block()
+        return shape
+    }
+
+    fun ShapeContainer.circleShape(radius: Float = 1f, steps: Int = 40): SimpleShape {
+        return simpleShape(true) {
+            for (a in 0 until steps) {
+                val rad = 2f * PI.toFloat() * a / steps
+                xy(cos(rad) * radius, sin(rad) * radius)
+            }
+        }
+    }
+
+    fun Profile.sample(connect: Boolean = true, inverseOrientation: Boolean = false) {
+        sample(this@MeshBuilder, connect, inverseOrientation)
+    }
+
+    fun Profile.sampleAndFillBottom(connect: Boolean = false, inverseOrientation: Boolean = false) {
+        sample(this@MeshBuilder, connect, inverseOrientation)
+        fillBottom(this@MeshBuilder)
+    }
+
+    fun Profile.fillBottom() {
+        fillBottom(this@MeshBuilder)
+    }
+
+    fun Profile.sampleAndFillTop(connect: Boolean = false, inverseOrientation: Boolean = false) {
+        sample(this@MeshBuilder, connect, inverseOrientation)
+        fillTop(this@MeshBuilder)
+    }
+
+    fun Profile.fillTop() {
+        fillTop(this@MeshBuilder)
+    }
+
     inline fun circle(props: CircleProps.() -> Unit) {
         circleProps.defaults().props()
         circle(circleProps)

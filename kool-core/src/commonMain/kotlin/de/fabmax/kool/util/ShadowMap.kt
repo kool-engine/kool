@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
@@ -27,14 +28,16 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
 
     val lightViewProjMat = Mat4d()
 
+    var optimizeForDirectionalLight = false
     var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
+    var shadowBounds: BoundingBox? = null
 
-    private val viewMat = Mat4d()
     private val nearSceneCamPlane = FrustumPlane()
     private val farSceneCamPlane = FrustumPlane()
-    private val sceneFrustumBounds = BoundingBox()
+    private val shadowCamBounds = BoundingBox()
+    private val tmpVec = MutableVec3f()
 
     override var isShadowMapEnabled: Boolean
         get() = isEnabled
@@ -100,20 +103,33 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
         cam.position.set(Vec3f.ZERO)
         cam.lookAt.set(light.direction)
 
-        sceneCam.computeFrustumPlane(clipNear, nearSceneCamPlane)
-        sceneCam.computeFrustumPlane(clipFar, farSceneCamPlane)
+        val bounds = shadowBounds
+        if (bounds != null) {
+            shadowCamBounds.clear()
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
+            shadowCamBounds.add(cam.view.transform(tmpVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
 
-        viewMat.setLookAt(cam.position, cam.lookAt, cam.up)
-        viewMat.transform(nearSceneCamPlane)
-        viewMat.transform(farSceneCamPlane)
-        sceneFrustumBounds.setPlanes(nearSceneCamPlane, farSceneCamPlane)
+        } else {
+            sceneCam.computeFrustumPlane(clipNear, nearSceneCamPlane)
+            sceneCam.computeFrustumPlane(clipFar, farSceneCamPlane)
 
-        cam.left = sceneFrustumBounds.min.x
-        cam.right = sceneFrustumBounds.max.x
-        cam.bottom = sceneFrustumBounds.min.y
-        cam.top = sceneFrustumBounds.max.y
-        cam.near = -sceneFrustumBounds.max.z - 20
-        cam.far = -sceneFrustumBounds.min.z
+            cam.view.transform(nearSceneCamPlane)
+            cam.view.transform(farSceneCamPlane)
+            shadowCamBounds.setPlanes(nearSceneCamPlane, farSceneCamPlane)
+        }
+
+        cam.left = shadowCamBounds.min.x
+        cam.right = shadowCamBounds.max.x
+        cam.bottom = shadowCamBounds.min.y
+        cam.top = shadowCamBounds.max.y
+        cam.near = -shadowCamBounds.max.z - 20
+        cam.far = -shadowCamBounds.min.z
     }
 
     private fun Mat4d.transform(plane: FrustumPlane) {
@@ -143,8 +159,14 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
         MapRange(near, far)
     }
 
-    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode) }
+    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode).apply { optimizeForDirectionalLight = true } }
     val viewSpaceRanges = FloatArray(numCascades)
+
+    var drawNode: Node
+        get() = cascades[0].drawNode
+        set(value) {
+            cascades.forEach { it.drawNode = value }
+        }
 
     override var isShadowMapEnabled: Boolean
         get() = cascades[0].isEnabled

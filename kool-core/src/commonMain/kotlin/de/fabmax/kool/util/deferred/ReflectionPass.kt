@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
 
-class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLightingPass) :
+class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLightingPass, val baseReflectionStep: Float) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "ReflectionPass"
             setSize(pbrLightingPass.config.width, pbrLightingPass.config.height)
@@ -139,6 +139,7 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 inRayOffset = rayOffset
 
                 maxIterations = pushConstantNode1i("uMaxIterations").output
+                baseStepFac = constFloat(baseReflectionStep)
             }
 
             val color = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor

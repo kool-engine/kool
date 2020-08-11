@@ -142,6 +142,21 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
             ssaoSampler?.texture = value
         }
 
+    // Refraction parameters
+    private var uMaterialThickness: PushConstantNode1f? = null
+    var materialThickness = cfg.materialThickness
+        set(value) {
+            field = value
+            uMaterialThickness?.uniform?.value = value
+        }
+
+    private var refractionColorSampler: TextureSampler? = null
+    var refractionColorMap: Texture? = cfg.refractionColorMap
+        set(value) {
+            field = value
+            refractionColorSampler?.texture = value
+        }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
@@ -178,6 +193,11 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
         ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
         ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
+
+        uMaterialThickness = model.findNode("uMaterialThickness")
+        uMaterialThickness?.let { it.uniform.value = materialThickness }
+        refractionColorSampler = model.findNode<TextureNode>("tRefractionColor")?.sampler
+        refractionColorSampler?.let { it.texture = refractionColorMap }
 
         albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
@@ -326,6 +346,15 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                 shadowMapNodes.forEach {
                     lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
                 }
+                var normal = if (cfg.isNormalMapped && ifTangents != null) {
+                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                    bumpNormal.inStrength = constFloat(cfg.normalStrength)
+                    bumpNormal.outNormal
+                } else {
+                    ifNormals.output
+                }
+                normal = normalizeNode(flipBacksideNormalNode(normal).outNormal).output
+                val viewDir = viewDirNode(mvpFrag.outCamPos, ifFragPos.output).output
 
                 val reflMap: CubeMapNode?
                 val brdfLut: TextureNode?
@@ -343,21 +372,13 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                 }
 
                 val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+                    inAlbedo = albedo
+                    inNormal = normal
                     lightBacksides = cfg.lightBacksides
                     inFragPos = ifFragPos.output
-                    inCamPos = mvpFrag.outCamPos
+                    inViewDir = viewDir
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
-
-                    inAlbedo = albedo
-                    inNormal = if (cfg.isNormalMapped && ifTangents != null) {
-                        val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
-                        bumpNormal.inStrength = constFloat(cfg.normalStrength)
-                        bumpNormal.outNormal
-                    } else {
-                        ifNormals.output
-                    }
-                    inNormal = flipBacksideNormalNode(inNormal).outNormal
 
                     if (cfg.isEmissiveMapped) {
                         val emissive = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
@@ -426,15 +447,29 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     inAmbientOccl = aoFactor
                 }
 
-                val matOutColor = if (cfg.isHdrOutput) {
-                    mat.outColor
-                } else {
-                    hdrToLdrNode(mat.outColor).outColor
+                var outColor = mat.outColor
+                if (cfg.isRefraction) {
+                    val refrSampler = addNode(RefractionSamplerNode(stage)).apply {
+                        reflectionMap = reflMap
+                        refractionColor = textureNode("tRefractionColor")
+                        viewProj = multiplyNode(mvpFrag.outProjMat, mvpFrag.outViewMat).output
+                        inMaterialThickness = pushConstantNode1f("uMaterialThickness").output
+                        inFragPos = ifFragPos.output
+                        inRefractionDir = refractNode(viewDir, normal, constFloat(1f / cfg.refractionIor)).outDirection
+                    }
+                    val refrColor = refrSampler.outColor
+                    val refrWeight = subtractNode(constFloat(1f), splitNode(mat.outColor, "a").output).output
+                    val mixColor = multiplyNode(refrColor, refrWeight).output
+                    outColor = combineXyzWNode(addNode(outColor, mixColor).output, constFloat(1f)).output
+                }
+
+                if (!cfg.isHdrOutput) {
+                    outColor = hdrToLdrNode(outColor).outColor
                 }
                 when (cfg.alphaMode) {
-                    is AlphaModeBlend -> colorOutput(matOutColor)
-                    is AlphaModeMask -> colorOutput(matOutColor, alpha = constFloat(1f))
-                    is AlphaModeOpaque -> colorOutput(matOutColor, alpha = constFloat(1f))
+                    is AlphaModeBlend -> colorOutput(outColor)
+                    is AlphaModeMask -> colorOutput(outColor, alpha = constFloat(1f))
+                    is AlphaModeOpaque -> colorOutput(outColor, alpha = constFloat(1f))
                 }
             }
         }

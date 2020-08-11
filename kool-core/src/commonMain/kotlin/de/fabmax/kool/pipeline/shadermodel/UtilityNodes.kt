@@ -342,6 +342,26 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
     }
 }
 
+class ScreenCoordNode(graph: ShaderGraph) : ShaderNode("screenCoord_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+    var inViewport = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+
+    val outScreenCoord = ShaderNodeIoVar(ModelVar4f("gl_FragCoord"), this)
+    val outNormalizedScreenCoord = ShaderNodeIoVar(ModelVar3f("${name}_outNormalizedCoord"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inViewport)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            ${outNormalizedScreenCoord.declare()} = ${outScreenCoord.ref3f()};
+            $outNormalizedScreenCoord.xy - ${inViewport.ref2f()};
+            $outNormalizedScreenCoord.xy /= ${inViewport.ref4f()}.zw;
+        """)
+    }
+}
+
 class FullScreenQuadTexPosNode(graph: ShaderGraph) : ShaderNode("fullScreenQuad_${graph.nextNodeId}", graph) {
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
     var inDepth = ShaderNodeIoVar(ModelVar1fConst(0.999f))
@@ -376,5 +396,44 @@ class GetMorphWeightNode(val iWeight: Int, graph: ShaderGraph) : ShaderNode("get
             else -> "w"
         }
         generator.appendMain("${outWeight.declare()} = ${inW.ref4f()}.$c;")
+    }
+}
+
+class RefractionSamplerNode(graph: ShaderGraph) : ShaderNode("refractionSampler_${graph.nextNodeId}", graph) {
+    var reflectionMap: CubeMapNode? = null
+    lateinit var refractionColor: TextureNode
+    lateinit var viewProj: ShaderNodeIoVar
+
+    var inMaterialThickness = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var inRefractionDir = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+
+    val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(refractionColor)
+        dependsOn(reflectionMap)
+        dependsOn(viewProj, inRefractionDir, inFragPos, inMaterialThickness)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        val envColor = reflectionMap?.let { generator.sampleTextureCube(it.name, inRefractionDir.ref3f()) } ?: "vec4(0.0)"
+        generator.appendMain("""
+                vec3 ${name}_refrPos = ${inFragPos.ref3f()} + ${inRefractionDir.ref3f()} * ${inMaterialThickness.ref1f()};
+                vec4 ${name}_clip = $viewProj * vec4(${name}_refrPos, 1.0);
+                vec2 ${name}_refrSample = (${name}_clip.xy / ${name}_clip.w) * 0.5 + 0.5;
+                
+                bool ${name}_useReflMap = ${name}_refrSample.x < 0.0 || ${name}_refrSample.x > 1.0
+                                        || ${name}_refrSample.y < 0.0 || ${name}_refrSample.y > 1.0;
+                
+                ${outColor.declare()} = vec4(0.0);
+                if (!${name}_useReflMap) {
+                    $outColor = ${generator.sampleTexture2d(refractionColor.name, "${name}_refrSample")};
+                }
+                if ($outColor.a == 0.0) {
+                    $outColor = $envColor;
+                }
+            """)
     }
 }

@@ -12,7 +12,7 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
 
     private val gradient = Array(n) { MutableColor() }
 
-    constructor(vararg colors: Color, n: Int = ColorGradient.DEFAULT_N) :
+    constructor(vararg colors: Color, n: Int = DEFAULT_N) :
             this(*Array(colors.size) { i -> i.toFloat() to colors[i] }, n = n)
 
     init {
@@ -40,6 +40,11 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
 
     fun getColor(value: Float, min: Float = 0f, max: Float = 1f): Color =
             gradient[((value - min) / (max - min) * gradient.size).toInt().clamp(0, gradient.size - 1)]
+
+    fun inverted(): ColorGradient {
+        val invertedColors = Array<Pair<Float, Color>>(gradient.size) { i -> i.toFloat() to gradient[gradient.lastIndex - i] }
+        return ColorGradient(*invertedColors, n = gradient.size)
+    }
 
     companion object {
         const val DEFAULT_N = 256

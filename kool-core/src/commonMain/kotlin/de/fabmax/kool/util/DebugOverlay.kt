@@ -44,7 +44,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     translate(xOffset, 0f, 0f)
                 }
 
-                val height = 150 + ctx.getSysInfos().size * 18f
+                val height = 168 + ctx.getSysInfos().size * 18f
                 val width = 180f
 
                 when (position) {
@@ -75,6 +75,15 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                 }
 
                 var yOri = -60f
+                +label("lblKoolVersion") {
+                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
+                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                    text = "Kool v${KoolContext.KOOL_VERSION}"
+                }
+                yOri -= 18f
+
                 for (i in ctx.getSysInfos().indices) {
                     +label("lblSysInfo_$i") {
                         layoutSpec.setOrigin(zero(), dps(yOri, true), zero())

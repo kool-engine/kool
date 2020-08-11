@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 
-abstract class RenderPass(val drawNode: Node) {
+abstract class RenderPass(var drawNode: Node) {
 
     var name: String? = null
 

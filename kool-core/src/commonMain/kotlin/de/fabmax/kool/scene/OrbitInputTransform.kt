@@ -20,13 +20,15 @@ fun Scene.orbitInputTransform(name: String? = null, block: OrbitInputTransform.(
     return sit
 }
 
-fun Scene.defaultCamTransform() {
-    +orbitInputTransform {
+fun Scene.defaultCamTransform(): OrbitInputTransform {
+    val ct = orbitInputTransform {
         // Set some initial rotation so that we look down on the scene
         setMouseRotation(20f, -30f)
         // Add camera to the transform group
         +camera
     }
+    +ct
+    return ct
 }
 
 open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name), Scene.DragHandler {

@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.Color
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -34,7 +35,7 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         staticPointLights.isDynamic = false
 
         lighting = scene.lighting
-        clearColor = null
+        clearColor = Color(0f, 0f, 0f, 0f)
         camera = mrtPass.camera
 
         scene.addOffscreenPass(this)

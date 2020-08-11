@@ -515,7 +515,7 @@ private fun treePbrModel(cfg: PbrMaterialConfig) = ShaderModel("treePbrModel()")
         val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
             lightBacksides = cfg.lightBacksides
             inFragPos = ifFragPos.output
-            inCamPos = mvpFrag.outCamPos
+            inViewDir = viewDirNode(mvpFrag.outCamPos, ifFragPos.output).output
 
             inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 

@@ -88,6 +88,16 @@ kotlin {
     }
 }
 
+tasks.register("updateVersion") {
+    val koolContextSrcFile = kotlin.sourceSets.findByName("commonMain")?.kotlin
+            ?.sourceDirectories
+            ?.map { File(it, "de/fabmax/kool/KoolContext.kt") }
+            ?.find { it.exists() }
+    koolContextSrcFile?.let { updateVersionCode(it, version) }
+}
+tasks["compileKotlinJs"].dependsOn("updateVersion")
+tasks["compileKotlinJvm"].dependsOn("updateVersion")
+
 val publishCredentials = PublishingCredentials("$rootDir/publishingCredentials.properties")
 if (publishCredentials.isAvailable) {
     publishing {
