@@ -134,8 +134,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Profile_init = $module$kool.de.fabmax.kool.util.Profile;
   var firstOrNull = Kotlin.kotlin.collections.firstOrNull_2p1efm$;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
-  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
+  var last = Kotlin.kotlin.collections.last_2p1efm$;
+  var randomI = $module$kool.de.fabmax.kool.math.randomI;
   var ColorGradient_init = $module$kool.de.fabmax.kool.util.ColorGradient_init_5tenyj$;
+  var first_0 = Kotlin.kotlin.collections.first_2p1efm$;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
+  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var SimpleShape_init = $module$kool.de.fabmax.kool.util.SimpleShape;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
@@ -157,7 +161,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
   var AlphaModeOpaque = $module$kool.de.fabmax.kool.pipeline.shading.AlphaModeOpaque;
   var now = $module$kool.de.fabmax.kool.now;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.spatial.pointKdTree_ffk80x$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
@@ -8223,24 +8226,40 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function proceduralDemo(ctx) {
     var demo = new ProceduralDemo(ctx);
-    return listOf_0(demo.mainScene);
+    return listOf([demo.mainScene, demo.menu]);
   }
   function ProceduralDemo(ctx) {
     this.mainScene = this.makeScene_aemszp$(ctx);
+    this.menu = this.makeMenu_aemszp$(ctx);
+    this.autoRotate = true;
+    this.roses_wwovcl$_0 = this.roses_wwovcl$_0;
   }
-  function ProceduralDemo$makeScene$lambda$lambda$lambda(this$) {
+  Object.defineProperty(ProceduralDemo.prototype, 'roses', {
+    get: function () {
+      if (this.roses_wwovcl$_0 == null)
+        return throwUPAE('roses');
+      return this.roses_wwovcl$_0;
+    },
+    set: function (roses) {
+      this.roses_wwovcl$_0 = roses;
+    }
+  });
+  function ProceduralDemo$makeScene$lambda$lambda$lambda(this$ProceduralDemo, this$) {
     return function ($receiver, it) {
-      this$.verticalRotation += 5.0 * it.deltaT;
-      return Unit;
+      if (this$ProceduralDemo.autoRotate) {
+        this$.verticalRotation += 5.0 * it.deltaT;
+      }return Unit;
     };
   }
-  function ProceduralDemo$makeScene$lambda$lambda(this$) {
+  function ProceduralDemo$makeScene$lambda$lambda(this$, this$ProceduralDemo) {
     return function ($receiver) {
       $receiver.setMouseRotation_dleff0$(-20.0, -10.0);
       $receiver.setMouseTranslation_y2kzbl$(0.0, 16.0, 0.0);
       $receiver.zoom = 40.0;
       $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.onUpdate.add_11rb$(ProceduralDemo$makeScene$lambda$lambda$lambda($receiver));
+      var $receiver_0 = $receiver.onUpdate;
+      var element = ProceduralDemo$makeScene$lambda$lambda$lambda(this$ProceduralDemo, $receiver);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -8249,11 +8268,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.5).toLinear(), 3.0);
     return Unit;
   }
-  function Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, $receiver_0, controller, continuation_0) {
+  function Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, this$ProceduralDemo_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$this$ = this$_0;
+    this.local$this$ProceduralDemo = this$ProceduralDemo_0;
     this.local$$receiver = $receiver_0;
   }
   Coroutine$ProceduralDemo$makeScene$lambda$lambda.$metadata$ = {
@@ -8291,13 +8311,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             $receiver_0.useShadowMaps_gdx315$(listOf_0(shadowMap));
             var deferredCfg = $receiver_0;
             var $receiver_1 = new DeferredPipeline(this.local$this$, deferredCfg);
+            var this$ProceduralDemo = this.local$this$ProceduralDemo;
             var tmp$;
             (tmp$ = $receiver_1.aoPipeline) != null ? (tmp$.radius = 0.6) : null;
             var $receiver_2 = $receiver_1.contentGroup;
             $receiver_2.unaryPlus_uv0sim$(new Glas(ensureNotNull($receiver_1.pbrPass.colorTexture), ibl_0));
-            $receiver_2.unaryPlus_uv0sim$(new Roses());
             $receiver_2.unaryPlus_uv0sim$(new Vase());
             $receiver_2.unaryPlus_uv0sim$(new Table());
+            this$ProceduralDemo.roses = new Roses();
+            $receiver_2.unaryPlus_uv0sim$(this$ProceduralDemo.roses);
             var deferredPipeline = $receiver_1;
             shadowMap.drawNode = deferredPipeline.contentGroup;
             return this.local$this$.unaryPlus_uv0sim$(deferredPipeline.renderOutput), Unit;
@@ -8315,9 +8337,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
      while (true);
   };
-  function ProceduralDemo$makeScene$lambda$lambda_1(this$_0) {
+  function ProceduralDemo$makeScene$lambda$lambda_1(this$_0, this$ProceduralDemo_0) {
     return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, $receiver_0, this, continuation_0);
+      var instance = new Coroutine$ProceduralDemo$makeScene$lambda$lambda(this$_0, this$ProceduralDemo_0, $receiver_0, this, continuation_0);
       if (suspended)
         return instance;
       else
@@ -8326,10 +8348,167 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   ProceduralDemo.prototype.makeScene_aemszp$ = function (ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, ProceduralDemo$makeScene$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, ProceduralDemo$makeScene$lambda$lambda($receiver, this)));
     $receiver.lighting.singleLight_q9zcvo$(ProceduralDemo$makeScene$lambda$lambda_0);
-    ctx.assetMgr.launch_eln4bt$(ProceduralDemo$makeScene$lambda$lambda_1($receiver));
+    ctx.assetMgr.launch_eln4bt$(ProceduralDemo$makeScene$lambda$lambda_1($receiver, this));
     return $receiver;
+  };
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(ProceduralDemo$makeMenu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(ProceduralDemo$makeMenu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda(this$ProceduralDemo) {
+    return function ($receiver, f, f_0, ctx) {
+      var tmp$;
+      tmp$ = this$ProceduralDemo.roses.children.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.dispose_aemszp$(ctx);
+      }
+      this$ProceduralDemo.roses.removeAllChildren();
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_2(closure$y, this$ProceduralDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda(this$ProceduralDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$ProceduralDemo, closure$replaceLastRose, closure$seedTxt) {
+    return function ($receiver, f, f_0, ctx) {
+      var tmp$, tmp$_0;
+      if (!this$ProceduralDemo.roses.children.isEmpty() && ((tmp$ = closure$replaceLastRose.v) != null ? tmp$.isEnabled : null) === true) {
+        var remNd = last(this$ProceduralDemo.roses.children);
+        this$ProceduralDemo.roses.removeNode_f1kmr1$(remNd);
+        remNd.dispose_aemszp$(ctx);
+      }var seed = randomI();
+      (tmp$_0 = closure$seedTxt.v) != null ? (tmp$_0.text = seed.toString()) : null;
+      this$ProceduralDemo.roses.makeRose_za3lpa$(seed);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_3(closure$y, this$ProceduralDemo, closure$replaceLastRose, closure$seedTxt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda_0(this$ProceduralDemo, closure$replaceLastRose, closure$seedTxt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_4(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = true;
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_5(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_6(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_7(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$ProceduralDemo) {
+    return function ($receiver) {
+      this$ProceduralDemo.autoRotate = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda$lambda_8(closure$y, this$ProceduralDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$ProceduralDemo.autoRotate;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$ProceduralDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda$lambda_0(closure$smallFont, this$, this$ProceduralDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-390.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(270.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Roses', ProceduralDemo$makeMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Empty Vase', ProceduralDemo$makeMenu$lambda$lambda$lambda_2(y, this$ProceduralDemo)));
+      y.v -= 35.0;
+      var seedTxt = {v: null};
+      var replaceLastRose = {v: null};
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Generate Rose', ProceduralDemo$makeMenu$lambda$lambda$lambda_3(y, this$ProceduralDemo, replaceLastRose, seedTxt)));
+      y.v -= 35.0;
+      replaceLastRose.v = this$.toggleButton_6j87po$('Replace Last Rose', ProceduralDemo$makeMenu$lambda$lambda$lambda_4(y));
+      $receiver.unaryPlus_uv0sim$(replaceLastRose.v);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Seed:', ProceduralDemo$makeMenu$lambda$lambda$lambda_5(y)));
+      seedTxt.v = this$.label_tokfmu$('0', ProceduralDemo$makeMenu$lambda$lambda$lambda_6(y));
+      $receiver.unaryPlus_uv0sim$(seedTxt.v);
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', ProceduralDemo$makeMenu$lambda$lambda$lambda_7(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', ProceduralDemo$makeMenu$lambda$lambda$lambda_8(y, this$ProceduralDemo)));
+      return Unit;
+    };
+  }
+  function ProceduralDemo$makeMenu$lambda(closure$ctx, this$ProceduralDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, ProceduralDemo$makeMenu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', ProceduralDemo$makeMenu$lambda$lambda_0(smallFont, $receiver, this$ProceduralDemo)));
+      return Unit;
+    };
+  }
+  ProceduralDemo.prototype.makeMenu_aemszp$ = function (ctx) {
+    return uiScene(void 0, void 0, void 0, ProceduralDemo$makeMenu$lambda(ctx, this));
   };
   ProceduralDemo.$metadata$ = {
     kind: Kind_CLASS,
@@ -8338,38 +8517,67 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function Roses() {
     Group.call(this);
+    this.makeRose_za3lpa$(1234);
     this.makeRose_za3lpa$(6415168);
     this.makeRose_za3lpa$(2541685);
-    this.makeRose_za3lpa$(25);
-    this.makeRose_za3lpa$(523947);
-    this.makeRose_za3lpa$(1234);
+    this.makeRose_za3lpa$(-336577773);
+    this.makeRose_za3lpa$(872435238);
+    this.translate_y2kzbl$(-7.5, 10.5, 2.5);
+  }
+  function Roses$makeRose$lambda(closure$rose) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(closure$rose.shaftMesh);
+      $receiver.unaryPlus_uv0sim$(closure$rose.shaftLeafMesh);
+      $receiver.unaryPlus_uv0sim$(closure$rose.leafMesh);
+      $receiver.unaryPlus_uv0sim$(closure$rose.blossomMesh);
+      return Unit;
+    };
   }
   Roses.prototype.makeRose_za3lpa$ = function (seed) {
     var rose = new Roses$GeneratedRose(seed);
-    this.unaryPlus_uv0sim$(rose.shaftMesh);
-    this.unaryPlus_uv0sim$(rose.leafMesh);
-    this.unaryPlus_uv0sim$(rose.blossomMesh);
+    this.unaryPlus_uv0sim$(group(void 0, Roses$makeRose$lambda(rose)));
   };
   function Roses$GeneratedRose(seed) {
     this.shaftGrad = new ColorGradient([to(0.0, Color.Companion.MD_BROWN_900.toLinear()), to(0.4, Color.Companion.MD_BROWN.toLinear()), to(1.0, Color.Companion.MD_LIGHT_GREEN_600.toLinear())]);
     this.blossomLeafGrad = ColorGradient_init([Color.Companion.MD_LIGHT_GREEN_600.toLinear(), Color.Companion.MD_LIGHT_GREEN.mix_y83vuj$(Color.Companion.MD_YELLOW_200, 0.5).toLinear()]);
     this.shaftMesh = null;
     this.leafMesh = null;
+    this.shaftLeafMesh = null;
     this.blossomMesh = null;
     this.rand = new Random(seed);
     this.shaftTopTransform = new Mat4f();
+    this.shaftLeafTransform = new Mat4f();
     this.shaftMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda(this));
-    this.leafMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_0(this));
-    this.blossomMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_1(this));
+    this.shaftLeafMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_0(this));
+    this.leafMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_1(this));
+    this.blossomMesh = colorMesh(void 0, Roses$Roses$GeneratedRose_init$lambda_2(this));
+    this.applyTint_d7aj7k$(Color.Companion.fromHsv_7b5o5w$(this.rand.randomF_dleff0$(0.0, 360.0), 0.12, this.rand.randomF_dleff0$(0.7, 1.0), 1.0).toLinear());
   }
-  Roses$GeneratedRose.prototype.makeShaftGeometry_0 = function ($receiver, origin) {
-    if (origin === void 0)
-      origin = new Vec3f(-7.5, -2.5, 10.0);
+  Roses$GeneratedRose.prototype.applyTint_d7aj7k$ = function (tint) {
+    this.applyTint_0(this.shaftMesh.geometry, tint);
+    this.applyTint_0(this.shaftLeafMesh.geometry, tint);
+    this.applyTint_0(this.leafMesh.geometry, tint);
+    this.applyTint_0(this.blossomMesh.geometry, tint);
+  };
+  Roses$GeneratedRose.prototype.applyTint_0 = function ($receiver, tint) {
+    var tmp$;
+    tmp$ = $receiver.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      $receiver.vertexIt.index = i;
+      var it = $receiver.vertexIt;
+      it.color.r = it.color.r * tint.r;
+      it.color.g = it.color.g * tint.g;
+      it.color.b = it.color.b * tint.b;
+      it.color.a = it.color.a * tint.a;
+    }
+  };
+  Roses$GeneratedRose.prototype.makeShaftGeometry_0 = function ($receiver) {
     $receiver.transform.push();
     $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.translate_czzhiu$(origin);
     var profile = new Profile_init();
+    var tmp$;
     $receiver.circleShape_k80pjh$(profile, 0.2, 8);
+    var leafPos = this.rand.randomI_vux9f0$(2, 3);
     var steps = 6;
     for (var i = 0; i < steps; i++) {
       var ax = (new MutableVec3f(this.rand.randomF_dleff0$(-1.0, 1.0), this.rand.randomF_dleff0$(-1.0, 1.0), 0.0)).norm();
@@ -8396,6 +8604,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.translate_y2kzbl$(0.0, 0.0, h * 0.1);
       $receiver.color = this.shaftGrad.getColor_y2kzbl$(p + sub * 0.85).mix_y83vuj$(Color.Companion.BLACK, 0.55);
       $receiver.sample_afatab$(profile);
+      if (i === leafPos) {
+        this.shaftLeafTransform.set_d4zu6j$($receiver.transform);
+      } else {
+        tmp$ = this.rand.randomI_vux9f0$(0, 1);
+        for (var j = 0; j < tmp$; j++) {
+          this.makeThorn_0($receiver);
+        }
+      }
     }
     $receiver.translate_y2kzbl$(0.0, 0.0, 0.2);
     $receiver.transform.push();
@@ -8410,6 +8626,158 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.fillTop_pvgy1j$(profile);
     this.shaftTopTransform.set_d4zu6j$($receiver.transform);
     $receiver.transform.pop();
+  };
+  Roses$GeneratedRose.prototype.makeThorn_0 = function ($receiver) {
+    $receiver.transform.push();
+    var ax = (new MutableVec3f(this.rand.randomF_dleff0$(-1.0, 1.0), this.rand.randomF_dleff0$(-1.0, 1.0), 0.0)).norm();
+    $receiver.rotate_ad55pp$(90.0, ax);
+    var shaftUp = (new MutableVec3f(0.0, 0.0, 1.0)).rotate_ad55pp$(-90.0, ax).scale_mx4ult$(0.1);
+    $receiver.translate_y2kzbl$(0.0, 0.0, 0.1);
+    var profile = new Profile_init();
+    $receiver.circleShape_k80pjh$(profile, 0.18, 8);
+    for (var i = 0; i <= 4; i++) {
+      var p = i / 4.0;
+      var $receiver_0 = 1 - p;
+      var s = Math_0.pow($receiver_0, 1.5);
+      $receiver.scale_y2kzbl$(s, s, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.scale_y2kzbl$(1 / s, 1 / s, 1.0);
+      $receiver.translate_y2kzbl$(0.0, 0.0, (1 - p) * 0.1);
+      $receiver.translate_czzhiu$(shaftUp);
+    }
+    $receiver.transform.pop();
+  };
+  Roses$GeneratedRose.prototype.makeShaftLeafGeometry_0 = function ($receiver) {
+    $receiver.transform.mul_d4zu6j$(this.shaftLeafTransform);
+    $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(0.0, 360.0), Vec3f.Companion.Z_AXIS);
+    var grad = ColorGradient_init([this.shaftGrad.getColor_y2kzbl$(0.7), Color.Companion.MD_LIGHT_GREEN_900.toLinear()]);
+    for (var i = 0; i <= 1; i++) {
+      $receiver.transform.push();
+      $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(30.0, 45.0), Vec3f.Companion.X_AXIS);
+      $receiver.color = grad.getColor_y2kzbl$(0.0);
+      var leafBases = ArrayList_init();
+      var rotYOffset = this.rand.randomF_dleff0$(-4.0, 4.0);
+      var rotZOffset = this.rand.randomF_dleff0$(-4.0, 4.0);
+      $receiver.transform.push();
+      var profile = new Profile_init();
+      $receiver.circleShape_k80pjh$(profile, 0.1, 8);
+      $receiver.sample_afatab$(profile);
+      $receiver.translate_y2kzbl$(0.0, 0.0, 0.4);
+      $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(2.0, 4.0), Vec3f.Companion.X_AXIS);
+      $receiver.scale_y2kzbl$(0.6, 0.6, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.scale_y2kzbl$(1 / 0.6, 1 / 0.6, 1.0);
+      $receiver.translate_y2kzbl$(0.0, 0.0, 0.4);
+      $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(2.0, 4.0), Vec3f.Companion.X_AXIS);
+      $receiver.scale_y2kzbl$(0.4, 0.4, 1.0);
+      $receiver.sample_afatab$(profile);
+      $receiver.scale_y2kzbl$(1 / 0.4, 1 / 0.4, 1.0);
+      for (var j = 0; j <= 10; j++) {
+        $receiver.color = grad.getColor_y2kzbl$(j / 10.0);
+        $receiver.translate_y2kzbl$(0.0, 0.0, 0.4);
+        $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(2.0, 4.0), Vec3f.Companion.X_AXIS);
+        $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(-5.0, 5.0) + rotYOffset, Vec3f.Companion.Y_AXIS);
+        $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(-5.0, 5.0) + rotZOffset, Vec3f.Companion.Z_AXIS);
+        var s = 0.4 * Math_0.pow(0.89, i);
+        $receiver.scale_y2kzbl$(s, s, 1.0);
+        $receiver.sample_afatab$(profile);
+        var element = (new Mat4f()).set_d4zu6j$($receiver.transform).resetScale();
+        leafBases.add_11rb$(element);
+        $receiver.scale_y2kzbl$(1 / s, 1 / s, 1.0);
+      }
+      $receiver.fillTop_pvgy1j$(profile);
+      $receiver.transform.pop();
+      var profile_0 = new Profile_init();
+      $receiver.color = Color.Companion.MD_LIGHT_GREEN_900.mix_y83vuj$(Color.Companion.MD_BROWN_900, 0.4).toLinear();
+      var ref = ArrayList_init();
+      for (var j_0 = -6; j_0 <= 6; j_0++) {
+        var p = j_0 / 6.0;
+        var element_0 = new Vec3f(0.0, j_0 * 0.2, abs(j_0) * 0.15 * (0.7 + 0.3 * p * p));
+        ref.add_11rb$(element_0);
+      }
+      var shape = new SimpleShape_init(true);
+      profile_0.shapes.add_11rb$(shape);
+      var tmp$ = shape.positions;
+      var $receiver_0 = MutableVec3f_init_0(first_0(ref));
+      $receiver_0.x = $receiver_0.x + 0.01;
+      tmp$.add_11rb$($receiver_0);
+      var tmp$_0;
+      tmp$_0 = ref.iterator();
+      while (tmp$_0.hasNext()) {
+        var element_1 = tmp$_0.next();
+        var tmp$_1 = shape.positions;
+        var $receiver_1 = MutableVec3f_init_0(element_1);
+        $receiver_1.x = $receiver_1.x + 0.01;
+        tmp$_1.add_11rb$($receiver_1);
+      }
+      var tmp$_2 = shape.positions;
+      var $receiver_2 = MutableVec3f_init_0(last(ref));
+      $receiver_2.x = $receiver_2.x + 0.01;
+      tmp$_2.add_11rb$($receiver_2);
+      var tmp$_3 = shape.positions;
+      var $receiver_3 = MutableVec3f_init_0(last(ref));
+      $receiver_3.x = $receiver_3.x - 0.01;
+      tmp$_3.add_11rb$($receiver_3);
+      var tmp$_4;
+      tmp$_4 = reversed(ref).iterator();
+      while (tmp$_4.hasNext()) {
+        var element_2 = tmp$_4.next();
+        var tmp$_5 = shape.positions;
+        var $receiver_4 = MutableVec3f_init_0(element_2);
+        $receiver_4.x = $receiver_4.x - 0.01;
+        tmp$_5.add_11rb$($receiver_4);
+      }
+      var tmp$_6 = shape.positions;
+      var $receiver_5 = MutableVec3f_init_0(first_0(ref));
+      $receiver_5.x = $receiver_5.x - 0.01;
+      tmp$_6.add_11rb$($receiver_5);
+      var scales = mutableListOf([0.6, 0.9, 1.0, 0.95, 0.85, 0.7, 0.5, 0.35, 0.22, 0.12, 0.05]);
+      $receiver.transform.push();
+      var zRot = this.rand.randomF_dleff0$(-60.0, 60.0);
+      var tmp$_7, tmp$_0_0;
+      var index = 0;
+      tmp$_7 = leafBases.iterator();
+      while (tmp$_7.hasNext()) {
+        var item = tmp$_7.next();
+        var i_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+        $receiver.transform.set_d4zu6j$(item);
+        $receiver.rotate_ad55pp$(zRot, Vec3f.Companion.Z_AXIS);
+        var scale = scales.get_za3lpa$(i_0);
+        var nextScale = i_0 < get_lastIndex(scales) ? scales.get_za3lpa$(i_0 + 1 | 0) + 0.05 : 0.0;
+        var invScale = 1.0 / scale;
+        var s_0 = {v: 1.0};
+        for (var j_1 = 0; j_1 <= 4; j_1++) {
+          var p_0 = j_1 / 4.0;
+          s_0.v = scale * (1 - p_0) + nextScale * p_0;
+          $receiver.translate_y2kzbl$(0.0, 0.0, 0.06);
+          $receiver.rotate_ad55pp$(rotZOffset / 5, Vec3f.Companion.Z_AXIS);
+          $receiver.transform.push();
+          $receiver.scale_y2kzbl$(1.0, s_0.v, s_0.v);
+          $receiver.sample_afatab$(profile_0);
+          $receiver.transform.pop();
+        }
+        $receiver.scale_y2kzbl$(1.0, s_0.v, s_0.v);
+        var baseColor = $receiver.color;
+        $receiver.scale_y2kzbl$(0.4, 1.0, 1.0);
+        $receiver.translate_y2kzbl$(0.0, 0.0, 0.02 * invScale);
+        $receiver.color = baseColor.mix_y83vuj$(Color.Companion.BLACK, 0.4);
+        $receiver.sample_afatab$(profile_0);
+        $receiver.translate_y2kzbl$(0.0, 0.0, 0.01 * invScale);
+        $receiver.sample_afatab$(profile_0);
+        $receiver.scale_y2kzbl$(1 / 0.4, 1.0, 1.0);
+        $receiver.color = baseColor;
+        $receiver.translate_y2kzbl$(0.0, 0.0, 0.02 * invScale);
+        $receiver.sample_afatab$(profile_0);
+      }
+      $receiver.transform.pop();
+      $receiver.transform.pop();
+      $receiver.rotate_ad55pp$(this.rand.randomF_dleff0$(160.0, 220.0), Vec3f.Companion.Z_AXIS);
+    }
+  };
+  Roses$GeneratedRose.prototype.withXyScale_0 = function ($receiver, s, block) {
+    $receiver.scale_y2kzbl$(s, s, 1.0);
+    block($receiver);
+    $receiver.scale_y2kzbl$(1 / s, 1 / s, 1.0);
   };
   Roses$GeneratedRose.prototype.makeLeafGeometry_0 = function ($receiver) {
     $receiver.transform.push();
@@ -8509,7 +8877,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var item = tmp$_1.next();
         var i_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
         var js = item * this.rand.randomF_dleff0$(0.95, 1.05);
-        $receiver.color = Color.Companion.RED.toLinear();
+        $receiver.color = (new Color(1.0, 0.1, 0.1)).toLinear();
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.2);
         var r = (0.5 - i_0 / scales.size) * 20.0;
         $receiver.rotate_ad55pp$(r + this.rand.randomF_dleff0$(-5.0, 5.0), Vec3f.Companion.NEG_Y_AXIS);
@@ -8520,6 +8888,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         $receiver.sample_afatab$(profile);
         $receiver.transform.pop();
       }
+      $receiver.fillTop_pvgy1j$(profile);
       $receiver.transform.pop();
     }
     $receiver.transform.pop();
@@ -8543,7 +8912,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function Roses$Roses$GeneratedRose_init$lambda$lambda_0(this$GeneratedRose) {
     return function ($receiver) {
-      this$GeneratedRose.makeLeafGeometry_0($receiver);
+      this$GeneratedRose.makeShaftLeafGeometry_0($receiver);
       $receiver.geometry.removeDegeneratedTriangles();
       $receiver.geometry.generateNormals();
       return Unit;
@@ -8560,7 +8929,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function Roses$Roses$GeneratedRose_init$lambda$lambda_1(this$GeneratedRose) {
     return function ($receiver) {
-      this$GeneratedRose.makeBlossomGeometry_0($receiver);
+      this$GeneratedRose.makeLeafGeometry_0($receiver);
       $receiver.geometry.removeDegeneratedTriangles();
       $receiver.geometry.generateNormals();
       return Unit;
@@ -8569,6 +8938,23 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function Roses$Roses$GeneratedRose_init$lambda_1(this$GeneratedRose) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(Roses$Roses$GeneratedRose_init$lambda$lambda_1(this$GeneratedRose));
+      var cfg = new PbrMaterialConfig();
+      cfg.roughness = 0.5;
+      $receiver.shader = new DeferredPbrShader(cfg);
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda$lambda_2(this$GeneratedRose) {
+    return function ($receiver) {
+      this$GeneratedRose.makeBlossomGeometry_0($receiver);
+      $receiver.geometry.removeDegeneratedTriangles();
+      $receiver.geometry.generateNormals();
+      return Unit;
+    };
+  }
+  function Roses$Roses$GeneratedRose_init$lambda_2(this$GeneratedRose) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(Roses$Roses$GeneratedRose_init$lambda$lambda_2(this$GeneratedRose));
       var cfg = new PbrMaterialConfig();
       cfg.roughness = 0.8;
       $receiver.shader = new DeferredPbrShader(cfg);

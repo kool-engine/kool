@@ -4,28 +4,39 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.deferred.deferredPbrShader
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
 
 class Roses : Group() {
 
     init {
+        makeRose(1234)
         makeRose(6415168)
         makeRose(2541685)
-        makeRose(25)
-        makeRose(523947)
-        makeRose(1234)
+        makeRose(-336577773)
+        makeRose(872435238)
+
+        translate(-7.5f, 10.5f, 2.5f)
+        //translate(0f, 10f, 0f)
     }
 
     fun makeRose(seed: Int) {
         val rose = GeneratedRose(seed)
-        +rose.shaftMesh
-        +rose.leafMesh
-        +rose.blossomMesh
+
+        +group {
+            +rose.shaftMesh
+            +rose.shaftLeafMesh
+            +rose.leafMesh
+            +rose.blossomMesh
+        }
     }
 
     private class GeneratedRose(seed: Int) {
@@ -34,10 +45,12 @@ class Roses : Group() {
 
         val shaftMesh: Mesh
         val leafMesh: Mesh
+        val shaftLeafMesh: Mesh
         val blossomMesh: Mesh
 
         val rand = Random(seed)
         val shaftTopTransform = Mat4f()
+        val shaftLeafTransform = Mat4f()
 
         init {
             shaftMesh = colorMesh {
@@ -48,6 +61,16 @@ class Roses : Group() {
                 }
                 shader = deferredPbrShader {
                     roughness = 0.3f
+                }
+            }
+            shaftLeafMesh = colorMesh {
+                generate {
+                    makeShaftLeafGeometry()
+                    geometry.removeDegeneratedTriangles()
+                    geometry.generateNormals()
+                }
+                shader = deferredPbrShader {
+                    roughness = 0.5f
                 }
             }
             leafMesh = colorMesh {
@@ -70,16 +93,35 @@ class Roses : Group() {
                     roughness = 0.8f
                 }
             }
+
+            applyTint(Color.fromHsv(rand.randomF(0f, 360f), 0.12f, rand.randomF(0.7f, 1f), 1f).toLinear())
         }
 
-        private fun MeshBuilder.makeShaftGeometry(origin: Vec3f = Vec3f(-7.5f, -2.5f, 10f)) {
+        fun applyTint(tint: Color) {
+            shaftMesh.geometry.applyTint(tint)
+            shaftLeafMesh.geometry.applyTint(tint)
+            leafMesh.geometry.applyTint(tint)
+            blossomMesh.geometry.applyTint(tint)
+        }
+
+        private fun IndexedVertexList.applyTint(tint: Color) {
+            forEach {
+                it.color.r *= tint.r
+                it.color.g *= tint.g
+                it.color.b *= tint.b
+                it.color.a *= tint.a
+            }
+        }
+
+        private fun MeshBuilder.makeShaftGeometry() {
             withTransform {
                 rotate(90f, Vec3f.NEG_X_AXIS)
-                translate(origin)
 
                 // shaft
                 profile {
                     circleShape(0.2f, steps = 8)
+
+                    val leafPos = rand.randomI(2, 3)
 
                     val steps = 6
                     for (i in 0 until steps) {
@@ -109,6 +151,14 @@ class Roses : Group() {
                         translate(0f, 0f, h * 0.1f)
                         color = shaftGrad.getColor(p + sub * 0.85f).mix(Color.BLACK, 0.55f)
                         sample()
+
+                        if (i == leafPos) {
+                            shaftLeafTransform.set(transform)
+                        } else {
+                            for (j in 0 until rand.randomI(0, 1)) {
+                                makeThorn()
+                            }
+                        }
                     }
 
                     translate(0f, 0f, 0.2f)
@@ -126,6 +176,141 @@ class Roses : Group() {
 
                 shaftTopTransform.set(transform)
             }
+        }
+
+        private fun MeshBuilder.makeThorn() {
+            withTransform {
+                val ax = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), 0f).norm()
+                rotate(90f, ax)
+                val shaftUp = MutableVec3f(0f, 0f, 1f).rotate(-90f, ax).scale(0.1f)
+                translate(0f, 0f, 0.1f)
+
+                profile {
+                    circleShape(0.18f, steps = 8)
+
+                    for (i in 0 .. 4) {
+                        val p = i / 4f
+                        val s = (1 - p).pow(1.5f)
+                        scale(s, s, 1f)
+                        sample()
+                        scale(1/s, 1/s, 1f)
+
+                        translate(0f, 0f, (1 - p) * 0.1f)
+                        translate(shaftUp)
+                    }
+                }
+            }
+        }
+
+        private fun MeshBuilder.makeShaftLeafGeometry() {
+            transform.mul(shaftLeafTransform)
+            rotate(rand.randomF(0f, 360f), Vec3f.Z_AXIS)
+
+            val grad = ColorGradient(shaftGrad.getColor(0.7f), Color.MD_LIGHT_GREEN_900.toLinear())
+
+            for (i in 0..1) {
+                withTransform {
+                    rotate(rand.randomF(30f, 45f), Vec3f.X_AXIS)
+                    color = grad.getColor(0f)
+                    val leafBases = mutableListOf<Mat4f>()
+
+                    val rotYOffset = rand.randomF(-4f, 4f)
+                    val rotZOffset = rand.randomF(-4f, 4f)
+
+                    withTransform {
+                        profile {
+                            circleShape(0.1f, steps = 8)
+
+                            sample()
+                            translate(0f, 0f, 0.4f)
+                            rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
+                            withXyScale(0.6f) { sample() }
+                            translate(0f, 0f, 0.4f)
+                            rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
+                            withXyScale(0.4f) { sample() }
+
+                            for (j in 0..10) {
+                                color = grad.getColor(j / 10f)
+                                translate(0f, 0f, 0.4f)
+                                rotate(rand.randomF(2f, 4f), Vec3f.X_AXIS)
+                                rotate(rand.randomF(-5f, 5f) + rotYOffset, Vec3f.Y_AXIS)
+                                rotate(rand.randomF(-5f, 5f) + rotZOffset, Vec3f.Z_AXIS)
+                                withXyScale(0.4f * 0.89f.pow(i)) {
+                                    sample()
+                                    leafBases += Mat4f().set(transform).resetScale()
+                                }
+                            }
+                            fillTop()
+                        }
+                    }
+
+                    profile {
+                        color = Color.MD_LIGHT_GREEN_900.mix(Color.MD_BROWN_900, 0.4f).toLinear()
+
+                        val ref = mutableListOf<Vec3f>()
+                        for (j in -6..6) {
+                            val p = j / 6f
+                            ref += Vec3f(0f, j * 0.2f, abs(j) * 0.15f * (0.7f + 0.3f * p * p))
+                        }
+
+                        simpleShape(true) {
+                            positions += MutableVec3f(ref.first()).also { v -> v.x += 0.01f }
+                            ref.forEach { positions += MutableVec3f(it).also { v -> v.x += 0.01f } }
+                            positions += MutableVec3f(ref.last()).also { v -> v.x += 0.01f }
+
+                            positions += MutableVec3f(ref.last()).also { v -> v.x -= 0.01f }
+                            ref.reversed().forEach { positions += MutableVec3f(it).also { v -> v.x -= 0.01f } }
+                            positions += MutableVec3f(ref.first()).also { v -> v.x -= 0.01f }
+                        }
+
+                        val scales = mutableListOf(0.6f, 0.9f, 1.0f, 0.95f, 0.85f, 0.7f, 0.5f, 0.35f, 0.22f, 0.12f, 0.05f)
+                        withTransform {
+                            val zRot = rand.randomF(-60f, 60f)
+                            leafBases.forEachIndexed { i, base ->
+                                transform.set(base)
+                                rotate(zRot, Vec3f.Z_AXIS)
+                                val scale = scales[i]
+                                val nextScale = if (i < scales.lastIndex) scales[i+1] + 0.05f else 0f
+                                val invScale = 1f / scale
+
+                                var s = 1f
+                                for (j in 0..4) {
+                                    val p = j / 4f
+                                    s = scale * (1-p) + nextScale * p
+
+                                    translate(0f, 0f, 0.06f)
+                                    rotate(rotZOffset / 5, Vec3f.Z_AXIS)
+                                    withTransform {
+                                        scale(1f, s, s)
+                                        sample()
+                                    }
+                                }
+
+                                scale(1f, s, s)
+                                val baseColor = color
+                                scale(0.4f, 1f, 1f)
+                                translate(0f, 0f, 0.02f * invScale)
+                                color = baseColor.mix(Color.BLACK, 0.4f)
+                                sample()
+                                translate(0f, 0f, 0.01f * invScale)
+                                sample()
+                                scale(1 / 0.4f, 1f, 1f)
+
+                                color = baseColor
+                                translate(0f, 0f, 0.02f * invScale)
+                                sample()
+                            }
+                        }
+                    }
+                }
+                rotate(rand.randomF(160f, 220f), Vec3f.Z_AXIS)
+            }
+        }
+
+        private inline fun MeshBuilder.withXyScale(s: Float, block: MeshBuilder.() -> Unit) {
+            scale(s, s, 1f)
+            block()
+            scale(1/s, 1/s, 1f)
         }
 
         private fun MeshBuilder.makeLeafGeometry() {
@@ -204,7 +389,7 @@ class Roses : Group() {
                             val scales = listOf(0.5f, 0.9f, 1f, 0.93f, 0.8f, 0.7f, 0.72f, 0.8f, 0.95f, 1.05f, 1f, 0.95f, 0.85f, 0.5f)
                             scales.forEachIndexed { i, s ->
                                 val js = s * rand.randomF(0.95f, 1.05f)
-                                color = Color.RED.toLinear()
+                                color = Color(1f, 0.1f, 0.1f).toLinear()
                                 translate(0f, 0f, 0.2f)
                                 val r = (0.5f - (i.toFloat() / scales.size)) * 20f
                                 rotate(r + rand.randomF(-5f, 5f), Vec3f.NEG_Y_AXIS)
@@ -215,6 +400,7 @@ class Roses : Group() {
                                     sample()
                                 }
                             }
+                            fillTop()
                         }
                     }
                 }

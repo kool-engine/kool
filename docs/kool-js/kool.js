@@ -3019,7 +3019,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function KoolContext$Companion() {
     KoolContext$Companion_instance = this;
-    this.KOOL_VERSION = '0.6.0-200812.1416';
+    this.KOOL_VERSION = '0.6.0-200812.1846';
   }
   KoolContext$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -3533,6 +3533,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       result.matrix[12 + smi | 0] = this.matrix[12 + mi | 0];
     }
     return result;
+  };
+  Mat4d.prototype.resetScale = function () {
+    var x = this.get_vux9f0$(0, 0) * this.get_vux9f0$(0, 0) + this.get_vux9f0$(1, 0) * this.get_vux9f0$(1, 0) + this.get_vux9f0$(2, 0) * this.get_vux9f0$(2, 0);
+    var s0 = 1.0 / Math_0.sqrt(x);
+    var x_0 = this.get_vux9f0$(0, 1) * this.get_vux9f0$(0, 1) + this.get_vux9f0$(1, 1) * this.get_vux9f0$(1, 1) + this.get_vux9f0$(2, 1) * this.get_vux9f0$(2, 1);
+    var s1 = 1.0 / Math_0.sqrt(x_0);
+    var x_1 = this.get_vux9f0$(0, 2) * this.get_vux9f0$(0, 2) + this.get_vux9f0$(1, 2) * this.get_vux9f0$(1, 2) + this.get_vux9f0$(2, 2) * this.get_vux9f0$(2, 2);
+    var s2 = 1.0 / Math_0.sqrt(x_1);
+    this.scale_yvo9jy$(s0, s1, s2);
+    return this;
   };
   Mat4d.prototype.transpose = function () {
     Mat4d$Companion_getInstance().tmpMatLock_0;
@@ -4248,6 +4258,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       result.matrix[12 + smi | 0] = this.matrix[12 + mi | 0];
     }
     return result;
+  };
+  Mat4f.prototype.resetScale = function () {
+    var x = this.get_vux9f0$(0, 0) * this.get_vux9f0$(0, 0) + this.get_vux9f0$(1, 0) * this.get_vux9f0$(1, 0) + this.get_vux9f0$(2, 0) * this.get_vux9f0$(2, 0);
+    var s0 = 1.0 / Math_0.sqrt(x);
+    var x_0 = this.get_vux9f0$(0, 1) * this.get_vux9f0$(0, 1) + this.get_vux9f0$(1, 1) * this.get_vux9f0$(1, 1) + this.get_vux9f0$(2, 1) * this.get_vux9f0$(2, 1);
+    var s1 = 1.0 / Math_0.sqrt(x_0);
+    var x_1 = this.get_vux9f0$(0, 2) * this.get_vux9f0$(0, 2) + this.get_vux9f0$(1, 2) * this.get_vux9f0$(1, 2) + this.get_vux9f0$(2, 2) * this.get_vux9f0$(2, 2);
+    var s2 = 1.0 / Math_0.sqrt(x_1);
+    this.scale_y2kzbl$(s0, s1, s2);
+    return this;
   };
   Mat4f.prototype.transpose = function () {
     Mat4f$Companion_getInstance().tmpMatLock_0;
@@ -30085,7 +30105,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = 'Kool v0.6.0-200812.1416';
+      $receiver.text = 'Kool v0.6.0-200812.1846';
       return Unit;
     };
   }

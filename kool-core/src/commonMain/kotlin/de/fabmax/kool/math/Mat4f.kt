@@ -93,6 +93,14 @@ open class Mat4f {
         return result
     }
 
+    fun resetScale(): Mat4f {
+        val s0 = 1f / sqrt(this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0])
+        val s1 = 1f / sqrt(this[0, 1] * this[0, 1] + this[1, 1] * this[1, 1] + this[2, 1] * this[2, 1])
+        val s2 = 1f / sqrt(this[0, 2] * this[0, 2] + this[1, 2] * this[1, 2] + this[2, 2] * this[2, 2])
+        scale(s0, s1, s2)
+        return this
+    }
+
     fun transpose(): Mat4f {
         return lock(tmpMatLock) {
             set(transpose(tmpMatA))
