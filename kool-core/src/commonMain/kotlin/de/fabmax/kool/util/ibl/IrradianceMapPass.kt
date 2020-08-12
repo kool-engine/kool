@@ -14,7 +14,7 @@ import kotlin.math.PI
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture?, cubeMap: CubeMapTexture?) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "IrradianceMapPass"
-            setSize(32, 32)
+            setSize(16, 16)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
@@ -96,7 +96,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
                 vec3 right = normalize(cross(up, normal));
                 up = cross(normal, right);
 
-                float sampleDelta = 0.00737;
+                float sampleDelta = 0.03737;
                 vec3 irradiance = vec3(0.0);
                 int nrSamples = 0; 
 
@@ -105,7 +105,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
                     for (float phi = 0.0; phi < $phiMax; phi += deltaPhi) {
                         vec3 tempVec = cos(phi) * right + sin(phi) * up;
                         vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;
-                        vec3 envColor = sampleEnv(sampleVector, 0.0);
+                        vec3 envColor = sampleEnv(sampleVector, 3.0);
                         irradiance += envColor * cos(theta) * 0.6;
                         nrSamples++;
                     }

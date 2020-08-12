@@ -3019,7 +3019,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function KoolContext$Companion() {
     KoolContext$Companion_instance = this;
-    this.KOOL_VERSION = '0.6.0-200812.0032';
+    this.KOOL_VERSION = '0.6.0-200812.1416';
   }
   KoolContext$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -30085,7 +30085,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = 'Kool v0.6.0-200812.0032';
+      $receiver.text = 'Kool v0.6.0-200812.1416';
       return Unit;
     };
   }
@@ -40849,7 +40849,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$ = new Group();
     var builder = new OffscreenRenderPass$ConfigBuilder();
     builder.name = 'IrradianceMapPass';
-    builder.setSize_vux9f0$(32, 32);
+    builder.setSize_vux9f0$(16, 16);
     builder.addColorTexture_farcsl$(TexFormat$RGBA_F16_getInstance());
     builder.clearDepthTexture();
     OffscreenRenderPassCube.call(this, tmp$, new OffscreenRenderPass$Config(builder));
@@ -40904,7 +40904,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
     var phiMax = 2.0 * math.PI;
     var thetaMax = 0.5 * math.PI;
-    generator.appendMain_61zpoe$('\n' + '                vec3 normal = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 up = vec3(0.0, 1.0, 0.0);' + '\n' + '                vec3 right = normalize(cross(up, normal));' + '\n' + '                up = cross(normal, right);' + '\n' + '\n' + '                float sampleDelta = 0.00737;' + '\n' + '                vec3 irradiance = vec3(0.0);' + '\n' + '                int nrSamples = 0; ' + '\n' + '\n' + '                for (float theta = 0.0; theta < ' + thetaMax + '; theta += sampleDelta) {' + '\n' + '                    float deltaPhi = sampleDelta / sin(theta);' + '\n' + '                    for (float phi = 0.0; phi < ' + phiMax + '; phi += deltaPhi) {' + '\n' + '                        vec3 tempVec = cos(phi) * right + sin(phi) * up;' + '\n' + '                        vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;' + '\n' + '                        vec3 envColor = sampleEnv(sampleVector, 0.0);' + '\n' + '                        irradiance += envColor * cos(theta) * 0.6;' + '\n' + '                        nrSamples++;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                irradiance = irradiance * ' + math.PI + ' / float(nrSamples);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(irradiance, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                vec3 normal = normalize(' + this.inLocalPos.ref3f() + ');' + '\n' + '                vec3 up = vec3(0.0, 1.0, 0.0);' + '\n' + '                vec3 right = normalize(cross(up, normal));' + '\n' + '                up = cross(normal, right);' + '\n' + '\n' + '                float sampleDelta = 0.03737;' + '\n' + '                vec3 irradiance = vec3(0.0);' + '\n' + '                int nrSamples = 0; ' + '\n' + '\n' + '                for (float theta = 0.0; theta < ' + thetaMax + '; theta += sampleDelta) {' + '\n' + '                    float deltaPhi = sampleDelta / sin(theta);' + '\n' + '                    for (float phi = 0.0; phi < ' + phiMax + '; phi += deltaPhi) {' + '\n' + '                        vec3 tempVec = cos(phi) * right + sin(phi) * up;' + '\n' + '                        vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;' + '\n' + '                        vec3 envColor = sampleEnv(sampleVector, 3.0);' + '\n' + '                        irradiance += envColor * cos(theta) * 0.6;' + '\n' + '                        nrSamples++;' + '\n' + '                    }' + '\n' + '                }' + '\n' + '                irradiance = irradiance * ' + math.PI + ' / float(nrSamples);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(irradiance, 1.0);' + '\n' + '            ');
   };
   IrradianceMapPass$ConvoluteIrradianceNode.$metadata$ = {
     kind: Kind_CLASS,
