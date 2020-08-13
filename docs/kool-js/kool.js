@@ -3019,7 +3019,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function KoolContext$Companion() {
     KoolContext$Companion_instance = this;
-    this.KOOL_VERSION = '0.6.0-200812.1846';
+    this.KOOL_VERSION = '0.6.0-200813.1507';
   }
   KoolContext$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -30105,7 +30105,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), full());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = 'Kool v0.6.0-200812.1846';
+      $receiver.text = 'Kool v0.6.0-200813.1507';
       return Unit;
     };
   }

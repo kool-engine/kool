@@ -20,11 +20,11 @@ fun proceduralDemo(ctx: KoolContext): List<Scene> {
 }
 
 class ProceduralDemo(ctx: KoolContext) {
-    val mainScene = makeScene(ctx)
-    val menu = makeMenu(ctx)
-
     var autoRotate = true
     lateinit var roses: Roses
+
+    val mainScene = makeScene(ctx)
+    val menu = makeMenu(ctx)
 
     fun makeScene(ctx: KoolContext) = scene {
         +orbitInputTransform {

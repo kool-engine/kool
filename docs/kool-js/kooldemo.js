@@ -2235,11 +2235,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.menu = null;
     this.foxAnimator_0 = new GltfDemo$FoxAnimator(this);
     var tmp$ = new GltfDemo$GltfModel(this, 'Flight Helmet', Demo$Companion_getInstance().modelBasePath + '/flight_helmet/FlightHelmet.gltf', 4.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), false, 3.5);
-    var tmp$_0 = new GltfDemo$GltfModel(this, 'Coffee Cart', Demo$Companion_getInstance().modelBasePath + '/CoffeeCart_01.glb', 2.0, new Vec3f(0.0, -0.01, 0.0), false, new Vec3d(0.0, 1.75, 0.0), false, 3.5);
-    var tmp$_1 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
+    var tmp$_0 = new GltfDemo$GltfModel(this, 'Polly', Demo$Companion_getInstance().modelBasePath + '/project_polly_jpg.glb', 3.0, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), false, 3.5);
+    var tmp$_1 = new GltfDemo$GltfModel(this, 'Coffee Cart', Demo$Companion_getInstance().modelBasePath + '/CoffeeCart_01.glb', 2.0, new Vec3f(0.0, -0.01, 0.0), false, new Vec3d(0.0, 1.75, 0.0), false, 3.5);
+    var tmp$_2 = new GltfDemo$GltfModel(this, 'Camera', Demo$Companion_getInstance().modelBasePath + '/camera.glb', 20.0, Vec3f.Companion.ZERO, true, new Vec3d(0.0, 0.5, 0.0), false, 5.0);
     var $receiver = new GltfDemo$GltfModel(this, 'Fox', Demo$Companion_getInstance().modelBasePath + '/fox.glb', 0.01, Vec3f.Companion.ZERO, false, new Vec3d(0.0, 1.25, 0.0), true, 3.5);
     $receiver.animate = GltfDemo$models$lambda$lambda(this);
-    this.models_0 = Cycler_init([tmp$, tmp$_0, tmp$_1, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 0.75, 0.0), false, 3.5)]);
+    this.models_0 = Cycler_init([tmp$, tmp$_0, tmp$_1, tmp$_2, $receiver, new GltfDemo$GltfModel(this, 'Animated Box', Demo$Companion_getInstance().modelBasePath + '/BoxAnimated.gltf', 1.0, new Vec3f(0.0, 0.5, 0.0), false, new Vec3d(0.0, 1.5, 0.0), false, 5.0), new GltfDemo$GltfModel(this, 'Morph Cube', Demo$Companion_getInstance().modelBasePath + '/AnimatedMorphCube.glb', 1.0, new Vec3f(0.0, 1.0, 0.0), false, new Vec3d(0.0, 1.0, 0.0), false, 3.5), new GltfDemo$GltfModel(this, 'Alpha Mode Test', Demo$Companion_getInstance().modelBasePath + '/AlphaBlendModeTest.glb', 0.5, new Vec3f(0.0, 0.06, 0.0), false, new Vec3d(0.0, 0.75, 0.0), false, 3.5)]);
     this.orbitTransform_w8joii$_0 = this.orbitTransform_w8joii$_0;
     this.camTranslationTarget_0 = null;
     this.trackModel_0 = false;
@@ -3072,10 +3073,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               var materialCfg = new GltfFile$ModelMaterialConfig(this.local$isDeferredShading ? this$GltfDemo.deferredPipeline_0.shadowMaps : this$GltfDemo.shadowsForward_0, this.local$isDeferredShading ? (tmp$_0 = this$GltfDemo.deferredPipeline_0.aoPipeline) != null ? tmp$_0.aoMap : null : (tmp$_1 = this$GltfDemo.aoPipelineForward_0) != null ? tmp$_1.aoMap : null, this$GltfDemo.envMaps_0, this.local$isDeferredShading);
               var modelCfg = new GltfFile$ModelGenerateConfig(this.$this.generateNormals, void 0, materialCfg, true, true, true, true, void 0, true);
               var $receiver = tmp$.makeModel_m0hq3v$(modelCfg);
-              var tmp$_2;
               $receiver.translate_czzhiu$(this.$this.translation);
               $receiver.scale_mx4ult$(this.$this.scale);
-              (tmp$_2 = $receiver.findNode_61zpoe$('Ground')) != null ? (tmp$_2.isVisible = false) : null;
               $receiver.enableAnimation_za3lpa$(0);
               $receiver.onUpdate.add_11rb$(GltfDemo$GltfModel$load$lambda$lambda$lambda(this.$this, this$GltfDemo, this.local$ctx, $receiver));
               this.local$model.v = $receiver;
@@ -8229,10 +8228,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return listOf([demo.mainScene, demo.menu]);
   }
   function ProceduralDemo(ctx) {
-    this.mainScene = this.makeScene_aemszp$(ctx);
-    this.menu = this.makeMenu_aemszp$(ctx);
     this.autoRotate = true;
     this.roses_wwovcl$_0 = this.roses_wwovcl$_0;
+    this.mainScene = this.makeScene_aemszp$(ctx);
+    this.menu = this.makeMenu_aemszp$(ctx);
   }
   Object.defineProperty(ProceduralDemo.prototype, 'roses', {
     get: function () {
@@ -8464,7 +8463,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.isEnabled = this$ProceduralDemo.autoRotate;
+      $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
       var element = ProceduralDemo$makeMenu$lambda$lambda$lambda$lambda_1(this$ProceduralDemo);
       $receiver_0.add_11rb$(element);
@@ -8521,7 +8520,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.makeRose_za3lpa$(6415168);
     this.makeRose_za3lpa$(2541685);
     this.makeRose_za3lpa$(-336577773);
-    this.makeRose_za3lpa$(872435238);
+    this.makeRose_za3lpa$(1339055691);
     this.translate_y2kzbl$(-7.5, 10.5, 2.5);
   }
   function Roses$makeRose$lambda(closure$rose) {
@@ -8692,45 +8691,47 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var ref = ArrayList_init();
       for (var j_0 = -6; j_0 <= 6; j_0++) {
         var p = j_0 / 6.0;
-        var element_0 = new Vec3f(0.0, j_0 * 0.2, abs(j_0) * 0.15 * (0.7 + 0.3 * p * p));
+        var $receiver_0 = Math_0.abs(p) - 0.5;
+        var q = Math_0.pow($receiver_0, 2) - 0.25;
+        var element_0 = new Vec3f(-0.5 * q, j_0 * 0.2, abs(j_0) * 0.15 * (0.7 + 0.3 * p * p));
         ref.add_11rb$(element_0);
       }
       var shape = new SimpleShape_init(true);
       profile_0.shapes.add_11rb$(shape);
       var tmp$ = shape.positions;
-      var $receiver_0 = MutableVec3f_init_0(first_0(ref));
-      $receiver_0.x = $receiver_0.x + 0.01;
-      tmp$.add_11rb$($receiver_0);
+      var $receiver_1 = MutableVec3f_init_0(first_0(ref));
+      $receiver_1.x = $receiver_1.x + 0.01;
+      tmp$.add_11rb$($receiver_1);
       var tmp$_0;
       tmp$_0 = ref.iterator();
       while (tmp$_0.hasNext()) {
         var element_1 = tmp$_0.next();
         var tmp$_1 = shape.positions;
-        var $receiver_1 = MutableVec3f_init_0(element_1);
-        $receiver_1.x = $receiver_1.x + 0.01;
-        tmp$_1.add_11rb$($receiver_1);
+        var $receiver_2 = MutableVec3f_init_0(element_1);
+        $receiver_2.x = $receiver_2.x + 0.01;
+        tmp$_1.add_11rb$($receiver_2);
       }
       var tmp$_2 = shape.positions;
-      var $receiver_2 = MutableVec3f_init_0(last(ref));
-      $receiver_2.x = $receiver_2.x + 0.01;
-      tmp$_2.add_11rb$($receiver_2);
-      var tmp$_3 = shape.positions;
       var $receiver_3 = MutableVec3f_init_0(last(ref));
-      $receiver_3.x = $receiver_3.x - 0.01;
-      tmp$_3.add_11rb$($receiver_3);
+      $receiver_3.x = $receiver_3.x + 0.01;
+      tmp$_2.add_11rb$($receiver_3);
+      var tmp$_3 = shape.positions;
+      var $receiver_4 = MutableVec3f_init_0(last(ref));
+      $receiver_4.x = $receiver_4.x - 0.01;
+      tmp$_3.add_11rb$($receiver_4);
       var tmp$_4;
       tmp$_4 = reversed(ref).iterator();
       while (tmp$_4.hasNext()) {
         var element_2 = tmp$_4.next();
         var tmp$_5 = shape.positions;
-        var $receiver_4 = MutableVec3f_init_0(element_2);
-        $receiver_4.x = $receiver_4.x - 0.01;
-        tmp$_5.add_11rb$($receiver_4);
+        var $receiver_5 = MutableVec3f_init_0(element_2);
+        $receiver_5.x = $receiver_5.x - 0.01;
+        tmp$_5.add_11rb$($receiver_5);
       }
       var tmp$_6 = shape.positions;
-      var $receiver_5 = MutableVec3f_init_0(first_0(ref));
-      $receiver_5.x = $receiver_5.x - 0.01;
-      tmp$_6.add_11rb$($receiver_5);
+      var $receiver_6 = MutableVec3f_init_0(first_0(ref));
+      $receiver_6.x = $receiver_6.x - 0.01;
+      tmp$_6.add_11rb$($receiver_6);
       var scales = mutableListOf([0.6, 0.9, 1.0, 0.95, 0.85, 0.7, 0.5, 0.35, 0.22, 0.12, 0.05]);
       $receiver.transform.push();
       var zRot = this.rand.randomF_dleff0$(-60.0, 60.0);
@@ -8752,19 +8753,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           $receiver.translate_y2kzbl$(0.0, 0.0, 0.06);
           $receiver.rotate_ad55pp$(rotZOffset / 5, Vec3f.Companion.Z_AXIS);
           $receiver.transform.push();
-          $receiver.scale_y2kzbl$(1.0, s_0.v, s_0.v);
+          $receiver.scale_y2kzbl$(s_0.v, s_0.v, s_0.v);
           $receiver.sample_afatab$(profile_0);
           $receiver.transform.pop();
         }
-        $receiver.scale_y2kzbl$(1.0, s_0.v, s_0.v);
         var baseColor = $receiver.color;
-        $receiver.scale_y2kzbl$(0.4, 1.0, 1.0);
+        $receiver.scale_y2kzbl$(s_0.v * 0.8, s_0.v, s_0.v);
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.02 * invScale);
         $receiver.color = baseColor.mix_y83vuj$(Color.Companion.BLACK, 0.4);
         $receiver.sample_afatab$(profile_0);
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.01 * invScale);
         $receiver.sample_afatab$(profile_0);
-        $receiver.scale_y2kzbl$(1 / 0.4, 1.0, 1.0);
+        $receiver.scale_y2kzbl$(1 / 0.8, 1.0, 1.0);
         $receiver.color = baseColor;
         $receiver.translate_y2kzbl$(0.0, 0.0, 0.02 * invScale);
         $receiver.sample_afatab$(profile_0);

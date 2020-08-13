@@ -22,10 +22,9 @@ class Roses : Group() {
         makeRose(6415168)
         makeRose(2541685)
         makeRose(-336577773)
-        makeRose(872435238)
+        makeRose(1339055691)
 
         translate(-7.5f, 10.5f, 2.5f)
-        //translate(0f, 10f, 0f)
     }
 
     fun makeRose(seed: Int) {
@@ -250,7 +249,8 @@ class Roses : Group() {
                         val ref = mutableListOf<Vec3f>()
                         for (j in -6..6) {
                             val p = j / 6f
-                            ref += Vec3f(0f, j * 0.2f, abs(j) * 0.15f * (0.7f + 0.3f * p * p))
+                            val q = (abs(p) - 0.5f).pow(2) - 0.25f
+                            ref += Vec3f(-0.5f * q, j * 0.2f, abs(j) * 0.15f * (0.7f + 0.3f * p * p))
                         }
 
                         simpleShape(true) {
@@ -281,20 +281,19 @@ class Roses : Group() {
                                     translate(0f, 0f, 0.06f)
                                     rotate(rotZOffset / 5, Vec3f.Z_AXIS)
                                     withTransform {
-                                        scale(1f, s, s)
+                                        scale(s, s, s)
                                         sample()
                                     }
                                 }
 
-                                scale(1f, s, s)
                                 val baseColor = color
-                                scale(0.4f, 1f, 1f)
+                                scale(s * 0.8f, s, s)
                                 translate(0f, 0f, 0.02f * invScale)
                                 color = baseColor.mix(Color.BLACK, 0.4f)
                                 sample()
                                 translate(0f, 0f, 0.01f * invScale)
                                 sample()
-                                scale(1 / 0.4f, 1f, 1f)
+                                scale(1 / 0.8f, 1f, 1f)
 
                                 color = baseColor
                                 translate(0f, 0f, 0.02f * invScale)

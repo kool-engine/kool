@@ -10,14 +10,14 @@ as well (look below for a very short usage guide - that's all the documentation 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=proceduralDemo): Small test-case for
-  procedural geometry; all geometry is generated in code (textures are regular images though). Also some glass
-  shading (shaft of the wine glass, the wine itself looks odd when shaded with refractions and is therefore opaque)
-- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Three fancy models:
-  Flight Helmet from 
-  [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet) as well as
-  [Coffee Cart](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) and
-  [Camera Model](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01) from 3dModeHaven. Moreover, a
-  few feature test models.
+  procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
+  shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque)
+- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Various demo models loaded from glTF / glb format
+  - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
+  - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
+  - Coffee Cart from [3D Model Haven]((https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01))
+  - Camera Model also from [3D Model Haven](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01)
+  - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
 - [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
   light sources - also includes PBR shading and ambient occlusion.
 - [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Roughly based on
@@ -258,7 +258,7 @@ dependencies {
 
 // or alternatively for javascript
 dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.4.0"
+    implementation "de.fabmax.kool:kool-core-js:0.5.0"
 }
 ```
 
