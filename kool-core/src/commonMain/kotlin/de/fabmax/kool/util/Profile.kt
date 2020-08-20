@@ -26,6 +26,7 @@ class Profile : ShapeContainer {
 }
 
 abstract class Shape {
+    abstract val positions: List<Vec3f>
     abstract val sampledVertIndices: List<Int>
 
     abstract fun sample(meshBuilder: MeshBuilder, connect: Boolean, inverseOrientation: Boolean)
@@ -35,7 +36,7 @@ abstract class Shape {
 }
 
 class SimpleShape(val isClosed: Boolean) : Shape() {
-    val positions = mutableListOf<MutableVec3f>()
+    override val positions = mutableListOf<MutableVec3f>()
     val normals = mutableListOf<MutableVec3f>()
     val texCoords = mutableListOf<MutableVec2f>()
 
@@ -120,39 +121,31 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    /**
-     * fixme: For now this only works for convex profiles
-     */
     override fun fillTop(meshBuilder: MeshBuilder) {
-        val s = vertIndices.size
-        for (i in 1 until vertIndices.size / 2) {
-            meshBuilder.geometry.addTriIndices(vertIndices[s-i], vertIndices[i-1], vertIndices[i])
-            meshBuilder.geometry.addTriIndices(vertIndices[s-i-1], vertIndices[s-i], vertIndices[i])
-        }
-        if (vertIndices.size % 2 != 0) {
-            val m = vertIndices.size / 2
-            meshBuilder.geometry.addTriIndices(vertIndices[m-1], vertIndices[m], vertIndices[m+1])
+        val triangulated = PolyUtil.fillPolygon(positions)
+        for (i in triangulated.indices.indices step 3) {
+            val i1 = triangulated.indices[i]
+            val i2 = triangulated.indices[i+1]
+            val i3 = triangulated.indices[i+2]
+            meshBuilder.geometry.addTriIndices(vertIndices[i1], vertIndices[i2], vertIndices[i3])
         }
     }
 
-    /**
-     * fixme: For now this only works for convex profiles
-     */
     override fun fillBottom(meshBuilder: MeshBuilder) {
-        val s = vertIndices.size
-        for (i in 1 until vertIndices.size / 2) {
-            meshBuilder.geometry.addTriIndices(vertIndices[s-i], vertIndices[i], vertIndices[i-1])
-            meshBuilder.geometry.addTriIndices(vertIndices[s-i-1], vertIndices[i], vertIndices[s-i])
-        }
-        if (vertIndices.size % 2 != 0) {
-            val m = vertIndices.size / 2
-            meshBuilder.geometry.addTriIndices(vertIndices[m-1], vertIndices[m+1], vertIndices[m])
+        val triangulated = PolyUtil.fillPolygon(positions)
+        for (i in triangulated.indices.indices step 3) {
+            val i1 = triangulated.indices[i]
+            val i2 = triangulated.indices[i+1]
+            val i3 = triangulated.indices[i+2]
+            meshBuilder.geometry.addTriIndices(vertIndices[i1], vertIndices[i3], vertIndices[i2])
         }
     }
 }
 
 class MultiShape : Shape(), ShapeContainer {
     override val shapes = mutableListOf<Shape>()
+    override val positions: List<Vec3f>
+        get() = shapes.flatMap { it.positions }
     override val sampledVertIndices: List<Int>
         get() = shapes.flatMap { it.sampledVertIndices }
 
@@ -162,15 +155,23 @@ class MultiShape : Shape(), ShapeContainer {
 
     override fun fillTop(meshBuilder: MeshBuilder) {
         val joinedInds = sampledVertIndices
-        for (i in 2 until joinedInds.size) {
-            meshBuilder.geometry.addTriIndices(joinedInds[0], joinedInds[i-1], joinedInds[i])
+        val triangulated = PolyUtil.fillPolygon(positions)
+        for (i in triangulated.indices.indices step 3) {
+            val i1 = triangulated.indices[i]
+            val i2 = triangulated.indices[i+1]
+            val i3 = triangulated.indices[i+2]
+            meshBuilder.geometry.addTriIndices(joinedInds[i1], joinedInds[i2], joinedInds[i3])
         }
     }
 
     override fun fillBottom(meshBuilder: MeshBuilder) {
         val joinedInds = sampledVertIndices
-        for (i in 2 until joinedInds.size) {
-            meshBuilder.geometry.addTriIndices(joinedInds[0], joinedInds[i], joinedInds[i-1])
+        val triangulated = PolyUtil.fillPolygon(positions)
+        for (i in triangulated.indices.indices step 3) {
+            val i1 = triangulated.indices[i]
+            val i2 = triangulated.indices[i+1]
+            val i3 = triangulated.indices[i+2]
+            meshBuilder.geometry.addTriIndices(joinedInds[i1], joinedInds[i3], joinedInds[i2])
         }
     }
 }
