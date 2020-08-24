@@ -159,8 +159,8 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
             val ang = rotAngles[i]
             val x = cos(ang)
             val y = sin(ang)
-            buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toByte()
-            buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toByte()
+            buf[i*4+0] = ((x * 0.5f + 0.5f) * 255).toInt().toByte()
+            buf[i*4+1] = ((y * 0.5f + 0.5f) * 255).toInt().toByte()
             buf[i*4+2] = 0
             buf[i*4+3] = 1
         }

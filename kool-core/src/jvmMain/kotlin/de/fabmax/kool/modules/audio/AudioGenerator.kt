@@ -16,7 +16,7 @@ import kotlin.concurrent.thread
 
 actual class AudioGenerator actual constructor(ctx: KoolContext, generatorFun: AudioGenerator.(Float) -> Float) {
 
-    private val pauseLock = java.lang.Object()
+    private val pauseLock = Object()
     private var isStopRequested = false
 
     private var fftHelper: FftHelper? = null
@@ -57,7 +57,7 @@ actual class AudioGenerator actual constructor(ctx: KoolContext, generatorFun: A
                     var f = generatorFun(dt)
                     if (f > 1f) { f = 1f }
                     if (f < -1f) { f = -1f }
-                    samples.put((f * 32767).toShort())
+                    samples.put((f * 32767).toInt().toShort())
                     fftHelper?.putSample(f)
                     sampleIdx++
                 }

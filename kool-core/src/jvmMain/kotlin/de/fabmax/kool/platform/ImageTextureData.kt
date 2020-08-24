@@ -110,17 +110,17 @@ class ImageTextureData(image: BufferedImage) :
                         pixel[3] = 255
                     }
 
-                    var r = pixel[0] / sizes[0].toFloat()
-                    var g = pixel[1] / sizes[1].toFloat()
-                    var b = pixel[2] / sizes[2].toFloat()
+                    val r = pixel[0] / sizes[0].toFloat()
+                    val g = pixel[1] / sizes[1].toFloat()
+                    val b = pixel[2] / sizes[2].toFloat()
                     val a = pixel[3] / sizes[3].toFloat()
 
                     // copy bytes to target buf
                     if (format == TexFormat.RGBA || format == TexFormat.RGB) {
-                        target.put((r * 255f).toByte()).put((g * 255f).toByte()).put((b * 255f).toByte())
+                        target.put((r * 255f).toInt().toByte()).put((g * 255f).toInt().toByte()).put((b * 255f).toInt().toByte())
                     }
                     if (format == TexFormat.RGBA || format == TexFormat.R) {
-                        target.put((a * 255f).toByte())
+                        target.put((a * 255f).toInt().toByte())
                     }
                 }
             }

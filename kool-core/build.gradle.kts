@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 plugins {
     kotlin("plugin.serialization") version Versions.kotlinVersion
     `maven-publish`
@@ -8,17 +10,13 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
+                useIR = true
             }
         }
     }
+    //js(IR) {  // build fails with exeption
     js {
-        val main by compilations.getting {
-            kotlinOptions {
-                outputFile = "${buildDir}/web/kool.js"
-                moduleKind = "amd"
-                sourceMap = false
-            }
-        }
+        browser { }
     }
     targets.all {
         compilations.all {
@@ -31,7 +29,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
             }
@@ -45,10 +42,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-jdk8"))
                 implementation(kotlin("reflect"))
-                implementation(DepsJvm.kotlinCoroutines)
-                implementation(DepsJvm.kotlinSerialization)
 
                 implementation(DepsJvm.jTransforms)
                 implementation(DepsJvm.lwjgl())
@@ -68,17 +62,12 @@ kotlin {
         }
 
         val jsMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-js"))
-                implementation(DepsJs.kotlinCoroutines)
-                implementation(DepsJs.kotlinSerialization)
-            }
+            dependencies { }
         }
 
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
-                useExperimentalAnnotation("kotlinx.serialization.ImplicitReflectionSerializer")
                 useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
                 useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")

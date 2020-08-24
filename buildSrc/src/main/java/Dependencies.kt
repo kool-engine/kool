@@ -1,9 +1,9 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.3.72"
-    val kotlinCorroutinesVersion = "1.3.7"
-    val kotlinSerializationVersion = "0.20.0"
+    val kotlinVersion = "1.4.0"
+    val kotlinCorroutinesVersion = "1.3.9"
+    val kotlinSerializationVersion = "1.0.0-RC"
 
     val lwjglVersion = "3.2.3"
     val lwjglNatives = OperatingSystem.current().let {
@@ -16,14 +16,11 @@ object Versions {
 }
 
 object DepsCommon {
-    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:${Versions.kotlinCorroutinesVersion}"
-    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:${Versions.kotlinSerializationVersion}"
+    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCorroutinesVersion}"
+    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.kotlinSerializationVersion}"
 }
 
 object DepsJvm {
-    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCorroutinesVersion}"
-    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-runtime:${Versions.kotlinSerializationVersion}"
-
     val jTransforms = "com.github.wendykierp:JTransforms:3.1"
 
     fun lwjgl(subLib: String? = null): String {
@@ -44,6 +41,5 @@ object DepsJvm {
 }
 
 object DepsJs {
-    val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${Versions.kotlinCorroutinesVersion}"
-    val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:${Versions.kotlinSerializationVersion}"
+
 }

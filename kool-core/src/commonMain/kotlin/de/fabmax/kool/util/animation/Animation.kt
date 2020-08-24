@@ -17,7 +17,7 @@ class Animation(val name: String?) {
     private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
-        duration = channels.map { it.lastKeyTime }.max() ?: 0f
+        duration = channels.map { it.lastKeyTime }.maxOrNull() ?: 0f
         channels.forEach { it.duration = duration }
         animationNodes += channels.map { it.animationNode }.distinct()
     }

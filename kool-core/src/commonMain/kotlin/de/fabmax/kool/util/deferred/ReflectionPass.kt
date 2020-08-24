@@ -159,9 +159,9 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 vec.set(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f))
             } while (vec.length() > 1f)
             vec.norm().scale(0.25f)
-            buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toByte()
-            buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toByte()
-            buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toByte()
+            buf[i * 4 + 0] = ((vec.x + 1f) * 127.5f).toInt().toByte()
+            buf[i * 4 + 1] = ((vec.y + 1f) * 127.5f).toInt().toByte()
+            buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toInt().toByte()
             buf[i * 4 + 3] = rand.randomI(0..255).toByte()
         }
         val data = BufferedTextureData(buf, sz, sz, TexFormat.RGBA)

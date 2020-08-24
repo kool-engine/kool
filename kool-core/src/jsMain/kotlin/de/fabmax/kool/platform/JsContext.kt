@@ -11,6 +11,8 @@ import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import de.fabmax.kool.util.Viewport
+import kotlinx.browser.document
+import kotlinx.browser.window
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
@@ -19,8 +21,6 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.UIEvent
-import kotlin.browser.document
-import kotlin.browser.window
 
 /**
  * @author fabmax

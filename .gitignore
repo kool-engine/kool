@@ -2,6 +2,7 @@
 .gradle
 .idea
 build
+dist
 *.kjsm
 *.meta.js
 /local.properties

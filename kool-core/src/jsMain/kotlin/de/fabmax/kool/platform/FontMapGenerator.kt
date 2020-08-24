@@ -3,10 +3,10 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.*
+import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
-import kotlin.browser.document
 import kotlin.math.round
 
 /**

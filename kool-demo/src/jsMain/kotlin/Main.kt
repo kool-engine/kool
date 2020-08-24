@@ -1,5 +1,5 @@
 import de.fabmax.kool.demo.demo
-import kotlin.browser.window
+import kotlinx.browser.window
 import kotlin.collections.set
 
 /**

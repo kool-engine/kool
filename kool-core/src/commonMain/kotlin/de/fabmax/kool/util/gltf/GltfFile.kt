@@ -20,10 +20,8 @@ import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.parse
 import kotlin.math.min
 
 /**
@@ -611,14 +609,13 @@ data class GltfFile(
         const val GLB_CHUNK_MAGIC_JSON = 0x4e4f534a
         const val GLB_CHUNK_MAGIC_BIN = 0x004e4942
 
-        @OptIn(UnstableDefault::class)
         fun fromJson(json: String): GltfFile {
-            return Json(JsonConfiguration(
-                    isLenient = true,
-                    ignoreUnknownKeys = true,
-                    serializeSpecialFloatingPointValues = true,
-                    useArrayPolymorphism = true
-            )).parse(json)
+            return Json {
+                isLenient = true
+                ignoreUnknownKeys = true
+                allowSpecialFloatingPointValues = true
+                useArrayPolymorphism = true
+            }.decodeFromString(json)
         }
     }
 }

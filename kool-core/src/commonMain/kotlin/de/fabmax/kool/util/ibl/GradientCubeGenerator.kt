@@ -54,9 +54,9 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
 
         for (i in 0 until size) {
             val c = gradient.getColor(1f - i.toFloat() / size)
-            buf[i * 4 + 0] = ((c.r * 255f).toByte())
-            buf[i * 4 + 1] = ((c.g * 255f).toByte())
-            buf[i * 4 + 2] = ((c.b * 255f).toByte())
+            buf[i * 4 + 0] = ((c.r * 255f).toInt().toByte())
+            buf[i * 4 + 1] = ((c.g * 255f).toInt().toByte())
+            buf[i * 4 + 2] = ((c.b * 255f).toInt().toByte())
             buf[i * 4 + 3] = (255.toByte())
         }
 

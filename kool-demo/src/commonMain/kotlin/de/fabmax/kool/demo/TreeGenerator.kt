@@ -239,7 +239,7 @@ class TreeGenerator(val distribution: PointDistribution,
                 branchDepth = if (children.size == 1) {
                     children[0].branchDepth
                 } else {
-                    (children.maxBy { it.branchDepth }?.branchDepth ?: 0) + 1
+                    (children.maxByOrNull { it.branchDepth }?.branchDepth ?: 0) + 1
                 }
             }
             if (parent == null) {
@@ -414,7 +414,7 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
         var pt: Vec3f
         while (true) {
             pt = nextPointInBounds()
-            val d = seedPts.minBy { it.sqrDistance(pt) }!!.distance(pt)
+            val d = seedPts.minByOrNull { it.sqrDistance(pt) }!!.distance(pt)
             if (d < random.randomF()) {
                 break
             }
