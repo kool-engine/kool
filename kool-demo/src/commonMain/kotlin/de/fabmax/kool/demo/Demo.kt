@@ -2,8 +2,9 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
-import de.fabmax.kool.demo.pbr.pbrDemoScene
-import de.fabmax.kool.demo.procedural.proceduralDemo
+import de.fabmax.kool.demo.building.BuildingDemo
+import de.fabmax.kool.demo.pbr.PbrDemo
+import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.DebugOverlay
@@ -28,21 +29,24 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("glTF Models") { addAll(gltfDemo(it)) }
+    private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
-            "proceduralDemo" to DemoEntry("Procedural Geometry") { addAll(proceduralDemo(it)) },
-            "gltfDemo" to DemoEntry("glTF Models") { addAll(gltfDemo(it)) },
-            "deferredDemo" to DemoEntry("Deferred Shading") { addAll(deferredScene(it)) },
-            "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
-            "ssrDemo" to DemoEntry("Reflections") { addAll(multiLightDemo(it)) },
-            "pbrDemo" to DemoEntry("PBR Materials") { addAll(pbrDemoScene(it)) },
-            "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
-            "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
-            "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
+            "proceduralDemo" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
+            "gltfDemo" to DemoEntry("glTF Models") { GltfDemo() },
+            "deferredDemo" to DemoEntry("Deferred Shading") { DeferredDemo() },
+            "aoDemo" to DemoEntry("Ambient Occlusion") { AoDemo() },
+            "ssrDemo" to DemoEntry("Reflections") { MultiLightDemo() },
+            "pbrDemo" to DemoEntry("PBR Materials") { PbrDemo() },
+            "treeDemo" to DemoEntry("Procedural Tree") { TreeDemo() },
+            "instanceDemo" to DemoEntry("Instanced Drawing") { InstanceDemo() },
+            "simplificationDemo" to DemoEntry("Simplification") { SimplificationDemo() },
 
-            "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) },
-            "helloGltfDemo" to DemoEntry("Hello glTF", true) { add(helloGltfScene(it)) }
+            "helloWorldDemo" to DemoEntry("Hello World", true) { HelloWorldDemo() },
+            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
+
+            "buildingDemo" to DemoEntry("Procedural Building", true) { BuildingDemo() },
+            "atmoTest" to DemoEntry("atmoTest", true) { AtmosphereTest() }
     )
 
     init {
@@ -50,7 +54,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
-        (demos[startScene] ?: defaultScene).loadScene(newScenes, ctx)
+        val initScene = (demos[startScene] ?: defaultScene).sceneLoader(ctx)
+        newScenes += initScene.setupScenes(ctx)
 
         ctx.run()
     }
@@ -96,7 +101,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                         y -= 35f
 
                         onClick += { _,_,_ ->
-                            demo.loadScene.invoke(newScenes, ctx)
+                            val demoScene = demo.sceneLoader(ctx)
+                            newScenes += demoScene.setupScenes(ctx)
                             isOpen = false
                         }
                     }
@@ -114,7 +120,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         }
     }
 
-    private class DemoEntry(val label: String, val isHidden: Boolean = false, val loadScene: MutableList<Scene>.(KoolContext) -> Unit)
+    private class DemoEntry(val label: String, val isHidden: Boolean = false, val sceneLoader: (KoolContext) -> DemoScene)
 
     companion object {
         val demoProps = mutableMapOf<String, Any>()
@@ -156,4 +162,28 @@ class Cycler<T>(elements: List<T>) : List<T> by elements {
         index = (index + size - 1 + size) % size
         return current
     }
+}
+
+abstract class DemoScene(val name: String) {
+    val scenes = mutableListOf<Scene>()
+
+    lateinit var mainScene: Scene
+    var menuScene: Scene? = null
+
+    open fun setupScenes(ctx: KoolContext): List<Scene> {
+        mainScene = setupMainScene(ctx)
+        scenes += mainScene
+        menuScene = setupMenu(ctx)
+        menuScene?.let { scenes += it }
+        lateInit(ctx)
+        return scenes
+    }
+
+    abstract fun setupMainScene(ctx: KoolContext): Scene
+
+    open fun setupMenu(ctx: KoolContext): Scene? {
+        return null
+    }
+
+    open fun lateInit(ctx: KoolContext) { }
 }

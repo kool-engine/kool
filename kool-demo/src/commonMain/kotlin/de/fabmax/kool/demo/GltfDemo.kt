@@ -5,9 +5,10 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPipeline
@@ -21,14 +22,7 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-fun gltfDemo(ctx: KoolContext): List<Scene> {
-    val demo = GltfDemo(ctx)
-    return listOf(demo.mainScene, demo.menu)
-}
-
-class GltfDemo(ctx: KoolContext) {
-    val mainScene: Scene
-    val menu: Scene
+class GltfDemo : DemoScene("glTF Models") {
 
     private val foxAnimator = FoxAnimator()
     private val models = Cycler(
@@ -74,20 +68,12 @@ class GltfDemo(ctx: KoolContext) {
             deferredPipeline.isAoEnabled = value
         }
 
-    init {
+    override fun lateInit(ctx: KoolContext) {
         models.current.isVisible = true
         trackModel = models.current.trackModel
-
-        mainScene = makeMainScene(ctx)
-        menu = menu(ctx)
-
-        mainScene.onUpdate += {
-            animationTime += ctx.deltaT * animationSpeed
-            foxAnimator.updatePosition(ctx)
-        }
     }
 
-    private fun makeMainScene(ctx: KoolContext) = scene("gltfDemo") {
+    override fun setupMainScene(ctx: KoolContext) = scene("gltfDemo") {
         setupLighting()
         setupCamera()
 
@@ -100,6 +86,11 @@ class GltfDemo(ctx: KoolContext) {
             makeForwardContent(ctx)
 
             setupPipelines()
+        }
+
+        onUpdate += {
+            animationTime += ctx.deltaT * animationSpeed
+            foxAnimator.updatePosition(ctx)
         }
     }
 
@@ -242,162 +233,39 @@ class GltfDemo(ctx: KoolContext) {
         }
     }
 
-    private fun cycleModel(next: Boolean, ctx: KoolContext) {
-        val oldModel = models.current
+    private fun cycleModel(prevModel: GltfModel, newModel: GltfModel, ctx: KoolContext) {
+        prevModel.isVisible = false
         ctx.runDelayed(1) {
-            oldModel.forwardModel?.dispose(ctx)
-            oldModel.deferredModel?.dispose(ctx)
+            prevModel.forwardModel?.dispose(ctx)
+            prevModel.deferredModel?.dispose(ctx)
         }
 
-        models.current.isVisible = false
-        if (next) {
-            models.next()
-        } else {
-            models.prev()
-        }
-        models.current.isVisible = true
-        orbitTransform.zoom = models.current.zoom
-        camTranslationTarget = models.current.lookAt
-        trackModel = models.current.trackModel
+        newModel.isVisible = true
+        orbitTransform.zoom = newModel.zoom
+        camTranslationTarget = newModel.lookAt
+        trackModel = newModel.trackModel
     }
 
-    private fun menu(ctx: KoolContext) = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
-        }
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-420f), dps(-525f), zero())
-            layoutSpec.setSize(dps(300f), dps(405f), full())
-
-            var y = -40f
-            +label("glTF Models") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        section("glTF models") {
+            cycler("Model:", models) { cur, prev -> cycleModel(prev, cur, ctx) }
+            sliderWithValue("Animation Speed:", animationSpeed, 0f, 1f, 2) { animationSpeed = value }
+            toggleButton("Deferred Shading", useDeferredPipeline) {
+                useDeferredPipeline = isEnabled
+                setupPipelines()
             }
-
-            y -= 35f
-            +label("Model:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
+            toggleButton("Ambient Occlusion", isAo) {
+                isAo = isEnabled
+                setupPipelines()
             }
-            y -= 35f
-            val modelName = button(models.current.name) {
-                layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                onClick += { _, _, ctx ->
-                    cycleModel(true, ctx)
-                    text = models.current.name
-                }
+            toggleButton("Screen Space Reflections", true) {
+                deferredPipeline.isSsrEnabled = isEnabled
+                setupPipelines()
             }
-            +modelName
-            +button("prevModel") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(20f), dps(35f), full())
-                text = "<"
-
-                onClick += { _, _, ctx ->
-                    cycleModel(false, ctx)
-                    modelName.text = models.current.name
-                }
+            sliderWithValue("SSR Map Size:", 0.7f, 0.1f, 1f, 1) {
+                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
             }
-            +button("nextModel") {
-                layoutSpec.setOrigin(pcs(80f), dps(y), zero())
-                layoutSpec.setSize(pcs(20f), dps(35f), full())
-                text = ">"
-
-                onClick += { _, _, _ ->
-                    cycleModel(true, ctx)
-                    modelName.text = models.current.name
-                }
-            }
-            y -= 35f
-            +label("Animation Speed:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val speedVal = label(animationSpeed.toString(2)) {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +speedVal
-            y -= 35f
-            +slider("speedSlider", 0f, 1f, animationSpeed) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    speedVal.text = value.toString(2)
-                    animationSpeed = value
-                }
-            }
-            y -= 35f
-            +toggleButton("Deferred Shading") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = useDeferredPipeline
-                onStateChange += {
-                    useDeferredPipeline = isEnabled
-                    setupPipelines()
-                }
-            }
-            y -= 35f
-            +toggleButton("Ambient Occlusion") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = true
-                onStateChange += {
-                    isAo = isEnabled
-                    setupPipelines()
-                }
-            }
-            y -= 35f
-            +toggleButton("Screen Space Reflections") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = true
-                onStateChange += {
-                    deferredPipeline.isSsrEnabled = isEnabled
-                    setupPipelines()
-                }
-            }
-            y -= 35f
-            +label("SSR Map Size:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val mapSzVal = label("0.7 x") {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +mapSzVal
-            y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, 7f) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    val sz = value.roundToInt() / 10f
-                    deferredPipeline.reflectionMapSize = sz
-                    mapSzVal.text = "${sz.toString(1)} x"
-                }
-            }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
         }
     }
 
@@ -457,6 +325,8 @@ class GltfDemo(ctx: KoolContext) {
         var animate: Model.(Double, KoolContext) -> Unit = { t, _ ->
             applyAnimation(t)
         }
+
+        override fun toString() = name
 
         suspend fun load(isDeferredShading: Boolean, ctx: KoolContext): Model? {
             var model: Model? = null

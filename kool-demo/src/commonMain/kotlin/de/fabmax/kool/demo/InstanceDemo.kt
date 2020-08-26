@@ -9,17 +9,15 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.InstancedLodController
+import de.fabmax.kool.util.MeshInstanceList
+import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
+import kotlin.math.roundToInt
 
-fun instanceDemo(ctx: KoolContext) : List<Scene> {
-    return InstanceDemo(ctx).scenes
-}
-
-class InstanceDemo(ctx: KoolContext) {
-    val scenes = mutableListOf<Scene>()
+class InstanceDemo() : DemoScene("Instanced Drawing") {
 
     private var nBunnies = 10
     private var isLodColors = false
@@ -38,12 +36,7 @@ class InstanceDemo(ctx: KoolContext) {
             Lod(10000, 1000f, MutableColor(Color.MD_BLUE))
     )
 
-    init {
-        scenes += mainScene(ctx)
-        scenes += menu(ctx)
-    }
-
-    private fun mainScene(ctx: KoolContext) = scene {
+    override fun setupMainScene(ctx: KoolContext) = scene {
         +orbitInputTransform {
             +camera.apply {
                 this as PerspectiveCamera
@@ -192,110 +185,25 @@ class InstanceDemo(ctx: KoolContext) {
         }
     }
 
-    private fun menu(ctx: KoolContext): Scene = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        section("Scene") {
+            val bunnyTxtFormat: ((Float) -> String) = {
+                val n = it.roundToInt()
+                "${n * n * n}"
+            }
+            sliderWithValue("Bunnies:", nBunnies.toFloat(), 5f, 20f, textFormat = bunnyTxtFormat) {
+                val n = value.roundToInt()
+                if (n != nBunnies) {
+                    nBunnies = n
+                    lodController.setupInstances()
+                }
+            }
+            toggleButton("Color by LOD", isLodColors) { isLodColors = isEnabled }
+            toggleButton("Auto Rotate", isAutoRotate) { isAutoRotate = isEnabled }
         }
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-535f), zero())
-            layoutSpec.setSize(dps(330f), dps(415f), full())
-
-            var y = -40f
-            +label("Scene") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-
-            y -= 35f
-            +label("Bunnies:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val btnBunnyCnt = button("bunnyCnt") {
-                layoutSpec.setOrigin(pcs(45f), dps(y), zero())
-                layoutSpec.setSize(pcs(40f), dps(35f), full())
-                text = "${nBunnies * nBunnies * nBunnies}"
-
-                onClick += { _, _, _ ->
-                    if (nBunnies < 20) {
-                        nBunnies++
-                        text = "${nBunnies * nBunnies * nBunnies}"
-                        lodController.setupInstances()
-                    }
-                }
-            }
-            +btnBunnyCnt
-            +button("decBunnyCnt") {
-                layoutSpec.setOrigin(pcs(35f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = "<"
-
-                onClick += { _, _, _ ->
-                    if (nBunnies > 5) {
-                        nBunnies--
-                        btnBunnyCnt.text = "${nBunnies * nBunnies * nBunnies}"
-                        lodController.setupInstances()
-                    }
-                }
-            }
-            +button("incBunnyCnt") {
-                layoutSpec.setOrigin(pcs(85f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = ">"
-
-                onClick += { _, _, _ ->
-                    if (nBunnies < 20) {
-                        nBunnies++
-                        btnBunnyCnt.text = "${nBunnies * nBunnies * nBunnies}"
-                        lodController.setupInstances()
-                    }
-                }
-            }
-            y -= 35f
-            +toggleButton("Color by LOD") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = isLodColors
-                onStateChange += {
-                    isLodColors = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = isAutoRotate
-                onStateChange += {
-                    isAutoRotate = isEnabled
-                }
-            }
-
-            y -= 40f
-            +label("Info") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
+        section("Info") {
             for (i in lods.indices) {
-                y -= 35f
-                +label("LOD $i:") {
-                    layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(30f), full())
-                }
-                +label("LOD $i:") {
-                    layoutSpec.setOrigin(pcs(80f), dps(y), zero())
-                    layoutSpec.setSize(pcs(20f), dps(30f), full())
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                textWithValue("LOD $i:", "").apply {
                     onUpdate += {
                         val cnt = lodController.getInstanceCount(i)
                         val tris = cnt * (lods[i].mesh?.geometry?.numPrimitives ?: 0)

@@ -11,7 +11,8 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.scene.ui.Label
+import de.fabmax.kool.scene.ui.ToggleButton
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.gltf.GltfFile
@@ -19,13 +20,7 @@ import de.fabmax.kool.util.gltf.loadGltfModel
 import kotlin.math.cos
 import kotlin.math.sqrt
 
-fun simplificationDemo(ctx: KoolContext): List<Scene> {
-    return SimplificationDemo(ctx).scenes
-}
-
-class SimplificationDemo(ctx: KoolContext) {
-    val simplificationScene: Scene
-    val scenes = mutableListOf<Scene>()
+class SimplificationDemo : DemoScene("Simplification") {
     val models = mutableMapOf<String, IndexedVertexList>()
 
     val modelWireframe = LineMesh()
@@ -52,21 +47,18 @@ class SimplificationDemo(ctx: KoolContext) {
         srcModel = makeCosGrid()
         models["cos"] = srcModel
         heMesh = HalfEdgeMesh(srcModel)
+    }
 
+    override fun lateInit(ctx: KoolContext) {
         ctx.assetMgr.launch {
             loadModel("${Demo.modelBasePath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
             loadModel("${Demo.modelBasePath}/cow.gltf.gz", 1f, Vec3f.ZERO)
             loadModel("${Demo.modelBasePath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
         }
-
-        simplificationScene = mainScene(ctx)
-        scenes += simplificationScene
-        scenes += menu(ctx)
-
         simplify()
     }
 
-    private fun mainScene(ctx: KoolContext) = scene {
+    override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform()
 
         lighting.lights.apply {
@@ -146,197 +138,54 @@ class SimplificationDemo(ctx: KoolContext) {
         return builder.geometry
     }
 
-    fun menu(ctx: KoolContext): Scene = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        section("Model") {
+            button("Cow") {
+                srcModel = models["cow"] ?: srcModel
+                simplify()
+            }
+            button("Teapot") {
+                srcModel = models["teapot"] ?: srcModel
+                simplify()
+            }
+            button("Bunny") {
+                srcModel = models["bunny"] ?: srcModel
+                simplify()
+            }
+            button("Cosine Grid") {
+                srcModel = models["cos"] ?: srcModel
+                simplify()
+            }
         }
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-705f), zero())
-            layoutSpec.setSize(dps(330f), dps(585f), full())
-
-            var y = -40f
-            +label("lights") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                text = "Model"
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +button("Cow") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-
-                onClick += { _,_,_ ->
-                    srcModel = models["cow"] ?: srcModel
-                    simplify()
-                }
-            }
-            y -= 35f
-            +button("Teapot") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-
-                onClick += { _,_,_ ->
-                    srcModel = models["teapot"] ?: srcModel
-                    simplify()
-                }
-            }
-            y -= 35f
-            +button("Bunny") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-
-                onClick += { _,_,_ ->
-                    srcModel = models["bunny"] ?: srcModel
-                    simplify()
-                }
-            }
-            y -= 35f
-            +button("Cosine Grid") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-
-                onClick += { _,_,_ ->
-                    srcModel = models["cos"] ?: srcModel
-                    simplify()
-                }
-            }
-            y -= 45f
-            val tbDrawSolid = toggleButton("Draw Solid") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                isEnabled = dispModel.isVisible
-            }
-            y -= 35f
-            val tbDrawWireframe = toggleButton("Draw Wireframe") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                isEnabled = modelWireframe.isVisible
-            }
-            tbDrawSolid.onStateChange += {
+        section("Scene") {
+            val tbSolid = toggleButton("Draw Solid", dispModel.isVisible) { }
+            val tbWireframe = toggleButton("Draw Wireframe", modelWireframe.isVisible) { }
+            tbSolid.onStateChange += {
                 dispModel.isVisible = isEnabled
-                if (!isEnabled && !tbDrawWireframe.isEnabled) {
-                    tbDrawWireframe.isEnabled = true
+                if (!isEnabled && !tbWireframe.isEnabled) {
+                    tbWireframe.isEnabled = true
                 }
             }
-            tbDrawWireframe.onStateChange += {
+            tbWireframe.onStateChange += {
                 modelWireframe.isVisible = isEnabled
-                if (!isEnabled && !tbDrawSolid.isEnabled) {
-                    tbDrawSolid.isEnabled = true
+                if (!isEnabled && !tbSolid.isEnabled) {
+                    tbSolid.isEnabled = true
                 }
             }
-            +tbDrawSolid
-            +tbDrawWireframe
-
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                isEnabled = autoRotate
-                onStateChange += { autoRotate = isEnabled}
-            }
-
-            y -= 40f
-            +label("Simplification") {
-                layoutSpec.setOrigin(zero(), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-
-
-
-            y -= 35f
-            +label("Ratio:") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-            }
-            val faceCntVal = label("faceCntVal") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = "100 %"
-            }
-            +faceCntVal
-            y -= 25f
-            +slider("faceCnt") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-                setValue(0.01f, 1f, 1f)
-                onValueChanged += { value ->
-                    faceCntVal.text = "${(value * 100f).toString(0)} %"
-                    simplifcationGrade = value
-                    if (autoRun.isEnabled) {
-                        simplify()
-                    }
-                }
-            }
-
-            y -= 35f
-            +button("Update Mesh") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                onClick += { _,_,_ ->
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled}
+        }
+        section("Simplification") {
+            sliderWithValue("Ratio:", 100f, 1f, 100f) {
+                simplifcationGrade = value / 100f
+                if (autoRun.isEnabled) {
                     simplify()
                 }
             }
-            y -= 35f
-            autoRun = toggleButton("Auto Update") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-                isEnabled = true
-            }
-            +autoRun
-            y -= 35f
-            +label("Faces:") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-            }
-            facesValLbl = label("facesValLbl") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = ""
-            }
-            +facesValLbl
-            y -= 35f
-            +label("Vertices:") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-            }
-            vertsValLbl = label("verticesValLbl") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = ""
-            }
-            +vertsValLbl
-            y -= 35f
-            +label("Time:") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-            }
-            timeValLbl = label("timeValLbl") {
-                layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = ""
-            }
-            +timeValLbl
+            button("Update Mesh") { simplify() }
+            autoRun = toggleButton("Auto Update", true) { }
+            facesValLbl = textWithValue("Faces:", "")
+            vertsValLbl = textWithValue("Vertices:", "")
+            timeValLbl = textWithValue("Time:", "")
         }
     }
 }

@@ -2,31 +2,26 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.ui.Label
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 
-fun proceduralDemo(ctx: KoolContext): List<Scene> {
-    val demo = ProceduralDemo(ctx)
-    return listOf(demo.mainScene, demo.menu)
-}
-
-class ProceduralDemo(ctx: KoolContext) {
+class ProceduralDemo : DemoScene("Procedural Geometry") {
     var autoRotate = true
     lateinit var roses: Roses
 
-    val mainScene = makeScene(ctx)
-    val menu = makeMenu(ctx)
-
-    fun makeScene(ctx: KoolContext) = scene {
+    override fun setupMainScene(ctx: KoolContext) = scene {
         +orbitInputTransform {
             setMouseRotation(-20f, -10f)
             setMouseTranslation(0f, 16f, 0f)
@@ -78,92 +73,30 @@ class ProceduralDemo(ctx: KoolContext) {
         }
     }
 
-    fun makeMenu(ctx: KoolContext) = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
-        }
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-390f), zero())
-            layoutSpec.setSize(dps(250f), dps(270f), full())
-
-            var y = -40f
-            +label("Roses") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        section("Roses") {
+            button("Empty Vase") {
+                roses.children.forEach { it.dispose(ctx) }
+                roses.removeAllChildren()
             }
-            y -= 35f
-            +button("Empty Vase") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                onClick += { _, _, ctx ->
-                    roses.children.forEach { it.dispose(ctx) }
-                    roses.removeAllChildren()
-                }
-            }
-            y -= 35f
             var seedTxt: Label? = null
-            var replaceLastRose: ToggleButton? = null
-            +button("Generate Rose") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                onClick += { _, _, ctx ->
-                    if (roses.children.isNotEmpty() && replaceLastRose?.isEnabled == true) {
-                        val remNd = roses.children.last()
-                        roses.removeNode(remNd)
-                        remNd.dispose(ctx)
-                    }
-
-                    val seed = randomI()
-                    seedTxt?.text = "$seed"
-                    roses.makeRose(seed)
+            var replaceLastRose = true
+            button("Generate Rose") {
+                if (roses.children.isNotEmpty() && replaceLastRose) {
+                    val remNd = roses.children.last()
+                    roses.removeNode(remNd)
+                    remNd.dispose(ctx)
                 }
-            }
-            y -= 35f
-            replaceLastRose = toggleButton("Replace Last Rose") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = true
-            }
-            +replaceLastRose
-            y -= 35f
-            +label("Seed:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-            }
-            seedTxt = label("0") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +seedTxt
 
-            y -= 40f
-            +label("Scene") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+                val seed = randomI()
+                seedTxt?.text = "$seed"
+                roses.makeRose(seed)
             }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
+            toggleButton("Replace Last Rose", replaceLastRose) { replaceLastRose = isEnabled }
+            seedTxt = textWithValue("Seed:", "")
+        }
+        section("Scene") {
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
         }
     }
 }

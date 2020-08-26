@@ -14,6 +14,13 @@ import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 
+class HelloWorldDemo : DemoScene("Hello World") {
+    override fun setupMainScene(ctx: KoolContext) = helloWorldScene()
+}
+
+class HelloGltfDemo : DemoScene("Hello glTF") {
+    override fun setupMainScene(ctx: KoolContext) = helloGltfScene(ctx)
+}
 
 fun helloWorldScene(): Scene = scene {
     defaultCamTransform()

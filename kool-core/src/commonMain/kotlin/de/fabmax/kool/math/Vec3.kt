@@ -178,7 +178,14 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         return this
     }
 
-    fun norm(): MutableVec3f = scale(1f / length())
+    fun norm(): MutableVec3f {
+        val l = length()
+        return if (l != 0f) {
+            scale(1f / l)
+        } else {
+            set(ZERO)
+        }
+    }
 
     fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
         val rad = angleDeg.toRad()

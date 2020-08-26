@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
 
@@ -316,6 +317,9 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         val v1 = this[1]
         val v2 = this[2]
 
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+
         val fixedIndices = IntArray(numIndices)
         var iFixed = 0
         for (i in 0 until numIndices step 3) {
@@ -323,8 +327,11 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             v1.index = indices[i + 1]
             v2.index = indices[i + 2]
 
+            v1.position.subtract(v0.position, e1).norm()
+            v2.position.subtract(v0.position, e2).norm()
             val a = triArea(v0.position, v1.position, v2.position)
-            if (!a.isNaN() && a > 0f) {
+
+            if (e1 != Vec3f.ZERO && e2 != Vec3f.ZERO && abs(e1 * e2) != 1f && !a.isNaN() && a > 0f) {
                 fixedIndices[iFixed++] = indices[i]
                 fixedIndices[iFixed++] = indices[i + 1]
                 fixedIndices[iFixed++] = indices[i + 2]
@@ -370,8 +377,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             val a = triArea(v0.position, v1.position, v2.position)
 
             e1.cross(e2, nrm).norm().scale(a)
-            if (nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
-                logW { "degenerated triangle, a = $a" }
+            if (nrm == Vec3f.ZERO || nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
+                logW { "generate normals: degenerated triangle, a = $a, e1 = $e1, e2 = $e2" }
             } else {
                 v0.normal += nrm
                 v1.normal += nrm
@@ -419,7 +426,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             val dv2 = v2.texCoord.y - v0.texCoord.y
             val f = 1f / (du1 * dv2 - du2 * dv1)
             if (f.isNaN()) {
-                logW { "degenerated triangle" }
+                logW { "generate tangents: degenerated triangle, e1 = $e1, e2 = $e2" }
             } else {
                 tan.x = f * (dv2 * e1.x - dv1 * e2.x)
                 tan.y = f * (dv2 * e1.y - dv1 * e2.y)

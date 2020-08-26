@@ -8,9 +8,8 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
@@ -20,14 +19,8 @@ import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.*
 
-fun multiLightDemo(ctx: KoolContext): List<Scene> {
-    return MultiLightDemo(ctx).scenes
-}
+class MultiLightDemo : DemoScene("Reflections") {
 
-class MultiLightDemo(ctx: KoolContext) {
-    val scenes = mutableListOf<Scene>()
-
-    private val mainScene = Scene()
     private lateinit var deferredPipeline: DeferredPipeline
 
     private val lights = listOf(
@@ -54,15 +47,12 @@ class MultiLightDemo(ctx: KoolContext) {
 
     private var modelShader: DeferredPbrShader? = null
 
-    init {
-        initMainScene(ctx)
-        scenes += mainScene
-        scenes += menu(ctx)
+    override fun lateInit(ctx: KoolContext) {
         updateLighting()
     }
 
-    private fun initMainScene(ctx: KoolContext) {
-        mainScene.apply {
+    override fun setupMainScene(ctx: KoolContext): Scene {
+        val scene = scene {
             +orbitInputTransform {
                 +camera
                 zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
@@ -85,7 +75,7 @@ class MultiLightDemo(ctx: KoolContext) {
             }
         }
 
-        val envMaps = EnvironmentHelper.singleColorEnvironment(mainScene, Color(0.15f, 0.15f, 0.15f))
+        val envMaps = EnvironmentHelper.singleColorEnvironment(scene, Color(0.15f, 0.15f, 0.15f))
         val defCfg = DeferredPipelineConfig().apply {
             isWithEmissive = false
             isWithAmbientOcclusion = false
@@ -94,12 +84,12 @@ class MultiLightDemo(ctx: KoolContext) {
             isWithScreenSpaceReflections = true
             useImageBasedLighting(envMaps)
         }
-        deferredPipeline = DeferredPipeline(mainScene, defCfg)
+        deferredPipeline = DeferredPipeline(scene, defCfg)
 
-        mainScene += deferredPipeline.renderOutput
-        mainScene += Skybox(envMaps.reflectionMap, 1f)
+        scene += deferredPipeline.renderOutput
+        scene += Skybox(envMaps.reflectionMap, 1f)
 
-        mainScene.onDispose += {
+        scene.onDispose += {
             noSsrMap.dispose()
         }
 
@@ -149,6 +139,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
             }
         }
+        return scene
     }
 
     private fun updateLighting() {
@@ -173,282 +164,46 @@ class MultiLightDemo(ctx: KoolContext) {
         lights.forEach { it.updateVisibility() }
     }
 
-    private fun menu(ctx: KoolContext) = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
-        }
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        val ssrMap = image(deferredPipeline.reflectionDenoisePass?.colorTexture)
 
-        val ssrMap = group {
-            isVisible = false
-            +textureMesh {
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
-                shader = ModeledShader.TextureColor(deferredPipeline.reflectionDenoisePass?.colorTexture)
+        section("Lights") {
+            cycler("Lights:", Cycler(1, 2, 3, 4).apply { index = 3 }) { count, _ ->
+                lightCount = count
+                updateLighting()
             }
-            onUpdate += {
-                val screenSz = 0.33f
-                val scaleX = it.viewport.width * screenSz
-                val scaleY = scaleX * (it.viewport.height.toFloat() / it.viewport.width.toFloat())
-
-                setIdentity()
-                val margin = it.viewport.height * 0.05f
-                translate(margin, margin, 0f)
-                scale(scaleX, scaleY, 1f)
+            sliderWithValue("Strength:", lightPower, 0f, 1000f, 0) {
+                lightPower = value
+                updateLighting()
+            }
+            sliderWithValue("Saturation:", lightSaturation, 0f, 1f) {
+                lightSaturation = value
+                updateLighting()
             }
         }
-        +ssrMap
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-715f), zero())
-            layoutSpec.setSize(dps(330f), dps(595f), full())
-
-            // light setup
-            var y = -40f
-            +label("Lights") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+        section("Screen Space Reflections") {
+            toggleButton("Enabled", deferredPipeline.isSsrEnabled) { deferredPipeline.isSsrEnabled = isEnabled }
+            toggleButton("Show SSR Map", ssrMap.isVisible) { ssrMap.isVisible = isEnabled }
+            sliderWithValue("Map Size:", deferredPipeline.reflectionMapSize, 0.1f, 1f, 1) {
+                deferredPipeline.reflectionMapSize = (value * 10).roundToInt() / 10f
             }
-
-            // light count
-            y -= 35f
-            +label("Lights:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
+        }
+        section("Material") {
+            cycler("Color:", colorCycler) { color, _ ->modelShader?.albedo = color.linColor }
+            sliderWithValue("Roughness:", roughness, 0f, 1f) {
+                roughness = value
+                modelShader?.roughness = value
             }
-            val btnLightCnt = button("lightCnt") {
-                layoutSpec.setOrigin(pcs(45f), dps(y), zero())
-                layoutSpec.setSize(pcs(40f), dps(35f), full())
-                text = "$lightCount"
-
-                onClick += { _, _, _ ->
-                    lightCount++
-                    if (lightCount > 4) { lightCount = 1 }
-                    text = "$lightCount"
-                    updateLighting()
-                }
+            sliderWithValue("Metallic:", metallic, 0f, 1f) {
+                metallic = value
+                modelShader?.metallic = value
             }
-            +btnLightCnt
-            +button("decLightCnt") {
-                layoutSpec.setOrigin(pcs(35f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = "<"
-
-                onClick += { _, _, _ ->
-                    lightCount--
-                    if (lightCount < 1) { lightCount = 4 }
-                    btnLightCnt.text = "$lightCount"
-                    updateLighting()
-                }
-            }
-            +button("incLightCnt") {
-                layoutSpec.setOrigin(pcs(85f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = ">"
-
-                onClick += { _, _, _ ->
-                    lightCount++
-                    if (lightCount > 4) { lightCount = 1 }
-                    btnLightCnt.text = "$lightCount"
-                    updateLighting()
-                }
-            }
-
-            // light strength / brightness
-            y -= 35f
-            +label("Strength:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            +slider("lightPowerSlider") {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                value = lightPower / 10f
-
-                onValueChanged += {
-                    lightPower = value * 10f
-                    updateLighting()
-                }
-            }
-
-            y -= 35f
-            +label("Saturation:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-            }
-            +slider("saturationSlider") {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                value = lightSaturation * 100f
-
-                onValueChanged += {
-                    lightSaturation = value / 100f
-                    updateLighting()
-                }
-            }
-
-            y -= 40f
-            +label("Screen-Space Reflections") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Enabled") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = isScrSpcReflections
-                onClick += { _, _, _ ->
-                    isScrSpcReflections = isEnabled
-                    deferredPipeline.reflectionPass?.isEnabled = isEnabled
-                    deferredPipeline.reflectionDenoisePass?.isEnabled = isEnabled
-                    if (isEnabled) {
-                        deferredPipeline.pbrPass.sceneShader.scrSpcReflectionMap = deferredPipeline.reflectionDenoisePass?.colorTexture
-                    } else {
-                        deferredPipeline.pbrPass.sceneShader.scrSpcReflectionMap = noSsrMap
-                    }
-                }
-            }
-            y -= 35f
-            +toggleButton("Show SSR Map") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = ssrMap.isVisible
-                onStateChange += {
-                    ssrMap.isVisible = isEnabled
-                }
-            }
-            y -= 35f
-            +label("Map Size:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val mapSzVal = label("${deferredPipeline.reflectionMapSize.toString(1)} x") {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +mapSzVal
-            y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, deferredPipeline.reflectionMapSize * 10) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    deferredPipeline.reflectionMapSize = value.roundToInt() / 10f
-                    mapSzVal.text = "${deferredPipeline.reflectionMapSize.toString(1)} x"
-                }
-            }
-            y -= 40f
-            +label("Material") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +label("Color:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val matLabel = button("selected-color") {
-                layoutSpec.setOrigin(pcs(45f), dps(y), zero())
-                layoutSpec.setSize(pcs(40f), dps(35f), full())
-                text = colorCycler.current.name
-
-                onClick += { _, _, _ ->
-                    text = colorCycler.next().name
-                    modelShader?.albedo = colorCycler.current.linColor
-                }
-            }
-            +matLabel
-            +button("color-left") {
-                layoutSpec.setOrigin(pcs(35f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = "<"
-
-                onClick += { _, _, _ ->
-                    matLabel.text = colorCycler.prev().name
-                    modelShader?.albedo = colorCycler.current.linColor
-                }
-            }
-            +button("color-right") {
-                layoutSpec.setOrigin(pcs(85f), dps(y), zero())
-                layoutSpec.setSize(pcs(10f), dps(35f), full())
-                text = ">"
-
-                onClick += { _, _, _ ->
-                    matLabel.text = colorCycler.next().name
-                    modelShader?.albedo = colorCycler.current.linColor
-                }
-            }
-            y -= 35f
-            +label("Roughness:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            +slider("roughnessSlider", 0f, 1f, roughness) {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-
-                onValueChanged += {
-                    roughness = value
-                    modelShader?.roughness = roughness
-                }
-            }
-            y -= 35f
-            +label("Metallic:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            +slider("metallicSlider", 0f, 1f, metallic) {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-
-                onValueChanged += {
-                    metallic = value
-                    modelShader?.metallic = metallic
-                }
-            }
-
-            y -= 40f
-            +label("Scene") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Light Indicators") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = showLightIndicators
-                onStateChange += {
-                    showLightIndicators = isEnabled
-                    updateLighting()
-                }
+        }
+        section("Scene") {
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
+            toggleButton("Light Indicators", showLightIndicators) {
+                showLightIndicators = isEnabled
+                updateLighting()
             }
         }
     }
@@ -563,7 +318,9 @@ class MultiLightDemo(ctx: KoolContext) {
         }
     }
 
-    private data class MatColor(val name: String, val linColor: Color)
+    private data class MatColor(val name: String, val linColor: Color) {
+        override fun toString() = name
+    }
 
     companion object {
         private val matColors = listOf(

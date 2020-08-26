@@ -24,9 +24,9 @@ abstract class AoPipeline {
             denoisePass.radius = value
         }
 
-    var intensity: Float
-        get() = aoPass.intensity
-        set(value) { aoPass.intensity = value }
+    var strength: Float
+        get() = aoPass.strength
+        set(value) { aoPass.strength = value }
 
     var power: Float
         get() = aoPass.power

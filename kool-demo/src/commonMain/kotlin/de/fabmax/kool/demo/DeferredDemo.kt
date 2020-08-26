@@ -1,28 +1,23 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.*
 import kotlin.math.sqrt
 
-fun deferredScene(ctx: KoolContext): List<Scene> {
-    val deferredDemo = DeferredDemo(ctx)
-    return listOf(deferredDemo.mainScene, deferredDemo.menu)
-}
-
-class DeferredDemo(ctx: KoolContext) {
-
-    val mainScene: Scene
-    val menu: Scene
+class DeferredDemo() : DemoScene("Deferred Shading") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
@@ -47,14 +42,11 @@ class DeferredDemo(ctx: KoolContext) {
             ColorMap("White", listOf(Color.WHITE))
     )).apply { index = 1 }
 
-    init {
-        mainScene = makeDeferredScene()
-        menu = makeMenu(ctx)
-
+    override fun lateInit(ctx: KoolContext) {
         updateLights()
     }
 
-    private fun makeDeferredScene() = scene {
+    override fun setupMainScene(ctx: KoolContext) = scene {
         +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -40f)
@@ -274,215 +266,54 @@ class DeferredDemo(ctx: KoolContext) {
         }
     }
 
-    private fun makeMenu(ctx: KoolContext) = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        val images = mutableListOf<UiImage>()
+        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.albedoMetal, 0f, 1f)).apply {
+            setupImage(0.025f, 0.025f)
+        }
+        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.normalRoughness, 1f, 0.5f)).apply {
+            setupImage(0.025f, 0.35f)
+        }
+        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.positionAo, 10f, 0.05f)).apply {
+            setupImage(0.025f, 0.675f)
+        }
+        images += image(imageShader = ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, model = AoDemo.aoMapColorModel())).apply {
+            setupImage(0.35f, 0.35f)
+        }
+        images += image(imageShader = MetalRoughAoTex(deferredPipeline.mrtPass)).apply {
+            setupImage(0.35f, 0.675f)
         }
 
-        val mapGroup = group {
-            isVisible = false
-
-            val positions = listOf(
-                    Vec2f(0f, 0f),
-                    Vec2f(0f, 1.2f),
-                    Vec2f(0f, 2.4f),
-                    Vec2f(1.1f, 1.2f),
-                    Vec2f(1.1f, 2.4f))
-
-            positions.forEachIndexed { i, p ->
-                +textureMesh {
-                    generate {
-                        rect {
-                            origin.set(p.x, p.y, 0f)
-                            size.set(1f, 1f)
-                            mirrorTexCoordsY()
-                        }
-                    }
-
-                    shader = when (i) {
-                        0 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.albedoMetal, "colorTex", rgbMapColorModel(0f, 1f))
-                        1 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.normalRoughness, "colorTex", rgbMapColorModel(1f, 0.5f))
-                        2 -> ModeledShader.TextureColor(deferredPipeline.mrtPass.positionAo, "colorTex", rgbMapColorModel(10f, 0.05f))
-                        3 -> ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, "colorTex", AoDemo.aoMapColorModel())
-                        4 -> MetalRoughAoTex(deferredPipeline.mrtPass)
-                        else -> ModeledShader.StaticColor(Color.MAGENTA)
-                    }
-                }
+        section("Dynamic Lights") {
+            sliderWithValue("Light Count:", lightCount.toFloat(), 1f, MAX_LIGHTS.toFloat(), 0) {
+                lightCount = value.toInt()
+                updateLights()
             }
-
-            onUpdate += {
-                val mapSz = 0.26f
-                val scaleX = it.viewport.width * mapSz
-                val scaleY = scaleX * (it.viewport.height.toFloat() / it.viewport.width.toFloat())
-                val margin = it.viewport.height * 0.05f
-
-                setIdentity()
-                translate(margin, margin, 0f)
-                scale(scaleX, scaleY, 1f)
+            toggleButton("Light Positions", lightPositionMesh.isVisible) { lightPositionMesh.isVisible = isEnabled }
+            toggleButton("Light Volumes", lightVolumeMesh.isVisible) { lightVolumeMesh.isVisible = isEnabled }
+            cycler("Color Map:", colorMap) { _, _ -> updateLightColors() }
+        }
+        section("Deferred Shading") {
+            toggleButton("Show Maps", images.first().isVisible) { images.forEach { it.isVisible = isEnabled } }
+            toggleButton("Ambient Occlusion", deferredPipeline.isAoEnabled) { deferredPipeline.isAoEnabled = isEnabled }
+        }
+        section("Scene") {
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled}
+            toggleButton("Show Objects", objects.isVisible) {
+                objects.isVisible = isEnabled
+                updateLights(true)
+            }
+            sliderWithValue("Object Roughness:", objectShader.roughness, 0f, 1f, 2) {
+                objectShader.roughness = value
             }
         }
-        +mapGroup
+    }
 
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-675f), zero())
-            layoutSpec.setSize(dps(250f), dps(555f), full())
-
-            var y = -40f
-            +label("Dynamic Lights") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +label("Light Count:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val lightCntVal = label("$lightCount") {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +lightCntVal
-            y -= 35f
-            +slider("lightCntSlider", 100f, MAX_LIGHTS.toFloat(), lightCount.toFloat()) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    lightCount = value.toInt()
-                    lightCntVal.text = "$lightCount"
-                    updateLights()
-                }
-            }
-            y -= 35f
-            +toggleButton("Light Positions") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = lightPositionMesh.isVisible
-                onStateChange += {
-                    lightPositionMesh.isVisible = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Light Volumes") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = lightVolumeMesh.isVisible
-                onStateChange += {
-                    lightVolumeMesh.isVisible = isEnabled
-                }
-            }
-            y -= 35f
-            +label("Color Map:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-            }
-            y -= 35f
-            val colorMapLabel = button(colorMap.current.name) {
-                layoutSpec.setOrigin(pcs(15f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                onClick += { _, _, _ ->
-                    text = colorMap.next().name
-                    updateLightColors()
-                }
-            }
-            +colorMapLabel
-            +button("colors-left") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(20f), dps(35f), full())
-                text = "<"
-
-                onClick += { _, _, _ ->
-                    colorMap.prev()
-                    updateLightColors()
-                }
-            }
-            +button("colors-right") {
-                layoutSpec.setOrigin(pcs(80f), dps(y), zero())
-                layoutSpec.setSize(pcs(20f), dps(35f), full())
-                text = ">"
-
-                onClick += { _, _, _ ->
-                    colorMap.next()
-                    updateLightColors()
-                }
-            }
-
-            y -= 40f
-            +label("Deferred Shading") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Show Maps") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = mapGroup.isVisible
-                onStateChange += {
-                    mapGroup.isVisible = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Ambient Occlusion") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = deferredPipeline.aoPipeline?.aoPass?.isEnabled ?: false
-                onStateChange += {
-                    deferredPipeline.isAoEnabled = isEnabled
-                }
-            }
-
-            y -= 40f
-            +label("Scene") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Show Objects") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = objects.isVisible
-                onStateChange += {
-                    objects.isVisible = isEnabled
-                    updateLights(true)
-                }
-            }
-            y -= 35f
-            +label("Object Roughness:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            y -= 35f
-            +slider("roughnessSlider", 0f, 1f, lightCount.toFloat()) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                value = objectShader.roughness
-                onValueChanged += {
-                    objectShader.roughness = value
-                }
-            }
-        }
+    private fun UiImage.setupImage(x: Float, y: Float) {
+        isVisible = false
+        relativeWidth = 0.3f
+        relativeX = x
+        relativeY = y
     }
 
     private inner class LightGroup(val startConst: Vec3f, val startIt: Vec3f, val travelDir: Vec3f, val rows: Int) {
@@ -526,6 +357,7 @@ class DeferredDemo(ctx: KoolContext) {
 
     private class ColorMap(val name: String, val colors: List<Color>) {
         fun getColor(idx: Int): Color = colors[idx % colors.size]
+        override fun toString() = name
     }
 
     private fun instancedLightIndicatorModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
@@ -539,6 +371,10 @@ class DeferredDemo(ctx: KoolContext) {
         fragmentStage {
             colorOutput(unlitMaterialNode(ifColors.output).outColor)
         }
+    }
+
+    private fun gBufferShader(map: Texture, offset: Float, scale: Float): ModeledShader {
+        return ModeledShader.TextureColor(map, model = rgbMapColorModel(offset, scale))
     }
 
     private fun rgbMapColorModel(offset: Float, scale: Float) = ShaderModel("rgbMap").apply {

@@ -9,24 +9,17 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.RectProps
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.*
 
-fun aoDemo(ctx: KoolContext): List<Scene> {
-    val aoDemo = AoDemo(ctx)
-    return listOf(aoDemo.mainScene, aoDemo.menu)
-}
-
-class AoDemo(ctx: KoolContext) {
-
-    val mainScene: Scene
-    val menu: Scene
+class AoDemo : DemoScene("Ambient Occlusion") {
 
     private var autoRotate = true
     private var spotLight = true
@@ -34,14 +27,11 @@ class AoDemo(ctx: KoolContext) {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    init {
-        mainScene = makeMainScene(ctx)
-        menu = menu(ctx)
-
+    override fun lateInit(ctx: KoolContext) {
         updateLighting()
     }
 
-    private fun makeMainScene(ctx: KoolContext) = scene {
+    override fun setupMainScene(ctx: KoolContext) = scene {
         +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -20f)
@@ -211,198 +201,35 @@ class AoDemo(ctx: KoolContext) {
         shadows.forEach { it.isShadowMapEnabled = spotLight }
     }
 
-    private fun menu(ctx: KoolContext) = uiScene {
-        val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
-        val smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
-        theme = theme(UiTheme.DARK) {
-            componentUi { BlankComponentUi() }
-            containerUi { BlankComponentUi() }
-        }
-
-        val aoMap = group {
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        val aoMap = image(imageShader = ModeledShader.TextureColor(aoPipeline.aoMap, model = aoMapColorModel())).apply {
             isVisible = false
-            +textureMesh {
-                generate {
-                    rect {
-                        size.set(1f, 1f)
-                        mirrorTexCoordsY()
-                    }
-                }
-                shader = ModeledShader.TextureColor(aoPipeline.aoMap, "colorTex", aoMapColorModel())
+        }
+
+        section("Ambient Occlusion") {
+            toggleButton("Enabled", aoPipeline.isEnabled) { aoPipeline.isEnabled = isEnabled }
+            toggleButton("Show AO Map", aoMap.isVisible) { aoMap.isVisible = isEnabled }
+            sliderWithValue("Radius:", aoPipeline.radius, 0.1f, 3f, 2) {
+                aoPipeline.radius = value
             }
-
-            onUpdate += {
-                val screenSz = 0.33f
-                val scaleX = it.viewport.width * screenSz
-                val scaleY = scaleX * (aoPipeline.denoisePass.height.toFloat() / aoPipeline.denoisePass.width.toFloat())
-
-                setIdentity()
-                val margin = it.viewport.height * 0.05f
-                translate(margin, margin, 0f)
-                scale(scaleX, scaleY, 1f)
+            sliderWithValue("Power:", log(aoPipeline.power, 10f), log(0.2f, 10f), log(5f, 10f), 2) {
+                aoPipeline.power = 10f.pow(value)
+            }
+            sliderWithValue("Strength:", aoPipeline.strength, 0f, 5f, 2) {
+                aoPipeline.strength = value
+            }
+            sliderWithValue("AO Samples:", aoPipeline.kernelSz.toFloat(), 4f, 128f, 0) {
+                aoPipeline.kernelSz = value.roundToInt()
+            }
+            sliderWithValue("Map Size:", aoPipeline.mapSize, 0.1f, 1f, 1) {
+                aoPipeline.mapSize = (value * 10).roundToInt() / 10f
             }
         }
-        +aoMap
-
-        +container("menu container") {
-            ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-705f), zero())
-            layoutSpec.setSize(dps(250f), dps(585f), full())
-
-            // light setup
-            var y = -40f
-            +label("Ambient Occulsion") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Enabled") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = aoPipeline.aoPass.isEnabled
-                onStateChange += {
-                    aoPipeline.isEnabled = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Show AO Map") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = aoMap.isVisible
-                onStateChange += {
-                    aoMap.isVisible = isEnabled
-                }
-            }
-            y -= 35f
-            +label("Radius:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val radiusVal = label(aoPipeline.radius.toString(2)) {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +radiusVal
-            y -= 35f
-            +slider("radiusSlider", 0.1f, 3f, aoPipeline.radius) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    radiusVal.text = value.toString(2)
-                    aoPipeline.radius = value
-                }
-            }
-            y -= 35f
-            +label("Intensity:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val intensityVal = label(aoPipeline.intensity.toString(2)) {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +intensityVal
-            y -= 35f
-            +slider("intensitySlider", 0f, 5f, aoPipeline.intensity) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    intensityVal.text = value.toString(2)
-                    aoPipeline.intensity = value
-                }
-            }
-            y -= 35f
-            +label("Power:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val powerVal = label(aoPipeline.power.toString(2)) {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +powerVal
-            y -= 35f
-            +slider("powerSlider", log(0.2f, 10f), log(5f, 10f), log(aoPipeline.power, 10f)) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    aoPipeline.power = 10f.pow(value)
-                    powerVal.text = aoPipeline.power.toString(2)
-                }
-            }
-            y -= 35f
-            +label("AO Samples:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val kernelSzVal = label(aoPipeline.kernelSz.toString()) {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +kernelSzVal
-            y -= 35f
-            +slider("kernelSlider", 4f, 128f, aoPipeline.kernelSz.toFloat()) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    aoPipeline.aoPass.kernelSz = value.roundToInt()
-                    kernelSzVal.text = aoPipeline.kernelSz.toString()
-                }
-            }
-            y -= 35f
-            +label("Map Size:") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-            }
-            val mapSzVal = label("${aoPipeline.mapSize.toString(1)} x") {
-                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-            }
-            +mapSzVal
-            y -= 35f
-            +slider("mapSizeSlider", 1f, 10f, aoPipeline.mapSize * 10) {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                onValueChanged += {
-                    aoPipeline.mapSize = value.roundToInt() / 10f
-                    mapSzVal.text = "${aoPipeline.mapSize.toString(1)} x"
-                }
-            }
-
-            y -= 40f
-            +label("Scene") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                font.setCustom(smallFont)
-                textColor.setCustom(theme.accentColor)
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +toggleButton("Auto Rotate") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = autoRotate
-                onStateChange += {
-                    autoRotate = isEnabled
-                }
-            }
-            y -= 35f
-            +toggleButton("Spot Light") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(30f), full())
-                isEnabled = spotLight
-                onStateChange += {
-                    spotLight = isEnabled
-                    updateLighting()
-                }
+        section("Scene") {
+            toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
+            toggleButton("Spot Light", spotLight) {
+                spotLight = isEnabled
+                updateLighting()
             }
         }
     }

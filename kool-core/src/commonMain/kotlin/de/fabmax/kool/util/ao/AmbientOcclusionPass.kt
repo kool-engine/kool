@@ -25,7 +25,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         }) {
 
     var radius = 1f
-    var intensity = 1.25f
+    var strength = 1.25f
     var power = 1.5f
     var bias = 0.05f
     var kernelSz = 32
@@ -185,7 +185,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         val uInvProj = UniformMat4f("uInvProj")
         val uNoiseScale = Uniform2f("uNoiseScale")
         val uRadius = Uniform1f("uRadius")
-        val uIntensity = Uniform1f("uIntensity")
+        val uStrength = Uniform1f("uStrength")
         val uPower = Uniform1f("uPower")
         val uBias = Uniform1f("uBias")
 
@@ -198,7 +198,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     if (withInvProj) +{ uInvProj }
                     +{ uNoiseScale }
                     +{ uRadius }
-                    +{ uIntensity }
+                    +{ uStrength }
                     +{ uPower }
                     +{ uBias }
                     +{ uKernelN }
@@ -207,7 +207,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         uProj.value.set(cam.proj)
                         uNoiseScale.value.set(width / 4f, height / 4f)
                         uRadius.value = radius
-                        uIntensity.value = intensity
+                        uStrength.value = strength
                         uPower.value = power
                         uBias.value = bias
 
@@ -285,7 +285,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     }
                 }
                 occlusion /= float(${aoUniforms.uKernelN});
-                float occlFac = pow(clamp(1.0 - occlusion * ${aoUniforms.uIntensity}, 0.0, 1.0), ${aoUniforms.uPower});
+                float occlFac = pow(clamp(1.0 - occlusion * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
                 
                 ${outColor.declare()} = vec4(occlFac, 0.0, 0.0, 1.0);
             """)
