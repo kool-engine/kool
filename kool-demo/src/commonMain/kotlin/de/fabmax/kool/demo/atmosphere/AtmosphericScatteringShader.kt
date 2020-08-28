@@ -51,7 +51,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             updateScatteringCoeffs()
         }
 
-    var rayleighCoeffs = Vec3f(0.7f, 0.6f, 1.0f)
+    var rayleighCoeffs = Vec3f(0.75f, 0.75f, 0.75f)
         set(value) {
             field = value
             atmosphereNode?.uRayleighCoeffs?.value?.set(value, rayleighStrength)
@@ -281,8 +281,8 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         }
 
         override fun generateCode(generator: CodeGenerator) {
-            val numDepthSamples = 12
-            val numScatterSamples = 12
+            val numDepthSamples = 10
+            val numScatterSamples = 10
 
             generator.appendFunction("phaseFunRayleigh", """
                 vec3 phaseFunRayleigh(float cosTheta) {

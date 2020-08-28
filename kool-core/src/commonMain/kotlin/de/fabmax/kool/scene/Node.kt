@@ -93,7 +93,7 @@ abstract class Node(val name: String? = null) : Disposable {
             onUpdate[i](updateEvent)
         }
 
-        updateModelMat(updateEvent)
+        updateModelMat()
 
         // update global center and radius
         globalCenterMut.set(bounds.center)
@@ -103,7 +103,7 @@ abstract class Node(val name: String? = null) : Disposable {
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
-    protected open fun updateModelMat(updateEvent: RenderPass.UpdateEvent) {
+    open fun updateModelMat() {
         modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
         modelMatDirty = true
     }

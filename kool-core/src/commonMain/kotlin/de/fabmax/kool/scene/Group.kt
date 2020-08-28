@@ -47,16 +47,24 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
+        // update must be called before children are updated, otherwise children use a potentially outdated
+        // parent model mat and toGlobalCoords() might yield wrong results
+        super.update(updateEvent)
+
         // call update on all children and update group bounding box
         childrenBounds.clear()
         for (i in intChildren.indices) {
             intChildren[i].update(updateEvent)
             childrenBounds.add(intChildren[i].bounds)
         }
-        setLocalBounds()
 
-        // compute global position and size based on group bounds and current model transform
-        super.update(updateEvent)
+        // update bounds based on updated children bounds
+        setLocalBounds()
+        globalCenterMut.set(bounds.center)
+        globalExtentMut.set(bounds.max)
+        modelMat.transform(globalCenterMut)
+        modelMat.transform(globalExtentMut)
+        globalRadius = globalCenter.distance(globalExtentMut)
 
         // transform group bounds
         if (!bounds.isEmpty && !isIdentity) {
@@ -77,8 +85,8 @@ open class Group(name: String? = null) : Node(name) {
         bounds.set(childrenBounds)
     }
 
-    override fun updateModelMat(updateEvent: RenderPass.UpdateEvent) {
-        super.updateModelMat(updateEvent)
+    override fun updateModelMat() {
+        super.updateModelMat()
         if (!isIdentity) {
             modelMat.mul(transform)
         }

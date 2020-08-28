@@ -29,12 +29,37 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
     private var sunIntensity = 1f
 
-    private var time = 12f
+    private var time = 0.5f
     private var animateTime = true
     private var timeSlider: Slider? = null
 
     private val shadows = mutableListOf<SimpleShadowMap>()
-    private var atmoShader = AtmosphericScatteringShader()
+    private val atmoShader = AtmosphericScatteringShader()
+    private val earthTransform = Group("earth")
+    private val camTransform = EarthCamTransform(earthRadius)
+
+    override fun lateInit(ctx: KoolContext) {
+        camTransform.apply {
+            mainScene.registerDragHandler(this)
+
+            val cam = mainScene.camera as PerspectiveCamera
+            +cam
+            onUpdate += { ev ->
+                cam.apply {
+                    val h = globalPos.length() - earthRadius
+                    position.set(Vec3f.ZERO)
+                    lookAt.set(Vec3f.NEG_Z_AXIS)
+                    clipNear = max(0.003f, h * 0.5f)
+                    clipFar = clipNear * 1000f
+                }
+
+                if (animateTime) {
+                    timeSlider?.value = (time + ev.deltaT / 300) % 1f
+                }
+            }
+        }
+        updateSun()
+    }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         lighting.lights.clear()
@@ -61,11 +86,15 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             scenePos = deferredPipeline.mrtPass.positionAo
             planetRadius = earthRadius
             atmosphereRadius = 6500f / kmPerUnit
+
+            scatteringCoeffs = Vec3f(0.75f, 1.05f, 1.30f)
+            rayleighCoeffs = Vec3f(0.5f, 0.5f, 1f)
+            scatteringCoeffStrength = 2f
         }
 
         +group {
             isFrustumChecked = false
-            +Skybox.sphere(Texture("milkyway-darker.jpg"), hdriInput = false)
+            +Skybox.sphere(Texture("milkyway-dark.jpg"), hdriInput = false)
             // milky way is wildly tilted (no idea in which direction...)
             rotate(-60f, Vec3f.X_AXIS)
         }
@@ -79,35 +108,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             }
             shader = atmoShader
         }
-
-        setupCamera()
-    }
-
-    private fun Scene.setupCamera() {
-        +group {
-            translate(0f, 0f, earthRadius)
-
-            +orbitInputTransform {
-                +camera
-                (camera as PerspectiveCamera).apply {
-                    onUpdate += {
-                        val h = globalPos.length() - earthRadius
-
-                        clipNear = max(0.01f, h * 0.5f)
-                        clipFar = clipNear * 1000f
-                    }
-                }
-                minZoom = 1.0 / kmPerUnit
-                maxZoom = 30000.0 / kmPerUnit
-                zoom = 15000.0 / kmPerUnit
-
-                setMouseRotation(90f, 0f)
-            }
-        }
     }
 
     private fun Group.setupContent() {
-        +group("earth") {
+        +earthTransform.apply {
+            +camTransform
+
             +textureMesh(isNormalMapped = true) {
                 generate {
                     icoSphere {
@@ -129,12 +135,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 }
             }
 
-            // earth rotation axis is tilted by ~20°
-            rotate(20f, Vec3f.X_AXIS)
-
-            onUpdate += { ctx ->
-                // rotate with 0.2f rpm
-                //rotate(ctx.deltaT * 1.2f, Vec3f.Y_AXIS)
+            onUpdate += {
+                setIdentity()
+                // earth rotation axis is tilted by ~20°
+                rotate(-20f, Vec3f.X_AXIS)
+                // rotate according to time
+                rotate(time * 360, Vec3f.Y_AXIS)
             }
         }
     }
@@ -189,7 +195,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 val m0 = if (m < 10) "0" else ""
                 "$h:$m0$m"
             }
-            timeSlider = sliderWithValueSmall("Time:", 0.5f, 0f, 1f, textFormat = timeFmt, widthLabel = 24f) {
+            timeSlider = sliderWithValueSmall("Time:", time, 0f, 1f, textFormat = timeFmt, widthLabel = 24f) {
                 time = value
                 updateSun()
             }
@@ -204,7 +210,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     private fun updateSun() {
-        val angle = 180f - time * 360f
+        val angle = 180f
         val lightDir = MutableVec3f(0f, 0f, 1f).rotate(angle, Vec3f.Y_AXIS)
         atmoShader.dirToSun = lightDir
         atmoShader.sunIntensity = MutableVec3f(sunColor.r, sunColor.g, sunColor.b).scale(sunIntensity)
