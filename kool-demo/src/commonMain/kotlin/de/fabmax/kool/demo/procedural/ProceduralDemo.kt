@@ -42,7 +42,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
         ctx.assetMgr.launch {
             val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-            +Skybox(ibl.reflectionMap, 1f)
+            +Skybox.cube(ibl.reflectionMap, 1f)
 
             val shadowMap = SimpleShadowMap(this@scene, 0).apply {
                 optimizeForDirectionalLight = true

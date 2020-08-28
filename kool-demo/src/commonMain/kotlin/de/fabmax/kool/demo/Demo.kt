@@ -2,7 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
-import de.fabmax.kool.demo.building.BuildingDemo
+import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.scene.Scene
@@ -32,6 +32,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
+            "atmosphereDemo" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },
             "proceduralDemo" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
             "gltfDemo" to DemoEntry("glTF Models") { GltfDemo() },
             "deferredDemo" to DemoEntry("Deferred Shading") { DeferredDemo() },
@@ -43,10 +44,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "simplificationDemo" to DemoEntry("Simplification") { SimplificationDemo() },
 
             "helloWorldDemo" to DemoEntry("Hello World", true) { HelloWorldDemo() },
-            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
-
-            "buildingDemo" to DemoEntry("Procedural Building", true) { BuildingDemo() },
-            "atmoTest" to DemoEntry("atmoTest", true) { AtmosphereTest() }
+            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() }
     )
 
     init {

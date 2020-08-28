@@ -80,7 +80,7 @@ class GltfDemo : DemoScene("glTF Models") {
         ctx.assetMgr.launch {
             envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
 
-            +Skybox(envMaps.reflectionMap, 1f)
+            +Skybox.cube(envMaps.reflectionMap, 1f)
 
             makeDeferredContent(ctx)
             makeForwardContent(ctx)

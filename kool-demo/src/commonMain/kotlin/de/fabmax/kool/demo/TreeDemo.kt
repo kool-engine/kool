@@ -58,7 +58,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         val envMaps = EnvironmentHelper.gradientColorEnvironment(this, bgGradient, ctx)
 
         +makeTreeGroundGrid(10, shadowMaps, envMaps)
-        +Skybox(envMaps.reflectionMap)
+        +Skybox.cube(envMaps.reflectionMap)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {

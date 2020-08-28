@@ -169,7 +169,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
                     if (cfg.isWithEmissive) {
-                        inEmissive = textureSamplerNode(textureNode("emissive"), coord).outColor
+                        inEmissive = gammaNode(textureSamplerNode(textureNode("emissive"), coord).outColor).outColor
                     }
                 }
 

@@ -19,7 +19,7 @@ inline fun deferredPbrShader(block: PbrMaterialConfig.() -> Unit): DeferredPbrSh
  * 1st pass shader for deferred pbr shading: Renders view space position, normals, albedo, roughness, metallic and
  * texture-based AO into three separate texture outputs.
  */
-class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
+open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
 
@@ -99,7 +99,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
             field = value
             displacementSampler?.texture = value
         }
-    var displacementStrength = 0.1f
+    var displacementStrength = cfg.displacementStrength
         set(value) {
             field = value
             uDispStrength?.uniform?.value = value
@@ -217,7 +217,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
 
                 if (cfg.isDisplacementMapped) {
                     val dispTex = textureNode("tDisplacement")
-                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
+                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, localPos, localNrm).apply {
                         inStrength = pushConstantNode1f("uDispStrength").output
                     }
                     localPos = dispNd.outPosition
@@ -259,23 +259,23 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
 
                 val emissive = if (cfg.isEmissiveMapped) {
                     val emissiveTex = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
-                    val emissiveLin = gammaNode(emissiveTex).outColor
                     if (cfg.isMultiplyEmissiveMap) {
                         val fac = pushConstantNodeColor("uEmissive").output
-                        multiplyNode(emissiveLin, fac).output
+                        multiplyNode(emissiveTex, fac).output
                     } else {
-                        emissiveLin
+                        emissiveTex
                     }
                 } else {
                     pushConstantNodeColor("uEmissive").output
                 }
 
+                val normal = normalizeNode(ifNormals.output).output
                 var viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
-                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, normal, ifTangents.output)
                     bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
                     bumpNormal.outNormal
                 } else {
-                    ifNormals.output
+                    normal
                 }
                 viewNormal = flipBacksideNormalNode(viewNormal).outNormal
 
@@ -361,13 +361,13 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inViewPos, inAlbedo, inViewNormal, inRoughness, inMetallic, inAo)
+            dependsOn(inViewPos, inAlbedo, inEmissive, inViewNormal, inRoughness, inMetallic, inAo)
         }
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
                 ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
-                ${outNormalRough.declare()} = vec4(normalize(${inViewNormal.ref3f()}), ${inRoughness.ref1f()});
+                ${outNormalRough.declare()} = vec4(${inViewNormal.ref3f()}, ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
                 ${outEmissive.declare()} = vec4(${inEmissive.ref3f()}, 1.0);
             """)
@@ -398,7 +398,7 @@ class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultMrtP
                 ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
                 ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
                 ${outEmissive.declare()} = ${inEmissive.ref3f()};
-                ${outViewNormal.declare()} = ${inNormalRough.ref3f()};
+                ${outViewNormal.declare()} = normalize(${inNormalRough.ref3f()});
                 ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
                 ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;
                 ${outAo.declare()} = ${inPositionAo.ref4f()}.a;

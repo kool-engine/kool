@@ -177,7 +177,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 this.shader = shader
             }
 
-            this@scene += Skybox(envMaps.reflectionMap, 1f)
+            this@scene += Skybox.cube(envMaps.reflectionMap, 1f)
         }
     }
 

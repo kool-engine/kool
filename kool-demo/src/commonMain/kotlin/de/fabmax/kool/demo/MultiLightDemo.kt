@@ -87,7 +87,7 @@ class MultiLightDemo : DemoScene("Reflections") {
         deferredPipeline = DeferredPipeline(scene, defCfg)
 
         scene += deferredPipeline.renderOutput
-        scene += Skybox(envMaps.reflectionMap, 1f)
+        scene += Skybox.cube(envMaps.reflectionMap, 1f)
 
         scene.onDispose += {
             noSsrMap.dispose()

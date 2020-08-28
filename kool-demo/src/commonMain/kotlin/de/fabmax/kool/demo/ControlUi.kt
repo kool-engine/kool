@@ -110,6 +110,10 @@ class ControlUiBuilder(val uiRoot: UiRoot, ctx: KoolContext) {
         menuY -= 35f
     }
 
+    fun gap(yGap: Float) {
+        menuY -= yGap
+    }
+
     fun image(imageTex: Texture? = null, imageShader: Shader? = null): UiImage {
         val image: UiImage
         uiRoot.apply {
@@ -160,6 +164,38 @@ class ControlUiBuilder(val uiRoot: UiRoot, ctx: KoolContext) {
                 slider = slider("slider", min, max, initialValue) {
                     layoutSpec.setOrigin(pcs(0f), dps(menuY), zero())
                     layoutSpec.setSize(pcs(100f), dps(35f), full())
+                    onValueChanged += {
+                        valueLabel.text = textFormat(value)
+                        onChange()
+                    }
+                }
+                +slider
+            }
+        }
+        menuY -= 35f
+        return slider
+    }
+
+    fun sliderWithValueSmall(text: String, initialValue: Float, min: Float, max: Float,
+                             precision: Int = 2, textFormat: (Float) -> String = { it.toString(precision) },
+                             widthLabel: Float = 15f, widthValue: Float = 15f,
+                             onChange: Slider.() -> Unit): Slider {
+        val slider: Slider
+        uiRoot.apply {
+            menuContainer.apply {
+                +label(text) {
+                    layoutSpec.setOrigin(pcs(0f), dps(menuY), zero())
+                    layoutSpec.setSize(pcs(widthLabel), dps(35f), full())
+                }
+                val valueLabel = label(textFormat(initialValue)) {
+                    layoutSpec.setOrigin(pcs(100 - widthValue), dps(menuY), zero())
+                    layoutSpec.setSize(pcs(widthValue), dps(35f), full())
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                }
+                +valueLabel
+                slider = slider("slider", min, max, initialValue) {
+                    layoutSpec.setOrigin(pcs(widthLabel), dps(menuY), zero())
+                    layoutSpec.setSize(pcs(100 - widthLabel - widthValue), dps(35f), full())
                     onValueChanged += {
                         valueLabel.text = textFormat(value)
                         onChange()
