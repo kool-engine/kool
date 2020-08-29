@@ -8,6 +8,7 @@ import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
+import kotlin.math.min
 import kotlin.math.pow
 
 class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
@@ -23,13 +24,17 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
     var zoom = 2f
 
     var minZoom = 0.001f
-    var maxZoom = 4f
+    var maxZoom = 20f
 
     private val planetRot = Mat4d()
     private val lookRot = Mat4d()
     private val camRot = Mat4d()
 
     init {
+        // initial center position (lat / long)
+        planetRot.rotate(13.0, Vec3d.Y_AXIS)
+        planetRot.rotate(40.0, Vec3d.NEG_X_AXIS)
+
         onUpdate += {
             val localX = invTransform.transform(MutableVec3d(Vec3d.X_AXIS), 0.0)
             val localY = invTransform.transform(MutableVec3d(Vec3d.Y_AXIS), 0.0)
@@ -61,15 +66,20 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
         }
         val dragPtr = dragPtrs[0]
         if (!dragPtr.isConsumed() && dragPtr.isInViewport(scene.mainRenderPass.viewport, ctx)) {
-            if (dragPtr.isLeftButtonDown) {
-                planetRotX = -dragPtr.deltaY / 15.0 * zoom.pow(0.6f)
-                planetRotY = -dragPtr.deltaX / 15.0 * zoom.pow(0.6f)
-            } else if (dragPtr.isRightButtonDown) {
-                lookRotX -= dragPtr.deltaY / 10.0
-                lookRotY -= dragPtr.deltaX / 10.0
-            } else if (dragPtr.isMiddleButtonDown) {
-                camRotX -= dragPtr.deltaY / 10.0
-                lookRotY -= dragPtr.deltaX / 10.0
+            val moveScale = min(zoom, 10f)
+            when {
+                dragPtr.isLeftButtonDown -> {
+                    planetRotX = -dragPtr.deltaY / 15.0 * moveScale.pow(0.6f)
+                    planetRotY = -dragPtr.deltaX / 15.0 * moveScale.pow(0.6f)
+                }
+                dragPtr.isRightButtonDown -> {
+                    lookRotX -= dragPtr.deltaY / 10.0
+                    lookRotY -= dragPtr.deltaX / 10.0
+                }
+                dragPtr.isMiddleButtonDown -> {
+                    camRotX = (camRotX - dragPtr.deltaY / 10.0).clamp(0.0, 180.0)
+                    lookRotY -= dragPtr.deltaX / 10.0
+                }
             }
             zoom = (zoom * (1f - dragPtr.deltaScroll / 10f)).clamp(minZoom, maxZoom)
 

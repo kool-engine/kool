@@ -18,7 +18,7 @@ fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi:
     return ui
 }
 
-fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, block: UiRoot.() -> Unit) = scene(name ?: "uiScene") {
+fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, block: UiRoot.(Scene) -> Unit) = scene(name ?: "uiScene") {
     camera = OrthographicCamera().apply {
         isClipToViewport = true
         near = -1000f
@@ -31,7 +31,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
 
     +embeddedUi(1f, 1f, null, dpi) {
         isFillViewport = true
-        this.block()
+        this.block(this@scene)
     }
 }
 

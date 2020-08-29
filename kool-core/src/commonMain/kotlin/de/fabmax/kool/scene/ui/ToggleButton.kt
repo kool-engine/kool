@@ -18,7 +18,8 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
 
     var knobColorOn = Color.WHITE
     var knobColorOff = Color.LIGHT_GRAY
-    var trackColor = Color.GRAY
+    var trackColorOff = Color.GRAY
+    var trackColorOn = Color.LIGHT_GRAY
 
     var isEnabled = initState
         set(value) {
@@ -46,6 +47,7 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
     override fun setThemeProps(ctx: KoolContext) {
         super.setThemeProps(ctx)
         knobColorOn = root.theme.accentColor
+        trackColorOn = MutableColor().add(root.theme.accentColor, 0.4f)
     }
 
     override fun createThemeUi(ctx: KoolContext): ComponentUi {
@@ -57,6 +59,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
 
     protected val knobAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
     protected val knobColor = MutableColor()
+    protected val trackColor = MutableColor()
 
     protected val stateChangedListener: ToggleButton.() -> Unit = {
         if (isEnabled) {
@@ -94,7 +97,12 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         val x = tb.width - paddingR - trackW - knobR
         val y = (tb.height - trackH) / 2f
 
-        meshBuilder.color = tb.trackColor
+        val anim = knobAnimator.value.value
+        trackColor.clear()
+        trackColor.add(tb.trackColorOff, 1f - anim)
+        trackColor.add(tb.trackColorOn, anim)
+
+        meshBuilder.color = trackColor
         meshBuilder.rect {
             origin.set(x, y, tb.dp(.1f))
             size.set(trackW, trackH)
@@ -102,8 +110,6 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
             cornerSteps = 4
             zeroTexCoords()
         }
-
-        val anim = knobAnimator.value.value
 
         knobColor.clear()
         knobColor.add(tb.knobColorOff, 1f - anim)

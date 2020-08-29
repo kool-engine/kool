@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -12,13 +13,13 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.uiFont
 
-fun controlUi(ctx: KoolContext, block: ControlUiBuilder.() -> Unit) = uiScene{
-    val builder = ControlUiBuilder(this, ctx)
+fun controlUi(ctx: KoolContext, block: ControlUiBuilder.() -> Unit) = uiScene { scene ->
+    val builder = ControlUiBuilder(scene, this, ctx)
     builder.block()
     builder.finish()
 }
 
-class ControlUiBuilder(val uiRoot: UiRoot, ctx: KoolContext) {
+class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext) {
 
     var menuWidth = 300f
     var menuHeight = 0f

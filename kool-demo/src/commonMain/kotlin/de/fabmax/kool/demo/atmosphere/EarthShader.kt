@@ -1,11 +1,12 @@
 package de.fabmax.kool.demo.atmosphere
 
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.Uniform3f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 
-class EarthShader : DeferredPbrShader(cfg, model()) {
+class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shaderConfig(textures)) : DeferredPbrShader(cfg, model(cfg)) {
     var uDirToSun: Uniform3f? = null
 
     init {
@@ -15,38 +16,47 @@ class EarthShader : DeferredPbrShader(cfg, model()) {
     }
 
     companion object {
-        val cfg = PbrMaterialConfig().apply {
-            useAlbedoMap("world_day.jpg")
-            useDisplacementMap("world_height.png")
-            useEmissiveMap("world_night.jpg")
-            useNormalMap("world_nrm.jpg")
+        const val texEarthDay = "earthDay"
+        const val texEarthNight = "earthNight"
+        const val texEarthNrm = "earthNrm"
+        const val texEarthHeight = "earthHeight"
 
-            displacementStrength = 1f
+        fun shaderConfig(textures: Map<String, Texture>): PbrMaterialConfig {
+            return PbrMaterialConfig().apply {
+                useAlbedoMap(textures[texEarthDay])
+                useDisplacementMap(textures[texEarthHeight])
+                useEmissiveMap(textures[texEarthNight])
+                useNormalMap(textures[texEarthNrm])
+
+                displacementStrength = 1f
+            }
         }
 
-        fun model() = defaultMrtPbrModel(cfg).apply {
-            val ifSunDirViewSpace: StageInterfaceNode
-            vertexStage {
-                val mvp = findNodeByType<UniformBufferMvp>()!!
-                val modelViewMat = multiplyNode(mvp.outViewMat, mvp.outModelMat).output
-                val dirToSun = pushConstantNode3f("uDirToSun").output
-                val viewSunDir = vec3TransformNode(dirToSun, modelViewMat, 0f).outVec3
-                ifSunDirViewSpace = stageInterfaceNode("ifSunDirViewSpace", viewSunDir)
-            }
-            fragmentStage {
-                val mrtOutput = findNodeByType<MrtMultiplexNode>()!!
-                val dayAlbedo = mrtOutput.inAlbedo
+        fun model(cfg: PbrMaterialConfig): ShaderModel{
+            return defaultMrtPbrModel(cfg).apply {
+                val ifSunDirViewSpace: StageInterfaceNode
+                vertexStage {
+                    val mvp = findNodeByType<UniformBufferMvp>()!!
+                    val modelViewMat = multiplyNode(mvp.outViewMat, mvp.outModelMat).output
+                    val dirToSun = pushConstantNode3f("uDirToSun").output
+                    val viewSunDir = vec3TransformNode(dirToSun, modelViewMat, 0f).outVec3
+                    ifSunDirViewSpace = stageInterfaceNode("ifSunDirViewSpace", viewSunDir)
+                }
+                fragmentStage {
+                    val mrtOutput = findNodeByType<MrtMultiplexNode>()!!
+                    val dayAlbedo = mrtOutput.inAlbedo
 
-                val roughnessNd = addNode(EarthRoughnessNode(dayAlbedo, stage))
-                mrtOutput.inRoughness = roughnessNd.outRoughness
+                    val roughnessNd = addNode(EarthRoughnessNode(dayAlbedo, stage))
+                    mrtOutput.inRoughness = roughnessNd.outRoughness
 
-                addNode(EarthDayNightMixNode(stage)).apply {
-                    inNormal = normalizeNode(mrtOutput.inViewNormal).output
-                    inSunDir = normalizeNode(ifSunDirViewSpace.output).output
-                    inAlbedo = dayAlbedo
-                    inEmissive = mrtOutput.inEmissive
-                    mrtOutput.inAlbedo = outAlbedo
-                    mrtOutput.inEmissive = outEmissive
+                    addNode(EarthDayNightMixNode(stage)).apply {
+                        inNormal = normalizeNode(mrtOutput.inViewNormal).output
+                        inSunDir = normalizeNode(ifSunDirViewSpace.output).output
+                        inAlbedo = dayAlbedo
+                        inEmissive = mrtOutput.inEmissive
+                        mrtOutput.inAlbedo = outAlbedo
+                        mrtOutput.inEmissive = outEmissive
+                    }
                 }
             }
         }

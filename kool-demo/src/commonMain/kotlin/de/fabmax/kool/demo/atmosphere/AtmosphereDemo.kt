@@ -1,28 +1,34 @@
 package de.fabmax.kool.demo.atmosphere
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.ControlUiBuilder
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.UniformBufferMvp
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
+import de.fabmax.kool.pipeline.shading.AlphaModeBlend
+import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
+import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.Slider
+import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import kotlin.math.max
+import de.fabmax.kool.util.deferred.deferredPbrShader
+import kotlin.math.pow
 
 class AtmosphereDemo : DemoScene("Atmosphere") {
 
-    private val kmPerUnit = 100f
-    private val earthRadius = 6000f / kmPerUnit
-
-    private val sunColor = Color.MD_AMBER.mix(Color.WHITE, 0.85f).toLinear()
+    private val sunColor = Color.WHITE
     private val sun = Light().apply {
         setDirectional(Vec3f.NEG_Z_AXIS)
         setColor(sunColor, 5f)
@@ -30,41 +36,51 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private var sunIntensity = 1f
 
     private var time = 0.5f
+    private var moonTime = 0f
     private var animateTime = true
     private var timeSlider: Slider? = null
 
+    private lateinit var mainCamera: PerspectiveCamera
     private val shadows = mutableListOf<SimpleShadowMap>()
     private val atmoShader = AtmosphericScatteringShader()
     private val earthTransform = Group("earth")
     private val camTransform = EarthCamTransform(earthRadius)
 
+    private lateinit var menuContainer: UiContainer
+    private lateinit var loadingLabel: Label
+
+    private val textures = mutableMapOf<String, Texture>()
+    private var loadingComplete = false
+    private var sceneSetup = false
+
     override fun lateInit(ctx: KoolContext) {
         camTransform.apply {
             mainScene.registerDragHandler(this)
-
-            val cam = mainScene.camera as PerspectiveCamera
-            +cam
-            onUpdate += { ev ->
-                cam.apply {
-                    val h = globalPos.length() - earthRadius
-                    position.set(Vec3f.ZERO)
-                    lookAt.set(Vec3f.NEG_Z_AXIS)
-                    clipNear = max(0.003f, h * 0.5f)
-                    clipFar = clipNear * 1000f
-                }
-
-                if (animateTime) {
-                    timeSlider?.value = (time + ev.deltaT / 300) % 1f
-                }
-            }
+            +mainCamera
         }
-        updateSun()
+
+        ctx.assetMgr.launch {
+            loadTex(texMilkyway, "milkyway-dark.jpg")
+            loadTex(texSun, "sun.png")
+            loadTex(texSunBg, "sun_bg.png")
+            loadTex(texMoon, "moon.jpg")
+            loadTex(EarthShader.texEarthDay, "earth_day.jpg")
+            loadTex(EarthShader.texEarthNight, "earth_night.jpg")
+            loadTex(EarthShader.texEarthNrm, "earth_nrm.jpg")
+            loadTex(EarthShader.texEarthHeight, "earth_height.jpg")
+            loadingComplete = true
+        }
+    }
+
+    private suspend fun AssetManager.loadTex(key: String, path: String) {
+        loadingLabel.text = "Loading texture \"$key\"..."
+        textures[key] = loadAndPrepareTexture(path)
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
+        mainCamera = camera as PerspectiveCamera
         lighting.lights.clear()
         lighting.lights += sun
-
         shadows += SimpleShadowMap(this, 0)
 
         val defCfg = DeferredPipelineConfig().apply {
@@ -75,12 +91,9 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             shadowMaps = shadows
         }
         val deferredPipeline = DeferredPipeline(this, defCfg)
-        deferredPipeline.contentGroup.setupContent()
+        deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
         +deferredPipeline.renderOutput
-        shadows.forEach { shadow ->
-            shadow.drawNode = deferredPipeline.contentGroup
-            shadow.shadowBounds = deferredPipeline.contentGroup.bounds
-        }
+
         atmoShader.apply {
             sceneColor = deferredPipeline.pbrPass.colorTexture
             scenePos = deferredPipeline.mrtPass.positionAo
@@ -92,21 +105,107 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             scatteringCoeffStrength = 2f
         }
 
+        shadows.forEach { shadow ->
+            shadow.drawNode = deferredPipeline.contentGroup
+            shadow.shadowBounds = BoundingBox()
+        }
+
+        onUpdate += { ev ->
+            if (loadingComplete) {
+                if (!sceneSetup) {
+                    sceneSetup = true
+
+                    menuContainer.isVisible = true
+                    loadingLabel.isVisible = false
+
+                    deferredPipeline.contentGroup.setupContent()
+                    setupSkybox()
+                    updateSun()
+                    +mesh(listOf(Attribute.POSITIONS)) {
+                        generate {
+                            icoSphere {
+                                steps = 3
+                                radius = earthRadius + 12
+                            }
+                        }
+                        shader = atmoShader
+                    }
+                }
+
+                mainCamera.apply {
+                    val h = globalPos.length() - earthRadius
+                    position.set(Vec3f.ZERO)
+                    lookAt.set(Vec3f.NEG_Z_AXIS)
+                    clipNear = (h * 0.5f).clamp(0.003f, 5f)
+                    clipFar = clipNear * 1000f
+                }
+
+                if (animateTime) {
+                    val dt = ev.deltaT / 120
+                    // setting time slider value results in timer slider's onChange function being called which also sets time
+                    timeSlider?.value = (time + dt) % 1f
+                    moonTime = (moonTime + dt / moonT)
+                }
+
+                shadows[0].shadowBounds!!.set(deferredPipeline.contentGroup.bounds).expand(Vec3f(350f))
+            }
+        }
+
+        onDispose += {
+            textures.values.forEach { it.dispose() }
+        }
+    }
+
+    private fun Scene.setupSkybox() {
         +group {
             isFrustumChecked = false
-            +Skybox.sphere(Texture("milkyway-dark.jpg"), hdriInput = false)
+            +Skybox.sphere(textures[texMilkyway]!!, hdriInput = false)
             // milky way is wildly tilted (no idea in which direction...)
             rotate(-60f, Vec3f.X_AXIS)
         }
 
-        +mesh(listOf(Attribute.POSITIONS)) {
+        +textureMesh {
+            isFrustumChecked = false
             generate {
-                icoSphere {
-                    steps = 3
-                    radius = earthRadius + 12
+                rect {
+                    size.set(3f, 3f)
+                    origin.set(size.x, size.y, 0f).scale(-0.5f)
+                    origin.z = -10f
                 }
             }
-            shader = atmoShader
+            shader = skyboxShader(textures[texSunBg], 0.75f)
+        }
+        +textureMesh {
+            isFrustumChecked = false
+            generate {
+                rect {
+                    size.set(1f, 1f)
+                    origin.set(size.x, size.y, 0f).scale(-0.5f)
+                    origin.z = -10f
+                }
+
+            }
+            shader = skyboxShader(textures[texSun], 1f)
+        }
+    }
+
+    private fun skyboxShader(texture: Texture?, maxAlpha: Float): UnlitShader {
+        val unlitCfg = UnlitMaterialConfig().apply {
+            alphaMode = AlphaModeBlend()
+            useColorMap(texture, maxAlpha < 1f)
+            color = Color.WHITE.withAlpha(maxAlpha)
+        }
+        val unlitModel = UnlitShader.defaultUnlitModel(unlitCfg).apply {
+            vertexStage {
+                val mvp = findNodeByType<UniformBufferMvp>()!!
+                positionOutput = addNode(Skybox.SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
+            }
+        }
+        return UnlitShader(unlitCfg, unlitModel).apply {
+            onPipelineSetup += { builder, _, _ ->
+                builder.cullMethod = CullMethod.NO_CULLING
+                builder.depthTest = DepthCompareOp.LESS_EQUAL
+            }
         }
     }
 
@@ -121,7 +220,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                         radius = earthRadius
                     }
                 }
-                val earthShader = EarthShader().also { shader = it }
+                val earthShader = EarthShader(textures).also { shader = it }
 
                 onUpdate += {
                     val dirToSun = MutableVec3f(sun.direction).scale(-1f)
@@ -143,11 +242,80 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 rotate(time * 360, Vec3f.Y_AXIS)
             }
         }
+
+        +group {
+            isFrustumChecked = false
+            +Moon()
+
+            onUpdate += {
+                setIdentity()
+                // real inclination is 5.145°, we rotate a bit more to avoid the earth shadow
+                rotate(5.145f * 1.1f, Vec3f.X_AXIS)
+                rotate(360f * moonTime, Vec3f.Y_AXIS)
+                translate(0f, 0f, moonDist)
+            }
+        }
+    }
+
+    private inner class Moon : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "moon") {
+        init {
+            isFrustumChecked = false
+            generate {
+                rotate(180f, Vec3f.Y_AXIS)
+                icoSphere {
+                    steps = 4
+                    radius = moonRadius
+                }
+            }
+            shader = deferredPbrShader {
+                useAlbedoMap(textures[texMoon])
+                roughness = 0.7f
+            }
+        }
+
+        override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+            val rpCam = updateEvent.camera
+
+            if (rpCam is PerspectiveCamera) {
+                // Use modified camera clip values when rendering moon. This can cause artifacts but works in
+                // most situations and is better than moon being completely clipped away
+
+                val clipN = rpCam.clipNear
+                val clipF = rpCam.clipFar
+                val d = globalCenter.distance(rpCam.globalPos) + moonRadius
+                val customClip = d > clipF
+
+                if (customClip) {
+                    rpCam.clipFar = d
+                    rpCam.clipNear = d / 1000f
+                    rpCam.updateCamera(updateEvent.ctx, updateEvent.viewport)
+                }
+                super.collectDrawCommands(updateEvent)
+                if (customClip) {
+                    rpCam.clipNear = clipN
+                    rpCam.clipFar = clipF
+                    rpCam.updateCamera(updateEvent.ctx, updateEvent.viewport)
+                }
+
+            } else {
+                super.collectDrawCommands(updateEvent)
+            }
+        }
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
-        menuWidth = 380f
+        uiRoot.apply {
+            loadingLabel = label("Loading...") {
+                layoutSpec.setOrigin(zero(), zero(), zero())
+                layoutSpec.setSize(pcs(100f), pcs(100f), full())
+                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+            }
+            +loadingLabel
+        }
 
+        this@AtmosphereDemo.menuContainer = menuContainer
+        menuContainer.isVisible = false
+        menuWidth = 380f
         section("Scattering") {
             colorSlider("R:", Color.RED, atmoShader.scatteringCoeffs.x, 0f, 2f) { updateScatteringCoeffs(x = value) }
             colorSlider("G:", Color.GREEN, atmoShader.scatteringCoeffs.y, 0f, 2f) { updateScatteringCoeffs(y = value) }
@@ -210,8 +378,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     private fun updateSun() {
-        val angle = 180f
-        val lightDir = MutableVec3f(0f, 0f, 1f).rotate(angle, Vec3f.Y_AXIS)
+        val lightDir = MutableVec3f(0f, 0f, -1f)
         atmoShader.dirToSun = lightDir
         atmoShader.sunIntensity = MutableVec3f(sunColor.r, sunColor.g, sunColor.b).scale(sunIntensity)
 
@@ -234,5 +401,23 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         slider.knobColor.setCustom(color)
         slider.trackColorHighlighted.setCustom(color.mix(Color.BLACK, 0.5f))
         return slider
+    }
+
+    companion object {
+        private const val kmPerUnit = 100f
+        private const val earthRadius = 6000f / kmPerUnit
+
+        private const val moonRadius = 1750f / kmPerUnit
+        private const val moonDistScale = 0.2f
+        private const val moonDist = 384400 / kmPerUnit * moonDistScale
+
+        // scaled moon orbital period (according to kepler's 3rd law)
+        private val keplerC = (moonDist / moonDistScale).pow(3) / 27.32f.pow(2)
+        private val moonT = moonDist.pow(3) / keplerC
+
+        private const val texMilkyway = "milkyway"
+        private const val texSun = "sun"
+        private const val texSunBg = "sun_bg"
+        private const val texMoon = "moon"
     }
 }
