@@ -9,6 +9,9 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
+- [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphereDemo): Earth (and Moon) with volumetric atmosphere.
+  Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
+  deferred pbr shader with extensions for rendering the oceans and night side.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=proceduralDemo): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
   shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque)

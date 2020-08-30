@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.atmosphere
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.ControlUiBuilder
+import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
@@ -63,14 +64,15 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         ctx.assetMgr.launch {
             delay(500)
-            loadTex(texMilkyway, "milkyway-dark.jpg")
-            loadTex(texSun, "sun.png")
-            loadTex(texSunBg, "sun_bg.png")
-            loadTex(texMoon, "moon.jpg")
-            loadTex(EarthShader.texEarthDay, "earth_day.jpg")
-            loadTex(EarthShader.texEarthNight, "earth_night.jpg")
-            loadTex(EarthShader.texEarthNrm, "earth_nrm.jpg")
-            loadTex(EarthShader.texEarthHeight, "earth_height.jpg")
+            loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/milkyway-dark.jpg")
+            loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
+            loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
+            loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
+            loadTex(EarthShader.texEarthDay, "${Demo.awsBaseUrl}/solarsystem/earth_day.jpg")
+            loadTex(EarthShader.texEarthNight, "${Demo.awsBaseUrl}/solarsystem/earth_night.jpg")
+            loadTex(EarthShader.texEarthNrm, "${Demo.awsBaseUrl}/solarsystem/earth_nrm.jpg")
+            loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height.jpg")
+            loadTex(EarthShader.texOceanNrm, "${Demo.awsBaseUrl}/solarsystem/oceanNrm.jpg")
             loadingLabel.text = "Initializing Scene..."
             delay(100)
             loadingComplete = true
@@ -232,14 +234,20 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                     }
                 }
                 val earthShader = EarthShader(textures).also { shader = it }
+                earthShader.oceanNrmTex = textures[EarthShader.texOceanNrm]
 
-                onUpdate += {
+                onUpdate += { ev ->
                     val dirToSun = MutableVec3f(sun.direction).scale(-1f)
 
                     earthShader.uDirToSun?.value?.let { uSunDir ->
                         uSunDir.set(dirToSun)
                         toLocalCoords(uSunDir, 0f)
                     }
+
+                    val camHeight = (mainScene.camera.globalPos.distance(Vec3f.ZERO) - earthRadius) * kmPerUnit
+                    val colorMix = (camHeight / 100f).clamp()
+                    earthShader.uWaterColor?.value?.set(waterColorLow.mix(waterColorHigh, colorMix))
+                    earthShader.uNormalShift?.value?.set(ev.time.toFloat() * 0.0051f, ev.time.toFloat() * 0.0037f, ev.time.toFloat() * -0.0071f, ev.time.toFloat() * -0.0039f)
 
                     atmoShader.dirToSun = dirToSun
                 }
@@ -352,10 +360,10 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             sliderWithValueSmall("Str:", atmoShader.rayleighColor.a, 0f, 2f, widthLabel = 10f) { updateRayleighColor(strength = value) }
         }
         section("Mie") {
-            colorSlider("R:", Color.RED, atmoShader.mieColor.r, 0f, 4f) { updateMieColor(r = value) }
-            colorSlider("G:", Color.GREEN, atmoShader.mieColor.g, 0f, 4f) { updateMieColor(g = value) }
-            colorSlider("B:", Color.BLUE, atmoShader.mieColor.b, 0f, 4f) { updateMieColor(b = value) }
-            gap(8f)
+//            colorSlider("R:", Color.RED, atmoShader.mieColor.r, 0f, 4f) { updateMieColor(r = value) }
+//            colorSlider("G:", Color.GREEN, atmoShader.mieColor.g, 0f, 4f) { updateMieColor(g = value) }
+//            colorSlider("B:", Color.BLUE, atmoShader.mieColor.b, 0f, 4f) { updateMieColor(b = value) }
+//            gap(8f)
             sliderWithValueSmall("Str:", atmoShader.mieColor.a, 0f, 2f, widthLabel = 10f) { updateMieColor(strength = value) }
             sliderWithValueSmall("g:", atmoShader.mieG, 0.5f, 0.999f, 3, widthLabel = 10f) { atmoShader.mieG = value }
         }
@@ -444,6 +452,9 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         // scaled moon orbital period (according to kepler's 3rd law)
         private val keplerC = (moonDist / moonDistScale).pow(3) / 27.32f.pow(2)
         private val moonT = moonDist.pow(3) / keplerC
+
+        private val waterColorLow = Color.fromHex("0D1F56").toLinear()
+        private val waterColorHigh = Color.fromHex("020514").toLinear()
 
         private const val texMilkyway = "Milkyway"
         private const val texSun = "Sun"

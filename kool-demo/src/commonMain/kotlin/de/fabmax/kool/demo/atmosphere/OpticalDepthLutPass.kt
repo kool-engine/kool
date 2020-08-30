@@ -87,7 +87,7 @@ class OpticalDepthLutPass() :
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += { ctx ->
+        onAfterDraw += {
             isEnabled = false
         }
     }

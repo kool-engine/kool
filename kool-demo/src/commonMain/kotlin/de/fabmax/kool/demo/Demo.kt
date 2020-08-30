@@ -125,14 +125,17 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     companion object {
         val demoProps = mutableMapOf<String, Any>()
 
+        val awsBaseUrl: String
+            get() = getProperty("awsBaseUrl", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com")
+
         val envMapBasePath: String
-            get() = getProperty("pbrDemo.envMaps", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri")
+            get() = getProperty("pbrDemo.envMaps", "$awsBaseUrl/hdri")
 
         val pbrBasePath: String
-            get() = getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
+            get() = getProperty("pbrDemo.materials", "$awsBaseUrl/materials")
 
         val modelBasePath: String
-            get() = getProperty("pbrDemo.models", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/models")
+            get() = getProperty("pbrDemo.models", "$awsBaseUrl/models")
 
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value

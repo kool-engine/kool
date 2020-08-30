@@ -163,19 +163,20 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
         super.generateCode(generator)
 
         generator.appendFunction("calcBumpedNormal", """
-            vec3 calcBumpedNormal(vec3 n, vec4 t, vec2 uv, float strength) {
+            vec3 calcBumpedNormal(vec3 n, vec4 t, vec3 bumpN, float strength) {
                 vec3 normal = normalize(n);
                 vec3 tangent = normalize(t.xyz);
                 tangent = normalize(tangent - dot(tangent, normal) * normal);
                 vec3 bitangent = cross(normal, tangent) * t.w;
-                vec3 bumpMapNormal = ${generator.sampleTexture2d(texture.name, "uv")}.xyz;
-                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
                 mat3 tbn = mat3(tangent, bitangent, normal);
-                return normalize(mix(normal, tbn * bumpMapNormal, strength));
+                return normalize(mix(normal, tbn * bumpN, strength));
             }
         """)
 
-        generator.appendMain("${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref4f()}, ${inTexCoord.ref2f()}, ${inStrength.ref1f()});")
+        generator.appendMain("""
+            vec3 ${name}_bumpN = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.xyz * 2.0 - 1.0;
+            ${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref4f()}, ${name}_bumpN, ${inStrength.ref1f()});
+        """)
     }
 }
 
@@ -322,7 +323,14 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
 
     private lateinit var ifVar: ShaderInterfaceIoVar
 
-    val vertexNode = object : ShaderNode(name, vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
+    val vertexNode = InputNode(vertexGraph)
+    val fragmentNode = OutputNode(fragmentGraph)
+
+    inner class InputNode(graph: ShaderGraph) : ShaderNode(name, graph, ShaderStage.VERTEX_SHADER.mask) {
+        val ifNode = this@StageInterfaceNode
+        val input: ShaderNodeIoVar
+            get() = ifNode.input
+
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(input)
@@ -334,7 +342,11 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
         }
     }
 
-    val fragmentNode = object : ShaderNode(name, fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
+    inner class OutputNode(graph: ShaderGraph) : ShaderNode(name, graph, ShaderStage.FRAGMENT_SHADER.mask) {
+        val ifNode = this@StageInterfaceNode
+        val output: ShaderNodeIoVar
+            get() = ifNode.output
+
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             shaderGraph.inputs += ifVar

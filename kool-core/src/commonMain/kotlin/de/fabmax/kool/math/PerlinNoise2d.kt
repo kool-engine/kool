@@ -1,15 +1,12 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.Random
-import de.fabmax.kool.math.Vec2f
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class PerlinNoise2d(private val tableSz: Int = 256, seed: Int = 19937) {
+class PerlinNoise2d(seed: Int = 19937, private val tableSz: Int = 256) {
     private val gradients = Array(tableSz) { MutableVec2f() }
-    private val permutationTab = IntArray(tableSz) { it }
+    private val permutationTab = IntArray(tableSz)
 
     var wrapSizeX = 0
     var wrapSizeY = 0
@@ -25,15 +22,12 @@ class PerlinNoise2d(private val tableSz: Int = 256, seed: Int = 19937) {
             }
         }
 
-        for (i in permutationTab.indices) {
-            val swapIdx = rand.randomI(permutationTab.indices)
-            permutationTab[i] = permutationTab[swapIdx].also { permutationTab[swapIdx] = permutationTab[i] }
-        }
+        permutationTab.indices.shuffled().forEachIndexed { i, shuffled -> permutationTab[i] = shuffled }
     }
 
     private fun hash(x: Int, y: Int) = permutationTab[(permutationTab[x] + y) % permutationTab.size]
 
-    private fun smoothStep(t: Float) = t * t * (3 - 2 * t)
+    private fun smoothStep(t: Float) = (t * t * (3 - 2 * t)).clamp()
 
     private fun lerp(a: Float, b: Float, l: Float) = a * (1 - l) + b * l
 
