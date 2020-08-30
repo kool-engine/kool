@@ -17,13 +17,13 @@ import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.deferredPbrShader
+import kotlinx.coroutines.delay
 import kotlin.math.pow
 
 class AtmosphereDemo : DemoScene("Atmosphere") {
@@ -53,6 +53,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private var loadingComplete = false
     private var sceneSetup = false
 
+    private lateinit var opticalDepthLutPass: OpticalDepthLutPass
+
     override fun lateInit(ctx: KoolContext) {
         camTransform.apply {
             mainScene.registerDragHandler(this)
@@ -60,6 +62,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
         ctx.assetMgr.launch {
+            delay(500)
             loadTex(texMilkyway, "milkyway-dark.jpg")
             loadTex(texSun, "sun.png")
             loadTex(texSunBg, "sun_bg.png")
@@ -68,6 +71,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             loadTex(EarthShader.texEarthNight, "earth_night.jpg")
             loadTex(EarthShader.texEarthNrm, "earth_nrm.jpg")
             loadTex(EarthShader.texEarthHeight, "earth_height.jpg")
+            loadingLabel.text = "Initializing Scene..."
+            delay(100)
             loadingComplete = true
         }
     }
@@ -79,6 +84,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         mainCamera = camera as PerspectiveCamera
+        opticalDepthLutPass = OpticalDepthLutPass()
+
         lighting.lights.clear()
         lighting.lights += sun
         shadows += SimpleShadowMap(this, 0)
@@ -94,20 +101,24 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
         +deferredPipeline.renderOutput
 
+        addOffscreenPass(opticalDepthLutPass)
+
         atmoShader.apply {
+            opticalDepthLut = opticalDepthLutPass.colorTexture
             sceneColor = deferredPipeline.pbrPass.colorTexture
             scenePos = deferredPipeline.mrtPass.positionAo
-            planetRadius = earthRadius
+            surfaceRadius = earthRadius
             atmosphereRadius = 6500f / kmPerUnit
 
-            scatteringCoeffs = Vec3f(0.75f, 1.05f, 1.30f)
+            scatteringCoeffs = Vec3f(0.75f, 1.05f, 1.25f)
             rayleighCoeffs = Vec3f(0.5f, 0.5f, 1f)
-            scatteringCoeffStrength = 2f
+            scatteringCoeffStrength = 2.0f
         }
 
         shadows.forEach { shadow ->
             shadow.drawNode = deferredPipeline.contentGroup
-            shadow.shadowBounds = BoundingBox()
+            shadow.shadowBounds = earthTransform.bounds
+            //shadow.shadowBounds = deferredPipeline.contentGroup.bounds
         }
 
         onUpdate += { ev ->
@@ -146,8 +157,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                     timeSlider?.value = (time + dt) % 1f
                     moonTime = (moonTime + dt / moonT)
                 }
-
-                shadows[0].shadowBounds!!.set(deferredPipeline.contentGroup.bounds).expand(Vec3f(350f))
             }
         }
 
@@ -249,8 +258,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
             onUpdate += {
                 setIdentity()
-                // real inclination is 5.145°, we rotate a bit more to avoid the earth shadow
-                rotate(5.145f * 1.1f, Vec3f.X_AXIS)
+                rotate(moonInclination, Vec3f.X_AXIS)
                 rotate(360f * moonTime, Vec3f.Y_AXIS)
                 translate(0f, 0f, moonDist)
             }
@@ -313,6 +321,11 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             +loadingLabel
         }
 
+        image(opticalDepthLutPass.colorTexture).apply {
+            aspectRatio = 1f
+            relativeWidth = 0.25f
+        }
+
         this@AtmosphereDemo.menuContainer = menuContainer
         menuContainer.isVisible = false
         menuWidth = 380f
@@ -344,10 +357,10 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         section("Atmosphere") {
             val thickFmt: (Float) -> String = { "${it.toString(0)} km" }
             sliderWithValueSmall("Thickness:", (atmoShader.atmosphereRadius - earthRadius) * kmPerUnit, 10f, 1000f, textFormat = thickFmt, widthLabel = 24f) {
-                atmoShader.atmosphereRadius = earthRadius + value / kmPerUnit
+                updateAtmosphereThickness(value)
             }
-            sliderWithValueSmall("Falloff:", atmoShader.densityFalloff, 0f, 15f, 2, widthLabel = 24f) {
-                atmoShader.densityFalloff = value
+            sliderWithValueSmall("Falloff:", opticalDepthLutPass.densityFalloff, 0f, 15f, 2, widthLabel = 24f) {
+                opticalDepthLutPass.densityFalloff = value
             }
         }
 
@@ -396,6 +409,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         atmoShader.scatteringCoeffs = Vec3f(x, y, z)
     }
 
+    private fun updateAtmosphereThickness(newThickness: Float) {
+        val atmoRadius = earthRadius + newThickness / kmPerUnit
+        atmoShader.atmosphereRadius = atmoRadius
+        opticalDepthLutPass.atmosphereRadius = atmoRadius
+    }
+
     private fun ControlUiBuilder.colorSlider(label: String, color: Color, initialValue: Float, min: Float, max: Float, onChange: Slider.() -> Unit): Slider {
         val slider = sliderWithValueSmall(label, initialValue, min, max, widthLabel = 10f, onChange = onChange)
         slider.knobColor.setCustom(color)
@@ -408,16 +427,17 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         private const val earthRadius = 6000f / kmPerUnit
 
         private const val moonRadius = 1750f / kmPerUnit
-        private const val moonDistScale = 0.2f
+        private const val moonDistScale = 0.25f
         private const val moonDist = 384400 / kmPerUnit * moonDistScale
+        private const val moonInclination = 5.145f
 
         // scaled moon orbital period (according to kepler's 3rd law)
         private val keplerC = (moonDist / moonDistScale).pow(3) / 27.32f.pow(2)
         private val moonT = moonDist.pow(3) / keplerC
 
-        private const val texMilkyway = "milkyway"
-        private const val texSun = "sun"
-        private const val texSunBg = "sun_bg"
-        private const val texMoon = "moon"
+        private const val texMilkyway = "Milkyway"
+        private const val texSun = "Sun"
+        private const val texSunBg = "Sun Background"
+        private const val texMoon = "Moon"
     }
 }

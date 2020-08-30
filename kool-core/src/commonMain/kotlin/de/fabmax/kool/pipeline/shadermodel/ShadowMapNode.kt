@@ -124,14 +124,23 @@ class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph
         }
 
         generator.appendMain("""
+            vec4 ${name}_pos = ${inPosLightSpace.ref4f()};
+            
+            // check shadow map bounds
+            ${outShadowFac.declare()} = 1.0;
+            vec3 ${name}_posW = ${name}_pos.xyz / ${name}_pos.w;
+            if (${name}_posW.x > 0.0 && ${name}_posW.x < 1.0
+                && ${name}_posW.y > 0.0 && ${name}_posW.y < 1.0
+                && ${name}_posW.z > -1.0 && ${name}_posW.z < 1.0) {
+            
                 float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
                 float ${name}_scale = 1.0 / float(${name}_size);
-                vec4 ${name}_pos = ${inPosLightSpace.ref4f()};
                 ${name}_pos.z += ${inDepthOffset.ref1f()};
-                ${outShadowFac.declare()} = 0.0;
+                ${outShadowFac.name} = 0.0;
                 $sampleBuilder
                 ${outShadowFac.name} *= ${1f / nSamples};
-            """)
+            }
+        """)
     }
 }
 

@@ -16,10 +16,10 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
     }
 
     companion object {
-        const val texEarthDay = "earthDay"
-        const val texEarthNight = "earthNight"
-        const val texEarthNrm = "earthNrm"
-        const val texEarthHeight = "earthHeight"
+        const val texEarthDay = "Earth by Day"
+        const val texEarthNight = "Earth by Night"
+        const val texEarthNrm = "Earth Normal Map"
+        const val texEarthHeight = "Earth Height Map"
 
         fun shaderConfig(textures: Map<String, Texture>): PbrMaterialConfig {
             return PbrMaterialConfig().apply {
