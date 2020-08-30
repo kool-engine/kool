@@ -48,6 +48,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     )
 
     init {
+        dbgOverlay.ui.isVisible = getProperty("dbgOverlay.isVisible", false)
+
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender

@@ -9,7 +9,6 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.logD
 
 class OpticalDepthLutPass() :
         OffscreenRenderPass2d(Group(), renderPassConfig {
@@ -89,7 +88,6 @@ class OpticalDepthLutPass() :
 
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
-            logD { "Updated optical depth look-up table" }
             isEnabled = false
         }
     }
@@ -132,7 +130,7 @@ class OpticalDepthLutPass() :
         override fun generateCode(generator: CodeGenerator) {
             super.generateCode(generator)
 
-            val numDepthSamples = 50
+            val numDepthSamples = 100
 
             generator.appendFunction("rayLength", """
                 float rayLength(vec3 rayOrigin, vec3 rayDir) {
@@ -154,14 +152,21 @@ class OpticalDepthLutPass() :
 
             generator.appendFunction("densityAtAltitude", """
                 float densityAtAltitude(float altitude) {
-                    float normAltitude = clamp(altitude / ($uAtmosphereRadius - $uSurfaceRadius), 0.0, 1.0);
+                    float nH = clamp(altitude / ($uAtmosphereRadius - $uSurfaceRadius), 0.0, 1.0);
 
-                    // simple falloff with density cut-off
-                    float cutOff = 0.2;
-                    float h = normAltitude * (1.0 - cutOff) + cutOff;
-                    float density = exp(-h * $uDensityFalloff) * (1.0 - normAltitude);
+                    // exponential density
+                    //float h = nH;
 
-                    return density;
+                    // exponential density with cut-off
+                    //float cutOff = 0.2;
+                    //float h = nH * (1.0 - cutOff) + cutOff;
+                    
+                    // reduced density at low altitudes
+                    float x = nH * 10.0;
+                    float f = 0.3 * (2.0 + 3.0 * x * exp(-x)) * (10.0 - x) / 10.0;
+                    float h = 1.0 - f;
+                    
+                    return exp(-clamp(h, 0.0, 1.0) * $uDensityFalloff) * (1.0 - nH);
                 }
             """)
 

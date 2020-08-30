@@ -110,9 +110,11 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             surfaceRadius = earthRadius
             atmosphereRadius = 6500f / kmPerUnit
 
-            scatteringCoeffs = Vec3f(0.75f, 1.05f, 1.25f)
-            rayleighCoeffs = Vec3f(0.5f, 0.5f, 1f)
-            scatteringCoeffStrength = 2.0f
+            scatteringCoeffs = Vec3f(0.75f, 1.15f, 1.35f)
+            rayleighColor = Color(0.5f, 0.5f, 1f, 1f)
+            mieColor = Color(1f, 0.35f, 0.35f, 1f)
+            mieG = 0.995f
+            scatteringCoeffStrength = 1.0f
         }
 
         shadows.forEach { shadow ->
@@ -321,10 +323,10 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             +loadingLabel
         }
 
-        image(opticalDepthLutPass.colorTexture).apply {
-            aspectRatio = 1f
-            relativeWidth = 0.25f
-        }
+//        image(opticalDepthLutPass.colorTexture).apply {
+//            aspectRatio = 1f
+//            relativeWidth = 0.25f
+//        }
 
         this@AtmosphereDemo.menuContainer = menuContainer
         menuContainer.isVisible = false
@@ -343,15 +345,19 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
         section("Rayleigh") {
-            colorSlider("R:", Color.RED, atmoShader.rayleighCoeffs.x, 0f, 4f) { updateRayleighCoeffs(x = value) }
-            colorSlider("G:", Color.GREEN, atmoShader.rayleighCoeffs.y, 0f, 4f) { updateRayleighCoeffs(y = value) }
-            colorSlider("B:", Color.BLUE, atmoShader.rayleighCoeffs.z, 0f, 4f) { updateRayleighCoeffs(z = value) }
+            colorSlider("R:", Color.RED, atmoShader.rayleighColor.r, 0f, 4f) { updateRayleighColor(r = value) }
+            colorSlider("G:", Color.GREEN, atmoShader.rayleighColor.g, 0f, 4f) { updateRayleighColor(g = value) }
+            colorSlider("B:", Color.BLUE, atmoShader.rayleighColor.b, 0f, 4f) { updateRayleighColor(b = value) }
             gap(8f)
-            sliderWithValueSmall("Str:", atmoShader.rayleighStrength, 0f, 2f, widthLabel = 10f) { atmoShader.rayleighStrength = value }
+            sliderWithValueSmall("Str:", atmoShader.rayleighColor.a, 0f, 2f, widthLabel = 10f) { updateRayleighColor(strength = value) }
         }
         section("Mie") {
+            colorSlider("R:", Color.RED, atmoShader.mieColor.r, 0f, 4f) { updateMieColor(r = value) }
+            colorSlider("G:", Color.GREEN, atmoShader.mieColor.g, 0f, 4f) { updateMieColor(g = value) }
+            colorSlider("B:", Color.BLUE, atmoShader.mieColor.b, 0f, 4f) { updateMieColor(b = value) }
+            gap(8f)
+            sliderWithValueSmall("Str:", atmoShader.mieColor.a, 0f, 2f, widthLabel = 10f) { updateMieColor(strength = value) }
             sliderWithValueSmall("g:", atmoShader.mieG, 0.5f, 0.999f, 3, widthLabel = 10f) { atmoShader.mieG = value }
-            sliderWithValueSmall("Str:", atmoShader.mieStrength, 0f, 2f, widthLabel = 10f) { atmoShader.mieStrength = value }
         }
 
         section("Atmosphere") {
@@ -365,7 +371,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
         section("View") {
-            sliderWithValueSmall("Sun:", atmoShader.sunIntensity.x, 0.1f, 5f, 2, widthLabel = 24f) {
+            sliderWithValueSmall("Sun:", atmoShader.sunColor.a, 0.1f, 5f, 2, widthLabel = 24f) {
                 sunIntensity = value
                 updateSun()
             }
@@ -393,7 +399,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private fun updateSun() {
         val lightDir = MutableVec3f(0f, 0f, -1f)
         atmoShader.dirToSun = lightDir
-        atmoShader.sunIntensity = MutableVec3f(sunColor.r, sunColor.g, sunColor.b).scale(sunIntensity)
+        atmoShader.sunColor = sunColor.withAlpha(sunIntensity)
 
         mainScene.lighting.lights[0].apply {
             setDirectional(MutableVec3f(lightDir).scale(-1f))
@@ -401,8 +407,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
     }
 
-    private fun updateRayleighCoeffs(x: Float = atmoShader.rayleighCoeffs.x, y: Float = atmoShader.rayleighCoeffs.y, z: Float = atmoShader.rayleighCoeffs.z) {
-        atmoShader.rayleighCoeffs = Vec3f(x, y, z)
+    private fun updateRayleighColor(r: Float = atmoShader.rayleighColor.r, g: Float = atmoShader.rayleighColor.g, b: Float = atmoShader.rayleighColor.b, strength: Float = atmoShader.rayleighColor.a) {
+        atmoShader.rayleighColor = Color(r, g, b, strength)
+    }
+
+    private fun updateMieColor(r: Float = atmoShader.mieColor.r, g: Float = atmoShader.mieColor.g, b: Float = atmoShader.mieColor.b, strength: Float = atmoShader.mieColor.a) {
+        atmoShader.mieColor = Color(r, g, b, strength)
     }
 
     private fun updateScatteringCoeffs(x: Float = atmoShader.scatteringCoeffs.x, y: Float = atmoShader.scatteringCoeffs.y, z: Float = atmoShader.scatteringCoeffs.z) {

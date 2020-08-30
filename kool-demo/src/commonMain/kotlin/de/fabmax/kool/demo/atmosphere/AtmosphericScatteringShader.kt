@@ -35,10 +35,10 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             field = value
             atmosphereNode?.uDirToSun?.value?.set(value)
         }
-    var sunIntensity = Vec3f(1f)
+    var sunColor = Color.WHITE
         set(value) {
             field = value
-            atmosphereNode?.uSunIntensity?.value?.set(value)
+            atmosphereNode?.uSunColor?.value?.set(value)
         }
 
     var scatteringCoeffPow = 4.5f
@@ -46,7 +46,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             field = value
             updateScatteringCoeffs()
         }
-    var scatteringCoeffStrength = 1.5f
+    var scatteringCoeffStrength = 1f
         set(value) {
             field = value
             updateScatteringCoeffs()
@@ -57,26 +57,21 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             updateScatteringCoeffs()
         }
 
-    var rayleighCoeffs = Vec3f(0.75f, 0.75f, 0.75f)
+    var rayleighColor = Color(0.75f, 0.75f, 0.75f, 1f)
         set(value) {
             field = value
-            atmosphereNode?.uRayleighCoeffs?.value?.set(value, rayleighStrength)
-        }
-    var rayleighStrength = 1f
-        set(value) {
-            field = value
-            atmosphereNode?.uRayleighCoeffs?.value?.apply { w = value }
+            atmosphereNode?.uRayleighColor?.value?.set(value)
         }
 
+    var mieColor = Color(1f, 0.9f, 0.8f, 0.3f)
+        set(value) {
+            field = value
+            atmosphereNode?.uMieColor?.value?.set(value)
+        }
     var mieG = 0.99f
         set(value) {
             field = value
-            atmosphereNode?.uMieCoeffs?.value?.apply { x = value }
-        }
-    var mieStrength = 0.3f
-        set(value) {
-            field = value
-            atmosphereNode?.uMieCoeffs?.value?.apply { y = value }
+            atmosphereNode?.uMieG?.value = value
         }
 
     var planetCenter = Vec3f.ZERO
@@ -115,9 +110,10 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                 uPlanetCenter.value.set(planetCenter)
                 uSurfaceRadius.value = surfaceRadius
                 uAtmosphereRadius.value = atmosphereRadius
-                uRayleighCoeffs.value.set(rayleighCoeffs, rayleighStrength)
-                uMieCoeffs.value.set(mieG, mieStrength)
-                uSunIntensity.value.set(sunIntensity)
+                uRayleighColor.value.set(rayleighColor)
+                uMieColor.value.set(mieColor)
+                uMieG.value = mieG
+                uSunColor.value.set(sunColor)
                 updateScatteringCoeffs()
             }
         }
@@ -256,10 +252,11 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         val uPlanetCenter = Uniform3f("uPlanetCenter")
         val uSurfaceRadius = Uniform1f("uSurfaceRadius")
         val uAtmosphereRadius = Uniform1f("uAtmosphereRadius")
-        val uRayleighCoeffs = Uniform4f("uRayleighCoeffs")
-        val uMieCoeffs = Uniform2f("uMieCoeffs")
         val uScatteringCoeffs = Uniform3f("uScatteringCoeffs")
-        val uSunIntensity = Uniform3f("uSunIntensity")
+        val uMieG = Uniform1f("uMieG")
+        val uMieColor = UniformColor("uMieColor")
+        val uRayleighColor = UniformColor("uRayleighColor")
+        val uSunColor = UniformColor("uSunColor")
 
         val outColor = ShaderNodeIoVar(ModelVar4f("outColor"), this)
 
@@ -273,10 +270,11 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     +{ uPlanetCenter }
                     +{ uSurfaceRadius }
                     +{ uAtmosphereRadius }
-                    +{ uRayleighCoeffs }
-                    +{ uMieCoeffs }
+                    +{ uRayleighColor }
+                    +{ uMieColor }
+                    +{ uMieG }
                     +{ uScatteringCoeffs }
-                    +{ uSunIntensity }
+                    +{ uSunColor }
                 }
             }
         }
@@ -287,7 +285,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             generator.appendFunction("phaseFunRayleigh", """
                 vec3 phaseFunRayleigh(float cosTheta) {
                     vec3 phase = vec3(1.0 + clamp(cosTheta, 0.0, 1.0));
-                    return phase * $uRayleighCoeffs.xyz;
+                    return phase * $uRayleighColor.rgb * $uRayleighColor.a;
                 }
             """)
 
@@ -296,7 +294,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     float g2 = g * g;
                     float f1 = (3.0 * (1.0 - g2)) / (2.0 * (2.0 + g2));
                     float f2 = (1.0 + cosTheta * cosTheta) / pow(1.0 + g2 - 2.0 * g * cosTheta, 1.5);
-                    return vec3(f1 * f2);
+                    return vec3(f1 * f2) * $uMieColor.rgb * $uMieColor.a;
                 }
             """)
 
@@ -357,9 +355,9 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     }
                     
                     float sunAngle = dot(dir, dirToSun);
-                    vec3 rayleigh = phaseFunRayleigh(sunAngle) * $uRayleighCoeffs.w;
-                    vec3 mie = phaseFunMie(sunAngle, $uMieCoeffs.x) * $uMieCoeffs.y;
-                    return (rayleigh + mie) * inScatteredLight * $uSunIntensity;
+                    vec3 rayleigh = phaseFunRayleigh(sunAngle);
+                    vec3 mie = phaseFunMie(sunAngle, $uMieG);
+                    return (rayleigh + mie) * inScatteredLight * $uSunColor.rgb * $uSunColor.a;
                 }
             """)
 
