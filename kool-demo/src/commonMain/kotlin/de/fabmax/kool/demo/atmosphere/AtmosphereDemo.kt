@@ -9,12 +9,9 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.UniformBufferMvp
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.AlphaModeBlend
-import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
-import de.fabmax.kool.pipeline.shading.UnlitShader
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -29,8 +26,8 @@ import kotlin.math.pow
 
 class AtmosphereDemo : DemoScene("Atmosphere") {
 
-    private val sunColor = Color.WHITE
-    private val sun = Light().apply {
+    val sunColor = Color.WHITE
+    val sun = Light().apply {
         setDirectional(Vec3f.NEG_Z_AXIS)
         setColor(sunColor, 5f)
     }
@@ -41,25 +38,31 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private var animateTime = true
     private var timeSlider: Slider? = null
 
-    private lateinit var mainCamera: PerspectiveCamera
+    val textures = mutableMapOf<String, Texture>()
+    lateinit var deferredPipeline: DeferredPipeline
+    val atmoShader = AtmosphericScatteringShader()
+
+    private lateinit var opticalDepthLutPass: OpticalDepthLutPass
+    private var sceneCompositing: AtmosphereSceneCompositing? = null
     private val shadows = mutableListOf<SimpleShadowMap>()
-    private val atmoShader = AtmosphericScatteringShader()
     private val earthTransform = Group("earth")
     private val camTransform = EarthCamTransform(earthRadius)
 
     private lateinit var menuContainer: UiContainer
     private lateinit var loadingLabel: Label
 
-    private val textures = mutableMapOf<String, Texture>()
     private var loadingComplete = false
-    private var sceneSetup = false
+    private var sceneSetupComplete = false
 
-    private lateinit var opticalDepthLutPass: OpticalDepthLutPass
+    val cameraHeight: Float
+        get() {
+            return mainScene.camera.globalPos.distance(Vec3f.ZERO) - earthRadius
+        }
 
     override fun lateInit(ctx: KoolContext) {
         camTransform.apply {
             mainScene.registerDragHandler(this)
-            +mainCamera
+            +mainScene.camera
         }
 
         ctx.assetMgr.launch {
@@ -85,8 +88,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
-        mainCamera = camera as PerspectiveCamera
         opticalDepthLutPass = OpticalDepthLutPass()
+        addOffscreenPass(opticalDepthLutPass)
 
         lighting.lights.clear()
         lighting.lights += sun
@@ -99,11 +102,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             maxGlobalLights = 1
             shadowMaps = shadows
         }
-        val deferredPipeline = DeferredPipeline(this, defCfg)
+        deferredPipeline = DeferredPipeline(this, defCfg)
         deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
-        +deferredPipeline.renderOutput
-
-        addOffscreenPass(opticalDepthLutPass)
 
         atmoShader.apply {
             opticalDepthLut = opticalDepthLutPass.colorTexture
@@ -127,27 +127,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         onUpdate += { ev ->
             if (loadingComplete) {
-                if (!sceneSetup) {
-                    sceneSetup = true
-
-                    menuContainer.isVisible = true
-                    loadingLabel.isVisible = false
-
-                    deferredPipeline.contentGroup.setupContent()
-                    setupSkybox()
-                    updateSun()
-                    +mesh(listOf(Attribute.POSITIONS)) {
-                        generate {
-                            icoSphere {
-                                steps = 3
-                                radius = earthRadius + 12
-                            }
-                        }
-                        shader = atmoShader
-                    }
+                if (!sceneSetupComplete) {
+                    sceneSetupComplete = true
+                    finalizeSceneSetup(deferredPipeline)
                 }
 
-                mainCamera.apply {
+                (mainScene.camera as PerspectiveCamera).apply {
                     val h = globalPos.length() - earthRadius
                     position.set(Vec3f.ZERO)
                     lookAt.set(Vec3f.NEG_Z_AXIS)
@@ -169,57 +154,15 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
     }
 
-    private fun Scene.setupSkybox() {
-        +group {
-            isFrustumChecked = false
-            +Skybox.sphere(textures[texMilkyway]!!, hdriInput = false)
-            // milky way is wildly tilted (no idea in which direction...)
-            rotate(-60f, Vec3f.X_AXIS)
-        }
+    private fun finalizeSceneSetup(deferredPipeline: DeferredPipeline) {
+        menuContainer.isVisible = true
+        loadingLabel.isVisible = false
 
-        +textureMesh {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    size.set(3f, 3f)
-                    origin.set(size.x, size.y, 0f).scale(-0.5f)
-                    origin.z = -10f
-                }
-            }
-            shader = skyboxShader(textures[texSunBg], 0.75f)
-        }
-        +textureMesh {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    size.set(1f, 1f)
-                    origin.set(size.x, size.y, 0f).scale(-0.5f)
-                    origin.z = -10f
-                }
+        deferredPipeline.contentGroup.setupContent()
 
-            }
-            shader = skyboxShader(textures[texSun], 1f)
-        }
-    }
+        sceneCompositing = AtmosphereSceneCompositing(this)
 
-    private fun skyboxShader(texture: Texture?, maxAlpha: Float): UnlitShader {
-        val unlitCfg = UnlitMaterialConfig().apply {
-            alphaMode = AlphaModeBlend()
-            useColorMap(texture, maxAlpha < 1f)
-            color = Color.WHITE.withAlpha(maxAlpha)
-        }
-        val unlitModel = UnlitShader.defaultUnlitModel(unlitCfg).apply {
-            vertexStage {
-                val mvp = findNodeByType<UniformBufferMvp>()!!
-                positionOutput = addNode(Skybox.SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
-            }
-        }
-        return UnlitShader(unlitCfg, unlitModel).apply {
-            onPipelineSetup += { builder, _, _ ->
-                builder.cullMethod = CullMethod.NO_CULLING
-                builder.depthTest = DepthCompareOp.LESS_EQUAL
-            }
-        }
+        updateSun()
     }
 
     private fun Group.setupContent() {
@@ -244,7 +187,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                         toLocalCoords(uSunDir, 0f)
                     }
 
-                    val camHeight = (mainScene.camera.globalPos.distance(Vec3f.ZERO) - earthRadius) * kmPerUnit
+                    val camHeight = cameraHeight * kmPerUnit
                     val colorMix = (camHeight / 100f).clamp()
                     earthShader.uWaterColor?.value?.set(waterColorLow.mix(waterColorHigh, colorMix))
                     earthShader.uNormalShift?.value?.set(ev.time.toFloat() * 0.0051f, ev.time.toFloat() * 0.0037f, ev.time.toFloat() * -0.0071f, ev.time.toFloat() * -0.0039f)
@@ -255,8 +198,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
             onUpdate += {
                 setIdentity()
-                // earth rotation axis is tilted by ~20°
-                rotate(-20f, Vec3f.X_AXIS)
+                // earth rotation axis is tilted by 23.44°
+                rotate(23.44f, Vec3f.NEG_X_AXIS)
                 // rotate according to time
                 rotate(time * 360, Vec3f.Y_AXIS)
             }
@@ -397,7 +340,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             toggleButton("Animate Time", animateTime) { animateTime = isEnabled }
             textWithValue("Camera Height:", "").apply {
                 onUpdate += {
-                    val h = (mainScene.camera.globalPos.distance(Vec3f.ZERO) - earthRadius) * kmPerUnit
+                    val h = cameraHeight * kmPerUnit
                     text = "${h.toString(1)} km"
                 }
             }
@@ -441,24 +384,24 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     companion object {
-        private const val kmPerUnit = 100f
-        private const val earthRadius = 6000f / kmPerUnit
+        const val kmPerUnit = 100f
+        const val earthRadius = 6000f / kmPerUnit
 
-        private const val moonRadius = 1750f / kmPerUnit
-        private const val moonDistScale = 0.25f
-        private const val moonDist = 384400 / kmPerUnit * moonDistScale
-        private const val moonInclination = 5.145f
+        const val moonRadius = 1750f / kmPerUnit
+        const val moonDistScale = 0.25f
+        const val moonDist = 384400 / kmPerUnit * moonDistScale
+        const val moonInclination = 5.145f
 
         // scaled moon orbital period (according to kepler's 3rd law)
-        private val keplerC = (moonDist / moonDistScale).pow(3) / 27.32f.pow(2)
-        private val moonT = moonDist.pow(3) / keplerC
+        val keplerC = (moonDist / moonDistScale).pow(3) / 27.32f.pow(2)
+        val moonT = moonDist.pow(3) / keplerC
 
-        private val waterColorLow = Color.fromHex("0D1F56").toLinear()
-        private val waterColorHigh = Color.fromHex("020514").toLinear()
+        val waterColorLow = Color.fromHex("0D1F56").toLinear()
+        val waterColorHigh = Color.fromHex("020514").toLinear()
 
-        private const val texMilkyway = "Milkyway"
-        private const val texSun = "Sun"
-        private const val texSunBg = "Sun Background"
-        private const val texMoon = "Moon"
+        const val texMilkyway = "Milkyway"
+        const val texSun = "Sun"
+        const val texSunBg = "Sun Background"
+        const val texMoon = "Moon"
     }
 }

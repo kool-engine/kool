@@ -53,6 +53,11 @@ fun getNumMipLevels(texWidth: Int, texHeight: Int): Int {
     return floor(log2(max(texWidth, texHeight).toDouble())).toInt() + 1
 }
 
+fun smoothStep(low: Float, high: Float, x: Float): Float {
+    val nx = ((x - low) / (high - low)).clamp()
+    return nx * nx * (3 - 2 * nx)
+}
+
 fun triArea(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {
     val xAB = vb.x - va.x
     val yAB = vb.y - va.y

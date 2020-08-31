@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.atmosphere
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
@@ -92,9 +93,8 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
     init {
         onPipelineSetup += { builder, _, _ ->
-            builder.cullMethod = CullMethod.CULL_FRONT_FACES
             builder.depthTest = DepthCompareOp.DISABLED
-            builder.blendMode = BlendMode.BLEND_MULTIPLY_ALPHA
+            builder.blendMode = BlendMode.BLEND_ADDITIVE
         }
         onPipelineCreated += { _, _, _ ->
             opticalDepthLutNode = model.findNode("tOpticalDepthLut")
@@ -130,26 +130,26 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
     companion object {
         private fun atmosphereModel() = ShaderModel().apply {
             val mvp: UniformBufferMvp
-            val ifClipPos: StageInterfaceNode
-            val ifWorldPos: StageInterfaceNode
+            val ifQuadPos: StageInterfaceNode
+            val ifViewDir: StageInterfaceNode
 
             vertexStage {
                 mvp = mvpNode()
-                val localPos = attrPositions().output
-                val worldPos = vec3TransformNode(localPos, mvp.outModelMat).outVec3
-                ifWorldPos = stageInterfaceNode("ifWorldPos", worldPos)
-                val clipPos = splitNode(vec4TransformNode(localPos, mvp.outMvpMat).outVec4, "xyww").output
-                ifClipPos = stageInterfaceNode("ifClipPos", clipPos)
-                positionOutput = clipPos
+                val quadPos = attrTexCoords().output
+                val viewDir = addNode(XyToViewDirNode(stage)).apply {
+                    inScreenPos = quadPos
+                }
+                ifViewDir = stageInterfaceNode("ifViewDir", viewDir.outViewDir)
+                ifQuadPos = stageInterfaceNode("ifTexCoords", quadPos)
+                positionOutput = fullScreenQuadPositionNode(quadPos).outQuadPos
             }
             fragmentStage {
                 addNode(RaySphereIntersectionNode(stage))
 
                 val fragMvp = mvp.addToStage(stage)
                 val opticalDepthLut = textureNode("tOpticalDepthLut")
-                val clip2uv = addNode(Clip2UvNode(stage)).apply { inClipPos = ifClipPos.output }
-                val sceneColor = textureSamplerNode(textureNode("tSceneColor"), clip2uv.outUv).outColor
-                val viewPos = textureSamplerNode(textureNode("tScenePos"), clip2uv.outUv).outColor
+                val sceneColor = textureSamplerNode(textureNode("tSceneColor"), ifQuadPos.output).outColor
+                val viewPos = textureSamplerNode(textureNode("tScenePos"), ifQuadPos.output).outColor
                 val view2world = addNode(ViewToWorldPosNode(stage)).apply {
                     inViewPos = viewPos
                 }
@@ -159,7 +159,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     inScenePos = view2world.outWorldPos
                     inViewDepth = splitNode(viewPos, "z").output
                     inCamPos = fragMvp.outCamPos
-                    inLookDir = viewDirNode(fragMvp.outCamPos, ifWorldPos.output).output
+                    inLookDir = ifViewDir.output
                 }
 
                 colorOutput(hdrToLdrNode(atmoNd.outColor).outColor)
@@ -167,17 +167,31 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         }
     }
 
-    class Clip2UvNode(graph: ShaderGraph) : ShaderNode("clip2uv", graph) {
-        lateinit var inClipPos: ShaderNodeIoVar
-        val outUv = ShaderNodeIoVar(ModelVar2f("${name}_outUv"), this)
+    private class XyToViewDirNode(graph: ShaderGraph) : ShaderNode("xyToViewDir", graph) {
+        private val uInvViewProjMat = UniformMat4f("uInvViewProjMat")
+
+        var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
+        val outViewDir = ShaderNodeIoVar(ModelVar3f("${name}_outWorldPos"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inClipPos)
+            dependsOn(inScreenPos)
+            shaderGraph.descriptorSet.apply {
+                uniformBuffer(name, shaderGraph.stage) {
+                    +{ uInvViewProjMat }
+                    onUpdate = { _, cmd ->
+                        uInvViewProjMat.value.set(cmd.renderPass.camera.invViewProj)
+                    }
+                }
+            }
         }
 
         override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("${outUv.declare()} = ($inClipPos.xy / $inClipPos.w) * 0.5 + 0.5;")
+            generator.appendMain("""
+                vec4 ${name}_near = $uInvViewProjMat * vec4(${inScreenPos.ref2f()} * 2.0 - 1.0, 0.0, 1.0);
+                vec4 ${name}_far = $uInvViewProjMat * vec4(${inScreenPos.ref2f()} * 2.0 - 1.0, 1.0, 1.0);
+                ${outViewDir.declare()} = (${name}_far.xyz / ${name}_far.w) - (${name}_near.xyz / ${name}_near.w);
+            """)
         }
     }
 
@@ -262,7 +276,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inSceneColor, inCamPos, inLookDir)
+            dependsOn(inSceneColor, inScenePos, inViewDepth, inCamPos, inLookDir)
 
             shaderGraph.descriptorSet.apply {
                 uniformBuffer(name, shaderGraph.stage) {
@@ -341,17 +355,25 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     for (int i = 0; i < $numScatterSamples; i++) {
                         inScatterPt += dir * stepSize;
                         
-                        vec3 verticalDir = normalize(inScatterPt);
-                        float cosTheta = dot(dirToSun, verticalDir);
-                        float altitude = (length(inScatterPt) - $uSurfaceRadius) / atmosphereThickness;
-
-                        float viewRayOpticalDepth = opticalDepthLenLut(origin, dir, stepSize * float(i));
-                        vec2 opticalDepthToSun = opticalDepthLut(altitude, cosTheta);
-                        float sunRayOpticalDepth = opticalDepthToSun.x;
-                        float localDensity = opticalDepthToSun.y;
-                        vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * $uScatteringCoeffs);
-
-                        inScatteredLight += localDensity * transmittance * $uScatteringCoeffs * stepSize;
+                        float dPlanetIn, dPlanetOut;
+                        bool planetHit = raySphereIntersection(inScatterPt, dirToSun, vec3(0.0), $uSurfaceRadius, dPlanetIn, dPlanetOut);
+                        float dThroughPlanet = (dPlanetOut - dPlanetIn) * float(planetHit);
+                        float planetLenThresh = $uSurfaceRadius / 5.0;
+                        
+                        if (dThroughPlanet < planetLenThresh) {
+                            vec3 verticalDir = normalize(inScatterPt);
+                            float cosTheta = dot(dirToSun, verticalDir);
+                            float altitude = (length(inScatterPt) - $uSurfaceRadius) / atmosphereThickness;
+    
+                            float viewRayOpticalDepth = opticalDepthLenLut(origin, dir, stepSize * float(i));
+                            vec2 opticalDepthToSun = opticalDepthLut(altitude, cosTheta);
+                            float sunRayOpticalDepth = opticalDepthToSun.x;
+                            float localDensity = opticalDepthToSun.y;
+                            vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * $uScatteringCoeffs);
+    
+                            float planetBlend = 1.0 - dThroughPlanet / planetLenThresh;
+                            inScatteredLight += localDensity * transmittance * $uScatteringCoeffs * stepSize * planetBlend;
+                        }
                     }
                     
                     float sunAngle = dot(dir, dirToSun);
@@ -364,7 +386,8 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             generator.appendMain("""
                 float dAtmoIn, dAtmoOut;
                 vec3 camOri = ${inCamPos.ref3f()} - $uPlanetCenter;
-                bool hitAtmo = raySphereIntersection(camOri, ${inLookDir.ref3f()}, vec3(0.0), $uAtmosphereRadius, dAtmoIn, dAtmoOut);
+                vec3 nrmLookDir = normalize(${inLookDir.ref3f()});
+                bool hitAtmo = raySphereIntersection(camOri, nrmLookDir, vec3(0.0), $uAtmosphereRadius, dAtmoIn, dAtmoOut);
                 
                 ${outColor.declare()} = $inSceneColor;
                 if (hitAtmo) {
@@ -372,35 +395,14 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     float dToAtmo = max(0.0, dAtmoIn);
                     float dThroughAtmo = dAtmoOut - dToAtmo;
                     if (${inViewDepth.ref1f()} < 0.0) {
-                    float sceneDepth = length(${inCamPos.ref3f()} - ${inScenePos.ref3f()});
+                        float sceneDepth = length(${inCamPos.ref3f()} - ${inScenePos.ref3f()});
                         dThroughAtmo = min(dThroughAtmo, sceneDepth - dToAtmo);
                     }
-                    
+
                     // scattering
-                    vec3 atmoHitPt = camOri + ${inLookDir.ref3f()} * dToAtmo;
-                    vec3 light = scatterLight(atmoHitPt, ${inLookDir.ref3f()}, dThroughAtmo, $uDirToSun);
+                    vec3 atmoHitPt = camOri + nrmLookDir * dToAtmo;
+                    vec3 light = scatterLight(atmoHitPt, nrmLookDir, dThroughAtmo, $uDirToSun);
                     $outColor.rgb += light;
-                    
-                    // blending
-                    vec4 rayToPoint = rayPointDistance(camOri, ${inLookDir.ref3f()}, vec3(0.0));
-                    vec3 nearestPoint = rayToPoint.xyz;
-                    float rayPointDist = rayToPoint.w;
-
-                    if (rayPointDist < 0.0) {
-                        nearestPoint = camOri;
-                        rayPointDist = length(camOri);
-                    } else if (rayPointDist < $uSurfaceRadius) {
-                        float dPlanetIn, dPlanetOut;
-                        raySphereIntersection(camOri, ${inLookDir.ref3f()}, vec3(0.0), $uAtmosphereRadius, dPlanetIn, dPlanetOut);
-                        nearestPoint = camOri + ${inLookDir.ref3f()} * dPlanetIn;
-                        rayPointDist = $uSurfaceRadius;
-                    }
-
-                    float normalDotSun = dot(normalize(nearestPoint), $uDirToSun);
-                    float skyAlpha = smoothstep(-0.3, -0.1, normalDotSun);
-                    float heightAlpha = 1.0 - smoothstep(0.3, 1.0, (rayPointDist - $uSurfaceRadius) / ($uAtmosphereRadius - $uSurfaceRadius));
-
-                    $outColor.a = skyAlpha * heightAlpha;
                 }
             """)
         }

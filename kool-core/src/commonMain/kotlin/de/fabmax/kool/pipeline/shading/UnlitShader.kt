@@ -12,7 +12,7 @@ inline fun unlitShader(block: UnlitMaterialConfig.() -> Unit): UnlitShader {
     return UnlitShader(cfg)
 }
 
-class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnlitModel(cfg)) : ModeledShader(model) {
+open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnlitModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend
