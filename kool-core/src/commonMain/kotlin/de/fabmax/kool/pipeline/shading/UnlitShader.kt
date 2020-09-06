@@ -176,9 +176,6 @@ class UnlitMaterialConfig {
         colorSource = Albedo.TEXTURE_ALBEDO
     }
 
-    fun useColorCubeMap(colorCubeMap: String, isMultiplyColorMap: Boolean = false) =
-            useColorMap(CubeMapTexture(colorCubeMap), isMultiplyColorMap)
-
     fun useColorCubeMap(colorCubeMap: CubeMapTexture?, isMultiplyColorMap: Boolean = false) {
         this.colorCubeMap = colorCubeMap
         this.isMultiplyColorMap = isMultiplyColorMap

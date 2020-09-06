@@ -7,6 +7,12 @@ import de.fabmax.kool.util.deferred.DeferredPbrShader
 
 class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shaderConfig(textures)) : DeferredPbrShader(cfg, model(cfg)) {
 
+    private var tHeightMap: TextureSampler? = null
+    var heightMap: Texture? = null
+        set(value) {
+            field = value
+            tHeightMap?.texture = value
+        }
     private var tOcean: TextureSampler? = null
     var oceanNrmTex: Texture? = null
         set(value) {
@@ -27,6 +33,9 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
             }
             tOcean = model.findNode<TextureNode>("tOceanNrm1")?.sampler
             tOcean?.texture = oceanNrmTex
+
+            tHeightMap = model.findNode<TextureNode>("tHeightMap")?.sampler
+            tHeightMap?.texture = heightMap
         }
     }
 
@@ -40,25 +49,58 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
         fun shaderConfig(textures: Map<String, Texture>): PbrMaterialConfig {
             return PbrMaterialConfig().apply {
                 useAlbedoMap(textures[texEarthDay])
-                useDisplacementMap(textures[texEarthHeight])
                 useEmissiveMap(textures[texEarthNight])
                 useNormalMap(textures[texEarthNrm])
 
-                displacementStrength = 1f
+                isInstanced = true
             }
         }
 
         fun model(cfg: PbrMaterialConfig): ShaderModel{
             return defaultMrtPbrModel(cfg).apply {
                 val ifSunDirViewSpace: StageInterfaceNode
-                val ifLocalNormal: StageInterfaceNode
+                val ifNormalViewSpaceNoBump: StageInterfaceNode
+                val ifNormalLocalNoBump: StageInterfaceNode
+
                 vertexStage {
                     val mvp = findNodeByType<UniformBufferMvp>()!!
                     val modelViewMat = multiplyNode(mvp.outViewMat, mvp.outModelMat).output
+                    val modelViewInstMat = findNode<NamedVariableNode>("modelViewMat")!!.output
                     val dirToSun = pushConstantNode3f("uDirToSun").output
                     val viewSunDir = vec3TransformNode(dirToSun, modelViewMat, 0f).outVec3
                     ifSunDirViewSpace = stageInterfaceNode("ifSunDirViewSpace", viewSunDir)
-                    ifLocalNormal = stageInterfaceNode("ifLocalNormal", attrNormals().output)
+
+                    val instModelMat = instanceAttrModelMat().output
+                    val spherePos = addNode(SpherePosNode(stage)).apply {
+                        inModelMat = instModelMat
+                        inTileName = instanceAttributeNode(SphereGridSystem.ATTRIB_TILE_NAME).output
+                        inXyPos = attrTexCoords().output
+                    }
+
+                    val heightTex = textureNode("tHeightMap")
+                    val heightMap = addNode(HeightMapNode(heightTex, stage)).apply {
+                        inTileName = instanceAttributeNode(SphereGridSystem.ATTRIB_TILE_NAME).output
+                        inEdgeFlag = attributeNode(SphereGridSystem.ATTRIB_EDGE_FLAG).output
+                        inEdgeMask = instanceAttributeNode(SphereGridSystem.ATTRIB_EDGE_MASK).output
+                        inRawTexCoord = attrTexCoords().output
+                        inModelMat = instModelMat
+
+                        inPosition = spherePos.outPos
+                        inNormal = spherePos.outNrm
+                        inTangent = spherePos.outTan
+                        inTexCoord = spherePos.outTex
+                        inStrength = constFloat(0.005f)
+                        inNrmStrength = constFloat(3f)
+                    }
+
+                    findNode<NamedVariableNode>("texCoordInput")?.input = spherePos.outTex
+                    findNode<NamedVariableNode>("localTangentInput")?.input = spherePos.outTan
+
+                    findNode<NamedVariableNode>("localPosDisplaced")?.input = heightMap.outPosition
+                    findNode<NamedVariableNode>("localNormalInput")?.input = heightMap.outNormal
+
+                    ifNormalLocalNoBump = stageInterfaceNode("ifNormalLocalNoBump", spherePos.outNrm)
+                    ifNormalViewSpaceNoBump = stageInterfaceNode("ifNormalNoBumpViewSpace", vec3TransformNode(spherePos.outNrm, modelViewInstMat, 0f).outVec3)
                 }
                 fragmentStage {
                     val mrtOutput = findNodeByType<MrtMultiplexNode>()!!
@@ -72,7 +114,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
                         inOceanTex1 = textureNode("tOceanNrm1")
                         inAlbedo = dayAlbedo
                         inIsOcean = roughnessNd.outIsOcean
-                        inNormal = ifLocalNormal.output
+                        inNormal = ifNormalLocalNoBump.output
                         inBumpNormal = mrtOutput.inViewNormal
                         inTangent = ifTangent.output
 
@@ -80,7 +122,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
                     }
 
                     addNode(EarthDayNightMixNode(stage)).apply {
-                        inNormal = normalizeNode(mrtOutput.inViewNormal).output
+                        inNormal = normalizeNode(ifNormalViewSpaceNoBump.output).output
                         inSunDir = normalizeNode(ifSunDirViewSpace.output).output
                         inAlbedo = oceanNd.outColor
                         inEmissive = mrtOutput.inEmissive
@@ -112,113 +154,6 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
             ${outAlbedo.declare()} = $inAlbedo * ${name}_mix;
             ${outEmissive.declare()} = $inEmissive * (1.0 - ${name}_mix) * 0.6;
         """)
-        }
-    }
-
-    private class EarthRoughnessNode(val inAlbedo: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("earthRoughness", graph) {
-        val outRoughness = ShaderNodeIoVar(ModelVar1f("earth_outRoughness"), this)
-        val outIsOcean = ShaderNodeIoVar(ModelVar1i("earth_outIsOcean"), this)
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inAlbedo)
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("""
-            float ${name}_relBlue = min($inAlbedo.b - $inAlbedo.r, $inAlbedo.b - $inAlbedo.g) / $inAlbedo.b;
-            float ${name}_brightness = dot($inAlbedo.rgb, vec3(0.333));
-            
-            ${outRoughness.declare()} = 1.0 - (0.3 + ${name}_brightness * 0.4);
-            bool $outIsOcean = ${name}_relBlue > 0.2 || ${name}_brightness < 0.002;
-            if ($outIsOcean) {
-                $outRoughness = 0.22;
-            }
-        """)
-        }
-    }
-
-    private class EarthOceanNode(graph: ShaderGraph) : ShaderNode("earthOcean", graph) {
-        lateinit var inOceanTex1: TextureNode
-
-        lateinit var inAlbedo: ShaderNodeIoVar
-        lateinit var inIsOcean: ShaderNodeIoVar
-        lateinit var inNormal: ShaderNodeIoVar
-        lateinit var inBumpNormal: ShaderNodeIoVar
-        lateinit var inTangent: ShaderNodeIoVar
-
-        val outColor = ShaderNodeIoVar(ModelVar4f("ocean_outColor"), this)
-        val outBumpNormal = ShaderNodeIoVar(ModelVar3f("ocean_outBump"), this)
-
-        val uNormalShift = Uniform4f("uNormalShift")
-        val uWaterColor = UniformColor("uWaterColor")
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inAlbedo, inIsOcean, inNormal, inBumpNormal, inTangent)
-
-            shaderGraph.pushConstants.apply {
-                +{ uNormalShift }
-                +{ uWaterColor }
-            }
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendFunction("cubeUv", """
-                vec2 cubeUv(vec3 normal) {
-                    vec3 absN = abs(normal);
-                    bvec3 isPos = bvec3(normal.x > 0.0, normal.y > 0.0, normal.z > 0.0);
-                
-                    float maxAxis = 1.0;
-                    vec2 uvc = vec2(1.0, 1.0);
-                    
-                    if (isPos.x && absN.x > absN.y && absN.x > absN.z) {
-                        maxAxis = absN.x;
-                        uvc = vec2(-normal.z, -normal.y);
-                    } else if (!isPos.x && absN.x > absN.y && absN.x > absN.z) {
-                        maxAxis = absN.x;
-                        uvc = vec2(normal.z, -normal.y);
-                        
-                    } else if (isPos.y && absN.y > absN.x && absN.y > absN.z) {
-                        maxAxis = absN.y;
-                        uvc = vec2(normal.x, normal.z);
-                    } else if (!isPos.y && absN.y > absN.x && absN.y > absN.z) {
-                        maxAxis = absN.y;
-                        uvc = vec2(normal.x, -normal.z);
-                        
-                    } else if (isPos.z && absN.z > absN.x && absN.z > absN.y) {
-                        maxAxis = absN.z;
-                        uvc = vec2(normal.x, -normal.y);
-                    } else if (!isPos.z && absN.z > absN.x && absN.z > absN.y) {
-                        maxAxis = absN.z;
-                        uvc = vec2(-normal.x, -normal.y);
-                    }
-                    
-                    return 0.5 * (uvc / maxAxis + 1.0);
-                }
-            """)
-
-            generator.appendMain("""
-                ${outColor.declare()} = ${inAlbedo.ref4f()};
-                ${outBumpNormal.declare()} = ${inBumpNormal.ref3f()};
-                if ($inIsOcean) {
-                    vec2 oceanUvBase = cubeUv(normalize(${inNormal.ref3f()}));
-                    float s = 400.0;
-                    vec2 oceanUv1 = oceanUvBase * vec2(1.0 * s, 1.5 * s) + $uNormalShift.xy;
-                    vec2 oceanUv2 = oceanUvBase * vec2(1.69751 * s, 1.27841 * s) + $uNormalShift.zw;
-                    vec2 oceanUvStrength = oceanUvBase;
-                    
-                    vec3 oceanNrm1 = ${generator.sampleTexture2d(inOceanTex1.name, "oceanUv1")}.rgb * 2.0 - 1.0;
-                    vec3 oceanNrm2 = ${generator.sampleTexture2d(inOceanTex1.name, "oceanUv2")}.rgb * 2.0 - 1.0;
-                    vec3 oceanNrm = oceanNrm1 + oceanNrm2;
-                    float nrmStrength = smoothstep(0.3, 0.6, ${generator.sampleTexture2d(inOceanTex1.name, "oceanUvStrength")}.r) * 0.7 + 0.3;
-                    oceanNrm.xy *= nrmStrength;
-                    
-                    //$outColor = vec4(vec3(nrmStrength), 1.0);
-                    $outColor = $uWaterColor;
-                    $outBumpNormal = calcBumpedNormal(${inBumpNormal.ref3f()}, ${inTangent.ref4f()}, normalize(oceanNrm), 0.4);
-                }
-            """)
         }
     }
 }

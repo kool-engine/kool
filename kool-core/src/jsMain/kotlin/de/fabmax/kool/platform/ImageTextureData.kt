@@ -1,9 +1,10 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
 import org.w3c.dom.HTMLImageElement
 
-class ImageTextureData(image: HTMLImageElement) : TextureData() {
+class ImageTextureData(image: HTMLImageElement, fmt: TexFormat?) : TextureData() {
     override val data = image
 
     init {
@@ -12,5 +13,7 @@ class ImageTextureData(image: HTMLImageElement) : TextureData() {
         }
         width = image.width
         height = image.height
+
+        fmt?.let { format = it }
     }
 }

@@ -120,7 +120,7 @@ class ShaderModel(val modelInfo: String = "") {
         }
     }
 
-    abstract inner class StageBuilder(val stage: ShaderGraph) {
+    abstract class StageBuilder(val stage: ShaderGraph) {
         fun <T: ShaderNode> addNode(node: T): T {
             stage.addNode(node)
             return node
@@ -268,6 +268,12 @@ class ShaderModel(val modelInfo: String = "") {
             inColor?.let { colAlpha.inColor = it }
             inAlpha?.let { colAlpha.inAlpha = it }
             return colAlpha
+        }
+
+        fun namedVariable(name: String, defaultInVar: ShaderNodeIoVar? = null): NamedVariableNode {
+            val namedNd = addNode(NamedVariableNode(name, stage))
+            defaultInVar?.let { namedNd.input = it }
+            return namedNd
         }
 
         fun constFloat(value: Float) = ShaderNodeIoVar(ModelVar1fConst(value))

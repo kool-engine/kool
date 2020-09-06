@@ -67,7 +67,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                     val img = synchronized(imageIoLock) {
                         ImageIO.read(it)
                     }
-                    data = ImageTextureData(img)
+                    data = ImageTextureData(img, localTextureRef.fmt)
                 }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${localTextureRef.url}: $e" }
@@ -87,7 +87,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                     val img = synchronized(imageIoLock) {
                         ImageIO.read(it)
                     }
-                    data = ImageTextureData(img)
+                    data = ImageTextureData(img, httpTextureRef.fmt)
                 }
             } catch (e: Exception) {
                 logE { "Failed loading texture ${httpTextureRef.url}: $e" }
@@ -116,12 +116,12 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                 ImageIO.read(ByteArrayInputStream(texData.toArray()))
             }
         }
-        return ImageTextureData(img!!)
+        return ImageTextureData(img!!, null)
     }
 
     override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture {
-        val tex = Texture(assetPathToName(assetPath), props) { it.loadTextureData(assetPath) }
-        val data = loadTextureData(assetPath)
+        val tex = Texture(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
+        val data = loadTextureData(assetPath, props.format)
         val deferred = CompletableDeferred<Texture>(job)
         ctx.runOnMainThread {
             ctx.renderBackend.loadTex2d(tex, data)
@@ -133,7 +133,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     override suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps): CubeMapTexture {
         val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
-        val tex = CubeMapTexture(name, props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        val tex = CubeMapTexture(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
         val deferred = CompletableDeferred<CubeMapTexture>(job)
         ctx.runOnMainThread {
@@ -144,13 +144,13 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture {
-        val tex = Texture(name, props) { texData }
+        val tex = Texture(props, name) { texData }
         ctx.renderBackend.loadTex2d(tex, texData)
         return tex
     }
 
     override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): CubeMapTexture {
-        val tex = CubeMapTexture(name, props) { texData }
+        val tex = CubeMapTexture(props, name) { texData }
         ctx.renderBackend.loadTexCube(tex, texData)
         return tex
     }

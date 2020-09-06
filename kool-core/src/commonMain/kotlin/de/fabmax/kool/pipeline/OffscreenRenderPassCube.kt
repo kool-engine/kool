@@ -34,7 +34,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
     }
 
     fun copyColor(): CubeMapTexture {
-        val tex = CubeMapTexture("$name-${copyTargetsColor.size}", getColorTexProps())
+        val tex = CubeMapTexture(getColorTexProps(), "$name-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
     }
@@ -75,7 +75,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
             } else {
                 val name = "${name}_color[$i]"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                CubeMapTexture(name, props)
+                CubeMapTexture(props, name)
             }
         }
     }
@@ -87,7 +87,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
             } else {
                 val name = "${name}_depth"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                CubeMapTexture(name, props)
+                CubeMapTexture(props, name)
             }
         }
     }

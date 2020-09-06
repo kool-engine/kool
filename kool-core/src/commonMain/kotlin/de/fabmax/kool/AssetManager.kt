@@ -109,11 +109,11 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         return loaded.data
     }
 
-    suspend fun loadTextureData(assetPath: String): TextureData {
+    suspend fun loadTextureData(assetPath: String, format: TexFormat? = null): TextureData {
         val ref = if (isHttpAsset(assetPath)) {
-            HttpTextureAssetRef(assetPath)
+            HttpTextureAssetRef(assetPath, format)
         } else {
-            LocalTextureAssetRef("$assetsBaseDir/$assetPath")
+            LocalTextureAssetRef("$assetsBaseDir/$assetPath", format)
         }
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
@@ -168,8 +168,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 sealed class AssetRef
 data class LocalRawAssetRef(val url: String) : AssetRef()
 data class HttpRawAssetRef(val url: String) : AssetRef()
-data class LocalTextureAssetRef(val url: String) : AssetRef()
-data class HttpTextureAssetRef(val url: String) : AssetRef()
+data class LocalTextureAssetRef(val url: String, val fmt: TexFormat?) : AssetRef()
+data class HttpTextureAssetRef(val url: String, val fmt: TexFormat?) : AssetRef()
 
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
 class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)

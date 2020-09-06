@@ -176,6 +176,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         }
         meshBuilder.color = slider.knobColor.apply()
         meshBuilder.circle {
+            zeroTexCoords()
             center.set(slider.knobPosition.x, slider.knobPosition.y, slider.dp(.2f))
             radius = slider.knobSize
             steps = 30

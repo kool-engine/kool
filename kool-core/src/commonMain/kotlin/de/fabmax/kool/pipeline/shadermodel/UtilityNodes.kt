@@ -328,8 +328,9 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
 
     inner class InputNode(graph: ShaderGraph) : ShaderNode(name, graph, ShaderStage.VERTEX_SHADER.mask) {
         val ifNode = this@StageInterfaceNode
-        val input: ShaderNodeIoVar
+        var input: ShaderNodeIoVar
             get() = ifNode.input
+            set(value) { ifNode.input = value }
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -447,5 +448,25 @@ class RefractionSamplerNode(graph: ShaderGraph) : ShaderNode("refractionSampler_
                     $outColor = $envColor;
                 }
             """)
+    }
+}
+
+class NamedVariableNode(name: String, graph: ShaderGraph) : ShaderNode(name, graph) {
+    var input = ShaderNodeIoVar(ModelVar1fConst(0f))
+        set(value) {
+            field = value
+            output = ShaderNodeIoVar(ModelVar(name, value.variable.type), this)
+        }
+
+    var output = ShaderNodeIoVar(ModelVar(name, GlslType.FLOAT), this)
+        private set
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(input)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = $input;")
     }
 }

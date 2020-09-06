@@ -116,6 +116,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         knobColor.add(tb.knobColorOn, anim)
         meshBuilder.color = knobColor
         meshBuilder.circle {
+            zeroTexCoords()
             center.set(x + trackW * anim, y + trackH / 2f, tb.dp(.2f))
             radius = knobR
             steps = 30

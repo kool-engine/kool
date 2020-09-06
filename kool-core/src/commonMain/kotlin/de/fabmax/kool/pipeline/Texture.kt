@@ -10,10 +10,10 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by it's properties and a loader function which is called once the texture is used.
  */
-open class Texture(val name: String? = null, val props: TextureProps = TextureProps(), val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) {
+open class Texture(val props: TextureProps = TextureProps(), val name: String? = null, val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) {
 
     constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
-            this(name, props, { it.loadTextureData(assetPath) })
+            this(props, name, { it.loadTextureData(assetPath, props.format) })
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -54,12 +54,12 @@ open class Texture(val name: String? = null, val props: TextureProps = TexturePr
 }
 
 class SingleColorTexture(color: Color) : Texture(
-        color.toString(),
         TextureProps(
                 minFilter = FilterMethod.NEAREST,
                 magFilter = FilterMethod.NEAREST,
                 mipMapping = false,
                 maxAnisotropy = 1),
+        color.toString(),
         loader = { getColorTextureData(color) }) {
 
     companion object {
@@ -71,8 +71,8 @@ class SingleColorTexture(color: Color) : Texture(
     }
 }
 
-open class CubeMapTexture(name: String? = null, props: TextureProps = TextureProps(), loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
-        Texture(name, props, loader)
+open class CubeMapTexture(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
+        Texture(props, name, loader)
 
 data class TextureProps(
         val format: TexFormat = TexFormat.RGBA,

@@ -16,12 +16,12 @@ object EnvironmentHelper {
                 minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = false, maxAnisotropy = 1
         )
-        val cubeTex = CubeMapTexture("singleColorEnv-$color", props) {
+        val cubeTex = CubeMapTexture(props, "singleColorEnv-$color") {
             CubeMapTextureData(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
         }
 
         val brdfLutPass = BrdfLutPass(scene)
-        val brdfLut = Texture("singleColorEnv-brdf", brdfLutPass.config.colorAttachments[0].getTextureProps(false))
+        val brdfLut = Texture(brdfLutPass.config.colorAttachments[0].getTextureProps(false), "singleColorEnv-brdf")
         brdfLutPass.copyTargetsColor += brdfLut
 
         val maps = EnvironmentMaps(cubeTex, cubeTex, brdfLut)

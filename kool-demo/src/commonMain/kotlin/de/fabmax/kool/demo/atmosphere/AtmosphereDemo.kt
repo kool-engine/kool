@@ -9,9 +9,7 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -71,20 +69,23 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
             loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
             loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
+
             loadTex(EarthShader.texEarthDay, "${Demo.awsBaseUrl}/solarsystem/earth_day.jpg")
             loadTex(EarthShader.texEarthNight, "${Demo.awsBaseUrl}/solarsystem/earth_night.jpg")
             loadTex(EarthShader.texEarthNrm, "${Demo.awsBaseUrl}/solarsystem/earth_nrm.jpg")
-            loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height.jpg")
             loadTex(EarthShader.texOceanNrm, "${Demo.awsBaseUrl}/solarsystem/oceanNrm.jpg")
+            val heightMapProps = TextureProps(TexFormat.R, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE)
+            loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height_8k.png", heightMapProps)
+
             loadingLabel.text = "Initializing Scene..."
             delay(100)
             loadingComplete = true
         }
     }
 
-    private suspend fun AssetManager.loadTex(key: String, path: String) {
+    private suspend fun AssetManager.loadTex(key: String, path: String, props: TextureProps = TextureProps()) {
         loadingLabel.text = "Loading texture \"$key\"..."
-        textures[key] = loadAndPrepareTexture(path)
+        textures[key] = loadAndPrepareTexture(path, props)
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
@@ -112,7 +113,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             surfaceRadius = earthRadius
             atmosphereRadius = 6500f / kmPerUnit
 
-            scatteringCoeffs = Vec3f(0.75f, 1.15f, 1.35f)
+            scatteringCoeffs = Vec3f(0.75f, 1.10f, 1.35f)
             rayleighColor = Color(0.5f, 0.5f, 1f, 1f)
             mieColor = Color(1f, 0.35f, 0.35f, 1f)
             mieG = 0.995f
@@ -167,40 +168,37 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
     private fun Group.setupContent() {
         +earthTransform.apply {
+            isFrustumChecked = false
             +camTransform
 
-            +textureMesh(isNormalMapped = true) {
-                generate {
-                    icoSphere {
-                        steps = 7
-                        radius = earthRadius
-                    }
-                }
-                val earthShader = EarthShader(textures).also { shader = it }
+            val gridSystem = SphereGridSystem().apply {
+                val earthShader = EarthShader(textures)
+                earthShader.heightMap = textures[EarthShader.texEarthHeight]
                 earthShader.oceanNrmTex = textures[EarthShader.texOceanNrm]
+                shader = earthShader
 
                 onUpdate += { ev ->
-                    val dirToSun = MutableVec3f(sun.direction).scale(-1f)
-
-                    earthShader.uDirToSun?.value?.let { uSunDir ->
-                        uSunDir.set(dirToSun)
-                        toLocalCoords(uSunDir, 0f)
-                    }
+                    updateTiles(mainScene.camera.globalPos)
 
                     val camHeight = cameraHeight * kmPerUnit
                     val colorMix = (camHeight / 100f).clamp()
                     earthShader.uWaterColor?.value?.set(waterColorLow.mix(waterColorHigh, colorMix))
                     earthShader.uNormalShift?.value?.set(ev.time.toFloat() * 0.0051f, ev.time.toFloat() * 0.0037f, ev.time.toFloat() * -0.0071f, ev.time.toFloat() * -0.0039f)
 
+                    val dirToSun = MutableVec3f(sun.direction).scale(-1f)
+                    earthShader.uDirToSun?.value?.let { uSunDir ->
+                        uSunDir.set(dirToSun)
+                        toLocalCoords(uSunDir, 0f)
+                    }
                     atmoShader.dirToSun = dirToSun
                 }
             }
+            +gridSystem
+
 
             onUpdate += {
                 setIdentity()
-                // earth rotation axis is tilted by 23.44°
-                rotate(23.44f, Vec3f.NEG_X_AXIS)
-                // rotate according to time
+                rotate(earthAxisTilt, Vec3f.NEG_X_AXIS)
                 rotate(time * 360, Vec3f.Y_AXIS)
             }
         }
@@ -386,6 +384,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     companion object {
         const val kmPerUnit = 100f
         const val earthRadius = 6000f / kmPerUnit
+        const val earthAxisTilt = 15f //23.44f
 
         const val moonRadius = 1750f / kmPerUnit
         const val moonDistScale = 0.25f

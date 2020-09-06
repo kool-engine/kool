@@ -8,6 +8,7 @@ import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
 import java.io.IOException
 import kotlin.math.roundToInt
 
@@ -84,8 +85,19 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(fontProps, g, metrics)
-        val buffer = ImageTextureData.bufferedImageToBuffer(canvas, TexFormat.R, maxWidth, texHeight)
+        val buffer = getCanvasAlphaData(maxWidth, texHeight)
         return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
+    }
+
+    private fun getCanvasAlphaData(width: Int, height: Int): Uint8Buffer {
+        val imgBuf = canvas.data.dataBuffer as DataBufferInt
+        val pixels = imgBuf.bankData[0]
+        val buffer = createUint8Buffer(width * height)
+        for (i in 0 until width * height) {
+            buffer.put((pixels[i] shr 24).toByte())
+        }
+        buffer.flip()
+        return buffer
     }
 
     private fun makeMap(fontProps: FontProps, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {

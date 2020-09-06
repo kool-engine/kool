@@ -15,7 +15,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
     val copyTargetsColor = mutableListOf<Texture>()
 
     fun copyColor(): Texture {
-        val tex = Texture("$name-copy-${copyTargetsColor.size}", getColorTexProps())
+        val tex = Texture(getColorTexProps(), "$name-copy-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
     }
@@ -48,7 +48,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
             } else {
                 val name = "${name}_color[$i]"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                Texture(name, props)
+                Texture(props, name)
             }
         }
     }
@@ -60,7 +60,7 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
             } else {
                 val name = "${name}_depth"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                Texture(name, props)
+                Texture(props, name)
             }
         }
     }

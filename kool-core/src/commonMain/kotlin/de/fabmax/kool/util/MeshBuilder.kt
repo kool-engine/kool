@@ -15,35 +15,26 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     var color = Color.GRAY
     var vertexModFun: (VertexView.() -> Unit)? = null
 
-    private val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
+    val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
 
-    private val tmpPos = MutableVec3f()
-    private val tmpNrm = MutableVec3f()
-    private val tmpUv = MutableVec2f()
-
-    val circleProps = CircleProps()
-    val cubeProps = CubeProps()
-    val cylinderProps = CylinderProps()
-    val gridProps = GridProps()
-    val rectProps = RectProps()
-    val sphereProps = SphereProps()
-    var textProps: TextProps? = null
-
-    open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
+    inline fun vertex(block: VertexView.() -> Unit): Int {
         return geometry.addVertex {
-            position.set(pos)
-            normal.set(nrm)
-            texCoord.set(uv)
             color.set(this@MeshBuilder.color)
+            block()
 
             transform.transform(position)
             if (hasNormals && normal.sqrLength() != 0f) {
                 transform.transform(normal, 0f)
                 normal.norm()
             }
-
             vertexModFun?.invoke(this)
         }
+    }
+
+    open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO) = vertex {
+        position.set(pos)
+        normal.set(nrm)
+        texCoord.set(uv)
     }
 
     inline fun withTransform(block: MeshBuilder.() -> Unit) {
@@ -153,9 +144,10 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         fillTop(this@MeshBuilder)
     }
 
-    inline fun circle(props: CircleProps.() -> Unit) {
-        circleProps.defaults().props()
-        circle(circleProps)
+    inline fun circle(block: CircleProps.() -> Unit) {
+        val props = CircleProps()
+        props.block()
+        circle(props)
     }
 
     fun circle(props: CircleProps) {
@@ -167,8 +159,12 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val sin = sin(ang)
             val px = props.center.x + props.radius * cos
             val py = props.center.y + props.radius * sin
-            tmpUv.set(cos, -sin).scale(props.uvRadius).add(props.uvCenter)
-            val idx = vertex(tmpPos.set(px, py, props.center.z), Vec3f.Z_AXIS, tmpUv)
+
+            val idx = vertex {
+                position.set(px, py, props.center.z)
+                normal.set(Vec3f.Z_AXIS)
+                texCoord.set(cos, -sin).scale(props.uvRadius).add(props.uvCenter)
+            }
 
             if (i > 0) {
                 geometry.addTriIndices(iCenter, i1, idx)
@@ -177,9 +173,10 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun uvSphere(props: SphereProps.() -> Unit) {
-        sphereProps.uvDefaults().props()
-        uvSphere(sphereProps)
+    inline fun uvSphere(block: SphereProps.() -> Unit) {
+        val props = SphereProps().uvDefaults()
+        props.block()
+        uvSphere(props)
     }
 
     fun uvSphere(props: SphereProps) {
@@ -196,14 +193,18 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val x = cos(-phi).toFloat() * r
             val z = sin(-phi).toFloat() * r
 
-            var uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
-            rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
-                    tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
+            rowIndices[i] = vertex {
+                position.set(x, y, z).add(props.center)
+                normal.set(x, y, z).scale(1f / props.radius)
+                texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
+            }
 
             if (i > 0) {
-                uv = props.texCoordGenerator(PI.toFloat(), phi.toFloat())
-                tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z)
-                val iCenter = vertex(tmpPos, Vec3f.NEG_Y_AXIS, uv)
+                val iCenter = vertex {
+                    position.set(props.center.x, props.center.y-props.radius, props.center.z)
+                    normal.set(Vec3f.NEG_Y_AXIS)
+                    texCoord.set(props.texCoordGenerator(PI.toFloat(), phi.toFloat()))
+                }
                 geometry.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
@@ -221,9 +222,11 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 val phi = PI * i / steps
                 val x = cos(-phi).toFloat() * r
                 val z = sin(-phi).toFloat() * r
-                val uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
-                rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
-                        tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
+                rowIndices[i] = vertex {
+                    position.set(x, y, z).add(props.center)
+                    normal.set(x, y, z).scale(1f / props.radius)
+                    texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
+                }
 
                 if (i > 0) {
                     geometry.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
@@ -234,16 +237,19 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
         // top cap
         for (i in 1..(steps * 2)) {
-            val uv = props.texCoordGenerator(0f, (PI * i / steps).toFloat())
-            val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z),
-                    Vec3f.Y_AXIS, uv)
+            val iCenter = vertex {
+                position.set(props.center.x, props.center.y + props.radius, props.center.z)
+                normal.set(Vec3f.Y_AXIS)
+                texCoord.set(props.texCoordGenerator(0f, (PI * i / steps).toFloat()))
+            }
             geometry.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
     }
 
-    inline fun icoSphere(props: SphereProps.() -> Unit) {
-        sphereProps.icoDefaults().props()
-        icoSphere(sphereProps)
+    inline fun icoSphere(block: SphereProps.() -> Unit) {
+        val props = SphereProps().icoDefaults()
+        props.block()
+        icoSphere(props)
     }
 
     /*
@@ -352,37 +358,49 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
         // insert geometry
         val pif = PI.toFloat()
-        val nrm = MutableVec3f()
-        val pos = MutableVec3f()
         val i0 = geometry.numVertices
         for (v in icoGenerator.uvVerts) {
-            nrm.set(v.first).norm()
-            pos.set(nrm).scale(props.radius).add(props.center)
-            val uv = props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif)
-            vertex(pos, nrm, uv)
+            vertex {
+                normal.set(v.first).norm()
+                position.set(normal).scale(props.radius).add(props.center)
+                texCoord.set(props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif))
+            }
         }
         for (i in icoGenerator.faces.indices step 3) {
             geometry.addTriIndices(i0 + icoGenerator.faces[i], i0 + icoGenerator.faces[1 + i], i0 + icoGenerator.faces[2 + i])
         }
     }
 
-    inline fun rect(props: RectProps.() -> Unit) {
-        rectProps.defaults().props()
-        rect(rectProps)
+    inline fun rect(block: RectProps.() -> Unit) {
+        val props = RectProps()
+        props.block()
+        rect(props)
     }
 
     fun rect(props: RectProps) {
         props.fixNegativeSize()
 
         if (props.cornerRadius == 0f) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z),
-                    Vec3f.Z_AXIS, props.texCoordLowerLeft)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z),
-                    Vec3f.Z_AXIS, props.texCoordLowerRight)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z),
-                    Vec3f.Z_AXIS, props.texCoordUpperRight)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z),
-                    Vec3f.Z_AXIS, props.texCoordUpperLeft)
+            val i0 = vertex {
+                position.set(props.origin.x, props.origin.y, props.origin.z)
+                normal.set(Vec3f.Z_AXIS)
+                texCoord.set(props.texCoordLowerLeft)
+            }
+            val i1 = vertex {
+                position.set(props.origin.x + props.size.x, props.origin.y, props.origin.z)
+                normal.set(Vec3f.Z_AXIS)
+                texCoord.set(props.texCoordLowerRight)
+            }
+            val i2 = vertex {
+                position.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z)
+                normal.set(Vec3f.Z_AXIS)
+                texCoord.set(props.texCoordUpperRight)
+            }
+            val i3 = vertex {
+                position.set(props.origin.x, props.origin.y + props.size.y, props.origin.z)
+                normal.set(Vec3f.Z_AXIS)
+                texCoord.set(props.texCoordUpperLeft)
+            }
             geometry.addTriIndices(i0, i1, i2)
             geometry.addTriIndices(i0, i2, i3)
 
@@ -401,6 +419,9 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             // compute tex coord insets, this only works for axis aligned tex coords...
             val uI = (props.texCoordUpperRight.x - props.texCoordUpperLeft.x) * props.cornerRadius / w
             val vI = (props.texCoordUpperRight.y - props.texCoordLowerRight.y) * props.cornerRadius / h
+
+            val tmpPos = MutableVec3f()
+            val tmpUv = MutableVec2f()
 
             if (hI > 0) {
                 val i0 = vertex(tmpPos.set(x, yI, z), nrm, tmpUv.set(0f, vI).add(props.texCoordLowerLeft))
@@ -496,10 +517,10 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         val qx3 = x1 - addX - dyu
         val qy3 = y1 - addY + dxu
 
-        val i0 = vertex(tmpPos.set(qx0, qy0, 0f), Vec3f.Z_AXIS)
-        val i1 = vertex(tmpPos.set(qx1, qy1, 0f), Vec3f.Z_AXIS)
-        val i2 = vertex(tmpPos.set(qx2, qy2, 0f), Vec3f.Z_AXIS)
-        val i3 = vertex(tmpPos.set(qx3, qy3, 0f), Vec3f.Z_AXIS)
+        val i0 = vertex { position.set(qx0, qy0, 0f); normal.set(Vec3f.Z_AXIS) }
+        val i1 = vertex { position.set(qx1, qy1, 0f); normal.set(Vec3f.Z_AXIS) }
+        val i2 = vertex { position.set(qx2, qy2, 0f); normal.set(Vec3f.Z_AXIS) }
+        val i3 = vertex { position.set(qx3, qy3, 0f); normal.set(Vec3f.Z_AXIS) }
         geometry.addTriIndices(i0, i1, i2)
         geometry.addTriIndices(i0, i2, i3)
     }
@@ -522,12 +543,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun cube(props: CubeProps.() -> Unit) {
-        cubeProps.defaults().props()
-        cube(cubeProps)
+    inline fun cube(block: CubeProps.() -> Unit) {
+        val props = CubeProps()
+        props.block()
+        cube(props)
     }
 
     fun cube(props: CubeProps) {
+        val tmpPos = MutableVec3f()
         props.fixNegativeSize()
 
         // front
@@ -591,12 +614,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun cylinder(props: CylinderProps.() -> Unit) {
-        cylinderProps.defaults().props()
-        cylinder(cylinderProps)
+    inline fun cylinder(block: CylinderProps.() -> Unit) {
+        val props = CylinderProps()
+        props.block()
+        cylinder(props)
     }
 
     fun cylinder(props: CylinderProps) {
+        val tmpNrm = MutableVec3f()
         props.fixNegativeSize()
 
         // bottom
@@ -636,8 +661,14 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             val pz3 = props.origin.z + props.topRadius * s
 
             tmpNrm.set(c, 0f, s).rotate(nrmAng, s, 0f, c)
-            val i2 = vertex(tmpPos.set(px2, props.origin.y, pz2), tmpNrm)
-            val i3 = vertex(tmpPos.set(px3, props.origin.y + props.height, pz3), tmpNrm)
+            val i2 = vertex {
+                position.set(px2, props.origin.y, pz2)
+                normal.set(tmpNrm)
+            }
+            val i3 = vertex {
+                position.set(px3, props.origin.y + props.height, pz3)
+                normal.set(tmpNrm)
+            }
 
             if (i > 0) {
                 geometry.addTriIndices(i0, i1, i2)
@@ -648,30 +679,36 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun grid(props: GridProps.() -> Unit) {
-        gridProps.defaults().props()
-        grid(gridProps)
+    inline fun grid(block: GridProps.() -> Unit) {
+        val props = GridProps()
+        props.block()
+        grid(props)
     }
 
     fun grid(props: GridProps) {
+        val gridNormal = MutableVec3f()
+
         val bx = -props.sizeX / 2
         val by = -props.sizeY / 2
         val sx = props.sizeX / props.stepsX
         val sy = props.sizeY / props.stepsY
         val nx = props.stepsX + 1
-        props.xDir.cross(props.yDir, tmpNrm).norm()
+        props.xDir.cross(props.yDir, gridNormal).norm()
 
         for (y in 0 .. props.stepsY) {
             for (x in 0 .. props.stepsX) {
                 val px = bx + x * sx
                 val py = by + y * sy
                 val h = props.heightFun(x, y)
-                tmpPos.set(props.center)
-                tmpPos.x += props.xDir.x * px + props.yDir.x * py + tmpNrm.x * h
-                tmpPos.y += props.xDir.y * px + props.yDir.y * py + tmpNrm.y * h
-                tmpPos.z += props.xDir.z * px + props.yDir.z * py + tmpNrm.z * h
 
-                val idx = vertex(tmpPos, Vec3f.ZERO)
+                val idx = vertex {
+                    position.set(props.center)
+                    position.x += props.xDir.x * px + props.yDir.x * py + gridNormal.x * h
+                    position.y += props.xDir.y * px + props.yDir.y * py + gridNormal.y * h
+                    position.z += props.xDir.z * px + props.yDir.z * py + gridNormal.z * h
+                    texCoord.set(x / props.stepsX.toFloat(), y / props.stepsY.toFloat())
+                }
+
                 if (x > 0 && y > 0) {
                     if (x % 2 == y % 2) {
                         geometry.addTriIndices(idx - nx - 1, idx, idx - 1)
@@ -696,10 +733,10 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             v3.index = geometry.indices[i+2]
             v2.position.subtract(v1.position, e1).norm()
             v3.position.subtract(v1.position, e2).norm()
-            e1.cross(e2, tmpNrm).norm()
-            v1.normal.add(tmpNrm)
-            v2.normal.add(tmpNrm)
-            v3.normal.add(tmpNrm)
+            e1.cross(e2, gridNormal).norm()
+            v1.normal.add(gridNormal)
+            v2.normal.add(gridNormal)
+            v3.normal.add(gridNormal)
         }
 
         val iVert = geometry.numVertices - (props.stepsX + 1) * (props.stepsY + 1)
@@ -729,9 +766,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     inline fun text(font: Font, fontSizeUnits: Float = 0f, block: TextProps.() -> Unit) {
-        val props = textProps ?: TextProps(font).apply { textProps = this}
-        props.defaults()
-        props.font = font
+        val props = TextProps(font)
         props.block()
         text(props, fontSizeUnits)
     }
@@ -779,14 +814,8 @@ class CircleProps {
     val uvCenter = MutableVec2f()
     var uvRadius = 0f
 
-    fun defaults(): CircleProps {
-        radius = 1f
-        steps = 20
-        center.set(Vec3f.ZERO)
-        startDeg = 0f
-        sweepDeg = 360f
-        zeroTexCoords()
-        return this
+    init {
+        fullTexCoords()
     }
 
     fun zeroTexCoords() {
@@ -802,28 +831,13 @@ class CircleProps {
 
 class GridProps {
     val center = MutableVec3f()
-    val xDir = MutableVec3f()
-    val yDir = MutableVec3f()
-    var sizeX = 0f
-    var sizeY = 0f
-    var stepsX = 0
-    var stepsY = 0
+    val xDir = MutableVec3f(Vec3f.X_AXIS)
+    val yDir = MutableVec3f(Vec3f.NEG_Z_AXIS)
+    var sizeX = 10f
+    var sizeY = 10f
+    var stepsX = 10
+    var stepsY = 10
     var heightFun: (Int, Int) -> Float = ZERO_HEIGHT
-
-    init {
-        defaults()
-    }
-
-    fun defaults(): GridProps {
-        center.set(Vec3f.ZERO)
-        xDir.set(Vec3f.X_AXIS)
-        yDir.set(Vec3f.NEG_Z_AXIS)
-        sizeX = 10f
-        sizeY = 10f
-        stepsX = 10
-        stepsY = 10
-        return this
-    }
 
     companion object {
         val ZERO_HEIGHT: (Int, Int) -> Float = { _, _ -> 0f }
@@ -832,7 +846,7 @@ class GridProps {
 
 class SphereProps {
     var radius = 1f
-    var steps = 20
+    var steps = 5
     val center = MutableVec3f()
 
     private val uv = MutableVec2f()
@@ -864,7 +878,7 @@ class RectProps {
     var cornerRadius = 0f
     var cornerSteps = 8
     val origin = MutableVec3f()
-    val size = MutableVec2f()
+    val size = MutableVec2f(1f, 1f)
 
     var width: Float
         get() = size.x
@@ -919,20 +933,11 @@ class RectProps {
         texCoordUpperRight.y = texCoordLowerRight.y
         texCoordLowerRight.y = yur
     }
-
-    fun defaults(): RectProps {
-        cornerRadius = 0f
-        cornerSteps = 8
-        origin.set(Vec3f.ZERO)
-        size.set(1f, 1f)
-        generateTexCoords(1f)
-        return this
-    }
 }
 
 class CubeProps {
     val origin = MutableVec3f()
-    val size = MutableVec3f()
+    val size = MutableVec3f(1f, 1f, 1f)
 
     var width: Float
         get() = size.x
@@ -989,22 +994,6 @@ class CubeProps {
             bottomColor = Color.MD_GREEN
         }
     }
-
-    fun defaults(): CubeProps {
-        size.x = 1f
-        size.y = 1f
-        size.z = 1f
-        origin.set(Vec3f.ZERO)
-
-        topColor = null
-        bottomColor = null
-        leftColor = null
-        rightColor = null
-        frontColor = null
-        backColor = null
-
-        return this
-    }
 }
 
 class CylinderProps {
@@ -1015,17 +1004,6 @@ class CylinderProps {
     var topFill = true
     var bottomFill = true
     val origin = MutableVec3f()
-
-    fun defaults(): CylinderProps {
-        bottomRadius = 1f
-        topRadius = 1f
-        steps = 20
-        height = 1f
-        topFill = true
-        bottomFill = true
-        origin.set(Vec3f.ZERO)
-        return this
-    }
 
     fun fixNegativeSize() {
         if (height < 0) {
@@ -1038,10 +1016,4 @@ class CylinderProps {
 class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
-
-    fun defaults(): TextProps {
-        text = ""
-        origin.set(Vec3f.ZERO)
-        return this
-    }
 }

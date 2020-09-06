@@ -28,11 +28,11 @@ data class FontProps(
 }
 
 class Font(val charMap: CharMap) : Texture(
-        charMap.toString(),
         TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE,
                 addressModeV = AddressMode.CLAMP_TO_EDGE
         ),
+        charMap.toString(),
         loader = { charMap.textureData }) {
 
     val lineSpace = charMap.fontProps.sizePts * 1.2f

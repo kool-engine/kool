@@ -1,13 +1,10 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.vkDestroySampler
-import java.io.FileInputStream
 import java.util.concurrent.atomic.AtomicLong
-import javax.imageio.ImageIO
 
 class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage: Image,
                       val textureImageView: ImageView, val sampler: Long,
@@ -52,10 +49,6 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
     companion object {
         private val nextTexId = AtomicLong(1L)
-
-        fun fromFile(sys: VkSystem, path: String, texProps: TextureProps = TextureProps()): LoadedTextureVk {
-            return fromTexData(sys, texProps, ImageTextureData(ImageIO.read(FileInputStream(path))))
-        }
 
         fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTextureVk {
             return when(data) {

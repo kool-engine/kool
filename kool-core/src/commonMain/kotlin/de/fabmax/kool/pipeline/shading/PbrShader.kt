@@ -238,25 +238,26 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
             val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
             vertexStage {
-                var modelMat: ShaderNodeIoVar
-                var mvpMat: ShaderNodeIoVar
-
                 mvpNode = mvpNode()
+
+                val modelMatNd = namedVariable("modelMat", mvpNode.outModelMat)
+                val mvpMatNd = namedVariable("mvpMat", mvpNode.outMvpMat)
+                val modelMat = modelMatNd.output
+                val mvpMat = mvpMatNd.output
+
                 if (cfg.isInstanced) {
-                    modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
-                    mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
-                } else {
-                    modelMat = mvpNode.outModelMat
-                    mvpMat = mvpNode.outMvpMat
+                    modelMatNd.input = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
+                    mvpMatNd.input = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
                 }
                 if (cfg.isSkinned) {
                     val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
-                    modelMat = multiplyNode(modelMat, skinNd.outJointMat).output
-                    mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
+                    modelMatNd.input = multiplyNode(modelMatNd.input, skinNd.outJointMat).output
+                    mvpMatNd.input = multiplyNode(mvpMatNd.input, skinNd.outJointMat).output
                 }
 
                 ifTexCoords = if (cfg.requiresTexCoords()) {
-                    stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                    val texCoordInput = namedVariable("texCoordInput", attrTexCoords().output)
+                    stageInterfaceNode("ifTexCoords", texCoordInput.output)
                 } else {
                     null
                 }
@@ -272,47 +273,53 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     null
                 }
 
-                var localPos = attrPositions().output
+                val localPosInput = namedVariable("localPosInput", attrPositions().output)
+                val localNormalInput = namedVariable("localNormalInput", attrNormals().output)
+
+                var morphPos = localPosInput.output
                 cfg.morphAttributes.filter { it.name.startsWith(Attribute.POSITIONS.name) }.forEach { morphAttrib ->
                     val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
                     val posDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
-                    localPos = addNode(localPos, posDisplacement.output).output
+                    morphPos = addNode(morphPos, posDisplacement.output).output
                 }
+                val localPosMorphed = namedVariable("localPosMorphed", morphPos)
 
-                var localNrm = attrNormals().output
+                var morphNrm = localNormalInput.output
                 cfg.morphAttributes.filter { it.name.startsWith(Attribute.NORMALS.name) }.forEach { morphAttrib ->
                     val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
                     val nrmDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
-                    localNrm = addNode(localNrm, nrmDisplacement.output).output
+                    morphNrm = addNode(morphNrm, nrmDisplacement.output).output
                 }
+                val localNormalMorphed = namedVariable("localNormalMorphed", morphNrm)
 
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tanAttr = attrTangents().output
-                    var localTan = splitNode(tanAttr, "xyz").output
+                    val localTangentInput = namedVariable("localTangentInput", attrTangents().output)
+                    var localTan = splitNode(localTangentInput.output, "xyz").output
                     cfg.morphAttributes.filter { it.name.startsWith(Attribute.TANGENTS.name) }.forEach { morphAttrib ->
                         val weight = getMorphWeightNode(cfg.morphAttributes.indexOf(morphAttrib), morphWeights!!)
                         val tanDisplacement = multiplyNode(attributeNode(morphAttrib).output, weight.outWeight)
                         localTan = addNode(localTan, tanDisplacement.output).output
                     }
                     val tan = vec3TransformNode(localTan, modelMat, 0f)
-                    val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
+                    val tan4 = combineXyzWNode(tan.outVec3, splitNode(localTangentInput.output, "w").output)
                     stageInterfaceNode("ifTangents", tan4.output)
                 } else {
                     null
                 }
 
+                val localPosDisplaced = namedVariable("localPosDisplaced", localPosMorphed.output)
                 if (cfg.isDisplacementMapped) {
                     val dispTex = textureNode("tDisplacement")
-                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, localPos, localNrm).apply {
+                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, localPosMorphed.output, localNormalMorphed.output).apply {
                         inStrength = pushConstantNode1f("uDispStrength").output
                     }
-                    localPos = dispNd.outPosition
+                    localPosDisplaced.input = dispNd.outPosition
                 }
 
-                val worldPos = vec3TransformNode(localPos, modelMat, 1f).outVec3
+                val worldPos = vec3TransformNode(localPosDisplaced.output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                val nrm = vec3TransformNode(localNrm, modelMat, 0f)
+                val nrm = vec3TransformNode(localNormalMorphed.output, modelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
                 val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
@@ -322,7 +329,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = vec4TransformNode(localPos, mvpMat).outVec4
+                positionOutput = vec4TransformNode(localPosDisplaced.output, mvpMat).outVec4
             }
 
             fragmentStage {

@@ -102,6 +102,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 // add a completely translucent circle as background to get a larger click target
                 color = Color(0f, 0f, 0f, 0f)
                 circle {
+                    zeroTexCoords()
                     radius = min(tb.width, tb.height) / 2f
                     center.set(tb.width / 2f, tb.height / 2f, -4f)
                     steps = 30
