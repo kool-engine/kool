@@ -10,6 +10,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -18,7 +19,6 @@ import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlinx.coroutines.delay
 import kotlin.math.pow
 
@@ -40,10 +40,11 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     lateinit var deferredPipeline: DeferredPipeline
     val atmoShader = AtmosphericScatteringShader()
 
+    val earthGroup = Group("earth")
+    val moonGroup = Group("moon")
+
     private lateinit var opticalDepthLutPass: OpticalDepthLutPass
-    private var sceneCompositing: AtmosphereSceneCompositing? = null
     private val shadows = mutableListOf<SimpleShadowMap>()
-    private val earthTransform = Group("earth")
     private val camTransform = EarthCamTransform(earthRadius)
 
     private lateinit var menuContainer: UiContainer
@@ -115,14 +116,14 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
             scatteringCoeffs = Vec3f(0.75f, 1.10f, 1.35f)
             rayleighColor = Color(0.5f, 0.5f, 1f, 1f)
-            mieColor = Color(1f, 0.35f, 0.35f, 1f)
-            mieG = 0.995f
+            mieColor = Color(1f, 0.35f, 0.35f, 0.5f)
+            mieG = 0.8f
             scatteringCoeffStrength = 1.0f
         }
 
         shadows.forEach { shadow ->
             shadow.drawNode = deferredPipeline.contentGroup
-            shadow.shadowBounds = earthTransform.bounds
+            shadow.shadowBounds = earthGroup.bounds
             //shadow.shadowBounds = deferredPipeline.contentGroup.bounds
         }
 
@@ -159,15 +160,39 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         menuContainer.isVisible = true
         loadingLabel.isVisible = false
 
+        val skyPass = SkyPass(this)
+        atmoShader.skyColor = skyPass.colorTexture
+
+        moonGroup.apply {
+            isFrustumChecked = false
+            +Moon()
+
+            onUpdate += {
+                setIdentity()
+                rotate(moonInclination, Vec3f.X_AXIS)
+                rotate(360f * moonTime, Vec3f.Y_AXIS)
+                translate(0f, 0f, moonDist)
+            }
+        }
         deferredPipeline.contentGroup.setupContent()
 
-        sceneCompositing = AtmosphereSceneCompositing(this)
+        mainScene.apply {
+            +textureMesh {
+                isFrustumChecked = false
+                generate {
+                    rect {
+                        mirrorTexCoordsY()
+                    }
+                }
+                shader = atmoShader
+            }
+        }
 
         updateSun()
     }
 
     private fun Group.setupContent() {
-        +earthTransform.apply {
+        +earthGroup.apply {
             isFrustumChecked = false
             +camTransform
 
@@ -203,17 +228,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             }
         }
 
-        +group {
-            isFrustumChecked = false
-            +Moon()
-
-            onUpdate += {
-                setIdentity()
-                rotate(moonInclination, Vec3f.X_AXIS)
-                rotate(360f * moonTime, Vec3f.Y_AXIS)
-                translate(0f, 0f, moonDist)
-            }
-        }
+        //+moonGroup
     }
 
     private inner class Moon : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "moon") {
@@ -226,10 +241,16 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                     radius = moonRadius
                 }
             }
-            shader = deferredPbrShader {
+            shader = pbrShader {
                 useAlbedoMap(textures[texMoon])
                 roughness = 0.7f
+                isHdrOutput = true
             }
+
+//            shader = deferredPbrShader {
+//                useAlbedoMap(textures[texMoon])
+//                roughness = 0.7f
+//            }
         }
 
         override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {

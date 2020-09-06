@@ -24,7 +24,7 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
     var zoom = 2f
 
     var minZoom = 0.001f
-    var maxZoom = 20f
+    var maxZoom = 15f
 
     private val planetRot = Mat4d()
     private val lookRot = Mat4d()

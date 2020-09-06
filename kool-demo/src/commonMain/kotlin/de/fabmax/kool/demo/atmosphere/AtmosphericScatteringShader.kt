@@ -13,6 +13,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
     private var opticalDepthLutNode: TextureNode? = null
     private var sceneColorNode: TextureNode? = null
     private var scenePosNode: TextureNode? = null
+    private var skyColorNode: TextureNode? = null
     private var atmosphereNode: AtmosphereNode? = null
 
     var opticalDepthLut: Texture? = null
@@ -29,6 +30,11 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         set(value) {
             field = value
             scenePosNode?.sampler?.texture = value
+        }
+    var skyColor: Texture? = null
+        set(value) {
+            field = value
+            skyColorNode?.sampler?.texture = value
         }
 
     var dirToSun = Vec3f(0f, 0f, 1f)
@@ -94,7 +100,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
     init {
         onPipelineSetup += { builder, _, _ ->
             builder.depthTest = DepthCompareOp.DISABLED
-            builder.blendMode = BlendMode.BLEND_ADDITIVE
+//            builder.blendMode = BlendMode.BLEND_ADDITIVE
         }
         onPipelineCreated += { _, _, _ ->
             opticalDepthLutNode = model.findNode("tOpticalDepthLut")
@@ -103,6 +109,8 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             sceneColorNode?.sampler?.texture = sceneColor
             scenePosNode = model.findNode("tScenePos")
             scenePosNode?.sampler?.texture = scenePos
+            skyColorNode = model.findNode("tSkyColor")
+            skyColorNode?.sampler?.texture = skyColor
 
             atmosphereNode = model.findNodeByType()
             atmosphereNode?.apply {
@@ -149,6 +157,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                 val fragMvp = mvp.addToStage(stage)
                 val opticalDepthLut = textureNode("tOpticalDepthLut")
                 val sceneColor = textureSamplerNode(textureNode("tSceneColor"), ifQuadPos.output).outColor
+                val skyColor = textureSamplerNode(textureNode("tSkyColor"), ifQuadPos.output).outColor
                 val viewPos = textureSamplerNode(textureNode("tScenePos"), ifQuadPos.output).outColor
                 val view2world = addNode(ViewToWorldPosNode(stage)).apply {
                     inViewPos = viewPos
@@ -156,7 +165,9 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
                 val atmoNd = addNode(AtmosphereNode(opticalDepthLut, stage)).apply {
                     inSceneColor = sceneColor
+                    inSceneDepth = splitNode(viewPos, "z").output
                     inScenePos = view2world.outWorldPos
+                    inSkyColor = skyColor
                     inViewDepth = splitNode(viewPos, "z").output
                     inCamPos = fragMvp.outCamPos
                     inLookDir = ifViewDir.output
@@ -257,7 +268,9 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
     class AtmosphereNode(val opticalDepthLut: TextureNode, graph: ShaderGraph) : ShaderNode("atmosphereNode", graph) {
         var inSceneColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+        var inSceneDepth = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inScenePos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+        var inSkyColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
         var inViewDepth = ShaderNodeIoVar(ModelVar1fConst(-1f))
         var inCamPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inLookDir = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
@@ -276,19 +289,19 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inSceneColor, inScenePos, inViewDepth, inCamPos, inLookDir)
+            dependsOn(inSceneColor, inSceneDepth, inScenePos, inSkyColor, inViewDepth, inCamPos, inLookDir)
 
             shaderGraph.descriptorSet.apply {
                 uniformBuffer(name, shaderGraph.stage) {
                     +{ uDirToSun }
                     +{ uPlanetCenter }
-                    +{ uSurfaceRadius }
-                    +{ uAtmosphereRadius }
                     +{ uRayleighColor }
                     +{ uMieColor }
-                    +{ uMieG }
                     +{ uScatteringCoeffs }
                     +{ uSunColor }
+                    +{ uSurfaceRadius }
+                    +{ uAtmosphereRadius }
+                    +{ uMieG }
                 }
             }
         }
@@ -390,6 +403,9 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                 bool hitAtmo = raySphereIntersection(camOri, nrmLookDir, vec3(0.0), $uAtmosphereRadius, dAtmoIn, dAtmoOut);
                 
                 ${outColor.declare()} = $inSceneColor;
+                if ($inSceneDepth > 0.0) {
+                    $outColor = $inSkyColor;
+                }
                 if (hitAtmo) {
                     // dAtmoIn is negative if camera is inside atmosphere
                     float dToAtmo = max(0.0, dAtmoIn);

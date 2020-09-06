@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 
-class OpticalDepthLutPass() :
+class OpticalDepthLutPass :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "OpticalDepthLutPass"
             setSize(LUT_SIZE_X, LUT_SIZE_Y)

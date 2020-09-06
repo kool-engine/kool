@@ -170,6 +170,11 @@ abstract class OffscreenRenderPass(drawNode: Node, val config: Config) : RenderP
                 colorFormat = format
             }
         }
+
+        fun addColorTexture(block: TextureAttachmentConfigBuilder.() -> Unit) {
+            colorRenderTarget = RenderTarget.TEXTURE
+            colorAttachments += TextureAttachmentConfigBuilder().apply(block)
+        }
     }
 
     class TextureAttachmentConfig(builder: TextureAttachmentConfigBuilder) {

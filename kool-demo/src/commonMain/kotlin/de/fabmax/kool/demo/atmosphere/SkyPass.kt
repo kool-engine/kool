@@ -1,77 +1,64 @@
 package de.fabmax.kool.demo.atmosphere
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.UniformBufferMvp
+import de.fabmax.kool.pipeline.shadermodel.UnlitMaterialNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.AlphaModeBlend
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
 import de.fabmax.kool.pipeline.shading.UnlitShader
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.Skybox
-import de.fabmax.kool.scene.group
-import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 
-class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
+class SkyPass(val atmosphereDemo: AtmosphereDemo) :
+        OffscreenRenderPass2d(Group(), renderPassConfig {
+            name = "SkyPass"
+            setDynamicSize()
+            addColorTexture {
+                colorFormat = TexFormat.RGB_F16
+                minFilter = FilterMethod.NEAREST
+                magFilter = FilterMethod.NEAREST
+            }
+            clearDepthTexture()
+        }) {
+
+    val content = drawNode as Group
 
     init {
-        atmosphereDemo.mainScene.apply {
-            //+atmosphereDemo.deferredPipeline.renderOutput
-            compositeDepth()
-            compositeSkybox()
-            compositeColor()
+        val scene = atmosphereDemo.mainScene
+        val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
+        camera = proxyCamera
+        onBeforeCollectDrawCommands += { ctx ->
+            proxyCamera.sync(scene.mainRenderPass.viewport, ctx)
         }
-    }
 
-    private fun Scene.compositeColor() {
-        +textureMesh {
+        lighting = scene.lighting
+
+        scene.addOffscreenPass(this)
+        //clearColor = Color.RED
+
+        scene.onRenderScene += { ctx ->
+            val vpW = mainRenderPass.viewport.width
+            val vpH = mainRenderPass.viewport.height
+            if (vpW > 0 && vpH > 0 && (vpW != width || vpH != height)) {
+                resize(vpW, vpH, ctx)
+            }
+        }
+
+        content.apply {
             isFrustumChecked = false
-            generate {
-                rect {
-                    mirrorTexCoordsY()
-                }
-            }
-
-            shader = atmosphereDemo.atmoShader
+            setupSky()
         }
     }
 
-    private fun Scene.compositeDepth() {
-        +textureMesh {
-            isFrustumChecked = false
-            generate {
-                rect {
-                    mirrorTexCoordsY()
-                }
-            }
-            shader = ModeledShader(ShaderModel().apply {
-                val ifTexCoords: StageInterfaceNode
-                vertexStage {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                }
-                fragmentStage {
-                    depthOutput(textureSamplerNode(textureNode("sceneDepth"), ifTexCoords.output).outColor)
-                    colorOutput(constVec4f(Color.BLACK))
-                }
-            }).apply {
-                onPipelineSetup += { builder, _, _ ->
-                    builder.depthTest = DepthCompareOp.ALWAYS
-                }
-                onPipelineCreated += { _, _, _ ->
-                    model.findNodeByType<TextureNode>()!!.sampler.texture = atmosphereDemo.deferredPipeline.mrtPass.depthTexture
-                }
-            }
-        }
-    }
-
-    private fun Scene.compositeSkybox() {
+    private fun Group.setupSky() {
+        val textures = atmosphereDemo.textures
         var starShader: UnlitShader? = null
         var sunBgShader: UnlitShader? = null
 
@@ -85,7 +72,7 @@ class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
                     steps = 10
                 }
             }
-            starShader = skyboxShader(atmosphereDemo.textures[AtmosphereDemo.texMilkyway])
+            starShader = skyboxShader(textures[AtmosphereDemo.texMilkyway])
             shader = starShader
         }
         val sunBg = textureMesh {
@@ -97,7 +84,7 @@ class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
                     origin.z = -10f
                 }
             }
-            sunBgShader = skyboxShader(atmosphereDemo.textures[AtmosphereDemo.texSunBg])
+            sunBgShader = skyboxShader(textures[AtmosphereDemo.texSunBg])
             shader = sunBgShader
         }
         val sun = textureMesh {
@@ -110,7 +97,7 @@ class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
                 }
 
             }
-            shader = skyboxShader(atmosphereDemo.textures[AtmosphereDemo.texSun])
+            shader = skyboxShader(textures[AtmosphereDemo.texSun])
         }
 
         +group {
@@ -134,6 +121,13 @@ class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
         }
         +sunBg
         +sun
+
+        +atmosphereDemo.moonGroup
+    }
+
+    override fun dispose(ctx: KoolContext) {
+        drawNode.dispose(ctx)
+        super.dispose(ctx)
     }
 
     private fun skyboxShader(texture: Texture?): UnlitShader {
@@ -147,13 +141,16 @@ class AtmosphereSceneCompositing(val atmosphereDemo: AtmosphereDemo) {
                 val mvp = findNodeByType<UniformBufferMvp>()!!
                 positionOutput = addNode(Skybox.SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
             }
+            fragmentStage {
+                val unlitMat = findNodeByType<UnlitMaterialNode>()!!
+                colorOutput(gammaNode(unlitMat.outColor).outColor)
+            }
         }
         return UnlitShader(unlitCfg, unlitModel).apply {
             onPipelineSetup += { builder, _, _ ->
                 builder.cullMethod = CullMethod.NO_CULLING
-                builder.depthTest = DepthCompareOp.LESS_EQUAL
+                builder.depthTest = DepthCompareOp.DISABLED
             }
         }
     }
-
 }
