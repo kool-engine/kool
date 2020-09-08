@@ -470,3 +470,16 @@ class NamedVariableNode(name: String, graph: ShaderGraph) : ShaderNode(name, gra
         generator.appendMain("${output.declare()} = $input;")
     }
 }
+
+class PointSizeNode(graph: ShaderGraph) : ShaderNode("pointSz", graph, ShaderStage.VERTEX_SHADER.mask) {
+    var inSize = ShaderNodeIoVar(ModelVar1fConst(1f))
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inSize)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("gl_PointSize = ${inSize.ref1f()};")
+    }
+}

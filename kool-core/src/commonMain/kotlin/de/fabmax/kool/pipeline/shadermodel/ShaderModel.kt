@@ -382,6 +382,12 @@ class ShaderModel(val modelInfo: String = "") {
         fun instanceAttrModelMat() = instanceAttributeNode(MeshInstanceList.MODEL_MAT)
         fun instanceAttributeNode(attribute: Attribute) = addNode(InstanceAttributeNode(attribute, stage))
 
+        fun pointSize(inPointSize: ShaderNodeIoVar? = null): PointSizeNode {
+            val pointNd = addNode(PointSizeNode(stage))
+            inPointSize?.let { pointNd.inSize = inPointSize }
+            return pointNd
+        }
+
         fun stageInterfaceNode(name: String, input: ShaderNodeIoVar? = null, isFlat: Boolean = false): StageInterfaceNode {
             val ifNode = StageInterfaceNode(name, vertexStageGraph, fragmentStageGraph)
             ifNode.isFlat = isFlat
@@ -452,7 +458,11 @@ class ShaderModel(val modelInfo: String = "") {
             return nd
         }
 
-        fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
+        fun multiLightNode(fragPos: ShaderNodeIoVar? = null, maxLights: Int = 4): MultiLightNode {
+            val lightNd = addNode(MultiLightNode(stage, maxLights))
+            fragPos?.let { lightNd.inFragPos = it }
+            return lightNd
+        }
 
         fun singleLightNode(light: Light? = null): SingleLightNode {
             val lightNd = addNode(SingleLightNode(stage))
@@ -506,8 +516,8 @@ class ShaderModel(val modelInfo: String = "") {
          * world space.
          */
         fun phongMaterialNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
-                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PhongMaterialNode {
-            val mat = addNode(PhongMaterialNode(lightNode, stage))
+                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null): PhongMaterialNode {
+            val mat = addNode(PhongMaterialNode(stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
             camPos?.let { mat.inCamPos = it }
@@ -515,10 +525,10 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun pbrMaterialNode(lightNode: LightNode?, reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
+        fun pbrMaterialNode(reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
                             albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
                             fragPos: ShaderNodeIoVar? = null, viewDir: ShaderNodeIoVar? = null): PbrMaterialNode {
-            val mat = addNode(PbrMaterialNode(lightNode, reflectionMap, brdfLut, stage))
+            val mat = addNode(PbrMaterialNode(reflectionMap, brdfLut, stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
             viewDir?.let { mat.inViewDir = it }
@@ -526,8 +536,8 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun pbrLightNode(lightNode: LightNode): PbrLightNode {
-            return addNode(PbrLightNode(lightNode, stage))
+        fun pbrLightNode(): PbrLightNode {
+            return addNode(PbrLightNode(stage))
         }
 
         fun colorOutput(color0: ShaderNodeIoVar? = null, channels: Int = 1, alpha: ShaderNodeIoVar? = null): FragmentColorOutNode {

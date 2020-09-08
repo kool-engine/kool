@@ -144,13 +144,13 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = vec4TransformNode(worldPos, mvpMat).outVec4
+                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-                val lightNode = multiLightNode(cfg.maxLights)
+                val lightNode = multiLightNode(ifFragPos.output, cfg.maxLights)
                 shadowMapNodes.forEach {
-                    lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
+                    lightNode.inShadowFacs[it.lightIndex] = it.outShadowFac
                 }
 
                 val albedo = when (cfg.albedoSource) {
@@ -169,7 +169,7 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
                     ifNormals.output
                 }
 
-                val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {
+                val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos).apply {
                     lightBacksides = cfg.lightBacksides
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output

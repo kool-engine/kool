@@ -2,7 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
+import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
+import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
@@ -16,16 +19,20 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
     return PointMesh(name = name).apply(block)
 }
 
-open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
+open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS), name: String? = null) :
         Mesh(geometry, name) {
     init {
         geometry.primitiveType = PrimitiveType.POINTS
         rayTest = MeshRayTest.nopTest()
-        shader = ModeledShader.VertexColor()
-    }
 
-    //var isXray = false
-    //var pointSize: Float = 1f
+        val unlitCfg = UnlitMaterialConfig()
+        val unlitModel = UnlitShader.defaultUnlitModel(unlitCfg).apply {
+            vertexStage {
+                pointSize(attributeNode(ATTRIB_POINT_SIZE).output)
+            }
+        }
+        shader = UnlitShader(unlitCfg, unlitModel)
+    }
 
     fun addPoint(block: VertexView.() -> Unit): Int {
         val idx =  geometry.addVertex(block)
@@ -33,8 +40,12 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
         return idx
     }
 
-    fun addPoint(position: Vec3f, color: Color): Int {
-        val idx =  geometry.addVertex(position, null, color, null)
+    fun addPoint(position: Vec3f, pointSize: Float, color: Color): Int {
+        val idx = geometry.addVertex {
+            this.position.set(position)
+            this.color.set(color)
+            getFloatAttribute(ATTRIB_POINT_SIZE)?.f = pointSize
+        }
         geometry.addIndex(idx)
         return idx
     }
@@ -42,5 +53,9 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
     fun clear() {
         geometry.clear()
         bounds.clear()
+    }
+
+    companion object {
+        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GlslType.FLOAT)
     }
 }

@@ -6,7 +6,11 @@ import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
+import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -59,7 +63,7 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
 
         lighting.singleLight {
             setDirectional(Vec3f(-1f))
-            setColor(Color.WHITE, 1f)
+            setColor(Color.WHITE, 5f)
         }
 
         +lodController
@@ -84,7 +88,8 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
                     modelRadius = geometry.bounds.max.distance(geometry.bounds.center)
                 }
 
-                shader = PhongShader(PhongShader.PhongConfig(), model = instanceColorPhongModel())
+                //shader = instanceColorPhongShader()
+                shader = instanceColorPbrShader()
 
                 isFrustumChecked = false
                 lods[i].mesh = this
@@ -113,7 +118,7 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
                     val position = MutableVec3f((x - off) * 5f + randomF(-2f, 2f), (y - off) * 5f + randomF(-2f, 2f), (z - off) * 5f + randomF(-2f, 2f))
                     val rotAxis = MutableVec3f(randomF(-1f, 1f), randomF(-1f, 1f), randomF(-1f, 1f))
                     instances += BunnyInstance(position, rotAxis).apply {
-                        this.color.set(colors[rand.randomI(colors.indices)])
+                        this.color.set(colors[rand.randomI(colors.indices)].toLinear())
                         this.center.set(modelCenter)
                         this.radius = modelRadius
                     }
@@ -122,37 +127,39 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
         }
     }
 
-    private fun instanceColorPhongModel() = ShaderModel("instanceColorPhongModel()").apply {
-        val ifNormals: StageInterfaceNode
-        val ifColors: StageInterfaceNode
-        val ifFragPos: StageInterfaceNode
-        val mvpNode: UniformBufferMvp
-
-        vertexStage {
-            ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
-
-            mvpNode = mvpNode()
-            val modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
-            val mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
-
-            val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
-            ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
-
-            val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
-            ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
-            positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+    private fun instanceColorPbrShader(): Shader {
+        val cfg = PbrMaterialConfig().apply {
+            albedoSource = Albedo.STATIC_ALBEDO
+            isInstanced = true
+            roughness = 0.3f
         }
-        fragmentStage {
-            val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-            val lightNode = multiLightNode()
-            val albedo = ifColors.output
-            val normal = ifNormals.output
-            val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {
-                inShininess = pushConstantNode1f("uShininess").output
-                inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
+        val model = PbrShader.defaultPbrModel(cfg).apply {
+            val ifInstColor: StageInterfaceNode
+            vertexStage {
+                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
             }
-            colorOutput(phongMat.outColor)
+            fragmentStage {
+                findNodeByType<PbrMaterialNode>()!!.inAlbedo = ifInstColor.output
+            }
         }
+        return PbrShader(cfg, model)
+    }
+
+    private fun instanceColorPhongShader(): Shader {
+        val cfg = PhongShader.PhongConfig().apply {
+            albedoSource = Albedo.STATIC_ALBEDO
+            isInstanced = true
+        }
+        val model = PhongShader.defaultPhongModel(cfg).apply {
+            val ifInstColor: StageInterfaceNode
+            vertexStage {
+                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
+            }
+            fragmentStage {
+                findNodeByType<PhongMaterialNode>()!!.inAlbedo = ifInstColor.output
+            }
+        }
+        return PhongShader(cfg, model)
     }
 
     private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {

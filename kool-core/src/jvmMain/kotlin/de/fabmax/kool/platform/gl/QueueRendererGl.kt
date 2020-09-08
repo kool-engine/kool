@@ -55,7 +55,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
                 if (cmd.mesh.geometry.numIndices > 0) {
                     val shaderInst = shaderMgr.setupShader(cmd)
-                    if (shaderInst != null && shaderInst.primitiveType != 0 && shaderInst.indexType != 0) {
+                    if (shaderInst != null && shaderInst.indexType != 0) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {
                             glDrawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, 0)

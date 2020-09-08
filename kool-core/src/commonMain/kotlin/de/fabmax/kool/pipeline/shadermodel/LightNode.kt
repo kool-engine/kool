@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.shadermodel
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Uniform1i
@@ -11,29 +12,27 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 
-abstract class LightNode(name: String, shaderGraph: ShaderGraph) : ShaderNode(name, shaderGraph){
-    abstract val outLightCount: ShaderNodeIoVar
+class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("lightNd_${shaderGraph.nextNodeId}", shaderGraph) {
+    private val uLightCnt = Uniform1i("uLightCount")
+    private val uPositions = Uniform4fv("uLightPositions", maxLights)
+    private val uColors = Uniform4fv("uLightColors", maxLights)
+    private val uDirections = Uniform4fv("uLightDirections", maxLights)
 
-    abstract fun callVec3GetFragToLight(idx: String, fragPos: String): String
-    abstract fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String
-}
+    var inShadowFacs = Array(maxLights) { ShaderNodeIoVar(ModelVar1fConst(1f)) }
+    var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
 
-class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : LightNode("lightNd_${shaderGraph.nextNodeId}", shaderGraph) {
-    private val uLightCnt = Uniform1i("lightCount")
-    private val uPositions = Uniform4fv("lightPositions", maxLights)
-    private val uColors = Uniform4fv("lightColors", maxLights)
-    private val uDirections = Uniform4fv("lightDirections", maxLights)
-
-    var inShaodwFacs = Array(maxLights) { ShaderNodeIoVar(ModelVar1fConst(1f)) }
-
-    override val outLightCount = ShaderNodeIoVar(ModelVar1i(uLightCnt.name), this)
+    val outLightCount = ShaderNodeIoVar(ModelVar1i(uLightCnt.name), this)
+    val outFragToLightDirection = ShaderNodeIoVar(ModelVar3fv("${name}_outLightDirs"), this)
+    val outRadiance = ShaderNodeIoVar(ModelVar3fv("${name}_outRadiance"), this)
 
     var isReducedSoi = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
 
-        dependsOn(*inShaodwFacs)
+        dependsOn(*inShadowFacs)
+        dependsOn(inFragPos, inSpotInnerAngle)
         shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
                 +{ uPositions }
@@ -107,16 +106,17 @@ class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : LightNo
             }
             """)
 
-        val facs = (0 until maxLights).map { i -> inShaodwFacs[i].ref1f() }.joinToString(", ")
-        generator.appendMain("float[] ${name}_shadowFacs = float[] ($facs);")
-    }
-
-    override fun callVec3GetFragToLight(idx: String, fragPos: String): String {
-        return "light_getFragToLight($idx, $fragPos)"
-    }
-
-    override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
-        return "(light_getRadiance($idx, $fragToLight, $innerAngle) * ${name}_shadowFacs[$idx])"
+        val facs = (0 until maxLights).map { i -> inShadowFacs[i].ref1f() }.joinToString(", ")
+        val arrayInit = (0 until maxLights).map { "vec3(0.0)" }.joinToString(", ")
+        generator.appendMain("""
+            float[] ${name}_shadowFacs = float[] ($facs);
+            ${outFragToLightDirection.declare()} = vec3[$maxLights]($arrayInit);
+            ${outRadiance.declare()} = vec3[$maxLights]($arrayInit);
+            for (int i = 0; i < $uLightCnt; i++) {
+                ${outFragToLightDirection.ref3f("i")} = light_getFragToLight(i, ${inFragPos.ref3f()});
+                ${outRadiance.ref3f("i")} = light_getRadiance(i, ${outFragToLightDirection.ref3f("i")}, ${inSpotInnerAngle.ref1f("i")}) * ${name}_shadowFacs[i];
+            }
+            """)
     }
 }
 
@@ -158,13 +158,18 @@ class SingleLightUniformDataNode(shaderGraph: ShaderGraph) : ShaderNode("lightUn
     }
 }
 
-class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGraph.nextNodeId}", shaderGraph) {
+class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGraph.nextNodeId}", shaderGraph) {
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 0f, 0f, 60f)))
-    var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
 
-    override val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1))
+    var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
+
+    val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1), this)
+    val outFragToLightDirection = ShaderNodeIoVar(ModelVar3f("${name}_outLightDirs"), this)
+    val outRadiance = ShaderNodeIoVar(ModelVar3f("${name}_outRadiance"), this)
 
     var isReducedSoi = false
 
@@ -174,8 +179,8 @@ class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGra
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendFunction("${name}_getFragToLight", """
-            vec3 ${name}_getFragToLight(vec3 fragPos, vec4 lightPos, vec4 lightDir) {
+        generator.appendFunction("light_getFragToLight", """
+            vec3 light_getFragToLight(vec3 fragPos, vec4 lightPos, vec4 lightDir) {
                 if (lightPos.w == float(${Light.Type.DIRECTIONAL.encoded})) {
                     return -lightDir.xyz;
                 }
@@ -194,8 +199,8 @@ class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGra
             "float strength = power / (1.0 + dist * dist);"
         }
 
-        generator.appendFunction("${name}_getRadiance", """
-            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {
+        generator.appendFunction("light_getRadiance", """
+            vec3 light_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {
                 if (lightPos.w == float(${Light.Type.DIRECTIONAL.encoded})) {
                     return lightColor.rgb * lightColor.w;
                 }
@@ -215,29 +220,32 @@ class SingleLightNode(shaderGraph: ShaderGraph) : LightNode("lightNd_${shaderGra
                 }
             }
             """)
-    }
 
-    override fun callVec3GetFragToLight(idx: String, fragPos: String): String {
-        return "${name}_getFragToLight($fragPos, ${inLightPos.ref4f()}, ${inLightDir.ref4f()})"
-    }
-
-    override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
-        return "(${name}_getRadiance($fragToLight, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $innerAngle) * ${inShaodwFac.ref1f()})"
+        generator.appendMain("""
+            ${outFragToLightDirection.declare()} = light_getFragToLight(${inFragPos.ref3f()}, ${inLightPos.ref3f()}, ${inLightDir.ref3f()});
+            ${outRadiance.declare()} = light_getRadiance(${outFragToLightDirection.ref3f()},
+                         ${inLightPos.ref3f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()},
+                         ${inSpotInnerAngle.ref1f()}) * ${inShaodwFac.ref1f()};
+        """)
     }
 }
 
-class SinglePointLightNode(shaderGraph: ShaderGraph) : LightNode("pointLightNd_${shaderGraph.nextNodeId}", shaderGraph) {
+class SinglePointLightNode(shaderGraph: ShaderGraph) : ShaderNode("pointLightNd_${shaderGraph.nextNodeId}", shaderGraph) {
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
-    var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
 
-    override val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1))
+    var inShadowFac = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+
+    val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1), this)
+    val outFragToLightDirection = ShaderNodeIoVar(ModelVar3f("${name}_outLightDirs"), this)
+    val outRadiance = ShaderNodeIoVar(ModelVar3f("${name}_outRadiance"), this)
 
     var isReducedSoi = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inShaodwFac, inLightPos, inLightColor)
+        dependsOn(inLightPos, inLightColor, inShadowFac, inFragPos)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -251,38 +259,41 @@ class SinglePointLightNode(shaderGraph: ShaderGraph) : LightNode("pointLightNd_$
             "float strength = power / (1.0 + dist * dist);"
         }
 
-        generator.appendFunction("${name}_getRadiance", """
-            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor) {
+        generator.appendFunction("pointLight_getRadiance", """
+            vec3 pointLight_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor) {
                 float dist = length(fragToLight);
                 float power = lightColor.w;
                 $strength
                 return lightColor.rgb * strength;
             }
             """)
-    }
 
-    override fun callVec3GetFragToLight(idx: String, fragPos: String): String {
-        return "(${inLightPos.ref3f()} - $fragPos)"
-    }
-
-    override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
-        return "(${name}_getRadiance($fragToLight, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}) * ${inShaodwFac.ref1f()})"
+        generator.appendMain("""
+            ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
+            ${outRadiance.declare()} = pointLight_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
+                        ${inLightColor.ref4f()}) * ${inShadowFac.ref1f()};
+        """)
     }
 }
 
-class SingleSpotLightNode(shaderGraph: ShaderGraph) : LightNode("spotLightNd_${shaderGraph.nextNodeId}", shaderGraph) {
+class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${shaderGraph.nextNodeId}", shaderGraph) {
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 0f, 0f, 60f)))
-    var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
 
-    override val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1))
+    var inShadowFac = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
+
+    val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1), this)
+    val outFragToLightDirection = ShaderNodeIoVar(ModelVar3f("${name}_outLightDirs"), this)
+    val outRadiance = ShaderNodeIoVar(ModelVar3f("${name}_outRadiance"), this)
 
     var isReducedSoi = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inShaodwFac, inLightPos, inLightDir, inLightColor)
+        dependsOn(inShadowFac, inLightPos, inLightDir, inLightColor)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -296,7 +307,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : LightNode("spotLightNd_${s
             "float strength = power / (1.0 + dist * dist);"
         }
 
-        generator.appendFunction("${name}_getRadiance", """
+        generator.appendFunction("spotLight_getRadiance", """
             vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {
                 float dist = length(fragToLight);
                 float power = lightColor.w;
@@ -309,13 +320,11 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : LightNode("spotLightNd_${s
                 return lightColor.rgb * strength * angVal;
             }
             """)
-    }
 
-    override fun callVec3GetFragToLight(idx: String, fragPos: String): String {
-        return "(${inLightPos.ref3f()} - $fragPos)"
-    }
-
-    override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
-        return "(${name}_getRadiance($fragToLight, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $innerAngle) * ${inShaodwFac.ref1f()})"
+        generator.appendMain("""
+            ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
+            ${outRadiance.declare()} = spotLight_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
+                        ${inLightColor.ref4f()}, $inSpotInnerAngle) * ${inShadowFac.ref1f()};
+        """)
     }
 }

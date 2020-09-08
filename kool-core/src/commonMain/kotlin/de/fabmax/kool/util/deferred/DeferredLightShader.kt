@@ -104,22 +104,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
 
-                val lightNode = if (cfg.lightType == Light.Type.SPOT) {
-                    addNode(SingleSpotLightNode(stage)).apply {
-                        isReducedSoi = true
-                        inLightPos = ifLightPos.output
-                        inLightColor = ifLightColor.output
-                        inLightDir = ifLightDir!!.output
-                    }
-                } else {
-                    addNode(SinglePointLightNode(stage)).apply {
-                        isReducedSoi = true
-                        inLightPos = ifLightPos.output
-                        inLightColor = ifLightColor.output
-                    }
-                }
-
-                val mat = pbrLightNode(lightNode).apply {
+                val mat = pbrLightNode().apply {
                     lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
@@ -128,6 +113,27 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     inAlbedo = mrtDeMultiplex.outAlbedo
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
+
+                    if (cfg.lightType == Light.Type.SPOT) {
+                        val spot = addNode(SingleSpotLightNode(stage)).apply {
+                            isReducedSoi = true
+                            inLightPos = ifLightPos.output
+                            inLightColor = ifLightColor.output
+                            inLightDir = ifLightDir!!.output
+                            inFragPos = worldPos
+                        }
+                        inFragToLight = spot.outFragToLightDirection
+                        inRadiance = spot.outRadiance
+                    } else {
+                        val point = addNode(SinglePointLightNode(stage)).apply {
+                            isReducedSoi = true
+                            inLightPos = ifLightPos.output
+                            inLightColor = ifLightColor.output
+                            inFragPos = worldPos
+                        }
+                        inFragToLight = point.outFragToLightDirection
+                        inRadiance = point.outRadiance
+                    }
                 }
 
                 colorOutput(mat.outColor)

@@ -357,9 +357,9 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                 }
 
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-                val lightNode = multiLightNode(cfg.maxLights)
+                val lightNode = multiLightNode(ifFragPos.output, cfg.maxLights)
                 shadowMapNodes.forEach {
-                    lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
+                    lightNode.inShadowFacs[it.lightIndex] = it.outShadowFac
                 }
                 var normal = if (cfg.isNormalMapped && ifTangents != null) {
                     val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
@@ -386,7 +386,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     brdfLut = null
                 }
 
-                val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+                val mat = pbrMaterialNode(reflMap, brdfLut).apply {
                     inAlbedo = albedo
                     inNormal = normal
                     lightBacksides = cfg.lightBacksides
@@ -394,6 +394,9 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     inViewDir = viewDir
                     inReflectionStrength = pushConstantNode1f("uReflectionStrength").output
 
+                    inLightCount = lightNode.outLightCount
+                    inFragToLight = lightNode.outFragToLightDirection
+                    inRadiance = lightNode.outRadiance
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     if (cfg.isEmissiveMapped) {

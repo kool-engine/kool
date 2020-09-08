@@ -4,10 +4,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.*
+import de.fabmax.kool.pipeline.shading.AlphaModeMask
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
+import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -220,152 +222,14 @@ class TreeDemo : DemoScene("Procedural Tree") {
         }
     }
 
-    private fun treePbrModel(cfg: PbrMaterialConfig) = ShaderModel("treePbrModel()").apply {
-        val ifColors: StageInterfaceNode?
-        val ifNormals: StageInterfaceNode
-        val ifTangents: StageInterfaceNode?
-        val ifFragPos: StageInterfaceNode
-        val ifTexCoords: StageInterfaceNode?
-        val mvpNode: UniformBufferMvp
-        val shadowMapNodes = mutableListOf<ShadowMapNode>()
-
+    private fun treePbrModel(cfg: PbrMaterialConfig) = PbrShader.defaultPbrModel(cfg).apply {
         vertexStage {
-            mvpNode = mvpNode()
-            val nrm = vec3TransformNode(attrNormals().output, mvpNode.outModelMat, 0f)
-            ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
-
-            ifTexCoords = if (cfg.requiresTexCoords()) {
-                stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-            } else {
-                null
-            }
-
-            val staticLocalPos = if (cfg.isDisplacementMapped) {
-                val dispTex = textureNode("tDisplacement")
-                val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
-                    inStrength = pushConstantNode1f("uDispStrength").output
-                }
-                dispNd.outPosition
-            } else {
-                attrPositions().output
-            }
-            val windNd = addNode(WindNode(vertexStageGraph)).apply {
-                inputPos = staticLocalPos
+            val localPosInput = findNode<NamedVariableNode>("localPosInput")!!
+            addNode(WindNode(vertexStageGraph)).apply {
+                inputPos = localPosInput.input
                 inputAnim = pushConstantNode1f("windAnim").output
                 inputStrength = pushConstantNode1f("windStrength").output
-            }
-            val localPos = windNd.outputPos
-            val worldPos = vec3TransformNode(localPos, mvpNode.outModelMat, 1f).outVec3
-            ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
-
-            ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
-                stageInterfaceNode("ifColors", attrColors().output)
-            } else {
-                null
-            }
-            ifTangents = if (cfg.isNormalMapped) {
-                val tanAttr = attrTangents().output
-                val tan = vec3TransformNode(splitNode(tanAttr, "xyz").output, mvpNode.outModelMat, 0f)
-                val tan4 = combineXyzWNode(tan.outVec3, splitNode(tanAttr, "w").output)
-                stageInterfaceNode("ifTangents", tan4.output)
-            } else {
-                null
-            }
-
-            val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
-
-            cfg.shadowMaps.forEachIndexed { i, map ->
-                when (map) {
-                    is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos)
-                    is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
-                }
-            }
-            positionOutput = vec4TransformNode(localPos, mvpNode.outMvpMat).outVec4
-        }
-        fragmentStage {
-            var albedo = when (cfg.albedoSource) {
-                Albedo.VERTEX_ALBEDO -> ifColors!!.output
-                Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
-                Albedo.TEXTURE_ALBEDO -> {
-                    val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
-                    gammaNode(albedoSampler.outColor).outColor
-                }
-                Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
-            }
-
-            (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
-                discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
-            }
-            albedo = combineNode(GlslType.VEC_4F).apply {
-                inX = splitNode(albedo, "r").output
-                inY = splitNode(albedo, "g").output
-                inZ = splitNode(albedo, "b").output
-                inW = constFloat(1f)
-            }.output
-
-            val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-            val lightNode = multiLightNode(cfg.maxLights)
-            shadowMapNodes.forEach {
-                lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
-            }
-
-            val reflMap: CubeMapNode?
-            val brdfLut: TextureNode?
-            val irrSampler: CubeMapSamplerNode?
-
-            if (cfg.isImageBasedLighting) {
-                val irrMap = cubeMapNode("irradianceMap")
-                irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output, false)
-                reflMap = cubeMapNode("reflectionMap")
-                brdfLut = textureNode("brdfLut")
-            } else {
-                irrSampler = null
-                reflMap = null
-                brdfLut = null
-            }
-
-            val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
-                lightBacksides = cfg.lightBacksides
-                inFragPos = ifFragPos.output
-                inViewDir = viewDirNode(mvpFrag.outCamPos, ifFragPos.output).output
-
-                inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
-
-                inAlbedo = albedo
-                inNormal = if (cfg.isNormalMapped && ifTangents != null) {
-                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
-                    bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
-                    bumpNormal.outNormal
-                } else {
-                    ifNormals.output
-                }
-
-
-                val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
-                if (cfg.isRoughnessMapped) {
-                    val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
-                    rmoSamplers[cfg.roughnessTexName] = roughness
-                    inRoughness = splitNode(roughness, cfg.roughnessChannel).output
-                } else {
-                    inRoughness = pushConstantNode1f("uRoughness").output
-                }
-                if (cfg.isMetallicMapped) {
-                    val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
-                    rmoSamplers[cfg.metallicTexName] = metallic
-                    inMetallic = splitNode(metallic, cfg.metallicChannel).output
-                } else {
-                    inMetallic = pushConstantNode1f("uMetallic").output
-                }
-                if (cfg.isOcclusionMapped) {
-                    val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { textureSamplerNode(textureNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
-                    rmoSamplers[cfg.occlusionTexName] = occlusion
-                    inAmbientOccl = splitNode(occlusion, cfg.occlusionChannel).output
-                }
-            }
-            when (cfg.alphaMode) {
-                is AlphaModeBlend -> colorOutput(hdrToLdrNode(mat.outColor).outColor)
-                is AlphaModeMask -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
-                is AlphaModeOpaque -> colorOutput(hdrToLdrNode(mat.outColor).outColor, alpha = constFloat(1f))
+                localPosInput.input = outputPos
             }
         }
     }

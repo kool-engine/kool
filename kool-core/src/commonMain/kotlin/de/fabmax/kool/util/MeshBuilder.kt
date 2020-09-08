@@ -362,7 +362,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         for (v in icoGenerator.uvVerts) {
             vertex {
                 normal.set(v.first).norm()
-                position.set(normal).scale(props.radius).add(props.center)
+                position.set(v.first).scale(props.radius).add(props.center)
                 texCoord.set(props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif))
             }
         }

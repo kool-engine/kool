@@ -19,13 +19,15 @@ class UnlitMaterialNode(graph: ShaderGraph) : ShaderNode("Unlit Material", graph
     }
 }
 
-class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode("Phong Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
+class PhongMaterialNode(graph: ShaderGraph) : ShaderNode("Phong Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     var inNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
     var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
-    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
+    var inLightCount = ShaderNodeIoVar(ModelVar1iConst(1))
+    var inFragToLight = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    var inRadiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(1f)))
     var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.22f)))
     var inShininess = ShaderNodeIoVar(ModelVar1fConst(20f))
     var inSpecularIntensity = ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -37,7 +39,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inAlbedo, inNormal, inFragPos, inCamPos)
-        dependsOn(lightNode)
+        dependsOn(inLightCount, inFragToLight, inRadiance, inAmbient, inShininess, inSpecularIntensity)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -48,10 +50,9 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
             vec3 phongMat_ambient = ${inAlbedo.ref3f()} * ${inAmbient.ref3f()};
             vec3 phongMat_diffuse = vec3(0);
             vec3 phongMat_specular = vec3(0);
-            for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
-                vec3 phongMat_l = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
-                vec3 radiance = ${lightNode.callVec3GetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
-                phongMat_l = normalize(phongMat_l);
+            for (int i = 0; i < ${inLightCount.ref1i()}; i++) {
+                vec3 phongMat_l = normalize(${inFragToLight.ref3f("i")});
+                vec3 radiance = ${inRadiance.ref3f("i")};
                 
                 ${ if (lightBacksides) "if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }" else "" }
         
@@ -73,7 +74,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
 /**
  * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
  */
-class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
+class PbrMaterialNode(val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
         ShaderNode("pbrMaterial", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -82,11 +83,13 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
     var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inViewDir: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
-    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
     var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
     var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
     var inAmbientOccl = ShaderNodeIoVar(ModelVar1fConst(1f))
 
+    var inLightCount = ShaderNodeIoVar(ModelVar1iConst(0))
+    var inFragToLight = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    var inRadiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0f)))
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
     var inReflectionStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inReflectionColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -99,9 +102,8 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inAlbedo, inEmissive, inNormal, inFragPos, inViewDir)
-        dependsOn(inSpotInnerAngle, inMetallic, inRoughness, inAmbientOccl)
-        dependsOn(inIrradiance, inReflectionColor, inReflectionWeight)
-        dependsOn(lightNode)
+        dependsOn(inMetallic, inRoughness, inAmbientOccl)
+        dependsOn(inFragToLight, inRadiance, inIrradiance, inReflectionColor, inReflectionWeight)
         dependsOn(reflectionMap)
         dependsOn(brdfLut)
     }
@@ -168,38 +170,34 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
             vec3 F0 = vec3(0.04); 
             F0 = mix(F0, albedo, metal);
     
-            vec3 Lo = vec3(0.0);""")
-
-        if (lightNode != null) {
-            generator.appendMain("""
-                for (int i = 0; i < ${lightNode.outLightCount.ref1i()}; i++) {
-                    // calculate per-light radiance
-                    vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
-                    vec3 L = normalize(fragToLight);
-                    vec3 H = normalize(V + L);
-                    vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+            vec3 Lo = vec3(0.0);
             
-                    ${if (lightBacksides) "N *= sign(dot(N, L));" else ""}
-            
-                    // cook-torrance BRDF
-                    float NDF = DistributionGGX(N, H, rough); 
-                    float G = GeometrySmith(N, V, L, rough);
-                    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+            for (int i = 0; i < ${inLightCount.ref1i()}; i++) {
+                // calculate per-light radiance
+                vec3 L = normalize(${inFragToLight.ref3f("i")});
+                vec3 H = normalize(V + L);
+                vec3 radiance = ${inRadiance.ref3f("i")};
+        
+                ${if (lightBacksides) "N *= sign(dot(N, L));" else ""}
+        
+                // cook-torrance BRDF
+                float NDF = DistributionGGX(N, H, rough); 
+                float G = GeometrySmith(N, V, L, rough);
+                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+                
+                vec3 kS = F;
+                vec3 kD = vec3(1.0) - kS;
+                kD *= 1.0 - metal;
+                
+                vec3 numerator = NDF * G * F;
+                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                vec3 specular = numerator / max(denominator, 0.001);
                     
-                    vec3 kS = F;
-                    vec3 kD = vec3(1.0) - kS;
-                    kD *= 1.0 - metal;
-                    
-                    vec3 numerator = NDF * G * F;
-                    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-                    vec3 specular = numerator / max(denominator, 0.001);
-                        
-                    // add to outgoing radiance Lo
-                    float NdotL = max(dot(N, L), 0.0);
-                    Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
-                }
-                """)
-        }
+                // add to outgoing radiance Lo
+                float NdotL = max(dot(N, L), 0.0);
+                Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
+            }
+            """)
 
         if (reflectionMap != null && brdfLut != null) {
             generateFinalIbl(generator, reflectionMap, brdfLut)
@@ -248,7 +246,7 @@ class PbrMaterialNode(val lightNode: LightNode?, val reflectionMap: CubeMapNode?
 /**
  * Physical Based Rendering Light Shader. Only computes color contribution of a single light for deferred lighting.
  */
-class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
+class PbrLightNode(graph: ShaderGraph) :
         ShaderNode("pbrLightNode", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -256,10 +254,11 @@ class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
     var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
-    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
     var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
     var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
 
+    var inFragToLight = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    var inRadiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(1f)))
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrLight_outColor"), this)
@@ -268,8 +267,7 @@ class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance)
-        dependsOn(lightNode)
+        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inFragToLight, inRadiance, inIrradiance)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -317,14 +315,12 @@ class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
             }
         """)
 
-        val normalCheck = if (!lightBacksides) "dot(fragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
-
+        val normalCheck = if (!lightBacksides) "dot($inFragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
         generator.appendMain("""
             vec3 radiance = vec3(0.0);
-            vec3 fragToLight = ${lightNode.callVec3GetFragToLight("0", inFragPos.ref3f())};
             bool normalOk = $normalCheck;
             if (normalOk) {
-                radiance = ${lightNode.callVec3GetRadiance("0", "fragToLight", inSpotInnerAngle.ref1f())};
+                radiance = ${inRadiance.ref3f()};
             }
             
             ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);
@@ -339,7 +335,7 @@ class PbrLightNode(val lightNode: LightNode, graph: ShaderGraph) :
                 vec3 F0 = vec3(0.04); 
                 F0 = mix(F0, albedo, metal);
         
-                vec3 L = normalize(fragToLight);
+                vec3 L = normalize($inFragToLight);
                 vec3 H = normalize(V + L);
                 ${ if (lightBacksides) "N *= sign(dot(N, L));" else "" }
         

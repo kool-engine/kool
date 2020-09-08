@@ -9,16 +9,19 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.pipeline.AddressMode
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
+import de.fabmax.kool.util.deferred.PbrSceneShader
 import kotlinx.coroutines.delay
 import kotlin.math.pow
 
@@ -31,8 +34,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
     private var sunIntensity = 1f
 
-    private var time = 0.5f
-    private var moonTime = 0f
+    var time = 0.5f
+    var moonTime = 0f
     private var animateTime = true
     private var timeSlider: Slider? = null
 
@@ -41,7 +44,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     val atmoShader = AtmosphericScatteringShader()
 
     val earthGroup = Group("earth")
-    val moonGroup = Group("moon")
 
     private lateinit var opticalDepthLutPass: OpticalDepthLutPass
     private val shadows = mutableListOf<SimpleShadowMap>()
@@ -103,6 +105,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             isWithScreenSpaceReflections = false
             maxGlobalLights = 1
             shadowMaps = shadows
+            pbrSceneShader = makeDeferredPbrShader(this)
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
         deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
@@ -156,6 +159,25 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
     }
 
+    private fun makeDeferredPbrShader(cfg: DeferredPipelineConfig): PbrSceneShader {
+        val shaderCfg = PbrSceneShader.DeferredPbrConfig().apply {
+            isWithEmissive = cfg.isWithEmissive
+            isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
+            isScrSpcReflections = cfg.isWithScreenSpaceReflections
+            maxLights = cfg.maxGlobalLights
+            shadowMaps += shadows
+            useImageBasedLighting(cfg.environmentMaps)
+        }
+
+        val model = PbrSceneShader.defaultDeferredPbrModel(shaderCfg).apply {
+            fragmentStage {
+
+            }
+        }
+
+        return PbrSceneShader(shaderCfg, model)
+    }
+
     private fun finalizeSceneSetup(deferredPipeline: DeferredPipeline) {
         menuContainer.isVisible = true
         loadingLabel.isVisible = false
@@ -163,17 +185,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         val skyPass = SkyPass(this)
         atmoShader.skyColor = skyPass.colorTexture
 
-        moonGroup.apply {
-            isFrustumChecked = false
-            +Moon()
-
-            onUpdate += {
-                setIdentity()
-                rotate(moonInclination, Vec3f.X_AXIS)
-                rotate(360f * moonTime, Vec3f.Y_AXIS)
-                translate(0f, 0f, moonDist)
-            }
-        }
         deferredPipeline.contentGroup.setupContent()
 
         mainScene.apply {
@@ -225,60 +236,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 setIdentity()
                 rotate(earthAxisTilt, Vec3f.NEG_X_AXIS)
                 rotate(time * 360, Vec3f.Y_AXIS)
-            }
-        }
-
-        //+moonGroup
-    }
-
-    private inner class Moon : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "moon") {
-        init {
-            isFrustumChecked = false
-            generate {
-                rotate(180f, Vec3f.Y_AXIS)
-                icoSphere {
-                    steps = 4
-                    radius = moonRadius
-                }
-            }
-            shader = pbrShader {
-                useAlbedoMap(textures[texMoon])
-                roughness = 0.7f
-                isHdrOutput = true
-            }
-
-//            shader = deferredPbrShader {
-//                useAlbedoMap(textures[texMoon])
-//                roughness = 0.7f
-//            }
-        }
-
-        override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-            val rpCam = updateEvent.camera
-
-            if (rpCam is PerspectiveCamera) {
-                // Use modified camera clip values when rendering moon. This can cause artifacts but works in
-                // most situations and is better than moon being completely clipped away
-
-                val clipN = rpCam.clipNear
-                val clipF = rpCam.clipFar
-                val d = globalCenter.distance(rpCam.globalPos) + moonRadius
-                val customClip = d > clipF
-
-                if (customClip) {
-                    rpCam.clipFar = d
-                    rpCam.clipNear = d / 1000f
-                    rpCam.updateCamera(updateEvent.ctx, updateEvent.viewport)
-                }
-                super.collectDrawCommands(updateEvent)
-                if (customClip) {
-                    rpCam.clipNear = clipN
-                    rpCam.clipFar = clipF
-                    rpCam.updateCamera(updateEvent.ctx, updateEvent.viewport)
-                }
-
-            } else {
-                super.collectDrawCommands(updateEvent)
             }
         }
     }

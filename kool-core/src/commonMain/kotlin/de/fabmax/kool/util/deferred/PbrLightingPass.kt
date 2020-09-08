@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.Color
 
-class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneShader.DeferredPbrConfig = PbrSceneShader.DeferredPbrConfig()) :
+class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, val sceneShader: PbrSceneShader) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "PbrLightingPass"
             setSize(mrtPass.config.width, mrtPass.config.height)
@@ -28,8 +28,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
 
     val content = drawNode as Group
 
-    val sceneShader: PbrSceneShader
-
     init {
         dynamicPointLights.isDynamic = true
         staticPointLights.isDynamic = false
@@ -39,8 +37,6 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, cfg: PbrSceneS
         camera = mrtPass.camera
 
         scene.addOffscreenPass(this)
-        cfg.useMrtPass(mrtPass)
-        sceneShader = PbrSceneShader(cfg)
 
         content.apply {
             isFrustumChecked = false

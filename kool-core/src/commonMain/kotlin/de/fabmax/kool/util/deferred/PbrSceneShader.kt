@@ -20,7 +20,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
     private var deferredCameraNode: DeferredCameraNode? = null
 
-    var sceneCamera: Camera? = cfg.sceneCamera
+    var sceneCamera: Camera? = null
         set(value) {
             field = value
             deferredCameraNode?.sceneCam = value
@@ -32,27 +32,27 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private var albedoMetalSampler: TextureSampler? = null
     private var emissiveSampler: TextureSampler? = null
 
-    var depth: Texture? = cfg.depth
+    var depth: Texture? = null
         set(value) {
             field = value
             depthSampler?.texture = value
         }
-    var positionAo: Texture? = cfg.positionAo
+    var positionAo: Texture? = null
         set(value) {
             field = value
             positionAoSampler?.texture = value
         }
-    var normalRoughness: Texture? = cfg.normalRoughness
+    var normalRoughness: Texture? = null
         set(value) {
             field = value
             normalRoughnessSampler?.texture = value
         }
-    var albedoMetal: Texture? = cfg.albedoMetal
+    var albedoMetal: Texture? = null
         set(value) {
             field = value
             albedoMetalSampler?.texture = value
         }
-    var emissive: Texture? = cfg.emissive
+    var emissive: Texture? = null
         set(value) {
             field = value
             emissiveSampler?.texture = value
@@ -105,6 +105,15 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
+
+    fun setMrtMaps(mrtPass: DeferredMrtPass) {
+        sceneCamera = mrtPass.camera
+        depth = mrtPass.depthTexture
+        positionAo = mrtPass.positionAo
+        normalRoughness = mrtPass.normalRoughness
+        albedoMetal = mrtPass.albedoMetal
+        emissive = mrtPass.emissive
+    }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.depthTest = DepthCompareOp.ALWAYS
@@ -179,11 +188,11 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 val worldPos = vec3TransformNode(mrtDeMultiplex.outViewPos, defCam.outInvViewMat, 1f).outVec3
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
 
-                var lightNode: LightNode? = null
+                var lightNode: MultiLightNode? = null
                 if (cfg.maxLights > 0) {
-                    lightNode = multiLightNode(cfg.maxLights)
+                    lightNode = multiLightNode(worldPos, cfg.maxLights)
                     cfg.shadowMaps.forEachIndexed { i, map ->
-                        lightNode.inShaodwFacs[i] = when (map) {
+                        lightNode.inShadowFacs[i] = when (map) {
                             is CascadedShadowMap -> deferredCascadedShadowMapNode(map, "depthMap_$i", mrtDeMultiplex.outViewPos, worldPos).outShadowFac
                             is SimpleShadowMap -> deferredSimpleShadowMapNode(map, "depthMap_$i", worldPos).outShadowFac
                             else -> ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -205,12 +214,17 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     brdfLut = null
                 }
 
-                val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+                val mat = pbrMaterialNode(reflMap, brdfLut).apply {
                     lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
                     inViewDir = viewDirNode(defCam.outCamPos, worldPos).output
 
+                    if (lightNode != null) {
+                        inLightCount = lightNode.outLightCount
+                        inFragToLight = lightNode.outFragToLightDirection
+                        inRadiance = lightNode.outRadiance
+                    }
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     inAlbedo = mrtDeMultiplex.outAlbedo
@@ -242,8 +256,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     }
 
     class DeferredPbrConfig {
-        var sceneCamera: Camera? = null
-
         var isImageBasedLighting = false
         var isScrSpcAmbientOcclusion = false
         var isScrSpcReflections = false
@@ -252,26 +264,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
         var lightBacksides = false
-
-        var depth: Texture? = null
-        var positionAo: Texture? = null
-        var normalRoughness: Texture? = null
-        var albedoMetal: Texture? = null
-        var emissive: Texture? = null
-
         var environmentMaps: EnvironmentMaps? = null
-
-        fun useMrtPass(mrtPass: DeferredMrtPass) {
-            sceneCamera = mrtPass.camera
-            depth = mrtPass.depthTexture
-            positionAo = mrtPass.positionAo
-            normalRoughness = mrtPass.normalRoughness
-            albedoMetal = mrtPass.albedoMetal
-            isWithEmissive = mrtPass.withEmissive
-            if (isWithEmissive) {
-                emissive = mrtPass.emissive
-            }
-        }
 
         fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
             this.environmentMaps = environmentMaps
