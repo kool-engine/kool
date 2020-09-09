@@ -131,7 +131,7 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
         val cfg = PbrMaterialConfig().apply {
             albedoSource = Albedo.STATIC_ALBEDO
             isInstanced = true
-            roughness = 0.3f
+            roughness = 0.5f
         }
         val model = PbrShader.defaultPbrModel(cfg).apply {
             val ifInstColor: StageInterfaceNode

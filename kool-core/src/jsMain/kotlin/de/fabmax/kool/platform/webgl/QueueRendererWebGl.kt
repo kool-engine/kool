@@ -68,7 +68,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
 
                 if (cmd.mesh.geometry.numIndices > 0) {
                     shaderMgr.setupShader(cmd)?.let {
-                        if (it.primitiveType != 0 && it.indexType != 0) {
+                        if (it.indexType != 0) {
                             val insts = cmd.mesh.instances
                             if (insts == null) {
                                 gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)

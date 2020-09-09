@@ -20,7 +20,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
             name = "SkyPass"
             setDynamicSize()
             addColorTexture {
-                colorFormat = TexFormat.RGB_F16
+                colorFormat = TexFormat.RGBA_F16
                 minFilter = FilterMethod.NEAREST
                 magFilter = FilterMethod.NEAREST
             }
@@ -42,7 +42,6 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
         lighting = scene.lighting
 
         scene.addOffscreenPass(this)
-        //clearColor = Color.RED
 
         scene.onRenderScene += { ctx ->
             val vpW = mainRenderPass.viewport.width
