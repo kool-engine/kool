@@ -9,20 +9,21 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.math.toRad
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.PbrSceneShader
 import kotlinx.coroutines.delay
+import kotlin.math.cos
 import kotlin.math.pow
 
 class AtmosphereDemo : DemoScene("Atmosphere") {
@@ -68,7 +69,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         ctx.assetMgr.launch {
             delay(500)
-            loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/milkyway-dark.jpg")
+            loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/stars_bg.jpg")
             loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
             loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
             loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
@@ -124,8 +125,24 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             scatteringCoeffStrength = 1.0f
         }
 
+        val shadowScene = Group().apply {
+            isFrustumChecked = false
+            +colorMesh("shadowEarth") {
+                isFrustumChecked = false
+                generate {
+                    icoSphere {
+                        steps = 5
+                        radius = earthRadius * 1f
+                    }
+                }
+                shader = unlitShader {  }
+            }
+        }
+        earthGroup += shadowScene
+
         shadows.forEach { shadow ->
-            shadow.drawNode = deferredPipeline.contentGroup
+            //shadow.drawNode = deferredPipeline.contentGroup
+            shadow.drawNode = shadowScene
             shadow.shadowBounds = earthGroup.bounds
             //shadow.shadowBounds = deferredPipeline.contentGroup.bounds
         }
@@ -135,6 +152,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 if (!sceneSetupComplete) {
                     sceneSetupComplete = true
                     finalizeSceneSetup(deferredPipeline)
+
+                    earthGroup -= shadowScene
                 }
 
                 (mainScene.camera as PerspectiveCamera).apply {
@@ -171,11 +190,52 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         val model = PbrSceneShader.defaultDeferredPbrModel(shaderCfg).apply {
             fragmentStage {
+                val lightNd = findNodeByType<MultiLightNode>()!!
+                val pbrNd = findNodeByType<PbrMaterialNode>()!!
 
+                val lightGradientTex = textureNode("tLightGradient")
+                addNode(EarthLightColorNode(lightGradientTex, stage)).apply {
+                    inWorldPos = pbrNd.inFragPos
+                    inFragToLight = lightNd.outFragToLightDirection
+                    inRadiance = lightNd.outRadiance
+                    pbrNd.inRadiance = outRadiance
+                }
             }
         }
 
-        return PbrSceneShader(shaderCfg, model)
+        val lightGradientTex = GradientTexture(ColorGradient(
+                cos(90f.toRad()) to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
+                cos(85f.toRad()) to Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(),
+                cos(80f.toRad()) to Color.WHITE.toLinear(),
+                cos(0f.toRad()) to Color.WHITE.toLinear()
+        ))
+        textures[EarthShader.texLightGradient] = lightGradientTex
+
+        return PbrSceneShader(shaderCfg, model).apply {
+            onPipelineCreated += { _, _, _ ->
+                model.findNode<TextureNode>("tLightGradient")?.sampler?.texture = lightGradientTex
+            }
+        }
+    }
+
+    private class EarthLightColorNode(val lightColorGradient: TextureNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {
+        lateinit var inWorldPos: ShaderNodeIoVar
+        lateinit var inFragToLight: ShaderNodeIoVar
+        lateinit var inRadiance: ShaderNodeIoVar
+
+        val outRadiance = ShaderNodeIoVar(ModelVar3f("${name}_outRadiance"), this)
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inWorldPos, inFragToLight, inRadiance)
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("""
+                float ${name}_l = clamp(dot(normalize(${inWorldPos.ref3f()}), ${inFragToLight.ref3f()}), 0.0, 1.0);
+                ${outRadiance.declare()} = ${inRadiance.ref3f()} * ${generator.sampleTexture2d(lightColorGradient.name, "vec2(${name}_l, 0.0)")}.rgb;
+            """)
+        }
     }
 
     private fun finalizeSceneSetup(deferredPipeline: DeferredPipeline) {

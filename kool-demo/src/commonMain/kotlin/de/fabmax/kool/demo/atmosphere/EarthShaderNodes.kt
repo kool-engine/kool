@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Uniform4f
 import de.fabmax.kool.pipeline.UniformColor
 import de.fabmax.kool.pipeline.UniformMat4f
@@ -13,7 +14,7 @@ class HeightMapNode(val heightMap: TextureNode, graph: ShaderGraph) : ShaderNode
     var inEdgeFlag = ShaderNodeIoVar(ModelVar1iConst(0))
     var inEdgeMask = ShaderNodeIoVar(ModelVar1fConst(0f))
     var inSampleStep = ShaderNodeIoVar(ModelVar1fConst(1f / 40f))
-    var inTileName = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inTileName = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inRawTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
     var inModelMat = ShaderNodeIoVar(ModelVarMat4f("_"))
 
@@ -63,11 +64,12 @@ class HeightMapNode(val heightMap: TextureNode, graph: ShaderGraph) : ShaderNode
         """)
 
         generator.appendMain("""
-            float ${name}_hCt = ${generator.sampleTexture2d(heightMap.name, inTexCoord.ref2f())}.x;
-            float ${name}_hLt = ${generator.sampleTexture2d(heightMap.name, "${inTexCoord.ref2f()} - vec2(1.0 / 8192.0, 0.0)")}.x;
-            float ${name}_hRt = ${generator.sampleTexture2d(heightMap.name, "${inTexCoord.ref2f()} + vec2(1.0 / 8192.0, 0.0)")}.x;
-            float ${name}_hUp = ${generator.sampleTexture2d(heightMap.name, "${inTexCoord.ref2f()} - vec2(0.0, 1.0 / 8192.0)")}.x;
-            float ${name}_hDn = ${generator.sampleTexture2d(heightMap.name, "${inTexCoord.ref2f()} + vec2(0.0, 1.0 / 8192.0)")}.x;
+            vec2 ${name}_uv = ${inTexCoord.ref2f()};
+            float ${name}_hCt = ${generator.sampleTexture2d(heightMap.name, "${name}_uv")}.x;
+            float ${name}_hLt = ${generator.sampleTexture2d(heightMap.name, "${name}_uv - vec2(1.0 / 8192.0, 0.0)")}.x;
+            float ${name}_hRt = ${generator.sampleTexture2d(heightMap.name, "${name}_uv + vec2(1.0 / 8192.0, 0.0)")}.x;
+            float ${name}_hUp = ${generator.sampleTexture2d(heightMap.name, "${name}_uv - vec2(0.0, 1.0 / 8192.0)")}.x;
+            float ${name}_hDn = ${generator.sampleTexture2d(heightMap.name, "${name}_uv + vec2(0.0, 1.0 / 8192.0)")}.x;
             
             float ${name}_dx = (${name}_hCt - ${name}_hRt) + (${name}_hLt - ${name}_hCt);
             float ${name}_dy = (${name}_hUp - ${name}_hCt) + (${name}_hCt - ${name}_hDn);
@@ -133,7 +135,10 @@ class SpherePosNode(graph: ShaderGraph) : ShaderNode("spherePos", graph) {
         """)
 
         generator.appendMain("""
-            ${outNrm.declare()} = uv2localPos(${inTileName.ref3f()}, ${inXyPos.ref2f()});
+            vec2 ${name}_uv = ${inXyPos.ref2f()};
+            ${name}_uv.x = (1.0 - $inTileName.w) + ${name}_uv.x * $inTileName.w;
+            
+            ${outNrm.declare()} = uv2localPos(${inTileName.ref3f()}, ${name}_uv);
             ${outPos.declare()} = $outNrm * 60.0;
             
             vec3 ${name}_worldNrm = ($inModelMat * vec4($outNrm, 0.0)).xyz;

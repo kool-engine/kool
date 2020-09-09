@@ -371,7 +371,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                         float dPlanetIn, dPlanetOut;
                         bool planetHit = raySphereIntersection(inScatterPt, dirToSun, vec3(0.0), $uSurfaceRadius, dPlanetIn, dPlanetOut);
                         float dThroughPlanet = (dPlanetOut - dPlanetIn) * float(planetHit);
-                        float planetLenThresh = $uSurfaceRadius / 5.0;
+                        float planetLenThresh = $uSurfaceRadius / 3.0;
                         
                         if (dThroughPlanet < planetLenThresh) {
                             vec3 verticalDir = normalize(inScatterPt);

@@ -1,9 +1,6 @@
 package de.fabmax.kool.demo.atmosphere
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.Mesh
@@ -36,9 +33,9 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
     private val faces = listOf(front, back, left, right, top, bottom)
     private var centerFace: Face? = null
 
-    private val centerTileName = MutableVec3f()
-    private val oldCenterTileName = MutableVec3f()
-    private val tmpTileName = MutableVec3f()
+    private val centerTileName = MutableVec4f()
+    private val oldCenterTileName = MutableVec4f()
+    private val tmpTileName = MutableVec4f()
 
     init {
         isFrustumChecked = false
@@ -90,7 +87,7 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
                     // most vertex attributes are derived from texture coordinate by the vertex shader
                     // let x start slightly above 0.0 to avoid texture artifacts on longitude wrap edge (-180° -> +180°)
                     // this results in tiny longitudinal gaps between tiles but they are usually to small to notice.
-                    texCoord.set(0.00001f + x / gridSz.toFloat() * 0.99999f, y / gridSz.toFloat())
+                    texCoord.set(x / gridSz.toFloat(), y / gridSz.toFloat())
 
                     getIntAttribute(ATTRIB_EDGE_FLAG)!!.i = when {
                         x == 0 && y % 2 == 1 -> EDGE_RIGHT
@@ -306,9 +303,10 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
         }
     }
 
-    private fun encodeTileName(x: Int, y: Int, zoom: Int, result: MutableVec3f): MutableVec3f {
+    private fun encodeTileName(x: Int, y: Int, zoom: Int, result: MutableVec4f): MutableVec4f {
         val sz = 1 shl zoom
-        return result.set(x.toFloat(), y.toFloat(), sz.toFloat())
+        val uvRange = if (x == sz / 2 - 1) 0.99999f else 1f
+        return result.set(x.toFloat(), y.toFloat(), sz.toFloat(), uvRange)
     }
 
     private fun cubeFaceUv(normalPos: Vec3f): Pair<Vec2f, Face> {
@@ -353,7 +351,7 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
 
         val ATTRIB_EDGE_FLAG = Attribute("aEdgeFlag", GlslType.INT)
         val ATTRIB_EDGE_MASK = Attribute("aEdgeMask", GlslType.FLOAT)
-        val ATTRIB_TILE_NAME = Attribute("aTileName", GlslType.VEC_3F)
+        val ATTRIB_TILE_NAME = Attribute("aTileName", GlslType.VEC_4F)
 
         private val INSTANCE_ATTRIBUTES = listOf(MeshInstanceList.MODEL_MAT, ATTRIB_TILE_NAME, ATTRIB_EDGE_MASK, Attribute.COLORS)
     }

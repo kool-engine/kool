@@ -45,6 +45,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
         const val texEarthNrm = "Earth Normal Map"
         const val texEarthHeight = "Earth Height Map"
         const val texOceanNrm = "Ocean Normal Map"
+        const val texLightGradient = "Light Gradient"
 
         fun shaderConfig(textures: Map<String, Texture>): PbrMaterialConfig {
             return PbrMaterialConfig().apply {

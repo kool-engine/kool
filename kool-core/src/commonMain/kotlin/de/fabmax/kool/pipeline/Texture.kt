@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
 import kotlinx.coroutines.CoroutineScope
@@ -71,6 +72,17 @@ class SingleColorTexture(color: Color) : Texture(
     }
 }
 
+class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture(
+        TextureProps(
+                addressModeU = AddressMode.CLAMP_TO_EDGE,
+                addressModeV = AddressMode.CLAMP_TO_EDGE,
+                minFilter = FilterMethod.LINEAR,
+                magFilter = FilterMethod.LINEAR,
+                mipMapping = false,
+                maxAnisotropy = 1),
+        "gradientTex-$size",
+        loader = { BufferedTextureData.gradient(gradient, size) })
+
 open class CubeMapTexture(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
         Texture(props, name, loader)
 
@@ -132,6 +144,18 @@ open class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, for
             buf[2] = (color.b * 255f).roundToInt().toByte()
             buf[3] = (color.a * 255f).roundToInt().toByte()
             return BufferedTextureData(buf, 1, 1, TexFormat.RGBA)
+        }
+
+        fun gradient(gradient: ColorGradient, size: Int): BufferedTextureData {
+            val buf = createUint8Buffer(4 * size)
+            for (i in 0 until size) {
+                val color = gradient.getColor(i / (size - 1f))
+                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toByte()
+                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toByte()
+                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toByte()
+                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toByte()
+            }
+            return BufferedTextureData(buf, size, 1, TexFormat.RGBA)
         }
     }
 }
