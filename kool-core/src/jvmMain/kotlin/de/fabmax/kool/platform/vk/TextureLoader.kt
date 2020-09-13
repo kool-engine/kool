@@ -39,7 +39,7 @@ object TextureLoader {
         return tex
     }
 
-    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: CubeMapTextureData) : LoadedTextureVk {
+    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: TextureDataCube) : LoadedTextureVk {
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
@@ -99,7 +99,7 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTexture(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
+    fun loadTexture2d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
         val width = img.width
         val height = img.height
         val dstFmt = checkFormat(img.format)

@@ -149,7 +149,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return tex
     }
 
-    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): TextureCube {
+    override fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
         val tex = TextureCube(props, name) { texData }
         ctx.renderBackend.loadTexCube(tex, texData)
         return tex

@@ -294,6 +294,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     private fun DescriptorType.intType() = when (this) {
+        DescriptorType.SAMPLER_1D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         DescriptorType.SAMPLER_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         DescriptorType.SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         DescriptorType.SAMPLER_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER

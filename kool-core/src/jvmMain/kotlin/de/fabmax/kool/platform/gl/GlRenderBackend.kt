@@ -151,7 +151,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    override fun loadTexCube(tex: TextureCube, data: CubeMapTextureData) {
+    override fun loadTexCube(tex: TextureCube, data: TextureDataCube) {
         tex.loadedTexture = TextureLoader.loadTexture(ctx, tex.props, data)
         tex.loadingState = Texture.LoadingState.LOADED
     }

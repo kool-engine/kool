@@ -208,6 +208,26 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
     }
 }
 
+class MappedUniformTex1d(private val sampler1d: TextureSampler1d, texUnit: Int, val locations: List<Int>) :
+        MappedUniformTex(texUnit, GL_TEXTURE_2D) {
+    // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
+
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        var texUnit = texUnit
+        var isValid = true
+        for (i in 0 until sampler1d.arraySize) {
+            val tex = sampler1d.textures[i]
+            if (tex != null && checkLoadingState(ctx, tex, i)) {
+                glUniform1i(locations[i], this.texUnit - GL_TEXTURE0 + i)
+            } else {
+                isValid = false
+            }
+            texUnit++
+        }
+        return isValid
+    }
+}
+
 class MappedUniformTex2d(private val sampler2d: TextureSampler2d, texUnit: Int, val locations: List<Int>) :
         MappedUniformTex(texUnit, GL_TEXTURE_2D) {
     override fun setUniform(ctx: Lwjgl3Context): Boolean {

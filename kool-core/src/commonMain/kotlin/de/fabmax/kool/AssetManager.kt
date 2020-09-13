@@ -124,14 +124,14 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 
-    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
+    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): TextureDataCube {
         val ftd = loadTextureData(ft)
         val bkd = loadTextureData(bk)
         val ltd = loadTextureData(lt)
         val rtd = loadTextureData(rt)
         val upd = loadTextureData(up)
         val dnd = loadTextureData(dn)
-        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
+        return TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd)
     }
 
     abstract suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData
@@ -143,7 +143,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d
 
-    abstract fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps = TextureProps(), name: String? = null): TextureCube
+    abstract fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube
 
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {

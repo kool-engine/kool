@@ -13,12 +13,26 @@ import kotlin.math.max
 object TextureLoader {
     fun loadTexture(ctx: Lwjgl3Context, props: TextureProps, data: TextureData) : LoadedTextureGl {
         return when (data) {
+            is TextureData1d -> loadTexture1d(ctx, props, data)
             is TextureData2d -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
             is TextureData3d -> loadTexture3d(ctx, props, data)
-            is CubeMapTextureData -> loadTextureCube(ctx, props, data)
+            is TextureDataCube -> loadTextureCube(ctx, props, data)
             else -> throw IllegalArgumentException("TextureData type not supported: $data")
         }
+    }
+
+    private fun loadTexture1d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+        // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), img.estimateTexSize())
+        tex.setSize(img.width, 1, 1)
+        tex.applySamplerProps(props)
+
+        texImage2d(GL_TEXTURE_2D, img)
+        if (props.mipMapping) {
+            glGenerateMipmap(GL_TEXTURE_2D)
+        }
+        return tex
     }
 
     private fun loadTexture2d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
@@ -45,7 +59,7 @@ object TextureLoader {
         return tex
     }
 
-    private fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: CubeMapTextureData) : LoadedTextureGl {
+    private fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: TextureDataCube) : LoadedTextureGl {
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)
@@ -64,7 +78,7 @@ object TextureLoader {
 
     private fun TextureData.estimateTexSize(): Int {
         val layers = when (this) {
-            is CubeMapTextureData -> 6
+            is TextureDataCube -> 6
             is TextureData3d -> depth
             else -> 1
         }
@@ -75,6 +89,9 @@ object TextureLoader {
 
     private fun texImage2d(target: Int, data: TextureData) {
         when (data) {
+            is TextureData1d -> {
+                glTexImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
+            }
             is TextureData2d -> {
                 glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
             }

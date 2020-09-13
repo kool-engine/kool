@@ -53,6 +53,12 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: (
     }
 }
 
+open class Texture1d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData1d)? = null) :
+        Texture(props, name, loader) {
+
+    override val type = "1D"
+}
+
 open class Texture2d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
         Texture(props, name, loader) {
 
@@ -68,7 +74,7 @@ open class Texture3d(props: TextureProps = TextureProps(), name: String? = null,
     override val type = "3D"
 }
 
-open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
+open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureDataCube)? = null) :
         Texture(props, name, loader) {
 
     override val type = "Cube"
@@ -94,7 +100,7 @@ class SingleColorTexture(color: Color) : Texture2d(
     }
 }
 
-class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture2d(
+class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture1d(
         TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE,
                 addressModeV = AddressMode.CLAMP_TO_EDGE,
@@ -103,7 +109,7 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture2d(
                 mipMapping = false,
                 maxAnisotropy = 1),
         "gradientTex-$size",
-        loader = { TextureData2d.gradient(gradient, size) }) {
+        loader = { TextureData1d.gradient(gradient, size) }) {
 
     override val type = "Gradient"
 
@@ -143,6 +149,29 @@ abstract class TextureData {
     abstract val data: Any
 }
 
+class TextureData1d(override val data: Uint8Buffer, width: Int, format: TexFormat) : TextureData() {
+    init {
+        this.width = width
+        this.height = 1
+        this.depth = 1
+        this.format = format
+    }
+
+    companion object {
+        fun gradient(gradient: ColorGradient, size: Int): TextureData1d {
+            val buf = createUint8Buffer(4 * size)
+            for (i in 0 until size) {
+                val color = gradient.getColor(i / (size - 1f))
+                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toByte()
+                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toByte()
+                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toByte()
+                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toByte()
+            }
+            return TextureData1d(buf, size, TexFormat.RGBA)
+        }
+    }
+}
+
 /**
  * Byte buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
  * is specified by the format parameter. The buffer size must match the texture size and data format.
@@ -169,18 +198,6 @@ open class TextureData2d(override val data: Uint8Buffer, width: Int, height: Int
             buf[3] = (color.a * 255f).roundToInt().toByte()
             return TextureData2d(buf, 1, 1, TexFormat.RGBA)
         }
-
-        fun gradient(gradient: ColorGradient, size: Int): TextureData2d {
-            val buf = createUint8Buffer(4 * size)
-            for (i in 0 until size) {
-                val color = gradient.getColor(i / (size - 1f))
-                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toByte()
-                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toByte()
-                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toByte()
-                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toByte()
-            }
-            return TextureData2d(buf, size, 1, TexFormat.RGBA)
-        }
     }
 }
 
@@ -193,8 +210,8 @@ class TextureData3d(override val data: Uint8Buffer, width: Int, height: Int, dep
     }
 }
 
-class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
-                         val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
+class TextureDataCube(val front: TextureData, val back: TextureData, val left: TextureData,
+                      val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
     init {
         width = front.width
         height = front.height

@@ -31,6 +31,14 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
             +uniformBuilder
         }
 
+        fun texture1d(name: String, vararg stages: ShaderStage, block: TextureSampler1d.Builder.() -> Unit) {
+            val sampler = TextureSampler1d.Builder()
+            sampler.name = name
+            sampler.stages += stages
+            sampler.block()
+            +sampler
+        }
+
         fun texture2d(name: String, vararg stages: ShaderStage, block: TextureSampler2d.Builder.() -> Unit) {
             val sampler = TextureSampler2d.Builder()
             sampler.name = name
@@ -83,6 +91,35 @@ abstract class Descriptor(builder: Builder<*>, val binding: Int, val type: Descr
         val stages = mutableSetOf<ShaderStage>()
 
         abstract fun create(binding: Int): T
+    }
+}
+
+class TextureSampler1d private constructor(builder: Builder, binding: Int, hash: ULong) :
+        Descriptor(builder, binding, DescriptorType.SAMPLER_1D, hash) {
+
+    val arraySize = builder.arraySize
+
+    val onUpdate: ((TextureSampler1d, DrawCommand) -> Unit) ? = builder.onUpdate
+    val textures = Array<Texture1d?>(arraySize) { null }
+    var texture: Texture1d?
+        get() = textures[0]
+        set(value) { textures[0] = value }
+
+    class Builder : Descriptor.Builder<TextureSampler1d>() {
+        var arraySize = 1
+        var isDepthSampler = false
+        var onUpdate: ((TextureSampler1d, DrawCommand) -> Unit) ? = null
+        var onCreate: ((TextureSampler1d) -> Unit) ? = null
+
+        init {
+            name = "texture"
+        }
+
+        override fun create(binding: Int): TextureSampler1d {
+            val sampler = TextureSampler1d(this, binding, DescriptorType.SAMPLER_1D.hashCode().toULong() * 71023UL)
+            onCreate?.invoke(sampler)
+            return sampler
+        }
     }
 }
 
@@ -226,6 +263,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
 
 enum class DescriptorType {
+    SAMPLER_1D,
     SAMPLER_2D,
     SAMPLER_3D,
     SAMPLER_CUBE,

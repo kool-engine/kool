@@ -65,6 +65,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
+    constructor(binding: Int, sampler1d: TextureSampler1d) : this(binding, TexSamplerWrapper(sampler1d), sampler1d)
     constructor(binding: Int, sampler2d: TextureSampler2d) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
     constructor(binding: Int, sampler3d: TextureSampler3d) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
     constructor(binding: Int, samplerCube: TextureSamplerCube) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
@@ -192,17 +193,20 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     private class TexSamplerWrapper private constructor(
             val mode: Int,
+            val sampler1d: TextureSampler1d? = null,
             val sampler2d: TextureSampler2d? = null,
             val sampler3d: TextureSampler3d? = null,
             val samplerCube: TextureSamplerCube? = null,
             val arraySize: Int) {
 
+        constructor(sampler1d: TextureSampler1d) : this(MODE_1D, sampler1d = sampler1d, arraySize = sampler1d.arraySize)
         constructor(sampler2d: TextureSampler2d) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
         constructor(sampler3d: TextureSampler3d) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
         constructor(samplerCube: TextureSamplerCube) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
 
         val textures: Array<out Texture?>
             get() = when (mode) {
+                MODE_1D -> sampler1d!!.textures
                 MODE_2D -> sampler2d!!.textures
                 MODE_3D -> sampler3d!!.textures
                 MODE_CUBE -> samplerCube!!.textures
@@ -211,6 +215,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         fun onUpdate(cmd: DrawCommand) {
             when (mode) {
+                MODE_1D -> sampler1d!!.onUpdate?.invoke(sampler1d, cmd)
                 MODE_2D -> sampler2d!!.onUpdate?.invoke(sampler2d, cmd)
                 MODE_3D -> sampler3d!!.onUpdate?.invoke(sampler3d, cmd)
                 MODE_CUBE -> samplerCube!!.onUpdate?.invoke(samplerCube, cmd)
@@ -219,9 +224,10 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         }
 
         companion object {
-            const val MODE_2D = 1
-            const val MODE_3D = 2
-            const val MODE_CUBE = 3
+            const val MODE_1D = 1
+            const val MODE_2D = 2
+            const val MODE_3D = 3
+            const val MODE_CUBE = 4
         }
     }
 }

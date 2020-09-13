@@ -121,7 +121,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return tex
     }
 
-    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): TextureCube {
+    override fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
         val tex = TextureCube(props, name) { texData }
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED

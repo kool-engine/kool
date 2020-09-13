@@ -25,12 +25,26 @@ import kotlin.math.max
 object TextureLoader {
     fun loadTexture(ctx: JsContext, props: TextureProps, data: TextureData) : LoadedTextureWebGl {
         return when (data) {
+            is TextureData1d -> loadTexture1d(ctx, props, data)
             is TextureData2d -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
             is TextureData3d -> loadTexture3d(ctx, props, data)
-            is CubeMapTextureData -> loadTextureCube(ctx, props, data)
+            is TextureDataCube -> loadTextureCube(ctx, props, data)
             else -> throw IllegalArgumentException("TextureData type not supported: $data")
         }
+    }
+
+    private fun loadTexture1d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
+        // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, gl.createTexture(), img.estimateTexSize())
+        tex.setSize(img.width, 1, 1)
+        tex.applySamplerProps(props)
+
+        texImage2d(gl, TEXTURE_2D, img)
+        if (props.mipMapping) {
+            gl.generateMipmap(TEXTURE_2D)
+        }
+        return tex
     }
 
     private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
@@ -58,7 +72,7 @@ object TextureLoader {
         return tex
     }
 
-    private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: CubeMapTextureData) : LoadedTextureWebGl {
+    private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: TextureDataCube) : LoadedTextureWebGl {
         val gl = ctx.gl
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, gl.createTexture(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
@@ -77,7 +91,7 @@ object TextureLoader {
     }
 
     private fun TextureData.estimateTexSize(): Int {
-        val layers = if (this is CubeMapTextureData) 6 else 1
+        val layers = if (this is TextureDataCube) 6 else 1
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
         return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
     }
@@ -85,6 +99,9 @@ object TextureLoader {
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {
         gl.pixelStorei(UNPACK_COLORSPACE_CONVERSION_WEBGL, NONE)
         when (data) {
+            is TextureData1d -> {
+                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
+            }
             is TextureData2d -> {
                 gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
             }

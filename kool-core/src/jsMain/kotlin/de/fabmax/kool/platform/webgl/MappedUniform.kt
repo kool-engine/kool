@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.webgl
 
+import de.fabmax.kool.JsImpl.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
@@ -178,6 +179,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                 texture.loadingState = Texture.LoadingState.LOADING
                 val defTex = ctx.assetMgr.loadTextureAsync(loader)
                 defTex.invokeOnCompletion { ex ->
+                    println("tex loaded: $texture")
                     if (ex != null) {
                         logE { "Texture loading failed: $ex" }
                         texture.loadingState = Texture.LoadingState.LOADING_FAILED
@@ -209,6 +211,26 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                 loaded
             }
         }
+    }
+}
+
+class MappedUniformTex1d(private val sampler1d: TextureSampler1d, texUnit: Int, val locations: List<WebGLUniformLocation?>) :
+        MappedUniformTex(texUnit, TEXTURE_2D) {
+    // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
+
+    override fun setUniform(ctx: JsContext): Boolean {
+        var texUnit = texUnit
+        var isValid = true
+        for (i in 0 until sampler1d.arraySize) {
+            val tex = sampler1d.textures[i]
+            if (tex != null && checkLoadingState(ctx, tex, i)) {
+                gl.uniform1i(locations[i], this.texUnit - TEXTURE0 + i)
+            } else {
+                isValid = false
+            }
+            texUnit++
+        }
+        return isValid
     }
 }
 

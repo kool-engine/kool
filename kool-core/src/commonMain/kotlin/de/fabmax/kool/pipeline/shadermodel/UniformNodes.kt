@@ -100,6 +100,26 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
     }
 }
 
+class Texture1dNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
+    val visibleIn = mutableSetOf(graph.stage)
+    lateinit var sampler: TextureSampler1d
+
+    var arraySize = 1
+    var isDepthTexture = false
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        shaderGraph.descriptorSet.apply {
+            texture1d(name, shaderGraph.stage) {
+                arraySize = this@Texture1dNode.arraySize
+                isDepthSampler = isDepthTexture
+                stages += visibleIn
+                onCreate = { sampler = it }
+            }
+        }
+    }
+}
+
 class Texture2dNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
     lateinit var sampler: TextureSampler2d

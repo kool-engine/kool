@@ -104,7 +104,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                 if (desc.stages.contains(stage)) {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(set, desc))
-                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler(set, desc))
+                        is TextureSampler1d -> srcBuilder.append(generateTextureSampler1d(set, desc))
+                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler2d(set, desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(set, desc))
                         is TextureSamplerCube -> srcBuilder.append(generateCubeMapSampler(set, desc))
                         else -> TODO("Descriptor type not implemented: ${desc::class.java.name}")
@@ -139,7 +140,12 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler2d): String {
+    private fun generateTextureSampler1d(set: DescriptorSetLayout, desc: TextureSampler1d): String {
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name}$arraySuffix;\n"
+    }
+
+    private fun generateTextureSampler2d(set: DescriptorSetLayout, desc: TextureSampler2d): String {
         val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"
@@ -217,6 +223,9 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         override fun appendMain(glslCode: String) {
             mainCode += glslCode
         }
+
+        override fun sampleTexture1d(texName: String, texCoords: String, lod: String?) =
+                sampleTexture(texName, "vec2($texCoords, 0.0)", lod)
 
         override fun sampleTexture2d(texName: String, texCoords: String, lod: String?) =
                 sampleTexture(texName, texCoords, lod)

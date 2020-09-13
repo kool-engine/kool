@@ -320,11 +320,19 @@ class ShaderModel(val modelInfo: String = "") {
             return getWeightNd
         }
 
+        fun texture1dNode(texName: String) = addNode(Texture1dNode(stage, texName))
+
         fun texture2dNode(texName: String) = addNode(Texture2dNode(stage, texName))
 
         fun texture3dNode(texName: String) = addNode(Texture3dNode(stage, texName))
 
         fun textureCubeNode(texName: String) = addNode(TextureCubeNode(stage, texName))
+
+        fun texture1dSamplerNode(texNode: Texture1dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): Texture1dSamplerNode {
+            val texSampler = addNode(Texture1dSamplerNode(texNode, stage, premultiply))
+            texCoords?.let { texSampler.inTexCoord = it }
+            return texSampler
+        }
 
         fun texture2dSamplerNode(texNode: Texture2dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): Texture2dSamplerNode {
             val texSampler = addNode(Texture2dSamplerNode(texNode, stage, premultiply))

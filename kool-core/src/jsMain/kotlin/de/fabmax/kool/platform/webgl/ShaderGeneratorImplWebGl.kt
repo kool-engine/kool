@@ -78,9 +78,10 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
                 if (desc.stages.contains(stage)) {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(desc))
-                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler(desc))
+                        is TextureSampler1d -> srcBuilder.append(generateTextureSampler1d(desc))
+                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler2d(desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(desc))
-                        is TextureSamplerCube -> srcBuilder.append(generateCubeMapSampler(desc))
+                        is TextureSamplerCube -> srcBuilder.append(generateTextureSamplerCube(desc))
                         else -> TODO("Descriptor type not implemented: $desc")
                     }
                 }
@@ -108,7 +109,12 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateTextureSampler(desc: TextureSampler2d): String {
+    private fun generateTextureSampler1d(desc: TextureSampler1d): String {
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "uniform sampler2D ${desc.name}$arraySuffix;\n"
+    }
+
+    private fun generateTextureSampler2d(desc: TextureSampler2d): String {
         val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "uniform $samplerType ${desc.name}$arraySuffix;\n"
@@ -119,7 +125,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return "uniform sampler3D ${desc.name}$arraySuffix;\n"
     }
 
-    private fun generateCubeMapSampler(desc: TextureSamplerCube): String {
+    private fun generateTextureSamplerCube(desc: TextureSamplerCube): String {
         val samplerType = if (desc.isDepthSampler) "samplerCubeShadow" else "samplerCube"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "uniform $samplerType ${desc.name}$arraySuffix;\n"
@@ -185,6 +191,9 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         override fun appendMain(glslCode: String) {
             mainCode += glslCode
         }
+
+        override fun sampleTexture1d(texName: String, texCoords: String, lod: String?) =
+                sampleTexture(texName, "vec2($texCoords, 0.0)", lod)
 
         override fun sampleTexture2d(texName: String, texCoords: String, lod: String?) =
                 sampleTexture(texName, texCoords, lod)

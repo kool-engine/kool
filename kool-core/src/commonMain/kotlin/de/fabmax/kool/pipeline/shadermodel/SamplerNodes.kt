@@ -5,6 +5,33 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 
+class Texture1dSamplerNode(val texture: Texture1dNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+        ShaderNode("tex1d_sampler_${texture.name}_${graph.nextNodeId}", graph) {
+
+    var inTexCoord = ShaderNodeIoVar(ModelVar1fConst(0f))
+    val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+    var texLod: ShaderNodeIoVar? = null
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(texture)
+        dependsOn(inTexCoord)
+        texLod?.let { dependsOn(it) }
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        val lod = texLod
+        if (lod != null) {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture1d(texture.name, inTexCoord.ref1f(), lod.ref1f())};")
+        } else {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture1d(texture.name, inTexCoord.ref1f())};")
+        }
+        if (premultiply) {
+            generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
+        }
+    }
+}
+
 class Texture2dSamplerNode(val texture: Texture2dNode, graph: ShaderGraph, val premultiply: Boolean = false) :
         ShaderNode("tex2d_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 

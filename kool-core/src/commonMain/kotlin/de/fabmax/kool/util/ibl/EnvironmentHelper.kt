@@ -17,7 +17,7 @@ object EnvironmentHelper {
                 mipMapping = false, maxAnisotropy = 1
         )
         val cubeTex = TextureCube(props, "singleColorEnv-$color") {
-            CubeMapTextureData(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
+            TextureDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
         }
 
         val brdfLutPass = BrdfLutPass(scene)

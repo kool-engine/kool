@@ -41,6 +41,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private var timeSlider: Slider? = null
 
     val textures = mutableMapOf<String, Texture2d>()
+    val textures1d = mutableMapOf<String, Texture1d>()
     lateinit var deferredPipeline: DeferredPipeline
     val atmoShader = AtmosphericScatteringShader()
 
@@ -175,6 +176,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         onDispose += {
             textures.values.forEach { it.dispose() }
+            textures1d.values.forEach { it.dispose() }
         }
     }
 
@@ -193,7 +195,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 val lightNd = findNodeByType<MultiLightNode>()!!
                 val pbrNd = findNodeByType<PbrMaterialNode>()!!
 
-                val lightGradientTex = texture2dNode("tLightGradient")
+                val lightGradientTex = texture1dNode("tLightGradient")
                 addNode(EarthLightColorNode(lightGradientTex, stage)).apply {
                     inWorldPos = pbrNd.inFragPos
                     inFragToLight = lightNd.outFragToLightDirection
@@ -209,16 +211,16 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 cos(80f.toRad()) to Color.WHITE.toLinear(),
                 cos(0f.toRad()) to Color.WHITE.toLinear()
         ))
-        textures[EarthShader.texLightGradient] = lightGradientTex
+        textures1d[EarthShader.texLightGradient] = lightGradientTex
 
         return PbrSceneShader(shaderCfg, model).apply {
             onPipelineCreated += { _, _, _ ->
-                model.findNode<Texture2dNode>("tLightGradient")?.sampler?.texture = lightGradientTex
+                model.findNode<Texture1dNode>("tLightGradient")?.sampler?.texture = lightGradientTex
             }
         }
     }
 
-    private class EarthLightColorNode(val lightColorGradient: Texture2dNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {
+    private class EarthLightColorNode(val lightColorGradient: Texture1dNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {
         lateinit var inWorldPos: ShaderNodeIoVar
         lateinit var inFragToLight: ShaderNodeIoVar
         lateinit var inRadiance: ShaderNodeIoVar
@@ -233,7 +235,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
                 float ${name}_l = clamp(dot(normalize(${inWorldPos.ref3f()}), ${inFragToLight.ref3f()}), 0.0, 1.0);
-                ${outRadiance.declare()} = ${inRadiance.ref3f()} * ${generator.sampleTexture2d(lightColorGradient.name, "vec2(${name}_l, 0.0)")}.rgb;
+                ${outRadiance.declare()} = ${inRadiance.ref3f()} * ${generator.sampleTexture1d(lightColorGradient.name, "${name}_l")}.rgb;
             """)
         }
     }
