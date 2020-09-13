@@ -8,7 +8,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -373,7 +373,7 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
         }
     }
 
-    private fun gBufferShader(map: Texture, offset: Float, scale: Float): ModeledShader {
+    private fun gBufferShader(map: Texture2d, offset: Float, scale: Float): ModeledShader {
         return ModeledShader.TextureColor(map, model = rgbMapColorModel(offset, scale))
     }
 
@@ -385,7 +385,7 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
             positionOutput = simpleVertexPositionNode().outVec4
         }
         fragmentStage {
-            val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
+            val sampler = texture2dSamplerNode(texture2dNode("colorTex"), ifTexCoords.output)
             val rgb = splitNode(sampler.outColor, "rgb").output
             val scaled = multiplyNode(addNode(rgb, ShaderNodeIoVar(ModelVar1fConst(offset))).output, scale)
             colorOutput(scaled.output, alpha = ShaderNodeIoVar(ModelVar1fConst(1f)))
@@ -394,9 +394,9 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
 
     private class MetalRoughAoTex(val mrtPass: DeferredMrtPass) : ModeledShader(shaderModel()) {
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            model.findNode<TextureNode>("positionAo")!!.sampler.texture = mrtPass.positionAo
-            model.findNode<TextureNode>("normalRough")!!.sampler.texture = mrtPass.normalRoughness
-            model.findNode<TextureNode>("albedoMetal")!!.sampler.texture = mrtPass.albedoMetal
+            model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = mrtPass.positionAo
+            model.findNode<Texture2dNode>("normalRough")!!.sampler.texture = mrtPass.normalRoughness
+            model.findNode<Texture2dNode>("albedoMetal")!!.sampler.texture = mrtPass.albedoMetal
             super.onPipelineCreated(pipeline, mesh, ctx)
         }
 
@@ -409,9 +409,9 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
                     positionOutput = simpleVertexPositionNode().outVec4
                 }
                 fragmentStage {
-                    val aoSampler = textureSamplerNode(textureNode("positionAo"), ifTexCoords.output)
-                    val roughSampler = textureSamplerNode(textureNode("normalRough"), ifTexCoords.output)
-                    val metalSampler = textureSamplerNode(textureNode("albedoMetal"), ifTexCoords.output)
+                    val aoSampler = texture2dSamplerNode(texture2dNode("positionAo"), ifTexCoords.output)
+                    val roughSampler = texture2dSamplerNode(texture2dNode("normalRough"), ifTexCoords.output)
+                    val metalSampler = texture2dSamplerNode(texture2dNode("albedoMetal"), ifTexCoords.output)
                     val ao = splitNode(aoSampler.outColor, "a").output
                     val rough = splitNode(roughSampler.outColor, "a").output
                     val metal = splitNode(metalSampler.outColor, "a").output

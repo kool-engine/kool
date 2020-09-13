@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.util.vma.Vma
@@ -109,7 +109,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
     }
 
-    private fun Texture.clear() {
+    private fun TextureCube.clear() {
         loadedTexture = null
         loadingState = Texture.LoadingState.NOT_LOADED
     }
@@ -208,7 +208,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         }
     }
 
-    private fun CubeMapTexture.createCopyTexColor(ctx: Lwjgl3Context) {
+    private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
         val vkBackend = ctx.renderBackend as VkRenderBackend
         val prev = loadedTexture
         if (prev != null) {

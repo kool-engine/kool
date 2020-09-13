@@ -1,8 +1,8 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
 import java.awt.Transparency
@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 
 class ImageTextureData(image: BufferedImage, val dstFormat: TexFormat?) :
-        BufferedTextureData(image.toBuffer(dstFormat), image.width, image.height, chooseDstFormat(image.format, dstFormat)) {
+        TextureData2d(image.toBuffer(dstFormat), image.width, image.height, chooseDstFormat(image.format, dstFormat)) {
 
     companion object {
         private val BufferedImage.format: TexFormat get() {

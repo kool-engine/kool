@@ -1,7 +1,7 @@
 package de.fabmax.kool.util.ao
 
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.deferred.DeferredMrtPass
@@ -14,7 +14,7 @@ abstract class AoPipeline {
     // ao map size relative to screen resolution
     var mapSize = 0.5f
 
-    val aoMap: Texture
+    val aoMap: Texture2d
         get() = denoisePass.colorTexture!!
 
     var radius: Float

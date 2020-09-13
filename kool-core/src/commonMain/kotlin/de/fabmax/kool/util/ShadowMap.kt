@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
-import de.fabmax.kool.pipeline.TextureSampler
+import de.fabmax.kool.pipeline.TextureSampler2d
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
 import kotlin.math.min
@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 
 interface ShadowMap {
     var isShadowMapEnabled: Boolean
-    fun setupSampler(sampler: TextureSampler?)
+    fun setupSampler(sampler: TextureSampler2d?)
 }
 
 class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048, drawNode: Node = scene) :
@@ -66,7 +66,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
         super.dispose(ctx)
     }
 
-    override fun setupSampler(sampler: TextureSampler?) {
+    override fun setupSampler(sampler: TextureSampler2d?) {
         sampler?.texture = depthTexture
     }
 
@@ -199,7 +199,7 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
         }
     }
 
-    override fun setupSampler(sampler: TextureSampler?) {
+    override fun setupSampler(sampler: TextureSampler2d?) {
         if (sampler != null) {
             cascades.forEachIndexed { i, cascade ->
                 sampler.textures[i] = cascade.depthTexture

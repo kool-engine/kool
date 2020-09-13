@@ -2,16 +2,16 @@ package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 
-class DeferredOutputShader(private val pbrOutput: Texture, private val depth: Texture) : ModeledShader(outputModel()) {
+class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: Texture2d) : ModeledShader(outputModel()) {
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        val textureSampler = model.findNode<TextureNode>("deferredPbrOutput")?.sampler
+        val textureSampler = model.findNode<Texture2dNode>("deferredPbrOutput")?.sampler
         textureSampler?.texture = pbrOutput
-        val depthSampler = model.findNode<TextureNode>("deferredDepthOutput")?.sampler
+        val depthSampler = model.findNode<Texture2dNode>("deferredDepthOutput")?.sampler
         depthSampler?.texture = depth
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
@@ -25,9 +25,9 @@ class DeferredOutputShader(private val pbrOutput: Texture, private val depth: Te
                 positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
             }
             fragmentStage {
-                val sampler = textureSamplerNode(textureNode("deferredPbrOutput"), ifTexCoords.output)
+                val sampler = texture2dSamplerNode(texture2dNode("deferredPbrOutput"), ifTexCoords.output)
                 colorOutput(hdrToLdrNode(sampler.outColor).outColor)
-                val depthSampler = textureSamplerNode(textureNode("deferredDepthOutput"), ifTexCoords.output)
+                val depthSampler = texture2dSamplerNode(texture2dNode("deferredDepthOutput"), ifTexCoords.output)
                 depthOutput(depthSampler.outColor)
             }
         }

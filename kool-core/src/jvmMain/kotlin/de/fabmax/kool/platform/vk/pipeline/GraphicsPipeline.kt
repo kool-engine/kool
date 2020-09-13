@@ -294,9 +294,9 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     private fun DescriptorType.intType() = when (this) {
-        DescriptorType.IMAGE_SAMPLER -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.IMAGE_SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-        DescriptorType.CUBE_IMAGE_SAMPLER -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        DescriptorType.SAMPLER_2D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        DescriptorType.SAMPLER_3D -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        DescriptorType.SAMPLER_CUBE -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         DescriptorType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     }
 
@@ -309,9 +309,9 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
 
                     val arraySize = when (b) {
-                        is TextureSampler -> b.arraySize
+                        is TextureSampler2d -> b.arraySize
                         is TextureSampler3d -> b.arraySize
-                        is CubeMapSampler -> b.arraySize
+                        is TextureSamplerCube -> b.arraySize
                         else -> 1
                     }
                     descriptorCount(arraySize)

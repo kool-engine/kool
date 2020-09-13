@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture?, cubeMap: CubeMapTexture?) :
+class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "ReflectionMapPass"
             setSize(256, 256)
@@ -44,9 +44,9 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
                     }
                     fragmentStage {
                         if (hdriMap != null) {
-                            addNode(EnvEquiRectSamplerNode(textureNode(texName), stage))
+                            addNode(EnvEquiRectSamplerNode(texture2dNode(texName), stage))
                         } else {
-                            addNode(EnvCubeSamplerNode(cubeMapNode(texName), stage))
+                            addNode(EnvCubeSamplerNode(textureCubeNode(texName), stage))
                         }
                         val convNd = addNode(ConvoluteReflectionNode(stage)).apply {
                             inLocalPos = ifLocalPos.output
@@ -163,7 +163,7 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
     }
 
     companion object {
-        fun reflectionMapFromHdri(scene: Scene, hdri: Texture) = ReflectionMapPass(scene, hdri, null)
-        fun reflectionMapFromCube(scene: Scene, cube: CubeMapTexture) = ReflectionMapPass(scene, null, cube)
+        fun reflectionMapFromHdri(scene: Scene, hdri: Texture2d) = ReflectionMapPass(scene, hdri, null)
+        fun reflectionMapFromCube(scene: Scene, cube: TextureCube) = ReflectionMapPass(scene, null, cube)
     }
 }

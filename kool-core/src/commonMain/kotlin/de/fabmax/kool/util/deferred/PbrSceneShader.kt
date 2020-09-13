@@ -26,33 +26,33 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             deferredCameraNode?.sceneCam = value
         }
 
-    private var depthSampler: TextureSampler? = null
-    private var positionAoSampler: TextureSampler? = null
-    private var normalRoughnessSampler: TextureSampler? = null
-    private var albedoMetalSampler: TextureSampler? = null
-    private var emissiveSampler: TextureSampler? = null
+    private var depthSampler: TextureSampler2d? = null
+    private var positionAoSampler: TextureSampler2d? = null
+    private var normalRoughnessSampler: TextureSampler2d? = null
+    private var albedoMetalSampler: TextureSampler2d? = null
+    private var emissiveSampler: TextureSampler2d? = null
 
-    var depth: Texture? = null
+    var depth: Texture2d? = null
         set(value) {
             field = value
             depthSampler?.texture = value
         }
-    var positionAo: Texture? = null
+    var positionAo: Texture2d? = null
         set(value) {
             field = value
             positionAoSampler?.texture = value
         }
-    var normalRoughness: Texture? = null
+    var normalRoughness: Texture2d? = null
         set(value) {
             field = value
             normalRoughnessSampler?.texture = value
         }
-    var albedoMetal: Texture? = null
+    var albedoMetal: Texture2d? = null
         set(value) {
             field = value
             albedoMetalSampler?.texture = value
         }
-    var emissive: Texture? = null
+    var emissive: Texture2d? = null
         set(value) {
             field = value
             emissiveSampler?.texture = value
@@ -67,35 +67,35 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         }
 
     // Image based lighting maps
-    private var irradianceMapSampler: CubeMapSampler? = null
-    private var reflectionMapSampler: CubeMapSampler? = null
-    private var brdfLutSampler: TextureSampler? = null
+    private var irradianceMapSampler: TextureSamplerCube? = null
+    private var reflectionMapSampler: TextureSamplerCube? = null
+    private var brdfLutSampler: TextureSampler2d? = null
 
-    var irradianceMap: CubeMapTexture? = cfg.environmentMaps?.irradianceMap
+    var irradianceMap: TextureCube? = cfg.environmentMaps?.irradianceMap
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap: CubeMapTexture? = cfg.environmentMaps?.reflectionMap
+    var reflectionMap: TextureCube? = cfg.environmentMaps?.reflectionMap
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut: Texture? = cfg.environmentMaps?.brdfLut
+    var brdfLut: Texture2d? = cfg.environmentMaps?.brdfLut
         set(value) {
             field = value
             brdfLutSampler?.texture = value
         }
 
     // Screen space AO and Reflection maps
-    private var ssaoSampler: TextureSampler? = null
-    var scrSpcAmbientOcclusionMap: Texture? = null
+    private var ssaoSampler: TextureSampler2d? = null
+    var scrSpcAmbientOcclusionMap: Texture2d? = null
         set(value) {
             field = value
             ssaoSampler?.texture = value
         }
-    private var ssrSampler: TextureSampler? = null
-    var scrSpcReflectionMap: Texture? = null
+    private var ssrSampler: TextureSampler2d? = null
+    var scrSpcReflectionMap: Texture2d? = null
         set(value) {
             field = value
             ssrSampler?.texture = value
@@ -103,7 +103,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
     // Shadow Mapping
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
-    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
+    private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
     fun setMrtMaps(mrtPass: DeferredMrtPass) {
@@ -125,35 +125,35 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
 
-        depthSampler = model.findNode<TextureNode>("depth")?.sampler
+        depthSampler = model.findNode<Texture2dNode>("depth")?.sampler
         depthSampler?.let { it.texture = depth }
-        positionAoSampler = model.findNode<TextureNode>("positionAo")?.sampler
+        positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
         positionAoSampler?.let { it.texture = positionAo }
-        normalRoughnessSampler = model.findNode<TextureNode>("normalRoughness")?.sampler
+        normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
         normalRoughnessSampler?.let { it.texture = normalRoughness }
-        albedoMetalSampler = model.findNode<TextureNode>("albedoMetal")?.sampler
+        albedoMetalSampler = model.findNode<Texture2dNode>("albedoMetal")?.sampler
         albedoMetalSampler?.let { it.texture = albedoMetal }
-        emissiveSampler = model.findNode<TextureNode>("emissive")?.sampler
+        emissiveSampler = model.findNode<Texture2dNode>("emissive")?.sampler
         emissiveSampler?.let { it.texture = emissive }
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
 
-        irradianceMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
+        irradianceMapSampler = model.findNode<TextureCubeNode>("irradianceMap")?.sampler
         irradianceMapSampler?.let { it.texture = irradianceMap }
-        reflectionMapSampler = model.findNode<CubeMapNode>("reflectionMap")?.sampler
+        reflectionMapSampler = model.findNode<TextureCubeNode>("reflectionMap")?.sampler
         reflectionMapSampler?.let { it.texture = reflectionMap }
-        brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
+        brdfLutSampler = model.findNode<Texture2dNode>("brdfLut")?.sampler
         brdfLutSampler?.let { it.texture = brdfLut }
 
-        ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
+        ssaoSampler = model.findNode<Texture2dNode>("ssaoMap")?.sampler
         ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
-        ssrSampler = model.findNode<TextureNode>("ssrMap")?.sampler
+        ssrSampler = model.findNode<Texture2dNode>("ssrMap")?.sampler
         ssrSampler?.let { it.texture = scrSpcReflectionMap }
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
-                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                val sampler = model.findNode<Texture2dNode>("depthMap_$i")?.sampler
                 depthSamplers[i] = sampler
                 shadowMaps[i].setupSampler(sampler)
             }
@@ -172,13 +172,13 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
             fragmentStage {
                 val coord = ifTexCoords.output
 
-                val posAoTex = textureNode("positionAo")
+                val posAoTex = texture2dNode("positionAo")
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionAo = textureSamplerNode(posAoTex, coord).outColor
-                    inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
-                    inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
+                    inPositionAo = texture2dSamplerNode(posAoTex, coord).outColor
+                    inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
+                    inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
                     if (cfg.isWithEmissive) {
-                        inEmissive = gammaNode(textureSamplerNode(textureNode("emissive"), coord).outColor).outColor
+                        inEmissive = gammaNode(texture2dSamplerNode(texture2dNode("emissive"), coord).outColor).outColor
                     }
                 }
 
@@ -200,14 +200,14 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     }
                 }
 
-                val reflMap: CubeMapNode?
-                val brdfLut: TextureNode?
-                val irrSampler: CubeMapSamplerNode?
+                val reflMap: TextureCubeNode?
+                val brdfLut: Texture2dNode?
+                val irrSampler: TextureCubeSamplerNode?
                 if (cfg.isImageBasedLighting) {
-                    val irrMap = cubeMapNode("irradianceMap")
-                    irrSampler = cubeMapSamplerNode(irrMap, worldNrm)
-                    reflMap = cubeMapNode("reflectionMap")
-                    brdfLut = textureNode("brdfLut")
+                    val irrMap = textureCubeNode("irradianceMap")
+                    irrSampler = textureCubeSamplerNode(irrMap, worldNrm)
+                    reflMap = textureCubeNode("reflectionMap")
+                    brdfLut = texture2dNode("brdfLut")
                 } else {
                     irrSampler = null
                     reflMap = null
@@ -234,7 +234,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
                     var aoFactor = mrtDeMultiplex.outAo
                     if (cfg.isScrSpcAmbientOcclusion) {
-                        val aoMap = textureNode("ssaoMap")
+                        val aoMap = texture2dNode("ssaoMap")
                         val aoNode = addNode(AoMapSampleNode(aoMap, graph))
                         aoNode.inViewport = defCam.outViewport
                         aoFactor = multiplyNode(aoFactor, aoNode.outAo).output
@@ -242,14 +242,14 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inAmbientOccl = aoFactor
 
                     if (cfg.isScrSpcReflections) {
-                        val ssr = textureSamplerNode(textureNode("ssrMap"), coord).outColor
+                        val ssr = texture2dSamplerNode(texture2dNode("ssrMap"), coord).outColor
                         inReflectionColor = gammaNode(ssr).outColor
                         inReflectionWeight = splitNode(ssr, "a").output
                     }
                 }
 
                 colorOutput(mat.outColor)
-                val depthSampler = textureSamplerNode(textureNode("depth"), coord)
+                val depthSampler = texture2dSamplerNode(texture2dNode("depth"), coord)
                 depthOutput(depthSampler.outColor)
             }
         }

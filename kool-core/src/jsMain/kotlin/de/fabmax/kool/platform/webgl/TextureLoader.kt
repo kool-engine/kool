@@ -25,7 +25,7 @@ import kotlin.math.max
 object TextureLoader {
     fun loadTexture(ctx: JsContext, props: TextureProps, data: TextureData) : LoadedTextureWebGl {
         return when (data) {
-            is BufferedTextureData -> loadTexture2d(ctx, props, data)
+            is TextureData2d -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
             is TextureData3d -> loadTexture3d(ctx, props, data)
             is CubeMapTextureData -> loadTextureCube(ctx, props, data)
@@ -79,13 +79,13 @@ object TextureLoader {
     private fun TextureData.estimateTexSize(): Int {
         val layers = if (this is CubeMapTextureData) 6 else 1
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
-        return Texture.estimatedTexSize(width, height, format.pxSize, layers, mipLevels)
+        return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
     }
 
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {
         gl.pixelStorei(UNPACK_COLORSPACE_CONVERSION_WEBGL, NONE)
         when (data) {
-            is BufferedTextureData -> {
+            is TextureData2d -> {
                 gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
             }
             is ImageTextureData -> {

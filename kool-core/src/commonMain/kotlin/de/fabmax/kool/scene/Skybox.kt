@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 
 object Skybox {
 
-    fun cube(environmentMap: CubeMapTexture, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Mesh {
+    fun cube(environmentMap: TextureCube, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Mesh {
         return mesh(listOf(Attribute.POSITIONS), "skybox-cube") {
             generate {
                 cube {
@@ -19,7 +19,7 @@ object Skybox {
         }
     }
 
-    fun sphere(environmentMap: Texture, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Mesh {
+    fun sphere(environmentMap: Texture2d, texLod: Float = 0f, hdriInput: Boolean = true, hdrOutput: Boolean = false): Mesh {
         return mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS), "skybox-cube") {
             generate {
                 vertexModFun = {
@@ -35,11 +35,11 @@ object Skybox {
         }
     }
 
-    class SkyboxCubeShader(environmentMap: CubeMapTexture, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
+    class SkyboxCubeShader(environmentMap: TextureCube, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
             ModeledShader(skyboxCubeShaderModel(texLod, hdriInput, hdrOutput)) {
 
-        private var cubeMapSampler: CubeMapSampler? = null
-        var environmentMap: CubeMapTexture? = environmentMap
+        private var cubeMapSampler: TextureSamplerCube? = null
+        var environmentMap: TextureCube? = environmentMap
             set(value) {
                 field = value
                 cubeMapSampler?.texture = value
@@ -51,7 +51,7 @@ object Skybox {
                 builder.depthTest = DepthCompareOp.LESS_EQUAL
             }
             onPipelineCreated += { _, _, _ ->
-                cubeMapSampler = model.findNode<CubeMapNode>("skyboxCube")?.sampler
+                cubeMapSampler = model.findNode<TextureCubeNode>("skyboxCube")?.sampler
                 cubeMapSampler?.let { it.texture = environmentMap }
             }
         }
@@ -67,7 +67,7 @@ object Skybox {
                     positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
                 }
                 fragmentStage {
-                    val sampler = cubeMapSamplerNode(cubeMapNode("skyboxCube"), ifLocalPos.output)
+                    val sampler = textureCubeSamplerNode(textureCubeNode("skyboxCube"), ifLocalPos.output)
                     if (texLod != 0f) {
                         sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
                     }
@@ -82,11 +82,11 @@ object Skybox {
         }
     }
 
-    class SkyboxSphereShader(environmentMap: Texture, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
+    class SkyboxSphereShader(environmentMap: Texture2d, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
             ModeledShader(skyboxSphereShaderModel(texLod, hdriInput, hdrOutput)) {
 
-        private var textureSampler: TextureSampler? = null
-        var environmentMap: Texture? = environmentMap
+        private var textureSampler: TextureSampler2d? = null
+        var environmentMap: Texture2d? = environmentMap
             set(value) {
                 field = value
                 textureSampler?.texture = value
@@ -98,7 +98,7 @@ object Skybox {
                 builder.depthTest = DepthCompareOp.LESS_EQUAL
             }
             onPipelineCreated += { _, _, _ ->
-                textureSampler = model.findNode<TextureNode>("skyboxSphere")?.sampler
+                textureSampler = model.findNode<Texture2dNode>("skyboxSphere")?.sampler
                 textureSampler?.let { it.texture = environmentMap }
             }
         }
@@ -113,7 +113,7 @@ object Skybox {
                     positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
                 }
                 fragmentStage {
-                    val sampler = textureSamplerNode(textureNode("skyboxSphere"), ifUv.output)
+                    val sampler = texture2dSamplerNode(texture2dNode("skyboxSphere"), ifUv.output)
                     if (texLod != 0f) {
                         sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
                     }

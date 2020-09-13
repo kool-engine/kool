@@ -74,7 +74,7 @@ class PhongMaterialNode(graph: ShaderGraph) : ShaderNode("Phong Material", graph
 /**
  * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
  */
-class PbrMaterialNode(val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
+class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2dNode?, graph: ShaderGraph) :
         ShaderNode("pbrMaterial", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -218,7 +218,7 @@ class PbrMaterialNode(val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?
         """)
     }
 
-    private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: CubeMapNode, brdfLut: TextureNode) {
+    private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: TextureCubeNode, brdfLut: Texture2dNode) {
         generator.appendMain("""
             vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
             vec3 kS = F;

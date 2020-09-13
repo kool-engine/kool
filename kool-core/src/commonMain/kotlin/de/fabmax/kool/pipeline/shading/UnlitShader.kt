@@ -24,15 +24,15 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
             uColor?.uniform?.value?.set(value)
         }
 
-    private var colorSampler: TextureSampler? = null
-    var colorMap: Texture? = cfg.colorMap
+    private var colorSampler: TextureSampler2d? = null
+    var colorMap: Texture2d? = cfg.colorMap
         set(value) {
             field = value
             colorSampler?.texture = value
         }
 
-    private var colorCubeSampler: CubeMapSampler? = null
-    var colorCubeMap: CubeMapTexture? = cfg.colorCubeMap
+    private var colorCubeSampler: TextureSamplerCube? = null
+    var colorCubeMap: TextureCube? = cfg.colorCubeMap
         set(value) {
             field = value
             colorCubeSampler?.texture = value
@@ -47,7 +47,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         uColor = model.findNode("uColor")
         uColor?.uniform?.value?.set(color)
-        colorSampler = model.findNode<TextureNode>("tColor")?.sampler
+        colorSampler = model.findNode<Texture2dNode>("tColor")?.sampler
         colorSampler?.let { it.texture = colorMap }
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
@@ -114,7 +114,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uColor").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        val colorSampler = textureSamplerNode(textureNode("tColor"), ifTexCoords!!.output)
+                        val colorSampler = texture2dSamplerNode(texture2dNode("tColor"), ifTexCoords!!.output)
                         if (cfg.isMultiplyColorMap) {
                             val fac = pushConstantNodeColor("uColor").output
                             multiplyNode(colorSampler.outColor, fac).output
@@ -123,7 +123,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
                         }
                     }
                     Albedo.CUBE_MAP_ALBEDO -> {
-                        val colorSampler = cubeMapSamplerNode(cubeMapNode("tCubeColor"), ifFragPos!!.output)
+                        val colorSampler = textureCubeSamplerNode(textureCubeNode("tCubeColor"), ifFragPos!!.output)
                         if (cfg.isMultiplyColorMap) {
                             val fac = pushConstantNodeColor("uColor").output
                             multiplyNode(colorSampler.outColor, fac).output
@@ -159,8 +159,8 @@ class UnlitMaterialConfig {
     var alphaMode: AlphaMode = AlphaModeOpaque()
 
     var color = Color.GRAY
-    var colorMap: Texture? = null
-    var colorCubeMap: CubeMapTexture? = null
+    var colorMap: Texture2d? = null
+    var colorCubeMap: TextureCube? = null
 
     fun useStaticColor(color: Color) {
         colorSource = Albedo.STATIC_ALBEDO
@@ -168,15 +168,15 @@ class UnlitMaterialConfig {
     }
 
     fun useColorMap(colorMap: String, isMultiplyColorMap: Boolean = false) =
-            useColorMap(Texture(colorMap), isMultiplyColorMap)
+            useColorMap(Texture2d(colorMap), isMultiplyColorMap)
 
-    fun useColorMap(colorMap: Texture?, isMultiplyColorMap: Boolean = false) {
+    fun useColorMap(colorMap: Texture2d?, isMultiplyColorMap: Boolean = false) {
         this.colorMap = colorMap
         this.isMultiplyColorMap = isMultiplyColorMap
         colorSource = Albedo.TEXTURE_ALBEDO
     }
 
-    fun useColorCubeMap(colorCubeMap: CubeMapTexture?, isMultiplyColorMap: Boolean = false) {
+    fun useColorCubeMap(colorCubeMap: TextureCube?, isMultiplyColorMap: Boolean = false) {
         this.colorCubeMap = colorCubeMap
         this.isMultiplyColorMap = isMultiplyColorMap
         colorSource = Albedo.CUBE_MAP_ALBEDO

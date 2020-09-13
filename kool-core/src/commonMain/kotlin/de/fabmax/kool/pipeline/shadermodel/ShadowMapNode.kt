@@ -13,7 +13,7 @@ import de.fabmax.kool.util.SimpleShadowMap
 
 abstract class ShadowMapNode {
     var lightIndex = 0
-    open var depthMap: TextureNode? = null
+    open var depthMap: Texture2dNode? = null
 
     abstract val outShadowFac: ShaderNodeIoVar
 }
@@ -32,7 +32,7 @@ class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, 
         get() = fragmentNode.inDepthOffset
         set(value) { fragmentNode.inDepthOffset = value }
 
-    override var depthMap: TextureNode?
+    override var depthMap: Texture2dNode?
         get() = fragmentNode.depthMap
         set(value) { fragmentNode.depthMap = value }
 
@@ -75,7 +75,7 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
 }
 
 class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph) : ShaderNode("shadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
-    var depthMap: TextureNode? = null
+    var depthMap: Texture2dNode? = null
     var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(if (shadowMap.optimizeForDirectionalLight) -0.001f else -0.005f))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
@@ -155,7 +155,7 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
         get() = fragmentNode.inDepthOffset
         set(value) { fragmentNode.inDepthOffset = value }
 
-    override var depthMap: TextureNode?
+    override var depthMap: Texture2dNode?
         get() = fragmentNode.depthMap
         set(value) { fragmentNode.depthMap = value }
 
@@ -228,7 +228,7 @@ class CascadedShadowMapTransformNode(val shadowMap: CascadedShadowMap, graph: Sh
 class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: ShaderGraph) : ShaderNode("cascadedShadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
     private val uViewSpaceRanges = Uniform1fv("uClipSpaceRanges_${name}", shadowMap.numCascades)
 
-    var depthMap: TextureNode? = null
+    var depthMap: Texture2dNode? = null
     var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.0025f))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inViewZ: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))

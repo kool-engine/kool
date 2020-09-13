@@ -152,7 +152,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                 val height = parentPass.offscreenPass.height
                 val mipLevels = parentPass.offscreenPass.config.mipLevels
 
-                val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 1, mipLevels)
+                val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize)
                 val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
                 tex.setSize(width, height, 1)
                 tex.applySamplerProps(parentPass.offscreenPass.colorTextures[i].props)
@@ -178,7 +178,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             val mipLevels = parentPass.offscreenPass.config.mipLevels
             val depthCfg = parentPass.offscreenPass.config.depthAttachment
 
-            val estSize = Texture.estimatedTexSize(width, height, 4, 1, mipLevels)
+            val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4)
             val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
             tex.setSize(width, height, 1)
             tex.applySamplerProps(parentPass.offscreenPass.depthTexture!!.props)
@@ -194,13 +194,13 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
     }
 
-    private fun Texture.createCopyTexColor(ctx: Lwjgl3Context) {
+    private fun Texture2d.createCopyTexColor(ctx: Lwjgl3Context) {
         val intFormat = props.format.glInternalFormat
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
         val mipLevels = parentPass.offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 1, mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)

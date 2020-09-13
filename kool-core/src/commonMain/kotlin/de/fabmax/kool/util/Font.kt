@@ -3,7 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureProps
 
@@ -27,13 +27,15 @@ data class FontProps(
     }
 }
 
-class Font(val charMap: CharMap) : Texture(
+class Font(val charMap: CharMap) : Texture2d(
         TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE,
                 addressModeV = AddressMode.CLAMP_TO_EDGE
         ),
         charMap.toString(),
         loader = { charMap.textureData }) {
+
+    override val type = "Font"
 
     val lineSpace = charMap.fontProps.sizePts * 1.2f
     val normHeight = charMap.fontProps.sizePts * 0.7f

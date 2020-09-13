@@ -9,7 +9,7 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.UiContainer
@@ -31,7 +31,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     private val lightCycler = Cycler(lightSetups)
     private val hdriCycler = Cycler(hdriTextures)
-    private val loadedHdris = Array<Texture?>(hdriTextures.size) { null }
+    private val loadedHdris = Array<Texture2d?>(hdriTextures.size) { null }
 
     private val sphereProto = SphereProto()
     private val pbrContentCycler = Cycler(listOf(
@@ -124,7 +124,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
     }
 
-    private fun loadHdri(idx: Int, ctx: KoolContext, recv: (Texture) -> Unit) {
+    private fun loadHdri(idx: Int, ctx: KoolContext, recv: (Texture2d) -> Unit) {
         val tex = loadedHdris[idx]
         if (tex == null) {
             ctx.assetMgr.launch {

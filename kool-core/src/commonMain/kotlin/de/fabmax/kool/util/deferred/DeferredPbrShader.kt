@@ -51,50 +51,50 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         }
 
     // Material maps
-    private var albedoSampler: TextureSampler? = null
-    private var emissiveSampler: TextureSampler? = null
-    private var normalSampler: TextureSampler? = null
-    private var metallicSampler: TextureSampler? = null
-    private var roughnessSampler: TextureSampler? = null
-    private var occlusionSampler: TextureSampler? = null
-    private var displacementSampler: TextureSampler? = null
+    private var albedoSampler: TextureSampler2d? = null
+    private var emissiveSampler: TextureSampler2d? = null
+    private var normalSampler: TextureSampler2d? = null
+    private var metallicSampler: TextureSampler2d? = null
+    private var roughnessSampler: TextureSampler2d? = null
+    private var occlusionSampler: TextureSampler2d? = null
+    private var displacementSampler: TextureSampler2d? = null
     private var uDispStrength: PushConstantNode1f? = null
 
     private val metallicTexName = cfg.metallicTexName
     private val roughnessTexName = cfg.roughnessTexName
     private val occlusionTexName = cfg.occlusionTexName
 
-    var albedoMap: Texture? = cfg.albedoMap
+    var albedoMap: Texture2d? = cfg.albedoMap
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var emissiveMap: Texture? = cfg.emissiveMap
+    var emissiveMap: Texture2d? = cfg.emissiveMap
         set(value) {
             field = value
             emissiveSampler?.texture = value
         }
-    var normalMap: Texture? = cfg.normalMap
+    var normalMap: Texture2d? = cfg.normalMap
         set(value) {
             field = value
             normalSampler?.texture = value
         }
-    var metallicMap: Texture? = cfg.metallicMap
+    var metallicMap: Texture2d? = cfg.metallicMap
         set(value) {
             field = value
             metallicSampler?.texture = value
         }
-    var roughnessMap: Texture? = cfg.roughnessMap
+    var roughnessMap: Texture2d? = cfg.roughnessMap
         set(value) {
             field = value
             roughnessSampler?.texture = value
         }
-    var occlusionMap: Texture? = cfg.occlusionMap
+    var occlusionMap: Texture2d? = cfg.occlusionMap
         set(value) {
             field = value
             occlusionSampler?.texture = value
         }
-    var displacementMap: Texture? = cfg.displacementMap
+    var displacementMap: Texture2d? = cfg.displacementMap
         set(value) {
             field = value
             displacementSampler?.texture = value
@@ -121,19 +121,19 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         uEmissive = model.findNode("uEmissive")
         uEmissive?.uniform?.value?.set(emissive)
 
-        albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
+        albedoSampler = model.findNode<Texture2dNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
-        emissiveSampler = model.findNode<TextureNode>("tEmissive")?.sampler
+        emissiveSampler = model.findNode<Texture2dNode>("tEmissive")?.sampler
         emissiveSampler?.let { it.texture = emissiveMap }
-        normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
+        normalSampler = model.findNode<Texture2dNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
-        metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
+        metallicSampler = model.findNode<Texture2dNode>(metallicTexName)?.sampler
         metallicSampler?.let { it.texture = metallicMap }
-        roughnessSampler = model.findNode<TextureNode>(roughnessTexName)?.sampler
+        roughnessSampler = model.findNode<Texture2dNode>(roughnessTexName)?.sampler
         roughnessSampler?.let { it.texture = roughnessMap }
-        occlusionSampler = model.findNode<TextureNode>(occlusionTexName)?.sampler
+        occlusionSampler = model.findNode<Texture2dNode>(occlusionTexName)?.sampler
         occlusionSampler?.let { it.texture = occlusionMap }
-        displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
+        displacementSampler = model.findNode<Texture2dNode>("tDisplacement")?.sampler
         displacementSampler?.let { it.texture = displacementMap }
         uDispStrength = model.findNode("uDispStrength")
         uDispStrength?.let { it.uniform.value = displacementStrength }
@@ -225,7 +225,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
 
                 val localPosDisplaced = namedVariable("localPosDisplaced", localPosMorphed.output)
                 if (cfg.isDisplacementMapped) {
-                    val dispTex = textureNode("tDisplacement")
+                    val dispTex = texture2dNode("tDisplacement")
                     val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, localPosMorphed.output, localNormalMorphed.output).apply {
                         inStrength = pushConstantNode1f("uDispStrength").output
                     }
@@ -247,7 +247,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
+                        val albedoSampler = texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output)
                         val albedoLin = gammaNode(albedoSampler.outColor)
                         if (cfg.isMultiplyAlbedoMap) {
                             val fac = pushConstantNodeColor("uAlbedo").output
@@ -267,7 +267,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                 }
 
                 val emissive = if (cfg.isEmissiveMapped) {
-                    val emissiveTex = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
+                    val emissiveTex = texture2dSamplerNode(texture2dNode("tEmissive"), ifTexCoords!!.output).outColor
                     if (cfg.isMultiplyEmissiveMap) {
                         val fac = pushConstantNodeColor("uEmissive").output
                         multiplyNode(emissiveTex, fac).output
@@ -280,7 +280,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
 
                 val normal = normalizeNode(ifNormals.output).output
                 var viewNormal = if (cfg.isNormalMapped && ifTangents != null) {
-                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, normal, ifTangents.output)
+                    val bumpNormal = normalMapNode(texture2dNode("tNormal"), ifTexCoords!!.output, normal, ifTangents.output)
                     bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
                     bumpNormal.outNormal
                 } else {
@@ -294,7 +294,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
 
                 val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                 if (cfg.isRoughnessMapped) {
-                    val roughnessSampler = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
+                    val roughnessSampler = texture2dSamplerNode(texture2dNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
                     rmoSamplers[cfg.roughnessTexName] = roughnessSampler
                     val rawRoughness = splitNode(roughnessSampler, cfg.roughnessChannel).output
                     roughness = if (cfg.isMultiplyRoughnessMap) {
@@ -307,7 +307,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     roughness = pushConstantNode1f("uRoughness").output
                 }
                 if (cfg.isMetallicMapped) {
-                    val metallicSampler = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                    val metallicSampler = rmoSamplers.getOrPut(cfg.metallicTexName) { texture2dSamplerNode(texture2dNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
                     rmoSamplers[cfg.metallicTexName] = metallicSampler
                     val rawMetallic = splitNode(metallicSampler, cfg.metallicChannel).output
                     metallic = if (cfg.isMultiplyMetallicMap) {
@@ -320,7 +320,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     metallic = pushConstantNode1f("uMetallic").output
                 }
                 if (cfg.isOcclusionMapped) {
-                    val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { textureSamplerNode(textureNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
+                    val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { texture2dSamplerNode(texture2dNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
                     rmoSamplers[cfg.occlusionTexName] = occlusion
                     val rawAo = splitNode(occlusion, cfg.occlusionChannel).output
                     aoFactor = if (cfg.occlusionStrength != 1f) {

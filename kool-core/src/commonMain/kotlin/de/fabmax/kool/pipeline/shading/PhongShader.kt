@@ -25,8 +25,8 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
     private var uShininess: PushConstantNode1f? = null
     private var uSpecularIntensity: PushConstantNode1f? = null
 
-    private var albedoSampler: TextureSampler? = null
-    private var normalSampler: TextureSampler? = null
+    private var albedoSampler: TextureSampler2d? = null
+    private var normalSampler: TextureSampler2d? = null
     private var uAlbedo: PushConstantNodeColor? = null
 
     var shininess = cfg.shininess
@@ -45,18 +45,18 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
             field = value
             uAlbedo?.uniform?.value?.set(value)
         }
-    var albedoMap: Texture? = cfg.albedoMap
+    var albedoMap: Texture2d? = cfg.albedoMap
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var normalMap: Texture? = cfg.normalMap
+    var normalMap: Texture2d? = cfg.normalMap
         set(value) {
             field = value
             normalSampler?.texture = value
         }
 
-    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
+    private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
@@ -73,14 +73,14 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
         uAlbedo = model.findNode("uAlbedo")
         uAlbedo?.uniform?.value?.set(albedo)
 
-        albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
+        albedoSampler = model.findNode<Texture2dNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
-        normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
+        normalSampler = model.findNode<Texture2dNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
-                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                val sampler = model.findNode<Texture2dNode>("depthMap_$i")?.sampler
                 depthSamplers[i] = sampler
                 shadowMaps[i].setupSampler(sampler)
             }
@@ -157,13 +157,13 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false).outColor
+                        texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output, false).outColor
                     }
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
                 val normal = if (cfg.isNormalMapped && ifTangents != null) {
-                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                    val bumpNormal = normalMapNode(texture2dNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.outNormal
                 } else {
                     ifNormals.output
@@ -197,21 +197,21 @@ class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg))
 
         var isInstanced = false
 
-        var albedoMap: Texture? = null
-        var normalMap: Texture? = null
+        var albedoMap: Texture2d? = null
+        var normalMap: Texture2d? = null
 
         fun useAlbedoMap(albedoMap: String) =
-                useAlbedoMap(Texture(albedoMap))
+                useAlbedoMap(Texture2d(albedoMap))
 
-        fun useAlbedoMap(albedoMap: Texture?) {
+        fun useAlbedoMap(albedoMap: Texture2d?) {
             this.albedoMap = albedoMap
             albedoSource = Albedo.TEXTURE_ALBEDO
         }
 
         fun useNormalMap(normalMap: String) =
-                useNormalMap(Texture(normalMap))
+                useNormalMap(Texture2d(normalMap))
 
-        fun useNormalMap(normalMap: Texture?) {
+        fun useNormalMap(normalMap: Texture2d?) {
             this.normalMap = normalMap
             isNormalMapped = true
         }

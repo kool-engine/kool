@@ -208,7 +208,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
     }
 }
 
-class MappedUniformTex2d(private val sampler2d: TextureSampler, texUnit: Int, val locations: List<Int>) :
+class MappedUniformTex2d(private val sampler2d: TextureSampler2d, texUnit: Int, val locations: List<Int>) :
         MappedUniformTex(texUnit, GL_TEXTURE_2D) {
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var texUnit = texUnit
@@ -244,7 +244,7 @@ class MappedUniformTex3d(private val sampler3d: TextureSampler3d, texUnit: Int, 
     }
 }
 
-class MappedUniformCubeMap(private val samplerCube: CubeMapSampler, texUnit: Int, val locations: List<Int>) :
+class MappedUniformTexCube(private val samplerCube: TextureSamplerCube, texUnit: Int, val locations: List<Int>) :
         MappedUniformTex(texUnit, GL_TEXTURE_CUBE_MAP) {
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         var texUnit = texUnit

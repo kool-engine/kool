@@ -10,28 +10,28 @@ import kotlin.math.pow
 
 class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
-    private var opticalDepthLutNode: TextureNode? = null
-    private var sceneColorNode: TextureNode? = null
-    private var scenePosNode: TextureNode? = null
-    private var skyColorNode: TextureNode? = null
+    private var opticalDepthLutNode: Texture2dNode? = null
+    private var sceneColorNode: Texture2dNode? = null
+    private var scenePosNode: Texture2dNode? = null
+    private var skyColorNode: Texture2dNode? = null
     private var atmosphereNode: AtmosphereNode? = null
 
-    var opticalDepthLut: Texture? = null
+    var opticalDepthLut: Texture2d? = null
         set(value) {
             field = value
             opticalDepthLutNode?.sampler?.texture = value
         }
-    var sceneColor: Texture? = null
+    var sceneColor: Texture2d? = null
         set(value) {
             field = value
             sceneColorNode?.sampler?.texture = value
         }
-    var scenePos: Texture? = null
+    var scenePos: Texture2d? = null
         set(value) {
             field = value
             scenePosNode?.sampler?.texture = value
         }
-    var skyColor: Texture? = null
+    var skyColor: Texture2d? = null
         set(value) {
             field = value
             skyColorNode?.sampler?.texture = value
@@ -155,10 +155,10 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                 addNode(RaySphereIntersectionNode(stage))
 
                 val fragMvp = mvp.addToStage(stage)
-                val opticalDepthLut = textureNode("tOpticalDepthLut")
-                val sceneColor = textureSamplerNode(textureNode("tSceneColor"), ifQuadPos.output).outColor
-                val skyColor = textureSamplerNode(textureNode("tSkyColor"), ifQuadPos.output).outColor
-                val viewPos = textureSamplerNode(textureNode("tScenePos"), ifQuadPos.output).outColor
+                val opticalDepthLut = texture2dNode("tOpticalDepthLut")
+                val sceneColor = texture2dSamplerNode(texture2dNode("tSceneColor"), ifQuadPos.output).outColor
+                val skyColor = texture2dSamplerNode(texture2dNode("tSkyColor"), ifQuadPos.output).outColor
+                val viewPos = texture2dSamplerNode(texture2dNode("tScenePos"), ifQuadPos.output).outColor
                 val view2world = addNode(ViewToWorldPosNode(stage)).apply {
                     inViewPos = viewPos
                 }
@@ -266,7 +266,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         }
     }
 
-    class AtmosphereNode(val opticalDepthLut: TextureNode, graph: ShaderGraph) : ShaderNode("atmosphereNode", graph) {
+    class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : ShaderNode("atmosphereNode", graph) {
         var inSceneColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
         var inSceneDepth = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inScenePos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))

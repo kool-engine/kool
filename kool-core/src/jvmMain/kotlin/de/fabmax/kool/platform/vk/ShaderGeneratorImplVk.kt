@@ -104,9 +104,9 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                 if (desc.stages.contains(stage)) {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(set, desc))
-                        is TextureSampler -> srcBuilder.append(generateTextureSampler(set, desc))
+                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler(set, desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(set, desc))
-                        is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(set, desc))
+                        is TextureSamplerCube -> srcBuilder.append(generateCubeMapSampler(set, desc))
                         else -> TODO("Descriptor type not implemented: ${desc::class.java.name}")
                     }
                 }
@@ -139,7 +139,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
+    private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler2d): String {
         val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"
@@ -150,7 +150,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler3D ${desc.name}$arraySuffix;\n"
     }
 
-    private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
+    private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: TextureSamplerCube): String {
         val samplerType = if (desc.isDepthSampler) "samplerCubeShadow" else "samplerCube"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"

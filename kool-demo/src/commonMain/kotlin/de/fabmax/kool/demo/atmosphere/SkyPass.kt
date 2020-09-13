@@ -173,7 +173,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
         super.dispose(ctx)
     }
 
-    private fun skyboxShader(texture: Texture?): UnlitShader {
+    private fun skyboxShader(texture: Texture2d?): UnlitShader {
         val unlitCfg = UnlitMaterialConfig().apply {
             alphaMode = AlphaModeBlend()
             useColorMap(texture, true)

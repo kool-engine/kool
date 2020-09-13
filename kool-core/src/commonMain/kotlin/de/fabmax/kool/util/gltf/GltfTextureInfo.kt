@@ -1,6 +1,6 @@
 package de.fabmax.kool.util.gltf
 
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import kotlinx.serialization.Serializable
 
 /**
@@ -18,7 +18,7 @@ data class GltfTextureInfo(
         val texCoord: Int = 0,
         val scale: Float = 1f
 ) {
-    fun getTexture(gltfFile: GltfFile): Texture {
+    fun getTexture(gltfFile: GltfFile): Texture2d {
         return gltfFile.textures[index].makeTexture()
     }
 }

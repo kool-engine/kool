@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.animation.Animation
 import de.fabmax.kool.util.animation.Skin
 
@@ -9,7 +9,7 @@ class Model(name: String? = null) : Group(name) {
 
     val nodes = mutableMapOf<String, Group>()
     val meshes = mutableMapOf<String, Mesh>()
-    val textures = mutableMapOf<String, Texture>()
+    val textures = mutableMapOf<String, Texture2d>()
 
     val animations = mutableListOf<Animation>()
     val skins = mutableListOf<Skin>()

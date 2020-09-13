@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -20,7 +20,7 @@ import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
-class Glas(val pbrColorOut: Texture, val ibl: EnvironmentMaps) : Group() {
+class Glas(val pbrColorOut: Texture2d, val ibl: EnvironmentMaps) : Group() {
 
     init {
         +makeWine()

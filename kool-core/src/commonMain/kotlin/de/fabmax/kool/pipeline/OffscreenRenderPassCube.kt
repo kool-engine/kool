@@ -13,10 +13,10 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
-    val colorTexture: CubeMapTexture?
+    val colorTexture: TextureCube?
         get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
-    val copyTargetsColor = mutableListOf<CubeMapTexture>()
+    val copyTargetsColor = mutableListOf<TextureCube>()
 
     lateinit var onSetupView: ((ViewDirection, KoolContext) -> Unit)
 
@@ -33,8 +33,8 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         }
     }
 
-    fun copyColor(): CubeMapTexture {
-        val tex = CubeMapTexture(getColorTexProps(), "$name-${copyTargetsColor.size}")
+    fun copyColor(): TextureCube {
+        val tex = TextureCube(getColorTexProps(), "$name-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
     }
@@ -68,26 +68,26 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         impl.applySize(width, height, ctx)
     }
 
-    private fun makeColorAttachmentTexs(): List<CubeMapTexture> {
+    private fun makeColorAttachmentTexs(): List<TextureCube> {
         return config.colorAttachments.mapIndexed { i, texCfg ->
             if (texCfg.isProvided) {
-                texCfg.providedTexture as CubeMapTexture
+                texCfg.providedTexture as TextureCube
             } else {
                 val name = "${name}_color[$i]"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                CubeMapTexture(props, name)
+                TextureCube(props, name)
             }
         }
     }
 
-    private fun makeDepthAttachmentTex(): CubeMapTexture? {
+    private fun makeDepthAttachmentTex(): TextureCube? {
         return config.depthAttachment?.let { texCfg ->
             if (texCfg.isProvided) {
-                texCfg.providedTexture as CubeMapTexture
+                texCfg.providedTexture as TextureCube
             } else {
                 val name = "${name}_depth"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                CubeMapTexture(props, name)
+                TextureCube(props, name)
             }
         }
     }

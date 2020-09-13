@@ -55,9 +55,9 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
             addDescriptor {
                 when (desc.type) {
                     DescriptorType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBuffer)
-                    DescriptorType.IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as TextureSampler)
-                    DescriptorType.IMAGE_SAMPLER_3D -> SamplerDescriptor(idx, desc as TextureSampler3d)
-                    DescriptorType.CUBE_IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as CubeMapSampler)
+                    DescriptorType.SAMPLER_2D -> SamplerDescriptor(idx, desc as TextureSampler2d)
+                    DescriptorType.SAMPLER_3D -> SamplerDescriptor(idx, desc as TextureSampler3d)
+                    DescriptorType.SAMPLER_CUBE -> SamplerDescriptor(idx, desc as TextureSamplerCube)
                 }
             }
         }

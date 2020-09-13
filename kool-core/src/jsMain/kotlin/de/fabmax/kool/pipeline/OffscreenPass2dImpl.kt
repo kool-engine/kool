@@ -170,7 +170,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
                 val height = offscreenPass.height
                 val mipLevels = offscreenPass.config.mipLevels
 
-                val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 1, mipLevels)
+                val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, format.pxSize)
                 val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
                 tex.setSize(width, height, 1)
                 tex.applySamplerProps(offscreenPass.colorTextures[i].props)
@@ -196,7 +196,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             val mipLevels = offscreenPass.config.mipLevels
             val depthCfg = offscreenPass.config.depthAttachment
 
-            val estSize = Texture.estimatedTexSize(width, height, 4, 1, mipLevels)
+            val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, 4)
             val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
             tex.setSize(width, height, 1)
             tex.applySamplerProps(offscreenPass.depthTexture!!.props)
@@ -212,13 +212,13 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
     }
 
-    private fun Texture.createCopyTexColor(ctx: JsContext) {
+    private fun Texture2d.createCopyTexColor(ctx: JsContext) {
         val intFormat = props.format.glInternalFormat
         val width = offscreenPass.width
         val height = offscreenPass.height
         val mipLevels = offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 1, mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, ctx.gl.createTexture(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)

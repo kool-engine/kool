@@ -1,7 +1,7 @@
 package de.fabmax.kool.util.gltf
 
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
@@ -35,12 +35,12 @@ data class GltfMaterial(
 ) {
 
     fun applyTo(cfg: PbrMaterialConfig, useVertexColor: Boolean, gltfFile: GltfFile) {
-        val albedoTexture: Texture? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
-        val emissiveTexture: Texture? = emissiveTexture?.getTexture(gltfFile)
-        val normalTexture: Texture? = this.normalTexture?.getTexture(gltfFile)
-        val metallicTexture: Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val roughnessTexture: Texture? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val occlusionTexture: Texture? = occlusionTexture?.getTexture(gltfFile)
+        val albedoTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
+        val emissiveTexture: Texture2d? = emissiveTexture?.getTexture(gltfFile)
+        val normalTexture: Texture2d? = this.normalTexture?.getTexture(gltfFile)
+        val metallicTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val roughnessTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
+        val occlusionTexture: Texture2d? = occlusionTexture?.getTexture(gltfFile)
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
         cfg.alphaMode = when (alphaMode) {

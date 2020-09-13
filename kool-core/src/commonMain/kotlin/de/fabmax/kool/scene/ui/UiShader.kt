@@ -7,10 +7,10 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
-class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader(uiShaderModel()) {
+class UiShader(font: Texture2d? = SingleColorTexture(Color.WHITE)) : ModeledShader(uiShaderModel()) {
 
     private var uAlpha: PushConstantNode1f? = null
-    private var uFontSampler: TextureSampler? = null
+    private var uFontSampler: TextureSampler2d? = null
 
     var alpha = 1f
         set(value) {
@@ -35,7 +35,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
         uAlpha = model.findNode(U_ALPHA)
         uAlpha?.uniform?.value = alpha
 
-        uFontSampler = model.findNode<TextureNode>(U_FONT_TEX)?.sampler
+        uFontSampler = model.findNode<Texture2dNode>(U_FONT_TEX)?.sampler
         uFontSampler?.texture = font
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
@@ -57,7 +57,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
             }
             fragmentStage {
                 val alpha = pushConstantNode1f(U_ALPHA)
-                val fontSampler = textureSamplerNode(textureNode(U_FONT_TEX), ifTexCoords.output)
+                val fontSampler = texture2dSamplerNode(texture2dNode(U_FONT_TEX), ifTexCoords.output)
                 val mulAlpha = multiplyNode(fontSampler.outColor, alpha.output)
                 val alphaColor = colorAlphaNode(ifColors.output, mulAlpha.output)
                 colorOutput(unlitMaterialNode(alphaColor.outAlphaColor).outColor)

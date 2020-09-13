@@ -5,8 +5,8 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 
-class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = false) :
-        ShaderNode("tex_sampler_${texture.name}_${graph.nextNodeId}", graph) {
+class Texture2dSamplerNode(val texture: Texture2dNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+        ShaderNode("tex2d_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
     val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
@@ -32,7 +32,7 @@ class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premu
     }
 }
 
-class TextureSampler3dNode(val texture: Texture3dNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+class Texture3dSamplerNode(val texture: Texture3dNode, graph: ShaderGraph, val premultiply: Boolean = false) :
         ShaderNode("tex3d_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -59,7 +59,7 @@ class TextureSampler3dNode(val texture: Texture3dNode, graph: ShaderGraph, val p
     }
 }
 
-class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+class TextureCubeSamplerNode(val cubeMap: TextureCubeNode, graph: ShaderGraph, val premultiply: Boolean = false) :
         ShaderNode("cubeSampler_${cubeMap.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.NEG_X_AXIS))
@@ -86,7 +86,7 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
     }
 }
 
-class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val decodeRgbe: Boolean = false, val premultiply: Boolean = false) :
+class EquiRectSamplerNode(val texture: Texture2dNode, graph: ShaderGraph, val decodeRgbe: Boolean = false, val premultiply: Boolean = false) :
         ShaderNode("equi_rect_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
@@ -128,7 +128,7 @@ class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val deco
     }
 }
 
-class NoiseTextureSamplerNode(val texture: TextureNode, graph: ShaderGraph) :
+class NoiseTextureSamplerNode(val texture: Texture2dNode, graph: ShaderGraph) :
         ShaderNode("noise_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexSize = ShaderNodeIoVar(ModelVar2iConst(Vec2i(16, 16)))
@@ -148,7 +148,7 @@ class NoiseTextureSamplerNode(val texture: TextureNode, graph: ShaderGraph) :
     }
 }
 
-class AoMapSampleNode(val aoMap: TextureNode, graph: ShaderGraph) : ShaderNode("aoMapSampleNode_${graph.nextNodeId}", graph) {
+class AoMapSampleNode(val aoMap: Texture2dNode, graph: ShaderGraph) : ShaderNode("aoMapSampleNode_${graph.nextNodeId}", graph) {
     var inViewport = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
     val outAo = ShaderNodeIoVar(ModelVar1f("${name}_outAo"), this)
@@ -169,7 +169,7 @@ class AoMapSampleNode(val aoMap: TextureNode, graph: ShaderGraph) : ShaderNode("
     }
 }
 
-class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
+class NormalMapNode(val texture: Texture2dNode, graph: ShaderGraph) :
         ShaderNode("normalMapping_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
@@ -204,7 +204,7 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
     }
 }
 
-class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("dispMap_${graph.nextNodeId}", graph) {
+class DisplacementMapNode(val texture: Texture2dNode, graph: ShaderGraph) : ShaderNode("dispMap_${graph.nextNodeId}", graph) {
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
     var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
     var inPosition = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -226,8 +226,8 @@ class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : Shader
 }
 
 class RefractionSamplerNode(graph: ShaderGraph) : ShaderNode("refractionSampler_${graph.nextNodeId}", graph) {
-    var reflectionMap: CubeMapNode? = null
-    lateinit var refractionColor: TextureNode
+    var reflectionMap: TextureCubeNode? = null
+    lateinit var refractionColor: Texture2dNode
     lateinit var viewProj: ShaderNodeIoVar
 
     var inMaterialThickness = ShaderNodeIoVar(ModelVar1fConst(1f))

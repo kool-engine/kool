@@ -3,7 +3,7 @@ package de.fabmax.kool.util.deferred
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.shadermodel.*
 
-class ScreenSpaceRayTraceNode(val positionTex: TextureNode, graph: ShaderGraph) : ShaderNode("rayTrace_${graph.nextNodeId}", graph) {
+class ScreenSpaceRayTraceNode(val positionTex: Texture2dNode, graph: ShaderGraph) : ShaderNode("rayTrace_${graph.nextNodeId}", graph) {
     var baseStepFac = ShaderNodeIoVar(ModelVar1fConst(0.02f))
     var stepIncFac = ShaderNodeIoVar(ModelVar1fConst(1.2f))
     var maxIterations = ShaderNodeIoVar(ModelVar1iConst(24))

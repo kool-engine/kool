@@ -2,7 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
@@ -115,7 +115,7 @@ class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext)
         menuY -= yGap
     }
 
-    fun image(imageTex: Texture? = null, imageShader: Shader? = null): UiImage {
+    fun image(imageTex: Texture2d? = null, imageShader: Shader? = null): UiImage {
         val image: UiImage
         uiRoot.apply {
             image = UiImage(imageTex, imageShader)
@@ -282,7 +282,7 @@ class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext)
     }
 }
 
-class UiImage(imageTex: Texture?, imageShader: Shader?) : Group() {
+class UiImage(imageTex: Texture2d?, imageShader: Shader?) : Group() {
 
     var relativeX = 0.05f
     var relativeY = 0.05f

@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.ibl.EnvironmentMaps
@@ -60,18 +60,18 @@ class PbrMaterialConfig {
     var occlusionStrength = 1f
     var reflectionStrength = 1f
 
-    var albedoMap: Texture? = null
-    var emissiveMap: Texture? = null
-    var normalMap: Texture? = null
-    var displacementMap: Texture? = null
-    var roughnessMap: Texture? = null
-    var metallicMap: Texture? = null
-    var occlusionMap: Texture? = null
+    var albedoMap: Texture2d? = null
+    var emissiveMap: Texture2d? = null
+    var normalMap: Texture2d? = null
+    var displacementMap: Texture2d? = null
+    var roughnessMap: Texture2d? = null
+    var metallicMap: Texture2d? = null
+    var occlusionMap: Texture2d? = null
 
     var environmentMaps: EnvironmentMaps? = null
 
-    var scrSpcAmbientOcclusionMap: Texture? = null
-    var refractionColorMap: Texture? = null
+    var scrSpcAmbientOcclusionMap: Texture2d? = null
+    var refractionColorMap: Texture2d? = null
 
     fun useStaticAlbedo(albedo: Color) {
         albedoSource = Albedo.STATIC_ALBEDO
@@ -79,74 +79,74 @@ class PbrMaterialConfig {
     }
 
     fun useAlbedoMap(albedoMap: String, isMultiplyAlbedoMap: Boolean = false) =
-            useAlbedoMap(Texture(albedoMap), isMultiplyAlbedoMap)
+            useAlbedoMap(Texture2d(albedoMap), isMultiplyAlbedoMap)
 
-    fun useAlbedoMap(albedoMap: Texture?, isMultiplyAlbedoMap: Boolean = false) {
+    fun useAlbedoMap(albedoMap: Texture2d?, isMultiplyAlbedoMap: Boolean = false) {
         this.albedoMap = albedoMap
         this.isMultiplyAlbedoMap = isMultiplyAlbedoMap
         albedoSource = Albedo.TEXTURE_ALBEDO
     }
 
     fun useNormalMap(normalMap: String, normalStrength: Float = this.normalStrength) =
-            useNormalMap(Texture(normalMap), normalStrength)
+            useNormalMap(Texture2d(normalMap), normalStrength)
 
-    fun useNormalMap(normalMap: Texture?, normalStrength: Float = this.normalStrength) {
+    fun useNormalMap(normalMap: Texture2d?, normalStrength: Float = this.normalStrength) {
         this.normalMap = normalMap
         this.normalStrength = normalStrength
         isNormalMapped = true
     }
 
     fun useOcclusionMap(occlusionMap: String, occlusionStrength: Float = this.occlusionStrength) =
-            useOcclusionMap(Texture(occlusionMap), occlusionStrength)
+            useOcclusionMap(Texture2d(occlusionMap), occlusionStrength)
 
-    fun useOcclusionMap(occlusionMap: Texture?, occlusionStrength: Float = this.occlusionStrength) {
+    fun useOcclusionMap(occlusionMap: Texture2d?, occlusionStrength: Float = this.occlusionStrength) {
         this.occlusionMap = occlusionMap
         this.occlusionStrength = occlusionStrength
         isOcclusionMapped = true
     }
 
     fun useDisplacementMap(displacementMap: String, displacementStrength: Float = this.displacementStrength) =
-            useDisplacementMap(Texture(displacementMap), displacementStrength)
+            useDisplacementMap(Texture2d(displacementMap), displacementStrength)
 
-    fun useDisplacementMap(displacementMap: Texture?, displacementStrength: Float = this.displacementStrength) {
+    fun useDisplacementMap(displacementMap: Texture2d?, displacementStrength: Float = this.displacementStrength) {
         this.displacementMap = displacementMap
         this.displacementStrength = displacementStrength
         isDisplacementMapped = true
     }
 
     fun useEmissiveMap(emissiveMap: String, isMultiplyEmissiveMap: Boolean = false) =
-            useEmissiveMap(Texture(emissiveMap), isMultiplyEmissiveMap)
+            useEmissiveMap(Texture2d(emissiveMap), isMultiplyEmissiveMap)
 
-    fun useEmissiveMap(emissiveMap: Texture?, isMultiplyEmissiveMap: Boolean = false) {
+    fun useEmissiveMap(emissiveMap: Texture2d?, isMultiplyEmissiveMap: Boolean = false) {
         this.emissiveMap = emissiveMap
         this.isMultiplyEmissiveMap = isMultiplyEmissiveMap
         isEmissiveMapped = true
     }
 
     fun useMetallicMap(metallicMap: String, isMultiplyMetallicMap: Boolean = false) =
-            useMetallicMap(Texture(metallicMap), isMultiplyMetallicMap)
+            useMetallicMap(Texture2d(metallicMap), isMultiplyMetallicMap)
 
-    fun useMetallicMap(metallicMap: Texture?, isMultiplyMetallicMap: Boolean = false) {
+    fun useMetallicMap(metallicMap: Texture2d?, isMultiplyMetallicMap: Boolean = false) {
         this.metallicMap = metallicMap
         this.isMultiplyMetallicMap = isMultiplyMetallicMap
         isMetallicMapped = true
     }
 
     fun useRoughnessMap(roughnessMap: String, isMultiplyRoughnessMap: Boolean = false) =
-            useRoughnessMap(Texture(roughnessMap), isMultiplyRoughnessMap)
+            useRoughnessMap(Texture2d(roughnessMap), isMultiplyRoughnessMap)
 
-    fun useRoughnessMap(roughnessMap: Texture?, isMultiplyRoughnessMap: Boolean = false) {
+    fun useRoughnessMap(roughnessMap: Texture2d?, isMultiplyRoughnessMap: Boolean = false) {
         this.roughnessMap = roughnessMap
         this.isMultiplyRoughnessMap = isMultiplyRoughnessMap
         isRoughnessMapped = true
     }
 
-    fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture?) {
+    fun useScreenSpaceAmbientOcclusion(ssaoMap: Texture2d?) {
         this.scrSpcAmbientOcclusionMap = ssaoMap
         isScrSpcAmbientOcclusion = true
     }
 
-    fun useRefraction(refractionColorMap: Texture?) {
+    fun useRefraction(refractionColorMap: Texture2d?) {
         this.refractionColorMap = refractionColorMap
         isRefraction = this.refractionColorMap != null
     }

@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthComponent: String) :
+class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture2d, depthComponent: String) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "AoDenoisePass"
             setSize(aoPass.config.width, aoPass.config.height)
@@ -46,8 +46,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
                     positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                 }
                 fragmentStage {
-                    val noisyAo = textureNode("noisyAo")
-                    val depth = textureNode("depth")
+                    val noisyAo = texture2dNode("noisyAo")
+                    val depth = texture2dNode("depth")
                     val radius = pushConstantNode1f(uRadius)
                     val blurNd = addNode(BlurNode(noisyAo, depth, depthComponent, stage))
                     blurNd.inScreenPos = ifTexCoords.output
@@ -61,8 +61,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
                     builder.depthTest = DepthCompareOp.DISABLED
                 }
                 onPipelineCreated += { _, _, _ ->
-                    model.findNode<TextureNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
-                    model.findNode<TextureNode>("depth")!!.sampler.texture = depthTexture
+                    model.findNode<Texture2dNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
+                    model.findNode<Texture2dNode>("depth")!!.sampler.texture = depthTexture
                 }
             }
         }
@@ -122,8 +122,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture, depthCo
         super.dispose(ctx)
     }
 
-    private class BlurNode(val noisyAo: TextureNode, val depth: TextureNode,
-                                 val depthComponent: String, shaderGraph: ShaderGraph) :
+    private class BlurNode(val noisyAo: Texture2dNode, val depth: Texture2dNode,
+                           val depthComponent: String, shaderGraph: ShaderGraph) :
             ShaderNode("blurNode", shaderGraph) {
 
         var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))

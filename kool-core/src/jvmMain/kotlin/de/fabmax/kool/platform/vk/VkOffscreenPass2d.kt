@@ -167,7 +167,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
     }
 
-    private fun Texture.clear() {
+    private fun Texture2d.clear() {
         loadedTexture = null
         loadingState = Texture.LoadingState.NOT_LOADED
     }
@@ -244,7 +244,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         isCreated = true
     }
 
-    private fun createTex(tex: Texture, iAttachment: Int, isColor: Boolean, rp: VkOffscreenRenderPass, sys: VkSystem) {
+    private fun createTex(tex: Texture2d, iAttachment: Int, isColor: Boolean, rp: VkOffscreenRenderPass, sys: VkSystem) {
         tex.apply {
             if (isCopyResult) {
                 val vkTex = if (isColor) {
@@ -275,7 +275,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
         }
     }
 
-    private fun Texture.createCopyTexColor(ctx: Lwjgl3Context) {
+    private fun Texture2d.createCopyTexColor(ctx: Lwjgl3Context) {
         val vkBackend = ctx.renderBackend as VkRenderBackend
         val prev = loadedTexture
         if (prev != null) {

@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.shadermodel.*
 
 
-class EnvCubeSamplerNode(val texture: CubeMapNode, graph: ShaderGraph) : ShaderNode("envCubeSampler", graph) {
+class EnvCubeSamplerNode(val texture: TextureCubeNode, graph: ShaderGraph) : ShaderNode("envCubeSampler", graph) {
     var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
 
     override fun setup(shaderGraph: ShaderGraph) {
@@ -22,7 +22,7 @@ class EnvCubeSamplerNode(val texture: CubeMapNode, graph: ShaderGraph) : ShaderN
     }
 }
 
-class EnvEquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("envEquiRectSampler", graph) {
+class EnvEquiRectSamplerNode(val texture: Texture2dNode, graph: ShaderGraph) : ShaderNode("envEquiRectSampler", graph) {
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(texture)

@@ -65,9 +65,9 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
-    constructor(binding: Int, sampler2d: TextureSampler) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
+    constructor(binding: Int, sampler2d: TextureSampler2d) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
     constructor(binding: Int, sampler3d: TextureSampler3d) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
-    constructor(binding: Int, samplerCube: CubeMapSampler) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
+    constructor(binding: Int, samplerCube: TextureSamplerCube) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
 
     init {
         isValid = false
@@ -192,14 +192,14 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     private class TexSamplerWrapper private constructor(
             val mode: Int,
-            val sampler2d: TextureSampler? = null,
+            val sampler2d: TextureSampler2d? = null,
             val sampler3d: TextureSampler3d? = null,
-            val samplerCube: CubeMapSampler? = null,
+            val samplerCube: TextureSamplerCube? = null,
             val arraySize: Int) {
 
-        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
+        constructor(sampler2d: TextureSampler2d) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
         constructor(sampler3d: TextureSampler3d) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
-        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
+        constructor(samplerCube: TextureSamplerCube) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
 
         val textures: Array<out Texture?>
             get() = when (mode) {

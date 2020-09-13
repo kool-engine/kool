@@ -9,13 +9,13 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
 
     val depthTexture = makeDepthAttachmentTex()
     val colorTextures = makeColorAttachmentTexs()
-    val colorTexture: Texture?
+    val colorTexture: Texture2d?
         get() = if (colorTextures.isNotEmpty()) colorTextures[0] else null
 
-    val copyTargetsColor = mutableListOf<Texture>()
+    val copyTargetsColor = mutableListOf<Texture2d>()
 
-    fun copyColor(): Texture {
-        val tex = Texture(getColorTexProps(), "$name-copy-${copyTargetsColor.size}")
+    fun copyColor(): Texture2d {
+        val tex = Texture2d(getColorTexProps(), "$name-copy-${copyTargetsColor.size}")
         copyTargetsColor += tex
         return tex
     }
@@ -41,26 +41,26 @@ open class OffscreenRenderPass2d(drawNode: Node, config: Config) : OffscreenRend
         impl.applySize(width, height, ctx)
     }
 
-    private fun makeColorAttachmentTexs(): List<Texture> {
+    private fun makeColorAttachmentTexs(): List<Texture2d> {
         return config.colorAttachments.mapIndexed { i, texCfg ->
             if (texCfg.isProvided) {
-                texCfg.providedTexture!!
+                texCfg.providedTexture!! as Texture2d
             } else {
                 val name = "${name}_color[$i]"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                Texture(props, name)
+                Texture2d(props, name)
             }
         }
     }
 
-    private fun makeDepthAttachmentTex(): Texture? {
+    private fun makeDepthAttachmentTex(): Texture2d? {
         return config.depthAttachment?.let { texCfg ->
             if (texCfg.isProvided) {
-                texCfg.providedTexture!!
+                texCfg.providedTexture!! as Texture2d
             } else {
                 val name = "${name}_depth"
                 val props = texCfg.getTextureProps(config.mipLevels > 1)
-                Texture(props, name)
+                Texture2d(props, name)
             }
         }
     }

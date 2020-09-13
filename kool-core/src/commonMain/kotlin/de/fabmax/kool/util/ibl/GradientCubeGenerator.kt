@@ -49,7 +49,7 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
         }
     }
 
-    private fun makeGradientTex(gradient: ColorGradient, size: Int, ctx: KoolContext): Texture {
+    private fun makeGradientTex(gradient: ColorGradient, size: Int, ctx: KoolContext): Texture2d {
         val buf = createUint8Buffer(size * 4)
 
         for (i in 0 until size) {
@@ -60,7 +60,7 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
             buf[i * 4 + 3] = (255.toByte())
         }
 
-        val data = BufferedTextureData(buf, size, 1, TexFormat.RGBA)
+        val data = TextureData2d(buf, size, 1, TexFormat.RGBA)
         val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
         return ctx.assetMgr.loadAndPrepareTexture(data, props, "gradientEnvTex")
     }
@@ -79,7 +79,7 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
         fragmentStage {
             val uv = addNode(PosToUvNode(stage))
             uv.inPos = ifFragPos.output
-            val sampler = textureSamplerNode(textureNode("gradTex"), uv.outUv)
+            val sampler = texture2dSamplerNode(texture2dNode("gradTex"), uv.outUv)
             val linColor = gammaNode(sampler.outColor).outColor
             colorOutput(linColor)
         }

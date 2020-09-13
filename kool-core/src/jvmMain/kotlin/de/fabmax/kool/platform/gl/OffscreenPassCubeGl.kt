@@ -116,7 +116,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         val height = parentPass.offscreenPass.height
         val mipLevels = parentPass.offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 6, mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(parentPass.offscreenPass.colorTexture!!.props)
@@ -127,13 +127,13 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         parentPass.offscreenPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
     }
 
-    private fun CubeMapTexture.createCopyTexColor(ctx: Lwjgl3Context) {
+    private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
         val intFormat = props.format.glInternalFormat
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
         val mipLevels = parentPass.offscreenPass.config.mipLevels
 
-        val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 6, mipLevels)
+        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
         tex.setSize(width, height, 1)
         tex.applySamplerProps(props)

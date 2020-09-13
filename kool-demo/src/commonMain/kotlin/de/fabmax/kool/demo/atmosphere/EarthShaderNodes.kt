@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import kotlin.math.PI
 
 
-class HeightMapNode(val heightMap: TextureNode, graph: ShaderGraph) : ShaderNode("heightMap", graph) {
+class HeightMapNode(val heightMap: Texture2dNode, graph: ShaderGraph) : ShaderNode("heightMap", graph) {
     var inEdgeFlag = ShaderNodeIoVar(ModelVar1iConst(0))
     var inEdgeMask = ShaderNodeIoVar(ModelVar1fConst(0f))
     var inSampleStep = ShaderNodeIoVar(ModelVar1fConst(1f / 40f))
@@ -173,7 +173,7 @@ class EarthRoughnessNode(val inAlbedo: ShaderNodeIoVar, graph: ShaderGraph) : Sh
 }
 
 class EarthOceanNode(graph: ShaderGraph) : ShaderNode("earthOcean", graph) {
-    lateinit var inOceanTex1: TextureNode
+    lateinit var inOceanTex1: Texture2dNode
 
     lateinit var inAlbedo: ShaderNodeIoVar
     lateinit var inIsOcean: ShaderNodeIoVar

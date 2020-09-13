@@ -33,13 +33,13 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                     is UniformBuffer -> {
                         desc.uniforms.forEach { uniformLocations[it.name] = listOf(glGetUniformLocation(prog, it.name)) }
                     }
-                    is TextureSampler -> {
+                    is TextureSampler2d -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
                     is TextureSampler3d -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
-                    is CubeMapSampler -> {
+                    is TextureSamplerCube -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
                     else -> throw IllegalStateException("Descriptor type not implemented: $desc")
@@ -122,9 +122,9 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
     inner class ShaderInstance(val mesh: Mesh, val pipeline: Pipeline) {
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
-        private val textures = mutableListOf<TextureSampler>()
+        private val textures2d = mutableListOf<TextureSampler2d>()
         private val textures3d = mutableListOf<TextureSampler3d>()
-        private val cubeMaps = mutableListOf<CubeMapSampler>()
+        private val texturesCube = mutableListOf<TextureSamplerCube>()
         private val mappings = mutableListOf<MappedUniform>()
         private val attributeBinders = mutableListOf<AttributeOnLocation>()
         private val instanceAttribBinders = mutableListOf<AttributeOnLocation>()
@@ -146,9 +146,9 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 set.descriptors.forEach { desc ->
                     when (desc) {
                         is UniformBuffer -> mapUbo(desc)
-                        is TextureSampler -> mapTexture(desc)
+                        is TextureSampler2d -> mapTexture2d(desc)
                         is TextureSampler3d -> mapTexture3d(desc)
-                        is CubeMapSampler -> mapCubeMap(desc)
+                        is TextureSamplerCube -> mapTextureCube(desc)
                         else -> TODO("$desc")
                     }
                 }
@@ -169,8 +169,8 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             ubo.uniforms.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]!![0]) }
         }
 
-        private fun mapTexture(tex: TextureSampler) {
-            textures.add(tex)
+        private fun mapTexture2d(tex: TextureSampler2d) {
+            textures2d.add(tex)
             uniformLocations[tex.name]?.let { locs ->
                 mappings += MappedUniformTex2d(tex, nextTexUnit, locs)
                 nextTexUnit += locs.size
@@ -185,10 +185,10 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             }
         }
 
-        private fun mapCubeMap(cubeMap: CubeMapSampler) {
-            cubeMaps.add(cubeMap)
+        private fun mapTextureCube(cubeMap: TextureSamplerCube) {
+            texturesCube.add(cubeMap)
             uniformLocations[cubeMap.name]?.let { locs ->
-                mappings += MappedUniformCubeMap(cubeMap, nextTexUnit, locs)
+                mappings += MappedUniformTexCube(cubeMap, nextTexUnit, locs)
                 nextTexUnit += locs.size
             }
         }
@@ -201,14 +201,14 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             for (i in ubos.indices) {
                 ubos[i].onUpdate?.invoke(ubos[i], drawCmd)
             }
-            for (i in textures.indices) {
-                textures[i].onUpdate?.invoke(textures[i], drawCmd)
+            for (i in textures2d.indices) {
+                textures2d[i].onUpdate?.invoke(textures2d[i], drawCmd)
             }
             for (i in textures3d.indices) {
                 textures3d[i].onUpdate?.invoke(textures3d[i], drawCmd)
             }
-            for (i in cubeMaps.indices) {
-                cubeMaps[i].onUpdate?.invoke(cubeMaps[i], drawCmd)
+            for (i in texturesCube.indices) {
+                texturesCube[i].onUpdate?.invoke(texturesCube[i], drawCmd)
             }
 
             // update uniform values
@@ -241,9 +241,9 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
 
             pushConstants.clear()
             ubos.clear()
-            textures.clear()
+            textures2d.clear()
             textures3d.clear()
-            cubeMaps.clear()
+            texturesCube.clear()
             mappings.clear()
             attributeBinders.clear()
             instanceAttribBinders.clear()

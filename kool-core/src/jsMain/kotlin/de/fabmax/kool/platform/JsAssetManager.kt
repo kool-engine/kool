@@ -96,33 +96,33 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return loadImage("data:$mimeType;base64,$base64", null)
     }
 
-    override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture {
-        val tex = Texture(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
+    override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
+        val tex = Texture2d(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
         val data = loadTextureData(assetPath, props.format)
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
 
-    override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture {
-        val tex = Texture(props, name) { texData }
+    override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
+        val tex = Texture2d(props, name) { texData }
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
 
     override suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
-                                       props: TextureProps): CubeMapTexture {
+                                       props: TextureProps): TextureCube {
         val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
-        val tex = CubeMapTexture(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        val tex = TextureCube(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
 
-    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): CubeMapTexture {
-        val tex = CubeMapTexture(props, name) { texData }
+    override fun loadAndPrepareCubeMap(texData: CubeMapTextureData, props: TextureProps, name: String?): TextureCube {
+        val tex = TextureCube(props, name) { texData }
         tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex

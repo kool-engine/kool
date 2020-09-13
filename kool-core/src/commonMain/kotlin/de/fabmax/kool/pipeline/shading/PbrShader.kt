@@ -55,50 +55,50 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
         }
 
     // Material maps
-    private var albedoSampler: TextureSampler? = null
-    private var emissiveSampler: TextureSampler? = null
-    private var normalSampler: TextureSampler? = null
-    private var metallicSampler: TextureSampler? = null
-    private var roughnessSampler: TextureSampler? = null
-    private var occlusionSampler: TextureSampler? = null
-    private var displacementSampler: TextureSampler? = null
+    private var albedoSampler: TextureSampler2d? = null
+    private var emissiveSampler: TextureSampler2d? = null
+    private var normalSampler: TextureSampler2d? = null
+    private var metallicSampler: TextureSampler2d? = null
+    private var roughnessSampler: TextureSampler2d? = null
+    private var occlusionSampler: TextureSampler2d? = null
+    private var displacementSampler: TextureSampler2d? = null
     private var uDispStrength: PushConstantNode1f? = null
 
     private val metallicTexName = cfg.metallicTexName
     private val roughnessTexName = cfg.roughnessTexName
     private val occlusionTexName = cfg.occlusionTexName
 
-    var albedoMap: Texture? = cfg.albedoMap
+    var albedoMap: Texture2d? = cfg.albedoMap
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var emissiveMap: Texture? = cfg.emissiveMap
+    var emissiveMap: Texture2d? = cfg.emissiveMap
         set(value) {
             field = value
             emissiveSampler?.texture = value
         }
-    var normalMap: Texture? = cfg.normalMap
+    var normalMap: Texture2d? = cfg.normalMap
         set(value) {
             field = value
             normalSampler?.texture = value
         }
-    var metallicMap: Texture? = cfg.metallicMap
+    var metallicMap: Texture2d? = cfg.metallicMap
         set(value) {
             field = value
             metallicSampler?.texture = value
         }
-    var roughnessMap: Texture? = cfg.roughnessMap
+    var roughnessMap: Texture2d? = cfg.roughnessMap
         set(value) {
             field = value
             roughnessSampler?.texture = value
         }
-    var occlusionMap: Texture? = cfg.occlusionMap
+    var occlusionMap: Texture2d? = cfg.occlusionMap
         set(value) {
             field = value
             occlusionSampler?.texture = value
         }
-    var displacementMap: Texture? = cfg.displacementMap
+    var displacementMap: Texture2d? = cfg.displacementMap
         set(value) {
             field = value
             displacementSampler?.texture = value
@@ -111,7 +111,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
     // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
-    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
+    private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
     var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
@@ -120,29 +120,29 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
         }
 
     // Image based lighting maps
-    private var irradianceMapSampler: CubeMapSampler? = null
-    private var reflectionMapSampler: CubeMapSampler? = null
-    private var brdfLutSampler: TextureSampler? = null
+    private var irradianceMapSampler: TextureSamplerCube? = null
+    private var reflectionMapSampler: TextureSamplerCube? = null
+    private var brdfLutSampler: TextureSampler2d? = null
 
-    var irradianceMap: CubeMapTexture? = cfg.environmentMaps?.irradianceMap
+    var irradianceMap: TextureCube? = cfg.environmentMaps?.irradianceMap
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap: CubeMapTexture? = cfg.environmentMaps?.reflectionMap
+    var reflectionMap: TextureCube? = cfg.environmentMaps?.reflectionMap
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut: Texture? = cfg.environmentMaps?.brdfLut
+    var brdfLut: Texture2d? = cfg.environmentMaps?.brdfLut
         set(value) {
             field = value
             brdfLutSampler?.texture = value
         }
 
     // Screen space ambient occlusion map
-    private var ssaoSampler: TextureSampler? = null
-    var scrSpcAmbientOcclusionMap: Texture? = cfg.scrSpcAmbientOcclusionMap
+    private var ssaoSampler: TextureSampler2d? = null
+    var scrSpcAmbientOcclusionMap: Texture2d? = cfg.scrSpcAmbientOcclusionMap
         set(value) {
             field = value
             ssaoSampler?.texture = value
@@ -156,8 +156,8 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
             uMaterialThickness?.uniform?.value = value
         }
 
-    private var refractionColorSampler: TextureSampler? = null
-    var refractionColorMap: Texture? = cfg.refractionColorMap
+    private var refractionColorSampler: TextureSampler2d? = null
+    var refractionColorMap: Texture2d? = cfg.refractionColorMap
         set(value) {
             field = value
             refractionColorSampler?.texture = value
@@ -186,40 +186,40 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
-                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                val sampler = model.findNode<Texture2dNode>("depthMap_$i")?.sampler
                 depthSamplers[i] = sampler
                 shadowMaps[i].setupSampler(sampler)
             }
         }
 
-        irradianceMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
+        irradianceMapSampler = model.findNode<TextureCubeNode>("irradianceMap")?.sampler
         irradianceMapSampler?.let { it.texture = irradianceMap }
-        reflectionMapSampler = model.findNode<CubeMapNode>("reflectionMap")?.sampler
+        reflectionMapSampler = model.findNode<TextureCubeNode>("reflectionMap")?.sampler
         reflectionMapSampler?.let { it.texture = reflectionMap }
-        brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
+        brdfLutSampler = model.findNode<Texture2dNode>("brdfLut")?.sampler
         brdfLutSampler?.let { it.texture = brdfLut }
 
-        ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
+        ssaoSampler = model.findNode<Texture2dNode>("ssaoMap")?.sampler
         ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
 
         uMaterialThickness = model.findNode("uMaterialThickness")
         uMaterialThickness?.let { it.uniform.value = materialThickness }
-        refractionColorSampler = model.findNode<TextureNode>("tRefractionColor")?.sampler
+        refractionColorSampler = model.findNode<Texture2dNode>("tRefractionColor")?.sampler
         refractionColorSampler?.let { it.texture = refractionColorMap }
 
-        albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
+        albedoSampler = model.findNode<Texture2dNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
-        emissiveSampler = model.findNode<TextureNode>("tEmissive")?.sampler
+        emissiveSampler = model.findNode<Texture2dNode>("tEmissive")?.sampler
         emissiveSampler?.let { it.texture = emissiveMap }
-        normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
+        normalSampler = model.findNode<Texture2dNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
-        metallicSampler = model.findNode<TextureNode>(metallicTexName)?.sampler
+        metallicSampler = model.findNode<Texture2dNode>(metallicTexName)?.sampler
         metallicSampler?.let { it.texture = metallicMap }
-        roughnessSampler = model.findNode<TextureNode>(roughnessTexName)?.sampler
+        roughnessSampler = model.findNode<Texture2dNode>(roughnessTexName)?.sampler
         roughnessSampler?.let { it.texture = roughnessMap }
-        occlusionSampler = model.findNode<TextureNode>(occlusionTexName)?.sampler
+        occlusionSampler = model.findNode<Texture2dNode>(occlusionTexName)?.sampler
         occlusionSampler?.let { it.texture = occlusionMap }
-        displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
+        displacementSampler = model.findNode<Texture2dNode>("tDisplacement")?.sampler
         displacementSampler?.let { it.texture = displacementMap }
         uDispStrength = model.findNode("uDispStrength")
         uDispStrength?.let { it.uniform.value = displacementStrength }
@@ -309,7 +309,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
                 val localPosDisplaced = namedVariable("localPosDisplaced", localPosMorphed.output)
                 if (cfg.isDisplacementMapped) {
-                    val dispTex = textureNode("tDisplacement")
+                    val dispTex = texture2dNode("tDisplacement")
                     val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, localPosMorphed.output, localNormalMorphed.output).apply {
                         inStrength = pushConstantNode1f("uDispStrength").output
                     }
@@ -337,7 +337,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
+                        val albedoSampler = texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output)
                         val albedoLin = gammaNode(albedoSampler.outColor)
                         if (cfg.isMultiplyAlbedoMap) {
                             val fac = pushConstantNodeColor("uAlbedo").output
@@ -362,7 +362,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     lightNode.inShadowFacs[it.lightIndex] = it.outShadowFac
                 }
                 var normal = if (cfg.isNormalMapped && ifTangents != null) {
-                    val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                    val bumpNormal = normalMapNode(texture2dNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.inStrength = constFloat(cfg.normalStrength)
                     bumpNormal.outNormal
                 } else {
@@ -371,15 +371,15 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                 normal = normalizeNode(flipBacksideNormalNode(normal).outNormal).output
                 val viewDir = viewDirNode(mvpFrag.outCamPos, ifFragPos.output).output
 
-                val reflMap: CubeMapNode?
-                val brdfLut: TextureNode?
-                val irrSampler: CubeMapSamplerNode?
+                val reflMap: TextureCubeNode?
+                val brdfLut: Texture2dNode?
+                val irrSampler: TextureCubeSamplerNode?
 
                 if (cfg.isImageBasedLighting) {
-                    val irrMap = cubeMapNode("irradianceMap")
-                    irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output)
-                    reflMap = cubeMapNode("reflectionMap")
-                    brdfLut = textureNode("brdfLut")
+                    val irrMap = textureCubeNode("irradianceMap")
+                    irrSampler = textureCubeSamplerNode(irrMap, ifNormals.output)
+                    reflMap = textureCubeNode("reflectionMap")
+                    brdfLut = texture2dNode("brdfLut")
                 } else {
                     irrSampler = null
                     reflMap = null
@@ -400,7 +400,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     if (cfg.isEmissiveMapped) {
-                        val emissive = textureSamplerNode(textureNode("tEmissive"), ifTexCoords!!.output).outColor
+                        val emissive = texture2dSamplerNode(texture2dNode("tEmissive"), ifTexCoords!!.output).outColor
                         val emissiveLin = gammaNode(emissive).outColor
                         inEmissive = if (cfg.isMultiplyEmissiveMap) {
                             val fac = pushConstantNodeColor("uEmissive").output
@@ -414,7 +414,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
 
                     val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                     if (cfg.isRoughnessMapped) {
-                        val roughness = textureSamplerNode(textureNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
+                        val roughness = texture2dSamplerNode(texture2dNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
                         rmoSamplers[cfg.roughnessTexName] = roughness
                         val rawRoughness = splitNode(roughness, cfg.roughnessChannel).output
                         inRoughness = if (cfg.isMultiplyRoughnessMap) {
@@ -427,7 +427,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                         inRoughness = pushConstantNode1f("uRoughness").output
                     }
                     if (cfg.isMetallicMapped) {
-                        val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { textureSamplerNode(textureNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                        val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { texture2dSamplerNode(texture2dNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
                         rmoSamplers[cfg.metallicTexName] = metallic
                         val rawMetallic = splitNode(metallic, cfg.metallicChannel).output
                         inMetallic = if (cfg.isMultiplyMetallicMap) {
@@ -441,7 +441,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     }
                     var aoFactor = constFloat(1f)
                     if (cfg.isOcclusionMapped) {
-                        val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { textureSamplerNode(textureNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
+                        val occlusion = rmoSamplers.getOrPut(cfg.occlusionTexName) { texture2dSamplerNode(texture2dNode(cfg.occlusionTexName), ifTexCoords!!.output).outColor }
                         rmoSamplers[cfg.occlusionTexName] = occlusion
                         val rawAo = splitNode(occlusion, cfg.occlusionChannel).output
                         aoFactor = if (cfg.occlusionStrength != 1f) {
@@ -453,7 +453,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     }
 
                     if (cfg.isScrSpcAmbientOcclusion) {
-                        val aoMap = textureNode("ssaoMap")
+                        val aoMap = texture2dNode("ssaoMap")
                         val aoNode = addNode(AoMapSampleNode(aoMap, stage))
                         aoNode.inViewport = mvpFrag.outViewport
 
@@ -470,7 +470,7 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                 if (cfg.isRefraction) {
                     val refrSampler = addNode(RefractionSamplerNode(stage)).apply {
                         reflectionMap = reflMap
-                        refractionColor = textureNode("tRefractionColor")
+                        refractionColor = texture2dNode("tRefractionColor")
                         viewProj = multiplyNode(mvpFrag.outProjMat, mvpFrag.outViewMat).output
                         inMaterialThickness = pushConstantNode1f("uMaterialThickness").output
                         inFragPos = ifFragPos.output

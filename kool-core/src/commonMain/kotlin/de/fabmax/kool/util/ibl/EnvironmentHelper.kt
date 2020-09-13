@@ -10,18 +10,18 @@ import de.fabmax.kool.util.ColorGradient
 object EnvironmentHelper {
 
     fun singleColorEnvironment(scene: Scene, color: Color, autoDispose: Boolean = true): EnvironmentMaps {
-        val bgColor = BufferedTextureData.singleColor(color.toLinear())
+        val bgColor = TextureData2d.singleColor(color.toLinear())
         val props = TextureProps(
                 addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, addressModeW = AddressMode.CLAMP_TO_EDGE,
                 minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = false, maxAnisotropy = 1
         )
-        val cubeTex = CubeMapTexture(props, "singleColorEnv-$color") {
+        val cubeTex = TextureCube(props, "singleColorEnv-$color") {
             CubeMapTextureData(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
         }
 
         val brdfLutPass = BrdfLutPass(scene)
-        val brdfLut = Texture(brdfLutPass.config.colorAttachments[0].getTextureProps(false), "singleColorEnv-brdf")
+        val brdfLut = Texture2d(brdfLutPass.config.colorAttachments[0].getTextureProps(false), "singleColorEnv-brdf")
         brdfLutPass.copyTargetsColor += brdfLut
 
         val maps = EnvironmentMaps(cubeTex, cubeTex, brdfLut)
@@ -66,7 +66,7 @@ object EnvironmentHelper {
         return hdriEnvironment(scene, hdri, autoDispose)
     }
 
-    fun hdriEnvironment(scene: Scene, hdri: Texture, autoDispose: Boolean = true): EnvironmentMaps {
+    fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true): EnvironmentMaps {
         val rgbeDecoder = RgbeDecoder(scene, hdri)
         val irrMapPass = IrradianceMapPass.irradianceMapFromHdri(scene, rgbeDecoder.colorTexture!!)
         val reflMapPass = ReflectionMapPass.reflectionMapFromHdri(scene, rgbeDecoder.colorTexture!!)
@@ -92,7 +92,7 @@ object EnvironmentHelper {
 
 }
 
-class EnvironmentMaps(val irradianceMap: CubeMapTexture, val reflectionMap: CubeMapTexture, val brdfLut: Texture) {
+class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube, val brdfLut: Texture2d) {
     fun dispose() {
         irradianceMap.dispose()
         reflectionMap.dispose()

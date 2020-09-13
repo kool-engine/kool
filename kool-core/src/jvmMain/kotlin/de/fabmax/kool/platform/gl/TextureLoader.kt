@@ -13,7 +13,7 @@ import kotlin.math.max
 object TextureLoader {
     fun loadTexture(ctx: Lwjgl3Context, props: TextureProps, data: TextureData) : LoadedTextureGl {
         return when (data) {
-            is BufferedTextureData -> loadTexture2d(ctx, props, data)
+            is TextureData2d -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
             is TextureData3d -> loadTexture3d(ctx, props, data)
             is CubeMapTextureData -> loadTextureCube(ctx, props, data)
@@ -70,12 +70,12 @@ object TextureLoader {
         }
 
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
-        return Texture.estimatedTexSize(width, height, format.pxSize, layers, mipLevels)
+        return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
     }
 
     private fun texImage2d(target: Int, data: TextureData) {
         when (data) {
-            is BufferedTextureData -> {
+            is TextureData2d -> {
                 glTexImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
             }
             else -> {

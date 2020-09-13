@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import org.khronos.webgl.get
@@ -50,7 +50,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         for (i in 0 until buffer.capacity) {
             buffer.put(data.data[i*4+3])
         }
-        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
+        return CharMap(TextureData2d(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
     }
 
     private fun makeMap(fontProps: FontProps, style: String, map: MutableMap<Char, CharMetrics>): Int {

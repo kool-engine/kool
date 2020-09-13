@@ -100,9 +100,9 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
     }
 }
 
-class TextureNode(graph: ShaderGraph, name: String = "tex2d_${graph.nextNodeId}") : ShaderNode(name, graph) {
+class Texture2dNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
-    lateinit var sampler: TextureSampler
+    lateinit var sampler: TextureSampler2d
 
     var arraySize = 1
     var isDepthTexture = false
@@ -110,18 +110,17 @@ class TextureNode(graph: ShaderGraph, name: String = "tex2d_${graph.nextNodeId}"
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
-            +TextureSampler.Builder().apply {
-                arraySize = this@TextureNode.arraySize
+            texture2d(name, shaderGraph.stage) {
+                arraySize = this@Texture2dNode.arraySize
                 isDepthSampler = isDepthTexture
                 stages += visibleIn
-                name = this@TextureNode.name
                 onCreate = { sampler = it }
             }
         }
     }
 }
 
-class Texture3dNode(graph: ShaderGraph, name: String = "tex3d_${graph.nextNodeId}") : ShaderNode(name, graph) {
+class Texture3dNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
     lateinit var sampler: TextureSampler3d
 
@@ -130,26 +129,27 @@ class Texture3dNode(graph: ShaderGraph, name: String = "tex3d_${graph.nextNodeId
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
-            +TextureSampler3d.Builder().apply {
+            texture3d(name, shaderGraph.stage) {
                 arraySize = this@Texture3dNode.arraySize
                 stages += visibleIn
-                name = this@Texture3dNode.name
                 onCreate = { sampler = it }
             }
         }
     }
 }
 
-class CubeMapNode(graph: ShaderGraph, name: String = "texCube_${graph.nextNodeId}") : ShaderNode(name, graph) {
+class TextureCubeNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
-    lateinit var sampler: CubeMapSampler
+    lateinit var sampler: TextureSamplerCube
+
+    var arraySize = 1
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
-            +CubeMapSampler.Builder().apply {
+            textureCube(name, shaderGraph.stage) {
+                arraySize = this@TextureCubeNode.arraySize
                 stages += visibleIn
-                name = this@CubeMapNode.name
                 onCreate = { sampler = it }
             }
         }

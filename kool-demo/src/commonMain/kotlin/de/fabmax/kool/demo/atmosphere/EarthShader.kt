@@ -5,16 +5,16 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 
-class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shaderConfig(textures)) : DeferredPbrShader(cfg, model(cfg)) {
+class EarthShader(textures: Map<String, Texture2d>, cfg: PbrMaterialConfig = shaderConfig(textures)) : DeferredPbrShader(cfg, model(cfg)) {
 
-    private var tHeightMap: TextureSampler? = null
-    var heightMap: Texture? = null
+    private var tHeightMap: TextureSampler2d? = null
+    var heightMap: Texture2d? = null
         set(value) {
             field = value
             tHeightMap?.texture = value
         }
-    private var tOcean: TextureSampler? = null
-    var oceanNrmTex: Texture? = null
+    private var tOcean: TextureSampler2d? = null
+    var oceanNrmTex: Texture2d? = null
         set(value) {
             field = value
             tOcean?.texture = value
@@ -31,10 +31,10 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
                 uNormalShift = it.uNormalShift
                 uWaterColor = it.uWaterColor
             }
-            tOcean = model.findNode<TextureNode>("tOceanNrm1")?.sampler
+            tOcean = model.findNode<Texture2dNode>("tOceanNrm1")?.sampler
             tOcean?.texture = oceanNrmTex
 
-            tHeightMap = model.findNode<TextureNode>("tHeightMap")?.sampler
+            tHeightMap = model.findNode<Texture2dNode>("tHeightMap")?.sampler
             tHeightMap?.texture = heightMap
         }
     }
@@ -47,7 +47,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
         const val texOceanNrm = "Ocean Normal Map"
         const val texLightGradient = "Light Gradient"
 
-        fun shaderConfig(textures: Map<String, Texture>): PbrMaterialConfig {
+        fun shaderConfig(textures: Map<String, Texture2d>): PbrMaterialConfig {
             return PbrMaterialConfig().apply {
                 useAlbedoMap(textures[texEarthDay])
                 useEmissiveMap(textures[texEarthNight])
@@ -78,7 +78,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
                         inXyPos = attrTexCoords().output
                     }
 
-                    val heightTex = textureNode("tHeightMap")
+                    val heightTex = texture2dNode("tHeightMap")
                     val heightMap = addNode(HeightMapNode(heightTex, stage)).apply {
                         inTileName = instanceAttributeNode(SphereGridSystem.ATTRIB_TILE_NAME).output
                         inEdgeFlag = attributeNode(SphereGridSystem.ATTRIB_EDGE_FLAG).output
@@ -112,7 +112,7 @@ class EarthShader(textures: Map<String, Texture>, cfg: PbrMaterialConfig = shade
                     mrtOutput.inRoughness = roughnessNd.outRoughness
 
                     val oceanNd = addNode(EarthOceanNode(stage)).apply {
-                        inOceanTex1 = textureNode("tOceanNrm1")
+                        inOceanTex1 = texture2dNode("tOceanNrm1")
                         inAlbedo = dayAlbedo
                         inIsOcean = roughnessNd.outIsOcean
                         inNormal = ifNormalLocalNoBump.output

@@ -23,21 +23,21 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
             deferredCameraNode?.sceneCam = value
         }
 
-    private var positionAoSampler: TextureSampler? = null
-    private var normalRoughnessSampler: TextureSampler? = null
-    private var albedoMetalSampler: TextureSampler? = null
+    private var positionAoSampler: TextureSampler2d? = null
+    private var normalRoughnessSampler: TextureSampler2d? = null
+    private var albedoMetalSampler: TextureSampler2d? = null
 
-    var positionAo: Texture? = cfg.positionAo
+    var positionAo: Texture2d? = cfg.positionAo
         set(value) {
             field = value
             positionAoSampler?.texture = value
         }
-    var normalRoughness: Texture? = cfg.normalRoughness
+    var normalRoughness: Texture2d? = cfg.normalRoughness
         set(value) {
             field = value
             normalRoughnessSampler?.texture = value
         }
-    var albedoMetal: Texture? = cfg.albedoMetal
+    var albedoMetal: Texture2d? = cfg.albedoMetal
         set(value) {
             field = value
             albedoMetalSampler?.texture = value
@@ -53,11 +53,11 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
-        positionAoSampler = model.findNode<TextureNode>("positionAo")?.sampler
+        positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
         positionAoSampler?.let { it.texture = positionAo }
-        normalRoughnessSampler = model.findNode<TextureNode>("normalRoughness")?.sampler
+        normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
         normalRoughnessSampler?.let { it.texture = normalRoughness }
-        albedoMetalSampler = model.findNode<TextureNode>("albedoMetal")?.sampler
+        albedoMetalSampler = model.findNode<Texture2dNode>("albedoMetal")?.sampler
         albedoMetalSampler?.let { it.texture = albedoMetal }
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
@@ -92,9 +92,9 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
                 val coord = texPos
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionAo = textureSamplerNode(textureNode("positionAo"), coord).outColor
-                    inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
-                    inAlbedoMetallic = textureSamplerNode(textureNode("albedoMetal"), coord).outColor
+                    inPositionAo = texture2dSamplerNode(texture2dNode("positionAo"), coord).outColor
+                    inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
+                    inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
                 }
 
                 // discard fragment if it contains background / clear color
@@ -156,8 +156,8 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
         var lightBacksides = false
 
-        var positionAo: Texture? = null
-        var normalRoughness: Texture? = null
-        var albedoMetal: Texture? = null
+        var positionAo: Texture2d? = null
+        var normalRoughness: Texture2d? = null
+        var albedoMetal: Texture2d? = null
     }
 }

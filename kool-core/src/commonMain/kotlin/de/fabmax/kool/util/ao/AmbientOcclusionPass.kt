@@ -58,24 +58,24 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                     }
                     fragmentStage {
-                        val noiseTex = textureNode("noiseTex")
+                        val noiseTex = texture2dNode("noiseTex")
                         val aoUnis = addNode(AoUniforms(screenCam, true, stage))
 
-                        val depthTex: TextureNode
+                        val depthTex: Texture2dNode
                         val depthComponent: String
                         val origin: ShaderNodeIoVar
                         val normal: ShaderNodeIoVar
 
                         if (aoSetup.isDeferred) {
-                            depthTex = textureNode("positionTex")
+                            depthTex = texture2dNode("positionTex")
                             depthComponent = "z"
-                            origin = splitNode(textureSamplerNode(depthTex, ifScreenPos.output).outColor, "xyz").output
-                            normal = splitNode(textureSamplerNode(textureNode("normalTex"), ifScreenPos.output).outColor, "xyz").output
+                            origin = splitNode(texture2dSamplerNode(depthTex, ifScreenPos.output).outColor, "xyz").output
+                            normal = splitNode(texture2dSamplerNode(texture2dNode("normalTex"), ifScreenPos.output).outColor, "xyz").output
 
                         } else {
-                            depthTex = textureNode("normalDepthTex")
+                            depthTex = texture2dNode("normalDepthTex")
                             depthComponent = "a"
-                            val normalDepth = textureSamplerNode(depthTex, ifScreenPos.output).outColor
+                            val normalDepth = texture2dSamplerNode(depthTex, ifScreenPos.output).outColor
                             normal = splitNode(normalDepth, "xyz").output
 
                             val unProj = addNode(UnprojectPosNode(aoUnis, stage))
@@ -94,12 +94,12 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                 shader = ModeledShader(model).apply {
                     onPipelineCreated += { _, _, _ ->
                         if (aoSetup.isForward) {
-                            model.findNode<TextureNode>("normalDepthTex")!!.sampler.texture = aoSetup.linearDepthPass?.colorTexture
+                            model.findNode<Texture2dNode>("normalDepthTex")!!.sampler.texture = aoSetup.linearDepthPass?.colorTexture
                         } else {
-                            model.findNode<TextureNode>("positionTex")!!.sampler.texture = aoSetup.mrtPass?.positionAo
-                            model.findNode<TextureNode>("normalTex")!!.sampler.texture = aoSetup.mrtPass?.normalRoughness
+                            model.findNode<Texture2dNode>("positionTex")!!.sampler.texture = aoSetup.mrtPass?.positionAo
+                            model.findNode<Texture2dNode>("normalTex")!!.sampler.texture = aoSetup.mrtPass?.normalRoughness
                         }
-                        model.findNode<TextureNode>("noiseTex")!!.sampler.texture = noiseTex
+                        model.findNode<Texture2dNode>("noiseTex")!!.sampler.texture = noiseTex
                         aoUniforms = model.findNode("aoUniforms")
                         aoNode = model.findNode("aoNode")
                         setKernelSize(kernelSz)
@@ -151,7 +151,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         return a + f * (b - a)
     }
 
-    private fun makeNoiseTexture(): Texture {
+    private fun makeNoiseTexture(): Texture2d {
         val buf = createUint8Buffer(4 * 16)
         val rotAngles = (0 until 16).map { PI.toFloat() * it / 8 }.shuffled()
 
@@ -165,11 +165,11 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
             buf[i*4+3] = 1
         }
 
-        val data = BufferedTextureData(buf, 4, 4, TexFormat.RGBA)
+        val data = TextureData2d(buf, 4, 4, TexFormat.RGBA)
         val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
                 minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = false, maxAnisotropy = 1)
-        return Texture(texProps, "ao_noise_tex") { data }
+        return Texture2d(texProps, "ao_noise_tex") { data }
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -241,7 +241,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         }
     }
 
-    private inner class AoNode(val aoUniforms: AoUniforms, val noiseTex: TextureNode, val depthTex: TextureNode, val depthComponent: String, graph: ShaderGraph) : ShaderNode("aoNode", graph) {
+    private inner class AoNode(val aoUniforms: AoUniforms, val noiseTex: Texture2dNode, val depthTex: Texture2dNode, val depthComponent: String, graph: ShaderGraph) : ShaderNode("aoNode", graph) {
         var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
         var inOrigin = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
         var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))

@@ -40,7 +40,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private var animateTime = true
     private var timeSlider: Slider? = null
 
-    val textures = mutableMapOf<String, Texture>()
+    val textures = mutableMapOf<String, Texture2d>()
     lateinit var deferredPipeline: DeferredPipeline
     val atmoShader = AtmosphericScatteringShader()
 
@@ -193,7 +193,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
                 val lightNd = findNodeByType<MultiLightNode>()!!
                 val pbrNd = findNodeByType<PbrMaterialNode>()!!
 
-                val lightGradientTex = textureNode("tLightGradient")
+                val lightGradientTex = texture2dNode("tLightGradient")
                 addNode(EarthLightColorNode(lightGradientTex, stage)).apply {
                     inWorldPos = pbrNd.inFragPos
                     inFragToLight = lightNd.outFragToLightDirection
@@ -213,12 +213,12 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
         return PbrSceneShader(shaderCfg, model).apply {
             onPipelineCreated += { _, _, _ ->
-                model.findNode<TextureNode>("tLightGradient")?.sampler?.texture = lightGradientTex
+                model.findNode<Texture2dNode>("tLightGradient")?.sampler?.texture = lightGradientTex
             }
         }
     }
 
-    private class EarthLightColorNode(val lightColorGradient: TextureNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {
+    private class EarthLightColorNode(val lightColorGradient: Texture2dNode, graph: ShaderGraph) : ShaderNode("earthLightColor", graph) {
         lateinit var inWorldPos: ShaderNodeIoVar
         lateinit var inFragToLight: ShaderNodeIoVar
         lateinit var inRadiance: ShaderNodeIoVar

@@ -225,7 +225,7 @@ class ShaderModel(val modelInfo: String = "") {
             return refractNd
         }
 
-        fun normalMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null,
+        fun normalMapNode(texture: Texture2dNode, textureCoord: ShaderNodeIoVar? = null,
                           normal: ShaderNodeIoVar? = null, tangent: ShaderNodeIoVar? = null): NormalMapNode {
             val nrmMappingNd = addNode(NormalMapNode(texture, stage))
             textureCoord?.let { nrmMappingNd.inTexCoord = it }
@@ -234,7 +234,7 @@ class ShaderModel(val modelInfo: String = "") {
             return nrmMappingNd
         }
 
-        fun displacementMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null, pos: ShaderNodeIoVar? = null,
+        fun displacementMapNode(texture: Texture2dNode, textureCoord: ShaderNodeIoVar? = null, pos: ShaderNodeIoVar? = null,
                                 normal: ShaderNodeIoVar? = null, strength: ShaderNodeIoVar? = null): DisplacementMapNode {
             val dispMappingNd = addNode(DisplacementMapNode(texture, stage))
             textureCoord?.let { dispMappingNd.inTexCoord = it }
@@ -320,38 +320,38 @@ class ShaderModel(val modelInfo: String = "") {
             return getWeightNd
         }
 
-        fun textureNode(texName: String) = addNode(TextureNode(stage, texName))
+        fun texture2dNode(texName: String) = addNode(Texture2dNode(stage, texName))
 
         fun texture3dNode(texName: String) = addNode(Texture3dNode(stage, texName))
 
-        fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSamplerNode {
-            val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
+        fun textureCubeNode(texName: String) = addNode(TextureCubeNode(stage, texName))
+
+        fun texture2dSamplerNode(texNode: Texture2dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): Texture2dSamplerNode {
+            val texSampler = addNode(Texture2dSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
 
-        fun textureSampler3dNode(texNode: Texture3dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSampler3dNode {
-            val texSampler = addNode(TextureSampler3dNode(texNode, stage, premultiply))
+        fun texture3dSamplerNode(texNode: Texture3dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): Texture3dSamplerNode {
+            val texSampler = addNode(Texture3dSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
 
-        fun noiseTextureSamplerNode(texNode: TextureNode, texSize: ShaderNodeIoVar? = null): NoiseTextureSamplerNode {
+        fun textureCubeSamplerNode(texNode: TextureCubeNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureCubeSamplerNode {
+            val texSampler = addNode(TextureCubeSamplerNode(texNode, stage, premultiply))
+            texCoords?.let { texSampler.inTexCoord = it }
+            return texSampler
+        }
+
+        fun noiseTextureSamplerNode(texNode: Texture2dNode, texSize: ShaderNodeIoVar? = null): NoiseTextureSamplerNode {
             val sampler = addNode(NoiseTextureSamplerNode(texNode, stage))
             texSize?.let { sampler.inTexSize = it }
             return sampler
         }
 
-        fun equiRectSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, decodeRgbe: Boolean = false, premultiply: Boolean = false): EquiRectSamplerNode {
+        fun equiRectSamplerNode(texNode: Texture2dNode, texCoords: ShaderNodeIoVar? = null, decodeRgbe: Boolean = false, premultiply: Boolean = false): EquiRectSamplerNode {
             val texSampler = addNode(EquiRectSamplerNode(texNode, stage, decodeRgbe, premultiply))
-            texCoords?.let { texSampler.inTexCoord = it }
-            return texSampler
-        }
-
-        fun cubeMapNode(texName: String) = addNode(CubeMapNode(stage, texName))
-
-        fun cubeMapSamplerNode(texNode: CubeMapNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): CubeMapSamplerNode {
-            val texSampler = addNode(CubeMapSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
@@ -421,7 +421,7 @@ class ShaderModel(val modelInfo: String = "") {
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
 
-            val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply { isDepthTexture = true }
+            val depthMap = Texture2dNode(fragmentStageGraph, depthMapName).apply { isDepthTexture = true }
             fragmentStageGraph.addNode(depthMap)
 
             inWorldPos?.let { shadowMapNode.inWorldPos = it }
@@ -436,7 +436,7 @@ class ShaderModel(val modelInfo: String = "") {
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
 
-            val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply {
+            val depthMap = Texture2dNode(fragmentStageGraph, depthMapName).apply {
                 isDepthTexture = true
                 arraySize = cascadedShadowMap.numCascades
             }
@@ -491,7 +491,7 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         fun deferredSimpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
-            val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply { isDepthTexture = true }
+            val depthMapNd = addNode(Texture2dNode(stage, depthMapName)).apply { isDepthTexture = true }
             val lightSpaceTf = addNode(SimpleShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
             return addNode(SimpleShadowMapFragmentNode(shadowMap, stage)).apply {
                 inPosLightSpace = lightSpaceTf.outPosLightSpace
@@ -501,7 +501,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun deferredCascadedShadowMapNode(shadowMap: CascadedShadowMap, depthMapName: String,
                                           viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
-            val depthMapNd = addNode(TextureNode(stage, depthMapName)).apply {
+            val depthMapNd = addNode(Texture2dNode(stage, depthMapName)).apply {
                 isDepthTexture = true
                 arraySize = shadowMap.numCascades
             }
@@ -533,7 +533,7 @@ class ShaderModel(val modelInfo: String = "") {
             return mat
         }
 
-        fun pbrMaterialNode(reflectionMap: CubeMapNode? = null, brdfLut: TextureNode? = null,
+        fun pbrMaterialNode(reflectionMap: TextureCubeNode? = null, brdfLut: Texture2dNode? = null,
                             albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
                             fragPos: ShaderNodeIoVar? = null, viewDir: ShaderNodeIoVar? = null): PbrMaterialNode {
             val mat = addNode(PbrMaterialNode(reflectionMap, brdfLut, stage))

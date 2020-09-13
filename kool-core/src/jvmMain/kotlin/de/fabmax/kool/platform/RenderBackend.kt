@@ -25,8 +25,8 @@ interface RenderBackend {
     fun drawFrame(ctx: Lwjgl3Context)
     fun destroy(ctx: Lwjgl3Context)
 
-    fun loadTex2d(tex: Texture, data: TextureData)
-    fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData)
+    fun loadTex2d(tex: Texture2d, data: TextureData)
+    fun loadTexCube(tex: TextureCube, data: CubeMapTextureData)
 
     fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl
     fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl

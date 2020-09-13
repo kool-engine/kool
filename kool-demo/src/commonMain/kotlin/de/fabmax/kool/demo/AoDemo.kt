@@ -243,7 +243,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
-                val sampler = textureSamplerNode(textureNode("colorTex"), ifTexCoords.output)
+                val sampler = texture2dSamplerNode(texture2dNode("colorTex"), ifTexCoords.output)
                 val gray = addNode(Red2GrayNode(sampler.outColor, stage)).outGray
                 colorOutput(gray)
             }

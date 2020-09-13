@@ -77,9 +77,9 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
                 if (desc.stages.contains(stage)) {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(desc))
-                        is TextureSampler -> srcBuilder.append(generateTextureSampler(desc))
+                        is TextureSampler2d -> srcBuilder.append(generateTextureSampler(desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(desc))
-                        is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(desc))
+                        is TextureSamplerCube -> srcBuilder.append(generateCubeMapSampler(desc))
                         else -> TODO("Descriptor type not implemented: $desc")
                     }
                 }
@@ -107,7 +107,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateTextureSampler(desc: TextureSampler): String {
+    private fun generateTextureSampler(desc: TextureSampler2d): String {
         val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "uniform $samplerType ${desc.name}$arraySuffix;\n"
@@ -118,7 +118,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
         return "uniform sampler3D ${desc.name}$arraySuffix;\n"
     }
 
-    private fun generateCubeMapSampler(desc: CubeMapSampler): String {
+    private fun generateCubeMapSampler(desc: TextureSamplerCube): String {
         val samplerType = if (desc.isDepthSampler) "samplerCubeShadow" else "samplerCube"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "uniform $samplerType ${desc.name}$arraySuffix;\n"

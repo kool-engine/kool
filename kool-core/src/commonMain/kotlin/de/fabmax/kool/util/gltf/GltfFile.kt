@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.AlphaModeBlend
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -134,7 +134,7 @@ data class GltfFile(
 
     class ModelMaterialConfig(
             val shadowMaps: List<ShadowMap> = emptyList(),
-            val scrSpcAmbientOcclusionMap: Texture? = null,
+            val scrSpcAmbientOcclusionMap: Texture2d? = null,
             val environmentMaps: EnvironmentMaps? = null,
             val isDeferredShading: Boolean = false
     )

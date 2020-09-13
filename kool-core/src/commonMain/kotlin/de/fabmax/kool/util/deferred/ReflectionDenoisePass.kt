@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture) :
+class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture2d) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "ReflectionDenoisePass"
             setSize(reflectionPass.config.width, reflectionPass.config.height)
@@ -36,8 +36,8 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
                         positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
                     }
                     fragmentStage {
-                        val noisyRefl = textureNode("noisyRefl")
-                        val depthTex = textureNode("positionAo")
+                        val noisyRefl = texture2dNode("noisyRefl")
+                        val depthTex = texture2dNode("positionAo")
                         val blurNd = addNode(BlurNode(noisyRefl, depthTex, stage))
                         blurNd.inScreenPos = ifTexCoords.output
                         colorOutput(blurNd.outColor)
@@ -49,8 +49,8 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
                         builder.blendMode = BlendMode.DISABLED
                     }
                     onPipelineCreated += { _, _, _ ->
-                        model.findNode<TextureNode>("noisyRefl")!!.sampler.texture = reflectionPass.colorTexture
-                        model.findNode<TextureNode>("positionAo")!!.sampler.texture = positionAo
+                        model.findNode<Texture2dNode>("noisyRefl")!!.sampler.texture = reflectionPass.colorTexture
+                        model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = positionAo
                     }
                 }
             }
@@ -64,7 +64,7 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture)
         super.dispose(ctx)
     }
 
-    private inner class BlurNode(val noisyRefl: TextureNode, val depthTex: TextureNode, shaderGraph: ShaderGraph) :
+    private inner class BlurNode(val noisyRefl: Texture2dNode, val depthTex: Texture2dNode, shaderGraph: ShaderGraph) :
             ShaderNode("blurNode", shaderGraph) {
 
         var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))

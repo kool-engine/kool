@@ -90,13 +90,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         result.set(0, windowHeight, windowWidth, -windowHeight)
     }
 
-    override fun loadTex2d(tex: Texture, data: TextureData) {
+    override fun loadTex2d(tex: Texture2d, data: TextureData) {
         tex.loadedTexture = TextureLoader.loadTexture(vkSystem, tex.props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
     }
 
-    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData) {
+    override fun loadTexCube(tex: TextureCube, data: CubeMapTextureData) {
         tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)

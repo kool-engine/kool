@@ -3,7 +3,7 @@ package de.fabmax.kool.util.deferred
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
@@ -24,13 +24,13 @@ class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
     val content = drawNode as Group
     internal val alphaMeshes = mutableListOf<Mesh>()
 
-    val positionAo: Texture
+    val positionAo: Texture2d
         get() = colorTextures[0]
-    val normalRoughness: Texture
+    val normalRoughness: Texture2d
         get() = colorTextures[1]
-    val albedoMetal: Texture
+    val albedoMetal: Texture2d
         get() = colorTextures[2]
-    val emissive: Texture?
+    val emissive: Texture2d?
         get() = if (withEmissive) colorTextures[3] else null
 
     init {

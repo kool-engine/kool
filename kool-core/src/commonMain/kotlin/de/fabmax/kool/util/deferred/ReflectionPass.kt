@@ -78,14 +78,14 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             val deferredCameraNode = model.findNode<DeferredCameraNode>("deferredCam")
             deferredCameraNode?.let { it.sceneCam = mrtPass.camera }
 
-            val positionAoSampler = model.findNode<TextureNode>("positionAo")?.sampler
+            val positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
             positionAoSampler?.let { it.texture = mrtPass.positionAo }
-            val normalRoughnessSampler = model.findNode<TextureNode>("normalRoughness")?.sampler
+            val normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
             normalRoughnessSampler?.let { it.texture = mrtPass.normalRoughness }
 
-            val ssrSampler = model.findNode<TextureNode>("ssrMap")?.sampler
+            val ssrSampler = model.findNode<Texture2dNode>("ssrMap")?.sampler
             ssrSampler?.let { it.texture = pbrLightingPass.colorTexture }
-            val ssrNoiseSampler = model.findNode<TextureNode>("ssrNoiseTex")?.sampler
+            val ssrNoiseSampler = model.findNode<Texture2dNode>("ssrNoiseTex")?.sampler
             ssrNoiseSampler?.let { it.texture = noiseTex }
 
             uRoughThreshLow = model.findNode("uRoughThreshLow")
@@ -107,10 +107,10 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
         fragmentStage {
             val coord = ifTexCoords.output
 
-            val posAoTex = textureNode("positionAo")
+            val posAoTex = texture2dNode("positionAo")
             val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                inPositionAo = textureSamplerNode(posAoTex, coord).outColor
-                inNormalRough = textureSamplerNode(textureNode("normalRoughness"), coord).outColor
+                inPositionAo = texture2dSamplerNode(posAoTex, coord).outColor
+                inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
             }
 
             val roughnessWeight = addNode(DiscardRoughSurfacesNode(stage)).apply {
@@ -120,9 +120,9 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             }
 
             val defCam = addNode(DeferredCameraNode(stage))
-            val ssrNoiseTex = textureNode("ssrNoiseTex")
+            val ssrNoiseTex = texture2dNode("ssrNoiseTex")
             val noise = noiseTextureSamplerNode(ssrNoiseTex, constVec2i(Vec2i(NOISE_SIZE, NOISE_SIZE))).outNoise
-            val sceneColorTex = textureNode("ssrMap")
+            val sceneColorTex = texture2dNode("ssrMap")
             val viewPos = mrtDeMultiplex.outViewPos
             val viewDir = normalizeNode(viewPos).output
             val rayOffset = splitNode(noise, "a").output
@@ -142,14 +142,14 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 baseStepFac = constFloat(baseReflectionStep)
             }
 
-            val color = textureSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
+            val color = texture2dSamplerNode(sceneColorTex, rayTraceNode.outSamplePos).outColor
             val alpha = multiplyNode(rayTraceNode.outSampleWeight, roughnessWeight.outWeight).output
             val srgb = gammaNode(color, constFloat(2.2f)).outColor
             colorOutput(combineXyzWNode(srgb, alpha).output)
         }
     }
 
-    private fun generateScrSpcReflectionNoiseTex(): Texture {
+    private fun generateScrSpcReflectionNoiseTex(): Texture2d {
         val sz = NOISE_SIZE
         val buf = createUint8Buffer(sz * sz * 4)
         val rand = Random(0x1deadb0b)
@@ -164,11 +164,11 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toInt().toByte()
             buf[i * 4 + 3] = rand.randomI(0..255).toByte()
         }
-        val data = BufferedTextureData(buf, sz, sz, TexFormat.RGBA)
+        val data = TextureData2d(buf, sz, sz, TexFormat.RGBA)
         val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
                 minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = false, maxAnisotropy = 1)
-        return Texture(texProps, "ssr_noise_tex") { data }
+        return Texture2d(texProps, "ssr_noise_tex") { data }
     }
 
     private class DiscardRoughSurfacesNode(graph: ShaderGraph) : ShaderNode("discardRough", graph) {

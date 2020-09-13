@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture?, cubeMap: CubeMapTexture?) :
+class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "IrradianceMapPass"
             setSize(16, 16)
@@ -37,9 +37,9 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
                     }
                     fragmentStage {
                         if (hdriMap != null) {
-                            addNode(EnvEquiRectSamplerNode(textureNode(texName), stage))
+                            addNode(EnvEquiRectSamplerNode(texture2dNode(texName), stage))
                         } else {
-                            addNode(EnvCubeSamplerNode(cubeMapNode(texName), stage))
+                            addNode(EnvCubeSamplerNode(textureCubeNode(texName), stage))
                         }
                         val convNd = addNode(ConvoluteIrradianceNode(stage)).apply {
                             inLocalPos = ifLocalPos.output
@@ -117,7 +117,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     }
 
     companion object {
-        fun irradianceMapFromHdri(scene: Scene, hdri: Texture) = IrradianceMapPass(scene, hdri, null)
-        fun irradianceMapFromCube(scene: Scene, cube: CubeMapTexture) = IrradianceMapPass(scene, null, cube)
+        fun irradianceMapFromHdri(scene: Scene, hdri: Texture2d) = IrradianceMapPass(scene, hdri, null)
+        fun irradianceMapFromCube(scene: Scene, cube: TextureCube) = IrradianceMapPass(scene, null, cube)
     }
 }

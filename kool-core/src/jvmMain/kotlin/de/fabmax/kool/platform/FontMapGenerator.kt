@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import java.awt.Color
 import java.awt.Graphics2D
@@ -86,7 +86,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(fontProps, g, metrics)
         val buffer = getCanvasAlphaData(maxWidth, texHeight)
-        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
+        return CharMap(TextureData2d(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
     }
 
     private fun getCanvasAlphaData(width: Int, height: Int): Uint8Buffer {

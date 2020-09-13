@@ -34,33 +34,33 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
 
     class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
 
-    class TextureColor(texture: Texture? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
-        private var textureSampler: TextureSampler? = null
+    class TextureColor(texture: Texture2d? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
+        private var textureSampler: TextureSampler2d? = null
 
-        var texture: Texture? = texture
+        var texture: Texture2d? = texture
             set(value) {
                 field = value
                 textureSampler?.texture = value
             }
 
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            textureSampler = model.findNode<TextureNode>(texName)?.sampler
+            textureSampler = model.findNode<Texture2dNode>(texName)?.sampler
             textureSampler?.let { it.texture = texture }
             super.onPipelineCreated(pipeline, mesh, ctx)
         }
     }
 
-    class CubeMapColor(texture: CubeMapTexture? = null, private val texName: String = "cubeMap", model: ShaderModel = cubeMapColorModel(texName)) : ModeledShader(model) {
-        private var cubeMapSampler: CubeMapSampler? = null
+    class CubeMapColor(texture: TextureCube? = null, private val texName: String = "cubeMap", model: ShaderModel = cubeMapColorModel(texName)) : ModeledShader(model) {
+        private var cubeMapSampler: TextureSamplerCube? = null
 
-        var texture: CubeMapTexture? = texture
+        var texture: TextureCube? = texture
             set(value) {
                 field = value
                 cubeMapSampler?.texture = value
             }
 
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            cubeMapSampler = model.findNode<CubeMapNode>(texName)?.sampler
+            cubeMapSampler = model.findNode<TextureCubeNode>(texName)?.sampler
             cubeMapSampler?.let { it.texture = texture }
             super.onPipelineCreated(pipeline, mesh, ctx)
         }
@@ -96,7 +96,7 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
                 positionOutput = simpleVertexPositionNode().outVec4
             }
             fragmentStage {
-                val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
+                val sampler = texture2dSamplerNode(texture2dNode(texName), ifTexCoords.output)
                 colorOutput(unlitMaterialNode(sampler.outColor).outColor)
             }
         }
@@ -112,7 +112,7 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
             }
             fragmentStage {
                 val nrmPos = normalizeNode(ifFragPos.output)
-                val sampler = cubeMapSamplerNode(cubeMapNode(texName), nrmPos.output)
+                val sampler = textureCubeSamplerNode(textureCubeNode(texName), nrmPos.output)
                 colorOutput(unlitMaterialNode(sampler.outColor).outColor)
             }
         }

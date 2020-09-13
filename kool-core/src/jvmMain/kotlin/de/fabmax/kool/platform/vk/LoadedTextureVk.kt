@@ -22,7 +22,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
             addDependingResource(textureImageView)
 
             sys.ctx.engineStats.textureAllocated(texId, Texture.estimatedTexSize(
-                    textureImage.width, textureImage.height, format.vkBytesPerPx, textureImage.arrayLayers, textureImage.mipLevels))
+                    textureImage.width, textureImage.height, textureImage.arrayLayers, textureImage.mipLevels, format.vkBytesPerPx))
         }
         logD { "Created texture: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
     }
@@ -54,7 +54,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
         fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTextureVk {
             return when(data) {
-                is BufferedTextureData -> TextureLoader.loadTexture(sys, texProps, data)
+                is TextureData2d -> TextureLoader.loadTexture(sys, texProps, data)
                 is TextureData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
                 is CubeMapTextureData -> TextureLoader.loadCubeMap(sys, texProps, data)
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
