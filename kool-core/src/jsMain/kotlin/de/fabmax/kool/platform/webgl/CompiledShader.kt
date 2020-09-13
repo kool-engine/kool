@@ -47,9 +47,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     is TextureSampler -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
+                    is TextureSampler3d -> {
+                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                    }
                     is CubeMapSampler -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
+                    else -> throw IllegalStateException("Descriptor type not implemented: $desc")
                 }
             }
         }
@@ -130,6 +134,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures = mutableListOf<TextureSampler>()
+        private val textures3d = mutableListOf<TextureSampler3d>()
         private val cubeMaps = mutableListOf<CubeMapSampler>()
         private val mappings = mutableListOf<MappedUniform>()
         private val attributeBinders = mutableListOf<AttributeOnLocation>()
@@ -153,6 +158,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     when (desc) {
                         is UniformBuffer -> mapUbo(desc)
                         is TextureSampler -> mapTexture(desc)
+                        is TextureSampler3d -> mapTexture3d(desc)
                         is CubeMapSampler -> mapCubeMap(desc)
                         else -> TODO("$desc")
                     }
@@ -182,6 +188,14 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             }
         }
 
+        private fun mapTexture3d(tex: TextureSampler3d) {
+            textures3d.add(tex)
+            uniformLocations[tex.name]?.let { locs ->
+                mappings += MappedUniformTex3d(tex, nextTexUnit, locs)
+                nextTexUnit += locs.size
+            }
+        }
+
         private fun mapCubeMap(cubeMap: CubeMapSampler) {
             cubeMaps.add(cubeMap)
             uniformLocations[cubeMap.name]?.let { locs ->
@@ -200,6 +214,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             }
             for (i in textures.indices) {
                 textures[i].onUpdate?.invoke(textures[i], drawCmd)
+            }
+            for (i in textures3d.indices) {
+                textures3d[i].onUpdate?.invoke(textures3d[i], drawCmd)
             }
             for (i in cubeMaps.indices) {
                 cubeMaps[i].onUpdate?.invoke(cubeMaps[i], drawCmd)
@@ -236,6 +253,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             pushConstants.clear()
             ubos.clear()
             textures.clear()
+            textures3d.clear()
             cubeMaps.clear()
             mappings.clear()
             attributeBinders.clear()

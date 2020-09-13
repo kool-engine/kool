@@ -322,8 +322,16 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun textureNode(texName: String) = addNode(TextureNode(stage, texName))
 
+        fun texture3dNode(texName: String) = addNode(Texture3dNode(stage, texName))
+
         fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSamplerNode {
             val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
+            texCoords?.let { texSampler.inTexCoord = it }
+            return texSampler
+        }
+
+        fun textureSampler3dNode(texNode: Texture3dNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSampler3dNode {
+            val texSampler = addNode(TextureSampler3dNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }

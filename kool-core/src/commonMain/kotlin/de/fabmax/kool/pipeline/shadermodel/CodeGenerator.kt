@@ -6,6 +6,8 @@ interface CodeGenerator {
 
     fun sampleTexture2dDepth(texName: String, texCoords: String): String
 
+    fun sampleTexture3d(texName: String, texCoords: String, lod: String? = null): String
+
     fun sampleTextureCube(texName: String, texCoords: String, lod: String? = null): String
 
     fun appendFunction(name: String, glslCode: String)

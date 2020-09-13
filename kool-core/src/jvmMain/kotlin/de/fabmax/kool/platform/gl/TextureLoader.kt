@@ -15,14 +15,39 @@ object TextureLoader {
         return when (data) {
             is BufferedTextureData -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
+            is TextureData3d -> loadTexture3d(ctx, props, data)
             is CubeMapTextureData -> loadTextureCube(ctx, props, data)
             else -> throw IllegalArgumentException("TextureData type not supported: $data")
         }
     }
 
+    private fun loadTexture2d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), img.estimateTexSize())
+        tex.setSize(img.width, img.height, 1)
+        tex.applySamplerProps(props)
+
+        texImage2d(GL_TEXTURE_2D, img)
+        if (props.mipMapping) {
+            glGenerateMipmap(GL_TEXTURE_2D)
+        }
+        return tex
+    }
+
+    private fun loadTexture3d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData3d) : LoadedTextureGl {
+        val tex = LoadedTextureGl(ctx, GL_TEXTURE_3D, glGenTextures(), img.estimateTexSize())
+        tex.setSize(img.width, img.height, img.depth)
+        tex.applySamplerProps(props)
+
+        glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+        if (props.mipMapping) {
+            glGenerateMipmap(GL_TEXTURE_3D)
+        }
+        return tex
+    }
+
     private fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: CubeMapTextureData) : LoadedTextureGl {
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), img.estimateTexSize())
-        tex.setSize(img.width, img.height)
+        tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)
 
         texImage2d(GL_TEXTURE_CUBE_MAP_POSITIVE_X, img.right)
@@ -37,20 +62,13 @@ object TextureLoader {
         return tex
     }
 
-    private fun loadTexture2d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
-        val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), img.estimateTexSize())
-        tex.setSize(img.width, img.height)
-        tex.applySamplerProps(props)
-
-        texImage2d(GL_TEXTURE_2D, img)
-        if (props.mipMapping) {
-            glGenerateMipmap(GL_TEXTURE_2D)
-        }
-        return tex
-    }
-
     private fun TextureData.estimateTexSize(): Int {
-        val layers = if (this is CubeMapTextureData) 6 else 1
+        val layers = when (this) {
+            is CubeMapTextureData -> 6
+            is TextureData3d -> depth
+            else -> 1
+        }
+
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
         return Texture.estimatedTexSize(width, height, format.pxSize, layers, mipLevels)
     }

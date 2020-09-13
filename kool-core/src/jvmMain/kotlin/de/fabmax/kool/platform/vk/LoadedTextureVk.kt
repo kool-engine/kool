@@ -14,6 +14,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
     override var width = 0
     override var height = 0
+    override var depth = 0
 
     init {
         if (!isSharedRes) {
@@ -26,9 +27,10 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         logD { "Created texture: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
     }
 
-    fun setSize(width: Int, height: Int) {
+    fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
         this.height = height
+        this.depth = depth
     }
 
     override fun freeResources() {
@@ -53,6 +55,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTextureVk {
             return when(data) {
                 is BufferedTextureData -> TextureLoader.loadTexture(sys, texProps, data)
+                is TextureData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
                 is CubeMapTextureData -> TextureLoader.loadCubeMap(sys, texProps, data)
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
             }

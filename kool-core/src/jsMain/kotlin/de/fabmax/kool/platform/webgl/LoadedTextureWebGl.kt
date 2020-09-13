@@ -5,6 +5,8 @@ import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.util.logW
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
@@ -28,14 +30,16 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
 
     override var width = 0
     override var height = 0
+    override var depth = 0
 
     init {
         ctx.engineStats.textureAllocated(texId, estimatedSize)
     }
 
-    fun setSize(width: Int, height: Int) {
+    fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
         this.height = height
+        this.depth = depth
     }
 
     fun applySamplerProps(props: TextureProps) {
@@ -46,6 +50,9 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
         gl.texParameteri(target, TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
         gl.texParameteri(target, TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
         gl.texParameteri(target, TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
+        if (target == TEXTURE_3D) {
+            gl.texParameteri(target, TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
+        }
 
         val anisotropy = min(props.maxAnisotropy, ctx.glCapabilities.maxAnisotropy)
         if (anisotropy > 1) {

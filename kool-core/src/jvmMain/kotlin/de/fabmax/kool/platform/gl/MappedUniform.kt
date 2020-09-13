@@ -226,6 +226,24 @@ class MappedUniformTex2d(private val sampler2d: TextureSampler, texUnit: Int, va
     }
 }
 
+class MappedUniformTex3d(private val sampler3d: TextureSampler3d, texUnit: Int, val locations: List<Int>) :
+        MappedUniformTex(texUnit, GL_TEXTURE_3D) {
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        var texUnit = texUnit
+        var isValid = true
+        for (i in 0 until sampler3d.arraySize) {
+            val tex = sampler3d.textures[i]
+            if (tex != null && checkLoadingState(ctx, tex, i)) {
+                glUniform1i(locations[i], this.texUnit - GL_TEXTURE0 + i)
+            } else {
+                isValid = false
+            }
+            texUnit++
+        }
+        return isValid
+    }
+}
+
 class MappedUniformCubeMap(private val samplerCube: CubeMapSampler, texUnit: Int, val locations: List<Int>) :
         MappedUniformTex(texUnit, GL_TEXTURE_CUBE_MAP) {
     override fun setUniform(ctx: Lwjgl3Context): Boolean {

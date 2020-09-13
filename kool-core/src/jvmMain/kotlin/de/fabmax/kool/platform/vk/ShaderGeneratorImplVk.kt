@@ -105,6 +105,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(set, desc))
                         is TextureSampler -> srcBuilder.append(generateTextureSampler(set, desc))
+                        is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(set, desc))
                         is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(set, desc))
                         else -> TODO("Descriptor type not implemented: ${desc::class.java.name}")
                     }
@@ -142,6 +143,11 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
         return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"
+    }
+
+    private fun generateTextureSampler3d(set: DescriptorSetLayout, desc: TextureSampler3d): String {
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler3D ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
@@ -212,22 +218,29 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             mainCode += glslCode
         }
 
-        override fun sampleTexture2d(texName: String, texCoords: String, lod: String?): String {
+        override fun sampleTexture2d(texName: String, texCoords: String, lod: String?) =
+                sampleTexture(texName, texCoords, lod)
+
+        override fun sampleTexture2dDepth(texName: String, texCoords: String): String {
+            return "textureProj($texName, $texCoords).x"
+        }
+
+        override fun sampleTexture3d(texName: String, texCoords: String, lod: String?) =
+                sampleTexture(texName, texCoords, lod)
+
+        override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) =
+                sampleTexture(texName, texCoords, lod)
+
+        fun generateFunctions(): String = functions.values.joinToString("\n")
+
+        fun generateMain(): String = mainCode.joinToString("\n")
+
+        private fun sampleTexture(texName: String, texCoords: String, lod: String?): String {
             return if (lod == null) {
                 "texture($texName, $texCoords)"
             } else {
                 "textureLod($texName, $texCoords, $lod)"
             }
         }
-
-        override fun sampleTexture2dDepth(texName: String, texCoords: String): String {
-            return "textureProj($texName, $texCoords).x"
-        }
-
-        override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) = sampleTexture2d(texName, texCoords, lod)
-
-        fun generateFunctions(): String = functions.values.joinToString("\n")
-
-        fun generateMain(): String = mainCode.joinToString("\n")
     }
 }

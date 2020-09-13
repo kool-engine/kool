@@ -9,7 +9,7 @@ kotlin {
             }
         }
     }
-    //js(IR) {  // build fails with exeption
+    //js(IR) { // build fails with IllegalStateException: Operation is unsupported (1.4.10)
     js {
         browser {
             distribution {
@@ -46,9 +46,7 @@ kotlin {
         }
 
         val jsMain by getting {
-            dependencies {
-                implementation(npm("pako", "1.0.11"))
-            }
+            dependencies { }
         }
 
         sourceSets.all {

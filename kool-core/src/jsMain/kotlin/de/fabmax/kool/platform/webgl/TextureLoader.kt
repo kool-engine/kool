@@ -1,7 +1,9 @@
 package de.fabmax.kool.platform.webgl
 
+import de.fabmax.kool.JsImpl.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.NONE
@@ -25,15 +27,41 @@ object TextureLoader {
         return when (data) {
             is BufferedTextureData -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
+            is TextureData3d -> loadTexture3d(ctx, props, data)
             is CubeMapTextureData -> loadTextureCube(ctx, props, data)
             else -> throw IllegalArgumentException("TextureData type not supported: $data")
         }
     }
 
+    private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
+        val gl = ctx.gl
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, gl.createTexture(), img.estimateTexSize())
+        tex.setSize(img.width, img.height, 1)
+        tex.applySamplerProps(props)
+
+        texImage2d(gl, TEXTURE_2D, img)
+        if (props.mipMapping) {
+            gl.generateMipmap(TEXTURE_2D)
+        }
+        return tex
+    }
+
+    private fun loadTexture3d(ctx: JsContext, props: TextureProps, img: TextureData3d) : LoadedTextureWebGl {
+        val tex = LoadedTextureWebGl(ctx, TEXTURE_3D, gl.createTexture(), img.estimateTexSize())
+        tex.setSize(img.width, img.height, img.depth)
+        tex.applySamplerProps(props)
+
+        gl.texImage3D(TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+        if (props.mipMapping) {
+            gl.generateMipmap(TEXTURE_3D)
+        }
+        return tex
+    }
+
     private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: CubeMapTextureData) : LoadedTextureWebGl {
         val gl = ctx.gl
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, gl.createTexture(), img.estimateTexSize())
-        tex.setSize(img.width, img.height)
+        tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)
 
         texImage2d(gl, TEXTURE_CUBE_MAP_POSITIVE_X, img.right)
@@ -44,19 +72,6 @@ object TextureLoader {
         texImage2d(gl, TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front)
         if (props.mipMapping) {
             gl.generateMipmap(TEXTURE_CUBE_MAP)
-        }
-        return tex
-    }
-
-    private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
-        val gl = ctx.gl
-        val tex = LoadedTextureWebGl(ctx, TEXTURE_2D, gl.createTexture(), img.estimateTexSize())
-        tex.setSize(img.width, img.height)
-        tex.applySamplerProps(props)
-
-        texImage2d(gl, TEXTURE_2D, img)
-        if (props.mipMapping) {
-            gl.generateMipmap(TEXTURE_2D)
         }
         return tex
     }

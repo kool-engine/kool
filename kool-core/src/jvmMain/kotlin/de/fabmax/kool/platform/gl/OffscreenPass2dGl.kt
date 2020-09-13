@@ -154,7 +154,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
                 val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 1, mipLevels)
                 val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
-                tex.setSize(width, height)
+                tex.setSize(width, height, 1)
                 tex.applySamplerProps(parentPass.offscreenPass.colorTextures[i].props)
                 glTexStorage2D(GL_TEXTURE_2D, mipLevels, intFormat, width, height)
 
@@ -180,7 +180,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
             val estSize = Texture.estimatedTexSize(width, height, 4, 1, mipLevels)
             val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
-            tex.setSize(width, height)
+            tex.setSize(width, height, 1)
             tex.applySamplerProps(parentPass.offscreenPass.depthTexture!!.props)
             if (depthCfg.depthCompareOp != DepthCompareOp.DISABLED) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE)
@@ -202,7 +202,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
         val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 1, mipLevels)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), estSize)
-        tex.setSize(width, height)
+        tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         glTexStorage2D(GL_TEXTURE_2D, mipLevels, intFormat, width, height)
         loadedTexture = tex

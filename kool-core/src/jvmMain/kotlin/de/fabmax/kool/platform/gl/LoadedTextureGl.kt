@@ -6,8 +6,7 @@ import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logW
-import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE
+import org.lwjgl.opengl.GL12.*
 import org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT
 import kotlin.math.min
 
@@ -19,14 +18,16 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
 
     override var width = 0
     override var height = 0
+    override var depth = 0
 
     init {
         ctx.engineStats.textureAllocated(texId, estimatedSize)
     }
 
-    fun setSize(width: Int, height: Int) {
+    fun setSize(width: Int, height: Int, depth: Int) {
         this.width = width
         this.height = height
+        this.depth = depth
     }
 
     fun applySamplerProps(props: TextureProps) {
@@ -36,6 +37,9 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
         glTexParameteri(target, GL_TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
         glTexParameteri(target, GL_TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
         glTexParameteri(target, GL_TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
+        if (target == GL_TEXTURE_3D) {
+            glTexParameteri(target, GL_TEXTURE_WRAP_R, props.addressModeW.glAddressMode())
+        }
 
         val backend = ctx.renderBackend as GlRenderBackend
         val anisotropy = min(props.maxAnisotropy, backend.glCapabilities.maxAnisotropy)

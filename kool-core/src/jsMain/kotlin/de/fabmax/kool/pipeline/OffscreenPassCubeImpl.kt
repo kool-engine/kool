@@ -125,7 +125,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 6, mipLevels)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
-        tex.setSize(width, height)
+        tex.setSize(width, height, 1)
         tex.applySamplerProps(offscreenPass.colorTexture!!.props)
         ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
@@ -142,7 +142,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 6, mipLevels)
         val tex = LoadedTextureWebGl(ctx, TEXTURE_CUBE_MAP, ctx.gl.createTexture(), estSize)
-        tex.setSize(width, height)
+        tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         ctx.gl.texStorage2D(TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         loadedTexture = tex

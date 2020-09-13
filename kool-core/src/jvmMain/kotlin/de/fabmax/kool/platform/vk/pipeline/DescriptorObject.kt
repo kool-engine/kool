@@ -66,6 +66,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     private var boundTex = mutableListOf<LoadedTextureVk>()
 
     constructor(binding: Int, sampler2d: TextureSampler) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
+    constructor(binding: Int, sampler3d: TextureSampler3d) : this(binding, TexSamplerWrapper(sampler3d), sampler3d)
     constructor(binding: Int, samplerCube: CubeMapSampler) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
 
     init {
@@ -192,23 +193,35 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     private class TexSamplerWrapper private constructor(
             val mode: Int,
             val sampler2d: TextureSampler? = null,
+            val sampler3d: TextureSampler3d? = null,
             val samplerCube: CubeMapSampler? = null,
             val arraySize: Int) {
 
-        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d, null, sampler2d.arraySize)
-        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, null, samplerCube, samplerCube.arraySize)
+        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d = sampler2d, arraySize = sampler2d.arraySize)
+        constructor(sampler3d: TextureSampler3d) : this(MODE_3D, sampler3d = sampler3d, arraySize = sampler3d.arraySize)
+        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, samplerCube = samplerCube, arraySize = samplerCube.arraySize)
 
         val textures: Array<out Texture?>
-            get() = if (mode == MODE_2D) { sampler2d!!.textures } else { samplerCube!!.textures }
+            get() = when (mode) {
+                MODE_2D -> sampler2d!!.textures
+                MODE_3D -> sampler3d!!.textures
+                MODE_CUBE -> samplerCube!!.textures
+                else -> throw IllegalStateException("Invalid mode: $mode")
+            }
 
         fun onUpdate(cmd: DrawCommand) {
-            if (mode == MODE_2D) { sampler2d!!.onUpdate?.invoke(sampler2d, cmd) }
-            else { samplerCube!!.onUpdate?.invoke(samplerCube, cmd) }
+            when (mode) {
+                MODE_2D -> sampler2d!!.onUpdate?.invoke(sampler2d, cmd)
+                MODE_3D -> sampler3d!!.onUpdate?.invoke(sampler3d, cmd)
+                MODE_CUBE -> samplerCube!!.onUpdate?.invoke(samplerCube, cmd)
+                else -> throw IllegalStateException("Invalid mode: $mode")
+            }
         }
 
         companion object {
             const val MODE_2D = 1
-            const val MODE_CUBE = 2
+            const val MODE_3D = 2
+            const val MODE_CUBE = 3
         }
     }
 }

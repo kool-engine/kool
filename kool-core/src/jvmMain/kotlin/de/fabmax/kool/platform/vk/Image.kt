@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.VkFormatProperties
 class Image(val sys: VkSystem, config: Config) : VkResource() {
     val width = config.width
     val height = config.height
+    val depth = config.depth
     val mipLevels = config.mipLevels
     val numSamples = config.numSamples
     val format = config.format
@@ -24,11 +25,11 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         memStack {
             val imageInfo = callocVkImageCreateInfo {
                 sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
-                imageType(VK_IMAGE_TYPE_2D)
+                imageType(if (depth > 1) VK_IMAGE_TYPE_3D else VK_IMAGE_TYPE_2D)
                 extent {
                     it.width(width)
                     it.height(height)
-                    it.depth(1)
+                    it.depth(depth)
                 }
                 mipLevels(mipLevels)
                 format(format)
@@ -233,6 +234,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
     class Config {
         var width: Int = 0
         var height: Int = 0
+        var depth: Int = 1
         var mipLevels: Int = 1
         var numSamples: Int = VK_SAMPLE_COUNT_1_BIT
         var format: Int = 0

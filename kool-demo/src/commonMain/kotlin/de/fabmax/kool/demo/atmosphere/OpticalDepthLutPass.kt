@@ -166,7 +166,7 @@ class OpticalDepthLutPass :
                     float f = 0.3 * (2.0 + 3.0 * x * exp(-x)) * (10.0 - x) / 10.0;
                     float h = 1.0 - f;
                     
-                    return exp(-clamp(h, 0.0, 1.0) * $uDensityFalloff) * (1.0 - nH);
+                    return exp(-clamp(h, 0.0, 1.0) * $uDensityFalloff) * (1.0 - smoothstep(0.0, 1.0, nH));
                 }
             """)
 

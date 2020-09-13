@@ -118,7 +118,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
 
         val estSize = Texture.estimatedTexSize(width, height, format.pxSize, 6, mipLevels)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
-        tex.setSize(width, height)
+        tex.setSize(width, height, 1)
         tex.applySamplerProps(parentPass.offscreenPass.colorTexture!!.props)
         glTexStorage2D(GL_TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
 
@@ -135,7 +135,7 @@ class OffscreenPassCubeGl(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
 
         val estSize = Texture.estimatedTexSize(width, height, props.format.pxSize, 6, mipLevels)
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), estSize)
-        tex.setSize(width, height)
+        tex.setSize(width, height, 1)
         tex.applySamplerProps(props)
         glTexStorage2D(GL_TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         loadedTexture = tex

@@ -13,6 +13,7 @@ class ImageTextureData(image: HTMLImageElement, fmt: TexFormat?) : TextureData()
         }
         width = image.width
         height = image.height
+        depth = 1
 
         fmt?.let { format = it }
     }

@@ -116,6 +116,34 @@ class TextureSampler private constructor(builder: Builder, binding: Int, hash: U
     }
 }
 
+class TextureSampler3d private constructor(builder: Builder, binding: Int, hash: ULong) :
+        Descriptor(builder, binding, DescriptorType.IMAGE_SAMPLER_3D, hash) {
+
+    val arraySize = builder.arraySize
+
+    val onUpdate: ((TextureSampler3d, DrawCommand) -> Unit) ? = builder.onUpdate
+    val textures = Array<Texture3d?>(arraySize) { null }
+    var texture: Texture3d?
+        get() = textures[0]
+        set(value) { textures[0] = value }
+
+    class Builder : Descriptor.Builder<TextureSampler3d>() {
+        var arraySize = 1
+        var onUpdate: ((TextureSampler3d, DrawCommand) -> Unit) ? = null
+        var onCreate: ((TextureSampler3d) -> Unit) ? = null
+
+        init {
+            name = "texture"
+        }
+
+        override fun create(binding: Int): TextureSampler3d {
+            val sampler = TextureSampler3d(this, binding, DescriptorType.IMAGE_SAMPLER_3D.hashCode().toULong() * 71023UL)
+            onCreate?.invoke(sampler)
+            return sampler
+        }
+    }
+}
+
 class CubeMapSampler private constructor(builder: Builder, binding: Int, hash: ULong) :
         Descriptor(builder, binding, DescriptorType.CUBE_IMAGE_SAMPLER, hash) {
 
@@ -199,6 +227,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
 enum class DescriptorType {
     IMAGE_SAMPLER,
+    IMAGE_SAMPLER_3D,
     CUBE_IMAGE_SAMPLER,
     UNIFORM_BUFFER
 }

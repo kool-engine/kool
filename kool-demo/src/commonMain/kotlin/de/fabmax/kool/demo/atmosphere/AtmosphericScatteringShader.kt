@@ -341,7 +341,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
                     float altitude2 = (length(p2) - $uSurfaceRadius) / atmosphereThickness;
                     
                     if (altitude1 > altitude2) {
-                        // swap points and directionif ray is pointing downwards
+                        // swap points and direction if ray is pointing downwards
                         p1 = p2;
                         p2 = origin;
                         

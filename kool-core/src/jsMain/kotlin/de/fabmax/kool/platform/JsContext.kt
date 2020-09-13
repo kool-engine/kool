@@ -13,6 +13,7 @@ import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import de.fabmax.kool.util.Viewport
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
@@ -387,6 +388,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
     fun readBuffer(src: Int)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
+    fun texImage3D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, depth: Int, border: Int, format: Int, type: Int, srcData: ArrayBufferView?)
     fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
@@ -398,6 +400,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val DEPTH_STENCIL: Int
 
         val DEPTH_COMPONENT24: Int
+        val TEXTURE_3D: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int
         val COMPARE_REF_TO_TEXTURE: Int

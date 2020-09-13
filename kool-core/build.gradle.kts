@@ -14,14 +14,14 @@ kotlin {
             }
         }
     }
-    //js(IR) {  // build fails with exeption
+    //js(IR) { // build fails with IllegalStateException: Operation is unsupported (1.4.10)
     js {
         browser { }
     }
     targets.all {
         compilations.all {
             kotlinOptions {
-                freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
             }
         }
     }
@@ -62,7 +62,9 @@ kotlin {
         }
 
         val jsMain by getting {
-            dependencies { }
+            dependencies {
+                implementation(npm("pako", "1.0.11"))
+            }
         }
 
         sourceSets.all {

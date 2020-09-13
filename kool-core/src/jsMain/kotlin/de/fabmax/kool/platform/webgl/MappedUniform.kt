@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
 import de.fabmax.kool.util.logE
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE0
@@ -218,6 +219,24 @@ class MappedUniformTex2d(private val sampler2d: TextureSampler, texUnit: Int, va
         var isValid = true
         for (i in 0 until sampler2d.arraySize) {
             val tex = sampler2d.textures[i]
+            if (tex != null && checkLoadingState(ctx, tex, i)) {
+                ctx.gl.uniform1i(locations[i], this.texUnit - TEXTURE0 + i)
+            } else {
+                isValid = false
+            }
+            texUnit++
+        }
+        return isValid
+    }
+}
+
+class MappedUniformTex3d(private val sampler3d: TextureSampler3d, texUnit: Int, val locations: List<WebGLUniformLocation?>) :
+        MappedUniformTex(texUnit, TEXTURE_3D) {
+    override fun setUniform(ctx: JsContext): Boolean {
+        var texUnit = texUnit
+        var isValid = true
+        for (i in 0 until sampler3d.arraySize) {
+            val tex = sampler3d.textures[i]
             if (tex != null && checkLoadingState(ctx, tex, i)) {
                 ctx.gl.uniform1i(locations[i], this.texUnit - TEXTURE0 + i)
             } else {

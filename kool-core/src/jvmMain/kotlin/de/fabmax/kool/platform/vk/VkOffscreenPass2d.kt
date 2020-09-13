@@ -249,14 +249,14 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             if (isCopyResult) {
                 val vkTex = if (isColor) {
                     val props = parentPass.offscreenPass.getColorTexProps(iAttachment)
-                    val cpTex = TextureLoader.createTexture(sys, props, rp.maxWidth, rp.maxHeight)
+                    val cpTex = TextureLoader.createTexture(sys, props, rp.maxWidth, rp.maxHeight, 1)
                     cpTex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                     resultImages[iAttachment] = cpTex.textureImage
                     cpTex
                 } else {
                     LoadedTextureVk(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
-                vkTex.setSize(rp.maxWidth, rp.maxHeight)
+                vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 loadedTexture = vkTex
                 loadingState = Texture.LoadingState.LOADED
 
@@ -268,7 +268,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
                 } else {
                     LoadedTextureVk(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
-                vkTex.setSize(rp.maxWidth, rp.maxHeight)
+                vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 loadedTexture = vkTex
                 loadingState = Texture.LoadingState.LOADED
             }
@@ -286,7 +286,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
 
         val width = parentPass.offscreenPass.width
         val height = parentPass.offscreenPass.height
-        val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height)
+        val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height, 1)
         loadedTexture = tex
         loadingState = Texture.LoadingState.LOADED
         vkBackend.vkSystem.device.addDependingResource(tex)

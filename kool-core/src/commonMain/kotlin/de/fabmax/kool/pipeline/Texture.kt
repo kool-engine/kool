@@ -86,6 +86,9 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture(
 open class CubeMapTexture(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)? = null) :
         Texture(props, name, loader)
 
+open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData3d)? = null) :
+        Texture(props, name, loader)
+
 data class TextureProps(
         val format: TexFormat = TexFormat.RGBA,
         val addressModeU: AddressMode = AddressMode.REPEAT,
@@ -112,6 +115,8 @@ abstract class TextureData {
         protected set
     var height = 0
         protected set
+    var depth = 0
+        protected set
     var format = TexFormat.RGBA
         protected set
 
@@ -119,22 +124,21 @@ abstract class TextureData {
 }
 
 /**
- * Byte buffer based texture data. Texture data can be generated and edited procedurally. Layout and format of data
+ * Byte buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
  * is specified by the format parameter. The buffer size must match the texture size and data format.
  *
- * @param buffer texture data buffer, must have a size of width * height * bytes-per-pixel
+ * @param data   texture data buffer, must have a size of width * height * bytes-per-pixel
  * @param width  width of texture in pixels
  * @param height height of texture in pixels
  * @param format texture data format
  */
-open class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
+open class BufferedTextureData(override val data: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = height
+        this.depth = 1
         this.format = format
     }
-
-    override val data: Uint8Buffer = buffer
 
     companion object {
         fun singleColor(color: Color): BufferedTextureData {
@@ -165,9 +169,20 @@ class CubeMapTextureData(val front: TextureData, val back: TextureData, val left
     init {
         width = front.width
         height = front.height
+        depth = 1
         format = front.format
     }
 
     override val data: Any
         get() = front.data
+}
+
+
+class TextureData3d(override val data: Uint8Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
+    init {
+        this.width = width
+        this.height = height
+        this.depth = depth
+        this.format = format
+    }
 }

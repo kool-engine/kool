@@ -8,7 +8,7 @@ class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, m
     val vkImageView: Long
 
     constructor(sys: VkSystem, image: Image, aspectFlags: Int):
-            this(sys, image.vkImage, image.format, aspectFlags, image.mipLevels, VK_IMAGE_VIEW_TYPE_2D)
+            this(sys, image.vkImage, image.format, aspectFlags, image.mipLevels, if (image.depth > 1) VK_IMAGE_VIEW_TYPE_3D else VK_IMAGE_VIEW_TYPE_2D)
 
     init {
         memStack {

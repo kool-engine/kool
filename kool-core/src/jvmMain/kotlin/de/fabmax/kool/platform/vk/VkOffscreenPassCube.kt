@@ -199,7 +199,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenPassCubeImpl) : OffscreenPass
         image.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 
         val loadedTex = LoadedTextureVk(sys, rp.texFormat, image, imageView, sampler)
-        loadedTex.setSize(rp.maxWidth, rp.maxHeight)
+        loadedTex.setSize(rp.maxWidth, rp.maxHeight, 1)
         rp.addDependingResource(loadedTex)
 
         parentPass.offscreenPass.colorTexture!!.apply {
