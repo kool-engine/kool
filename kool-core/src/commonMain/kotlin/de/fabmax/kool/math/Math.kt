@@ -49,6 +49,33 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     else -> this
 }
 
+fun Int.wrap(low: Int, high: Int): Int {
+    val r = high - low
+    var t = (this - low) % r
+    if (t < 0) {
+        t += r
+    }
+    return t + low
+}
+
+fun Float.wrap(low: Float, high: Float): Float {
+    val r = high - low
+    var t = (this - low) % r
+    if (t < 0) {
+        t += r
+    }
+    return t + low
+}
+
+fun Double.wrap(low: Double, high: Double): Double {
+    val r = high - low
+    var t = (this - low) % r
+    if (t < 0) {
+        t += r
+    }
+    return t + low
+}
+
 fun getNumMipLevels(texWidth: Int, texHeight: Int): Int {
     return floor(log2(max(texWidth, texHeight).toDouble())).toInt() + 1
 }
