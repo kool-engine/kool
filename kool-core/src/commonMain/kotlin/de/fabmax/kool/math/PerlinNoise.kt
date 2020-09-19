@@ -77,7 +77,7 @@ class PerlinNoise2d(seed: Int = 19937, private val tableSz: Int = 256) : Noise2d
             }
         }
 
-        permutationTab.indices.shuffled().forEachIndexed { i, shuffled -> permutationTab[i] = shuffled }
+        permutationTab.indices.shuffled(kotlin.random.Random(seed)).forEachIndexed { i, shuffled -> permutationTab[i] = shuffled }
     }
 
     private fun hash(x: Int, y: Int) = permutationTab[(permutationTab[x] + y) % permutationTab.size]
@@ -162,7 +162,7 @@ class PerlinNoise3d(seed: Int = 19937, private val tableSz: Int = 1024) : Noise3
             }
         }
 
-        permutationTab.indices.shuffled().forEachIndexed { i, shuffled -> permutationTab[i] = shuffled }
+        permutationTab.indices.shuffled(kotlin.random.Random(seed)).forEachIndexed { i, shuffled -> permutationTab[i] = shuffled }
     }
 
     private fun hash(x: Int, y: Int, z: Int) = permutationTab[(permutationTab[(permutationTab[x] + y) % permutationTab.size] + z) % permutationTab.size]

@@ -126,10 +126,78 @@ open class BoundingSphereInRadiusTraverser<T: Any> : InRadiusTraverser<T>() {
     }
 }
 
+open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
+    var sqrDist = MAX_RADIUS * MAX_RADIUS
+    var nearest: T? = null
+
+    open fun setup(center: Vec3f, maxRadius: Float = MAX_RADIUS): NearestTraverser<T> {
+        super.setup(center)
+        sqrDist = maxRadius * maxRadius
+        return this
+    }
+
+    override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
+        if (node.children.size == 2) {
+            // kd-tree optimized traversal
+            val dLt = pointDistance.nodeSqrDistanceToPoint(node.children[0], center)
+            val dRt = pointDistance.nodeSqrDistanceToPoint(node.children[1], center)
+
+            val d1st: Float
+            val d2nd: Float
+            val nd1st: SpatialTree<T>.Node
+            val nd2nd: SpatialTree<T>.Node
+
+            if (dLt < dRt) {
+                d1st = dLt
+                d2nd = dRt
+                nd1st = node.children[0]
+                nd2nd = node.children[1]
+            } else {
+                d1st = dRt
+                d2nd = dLt
+                nd1st = node.children[1]
+                nd2nd = node.children[0]
+            }
+
+            if (d1st < sqrDist) {
+                traverseNode(tree, nd1st)
+                if (d2nd < sqrDist) {
+                    traverseNode(tree, nd2nd)
+                }
+            }
+
+        } else {
+            for (i in node.children.indices) {
+                val child = node.children[i]
+                val dSqr = pointDistance.nodeSqrDistanceToPoint(child, center)
+
+                if (dSqr < sqrDist) {
+                    traverseNode(tree, child)
+                }
+            }
+        }
+    }
+
+    override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
+        for (i in leaf.nodeRange) {
+            val it = leaf.items[i]
+            val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
+            if (dSqr < sqrDist) {
+                sqrDist = dSqr
+                nearest = it
+            }
+        }
+    }
+
+    companion object {
+        const val MAX_RADIUS = 1.8446743E19f     // sqrt(Float.MAX_VALUE)
+    }
+}
+
 open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     var k = 10
         protected set
-    var radiusSqr = 1e18f
+    var radiusSqr = MAX_RADIUS * MAX_RADIUS
         protected set
 
     val result = mutableListOf<T>()

@@ -17,40 +17,10 @@ class Mat3f {
     }
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat3f {
-        var aX = axX
-        var aY = axY
-        var aZ = axZ
-        val len = sqrt(aX * aX + aY * aY + aZ * aZ)
-        if (!(1.0 - len).isFuzzyZero()) {
-            val recipLen = 1f / len
-            aX *= recipLen
-            aY *= recipLen
-            aZ *= recipLen
+        return lock(tmpMatLock) {
+            tmpMatA.setRotate(angleDeg, axX, axY, axZ)
+            set(mul(tmpMatA, tmpMatB))
         }
-
-        val ang = angleDeg * (PI.toFloat() / 180f)
-        val s = sin(ang)
-        val c = cos(ang)
-
-        val nc = 1f - c
-        val xy = aX * aY
-        val yz = aY * aZ
-        val zx = aZ * aX
-        val xs = aX * s
-        val ys = aY * s
-        val zs = aZ * s
-
-        this[0] = aX * aX * nc + c
-        this[3] = xy * nc - zs
-        this[6] = zx * nc + ys
-        this[1] = xy * nc + zs
-        this[4] = aY * aY * nc + c
-        this[7] = yz * nc - xs
-        this[2] = zx * nc - ys
-        this[5] = yz * nc + xs
-        this[8] = aZ * aZ * nc + c
-
-        return this
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
@@ -93,7 +63,7 @@ class Mat3f {
     }
 
     fun invert(): Boolean {
-        return lock(tmpMat) { invert(tmpMat).also { if (it) set(tmpMat) } }
+        return lock(tmpMatLock) { invert(tmpMatA).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat3f): Boolean {
@@ -131,9 +101,9 @@ class Mat3f {
     }
 
     fun mul(other: Mat3f): Mat3f {
-        return lock(tmpMat) {
-            mul(other, tmpMat)
-            set(tmpMat)
+        return lock(tmpMatLock) {
+            mul(other, tmpMatA)
+            set(tmpMatA)
         }
     }
 
@@ -193,9 +163,40 @@ class Mat3f {
         return this
     }
 
-    fun setRotate(rotA: Float, axX: Float, axY: Float, axZ: Float): Mat3f {
-        setIdentity()
-        rotate(rotA, axX, axY, axZ)
+    fun setRotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat3f {
+        var aX = axX
+        var aY = axY
+        var aZ = axZ
+        val len = sqrt(aX * aX + aY * aY + aZ * aZ)
+        if (!(1.0 - len).isFuzzyZero()) {
+            val recipLen = 1f / len
+            aX *= recipLen
+            aY *= recipLen
+            aZ *= recipLen
+        }
+
+        val ang = angleDeg * (PI.toFloat() / 180f)
+        val s = sin(ang)
+        val c = cos(ang)
+
+        val nc = 1f - c
+        val xy = aX * aY
+        val yz = aY * aZ
+        val zx = aZ * aX
+        val xs = aX * s
+        val ys = aY * s
+        val zs = aZ * s
+
+        this[0] = aX * aX * nc + c
+        this[3] = xy * nc - zs
+        this[6] = zx * nc + ys
+        this[1] = xy * nc + zs
+        this[4] = aY * aY * nc + c
+        this[7] = yz * nc - xs
+        this[2] = zx * nc - ys
+        this[5] = yz * nc + xs
+        this[8] = aZ * aZ * nc + c
+
         return this
     }
 
@@ -287,6 +288,8 @@ class Mat3f {
     }
 
     companion object {
-        private val tmpMat = Mat3f()
+        private val tmpMatLock = Any()
+        private val tmpMatA = Mat3f()
+        private val tmpMatB = Mat3f()
     }
 }

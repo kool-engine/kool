@@ -100,7 +100,6 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
     init {
         onPipelineSetup += { builder, _, _ ->
             builder.depthTest = DepthCompareOp.DISABLED
-//            builder.blendMode = BlendMode.BLEND_ADDITIVE
         }
         onPipelineCreated += { _, _, _ ->
             opticalDepthLutNode = model.findNode("tOpticalDepthLut")
