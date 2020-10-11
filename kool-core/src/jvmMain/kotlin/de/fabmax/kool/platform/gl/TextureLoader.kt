@@ -1,9 +1,10 @@
 package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Uint8BufferImpl
+import org.lwjgl.opengl.ARBTextureStorage.glTexStorage3D
 import org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP
 import org.lwjgl.opengl.GL30.*
 import kotlin.math.floor
@@ -11,18 +12,7 @@ import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoader {
-    fun loadTexture(ctx: Lwjgl3Context, props: TextureProps, data: TextureData) : LoadedTextureGl {
-        return when (data) {
-            is TextureData1d -> loadTexture1d(ctx, props, data)
-            is TextureData2d -> loadTexture2d(ctx, props, data)
-            is ImageTextureData -> loadTexture2d(ctx, props, data)
-            is TextureData3d -> loadTexture3d(ctx, props, data)
-            is TextureDataCube -> loadTextureCube(ctx, props, data)
-            else -> throw IllegalArgumentException("TextureData type not supported: $data")
-        }
-    }
-
-    private fun loadTexture1d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+    fun loadTexture1d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
         // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, 1, 1)
@@ -35,7 +25,7 @@ object TextureLoader {
         return tex
     }
 
-    private fun loadTexture2d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
+    fun loadTexture2d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_2D, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)
@@ -47,19 +37,29 @@ object TextureLoader {
         return tex
     }
 
-    private fun loadTexture3d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData3d) : LoadedTextureGl {
+    fun loadTexture3d(ctx: Lwjgl3Context, props: TextureProps, img: TextureData) : LoadedTextureGl {
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_3D, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, img.depth)
         tex.applySamplerProps(props)
 
-        glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+        when (img) {
+            is TextureData3d -> {
+                glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+            }
+            is ImageAtlasTextureData -> {
+                glTexStorage3D(GL_TEXTURE_3D, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
+                for (z in 0 until img.depth) {
+                    glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, (img.data[z] as Uint8BufferImpl).buffer)
+                }
+            }
+        }
         if (props.mipMapping) {
             glGenerateMipmap(GL_TEXTURE_3D)
         }
         return tex
     }
 
-    private fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: TextureDataCube) : LoadedTextureGl {
+    fun loadTextureCube(ctx: Lwjgl3Context, props: TextureProps, img: TextureDataCube) : LoadedTextureGl {
         val tex = LoadedTextureGl(ctx, GL_TEXTURE_CUBE_MAP, glGenTextures(), img.estimateTexSize())
         tex.setSize(img.width, img.height, 1)
         tex.applySamplerProps(props)

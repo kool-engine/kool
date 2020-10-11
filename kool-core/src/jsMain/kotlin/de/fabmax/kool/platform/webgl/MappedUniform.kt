@@ -184,7 +184,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                         logE { "Texture loading failed: $ex" }
                         texture.loadingState = Texture.LoadingState.LOADING_FAILED
                     } else {
-                        texture.loadedTexture = getLoadedTex(defTex.getCompleted(), texture.props, ctx)
+                        texture.loadedTexture = getLoadedTex(defTex.getCompleted(), texture, ctx)
                         texture.loadingState = Texture.LoadingState.LOADED
                     }
                 }
@@ -204,10 +204,16 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
         // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureWebGl>()
 
-        protected fun getLoadedTex(texData: TextureData, props: TextureProps, ctx: JsContext): LoadedTexture {
+        protected fun getLoadedTex(texData: TextureData, texture: Texture, ctx: JsContext): LoadedTexture {
             loadedTextures.values.removeAll { it.isDestroyed }
             return loadedTextures.getOrPut(texData) {
-                val loaded = TextureLoader.loadTexture(ctx, props, texData)
+                val loaded = when (texture) {
+                    is Texture1d -> TextureLoader.loadTexture1d(ctx, texture.props, texData)
+                    is Texture2d -> TextureLoader.loadTexture2d(ctx, texture.props, texData)
+                    is Texture3d -> TextureLoader.loadTexture3d(ctx, texture.props, texData)
+                    is TextureCube -> TextureLoader.loadTextureCube(ctx, texture.props, texData as TextureDataCube)
+                    else -> throw IllegalArgumentException("Unsupported texture type")
+                }
                 loaded
             }
         }

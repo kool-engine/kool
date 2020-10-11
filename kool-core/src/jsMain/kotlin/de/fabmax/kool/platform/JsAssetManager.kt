@@ -20,15 +20,10 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
     private val pako = js("require('pako');")
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
-    override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef) = LoadedRawAsset(localRawRef, loadRaw(localRawRef.url))
+    override suspend fun loadRaw(rawRef: RawAssetRef) = LoadedRawAsset(rawRef, loadRaw(rawRef.url))
 
-    override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef) = LoadedRawAsset(httpRawRef, loadRaw(httpRawRef.url))
-
-    override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef) =
-            LoadedTextureAsset(httpTextureRef, loadImage(httpTextureRef.url, httpTextureRef.fmt))
-
-    override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef) =
-            LoadedTextureAsset(localTextureRef, loadImage(localTextureRef.url, localTextureRef.fmt))
+    override suspend fun loadTexture(textureRef: TextureAssetRef) =
+            LoadedTextureAsset(textureRef, loadImage(textureRef))
 
     private suspend fun loadRaw(url: String): Uint8Buffer? {
         val data = CompletableDeferred<Uint8Buffer?>(job)
@@ -48,23 +43,28 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return data.await()
     }
 
-    private suspend fun loadImage(url: String, fmt: TexFormat?): ImageTextureData {
+    private suspend fun loadImage(ref: TextureAssetRef): TextureData {
         val deferred = CompletableDeferred<Image>()
         val img = Image()
         img.onload = {
             deferred.complete(img)
         }
         img.onerror = { _, _, _, _, _ ->
-            if (url.startsWith("data:")) {
+            if (ref.url.startsWith("data:")) {
                 deferred.completeExceptionally(KoolException("Failed loading tex from data URL"))
             } else {
-                deferred.completeExceptionally(KoolException("Failed loading tex from $url"))
+                deferred.completeExceptionally(KoolException("Failed loading tex from ${ref.url}"))
             }
         }
         img.crossOrigin = ""
         js("if ('decoding' in img) { img.decoding = 'async'; }")
-        img.src = url
-        return ImageTextureData(deferred.await(), fmt)
+        img.src = ref.url
+
+        return if (ref.isAtlas) {
+            ImageAtlasTextureData(deferred.await(), ref.tilesX, ref.tilesY, ref.fmt)
+        } else {
+            ImageTextureData(deferred.await(), ref.fmt)
+        }
     }
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
@@ -93,20 +93,21 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
             binary = c.join("");
         """)
         val base64 = js("window.btoa(binary);") as String
-        return loadImage("data:$mimeType;base64,$base64", null)
+        val ref = TextureAssetRef("data:$mimeType;base64,$base64", true, null, false)
+        return loadImage(ref)
     }
 
     override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
         val tex = Texture2d(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
         val data = loadTextureData(assetPath, props.format)
-        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
+        tex.loadedTexture = TextureLoader.loadTexture2d(ctx, props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
 
     override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
         val tex = Texture2d(props, name) { texData }
-        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
+        tex.loadedTexture = TextureLoader.loadTexture2d(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
@@ -116,14 +117,14 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         val name = cubeMapAssetPathToName(ft, bk, lt, rt, up, dn)
         val tex = TextureCube(props, name) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
+        tex.loadedTexture = TextureLoader.loadTextureCube(ctx, props, data)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }
 
     override fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
         val tex = TextureCube(props, name) { texData }
-        tex.loadedTexture = TextureLoader.loadTexture(ctx, props, texData)
+        tex.loadedTexture = TextureLoader.loadTextureCube(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
     }

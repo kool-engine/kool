@@ -68,7 +68,7 @@ open class Texture2d(props: TextureProps = TextureProps(), name: String? = null,
             this(props, name, { it.loadTextureData(assetPath, props.format) })
 }
 
-open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData3d)? = null) :
+open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
         Texture(props, name, loader) {
 
     override val type = "3D"
@@ -201,7 +201,7 @@ open class TextureData2d(override val data: Uint8Buffer, width: Int, height: Int
     }
 }
 
-class TextureData3d(override val data: Uint8Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
+open class TextureData3d(override val data: Uint8Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = height

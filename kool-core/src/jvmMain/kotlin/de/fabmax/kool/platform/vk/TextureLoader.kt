@@ -221,8 +221,8 @@ object TextureLoader {
 
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
-                val reshaped = createUint8Buffer(img.width * img.height * 4)
-                for (i in 0 until img.width * img.height) {
+                val reshaped = createUint8Buffer(img.width * img.height * img.depth * 4)
+                for (i in 0 until img.width * img.height * img.depth) {
                     reshaped[i*4+0] = imgData[i*3+0]
                     reshaped[i*4+1] = imgData[i*3+1]
                     reshaped[i*4+2] = imgData[i*3+2]

@@ -21,7 +21,15 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         HttpCache.initCache(File(".httpCache"))
     }
 
-    override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
+    override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
+        return if (rawRef.isLocal) {
+            loadLocalRaw(rawRef)
+        } else {
+            loadHttpRaw(rawRef)
+        }
+    }
+
+    private suspend fun loadLocalRaw(localRawRef: RawAssetRef): LoadedRawAsset {
         var data: Uint8BufferImpl? = null
         withContext(Dispatchers.IO) {
             try {
@@ -33,7 +41,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return LoadedRawAsset(localRawRef, data)
     }
 
-    override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
+    private suspend fun loadHttpRaw(httpRawRef: RawAssetRef): LoadedRawAsset {
         var data: Uint8BufferImpl? = null
 
         if (httpRawRef.url.startsWith("data:", true)) {
@@ -57,43 +65,47 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return Uint8BufferImpl(Base64.getDecoder().decode(dataUrl.substring(dataIdx)))
     }
 
-    override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
+    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
         withContext(Dispatchers.IO) {
             try {
-                openLocalStream(localTextureRef.url).use {
-                    //data = ImageTextureData(ImageIO.read(it))
-                    // ImageIO.read is not thread safe!
-                    val img = synchronized(imageIoLock) {
-                        ImageIO.read(it)
-                    }
-                    data = ImageTextureData(img, localTextureRef.fmt)
+                data = if (textureRef.isLocal) {
+                    loadLocalTexture(textureRef)
+                } else {
+                    loadHttpTexture(textureRef)
                 }
             } catch (e: Exception) {
-                logE { "Failed loading texture ${localTextureRef.url}: $e" }
+                logE { "Failed loading texture ${textureRef.url}: $e" }
             }
         }
-        return LoadedTextureAsset(localTextureRef, data)
+        return if (textureRef.isAtlas) {
+            LoadedTextureAsset(textureRef, ImageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
+        } else {
+            LoadedTextureAsset(textureRef, data)
+        }
     }
 
-    override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
-        var data: ImageTextureData? = null
-        withContext(Dispatchers.IO) {
-            try {
-                val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
-                FileInputStream(f).use {
-                    //data = ImageTextureData(ImageIO.read(it))
-                    // ImageIO.read is not thread safe!
-                    val img = synchronized(imageIoLock) {
-                        ImageIO.read(it)
-                    }
-                    data = ImageTextureData(img, httpTextureRef.fmt)
-                }
-            } catch (e: Exception) {
-                logE { "Failed loading texture ${httpTextureRef.url}: $e" }
+    private fun loadLocalTexture(localTextureRef: TextureAssetRef): ImageTextureData {
+        return openLocalStream(localTextureRef.url).use {
+            //data = ImageTextureData(ImageIO.read(it))
+            // ImageIO.read is not thread safe!
+            val img = synchronized(imageIoLock) {
+                ImageIO.read(it)
             }
+            ImageTextureData(img, localTextureRef.fmt)
         }
-        return LoadedTextureAsset(httpTextureRef, data)
+    }
+
+    private fun loadHttpTexture(httpTextureRef: TextureAssetRef): ImageTextureData {
+        val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
+        return FileInputStream(f).use {
+            //data = ImageTextureData(ImageIO.read(it))
+            // ImageIO.read is not thread safe!
+            val img = synchronized(imageIoLock) {
+                ImageIO.read(it)
+            }
+            ImageTextureData(img, httpTextureRef.fmt)
+        }
     }
 
     internal fun openLocalStream(assetPath: String): InputStream {

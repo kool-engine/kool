@@ -63,20 +63,14 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     private suspend fun loadAsset(ref: AssetRef): LoadedAsset {
         return when(ref) {
-            is LocalRawAssetRef -> loadLocalRaw(ref)
-            is HttpRawAssetRef -> loadHttpRaw(ref)
-            is LocalTextureAssetRef -> loadLocalTexture(ref)
-            is HttpTextureAssetRef -> loadHttpTexture(ref)
+            is RawAssetRef -> loadRaw(ref)
+            is TextureAssetRef -> loadTexture(ref)
         }
     }
 
-    protected abstract suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset
+    protected abstract suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset
 
-    protected abstract suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset
-
-    protected abstract suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset
-
-    protected abstract suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset
+    protected abstract suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
 
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
@@ -96,9 +90,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     suspend fun loadAsset(assetPath: String): Uint8Buffer? {
         val ref = if (isHttpAsset(assetPath)) {
-            HttpRawAssetRef(assetPath)
+            RawAssetRef(assetPath, false)
         } else {
-            LocalRawAssetRef("$assetsBaseDir/$assetPath")
+            RawAssetRef("$assetsBaseDir/$assetPath", true)
         }
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
@@ -111,15 +105,30 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     suspend fun loadTextureData(assetPath: String, format: TexFormat? = null): TextureData {
         val ref = if (isHttpAsset(assetPath)) {
-            HttpTextureAssetRef(assetPath, format)
+            TextureAssetRef(assetPath, false, format, false)
         } else {
-            LocalTextureAssetRef("$assetsBaseDir/$assetPath", format)
+            TextureAssetRef("$assetsBaseDir/$assetPath", true, format, false)
         }
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         loaded.data?.let {
             logD { "Loaded ${assetPathToName(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+        }
+        return loaded.data ?: throw KoolException("Failed loading texture")
+    }
+
+    suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, format: TexFormat? = null): TextureData {
+        val ref = if (isHttpAsset(assetPath)) {
+            TextureAssetRef(assetPath, false, format, true, tilesX, tilesY)
+        } else {
+            TextureAssetRef("$assetsBaseDir/$assetPath", true, format, true, tilesX, tilesY)
+        }
+        val awaitedAsset = AwaitedAsset(ref)
+        awaitedAssetsChannel.send(awaitedAsset)
+        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+        loaded.data?.let {
+            logD { "Loaded ${assetPathToName(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
         }
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
@@ -166,10 +175,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 }
 
 sealed class AssetRef
-data class LocalRawAssetRef(val url: String) : AssetRef()
-data class HttpRawAssetRef(val url: String) : AssetRef()
-data class LocalTextureAssetRef(val url: String, val fmt: TexFormat?) : AssetRef()
-data class HttpTextureAssetRef(val url: String, val fmt: TexFormat?) : AssetRef()
+data class RawAssetRef(val url: String, val isLocal: Boolean) : AssetRef()
+data class TextureAssetRef(val url: String, val isLocal: Boolean, val fmt: TexFormat?, val isAtlas: Boolean, val tilesX: Int = 1, val tilesY: Int = 1) : AssetRef()
 
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
 class LoadedRawAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
