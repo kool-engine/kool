@@ -21,6 +21,8 @@ class BrdfLutPass(parentScene: Scene) :
             clearDepthTexture()
         }) {
 
+    var isAutoRemove = true
+
     init {
         clearColor = null
 
@@ -62,8 +64,12 @@ class BrdfLutPass(parentScene: Scene) :
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += { ctx ->
             logD { "Generated BRDF look-up table" }
-            parentScene.removeOffscreenPass(this)
-            ctx.runDelayed(1) { dispose(ctx) }
+            if (isAutoRemove) {
+                parentScene.removeOffscreenPass(this)
+                ctx.runDelayed(1) { dispose(ctx) }
+            } else {
+                isEnabled = false
+            }
         }
     }
 

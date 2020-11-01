@@ -106,7 +106,7 @@ open class OffscreenRenderPassCube(drawNode: Node, config: Config) : OffscreenRe
         if (cam is PerspectiveCamera) {
             cam.position.set(Vec3f.ZERO)
             cam.fovY = 90f
-            cam.clipNear = 0.1f
+            cam.clipNear = 0.01f
             cam.clipFar = 10f
             cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
         }

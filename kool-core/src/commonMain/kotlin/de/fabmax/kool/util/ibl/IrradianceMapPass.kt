@@ -11,13 +11,15 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?) :
+class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "IrradianceMapPass"
-            setSize(16, 16)
+            setSize(size, size)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
+
+    var isAutoRemove = true
 
     init {
         clearColor = null
@@ -66,8 +68,12 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
             } else {
                 logD { "Generated irradiance map from cube map: ${cubeMap?.name}" }
             }
-            parentScene.removeOffscreenPass(this)
-            ctx.runDelayed(1) { dispose(ctx) }
+            if (isAutoRemove) {
+                parentScene.removeOffscreenPass(this)
+                ctx.runDelayed(1) { dispose(ctx) }
+            } else {
+                isEnabled = false
+            }
         }
     }
 
@@ -117,7 +123,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     }
 
     companion object {
-        fun irradianceMapFromHdri(scene: Scene, hdri: Texture2d) = IrradianceMapPass(scene, hdri, null)
-        fun irradianceMapFromCube(scene: Scene, cube: TextureCube) = IrradianceMapPass(scene, null, cube)
+        fun irradianceMapFromHdri(scene: Scene, hdri: Texture2d, size: Int = 16) = IrradianceMapPass(scene, hdri, null, size)
+        fun irradianceMapFromCube(scene: Scene, cube: TextureCube, size: Int = 16) = IrradianceMapPass(scene, null, cube, size)
     }
 }

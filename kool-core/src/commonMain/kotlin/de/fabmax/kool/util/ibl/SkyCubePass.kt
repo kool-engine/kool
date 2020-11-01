@@ -1,0 +1,214 @@
+package de.fabmax.kool.util.ibl
+
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.toRad
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.atmosphere.AtmosphereNode
+import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
+import de.fabmax.kool.util.atmosphere.RaySphereIntersectionNode
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+
+class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
+        OffscreenRenderPassCube(Group(), renderPassConfig {
+            name = "SkyCubePass"
+            setSize(size, size)
+            addColorTexture(TexFormat.RGBA_F16)
+            clearDepthTexture()
+        }) {
+
+    var azimuth = 0f
+        set(value) {
+            field = value
+            isEnabled = true
+        }
+
+    var elevation = 60f
+        set(value) {
+            field = value.clamp(-90f, 90f)
+            isEnabled = true
+        }
+
+    private val lightGradient = ColorGradient(
+            -90f to Color.BLACK,
+            -5f to Color.BLACK,
+            0f to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
+            5f to Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(),
+            10f to Color.WHITE,
+            90f to Color.WHITE,
+    )
+    private val sunLight = Light()
+            .setDirectional(Vec3f(-1f, -1f, -1f))
+            .setColor(Color.WHITE, 3f)
+
+    val groundShader: PbrShader
+    private val skyShader = SkyShader(opticalDepthLut)
+
+    init {
+        lighting = Lighting().apply {
+            lights.clear()
+            lights += sunLight
+        }
+
+        groundShader = pbrShader {
+            isHdrOutput = true
+            useStaticAlbedo(Color.MD_BROWN.toLinear())
+            roughness = 0.8f
+        }.apply {
+            //ambient = Color(0.01f, 0.01f, 0.01f, 1f).toLinear()
+        }
+
+        (drawNode as Group).apply {
+            // sky
+            +textureMesh {
+                generate {
+                    icoSphere {
+                        steps = 2
+                    }
+                }
+                shader = skyShader
+            }
+
+            // ground
+            +colorMesh {
+                generate {
+                    translate(0f, -0.011f, 0f)
+                    rotate(-90f, Vec3f.X_AXIS)
+                    circle {
+                        radius = 9f
+                        steps = 100
+                    }
+                }
+                shader = groundShader
+            }
+        }
+
+        onBeforeCollectDrawCommands += {
+            updateSunDirection()
+            skyShader.atmoNode?.let {
+                it.uDirToSun.value.set(sunLight.direction).scale(-1f)
+                it.uSunColor.value.set(sunLight.color)
+                it.uSunColor.value.a /= 3f
+            }
+        }
+
+        onAfterDraw += {
+            isEnabled = false
+        }
+    }
+
+    fun setupSunLight(result: Light) {
+        result.setDirectional(sunLight.direction)
+        val color = lightGradient.getColor(elevation, -90f, 90f)
+        val strength = sqrt(color.r * color.r + color.g * color.g + color.b * color.b)
+        result.setColor(color, strength * sunLight.color.a)
+    }
+
+    private fun updateSunDirection() {
+        val phi = -azimuth.toRad()
+        val theta = (PI.toFloat() / 2f) - elevation.toRad()
+        sunLight.direction.z = -sin(theta) * cos(phi)
+        sunLight.direction.x = -sin(theta) * sin(phi)
+        sunLight.direction.y = -cos(theta)
+    }
+
+    private class SkyShader(opticalDepthLut: Texture2d) : ModeledShader(model()) {
+
+        var atmoNode: AtmosphereNode? = null
+
+        init {
+            onPipelineSetup += { builder, _, _ ->
+                builder.depthTest = DepthCompareOp.DISABLED
+                builder.cullMethod = CullMethod.NO_CULLING
+            }
+            onPipelineCreated += { _, _, _ ->
+                model.findNode<Texture2dNode>("tOpticalDepthLut")!!.sampler.texture = opticalDepthLut
+
+                atmoNode = model.findNodeByType<AtmosphereNode>()!!.apply {
+                    uPlanetCenter.value.set(0f, -60f, 0f)
+                    uSurfaceRadius.value = 60f
+                    uAtmosphereRadius.value = 65f
+
+                    uScatteringCoeffs.value.set(0.274f, 1.536f, 3.859f)
+                    uRayleighColor.value.set(0.5f, 0.5f, 1.0f, 1.0f)
+                    uMieColor.value.set(1f, 0.35f, 0.35f, 0.5f)
+                    uMieG.value = 0.8f
+                }
+            }
+        }
+
+        companion object {
+            fun model() = ShaderModel().apply {
+                val mvp: UniformBufferMvp
+                val ifWorldPos: StageInterfaceNode
+
+                vertexStage {
+                    mvp = mvpNode()
+                    val localPos = attrPositions().output
+                    val worldPos = vec3TransformNode(localPos, mvp.outModelMat, 1f).outVec3
+                    ifWorldPos = stageInterfaceNode("ifFragPos", worldPos)
+                    positionOutput = vec4TransformNode(localPos, mvp.outMvpMat).outVec4
+                }
+                fragmentStage {
+                    addNode(RaySphereIntersectionNode(stage))
+
+                    val fragMvp = mvp.addToStage(stage)
+                    val opticalDepthLut = texture2dNode("tOpticalDepthLut")
+                    val viewDir = viewDirNode(fragMvp.outCamPos, ifWorldPos.output).output
+
+                    val atmoNd = addNode(AtmosphereNode(opticalDepthLut, stage)).apply {
+                        inSceneColor = constVec4f(Color(0f, 0.07f, 0.15f).toLinear())
+                        inSkyColor = constVec4f(Color(0f, 0.07f, 0.15f).toLinear())
+                        inScenePos = ifWorldPos.output
+                        inCamPos = fragMvp.outCamPos
+                        inLookDir = viewDir
+                    }
+                    colorOutput(atmoNd.outColor)
+                }
+            }
+        }
+    }
+}
+
+class SkyCubeIblSystem(val parentScene: Scene) {
+
+    val opticalDepthLutPass = OpticalDepthLutPass()
+    val skyPass = SkyCubePass(opticalDepthLutPass.colorTexture!!)
+
+    val brdfLutPass = BrdfLutPass(parentScene)
+    val irradianceMapPass = IrradianceMapPass.irradianceMapFromCube(parentScene, skyPass.colorTexture!!, 8)
+    val reflectionMapPass = ReflectionMapPass.reflectionMapFromCube(parentScene, skyPass.colorTexture!!, 128)
+
+    val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!, brdfLutPass.colorTexture!!)
+
+    init {
+        brdfLutPass.isAutoRemove = false
+        irradianceMapPass.isAutoRemove = false
+        reflectionMapPass.isAutoRemove = false
+
+        skyPass.onAfterDraw += {
+            irradianceMapPass.isEnabled = true
+            reflectionMapPass.isEnabled = true
+        }
+    }
+
+    fun setupOffscreenPasses() {
+        parentScene.addOffscreenPass(opticalDepthLutPass)
+        parentScene.addOffscreenPass(brdfLutPass)
+
+        parentScene.addOffscreenPass(skyPass)
+        parentScene.addOffscreenPass(irradianceMapPass)
+        parentScene.addOffscreenPass(reflectionMapPass)
+    }
+
+}

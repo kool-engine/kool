@@ -19,6 +19,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.PbrSceneShader

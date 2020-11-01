@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.atmosphere
+package de.fabmax.kool.util.atmosphere
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f

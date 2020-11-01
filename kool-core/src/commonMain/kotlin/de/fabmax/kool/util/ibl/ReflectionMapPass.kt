@@ -11,16 +11,17 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?) :
+class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "ReflectionMapPass"
-            setSize(256, 256)
+            setSize(size, size)
             mipLevels = 7
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
 
     private val uRoughness = Uniform1f(0.5f, "uRoughness")
+    var isAutoRemove = true
 
     init {
         isEnabled = true
@@ -74,8 +75,12 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
             } else {
                 logD { "Generated reflection map from cube map: ${cubeMap?.name}" }
             }
-            parentScene.removeOffscreenPass(this)
-            ctx.runDelayed(1) { dispose(ctx) }
+            if (isAutoRemove) {
+                parentScene.removeOffscreenPass(this)
+                ctx.runDelayed(1) { dispose(ctx) }
+            } else {
+                isEnabled = false
+            }
         }
     }
 
@@ -163,7 +168,7 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
     }
 
     companion object {
-        fun reflectionMapFromHdri(scene: Scene, hdri: Texture2d) = ReflectionMapPass(scene, hdri, null)
-        fun reflectionMapFromCube(scene: Scene, cube: TextureCube) = ReflectionMapPass(scene, null, cube)
+        fun reflectionMapFromHdri(scene: Scene, hdri: Texture2d, size: Int = 256) = ReflectionMapPass(scene, hdri, null, size)
+        fun reflectionMapFromCube(scene: Scene, cube: TextureCube, size: Int = 256) = ReflectionMapPass(scene, null, cube, size)
     }
 }
