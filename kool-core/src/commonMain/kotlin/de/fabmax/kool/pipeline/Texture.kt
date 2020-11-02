@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.AssetManager
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
@@ -160,8 +157,9 @@ class TextureData1d(override val data: Uint8Buffer, width: Int, format: TexForma
     companion object {
         fun gradient(gradient: ColorGradient, size: Int): TextureData1d {
             val buf = createUint8Buffer(4 * size)
+            val color = MutableColor()
             for (i in 0 until size) {
-                val color = gradient.getColor(i / (size - 1f))
+                gradient.getColorInterpolated(i / (size - 1f), color)
                 buf[i * 4 + 0] = (color.r * 255f).roundToInt().toByte()
                 buf[i * 4 + 1] = (color.g * 255f).roundToInt().toByte()
                 buf[i * 4 + 2] = (color.b * 255f).roundToInt().toByte()

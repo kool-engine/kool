@@ -41,6 +41,21 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
     fun getColor(value: Float, min: Float = 0f, max: Float = 1f): Color =
             gradient[((value - min) / (max - min) * gradient.size).toInt().clamp(0, gradient.size - 1)]
 
+    fun getColorInterpolated(value: Float, result: MutableColor, min: Float = 0f, max: Float = 1f): MutableColor {
+        val fi = ((value - min) / (max - min) * gradient.size).clamp(0f, gradient.size - 1f)
+        val iLower = fi.toInt().clamp(0, gradient.size - 1)
+        val iUpper = (iLower + 1).clamp(0, gradient.size - 1)
+        val wUpper = iUpper - fi
+        val wLower = 1f - wUpper
+        val cUpper = gradient[iUpper]
+        result.set(gradient[iLower]).scale(wLower)
+        result.r += cUpper.r * wUpper
+        result.g += cUpper.g * wUpper
+        result.b += cUpper.b * wUpper
+        result.a += cUpper.a * wUpper
+        return result
+    }
+
     fun inverted(): ColorGradient {
         val invertedColors = Array<Pair<Float, Color>>(gradient.size) { i -> i.toFloat() to gradient[gradient.lastIndex - i] }
         return ColorGradient(*invertedColors, n = gradient.size)

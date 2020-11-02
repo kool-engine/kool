@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.atmosphere.AtmosphereNode
 import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.util.atmosphere.RaySphereIntersectionNode
@@ -27,6 +28,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             clearDepthTexture()
         }) {
 
+    val syncLights = mutableListOf<Light>()
+
     var azimuth = 0f
         set(value) {
             field = value
@@ -41,8 +44,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
     private val lightGradient = ColorGradient(
             -90f to Color.BLACK,
-            -5f to Color.BLACK,
-            0f to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
+            -2f to Color.BLACK,
+            0f to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear().scale(0.7f),
             5f to Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(),
             10f to Color.WHITE,
             90f to Color.WHITE,
@@ -94,7 +97,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         }
 
         onBeforeCollectDrawCommands += {
-            updateSunDirection()
+            updateSunLight()
             skyShader.atmoNode?.let {
                 it.uDirToSun.value.set(sunLight.direction).scale(-1f)
                 it.uSunColor.value.set(sunLight.color)
@@ -107,19 +110,19 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         }
     }
 
-    fun setupSunLight(result: Light) {
-        result.setDirectional(sunLight.direction)
-        val color = lightGradient.getColor(elevation, -90f, 90f)
-        val strength = sqrt(color.r * color.r + color.g * color.g + color.b * color.b)
-        result.setColor(color, strength * sunLight.color.a)
-    }
-
-    private fun updateSunDirection() {
+    private fun updateSunLight() {
         val phi = -azimuth.toRad()
         val theta = (PI.toFloat() / 2f) - elevation.toRad()
         sunLight.direction.z = -sin(theta) * cos(phi)
         sunLight.direction.x = -sin(theta) * sin(phi)
         sunLight.direction.y = -cos(theta)
+
+        val syncColor = lightGradient.getColorInterpolated(elevation, MutableColor(), -90f, 90f)
+        val strength = sqrt(syncColor.r * syncColor.r + syncColor.g * syncColor.g + syncColor.b * syncColor.b)
+        for (light in syncLights) {
+            light.setDirectional(sunLight.direction)
+            light.setColor(syncColor, strength * sunLight.color.a)
+        }
     }
 
     private class SkyShader(opticalDepthLut: Texture2d) : ModeledShader(model()) {
@@ -167,8 +170,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
                     val viewDir = viewDirNode(fragMvp.outCamPos, ifWorldPos.output).output
 
                     val atmoNd = addNode(AtmosphereNode(opticalDepthLut, stage)).apply {
-                        inSceneColor = constVec4f(Color(0f, 0.07f, 0.15f).toLinear())
-                        inSkyColor = constVec4f(Color(0f, 0.07f, 0.15f).toLinear())
+                        inSceneColor = constVec4f(Color(0.02f, 0.07f, 0.15f).toLinear())
+                        inSkyColor = constVec4f(Color(0.02f, 0.07f, 0.15f).toLinear())
                         inScenePos = ifWorldPos.output
                         inCamPos = fragMvp.outCamPos
                         inLookDir = viewDir
@@ -191,15 +194,23 @@ class SkyCubeIblSystem(val parentScene: Scene) {
 
     val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!, brdfLutPass.colorTexture!!)
 
+    var isAutoUpdateIblMaps = true
+
     init {
         brdfLutPass.isAutoRemove = false
         irradianceMapPass.isAutoRemove = false
         reflectionMapPass.isAutoRemove = false
 
         skyPass.onAfterDraw += {
-            irradianceMapPass.isEnabled = true
-            reflectionMapPass.isEnabled = true
+            if (isAutoUpdateIblMaps) {
+                updateIblMaps()
+            }
         }
+    }
+
+    fun updateIblMaps() {
+        irradianceMapPass.isEnabled = true
+        reflectionMapPass.isEnabled = true
     }
 
     fun setupOffscreenPasses() {

@@ -13,17 +13,17 @@ import de.fabmax.kool.util.DebugOverlay
  * @author fabmax
  */
 
-fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext()) {
+fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), extraScenes: List<DemoEntry>? = null) {
     val assetsBaseDir = Demo.getProperty("assetsBaseDir", "")
     if (assetsBaseDir.isNotEmpty()) {
         ctx.assetMgr.assetsBaseDir = assetsBaseDir
     }
 
     // launch demo
-    Demo(ctx, startScene)
+    Demo(ctx, startScene, extraScenes)
 }
 
-class Demo(ctx: KoolContext, startScene: String? = null) {
+class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoEntry>?) {
 
     private val dbgOverlay = DebugOverlay(ctx, DebugOverlay.Position.LOWER_RIGHT)
     private val newScenes = mutableListOf<Scene>()
@@ -44,10 +44,16 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "simplificationDemo" to DemoEntry("Simplification") { SimplificationDemo() },
 
             "helloWorldDemo" to DemoEntry("Hello World", true) { HelloWorldDemo() },
-            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() }
+            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
     )
 
     init {
+        extraScenes?.let {
+            it.forEach {  demo ->
+                demos[demo.label] = demo
+            }
+        }
+
         dbgOverlay.ui.isVisible = getProperty("dbgOverlay.isVisible", false)
 
         ctx.scenes += dbgOverlay.ui
@@ -120,8 +126,6 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         }
     }
 
-    private class DemoEntry(val label: String, val isHidden: Boolean = false, val sceneLoader: (KoolContext) -> DemoScene)
-
     companion object {
         val demoProps = mutableMapOf<String, Any>()
 
@@ -146,6 +150,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         }
     }
 }
+
+class DemoEntry(val label: String, val isHidden: Boolean = false, val sceneLoader: (KoolContext) -> DemoScene)
 
 class Cycler<T>(elements: List<T>) : List<T> by elements {
 

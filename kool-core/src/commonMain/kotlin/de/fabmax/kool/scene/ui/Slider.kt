@@ -17,6 +17,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         UiComponent(name, root), Scene.DragHandler {
 
     val onValueChanged: MutableList<Slider.(Float) -> Unit> = mutableListOf()
+    val onDragFinished: MutableList<Slider.(Float) -> Unit> = mutableListOf()
 
     var trackColor = Color.GRAY
     val trackColorHighlighted = ThemeOrCustomProp(Color.LIGHT_GRAY)
@@ -103,6 +104,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         } else {
             // knob dragging stopped
             scene.removeDragHandler(this)
+            onDragFinished.forEach { it.invoke(this, value) }
         }
     }
 

@@ -11,9 +11,12 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.ibl.EnvironmentMaps
+import de.fabmax.kool.util.ibl.SkyCubeIblSystem
+import de.fabmax.kool.util.timedMs
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -35,6 +38,8 @@ class TreeDemo : DemoScene("Procedural Tree") {
 
     val lightDirection = MutableVec3f(-1f, -1.5f, -1f).norm()
 
+    private lateinit var skySystem: SkyCubeIblSystem
+
     init {
         val w = 3f
         val h = 3.5f
@@ -46,21 +51,19 @@ class TreeDemo : DemoScene("Procedural Tree") {
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
-        lighting.singleLight {
-            setDirectional(lightDirection).setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 5f)
-        }
         val shadowMaps = mutableListOf(CascadedShadowMap(this, 0).apply { maxRange = 50f })
-        val bgGradient = ColorGradient(
-                0.00f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
-                0.35f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.75f),
-                0.45f to Color.fromHex("B2D7FF").mix(Color.BLACK, 0.25f),
-                0.90f to Color.fromHex("3295FF").mix(Color.BLACK, 0.45f),
-                1.00f to Color.fromHex("3295FF").mix(Color.BLACK, 0.50f)
-        )
-        val envMaps = EnvironmentHelper.gradientColorEnvironment(this, bgGradient, ctx)
+
+        skySystem = SkyCubeIblSystem(this)
+        skySystem.isAutoUpdateIblMaps = false
+        skySystem.setupOffscreenPasses()
+        val envMaps = skySystem.envMaps
+
+        lighting.singleLight {
+            skySystem.skyPass.syncLights += this
+        }
 
         +makeTreeGroundGrid(10, shadowMaps, envMaps)
-        +Skybox.cube(envMaps.reflectionMap)
+        +Skybox.cube(skySystem.skyPass.colorTexture!!)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
@@ -199,6 +202,17 @@ class TreeDemo : DemoScene("Procedural Tree") {
             toggleButton("Toggle Leafs", true) { leafMesh?.isVisible = isEnabled }
             toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
         }
+        section("Light") {
+            val aziSlider = sliderWithValueSmall("Azimuth", 0f, 0f, 360f, 0, widthLabel = 25f) {
+                skySystem.skyPass.azimuth = value
+            }
+            val eleSlider = sliderWithValueSmall("Elevation", 45f, -90f, 90f, 0, widthLabel = 25f) {
+                skySystem.skyPass.elevation = value
+            }
+            toggleButton("Auto Update IBL Maps", false) { skySystem.isAutoUpdateIblMaps = isEnabled }
+            aziSlider.onDragFinished += { skySystem.updateIblMaps() }
+            eleSlider.onDragFinished += { skySystem.updateIblMaps() }
+        }
     }
 
     private class WindNode(graph: ShaderGraph) : ShaderNode("windNode", graph) {
@@ -239,7 +253,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         val groundExt = cells / 2
 
         return textureMesh(isNormalMapped = true) {
-            isCastingShadow = false
+            //isCastingShadow = false
             generate {
                 withTransform {
                     color = Color.LIGHT_GRAY.withAlpha(0.2f)

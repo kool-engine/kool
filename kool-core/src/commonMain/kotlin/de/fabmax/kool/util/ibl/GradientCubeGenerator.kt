@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.createUint8Buffer
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
@@ -52,11 +53,12 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
     private fun makeGradientTex(gradient: ColorGradient, size: Int, ctx: KoolContext): Texture2d {
         val buf = createUint8Buffer(size * 4)
 
+        val color = MutableColor()
         for (i in 0 until size) {
-            val c = gradient.getColor(1f - i.toFloat() / size)
-            buf[i * 4 + 0] = ((c.r * 255f).toInt().toByte())
-            buf[i * 4 + 1] = ((c.g * 255f).toInt().toByte())
-            buf[i * 4 + 2] = ((c.b * 255f).toInt().toByte())
+            gradient.getColorInterpolated(1f - i.toFloat() / size, color)
+            buf[i * 4 + 0] = ((color.r * 255f).toInt().toByte())
+            buf[i * 4 + 1] = ((color.g * 255f).toInt().toByte())
+            buf[i * 4 + 2] = ((color.b * 255f).toInt().toByte())
             buf[i * 4 + 3] = (255.toByte())
         }
 
