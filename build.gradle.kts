@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.6.0-SNAPSHOT"
+    version = "0.6.0"
 
     repositories {
         jcenter()

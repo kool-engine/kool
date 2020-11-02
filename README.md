@@ -236,7 +236,7 @@ More complex shaders can be defined in exactly the same fashion. E.g. ```PhongSh
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own projects.
+If you are adventurous, you can use kool as a library in your own (multiplatform-)projects.
 
 Gradle setup:
 ```groovy
@@ -246,7 +246,7 @@ repositories {
 
 // JVM dependencies
 dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.5.0"
+    implementation "de.fabmax.kool:kool-core-jvm:0.6.0"
 
     // On JVM, lwjgl runtime dependencies have to be included as well
     def lwjglVersion = "3.2.3"
@@ -261,7 +261,7 @@ dependencies {
 
 // or alternatively for javascript
 dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.5.0"
+    implementation "de.fabmax.kool:kool-core-js:0.6.0"
 }
 ```
 
