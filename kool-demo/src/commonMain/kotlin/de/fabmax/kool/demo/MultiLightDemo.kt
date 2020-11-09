@@ -79,8 +79,6 @@ class MultiLightDemo : DemoScene("Reflections") {
         val defCfg = DeferredPipelineConfig().apply {
             isWithEmissive = false
             isWithAmbientOcclusion = false
-            isWithScreenSpaceReflections = false
-            isWithImageBasedLighting = false
             isWithScreenSpaceReflections = true
             useImageBasedLighting(envMaps)
         }

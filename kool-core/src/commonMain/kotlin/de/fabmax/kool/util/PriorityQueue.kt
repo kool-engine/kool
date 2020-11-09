@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-class PriorityQueue<T>(comparator: Comparator<T>? = null) : Collection<T> {
+class PriorityQueue<T>(comparator: Comparator<T>? = null) : MutableCollection<T> {
 
     private val comparator: Comparator<T>
     private val elements = mutableListOf<T>()
@@ -13,14 +13,34 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : Collection<T> {
         this.comparator = comparator ?: Comparator { a, b -> (a as Comparable<T>).compareTo(b) }
     }
 
-    fun clear() = elements.clear()
+    override fun clear() = elements.clear()
 
-    fun add(element: T) {
+    override fun add(element: T): Boolean {
         elements += element
         swim(size-1)
+        return true
     }
 
-    operator fun plusAssign(element: T) = add(element)
+    override fun addAll(elements: Collection<T>): Boolean {
+        for (e in elements) {
+            add(e)
+        }
+        return true
+    }
+
+    override fun remove(element: T) = elements.remove(element)
+
+    override fun removeAll(elements: Collection<T>) = this.elements.removeAll(elements)
+
+    override fun retainAll(elements: Collection<T>) = this.elements.retainAll(elements)
+
+    operator fun plusAssign(element: T) {
+        add(element)
+    }
+
+    operator fun minusAssign(element: T) {
+        remove(element)
+    }
 
     fun peek(): T {
         if (size == 0) {
@@ -71,12 +91,21 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : Collection<T> {
 
     override fun containsAll(elements: Collection<T>) = this.elements.containsAll(elements)
 
-    override fun iterator(): Iterator<T> = object : Iterator<T> {
+    override fun iterator(): MutableIterator<T> = object : MutableIterator<T> {
         val q = PriorityQueue(comparator).also { it.elements.addAll(elements) }
+        var current: T? = null
 
-        override fun hasNext() = !q.isEmpty()
+        override fun hasNext() = q.isNotEmpty()
 
-        override fun next() = q.poll()
+        override fun next(): T {
+            val e = q.poll()
+            current = e
+            return e
+        }
+
+        override fun remove() {
+            elements.remove(current)
+        }
     }
 
     private fun <T> MutableList<T>.swap(a: Int, b: Int) {

@@ -54,7 +54,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         val shadowMaps = mutableListOf(CascadedShadowMap(this, 0).apply { maxRange = 50f })
 
         skySystem = SkyCubeIblSystem(this)
-        skySystem.isAutoUpdateIblMaps = false
+        skySystem.isAutoUpdateIblMaps = true
         skySystem.setupOffscreenPasses()
         val envMaps = skySystem.envMaps
 
@@ -209,7 +209,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
             val eleSlider = sliderWithValueSmall("Elevation", 45f, -90f, 90f, 0, widthLabel = 25f) {
                 skySystem.skyPass.elevation = value
             }
-            toggleButton("Auto Update IBL Maps", false) { skySystem.isAutoUpdateIblMaps = isEnabled }
+            toggleButton("Auto Update IBL Maps", skySystem.isAutoUpdateIblMaps) { skySystem.isAutoUpdateIblMaps = isEnabled }
             aziSlider.onDragFinished += { skySystem.updateIblMaps() }
             eleSlider.onDragFinished += { skySystem.updateIblMaps() }
         }
