@@ -8,9 +8,8 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlin.math.max
 
-class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
-                     bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20,
-                     val accurateBounds: Boolean = true) :
+open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
+                     bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
         SpatialTree<T>(itemAdapter), MutableCollection<T> {
 
     override val root: OcNode
@@ -48,7 +47,7 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
     }
 
     override fun add(element: T): Boolean {
-        if (!root.nodeBounds.contains(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
+        if (!root.bounds.contains(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
             logE { "Item not in tree bounds: (${itemAdapter.getMinX(element)}, ${itemAdapter.getMinY(element)}, ${itemAdapter.getMinZ(element)}), bounds: ${root.bounds}" }
             return false
         }
@@ -180,12 +179,9 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             if (depth > MAX_DEPTH) {
                 throw KoolException("Octree is too deep")
             }
-            if (!accurateBounds) {
-                bounds.add(nodeBounds)
-            }
         }
 
-        internal fun clear() {
+        fun clear() {
             if (depth != 0) {
                 throw KoolException("clear() is only allowed for root node")
             }
@@ -193,37 +189,30 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             children.clear()
             size = 0
 
-            if (accurateBounds) {
-                bounds.clear()
-            }
+            bounds.clear()
         }
 
-        internal fun add(item: T) {
+        fun add(item: T): OcNode {
+            bounds.add(itemAdapter.getMin(item, tmpVec))
+            bounds.add(itemAdapter.getMax(item, tmpVec))
             size++
-            if (isLeaf) {
-                if (accurateBounds) {
-                    bounds.add(itemAdapter.getMin(item, tmpVec))
-                    bounds.add(itemAdapter.getMax(item, tmpVec))
-                }
 
+            return if (isLeaf) {
                 if (mutItems.size < bucketSz || depth == MAX_DEPTH) {
                     mutItems.add(item)
                     itemAdapter.setNode(item, this)
+                    this
+
                 } else {
                     split()
                     children[childIndexForItem(item)].add(item)
                 }
             } else {
-                val child = children[childIndexForItem(item)]
-                child.add(item)
-
-                if (accurateBounds) {
-                    bounds.add(child.bounds)
-                }
+                children[childIndexForItem(item)].add(item)
             }
         }
 
-        internal fun remove(item: T, canMerge: Boolean): Boolean {
+        fun remove(item: T, canMerge: Boolean): Boolean {
             val success = if (isLeaf) {
                 mutItems.remove(item)
             } else {
@@ -236,7 +225,7 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
                     merge()
                 }
 
-                if (accurateBounds && isBorderItem(item)) {
+                if (isBorderItem(item)) {
                     recomputeBounds()
                 }
             }
@@ -278,14 +267,14 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             }
         }
 
-        fun isInBounds(center: Vec3f) = isInBounds(center.x, center.y, center.z)
+        fun isCenterInNode(center: Vec3f) = isCenterInNode(center.x, center.y, center.z)
 
-        fun isInBounds(centerX: Float, centerY: Float, centerZ: Float): Boolean {
+        fun isCenterInNode(x: Float, y: Float, z: Float): Boolean {
             // Do not use BoundingBox.isIncluding() here: It tests inclusive max bounds (x >= min && x <= max) which is
             // problematic if an item is on the border of neighboring nodes (x == max and x == min of next node)
-            return centerX >= nodeBounds.min.x && centerX < nodeBounds.max.x &&
-                    centerY >= nodeBounds.min.y && centerY < nodeBounds.max.y &&
-                    centerZ >= nodeBounds.min.z && centerZ < nodeBounds.max.z
+            return x >= bounds.min.x && x < bounds.max.x &&
+                    y >= bounds.min.y && y < bounds.max.y &&
+                    z >= bounds.min.z && z < bounds.max.z
         }
 
         private fun split() {

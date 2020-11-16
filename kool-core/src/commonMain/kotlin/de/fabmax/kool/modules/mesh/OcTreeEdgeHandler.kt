@@ -40,7 +40,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
             val newY = (from.y + newTo.y) * 0.5f
             val newZ = (from.z + newTo.z) * 0.5f
 
-            if (treeNode?.isInBounds(newX, newY, newZ) == true) {
+            if (treeNode?.isCenterInNode(newX, newY, newZ) == true) {
                 // edge stays in same tree node, no full update required
                 to = newTo
             } else {
@@ -58,7 +58,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
             val newY = (newFrom.y + to.y) * 0.5f
             val newZ = (newFrom.z + to.z) * 0.5f
 
-            if (treeNode?.isInBounds(newX, newY, newZ) == true) {
+            if (treeNode?.isCenterInNode(newX, newY, newZ) == true) {
                 // edge stays in same tree node, no full update required
                 from = newFrom
             } else {
@@ -78,7 +78,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
                 var newX = (x + ed.to.x) * 0.5f
                 var newY = (y + ed.to.y) * 0.5f
                 var newZ = (z + ed.to.z) * 0.5f
-                if (ed.treeNode?.isInBounds(newX, newY, newZ) == false) {
+                if (ed.treeNode?.isCenterInNode(newX, newY, newZ) == false) {
                     // full tree update required
                     edgeTree -= ed
                     ed.treeNode = null
@@ -89,7 +89,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
                 newX = (x + ed.from.x) * 0.5f
                 newY = (y + ed.from.y) * 0.5f
                 newZ = (z + ed.from.z) * 0.5f
-                if (ed.treeNode?.isInBounds(newX, newY, newZ) == false) {
+                if (ed.treeNode?.isCenterInNode(newX, newY, newZ) == false) {
                     // full tree update required
                     edgeTree -= ed
                     ed.treeNode = null
