@@ -35,7 +35,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
-    var zoomMethod = ZoomMethod.ZOOM_TRANSLATE
+    var zoomMethod = ZoomMethod.ZOOM_CENTER
 
     var verticalAxis = Vec3d.Y_AXIS
     var horizontalAxis = Vec3d.X_AXIS
@@ -193,7 +193,9 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
 
         val oldZ = zoomAnimator.actual
         val z = zoomAnimator.animate(ctx.deltaT)
-        if (!isFuzzyEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
+        if (!isFuzzyEqual(oldZ, z)
+                && zoomMethod == ZoomMethod.ZOOM_TRANSLATE
+                && panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
             computeZoomTranslationPerspective(renderPass.camera, oldZ, z)
         }
 
@@ -215,7 +217,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
                 .add(camera.globalLookAt)
         tmpVec1.subtract(tmpVec2)
         parent?.toLocalCoords(tmpVec1, 0f)
-        translation.add(tmpVec1)//.subtract(tmpVec2)
+        translation.add(tmpVec1)
     }
 
     private fun stopSmoothMotion() {
