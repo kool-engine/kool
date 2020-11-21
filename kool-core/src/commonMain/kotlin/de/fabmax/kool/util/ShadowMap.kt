@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler2d
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -96,12 +97,18 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
     private fun setupDirectionalLightCamera(light: Light) {
         var cam = camera
         if (cam !is OrthographicCamera) {
-            cam = OrthographicCamera()
+            cam = OrthographicCamera().apply { isKeepAspectRatio = false }
             cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
             camera = cam
         }
         cam.position.set(Vec3f.ZERO)
         cam.lookAt.set(light.direction)
+
+        if (abs(light.direction * Vec3f.Y_AXIS) > 0.99f) {
+            cam.up.set(Vec3f.NEG_Z_AXIS)
+        } else {
+            cam.up.set(Vec3f.Y_AXIS)
+        }
 
         val bounds = shadowBounds
         if (bounds != null) {

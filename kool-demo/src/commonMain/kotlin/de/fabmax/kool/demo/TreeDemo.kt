@@ -11,12 +11,9 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import de.fabmax.kool.util.ibl.SkyCubeIblSystem
-import de.fabmax.kool.util.timedMs
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -51,7 +48,18 @@ class TreeDemo : DemoScene("Procedural Tree") {
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
-        val shadowMaps = mutableListOf(CascadedShadowMap(this, 0).apply { maxRange = 50f })
+        val sceneContent = Group()
+        +sceneContent
+
+        // use simple shadow map with fixed bounds to avoid noise during camera movement
+        val shadow = SimpleShadowMap(this, 0).apply { optimizeForDirectionalLight = true }
+        val shadowMaps = listOf(shadow)
+        onUpdate += {
+            shadow.shadowBounds = sceneContent.bounds
+        }
+
+        // alternatively a CascadedShadowMap can be used for dynamic shadow bounds based on view frustum
+        //val shadowMaps = listOf(CascadedShadowMap(this, 0).apply { maxRange = 50f })
 
         skySystem = SkyCubeIblSystem(this)
         skySystem.isAutoUpdateIblMaps = true
@@ -62,7 +70,6 @@ class TreeDemo : DemoScene("Procedural Tree") {
             skySystem.skyPass.syncLights += this
         }
 
-        +makeTreeGroundGrid(10, shadowMaps, envMaps)
         +Skybox.cube(skySystem.skyPass.colorTexture!!)
 
         // generate tree trunk mesh
@@ -139,8 +146,11 @@ class TreeDemo : DemoScene("Procedural Tree") {
             }
         }
 
-        +trunkMesh!!
-        +leafMesh!!
+        sceneContent.apply {
+            +makeTreeGroundGrid(10, shadowMaps, envMaps)
+            +trunkMesh!!
+            +leafMesh!!
+        }
 
         +orbitInputTransform {
             +camera
@@ -203,10 +213,10 @@ class TreeDemo : DemoScene("Procedural Tree") {
             toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled }
         }
         section("Light") {
-            val aziSlider = sliderWithValueSmall("Azimuth", 0f, 0f, 360f, 0, widthLabel = 25f) {
+            val aziSlider = sliderWithValueSmall("Azimuth", skySystem.skyPass.azimuth, 0f, 360f, 0, widthLabel = 25f) {
                 skySystem.skyPass.azimuth = value
             }
-            val eleSlider = sliderWithValueSmall("Elevation", 45f, -90f, 90f, 0, widthLabel = 25f) {
+            val eleSlider = sliderWithValueSmall("Elevation", skySystem.skyPass.elevation, -90f, 90f, 0, widthLabel = 25f) {
                 skySystem.skyPass.elevation = value
             }
             toggleButton("Auto Update IBL Maps", skySystem.isAutoUpdateIblMaps) { skySystem.isAutoUpdateIblMaps = isEnabled }
@@ -249,7 +259,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         }
     }
 
-    private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>, envMaps: EnvironmentMaps): Node {
+    private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMap>, envMaps: EnvironmentMaps): Node {
         val groundExt = cells / 2
 
         return textureMesh(isNormalMapped = true) {
