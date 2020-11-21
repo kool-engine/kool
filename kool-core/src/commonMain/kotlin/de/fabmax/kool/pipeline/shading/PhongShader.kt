@@ -15,7 +15,7 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
     return PhongShader(cfg)
 }
 
-class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
+open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend

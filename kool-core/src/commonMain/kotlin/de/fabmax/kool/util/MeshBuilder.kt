@@ -273,48 +273,13 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 1,6,10, 0,9,11, 11,9,2, 2,9,5, 2,7,11
         )
 
-        private val midVerts = mutableMapOf<Double, Int>()
-
-        fun getMidVertex(fromIdx: Int, toIdx: Int): Int {
-            //val key = (min(fromIdx, toIdx).toLong() shl 32) + max(fromIdx, toIdx)
-            // using a Double as key is much faster in javascript, where Long is not a native type...
-            val key = min(fromIdx, toIdx).toDouble() * 1048576 + max(fromIdx, toIdx)
-            return midVerts.getOrPut(key) {
-                val insertIdx = verts.size
-                verts += MutableVec3f(verts[fromIdx]).add(verts[toIdx]).norm()
-                insertIdx
-            }
-        }
-
-        fun subdivide() {
-            val newFaces = IntArray(faces.size * 4)
-            var i = 0
-            for (j in faces.indices step 3) {
-                val v1 = faces[j]
-                val v2 = faces[j + 1]
-                val v3 = faces[j + 2]
-
-                // subdivide edges
-                val a = getMidVertex(v1, v2)
-                val b = getMidVertex(v2, v3)
-                val c = getMidVertex(v3, v1)
-
-                newFaces[i++] = v1; newFaces[i++] = a; newFaces[i++] = c
-                newFaces[i++] = v2; newFaces[i++] = b; newFaces[i++] = a
-                newFaces[i++] = v3; newFaces[i++] = c; newFaces[i++] = b
-                newFaces[i++] = a; newFaces[i++] = b; newFaces[i++] = c
-            }
-            faces.clear()
-            newFaces.forEach { faces.add(it) }
-        }
-
         fun subdivide(steps: Int) {
             val its = if (steps <= 8) { steps } else {
                 logW { "clamping too large number of iterations for ico-sphere (${steps}) to 8" }
                 8
             }
             for (i in 0 until its) {
-                subdivide()
+                Subdivide.subdivideTris(verts, faces) { a, b -> MutableVec3f(a).add(b).norm() }
             }
         }
 

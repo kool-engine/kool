@@ -234,7 +234,6 @@ class EarthOceanNode(graph: ShaderGraph) : ShaderNode("earthOcean", graph) {
                     float nrmStrength = smoothstep(0.3, 0.6, ${generator.sampleTexture2d(inOceanTex1.name, "oceanUvStrength")}.r) * 0.7 + 0.3;
                     oceanNrm.xy *= nrmStrength;
                     
-                    //$outColor = vec4(${generator.sampleTexture2d(inOceanTex1.name, "oceanUvBase")}.rgb, 1.0);
                     $outColor = $uWaterColor;
                     $outBumpNormal = calcBumpedNormal(${inBumpNormal.ref3f()}, ${inTangent.ref4f()}, normalize(oceanNrm), 0.4);
                 }

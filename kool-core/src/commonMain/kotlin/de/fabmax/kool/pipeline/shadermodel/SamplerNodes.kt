@@ -254,7 +254,9 @@ class DisplacementMapNode(val texture: Texture2dNode, graph: ShaderGraph) : Shad
 
 class RefractionSamplerNode(graph: ShaderGraph) : ShaderNode("refractionSampler_${graph.nextNodeId}", graph) {
     var reflectionMap: TextureCubeNode? = null
+    var refractionDepth: Texture2dNode? = null
     lateinit var refractionColor: Texture2dNode
+    lateinit var view: ShaderNodeIoVar
     lateinit var viewProj: ShaderNodeIoVar
 
     var inMaterialThickness = ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -262,31 +264,47 @@ class RefractionSamplerNode(graph: ShaderGraph) : ShaderNode("refractionSampler_
     var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+    val outMaterialThickness = ShaderNodeIoVar(ModelVar1f("${name}_outThickness"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(refractionColor)
+        dependsOn(refractionDepth)
         dependsOn(reflectionMap)
-        dependsOn(viewProj, inRefractionDir, inFragPos, inMaterialThickness)
+        dependsOn(view, viewProj, inRefractionDir, inFragPos, inMaterialThickness)
     }
 
     override fun generateCode(generator: CodeGenerator) {
         val envColor = reflectionMap?.let { generator.sampleTextureCube(it.name, inRefractionDir.ref3f()) } ?: "vec4(0.0)"
-        generator.appendMain("""
-                vec3 ${name}_refrPos = ${inFragPos.ref3f()} + ${inRefractionDir.ref3f()} * ${inMaterialThickness.ref1f()};
-                vec4 ${name}_clip = $viewProj * vec4(${name}_refrPos, 1.0);
-                vec2 ${name}_refrSample = (${name}_clip.xy / ${name}_clip.w) * 0.5 + 0.5;
-                
-                bool ${name}_useReflMap = ${name}_refrSample.x < 0.0 || ${name}_refrSample.x > 1.0
-                                        || ${name}_refrSample.y < 0.0 || ${name}_refrSample.y > 1.0;
-                
-                ${outColor.declare()} = vec4(0.0);
-                if (!${name}_useReflMap) {
-                    $outColor = ${generator.sampleTexture2d(refractionColor.name, "${name}_refrSample")};
-                }
-                if ($outColor.a == 0.0) {
-                    $outColor = $envColor;
-                }
+
+        val refrDepth = refractionDepth
+        if (refrDepth != null) {
+            generator.appendMain("""
+                float ${name}_fragDepth = ($view * vec4(${inFragPos.ref3f()}, 1.0)).z;
+                vec4 ${name}_depthClip = $viewProj * vec4(${inFragPos.ref3f()}, 1.0);
+                vec2 ${name}_depthSample = (${name}_depthClip.xy / ${name}_depthClip.w) * 0.5 + 0.5;
+                float ${name}_sceneDepth = ${generator.sampleTexture2d(refrDepth.name, "${name}_depthSample")}.z;
+                ${outMaterialThickness.declare()} = min(${inMaterialThickness.ref1f()}, ${name}_fragDepth - ${name}_sceneDepth);
             """)
+        } else {
+            generator.appendMain("${outMaterialThickness.declare()} = ${inMaterialThickness.ref1f()};")
+        }
+
+        generator.appendMain("""
+            vec3 ${name}_refrPos = ${inFragPos.ref3f()} + ${inRefractionDir.ref3f()} * $outMaterialThickness;
+            vec4 ${name}_clip = $viewProj * vec4(${name}_refrPos, 1.0);
+            vec2 ${name}_refrSample = (${name}_clip.xy / ${name}_clip.w) * 0.5 + 0.5;
+            
+            bool ${name}_useReflMap = ${name}_refrSample.x < 0.0 || ${name}_refrSample.x > 1.0
+                                    || ${name}_refrSample.y < 0.0 || ${name}_refrSample.y > 1.0;
+            
+            ${outColor.declare()} = vec4(0.0);
+            if (!${name}_useReflMap) {
+                $outColor = ${generator.sampleTexture2d(refractionColor.name, "${name}_refrSample")};
+            }
+            if ($outColor.a == 0.0) {
+                $outColor = $envColor;
+            }
+        """)
     }
 }

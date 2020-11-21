@@ -65,7 +65,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
         groundShader = pbrShader {
             isHdrOutput = true
-            useStaticAlbedo(Color.MD_BROWN.toLinear())
+            useStaticAlbedo(Color.MD_BROWN_300.toLinear())
             roughness = 0.8f
         }.apply {
             //ambient = Color(0.01f, 0.01f, 0.01f, 1f).toLinear()

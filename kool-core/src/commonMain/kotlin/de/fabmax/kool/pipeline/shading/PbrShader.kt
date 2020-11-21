@@ -14,7 +14,7 @@ fun pbrShader(cfgBlock: PbrMaterialConfig.() -> Unit): PbrShader {
     return PbrShader(cfg)
 }
 
-class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
+open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend
@@ -163,6 +163,13 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
             refractionColorSampler?.texture = value
         }
 
+    private var refractionDepthSampler: TextureSampler2d? = null
+    var refractionDepthMap: Texture2d? = cfg.refractionDepthMap
+        set(value) {
+            field = value
+            refractionDepthSampler?.texture = value
+        }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
@@ -206,6 +213,8 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
         uMaterialThickness?.let { it.uniform.value = materialThickness }
         refractionColorSampler = model.findNode<Texture2dNode>("tRefractionColor")?.sampler
         refractionColorSampler?.let { it.texture = refractionColorMap }
+        refractionDepthSampler = model.findNode<Texture2dNode>("tRefractionDepth")?.sampler
+        refractionDepthSampler?.let { it.texture = refractionDepthMap }
 
         albedoSampler = model.findNode<Texture2dNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
@@ -471,10 +480,14 @@ class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg
                     val refrSampler = addNode(RefractionSamplerNode(stage)).apply {
                         reflectionMap = reflMap
                         refractionColor = texture2dNode("tRefractionColor")
+                        view = mvpFrag.outViewMat
                         viewProj = multiplyNode(mvpFrag.outProjMat, mvpFrag.outViewMat).output
                         inMaterialThickness = pushConstantNode1f("uMaterialThickness").output
                         inFragPos = ifFragPos.output
                         inRefractionDir = refractNode(viewDir, normal, constFloat(1f / cfg.refractionIor)).outDirection
+                        if (cfg.isRefractByDepthMap) {
+                            refractionDepth = texture2dNode("tRefractionDepth")
+                        }
                     }
                     val refrColor = refrSampler.outColor
                     val refrWeight = subtractNode(constFloat(1f), splitNode(mat.outColor, "a").output).output

@@ -31,6 +31,7 @@ class PbrMaterialConfig {
     var isImageBasedLighting = false
     var isScrSpcAmbientOcclusion = false
     var isRefraction = false
+    var isRefractByDepthMap = false
 
     var maxLights = 4
     val shadowMaps = mutableListOf<ShadowMap>()
@@ -72,6 +73,7 @@ class PbrMaterialConfig {
 
     var scrSpcAmbientOcclusionMap: Texture2d? = null
     var refractionColorMap: Texture2d? = null
+    var refractionDepthMap: Texture2d? = null
 
     fun useStaticAlbedo(albedo: Color) {
         albedoSource = Albedo.STATIC_ALBEDO
@@ -146,9 +148,11 @@ class PbrMaterialConfig {
         isScrSpcAmbientOcclusion = true
     }
 
-    fun useRefraction(refractionColorMap: Texture2d?) {
+    fun useRefraction(refractionColorMap: Texture2d?, refractionDepthMap: Texture2d? = null) {
         this.refractionColorMap = refractionColorMap
+        this.refractionDepthMap = refractionDepthMap
         isRefraction = this.refractionColorMap != null
+        isRefractByDepthMap = this.refractionDepthMap != null
     }
 
     fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
