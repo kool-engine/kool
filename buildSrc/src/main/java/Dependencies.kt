@@ -1,9 +1,9 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.4.10"
-    val kotlinCorroutinesVersion = "1.3.9"
-    val kotlinSerializationVersion = "1.0.0-RC"
+    val kotlinVersion = "1.4.20"
+    val kotlinCorroutinesVersion = "1.4.1"
+    val kotlinSerializationVersion = "1.0.1"
 
     val lwjglVersion = "3.2.3"
     val lwjglNatives = OperatingSystem.current().let {
@@ -18,6 +18,7 @@ object Versions {
 object DepsCommon {
     val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCorroutinesVersion}"
     val kotlinSerialization = "org.jetbrains.kotlinx:kotlinx-serialization-core:${Versions.kotlinSerializationVersion}"
+    val kotlinSerializationJson = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.kotlinSerializationVersion}"
 }
 
 object DepsJvm {

@@ -1,5 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+
 kotlin {
     jvm {
         compilations.all {
@@ -9,14 +11,20 @@ kotlin {
             }
         }
     }
-    //js(IR) { // build fails with IllegalStateException: Operation is unsupported (1.4.10)
+    //js(IR) { // 1.4.20 build succeeds, but webapp crashes
     js {
         browser {
             distribution {
                 directory = File("${rootDir}/dist/kool-demo")
             }
+            commonWebpackConfig {
+                // small js code
+                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                // readable js code but ~twice the file size
+                //mode = KotlinWebpackConfig.Mode.DEVELOPMENT
+            }
+            binaries.executable()
         }
-        binaries.executable()
     }
 
     sourceSets {

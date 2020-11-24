@@ -14,7 +14,7 @@ kotlin {
             }
         }
     }
-    //js(IR) { // build fails with IllegalStateException: Operation is unsupported (1.4.10)
+    //js(IR) { // 1.4.20 build succeeds, but webapp crashes
     js {
         browser { }
     }
@@ -31,6 +31,7 @@ kotlin {
             dependencies {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
+                implementation(DepsCommon.kotlinSerializationJson)
             }
         }
         val commonTest by getting {
