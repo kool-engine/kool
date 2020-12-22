@@ -68,7 +68,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             useStaticAlbedo(Color.MD_BROWN_300.toLinear())
             roughness = 0.8f
         }.apply {
-            //ambient = Color(0.01f, 0.01f, 0.01f, 1f).toLinear()
+            ambient = nightSkyColor
         }
 
         (drawNode as Group).apply {
@@ -125,6 +125,10 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         }
     }
 
+    companion object {
+        private val nightSkyColor = Color(0.02f, 0.07f, 0.15f).toLinear()
+    }
+
     private class SkyShader(opticalDepthLut: Texture2d) : ModeledShader(model()) {
 
         var atmoNode: AtmosphereNode? = null
@@ -170,8 +174,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
                     val viewDir = viewDirNode(fragMvp.outCamPos, ifWorldPos.output).output
 
                     val atmoNd = addNode(AtmosphereNode(opticalDepthLut, stage)).apply {
-                        inSceneColor = constVec4f(Color(0.02f, 0.07f, 0.15f).toLinear())
-                        inSkyColor = constVec4f(Color(0.02f, 0.07f, 0.15f).toLinear())
+                        inSceneColor = constVec4f(nightSkyColor)
+                        inSkyColor = constVec4f(nightSkyColor)
                         inScenePos = ifWorldPos.output
                         inCamPos = fragMvp.outCamPos
                         inLookDir = viewDir

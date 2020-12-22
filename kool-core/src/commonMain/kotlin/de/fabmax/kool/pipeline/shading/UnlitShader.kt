@@ -16,6 +16,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
 
     private val cullMethod = cfg.cullMethod
     private val isBlending = cfg.alphaMode is AlphaModeBlend
+    private val lineWidth = cfg.lineWidth
 
     private var uColor: PushConstantNodeColor? = null
     var color: Color = cfg.color
@@ -41,6 +42,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
+        builder.lineWidth = lineWidth
         super.onPipelineSetup(builder, mesh, ctx)
     }
 
@@ -157,6 +159,7 @@ class UnlitMaterialConfig {
 
     var cullMethod = CullMethod.CULL_BACK_FACES
     var alphaMode: AlphaMode = AlphaModeOpaque()
+    var lineWidth = 1f
 
     var color = Color.GRAY
     var colorMap: Texture2d? = null

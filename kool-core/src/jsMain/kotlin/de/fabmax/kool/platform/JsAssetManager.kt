@@ -45,6 +45,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
 
     private suspend fun loadImage(ref: TextureAssetRef): TextureData {
         val deferred = CompletableDeferred<Image>()
+
         val img = Image()
         img.onload = {
             deferred.complete(img)
@@ -57,7 +58,6 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
             }
         }
         img.crossOrigin = ""
-        js("if ('decoding' in img) { img.decoding = 'async'; }")
         img.src = ref.url
 
         return if (ref.isAtlas) {

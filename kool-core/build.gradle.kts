@@ -14,7 +14,7 @@ kotlin {
             }
         }
     }
-    //js(IR) { // 1.4.20 build succeeds, but webapp crashes
+    //js(IR) { // kinda works as well but requires clean before build (1.4.21)
     js {
         browser { }
     }
