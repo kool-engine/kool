@@ -4,10 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.PI
 import kotlin.math.cos

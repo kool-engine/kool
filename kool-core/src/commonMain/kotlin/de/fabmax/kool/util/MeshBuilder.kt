@@ -99,20 +99,6 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         return profile
     }
 
-    inline fun ShapeContainer.multiShape(block: MultiShape.() -> Unit): MultiShape {
-        val shape = MultiShape()
-        shapes += shape
-        shape.block()
-        return shape
-    }
-
-    inline fun ShapeContainer.simpleShape(isClosed: Boolean, block: SimpleShape.() -> Unit): SimpleShape {
-        val shape = SimpleShape(isClosed)
-        shapes += shape
-        shape.block()
-        return shape
-    }
-
     fun ShapeContainer.circleShape(radius: Float = 1f, steps: Int = 40): SimpleShape {
         return simpleShape(true) {
             for (a in 0 until steps) {

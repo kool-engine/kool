@@ -9,6 +9,20 @@ interface ShapeContainer {
     val shapes: MutableList<Shape>
 }
 
+inline fun ShapeContainer.multiShape(block: MultiShape.() -> Unit): MultiShape {
+    val shape = MultiShape()
+    shapes += shape
+    shape.block()
+    return shape
+}
+
+inline fun ShapeContainer.simpleShape(isClosed: Boolean, block: SimpleShape.() -> Unit): SimpleShape {
+    val shape = SimpleShape(isClosed)
+    shapes += shape
+    shape.block()
+    return shape
+}
+
 class Profile : ShapeContainer {
     override val shapes = mutableListOf<Shape>()
 

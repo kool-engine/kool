@@ -445,6 +445,28 @@ open class Mat4d {
         return this
     }
 
+    fun setRotation(mat3: Mat3f) {
+        for (row in 0..2) {
+            for (col in 0..2) {
+                this[row, col] = mat3[row, col].toDouble()
+            }
+        }
+        val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
+        val s = 1f / sqrt(l0)
+        scale(s, s, s)
+    }
+
+    fun setRotation(mat4: Mat4d) {
+        for (row in 0..2) {
+            for (col in 0..2) {
+                this[row, col] = mat4[row, col]
+            }
+        }
+        val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
+        val s = 1f / sqrt(l0)
+        scale(s, s, s)
+    }
+
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f) = setLookAt(
             position.x.toDouble(), position.y.toDouble(), position.z.toDouble(),
             lookAt.x.toDouble(), lookAt.y.toDouble(), lookAt.z.toDouble(),
@@ -641,37 +663,37 @@ open class Mat4d {
         return result
     }
 
-//    fun getOrientation(result: Mat3f): Mat3f {
-//        result[0, 0] = this[0, 0]
-//        result[0, 1] = this[0, 1]
-//        result[0, 2] = this[0, 2]
-//
-//        result[1, 0] = this[1, 0]
-//        result[1, 1] = this[1, 1]
-//        result[1, 2] = this[1, 2]
-//
-//        result[2, 0] = this[2, 0]
-//        result[2, 1] = this[2, 1]
-//        result[2, 2] = this[2, 2]
-//
-//        return result
-//    }
-//
-//    fun getOrientationTransposed(result: Mat3f): Mat3f {
-//        result[0, 0] = this[0, 0]
-//        result[0, 1] = this[1, 0]
-//        result[0, 2] = this[2, 0]
-//
-//        result[1, 0] = this[0, 1]
-//        result[1, 1] = this[1, 1]
-//        result[1, 2] = this[2, 1]
-//
-//        result[2, 0] = this[0, 2]
-//        result[2, 1] = this[1, 2]
-//        result[2, 2] = this[2, 2]
-//
-//        return result
-//    }
+    fun getRotation(result: Mat3f): Mat3f {
+        result[0, 0] = this[0, 0].toFloat()
+        result[0, 1] = this[0, 1].toFloat()
+        result[0, 2] = this[0, 2].toFloat()
+
+        result[1, 0] = this[1, 0].toFloat()
+        result[1, 1] = this[1, 1].toFloat()
+        result[1, 2] = this[1, 2].toFloat()
+
+        result[2, 0] = this[2, 0].toFloat()
+        result[2, 1] = this[2, 1].toFloat()
+        result[2, 2] = this[2, 2].toFloat()
+
+        return result
+    }
+
+    fun getRotationTransposed(result: Mat3f): Mat3f {
+        result[0, 0] = this[0, 0].toFloat()
+        result[0, 1] = this[1, 0].toFloat()
+        result[0, 2] = this[2, 0].toFloat()
+
+        result[1, 0] = this[0, 1].toFloat()
+        result[1, 1] = this[1, 1].toFloat()
+        result[1, 2] = this[2, 1].toFloat()
+
+        result[2, 0] = this[0, 2].toFloat()
+        result[2, 1] = this[1, 2].toFloat()
+        result[2, 2] = this[2, 2].toFloat()
+
+        return result
+    }
 
     fun getRotation(result: MutableVec4d): MutableVec4d {
         val trace = this[0, 0] + this[1, 1] + this[2, 2]

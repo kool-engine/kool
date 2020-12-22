@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.deferred.deferredPbrShader
+import de.fabmax.kool.util.simpleShape
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

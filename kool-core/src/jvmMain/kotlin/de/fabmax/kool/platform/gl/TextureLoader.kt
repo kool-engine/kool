@@ -1,10 +1,8 @@
 package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Uint8BufferImpl
-import org.lwjgl.opengl.ARBTextureStorage.glTexStorage3D
 import org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP
 import org.lwjgl.opengl.GL30.*
 import kotlin.math.floor
@@ -42,16 +40,10 @@ object TextureLoader {
         tex.setSize(img.width, img.height, img.depth)
         tex.applySamplerProps(props)
 
-        when (img) {
-            is TextureData3d -> {
-                glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
-            }
-            is ImageAtlasTextureData -> {
-                glTexStorage3D(GL_TEXTURE_3D, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
-                for (z in 0 until img.depth) {
-                    glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat, img.format.glType, (img.data[z] as Uint8BufferImpl).buffer)
-                }
-            }
+        if (img is TextureData3d) {
+            glTexImage3D(GL_TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+        } else {
+            throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
         }
         if (props.mipMapping) {
             glGenerateMipmap(GL_TEXTURE_3D)

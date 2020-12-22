@@ -5,10 +5,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.abs
 import kotlin.math.cos

@@ -378,7 +378,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
             e1.cross(e2, nrm).norm().scale(a)
             if (nrm == Vec3f.ZERO || nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
-                logW { "generate normals: degenerated triangle, a = $a, e1 = $e1, e2 = $e2" }
+                //logW { "generate normals: degenerated triangle, a = $a, e1 = $e1, e2 = $e2" }
             } else {
                 v0.normal += nrm
                 v1.normal += nrm
@@ -426,7 +426,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             val dv2 = v2.texCoord.y - v0.texCoord.y
             val f = 1f / (du1 * dv2 - du2 * dv1)
             if (f.isNaN()) {
-                logW { "generate tangents: degenerated triangle, e1 = $e1, e2 = $e2" }
+                //logW { "generate tangents: degenerated triangle, e1 = $e1, e2 = $e2" }
             } else {
                 tan.x = f * (dv2 * e1.x - dv1 * e2.x)
                 tan.y = f * (dv2 * e1.y - dv1 * e2.y)
