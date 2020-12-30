@@ -17,7 +17,7 @@ import org.w3c.xhr.XMLHttpRequestResponseType
 
 class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsContext) : AssetManager(assetsBaseDir) {
 
-    private val pako = js("require('pako');")
+    private val pako = js("require('pako')")
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override suspend fun loadRaw(rawRef: RawAssetRef) = LoadedRawAsset(rawRef, loadRaw(rawRef.url))

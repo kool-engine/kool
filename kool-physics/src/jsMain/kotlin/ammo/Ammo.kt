@@ -1,0 +1,400 @@
+@file:Suppress("ClassName", "FunctionName", "unused", "UNUSED_PARAMETER", "UnsafeCastFromDynamic", "PropertyName")
+
+package ammo
+
+import de.fabmax.kool.math.*
+import de.fabmax.kool.util.logI
+import kotlin.js.Promise
+
+external interface btBoxShape: btCollisionShape
+
+external interface btBroadphaseInterface {
+    fun getOverlappingPairCache(): btOverlappingPairCache
+}
+
+external interface btBroadphaseProxy {
+    var m_collisionFilterGroup: Int
+    var m_collisionFilterMask: Int
+}
+
+external interface btCollisionConfiguration
+
+external interface btCollisionDispatcher: btDispatcher
+
+external interface btCollisionObject {
+    fun setAnisotropicFriction(anisotropicFriction: btVector3, frictionMode: Int)
+    fun getCollisionShape(): btCollisionShape
+    fun setContactProcessingThreshold(contactProcessingThreshold: Float)
+    fun setActivationState(newState: Int)
+    fun forceActivationState(newState: Int)
+    fun activate()
+    fun activate(forceActivation: Boolean)
+    fun isActive(): Boolean
+    fun isKinematicObject(): Boolean
+    fun isStaticObject(): Boolean
+    fun isStaticOrKinematicObject(): Boolean
+    fun getRestitution(): Float
+    fun getFriction(): Float
+    fun getRollingFriction(): Float
+    fun setRestitution(rest: Float)
+    fun setFriction(frict: Float)
+    fun setRollingFriction(frict: Float)
+    fun getWorldTransform(): btTransform
+    fun getCollisionFlags(): Int
+    fun setCollisionFlags(flags: Int)
+    fun setWorldTransform(worldTrans: btTransform)
+    fun setCollisionShape(collisionShape: btCollisionShape)
+    fun setCcdMotionThreshold(ccdMotionThreshold: Float)
+    fun setCcdSweptSphereRadius(radius: Float)
+    fun getUserIndex(): Int
+    fun setUserIndex(index: Int)
+    fun getUserPointer(): Any?      // todo: VoidPtr
+    fun setUserPointer(userPointer: Any?)   // todo: VoidPtr
+    fun getBroadphaseHandle(): btBroadphaseProxy
+}
+
+external interface btCollisionShape {
+    fun setLocalScaling(scaling: btVector3)
+    fun getLocalScaling(): btVector3
+    fun calculateLocalInertia(mass: Float, inertia: btVector3)
+    fun setMargin(margin: Float)
+    fun getMargin(): Float
+}
+
+external interface btCollisionWorld {
+    fun getDispatcher(): btDispatcher
+    //fun rayTest(rayFromWorld: btVector3, rayToWorld: btVector3, resultCallback: RayResultCallback)
+    fun getPairCache(): btOverlappingPairCache
+    //fun getDispatchInfo(): btDispatcherInfo
+    fun addCollisionObject(collisionObject: btCollisionObject)
+    fun addCollisionObject(collisionObject: btCollisionObject, collisionFilterGroup: Short, collisionFilterMask: Short)
+    fun removeCollisionObject(collisionObject: btCollisionObject)
+    fun getBroadphase(): btBroadphaseInterface
+    //fun convexSweepTest(castShape: btConvexShape, from: btTransform, to: btTransform, resultCallback: ConvexResultCallback, allowedCcdPenetration: Float)
+    //fun contactPairTest(colObjA: btCollisionObject, colObjB: btCollisionObject, resultCallback: ContactResultCallback)
+    //fun contactTest(colObj: btCollisionObject, resultCallback: ContactResultCallback)
+    fun updateSingleAabb(colObj: btCollisionObject)
+    //fun setDebugDrawer(debugDrawer: btIDebugDraw)
+    //fun getDebugDrawer(): btIDebugDraw
+    //fun debugDrawWorld()
+    //fun debugDrawObject(worldTransform: btTransform, shape: btCollisionShape, color: btVector3)
+}
+
+external interface btConstraintSolver
+
+external interface btConcaveShape: btCollisionShape
+
+external interface btConvexShape: btCollisionShape
+
+external interface btConvexTriangleMeshShape: btConvexShape {
+    fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface)
+    fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface, calcAabb: Boolean)
+}
+
+external interface btDbvtBroadphase: btBroadphaseInterface {
+    override fun getOverlappingPairCache(): btOverlappingPairCache
+}
+
+external interface btDefaultCollisionConfiguration: btCollisionConfiguration
+
+external interface btDefaultMotionState: btMotionState {
+    var m_graphicsWorldTrans: btTransform
+}
+
+external interface btDiscreteDynamicsWorld: btDynamicsWorld {
+    fun setGravity(gravity: btVector3)
+    fun getGravity(): btVector3
+
+    fun addRigidBody(body: btRigidBody)
+    fun addRigidBody(body: btRigidBody, group: Short, mask: Short)
+    fun removeRigidBody(body: btRigidBody)
+
+//    void addConstraint(btTypedConstraint constraint, optional boolean disableCollisionsBetweenLinkedBodies);
+//    void removeConstraint(btTypedConstraint constraint);
+
+    fun stepSimulation(timeStep: Float): Int
+    fun stepSimulation(timeStep: Float, maxSubSteps: Int, fixedTimeStep: Float): Int
+
+    fun setContactAddedCallback(funcpointer: Int)
+    fun setContactProcessedCallback(funcpointer: Int)
+    fun setContactDestroyedCallback(funcpointer: Int)
+}
+
+external interface btDispatcher {
+    fun getNumManifolds(): Int
+    fun getManifoldByIndexInternal(index: Int): btPersistentManifold
+}
+
+external interface btDynamicsWorld: btCollisionWorld {
+//    fun addAction(action: btActionInterface)
+//    fun removeAction(action: btActionInterface)
+//    fun getSolverInfo(): btContactSolverInfo
+//    fun setInternalTickCallback(cb: VoidPtr, worldUserInfo: VoidPtr)
+//    fun setInternalTickCallback(cb: VoidPtr, worldUserInfo: VoidPtr, isPreTick: Boolean)
+}
+
+external interface btEmptyShape: btConcaveShape
+
+external interface btMatrix3x3 {
+    fun setEulerZYX(ex: Float, ey: Float, ez: Float)
+    fun getRotation(q: btQuaternion)
+    fun getRow(y: Int): btVector3
+}
+
+external interface btMotionState {
+    fun getWorldTransform(worldTrans: btTransform)
+    fun setWorldTransform(worldTrans: btTransform)
+}
+
+external interface btOverlappingPairCache {
+//    fun setInternalGhostPairCallback(ghostPairCallback: btOverlappingPairCallback);
+    fun getNumOverlappingPairs(): Float
+}
+
+external interface btPersistentManifold {
+    fun getBody0(): btCollisionObject
+    fun getBody1(): btCollisionObject
+}
+
+external interface btQuaternion {
+    fun x(): Float
+    fun y(): Float
+    fun z(): Float
+    fun w(): Float
+
+    fun setX(x: Float)
+    fun setY(y: Float)
+    fun setZ(z: Float)
+    fun setW(w: Float)
+
+    fun setValue(x: Float, y: Float, z: Float, w: Float)
+    fun setEulerZYX(z: Float, y: Float, x: Float)
+    fun setRotation(axis: btVector3, angle: Float)
+    fun normalize()
+    fun length2(): Float
+    fun length(): Float
+    fun dot(q: btQuaternion): Float
+    fun normalized(): btQuaternion
+    fun getAxis(): btVector3
+    fun inverse(): btQuaternion
+    fun getAngle(): Float
+    fun getAngleShortestPath(): Float
+    fun angle(q: btQuaternion): Float
+    fun angleShortestPath(q: btQuaternion): Float
+    fun op_add(q: btQuaternion): btQuaternion
+    fun op_sub(q: btQuaternion): btQuaternion
+    fun op_mul(s: Float): btQuaternion
+    fun op_mulq(q: btQuaternion): btQuaternion
+    fun op_div(s: Float): btQuaternion
+}
+
+external interface btRigidBody : btCollisionObject {
+    fun getCenterOfMassTransform(): btTransform
+    fun setCenterOfMassTransform(xform: btTransform)
+    fun setSleepingThresholds(linear: Float, angular: Float)
+    fun getLinearDamping(): Float
+    fun getAngularDamping(): Float
+    fun setDamping(lin_damping: Float, ang_damping: Float)
+    fun setMassProps(mass: Float, inertia: btVector3)
+    fun getLinearFactor(): btVector3
+    fun setLinearFactor(linearFactor: btVector3)
+    fun applyTorque(torque: btVector3)
+    fun applyLocalTorque(torque: btVector3)
+    fun applyForce(force: btVector3, rel_pos: btVector3)
+    fun applyCentralForce(force: btVector3)
+    fun applyCentralLocalForce(force: btVector3)
+    fun applyTorqueImpulse(torque: btVector3)
+    fun applyImpulse(impulse: btVector3, rel_pos: btVector3)
+    fun applyCentralImpulse(impulse: btVector3)
+    fun updateInertiaTensor()
+    fun getLinearVelocity(): btVector3
+    fun getAngularVelocity(): btVector3
+    fun setLinearVelocity(lin_vel: btVector3)
+    fun setAngularVelocity(ang_vel: btVector3)
+    fun getMotionState(): btMotionState
+    fun setMotionState(motionState: btMotionState)
+    fun getAngularFactor(): btVector3
+    fun setAngularFactor(angularFactor: btVector3)
+    fun upcast(colObj: btCollisionObject): btRigidBody
+    fun getAabb(aabbMin: btVector3, aabbMax: btVector3)
+    fun applyGravity()
+    fun getGravity(): btVector3
+    fun setGravity(acceleration: btVector3)
+    fun getBroadphaseProxy(): btBroadphaseProxy
+    fun clearForces()
+}
+
+external interface btRigidBodyConstructionInfo {
+    var m_linearDamping: Float
+    var m_angularDamping: Float
+    var m_friction: Float
+    var m_rollingFriction: Float
+    var m_restitution: Float
+    var m_linearSleepingThreshold: Float
+    var m_angularSleepingThreshold: Float
+    var m_additionalDamping: Boolean
+    var m_additionalDampingFactor: Float
+    var m_additionalLinearDampingThresholdSqr: Float
+    var m_additionalAngularDampingThresholdSqr: Float
+    var m_additionalAngularDampingFactor: Float
+}
+
+external interface btSequentialImpulseConstraintSolver: btConstraintSolver
+
+external interface btStaticPlaneShape: btConcaveShape
+
+external interface btStridingMeshInterface {
+    fun setScaling(scaling: btVector3)
+}
+
+external interface btTransform {
+    fun setIdentity()
+    fun setOrigin(origin: btVector3)
+    fun setRotation(rotation: btQuaternion)
+    fun getOrigin(): btVector3
+    fun getRotation(): btQuaternion
+    fun getBasis(): btMatrix3x3
+    fun setFromOpenGLMatrix(m: FloatArray)
+    fun inverse(): btTransform
+    fun op_mul(t: btTransform): btTransform
+}
+
+external interface btTriangleMeshShape: btConcaveShape
+
+external interface btVector3 {
+    fun x(): Float
+    fun y(): Float
+    fun z(): Float
+
+    fun setX(x: Float)
+    fun setY(y: Float)
+    fun setZ(z: Float)
+    fun setValue(x: Float, y: Float, z: Float)
+
+    fun length(): Float
+    fun normalize()
+    fun rotate(wAxis: btVector3, angle: Float): btVector3
+    fun dot(v: btVector3): Float
+
+    fun op_mul(x: Float): btVector3
+    fun op_add(v: btVector3): btVector3
+    fun op_sub(v: btVector3): btVector3
+}
+
+fun btQuaternion.set(v: Vec4f) = setValue(v.x, v.y, v.z, v.w)
+fun btQuaternion.toVec4f(result: MutableVec4f = MutableVec4f()) = result.set(x(), y(), z(), w())
+
+fun btVector3.set(v: Vec3f) = setValue(v.x, v.y, v.z)
+fun btVector3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x(), y(), z())
+
+fun btTransform.toMat4f(result: Mat4f = Mat4f()): Mat4f {
+    val basis = getBasis()
+    val origin = getOrigin()
+
+    result[0, 0] = basis.getRow(0).x()
+    result[0, 1] = basis.getRow(0).y()
+    result[0, 2] = basis.getRow(0).z()
+
+    result[1, 0] = basis.getRow(1).x()
+    result[1, 1] = basis.getRow(1).y()
+    result[1, 2] = basis.getRow(1).z()
+
+    result[2, 0] = basis.getRow(2).x()
+    result[2, 1] = basis.getRow(2).y()
+    result[2, 2] = basis.getRow(2).z()
+
+    result[0, 3] = origin.x()
+    result[1, 3] = origin.y()
+    result[2, 3] = origin.z()
+
+    result[3, 0] = 0f
+    result[3, 1] = 0f
+    result[3, 2] = 0f
+    result[3, 3] = 1f
+
+    return result
+}
+
+fun Vec3f.toBtVector3() = Ammo.btVector3(x, y, z)
+fun Vec4f.toBtQuaternion() = Ammo.btQuaternion(x, y, z, w)
+
+object Ammo {
+    @JsName("ammo")
+    private var ammo: dynamic = null
+    private val ammoPromise: Promise<dynamic> = js("require('ammo.js')")()
+
+    private val onLoadListeners = mutableListOf<() -> Unit>()
+
+    val isInitialized: Boolean
+        get() = ammo != null
+
+    fun initAmmo() {
+        if (ammo == null) {
+            ammoPromise.then { ammo: dynamic ->
+                logI { "loaded ammo.js" }
+                this.ammo = ammo
+                onLoadListeners.forEach { it() }
+            }
+        }
+    }
+
+    fun onLoad(l: () -> Unit) {
+        onLoadListeners += l
+        if (ammo != null) {
+            l()
+        }
+    }
+
+    fun btBoxShape(boxHalfExtents: btVector3): btBoxShape = js("new this.ammo.btBoxShape(boxHalfExtents)")
+
+    fun btCollisionDispatcher(conf: btDefaultCollisionConfiguration): btCollisionDispatcher =
+        js("new this.ammo.btCollisionDispatcher(conf)")
+
+    fun btDbvtBroadphase(): btDbvtBroadphase =
+        js("new this.ammo.btDbvtBroadphase()")
+
+    fun btDefaultCollisionConfiguration(): btDefaultCollisionConfiguration =
+        js("new this.ammo.btDefaultCollisionConfiguration()")
+
+    fun btDefaultMotionState(): btDefaultMotionState =
+        js("new this.ammo.btDefaultMotionState()")
+
+    fun btDefaultMotionState(startTrans: btTransform, centerOfMassOffset: btTransform): btDefaultMotionState =
+        js("new this.ammo.btDefaultMotionState(startTrans, centerOfMassOffset)")
+
+    fun btDiscreteDynamicsWorld(dispatcher: btDispatcher,
+                                   pairCache: btBroadphaseInterface,
+                                   constraintSolver: btConstraintSolver,
+                                   collisionConfiguration: btCollisionConfiguration): btDiscreteDynamicsWorld =
+        js("new this.ammo.btDiscreteDynamicsWorld(dispatcher, pairCache, constraintSolver, collisionConfiguration)")
+
+    fun btQuaternion(x: Float, y: Float, z: Float, w: Float): btQuaternion =
+        js("new this.ammo.btQuaternion(x, y, z, w)")
+
+    fun btRigidBody(constructionInfo: btRigidBodyConstructionInfo): btRigidBody =
+        js("new this.ammo.btRigidBody(constructionInfo)")
+
+    fun btRigidBodyConstructionInfo(mass: Float,
+                                       motionState: btMotionState,
+                                       collisionShape: btCollisionShape): btRigidBodyConstructionInfo =
+        js("new this.ammo.btRigidBodyConstructionInfo(mass, motionState, collisionShape)")
+
+    fun btRigidBodyConstructionInfo(mass: Float,
+                                       motionState: btMotionState,
+                                       collisionShape: btCollisionShape,
+                                       localInertia: btVector3): btRigidBodyConstructionInfo =
+        js("new this.ammo.btRigidBodyConstructionInfo(mass, motionState, collisionShape, localInertia)")
+
+    fun btSequentialImpulseConstraintSolver(): btSequentialImpulseConstraintSolver =
+        js("new this.ammo.btSequentialImpulseConstraintSolver()")
+
+    fun btStaticPlaneShape(planeNormal: btVector3, planeConstant: Float): btStaticPlaneShape =
+        js("new this.ammo.btStaticPlaneShape(planeNormal, planeConstant)")
+
+    fun btTransform(): btTransform = js("new this.ammo.btTransform()")
+
+    fun btTransform(q: btQuaternion, v: btVector3): btTransform = js("new this.ammo.btTransform(q, v)")
+
+    fun btVector3(x: Float, y: Float, z: Float): btVector3 = js("new this.ammo.btVector3(x, y, z)")
+
+}

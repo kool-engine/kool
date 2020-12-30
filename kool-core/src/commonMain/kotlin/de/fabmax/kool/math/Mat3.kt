@@ -25,6 +25,13 @@ class Mat3f {
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat3f {
+        return lock(tmpMatLock) {
+            tmpMatA.setRotate(eulerX, eulerY, eulerZ)
+            set(mul(tmpMatA, tmpMatB))
+        }
+    }
+
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat3f): Mat3f {
         result.set(this)
         result.rotate(angleDeg, axX, axY, axZ)
@@ -32,6 +39,12 @@ class Mat3f {
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f, result: Mat3f) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
+
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float, result: Mat3f): Mat3f {
+        result.set(this)
+        result.rotate(eulerX, eulerY, eulerZ)
+        return result
+    }
 
     fun transpose(): Mat3f {
         var d = this[1]
@@ -160,6 +173,37 @@ class Mat3f {
         for (i in 0..8 step 4) {
             this[i] = 1f
         }
+        return this
+    }
+
+    fun setRotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat3f {
+        val a = eulerX.toRad()
+        val b = eulerY.toRad()
+        val c = eulerZ.toRad()
+
+        val ci = cos(a)
+        val cj = cos(b)
+        val ch = cos(c)
+        val si = sin(a)
+        val sj = sin(b)
+        val sh = sin(c)
+        val cc = ci * ch
+        val cs = ci * sh
+        val sc = si * ch
+        val ss = si * sh
+
+        matrix[0] = cj * ch
+        matrix[3] = sj * sc - cs
+        matrix[6] = sj * cc + ss
+
+        matrix[1] = cj * sh
+        matrix[4] = sj * ss + cc
+        matrix[7] = sj * cs - sc
+
+        matrix[2] = -sj
+        matrix[5] = cj * si
+        matrix[8] = cj * ci
+
         return this
     }
 

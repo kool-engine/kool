@@ -63,9 +63,9 @@ internal object DesktopImpl {
             throw KoolException("Unable to initialize GLFW")
         }
 
-        var primMon: MonitorSpec? = null
         val primMonId = GLFW.glfwGetPrimaryMonitor()
         val mons = GLFW.glfwGetMonitors()!!
+        var primMon = MonitorSpec(mons[0])
         for (i in 0 until mons.limit()) {
             val spec = MonitorSpec(mons[i])
             monitors += spec
@@ -73,7 +73,7 @@ internal object DesktopImpl {
                 primMon = spec
             }
         }
-        primaryMonitor = primMon!!
+        primaryMonitor = primMon
     }
 
     fun createContext(props: Lwjgl3Context.InitProps): KoolContext {

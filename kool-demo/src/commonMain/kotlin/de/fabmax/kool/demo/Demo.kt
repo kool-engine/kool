@@ -20,7 +20,14 @@ fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), 
     }
 
     // launch demo
-    Demo(ctx, startScene, extraScenes)
+    var demo = startScene
+    if (demo != null) {
+        demo = demo.toLowerCase()
+        if (demo.endsWith("demo")) {
+            demo = demo.substring(0, demo.length - 4)
+        }
+    }
+    Demo(ctx, demo, extraScenes)
 }
 
 class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoEntry>?) {
@@ -32,25 +39,26 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
-            "atmosphereDemo" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },
-            "proceduralDemo" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
-            "gltfDemo" to DemoEntry("glTF Models") { GltfDemo() },
-            "deferredDemo" to DemoEntry("Deferred Shading") { DeferredDemo() },
-            "aoDemo" to DemoEntry("Ambient Occlusion") { AoDemo() },
-            "ssrDemo" to DemoEntry("Reflections") { MultiLightDemo() },
-            "pbrDemo" to DemoEntry("PBR Materials") { PbrDemo() },
-            "treeDemo" to DemoEntry("Procedural Tree") { TreeDemo() },
-            "instanceDemo" to DemoEntry("Instanced Drawing") { InstanceDemo() },
-            "simplificationDemo" to DemoEntry("Simplification") { SimplificationDemo() },
+        "physics" to DemoEntry("Physics") { PhysicsDemo() },
+        "atmosphere" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },
+        "procedural" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
+        "gltf" to DemoEntry("glTF Models") { GltfDemo() },
+        "deferred" to DemoEntry("Deferred Shading") { DeferredDemo() },
+        "ao" to DemoEntry("Ambient Occlusion") { AoDemo() },
+        "ssr" to DemoEntry("Reflections") { MultiLightDemo() },
+        "pbr" to DemoEntry("PBR Materials") { PbrDemo() },
+        "tree" to DemoEntry("Procedural Tree") { TreeDemo() },
+        "instance" to DemoEntry("Instanced Drawing") { InstanceDemo() },
+        "simplification" to DemoEntry("Simplification") { SimplificationDemo() },
 
-            "helloWorldDemo" to DemoEntry("Hello World", true) { HelloWorldDemo() },
-            "helloGltfDemo" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
+        "helloworld" to DemoEntry("Hello World", true) { HelloWorldDemo() },
+        "hellogltf" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
     )
 
     init {
         extraScenes?.let {
-            it.forEach {  demo ->
-                demos[demo.label] = demo
+            it.forEach { demo ->
+                demos[demo.label.toLowerCase()] = demo
             }
         }
 

@@ -19,9 +19,9 @@ kotlin {
             }
             commonWebpackConfig {
                 // small js code
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                //mode = KotlinWebpackConfig.Mode.PRODUCTION
                 // readable js code but ~twice the file size
-                //mode = KotlinWebpackConfig.Mode.DEVELOPMENT
+                mode = KotlinWebpackConfig.Mode.DEVELOPMENT
             }
             binaries.executable()
         }
@@ -33,6 +33,7 @@ kotlin {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
                 implementation(project(":kool-core"))
+                implementation(project(":kool-physics"))
             }
         }
         val commonTest by getting {
@@ -68,4 +69,18 @@ kotlin {
 
 tasks["clean"].doLast {
     delete("${rootDir}/dist/kool-demo")
+}
+
+tasks.register<JavaExec>("run") {
+    group = "application"
+    main = "de.fabmax.kool.demo.MainKt"
+
+    kotlin {
+        val main = targets["jvm"].compilations["main"]
+        dependsOn(main.compileAllTaskName)
+        classpath(
+            { main.output.allOutputs.files },
+            { configurations["jvmRuntimeClasspath"] }
+        )
+    }
 }

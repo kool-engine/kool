@@ -8,8 +8,8 @@ import de.fabmax.kool.util.MutableColor
 /**
  * @author fabmax
  */
-class Lighting() {
-    val lights = mutableListOf(Light().setDirectional(Vec3f(-1f)).setColor(Color.WHITE, 1f))
+class Lighting {
+    val lights = mutableListOf(Light().setDirectional(Vec3f(-0.8f, -1.2f, -1f)).setColor(Color.WHITE, 1f))
 
     fun singleLight(block: Light.() -> Unit) {
         lights.clear()
@@ -21,7 +21,7 @@ class Light {
     val color = MutableColor(Color.WHITE)
 
     var type = Type.DIRECTIONAL
-    val direction = MutableVec3f(1f)
+    val direction = MutableVec3f(0f, 1f, 0f)
     val position = MutableVec3f()
     var spotAngle = 60f
 
