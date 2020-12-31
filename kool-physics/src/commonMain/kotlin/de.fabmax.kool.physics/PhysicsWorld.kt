@@ -25,6 +25,13 @@ abstract class CommonPhysicsWorld {
         removeRigidBodyImpl(rigidBody)
     }
 
+    fun clear() {
+        mutBodies.forEach {
+            removeRigidBodyImpl(it)
+        }
+        mutBodies.clear()
+    }
+
     fun stepPhysics(timeStep: Float, maxSubSteps: Int = 10, fixedStep: Float = 1f / 60f): Float {
         val stopTime = physicsTime + timeStep
         var steps = 0

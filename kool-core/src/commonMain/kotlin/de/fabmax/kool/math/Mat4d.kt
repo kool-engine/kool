@@ -47,6 +47,13 @@ open class Mat4d {
 
     fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
+    fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): Mat4d {
+        return lock(tmpMatLock) {
+            tmpMatA.setRotate(eulerX, eulerY, eulerZ)
+            set(mul(tmpMatA, tmpMatB))
+        }
+    }
+
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double, result: Mat4d): Mat4d {
         return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
@@ -55,6 +62,12 @@ open class Mat4d {
     }
 
     fun rotate(angleDeg: Double, axis: Vec3d, result: Mat4d) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
+
+    fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double, result: Mat4d): Mat4d {
+        result.set(this)
+        result.rotate(eulerX, eulerY, eulerZ)
+        return result
+    }
 
     fun scale(s: Double) = scale(s, s, s)
 
@@ -338,6 +351,45 @@ open class Mat4d {
         matrix[offset + 5] = 1.0
         matrix[offset + 10] = 1.0
         matrix[offset + 15] = 1.0
+        return this
+    }
+
+    fun setRotate(eulerX: Double, eulerY: Double, eulerZ: Double): Mat4d {
+        val a = eulerX.toRad()
+        val b = eulerY.toRad()
+        val c = eulerZ.toRad()
+
+        val ci = cos(a)
+        val cj = cos(b)
+        val ch = cos(c)
+        val si = sin(a)
+        val sj = sin(b)
+        val sh = sin(c)
+        val cc = ci * ch
+        val cs = ci * sh
+        val sc = si * ch
+        val ss = si * sh
+
+        matrix[offset + 0] = cj * ch
+        matrix[offset + 4] = sj * sc - cs
+        matrix[offset + 8] = sj * cc + ss
+        matrix[offset + 12] = 0.0
+
+        matrix[offset + 1] = cj * sh
+        matrix[offset + 5] = sj * ss + cc
+        matrix[offset + 9] = sj * cs - sc
+        matrix[offset + 13] = 0.0
+
+        matrix[offset + 2] = -sj
+        matrix[offset + 6] = cj * si
+        matrix[offset + 10] = cj * ci
+        matrix[offset + 14] = 0.0
+
+        matrix[offset + 3] = 0.0
+        matrix[offset + 7] = 0.0
+        matrix[offset + 11] = 0.0
+        matrix[offset + 15] = 1.0
+
         return this
     }
 

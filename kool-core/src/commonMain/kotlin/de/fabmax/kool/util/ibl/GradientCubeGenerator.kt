@@ -50,6 +50,11 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
         }
     }
 
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        gradientTex.dispose()
+    }
+
     private fun makeGradientTex(gradient: ColorGradient, size: Int, ctx: KoolContext): Texture2d {
         val buf = createUint8Buffer(size * 4)
 

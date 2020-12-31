@@ -6,43 +6,44 @@ import de.fabmax.kool.physics.BoxShape
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
+import kotlin.math.sqrt
 
 class PhysicsDemo : DemoScene("Physics") {
 
-    init {
-        Physics.loadPhysics()
-    }
+    private lateinit var aoPipeline: AoPipeline
+    private val shadows = mutableListOf<ShadowMap>()
 
-    private val boxes = mutableListOf<ColoredBox>()
+    private var numSpawnBodies = 450
+    private lateinit var physicsWorld: PhysicsWorld
+    private val bodies = mutableListOf<ColoredBody>()
+
     private val boxMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
         generate {
-            cube {
-                size.set(1f, 1f, 1f)
-                centered()
-            }
+            bevelBox()
         }
     }
-
-    private lateinit var aoPipeline: AoPipeline
-    private val shadows = mutableListOf<ShadowMap>()
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
             panMethod = yPlanePan()
             translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
-            zoom = 50.0
+            minHorizontalRot = -90.0
+            maxHorizontalRot = -20.0
+            minZoom = 10.0
+            zoom = 75.0
         }
 
         (camera as PerspectiveCamera).apply {
@@ -60,83 +61,176 @@ class PhysicsDemo : DemoScene("Physics") {
 
         ctx.assetMgr.launch {
             val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
-            boxMesh.shader = boxShader(ibl)
-            +Skybox.cube(ibl.reflectionMap, 1f)
+            boxMesh.shader = instancedBoxShader(ibl)
 
             Physics.awaitLoaded()
+            physicsWorld = PhysicsWorld()
+            makeGround(ibl, physicsWorld)
 
-            val physicsWorld = PhysicsWorld()
-            makeGround(physicsWorld)
-
-            val r = Random(654685)
-            for (j in 0 until 9) {
-                for (i in 0 until 50) {
-                    val x = (j % 3 - 1) * 10f
-                    val y = (j / 3 - 1) * 10f
-
-                    val boxShape = BoxShape(Vec3f(r.randomF(2f, 4f), r.randomF(1f, 2f), r.randomF(2f, 4f)))
-                    val box = RigidBody(boxShape, boxShape.size.sqrLength())
-                    box.origin = Vec3f(r.randomF(-1f, 1f) + x, 10f + 5f * i, r.randomF(-1f, 1f) + y)
-                    box.setRotation(Mat3f().rotate(r.randomF(-45f, 45f), 0f, r.randomF(-45f, 45f)))
-                    physicsWorld.addRigidBody(box)
-                    boxes += ColoredBox(box, Color.MD_COLORS[i % Color.MD_COLORS.size].toLinear())
-                }
-            }
-
+            resetPhysics()
             +boxMesh
 
             val matBuf = Mat4f()
+            val removeBoxes = mutableListOf<ColoredBody>()
             onUpdate += {
                 physicsWorld.stepPhysics(it.deltaT)
 
                 boxMesh.instances?.apply {
                     clear()
-                    boxes.forEach { box ->
-                        matBuf.set(box.box.transform).scale(box.size)
-                        addInstance {
-                            put(matBuf.matrix)
-                            put(box.color.array)
+                    bodies.forEach { box ->
+                        if (box.rigidBody.origin.length() > 500f) {
+                            removeBoxes += box
+                        } else {
+                            matBuf.set(box.rigidBody.transform).scale(box.size)
+                            addInstance {
+                                put(matBuf.matrix)
+                                put(box.color.array)
+                            }
                         }
                     }
                 }
+
+                if (removeBoxes.isNotEmpty()) {
+                    removeBoxes.forEach { body ->
+                        logI { "Removing out-of-range body" }
+                        bodies.remove(body)
+                        physicsWorld.removeRigidBody(body.rigidBody)
+                    }
+                    removeBoxes.clear()
+                }
             }
+
+            +Skybox.cube(ibl.reflectionMap, 1f)
         }
     }
 
-    private fun makeGround(physicsWorld: PhysicsWorld) {
+    private fun resetPhysics() {
+        bodies.forEach {
+            physicsWorld.removeRigidBody(it.rigidBody)
+        }
+        bodies.clear()
+
+        val stacks = numSpawnBodies / 50
+        val centers = makeCenters(stacks)
+
+        for (i in 0 until numSpawnBodies) {
+            val layer = i / stacks
+            val stack = i % stacks
+            val color = Color.MD_COLORS[layer % Color.MD_COLORS.size].toLinear()
+
+            val x = centers[stack].x * 10f + randomF(-1f, 1f)
+            val z = centers[stack].y * 10f + randomF(-1f, 1f)
+            val y = layer * 5f + 10f
+
+            val boxShape = BoxShape(Vec3f(randomF(2f, 3f), randomF(2f, 3f), randomF(2f, 3f)))
+            val box = RigidBody(boxShape, boxShape.size.sqrLength())
+            box.origin = Vec3f(x, y, z)
+            box.setRotation(Mat3f().rotate(randomF(-45f, 45f), 0f, randomF(-45f, 45f)))
+            physicsWorld.addRigidBody(box)
+            bodies += ColoredBody(box, color)
+        }
+    }
+
+    private fun makeCenters(stacks: Int): List<Vec2f> {
+        val dir = MutableVec2f(1f, 0f)
+        val centers = mutableListOf(Vec2f(0f, 0f))
+        var steps = 1
+        var stepsSteps = 1
+        while (centers.size < stacks) {
+            for (i in 1..steps) {
+                centers += MutableVec2f(centers.last()).add(dir)
+                if (centers.size == stacks) {
+                    break
+                }
+            }
+            dir.rotate(90f)
+            if (stepsSteps++ == 2) {
+                stepsSteps = 1
+                steps++
+            }
+        }
+
+        return centers
+    }
+
+    private fun Scene.makeGround(ibl: EnvironmentMaps, physicsWorld: PhysicsWorld) {
+        val frame = mutableListOf<RigidBody>()
+
         val groundShape = BoxShape(Vec3f(100f, 1f, 100f))
         val ground = RigidBody(groundShape, 0f)
         ground.origin = Vec3f(0f, -0.5f, 0f)
         physicsWorld.addRigidBody(ground)
-        boxes += ColoredBox(ground, Color.LIGHT_GRAY.toLinear())
 
         val frameLtShape = BoxShape(Vec3f(3f, 6f, 100f))
         val frameLt = RigidBody(frameLtShape, 0f)
         frameLt.origin = Vec3f(-51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameLt)
-        boxes += ColoredBox(frameLt, Color.GRAY.toLinear())
+        frame += frameLt
 
         val frameRtShape = BoxShape(Vec3f(3f, 6f, 100f))
         val frameRt = RigidBody(frameRtShape, 0f)
         frameRt.origin = Vec3f(51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameRt)
-        boxes += ColoredBox(frameRt, Color.GRAY.toLinear())
+        frame += frameRt
 
         val frameFtShape = BoxShape(Vec3f(106f, 6f, 3f))
         val frameFt = RigidBody(frameFtShape, 0f)
         frameFt.origin = Vec3f(0f, 2f, 51.5f)
         physicsWorld.addRigidBody(frameFt)
-        boxes += ColoredBox(frameFt, Color.GRAY.toLinear())
+        frame += frameFt
 
         val frameBkShape = BoxShape(Vec3f(106f, 6f, 3f))
         val frameBk = RigidBody(frameBkShape, 0f)
         frameBk.origin = Vec3f(0f, 2f, -51.5f)
         physicsWorld.addRigidBody(frameBk)
-        boxes += ColoredBox(frameBk, Color.GRAY.toLinear())
+        frame += frameBk
+
+        val groundTex = groundTexture()
+        onDispose += {
+            groundTex.dispose()
+        }
+
+        // render textured ground box
+        +textureMesh {
+            generate {
+                cube {
+                    size.set(groundShape.size)
+                    origin.set(size).scale(-0.5f).add(ground.origin)
+                }
+            }
+            shader = pbrShader {
+                roughness = 0.75f
+                shadowMaps += shadows
+                useImageBasedLighting(ibl)
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useAlbedoMap(groundTex)
+            }
+        }
+
+        // render frame
+        +colorMesh {
+            generate {
+                frame.forEach {
+                    val shape = it.collisionShape as BoxShape
+                    cube {
+                        size.set(shape.size)
+                        origin.set(size).scale(-0.5f).add(it.origin)
+                    }
+                }
+            }
+            shader = pbrShader {
+                roughness = 0.75f
+                shadowMaps += shadows
+                useImageBasedLighting(ibl)
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useStaticAlbedo(Color.MD_BLUE_GREY_700.toLinear())
+            }
+        }
     }
 
-    private fun boxShader(ibl: EnvironmentMaps): PbrShader {
+    private fun instancedBoxShader(ibl: EnvironmentMaps): PbrShader {
         val cfg = PbrMaterialConfig().apply {
+            roughness = 0.6f
             isInstanced = true
             shadowMaps += shadows
             useImageBasedLighting(ibl)
@@ -157,7 +251,87 @@ class PhysicsDemo : DemoScene("Physics") {
         return PbrShader(cfg, model)
     }
 
-    private class ColoredBox(val box: RigidBody, val color: MutableColor) {
-        val size = MutableVec3f((box.collisionShape as BoxShape).size)
+    private fun groundTexture(): Texture2d {
+        val props = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
+        return Texture2d(props, "groundTex") {
+            val w = 64
+            val h = 64
+            val buf = createUint8Buffer(w * h * 4)
+            val grad = ColorGradient(Color.MD_BLUE_GREY_600, Color.WHITE)
+            val rand = Random(18594253)
+            for (y in 0 until h) {
+                for (x in 0 until w) {
+                    val c = grad.getColor(rand.randomF())
+                    val i = (y * w + x) * 4
+                    buf[i] = (c.r * 255).toInt().toByte()
+                    buf[i + 1] = (c.g * 255).toInt().toByte()
+                    buf[i + 2] = (c.b * 255).toInt().toByte()
+                    buf[i + 3] = (c.a * 255).toInt().toByte()
+                }
+            }
+            TextureData2d(buf, w, h, TexFormat.RGBA)
+        }
+    }
+
+    private fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
+        withTransform {
+            rotate(0f, 90f, 0f)
+            rect {
+                size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
+                origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
+            }
+        }
+        withTransform {
+            rotate(0f, -90f, 0f)
+            rect {
+                size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
+                origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
+            }
+        }
+        withTransform {
+            profile {
+                val s = 1f / sqrt(2f)
+                val c = 1f - s
+                simpleShape(false) {
+                    xy(-0.5f, 0f)
+                    normals += MutableVec3f(-1f, 0f, 0f)
+                    xy(-0.5f + rBevel * c, rBevel * s)
+                    normals += MutableVec3f(-1f, 1f, 0f).norm()
+                    xy(-0.5f + rBevel, rBevel)
+                    normals += MutableVec3f(0f, 1f, 0f)
+
+                    xy(0.5f - rBevel, rBevel)
+                    normals += MutableVec3f(0f, 1f, 0f)
+                    xy(0.5f - rBevel * c, rBevel * s)
+                    normals += MutableVec3f(1f, 1f, 0f).norm()
+                    xy(0.5f, 0f)
+                    normals += MutableVec3f(1f, 0f, 0f)
+                }
+
+                translate(0f, 0.5f - rBevel, -0.5f + rBevel)
+                sample()
+                for (i in 0..3) {
+                    rotate(-45f, 0f, 0f)
+                    sample()
+                    rotate(-45f, 0f, 0f)
+                    sample()
+                    translate(0f, 0f, -1f + 2 * rBevel)
+                    sample()
+                }
+            }
+        }
+    }
+
+    private class ColoredBody(val rigidBody: RigidBody, val color: MutableColor) {
+        val size = MutableVec3f((rigidBody.collisionShape as BoxShape).size)
+    }
+
+    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+        section("Physics") {
+            sliderWithValue("Spawn Bodies:", numSpawnBodies.toFloat(), 50f, 1000f, 0) {
+                numSpawnBodies = value.toInt()
+            }
+            button("Reset Physics") { resetPhysics() }
+        }
     }
 }

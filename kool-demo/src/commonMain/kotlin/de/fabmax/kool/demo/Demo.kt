@@ -5,6 +5,7 @@ import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
+import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.DebugOverlay
@@ -62,7 +63,10 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
             }
         }
 
-        dbgOverlay.ui.isVisible = getProperty("dbgOverlay.isVisible", false)
+        // load physics module early - in js, for some reason wasm file cannot be loaded if this happens later on
+        Physics.loadPhysics()
+
+        dbgOverlay.ui.isVisible = getProperty("dbgOverlay.isVisible", true)
 
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += demoOverlay(ctx)

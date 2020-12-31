@@ -51,6 +51,13 @@ open class Mat4f {
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat4f {
+        return lock(tmpMatLock) {
+            tmpMatA.setRotate(eulerX, eulerY, eulerZ)
+            set(mul(tmpMatA, tmpMatB))
+        }
+    }
+
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat4f): Mat4f {
         return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
@@ -59,6 +66,12 @@ open class Mat4f {
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f, result: Mat4f) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
+
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float, result: Mat4f): Mat4f {
+        result.set(this)
+        result.rotate(eulerX, eulerY, eulerZ)
+        return result
+    }
 
     fun rotate(rotationMat: Mat3f) {
         return lock(tmpMatLock) {
@@ -320,6 +333,45 @@ open class Mat4f {
         matrix[offset + 5] = 1f
         matrix[offset + 10] = 1f
         matrix[offset + 15] = 1f
+        return this
+    }
+
+    fun setRotate(eulerX: Float, eulerY: Float, eulerZ: Float): Mat4f {
+        val a = eulerX.toRad()
+        val b = eulerY.toRad()
+        val c = eulerZ.toRad()
+
+        val ci = cos(a)
+        val cj = cos(b)
+        val ch = cos(c)
+        val si = sin(a)
+        val sj = sin(b)
+        val sh = sin(c)
+        val cc = ci * ch
+        val cs = ci * sh
+        val sc = si * ch
+        val ss = si * sh
+
+        matrix[offset + 0] = cj * ch
+        matrix[offset + 4] = sj * sc - cs
+        matrix[offset + 8] = sj * cc + ss
+        matrix[offset + 12] = 0f
+
+        matrix[offset + 1] = cj * sh
+        matrix[offset + 5] = sj * ss + cc
+        matrix[offset + 9] = sj * cs - sc
+        matrix[offset + 13] = 0f
+
+        matrix[offset + 2] = -sj
+        matrix[offset + 6] = cj * si
+        matrix[offset + 10] = cj * ci
+        matrix[offset + 14] = 0f
+
+        matrix[offset + 3] = 0f
+        matrix[offset + 7] = 0f
+        matrix[offset + 11] = 0f
+        matrix[offset + 15] = 1f
+
         return this
     }
 

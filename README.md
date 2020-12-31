@@ -9,33 +9,36 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphereDemo): Earth (and Moon) with volumetric atmosphere.
+- [Physics](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo. Based on 
+  bullet physics (via [ammo.js](https://github.com/kripken/ammo.js/) on javascript / [JBullet](http://jbullet.advel.cz/)
+  on JVM). A few more notes on physics [further below](#physics-simulation).
+- [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.
   Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
   deferred pbr shader with extensions for rendering the oceans and night side.
-- [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=proceduralDemo): Small test-case for
+- [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
   shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque)
-- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltfDemo): Various demo models loaded from glTF / glb format
+- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
   - Coffee Cart from [3D Model Haven]((https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01))
   - Camera Model also from [3D Model Haven](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01)
   - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
-- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferredDemo): Handles thousands of dynamic
+- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferred): Handles thousands of dynamic
   light sources - also includes PBR shading and ambient occlusion.
-- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Roughly based on
+- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=ao): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
-- [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssrDemo): A simple PBR shaded
+- [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssr): A simple PBR shaded
   model with screen-space reflections and up to four spot lights with dynamic shadows.
-- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
+- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbr): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
-- [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=treeDemo): A simple procedural tree generator
+- [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=tree): A simple procedural tree generator
   based on a [space colonization algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
-- [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instanceDemo): Instanced rendering
+- [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instance): Instanced rendering
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
-- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
+- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
   simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
 Code for all demos is available in kool-demo sub-project.
@@ -49,6 +52,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 
 ## Features / Noticeable Stuff:
 
+- Rudimentary physics simulation
 - Node based dynamic shader generation
 - Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
@@ -62,6 +66,38 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - A small GUI framework for simple in-game menus / controls
+
+## Physics Simulation
+
+Multiplatform physics simulation is quite hard to achieve. My current approach is to build a thin abstraction layer
+which is then implemented with separate physics engines for javascript and JVM. There are a few options for
+physics engines to use: For JS there are [ammo.js](https://github.com/kripken/ammo.js/),
+[cannon.js](https://github.com/schteppe/cannon.js) and [Oimo.js](https://github.com/lo-th/Oimo.js/) to only name a few.
+On JVM the only standalone physics engines I know of are [JBullet](http://jbullet.advel.cz/) and
+[ode4j](https://github.com/tzaeschke/ode4j) (there also are [jMonkey](https://jmonkeyengine.org/) and
+[libGDX](https://libgdx.badlogicgames.com/), which both use JNI wrappers for native bullet physics, but those seem to be
+integrated into their engine-ecosystems rather tightly).
+
+I opted for ammo.js and JBullet because they are both based on bullet 2.x and therefore have a similar API.
+However, especially JBullet lacks a lot of advanced features (multi-threading, soft-bodies etc.) and is not actively
+developed anymore - the latest release is 10 years old. So it might be a good idea to switch to a JNI-wrapper solution
+at some point in the future.
+
+Another interesting aspect is performance (and again JBullet is not great there). I have not done very detailed benchmarks
+yet, but here are a few numbers for the [box collision demo](https://fabmax.github.io/kool/kool-js/?demo=physics)
+with 1000 boxes on my machine (Ryzen 2700X). Times were measured as required time for a single 60 Hz simulation step:
+
+| Engine              | Platform             | Time   |
+| ------------------- | -------------------- | ------:|
+| JBullet             | Java 11 (OpenJ9)     | ~20 ms |
+| JBullet             | Java 11 (Graal 20.3) | ~16 ms |
+| ammo.js (js)        | Firefox 84           | ~25 ms |
+| ammo.js (js)        | Chrome 87            | ~16 ms |
+| ammo.js (wasm)      | Firefox 84           | ~8 ms  |
+| ammo.js (wasm)      | Chrome 87            | ~15 ms |
+
+The most impressive fact here is the Firefox performance when running wasm (about 2x faster than Chrome, 3x faster than
+pure javascript), whereas on Chrome js / wasm barely makes a difference.
 
 ## A Hello World Example
 
@@ -102,7 +138,7 @@ In order to draw the mesh on the screen it needs a shader, which is assigned wit
 ```shader = pbrShader { ... }```. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
-in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorldDemo).
+in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorld).
 
 ## Model Loading and Advanced Lighting
 
@@ -186,7 +222,7 @@ easy to manipulate the model. Here we move the model 0.5 units along the y-axis 
 animations, these can be easily activated. This example checks whether there are any animations and if so activates
 the first one. The ```model.onUpdate { }``` block is executed on every frame and updates the enabled animation.
 
-The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltfDemo). Here, the
+The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
 respository is loaded.
 

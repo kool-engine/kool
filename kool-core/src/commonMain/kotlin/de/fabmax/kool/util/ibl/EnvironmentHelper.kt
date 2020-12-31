@@ -79,6 +79,7 @@ object EnvironmentHelper {
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
+                hdri.dispose()
             }
         }
 

@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import ammo.Ammo
+import de.fabmax.kool.util.logD
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -13,17 +14,25 @@ actual object Physics : CoroutineScope {
         get() = job
     private val loadingDeferred = CompletableDeferred<Unit>(job)
 
+    private var isLoading = false
     actual val isLoaded: Boolean
         get() = Ammo.isInitialized
 
     actual fun loadPhysics() {
-        Ammo.initAmmo()
-        Ammo.onLoad {
-            loadingDeferred.complete(Unit)
+        if (!isLoading) {
+            logD { "Loading ammo.js..." }
+            isLoading = true
+            Ammo.initAmmo()
+            Ammo.onLoad {
+                loadingDeferred.complete(Unit)
+            }
         }
     }
 
     actual suspend fun awaitLoaded() {
+        if (!isLoading) {
+            loadPhysics()
+        }
         loadingDeferred.await()
     }
 

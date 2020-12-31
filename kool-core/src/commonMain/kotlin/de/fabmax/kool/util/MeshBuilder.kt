@@ -67,6 +67,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) = transform.rotate(angleDeg, axX, axY, axZ)
 
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float) = transform.rotate(eulerX, eulerY, eulerZ)
+
     fun scale(x: Float, y: Float, z: Float) = transform.scale(x, y, z)
 
     fun setCoordSystem(origin: Vec3f, right: Vec3f, up: Vec3f, top: Vec3f? = null) {

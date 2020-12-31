@@ -10,6 +10,7 @@ import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 import kotlin.coroutines.CoroutineContext
 
+// assign type aliases to JBullet classes to distinguish them from our own classes
 typealias btBoxShape = com.bulletphysics.collision.shapes.BoxShape
 typealias btCollisionShape = com.bulletphysics.collision.shapes.CollisionShape
 typealias btRigidBody = com.bulletphysics.dynamics.RigidBody
