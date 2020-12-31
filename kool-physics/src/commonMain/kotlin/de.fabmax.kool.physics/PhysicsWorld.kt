@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.PerfTimer
 
 expect class PhysicsWorld() : CommonPhysicsWorld {
 
@@ -10,6 +11,9 @@ expect class PhysicsWorld() : CommonPhysicsWorld {
 
 abstract class CommonPhysicsWorld {
     var physicsTime = 0.0
+
+    private val perfTimer = PerfTimer()
+    var cpuTime = 0.0
 
     private val mutBodies = mutableListOf<RigidBody>()
     val bodies: List<RigidBody>
@@ -36,8 +40,11 @@ abstract class CommonPhysicsWorld {
         val stopTime = physicsTime + timeStep
         var steps = 0
         while (physicsTime < stopTime && ++steps < maxSubSteps) {
+            perfTimer.reset()
             singleStepPhysics(fixedStep)
             physicsTime += fixedStep
+            val ms = perfTimer.takeMs()
+            cpuTime = cpuTime * 0.8 + ms * 0.2
         }
         return steps * fixedStep
     }

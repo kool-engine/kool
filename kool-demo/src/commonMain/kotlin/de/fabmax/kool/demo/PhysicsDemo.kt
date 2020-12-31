@@ -2,16 +2,14 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.BoxShape
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -24,7 +22,7 @@ class PhysicsDemo : DemoScene("Physics") {
     private val shadows = mutableListOf<ShadowMap>()
 
     private var numSpawnBodies = 450
-    private lateinit var physicsWorld: PhysicsWorld
+    private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
 
     private val boxMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
@@ -64,7 +62,8 @@ class PhysicsDemo : DemoScene("Physics") {
             boxMesh.shader = instancedBoxShader(ibl)
 
             Physics.awaitLoaded()
-            physicsWorld = PhysicsWorld()
+            val physicsWorld = PhysicsWorld()
+            this@PhysicsDemo.physicsWorld = physicsWorld
             makeGround(ibl, physicsWorld)
 
             resetPhysics()
@@ -105,28 +104,31 @@ class PhysicsDemo : DemoScene("Physics") {
     }
 
     private fun resetPhysics() {
+        physicsWorld?.cpuTime = 0.0
+
         bodies.forEach {
-            physicsWorld.removeRigidBody(it.rigidBody)
+            physicsWorld?.removeRigidBody(it.rigidBody)
         }
         bodies.clear()
 
         val stacks = numSpawnBodies / 50
         val centers = makeCenters(stacks)
 
+        val rand = Random(39851564)
         for (i in 0 until numSpawnBodies) {
             val layer = i / stacks
             val stack = i % stacks
             val color = Color.MD_COLORS[layer % Color.MD_COLORS.size].toLinear()
 
-            val x = centers[stack].x * 10f + randomF(-1f, 1f)
-            val z = centers[stack].y * 10f + randomF(-1f, 1f)
+            val x = centers[stack].x * 10f + rand.randomF(-1f, 1f)
+            val z = centers[stack].y * 10f + rand.randomF(-1f, 1f)
             val y = layer * 5f + 10f
 
-            val boxShape = BoxShape(Vec3f(randomF(2f, 3f), randomF(2f, 3f), randomF(2f, 3f)))
+            val boxShape = BoxShape(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
             val box = RigidBody(boxShape, boxShape.size.sqrLength())
             box.origin = Vec3f(x, y, z)
-            box.setRotation(Mat3f().rotate(randomF(-45f, 45f), 0f, randomF(-45f, 45f)))
-            physicsWorld.addRigidBody(box)
+            box.setRotation(Mat3f().rotate(rand.randomF(-45f, 45f), 0f, rand.randomF(-45f, 45f)))
+            physicsWorld?.addRigidBody(box)
             bodies += ColoredBody(box, color)
         }
     }
@@ -332,6 +334,13 @@ class PhysicsDemo : DemoScene("Physics") {
                 numSpawnBodies = value.toInt()
             }
             button("Reset Physics") { resetPhysics() }
+        }
+        section("Info") {
+            textWithValue("CPU Step Time:", "0.00 ms").apply {
+                onUpdate += {
+                    text = "${physicsWorld?.cpuTime?.toString(2)} ms"
+                }
+            }
         }
     }
 }

@@ -94,10 +94,7 @@ with 1000 boxes on my machine (Ryzen 2700X). Times were measured as required tim
 | ammo.js (js)        | Firefox 84           | ~25 ms |
 | ammo.js (js)        | Chrome 87            | ~16 ms |
 | ammo.js (wasm)      | Firefox 84           | ~8 ms  |
-| ammo.js (wasm)      | Chrome 87            | ~15 ms |
-
-The most impressive fact here is the Firefox performance when running wasm (about 2x faster than Chrome, 3x faster than
-pure javascript), whereas on Chrome js / wasm barely makes a difference.
+| ammo.js (wasm)      | Chrome 87            | ~8 ms |
 
 ## A Hello World Example
 
