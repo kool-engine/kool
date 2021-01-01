@@ -2,6 +2,7 @@ package de.fabmax.kool.physics
 
 import ammo.*
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.shapes.CollisionShape
 
 actual class RigidBody actual constructor(actual val collisionShape: CollisionShape, actual val mass: Float) : CommonRigidBody() {
     val btRigidBody: btRigidBody

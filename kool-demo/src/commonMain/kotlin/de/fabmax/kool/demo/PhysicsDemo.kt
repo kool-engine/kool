@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.shapes.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -14,24 +15,18 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
-import kotlin.math.sqrt
+import kotlin.math.*
 
 class PhysicsDemo : DemoScene("Physics") {
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
+    private val shapes = Cycler(*Shape.values())
+
     private var numSpawnBodies = 450
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
-
-    private val boxMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-        isFrustumChecked = false
-        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-        generate {
-            bevelBox()
-        }
-    }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
@@ -59,7 +54,6 @@ class PhysicsDemo : DemoScene("Physics") {
 
         ctx.assetMgr.launch {
             val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
-            boxMesh.shader = instancedBoxShader(ibl)
 
             Physics.awaitLoaded()
             val physicsWorld = PhysicsWorld()
@@ -67,35 +61,42 @@ class PhysicsDemo : DemoScene("Physics") {
             makeGround(ibl, physicsWorld)
 
             resetPhysics()
-            +boxMesh
+
+            shapes.forEach {
+                if (it != Shape.MIXED) {
+                    it.mesh.shader = instancedBodyShader(ibl)
+                    +it.mesh
+                }
+            }
 
             val matBuf = Mat4f()
-            val removeBoxes = mutableListOf<ColoredBody>()
+            val removeBodies = mutableListOf<ColoredBody>()
             onUpdate += {
                 physicsWorld.stepPhysics(it.deltaT)
 
-                boxMesh.instances?.apply {
-                    clear()
-                    bodies.forEach { box ->
-                        if (box.rigidBody.origin.length() > 500f) {
-                            removeBoxes += box
-                        } else {
-                            matBuf.set(box.rigidBody.transform).scale(box.size)
-                            addInstance {
-                                put(matBuf.matrix)
-                                put(box.color.array)
-                            }
+                for (i in shapes.indices) {
+                    shapes[i].instances.clear()
+                }
+
+                bodies.forEach { body ->
+                    if (body.rigidBody.origin.length() > 500f) {
+                        removeBodies += body
+                    } else {
+                        matBuf.set(body.rigidBody.transform).scale(body.scale)
+                        body.shape.instances.addInstance {
+                            put(matBuf.matrix)
+                            put(body.color.array)
                         }
                     }
                 }
 
-                if (removeBoxes.isNotEmpty()) {
-                    removeBoxes.forEach { body ->
+                if (removeBodies.isNotEmpty()) {
+                    removeBodies.forEach { body ->
                         logI { "Removing out-of-range body" }
                         bodies.remove(body)
                         physicsWorld.removeRigidBody(body.rigidBody)
                     }
-                    removeBoxes.clear()
+                    removeBodies.clear()
                 }
             }
 
@@ -111,6 +112,12 @@ class PhysicsDemo : DemoScene("Physics") {
         }
         bodies.clear()
 
+        val types = if (shapes.current == Shape.MIXED) {
+            Shape.values().toList().filter { it != Shape.MIXED }
+        } else {
+            listOf(shapes.current)
+        }
+
         val stacks = numSpawnBodies / 50
         val centers = makeCenters(stacks)
 
@@ -124,12 +131,14 @@ class PhysicsDemo : DemoScene("Physics") {
             val z = centers[stack].y * 10f + rand.randomF(-1f, 1f)
             val y = layer * 5f + 10f
 
-            val boxShape = BoxShape(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
-            val box = RigidBody(boxShape, boxShape.size.sqrLength())
+            val type = types[rand.randomI(types.indices)]
+            val (shape, mass) = type.generateShape(rand)
+
+            val box = RigidBody(shape, mass)
             box.origin = Vec3f(x, y, z)
             box.setRotation(Mat3f().rotate(rand.randomF(-45f, 45f), 0f, rand.randomF(-45f, 45f)))
             physicsWorld?.addRigidBody(box)
-            bodies += ColoredBody(box, color)
+            bodies += ColoredBody(box, color, type)
         }
     }
 
@@ -230,7 +239,7 @@ class PhysicsDemo : DemoScene("Physics") {
         }
     }
 
-    private fun instancedBoxShader(ibl: EnvironmentMaps): PbrShader {
+    private fun instancedBodyShader(ibl: EnvironmentMaps): PbrShader {
         val cfg = PbrMaterialConfig().apply {
             roughness = 0.6f
             isInstanced = true
@@ -275,70 +284,265 @@ class PhysicsDemo : DemoScene("Physics") {
         }
     }
 
-    private fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
-        withTransform {
-            rotate(0f, 90f, 0f)
-            rect {
-                size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
-                origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
+    private class ColoredBody(val rigidBody: RigidBody, val color: MutableColor, val shape: Shape) {
+        val scale = MutableVec3f()
+
+        init {
+            when (val shape = rigidBody.collisionShape) {
+                is BoxShape -> scale.set(shape.size)
+                is CapsuleShape -> scale.set(shape.radius, shape.radius, shape.radius)
+                is CylinderShape -> scale.set(shape.radius, shape.height, shape.radius)
+                is SphereShape -> scale.set(shape.radius, shape.radius, shape.radius)
             }
         }
-        withTransform {
-            rotate(0f, -90f, 0f)
-            rect {
-                size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
-                origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
-            }
-        }
-        withTransform {
-            profile {
-                val s = 1f / sqrt(2f)
-                val c = 1f - s
-                simpleShape(false) {
-                    xy(-0.5f, 0f)
-                    normals += MutableVec3f(-1f, 0f, 0f)
-                    xy(-0.5f + rBevel * c, rBevel * s)
-                    normals += MutableVec3f(-1f, 1f, 0f).norm()
-                    xy(-0.5f + rBevel, rBevel)
-                    normals += MutableVec3f(0f, 1f, 0f)
-
-                    xy(0.5f - rBevel, rBevel)
-                    normals += MutableVec3f(0f, 1f, 0f)
-                    xy(0.5f - rBevel * c, rBevel * s)
-                    normals += MutableVec3f(1f, 1f, 0f).norm()
-                    xy(0.5f, 0f)
-                    normals += MutableVec3f(1f, 0f, 0f)
-                }
-
-                translate(0f, 0.5f - rBevel, -0.5f + rBevel)
-                sample()
-                for (i in 0..3) {
-                    rotate(-45f, 0f, 0f)
-                    sample()
-                    rotate(-45f, 0f, 0f)
-                    sample()
-                    translate(0f, 0f, -1f + 2 * rBevel)
-                    sample()
-                }
-            }
-        }
-    }
-
-    private class ColoredBody(val rigidBody: RigidBody, val color: MutableColor) {
-        val size = MutableVec3f((rigidBody.collisionShape as BoxShape).size)
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
         section("Physics") {
-            sliderWithValue("Spawn Bodies:", numSpawnBodies.toFloat(), 50f, 1000f, 0) {
+            cycler("Body Shape:", shapes) { _, _ -> }
+            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 1000f, 0) {
                 numSpawnBodies = value.toInt()
             }
+            gap(10f)
             button("Reset Physics") { resetPhysics() }
+            gap(10f)
         }
         section("Info") {
             textWithValue("CPU Step Time:", "0.00 ms").apply {
                 onUpdate += {
                     text = "${physicsWorld?.cpuTime?.toString(2)} ms"
+                }
+            }
+        }
+    }
+
+    private enum class Shape {
+        BOX {
+            override val label = "Box"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                isFrustumChecked = false
+                instances = this@BOX.instances
+                generate {
+                    bevelBox()
+                }
+            }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val shape = BoxShape(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
+                val mass = shape.size.x * shape.size.y * shape.size.z
+                return shape to mass
+            }
+        },
+
+        CAPSULE {
+            override val label = "Capsule"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                isFrustumChecked = false
+                instances = this@CAPSULE.instances
+                generate {
+                    capsule()
+                }
+            }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val s = rand.randomF(0.75f, 1.5f)
+                val shape = CapsuleShape(2.5f * s, s)
+                val mass = shape.radius.pow(3)
+                return shape to mass
+            }
+        },
+
+        CYLINDER {
+            override val label = "Cylinder"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                isFrustumChecked = false
+                instances = this@CYLINDER.instances
+                generate {
+                    cylinder()
+                }
+            }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val shape = CylinderShape(rand.randomF(1f, 2f), rand.randomF(2f, 4f))
+                val mass = shape.radius.pow(2) * shape.height * 0.5f
+                return shape to mass
+            }
+        },
+
+        SPHERE {
+            override val label = "Sphere"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                isFrustumChecked = false
+                instances = this@SPHERE.instances
+                generate {
+                    icoSphere { steps = 2 }
+                }
+            }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val shape = SphereShape(rand.randomF(1.25f, 2.5f))
+                val mass = shape.radius.pow(3)
+                return shape to mass
+            }
+        },
+
+        MIXED {
+            override val label = "Mixed"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) { }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                throw IllegalStateException()
+            }
+        };
+
+        abstract val label: String
+        abstract val mesh: Mesh
+        abstract val instances: MeshInstanceList
+        abstract fun generateShape(rand: Random): Pair<CollisionShape, Float>
+
+        override fun toString(): String {
+            return label
+        }
+
+        fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
+            withTransform {
+                rotate(0f, 90f, 0f)
+                rect {
+                    size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
+                    origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
+                }
+            }
+            withTransform {
+                rotate(0f, -90f, 0f)
+                rect {
+                    size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
+                    origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
+                }
+            }
+            withTransform {
+                profile {
+                    val s = 1f / sqrt(2f)
+                    val c = 1f - s
+                    simpleShape(false) {
+                        xy(-0.5f, 0f)
+                        normals += MutableVec3f(-1f, 0f, 0f)
+                        xy(-0.5f + rBevel * c, rBevel * s)
+                        normals += MutableVec3f(-1f, 1f, 0f).norm()
+                        xy(-0.5f + rBevel, rBevel)
+                        normals += MutableVec3f(0f, 1f, 0f)
+
+                        xy(0.5f - rBevel, rBevel)
+                        normals += MutableVec3f(0f, 1f, 0f)
+                        xy(0.5f - rBevel * c, rBevel * s)
+                        normals += MutableVec3f(1f, 1f, 0f).norm()
+                        xy(0.5f, 0f)
+                        normals += MutableVec3f(1f, 0f, 0f)
+                    }
+
+                    translate(0f, 0.5f - rBevel, -0.5f + rBevel)
+                    sample()
+                    for (i in 0..3) {
+                        rotate(-45f, 0f, 0f)
+                        sample()
+                        rotate(-45f, 0f, 0f)
+                        sample()
+                        translate(0f, 0f, -1f + 2 * rBevel)
+                        sample()
+                    }
+                }
+            }
+        }
+
+        fun MeshBuilder.capsule(halfHeight: Float = 1.25f, radius: Float = 1f) {
+            profile {
+                simpleShape(false) {
+                    val steps = 8
+                    for (i in 0..steps) {
+                        val a = (i / steps.toFloat() * PI / 2 + PI * 1.5).toFloat()
+                        val x = cos(a)
+                        val y = sin(a)
+                        xy(x * radius, y * radius - halfHeight)
+                        normals += MutableVec3f(x, y, 0f)
+                    }
+                    for (i in 0..steps) {
+                        val a = (i / steps.toFloat() * PI / 2).toFloat()
+                        val x = cos(a)
+                        val y = sin(a)
+                        xy(x * radius, y * radius + halfHeight)
+                        normals += MutableVec3f(x, y, 0f)
+                    }
+                }
+
+                for (i in 0 .. 20) {
+                    sample()
+                    rotate(0f, -360f / 20, 0f)
+                }
+            }
+        }
+
+        fun MeshBuilder.cylinder(height: Float = 1f, radius: Float = 1f) {
+//            cylinder {
+//                origin.set(0f, -0.5f, 0f)
+//                this.height = height
+//                topRadius = radius
+//                bottomRadius = radius
+//                steps = 40
+//            }
+
+            profile {
+                simpleShape(false) {
+                    val bevelSteps = 3
+                    val bevelR = 0.02f
+                    for (i in 0..bevelSteps) {
+                        val a = (i / bevelSteps.toFloat() * PI / 2 + PI * 1.5).toFloat()
+                        val x = cos(a)
+                        val y = sin(a)
+                        xy(radius - bevelR + x * bevelR, height * -0.5f + bevelR + y * bevelR)
+                        normals += MutableVec3f(x, y, 0f)
+                    }
+                    for (i in 0..bevelSteps) {
+                        val a = (i / bevelSteps.toFloat() * PI / 2).toFloat()
+                        val x = cos(a)
+                        val y = sin(a)
+                        xy(radius - bevelR + x * bevelR, height * 0.5f - bevelR + y * bevelR)
+                        normals += MutableVec3f(x, y, 0f)
+                    }
+                }
+
+                val topVertInds = mutableListOf<Int>()
+                val bottomVertInds = mutableListOf<Int>()
+                val topVerts = mutableListOf<Vec3f>()
+                val bottomVerts = mutableListOf<Vec3f>()
+                for (i in 0 .. 40) {
+                    rotate(0f, -360f / 40, 0f)
+                    sample()
+                    geometry.vertexIt.apply {
+                        index = shapes[0].sampledVertIndices.first()
+                        bottomVertInds += index
+                        bottomVerts += Vec3f(position)
+                    }
+                    geometry.vertexIt.apply {
+                        index = shapes[0].sampledVertIndices.last()
+                        topVertInds += index
+                        topVerts += Vec3f(position)
+                    }
+                }
+
+                val topPoly = PolyUtil.fillPolygon(topVerts)
+                for (i in topPoly.indices.indices step 3) {
+                    geometry.addTriIndices(topVertInds[topPoly.indices[i]],
+                        topVertInds[topPoly.indices[i + 2]], topVertInds[topPoly.indices[i + 1]])
+                }
+
+                val bottomPoly = PolyUtil.fillPolygon(bottomVerts)
+                for (i in bottomPoly.indices.indices step 3) {
+                    geometry.addTriIndices(bottomVertInds[bottomPoly.indices[i]],
+                        bottomVertInds[bottomPoly.indices[i + 1]], bottomVertInds[bottomPoly.indices[i + 2]])
                 }
             }
         }

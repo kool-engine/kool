@@ -1,4 +1,4 @@
-package de.fabmax.kool.physics
+package de.fabmax.kool.physics.shapes
 
 import de.fabmax.kool.math.Vec3f
 

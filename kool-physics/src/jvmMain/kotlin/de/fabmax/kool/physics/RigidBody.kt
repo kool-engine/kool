@@ -8,9 +8,11 @@ import de.fabmax.kool.physics.Physics.set
 import de.fabmax.kool.physics.Physics.toQuat4f
 import de.fabmax.kool.physics.Physics.toVec3f
 import de.fabmax.kool.physics.Physics.toVec4f
+import de.fabmax.kool.physics.shapes.CollisionShape
 import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
+@Suppress("CanBeParameter")
 actual class RigidBody actual constructor(actual val collisionShape: CollisionShape, actual val mass: Float) : CommonRigidBody() {
     val btRigidBody: btRigidBody
 

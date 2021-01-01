@@ -6,7 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.util.logI
 import kotlin.js.Promise
 
-external interface btBoxShape: btCollisionShape
+external interface btBoxShape : btCollisionShape
 
 external interface btBroadphaseInterface {
     fun getOverlappingPairCache(): btOverlappingPairCache
@@ -17,9 +17,15 @@ external interface btBroadphaseProxy {
     var m_collisionFilterMask: Int
 }
 
+external interface btCapsuleShape : btCollisionShape {
+    fun getUpAxis(): Int
+    fun getRadius(): Float
+    fun getHalfHeight(): Float
+}
+
 external interface btCollisionConfiguration
 
-external interface btCollisionDispatcher: btDispatcher
+external interface btCollisionDispatcher : btDispatcher
 
 external interface btCollisionObject {
     fun setAnisotropicFriction(anisotropicFriction: btVector3, frictionMode: Int)
@@ -80,28 +86,32 @@ external interface btCollisionWorld {
     //fun debugDrawObject(worldTransform: btTransform, shape: btCollisionShape, color: btVector3)
 }
 
+external interface btConeShape : btCollisionShape
+
 external interface btConstraintSolver
 
-external interface btConcaveShape: btCollisionShape
+external interface btConcaveShape : btCollisionShape
 
-external interface btConvexShape: btCollisionShape
+external interface btConvexShape : btCollisionShape
 
-external interface btConvexTriangleMeshShape: btConvexShape {
+external interface btConvexTriangleMeshShape : btConvexShape {
     fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface)
     fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface, calcAabb: Boolean)
 }
 
-external interface btDbvtBroadphase: btBroadphaseInterface {
+external interface btCylinderShape : btCollisionShape
+
+external interface btDbvtBroadphase : btBroadphaseInterface {
     override fun getOverlappingPairCache(): btOverlappingPairCache
 }
 
-external interface btDefaultCollisionConfiguration: btCollisionConfiguration
+external interface btDefaultCollisionConfiguration : btCollisionConfiguration
 
-external interface btDefaultMotionState: btMotionState {
+external interface btDefaultMotionState : btMotionState {
     var m_graphicsWorldTrans: btTransform
 }
 
-external interface btDiscreteDynamicsWorld: btDynamicsWorld {
+external interface btDiscreteDynamicsWorld : btDynamicsWorld {
     fun setGravity(gravity: btVector3)
     fun getGravity(): btVector3
 
@@ -125,7 +135,7 @@ external interface btDispatcher {
     fun getManifoldByIndexInternal(index: Int): btPersistentManifold
 }
 
-external interface btDynamicsWorld: btCollisionWorld {
+external interface btDynamicsWorld : btCollisionWorld {
 //    fun addAction(action: btActionInterface)
 //    fun removeAction(action: btActionInterface)
 //    fun getSolverInfo(): btContactSolverInfo
@@ -133,7 +143,7 @@ external interface btDynamicsWorld: btCollisionWorld {
 //    fun setInternalTickCallback(cb: VoidPtr, worldUserInfo: VoidPtr, isPreTick: Boolean)
 }
 
-external interface btEmptyShape: btConcaveShape
+external interface btEmptyShape : btConcaveShape
 
 external interface btMatrix3x3 {
     fun setEulerZYX(ex: Float, ey: Float, ez: Float)
@@ -241,7 +251,9 @@ external interface btRigidBodyConstructionInfo {
 
 external interface btSequentialImpulseConstraintSolver: btConstraintSolver
 
-external interface btStaticPlaneShape: btConcaveShape
+external interface btSphereShape : btCollisionShape
+
+external interface btStaticPlaneShape : btConcaveShape
 
 external interface btStridingMeshInterface {
     fun setScaling(scaling: btVector3)
@@ -259,7 +271,7 @@ external interface btTransform {
     fun op_mul(t: btTransform): btTransform
 }
 
-external interface btTriangleMeshShape: btConcaveShape
+external interface btTriangleMeshShape : btConcaveShape
 
 external interface btVector3 {
     fun x(): Float
@@ -347,8 +359,14 @@ object Ammo {
 
     fun btBoxShape(boxHalfExtents: btVector3): btBoxShape = js("new this.ammo.btBoxShape(boxHalfExtents)")
 
+    fun btCapsuleShape(radius: Float, height: Float): btCapsuleShape = js("new this.ammo.btCapsuleShape(radius, height)")
+
     fun btCollisionDispatcher(conf: btDefaultCollisionConfiguration): btCollisionDispatcher =
         js("new this.ammo.btCollisionDispatcher(conf)")
+
+    fun btConeShape(radius: Float, height: Float): btConeShape = js("new this.ammo.btConeShape(radius, height)")
+
+    fun btCylinderShape(halfExtents: btVector3): btCylinderShape = js("new this.ammo.btCylinderShape(halfExtents)")
 
     fun btDbvtBroadphase(): btDbvtBroadphase =
         js("new this.ammo.btDbvtBroadphase()")
@@ -387,6 +405,8 @@ object Ammo {
 
     fun btSequentialImpulseConstraintSolver(): btSequentialImpulseConstraintSolver =
         js("new this.ammo.btSequentialImpulseConstraintSolver()")
+
+    fun btSphereShape(radius: Float): btSphereShape = js("new this.ammo.btSphereShape(radius)")
 
     fun btStaticPlaneShape(planeNormal: btVector3, planeConstant: Float): btStaticPlaneShape =
         js("new this.ammo.btStaticPlaneShape(planeNormal, planeConstant)")

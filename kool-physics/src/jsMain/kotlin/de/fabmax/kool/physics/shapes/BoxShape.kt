@@ -1,14 +1,17 @@
-package de.fabmax.kool.physics
+package de.fabmax.kool.physics.shapes
 
 import ammo.Ammo
-import ammo.btCollisionShape
+import ammo.btBoxShape
 import ammo.toBtVector3
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.Physics
 
 actual class BoxShape actual constructor(size: Vec3f) : CollisionShape() {
+
     actual val size: Vec3f = Vec3f(size)
-    override val shape: btCollisionShape
+
+    override val shape: btBoxShape
 
     init {
         Physics.checkIsLoaded()
