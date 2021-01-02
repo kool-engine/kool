@@ -6,6 +6,7 @@ typealias btCollisionShape = com.bulletphysics.collision.shapes.CollisionShape
 
 typealias btBoxShape = com.bulletphysics.collision.shapes.BoxShape
 typealias btCapsuleShape = com.bulletphysics.collision.shapes.CapsuleShape
+typealias btConvexHullShape = com.bulletphysics.collision.shapes.ConvexHullShape
 typealias btCylinderShape = com.bulletphysics.collision.shapes.CylinderShape
 typealias btSphereShape = com.bulletphysics.collision.shapes.SphereShape
 typealias btStaticPlaneShape = com.bulletphysics.collision.shapes.StaticPlaneShape

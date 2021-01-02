@@ -94,6 +94,20 @@ external interface btConcaveShape : btCollisionShape
 
 external interface btConvexShape : btCollisionShape
 
+external interface btConvexHullShape : btConvexShape {
+    fun addPoint(point: btVector3)
+    fun addPoint(point: btVector3, recalculateLocalAABB: Boolean)
+    fun getNumVertices(): Int
+    fun initializePolyhedralFeatures(shiftVerticesByMargin: Int)
+    fun recalcLocalAabb()
+    fun getConvexPolyhedron(): btConvexPolyhedron
+}
+
+external interface btConvexPolyhedron {
+    val m_vertices: btVector3Array
+    val m_faces: btFaceArray
+}
+
 external interface btConvexTriangleMeshShape : btConvexShape {
     fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface)
     fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface, calcAabb: Boolean)
@@ -144,6 +158,21 @@ external interface btDynamicsWorld : btCollisionWorld {
 }
 
 external interface btEmptyShape : btConcaveShape
+
+external interface btFace {
+    val m_indices: btIntArray
+    val m_plane: FloatArray
+}
+
+external interface btFaceArray {
+    fun size(): Int
+    fun at(n: Int): btFace
+}
+
+external interface btIntArray {
+    fun size(): Int
+    fun at(n: Int): Int
+}
 
 external interface btMatrix3x3 {
     fun setEulerZYX(ex: Float, ey: Float, ez: Float)
@@ -251,6 +280,14 @@ external interface btRigidBodyConstructionInfo {
 
 external interface btSequentialImpulseConstraintSolver: btConstraintSolver
 
+external interface btShapeHull {
+    fun buildHull(margin: Float): Boolean
+    fun numIndices(): Int
+    fun numVertices(): Int
+    fun getIndexAt(n: Int): Int
+    fun getVertexAt(n: Int): btVector3
+}
+
 external interface btSphereShape : btCollisionShape
 
 external interface btStaticPlaneShape : btConcaveShape
@@ -291,6 +328,11 @@ external interface btVector3 {
     fun op_mul(x: Float): btVector3
     fun op_add(v: btVector3): btVector3
     fun op_sub(v: btVector3): btVector3
+}
+
+external interface btVector3Array {
+    fun size(): Int
+    fun at(n: Int): btVector3
 }
 
 fun btQuaternion.set(v: Vec4f) = setValue(v.x, v.y, v.z, v.w)
@@ -359,12 +401,15 @@ object Ammo {
 
     fun btBoxShape(boxHalfExtents: btVector3): btBoxShape = js("new this.ammo.btBoxShape(boxHalfExtents)")
 
-    fun btCapsuleShape(radius: Float, height: Float): btCapsuleShape = js("new this.ammo.btCapsuleShape(radius, height)")
+    fun btCapsuleShape(radius: Float, height: Float): btCapsuleShape =
+        js("new this.ammo.btCapsuleShape(radius, height)")
 
     fun btCollisionDispatcher(conf: btDefaultCollisionConfiguration): btCollisionDispatcher =
         js("new this.ammo.btCollisionDispatcher(conf)")
 
     fun btConeShape(radius: Float, height: Float): btConeShape = js("new this.ammo.btConeShape(radius, height)")
+
+    fun btConvexHullShape(): btConvexHullShape = js("new this.ammo.btConvexHullShape()")
 
     fun btCylinderShape(halfExtents: btVector3): btCylinderShape = js("new this.ammo.btCylinderShape(halfExtents)")
 
@@ -405,6 +450,8 @@ object Ammo {
 
     fun btSequentialImpulseConstraintSolver(): btSequentialImpulseConstraintSolver =
         js("new this.ammo.btSequentialImpulseConstraintSolver()")
+
+    fun btShapeHull(shape: btConvexShape): btShapeHull = js("new this.ammo.btShapeHull(shape)")
 
     fun btSphereShape(radius: Float): btSphereShape = js("new this.ammo.btSphereShape(radius)")
 

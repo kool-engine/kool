@@ -291,6 +291,10 @@ class PhysicsDemo : DemoScene("Physics") {
             when (val shape = rigidBody.collisionShape) {
                 is BoxShape -> scale.set(shape.size)
                 is CapsuleShape -> scale.set(shape.radius, shape.radius, shape.radius)
+                is ConvexHullShape -> {
+                    val s = shape.points[0].length()
+                    scale.set(s, s, s)
+                }
                 is CylinderShape -> scale.set(shape.radius, shape.height, shape.radius)
                 is SphereShape -> scale.set(shape.radius, shape.radius, shape.radius)
             }
@@ -350,6 +354,27 @@ class PhysicsDemo : DemoScene("Physics") {
                 val s = rand.randomF(0.75f, 1.5f)
                 val shape = CapsuleShape(2.5f * s, s)
                 val mass = shape.radius.pow(3)
+                return shape to mass
+            }
+        },
+
+        CONVEX_HULL {
+            override val label = "Convex Hull"
+            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                isFrustumChecked = false
+                instances = this@CONVEX_HULL.instances
+                generate {
+                    flatIcoSphere()
+                }
+            }
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val s = rand.randomF(1.25f, 2.5f)
+                val icoPoints = mutableListOf<Vec3f>()
+                mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
+                val shape = ConvexHullShape(icoPoints)
+                val mass = s.pow(3)
                 return shape to mass
             }
         },
@@ -485,15 +510,23 @@ class PhysicsDemo : DemoScene("Physics") {
             }
         }
 
-        fun MeshBuilder.cylinder(height: Float = 1f, radius: Float = 1f) {
-//            cylinder {
-//                origin.set(0f, -0.5f, 0f)
-//                this.height = height
-//                topRadius = radius
-//                bottomRadius = radius
-//                steps = 40
-//            }
+        fun MeshBuilder.flatIcoSphere() {
+            val icoMesh = MeshBuilder(IndexedVertexList(Attribute.POSITIONS)).apply { icoSphere { steps = 0 } }
+            for (i in 0 until icoMesh.geometry.numIndices step 3) {
+                val vIt = icoMesh.geometry.vertexIt
+                vIt.index = icoMesh.geometry.indices[i]
+                val i0 = geometry.addVertex(vIt)
+                vIt.index = icoMesh.geometry.indices[i + 1]
+                val i1 = geometry.addVertex(vIt)
+                vIt.index = icoMesh.geometry.indices[i + 2]
+                val i2 = geometry.addVertex(vIt)
+                geometry.addTriIndices(i0, i1, i2)
+            }
+            geometry.generateNormals()
+        }
 
+        fun MeshBuilder.cylinder(height: Float = 1f, radius: Float = 1f) {
+            // make a beveled cylinder which looks a bit nicer than a simple one with sharp edges
             profile {
                 simpleShape(false) {
                     val bevelSteps = 3

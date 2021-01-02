@@ -29,6 +29,15 @@ class Plane {
         return false
     }
 
+    /**
+     * Computes the signed distance of the given point to this plane. Positive distance means that the point
+     * is in front of the plane (positive normal direction), negative distance means it is behind the plane (negative
+     * normal direction).
+     */
+    fun distance(point: Vec3f): Float {
+        return n * point - n * p
+    }
+
     fun toVec4() : MutableVec4f = toVec4(MutableVec4f())
 
     fun toVec4(result: MutableVec4f): MutableVec4f {
