@@ -17,6 +17,8 @@ external interface btBroadphaseProxy {
     var m_collisionFilterMask: Int
 }
 
+external interface btBvhTriangleMeshShape : btConcaveShape
+
 external interface btCapsuleShape : btCollisionShape {
     fun getUpAxis(): Int
     fun getRadius(): Float
@@ -106,11 +108,6 @@ external interface btConvexHullShape : btConvexShape {
 external interface btConvexPolyhedron {
     val m_vertices: btVector3Array
     val m_faces: btFaceArray
-}
-
-external interface btConvexTriangleMeshShape : btConvexShape {
-    fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface)
-    fun btConvexTriangleMeshShape(meshInterface: btStridingMeshInterface, calcAabb: Boolean)
 }
 
 external interface btCylinderShape : btCollisionShape
@@ -308,7 +305,7 @@ external interface btTransform {
     fun op_mul(t: btTransform): btTransform
 }
 
-external interface btTriangleMeshShape : btConcaveShape
+external interface btTriangleIndexVertexArray : btStridingMeshInterface
 
 external interface btVector3 {
     fun x(): Float
@@ -401,6 +398,9 @@ object Ammo {
 
     fun btBoxShape(boxHalfExtents: btVector3): btBoxShape = js("new this.ammo.btBoxShape(boxHalfExtents)")
 
+    fun btBvhTriangleMeshShape(meshInterface: btStridingMeshInterface, useQuantizedAabbCompression: Boolean): btBvhTriangleMeshShape =
+        js("new this.ammo.btBvhTriangleMeshShape(meshInterface, useQuantizedAabbCompression)")
+
     fun btCapsuleShape(radius: Float, height: Float): btCapsuleShape =
         js("new this.ammo.btCapsuleShape(radius, height)")
 
@@ -461,6 +461,9 @@ object Ammo {
     fun btTransform(): btTransform = js("new this.ammo.btTransform()")
 
     fun btTransform(q: btQuaternion, v: btVector3): btTransform = js("new this.ammo.btTransform(q, v)")
+
+    fun btTriangleIndexVertexArray(numTriangles: Int, triangleIndexBase: IntArray, triangleIndexStride: Int, numVertices: Int, vertexBase: FloatArray, vertexStride: Int): btTriangleIndexVertexArray =
+        js("new this.ammo.btTriangleIndexVertexArray(numTriangles, triangleIndexBase, triangleIndexStride, numVertices, vertexBase, vertexStride)")
 
     fun btVector3(x: Float, y: Float, z: Float): btVector3 = js("new this.ammo.btVector3(x, y, z)")
 

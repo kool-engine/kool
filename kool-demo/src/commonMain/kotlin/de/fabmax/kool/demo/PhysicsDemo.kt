@@ -28,6 +28,8 @@ class PhysicsDemo : DemoScene("Physics") {
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
 
+    private var timeFactor = 1f
+
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
@@ -72,7 +74,8 @@ class PhysicsDemo : DemoScene("Physics") {
             val matBuf = Mat4f()
             val removeBodies = mutableListOf<ColoredBody>()
             onUpdate += {
-                physicsWorld.stepPhysics(it.deltaT)
+                val deltaPhys = physicsWorld.stepPhysics(it.deltaT)
+                timeFactor = timeFactor * 0.9f + deltaPhys / it.deltaT * 0.1f
 
                 for (i in shapes.indices) {
                     shapes[i].instances.clear()
@@ -311,10 +314,15 @@ class PhysicsDemo : DemoScene("Physics") {
             button("Reset Physics") { resetPhysics() }
             gap(10f)
         }
-        section("Info") {
-            textWithValue("CPU Step Time:", "0.00 ms").apply {
+        section("Performance") {
+            textWithValue("Physics:", "0.00 ms").apply {
                 onUpdate += {
                     text = "${physicsWorld?.cpuTime?.toString(2)} ms"
+                }
+            }
+            textWithValue("Time Factor:", "1.00 x").apply {
+                onUpdate += {
+                    text = "${timeFactor.toString(2)} x"
                 }
             }
         }
