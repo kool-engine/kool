@@ -7,9 +7,9 @@ import de.fabmax.kool.util.PrimitiveType
 import java.nio.ByteBuffer
 
 @Suppress("CanBeParameter")
-actual class TriangleMeshShape actual constructor(actual val geometry: IndexedVertexList) : CollisionShape() {
+actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) : CommonTriangleMeshShape(geometry), CollisionShape {
 
-    override val shape: BvhTriangleMeshShape
+    override val btShape: BvhTriangleMeshShape
 
     init {
         if (geometry.primitiveType != PrimitiveType.TRIANGLES) {
@@ -32,7 +32,7 @@ actual class TriangleMeshShape actual constructor(actual val geometry: IndexedVe
         }
         val indexedVertexArray = TriangleIndexVertexArray(geometry.numPrimitives, indices, 12,
             geometry.numVertices, vertices, 12)
-        shape = BvhTriangleMeshShape(indexedVertexArray, true)
+        btShape = BvhTriangleMeshShape(indexedVertexArray, true)
     }
 
 }

@@ -88,6 +88,15 @@ external interface btCollisionWorld {
     //fun debugDrawObject(worldTransform: btTransform, shape: btCollisionShape, color: btVector3)
 }
 
+external interface btCompoundShape : btCollisionShape {
+    fun addChildShape(localTransform: btTransform, shape: btCollisionShape)
+    fun removeChildShape(shape: btCollisionShape)
+    fun removeChildShapeByIndex(childShapeIndex: Int)
+    fun getNumChildShapes(): Int
+    fun getChildShape(index: Int): btCollisionShape
+    fun updateChildTransform(childIndex: Int, newChildTransform: btTransform)
+}
+
 external interface btConeShape : btCollisionShape
 
 external interface btConstraintSolver
@@ -368,6 +377,10 @@ fun btTransform.toMat4f(result: Mat4f = Mat4f()): Mat4f {
 
 fun Vec3f.toBtVector3() = Ammo.btVector3(x, y, z)
 fun Vec4f.toBtQuaternion() = Ammo.btQuaternion(x, y, z, w)
+fun Mat4f.toBtTransform(result: btTransform = Ammo.btTransform()): btTransform {
+    result.setFromOpenGLMatrix(matrix)
+    return result
+}
 
 object Ammo {
     @JsName("ammo")
@@ -406,6 +419,8 @@ object Ammo {
 
     fun btCollisionDispatcher(conf: btDefaultCollisionConfiguration): btCollisionDispatcher =
         js("new this.ammo.btCollisionDispatcher(conf)")
+
+    fun btCompoundShape(): btCompoundShape = js("new this.ammo.btCompoundShape()")
 
     fun btConeShape(radius: Float, height: Float): btConeShape = js("new this.ammo.btConeShape(radius, height)")
 

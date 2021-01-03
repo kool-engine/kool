@@ -29,7 +29,7 @@ actual class RigidBody actual constructor(actual val collisionShape: CollisionSh
 
         val motionState = Ammo.btDefaultMotionState()
         val boxInertia = Ammo.btVector3(0f, 0f, 0f)
-        val btShape = collisionShape.shape
+        val btShape = collisionShape.btShape
         if (mass > 0f) {
             btShape.calculateLocalInertia(mass, boxInertia)
         }

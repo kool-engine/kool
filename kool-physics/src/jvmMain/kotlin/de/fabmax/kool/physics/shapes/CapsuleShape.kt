@@ -1,10 +1,9 @@
 package de.fabmax.kool.physics.shapes
 
-import de.fabmax.kool.physics.btCapsuleShape
+import de.fabmax.kool.physics.BtCapsuleShape
 
-@Suppress("CanBeParameter")
-actual class CapsuleShape actual constructor(actual val height: Float, actual val radius: Float) : CollisionShape() {
+actual class CapsuleShape actual constructor(height: Float, radius: Float) : CommonCapsuleShape(height, radius), CollisionShape {
 
-    override val shape: btCapsuleShape = btCapsuleShape(radius, height)
+    override val btShape: BtCapsuleShape = BtCapsuleShape(radius, height)
 
 }

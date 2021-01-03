@@ -3,27 +3,26 @@ package de.fabmax.kool.physics.shapes
 import com.bulletphysics.collision.shapes.ShapeHull
 import com.bulletphysics.util.ObjectArrayList
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.Physics.toVec3f
-import de.fabmax.kool.physics.Physics.toVector3f
-import de.fabmax.kool.physics.btConvexHullShape
+import de.fabmax.kool.physics.BtConvexHullShape
+import de.fabmax.kool.physics.toBtVector3f
+import de.fabmax.kool.physics.toVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.IndexedVertexList
 import javax.vecmath.Vector3f
 
-@Suppress("CanBeParameter")
-actual class ConvexHullShape actual constructor(actual val points: List<Vec3f>) : CollisionShape() {
+actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonConvexHullShape(points), CollisionShape {
 
-    override val shape: btConvexHullShape
+    override val btShape: BtConvexHullShape
 
-    actual val geometry: IndexedVertexList
+    override val geometry: IndexedVertexList
 
     init {
         // create temporary ConvexHullShape from supplied points
         val btPoints = ObjectArrayList<Vector3f>(points.size)
         points.forEach {
-            btPoints.add(it.toVector3f())
+            btPoints.add(it.toBtVector3f())
         }
-        val tmpShape = btConvexHullShape(btPoints)
+        val tmpShape = BtConvexHullShape(btPoints)
         tmpShape.margin = 0f
 
         // build convex hull from temp shape
@@ -32,8 +31,8 @@ actual class ConvexHullShape actual constructor(actual val points: List<Vec3f>) 
         hull.buildHull(0f)
 
         // create final ConvexHullShape containing only hull vertices
-        shape = btConvexHullShape(hull.vertexPointer)
-        shape.margin = 0f
+        btShape = BtConvexHullShape(hull.vertexPointer)
+        btShape.margin = 0f
 
         // build triangle mesh from convex hull
         geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)

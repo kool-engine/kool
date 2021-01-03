@@ -1,10 +1,10 @@
 package de.fabmax.kool.physics.shapes
 
-import de.fabmax.kool.physics.btSphereShape
+import de.fabmax.kool.physics.BtSphereShape
 
 @Suppress("CanBeParameter")
-actual class SphereShape actual constructor(actual val radius: Float) : CollisionShape() {
+actual class SphereShape actual constructor(radius: Float) : CommonSphereShape(radius), CollisionShape {
 
-    override val shape: btSphereShape = btSphereShape(radius)
+    override val btShape: BtSphereShape = BtSphereShape(radius)
 
 }

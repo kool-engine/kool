@@ -1,5 +1,16 @@
 package de.fabmax.kool.physics.shapes
 
-expect class SphereShape(radius: Float) : CollisionShape {
-    val radius: Float
+import de.fabmax.kool.util.MeshBuilder
+
+expect class SphereShape(radius: Float) : CommonSphereShape, CollisionShape
+
+abstract class CommonSphereShape(val radius: Float) {
+
+    open fun generateGeometry(target: MeshBuilder) {
+        target.icoSphere {
+            radius = this@CommonSphereShape.radius
+            steps = 2
+        }
+    }
+
 }

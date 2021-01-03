@@ -6,10 +6,9 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
 
-@Suppress("CanBeParameter")
-actual class TriangleMeshShape actual constructor(actual val geometry: IndexedVertexList) : CollisionShape() {
+actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) : CommonTriangleMeshShape(geometry), CollisionShape {
 
-    override val shape: btBvhTriangleMeshShape
+    override val btShape: btBvhTriangleMeshShape
 
     init {
         if (geometry.primitiveType != PrimitiveType.TRIANGLES) {
@@ -30,6 +29,6 @@ actual class TriangleMeshShape actual constructor(actual val geometry: IndexedVe
         }
 
         val mesh = Ammo.btTriangleIndexVertexArray(numTris, indices, 12, numVerts, verts, 12)
-        shape = Ammo.btBvhTriangleMeshShape(mesh, true)
+        btShape = Ammo.btBvhTriangleMeshShape(mesh, true)
     }
 }

@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.shapes.*
+import de.fabmax.kool.physics.shapes.MultiShape
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -121,7 +122,7 @@ class PhysicsDemo : DemoScene("Physics") {
             listOf(shapes.current)
         }
 
-        val stacks = numSpawnBodies / 50
+        val stacks = max(1, numSpawnBodies / 50)
         val centers = makeCenters(stacks)
 
         val rand = Random(39851564)
@@ -137,11 +138,11 @@ class PhysicsDemo : DemoScene("Physics") {
             val type = types[rand.randomI(types.indices)]
             val (shape, mass) = type.generateShape(rand)
 
-            val box = RigidBody(shape, mass)
-            box.origin = Vec3f(x, y, z)
-            box.setRotation(Mat3f().rotate(rand.randomF(-45f, 45f), 0f, rand.randomF(-45f, 45f)))
-            physicsWorld?.addRigidBody(box)
-            bodies += ColoredBody(box, color, type)
+            val body = RigidBody(shape, mass)
+            body.origin = Vec3f(x, y, z)
+            body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
+            physicsWorld?.addRigidBody(body)
+            bodies += ColoredBody(body, color, type)
         }
     }
 
@@ -299,6 +300,10 @@ class PhysicsDemo : DemoScene("Physics") {
                     scale.set(s, s, s)
                 }
                 is CylinderShape -> scale.set(shape.radius, shape.height, shape.radius)
+                is MultiShape -> {
+                    val s = (shape.children[0].shape as BoxShape).size.z / 2f
+                    scale.set(s, s, s)
+                }
                 is SphereShape -> scale.set(shape.radius, shape.radius, shape.radius)
             }
         }
@@ -331,14 +336,8 @@ class PhysicsDemo : DemoScene("Physics") {
     private enum class Shape {
         BOX {
             override val label = "Box"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                isFrustumChecked = false
-                instances = this@BOX.instances
-                generate {
-                    bevelBox()
-                }
-            }
+
+            override fun MeshBuilder.generateMesh() = bevelBox()
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
                 val shape = BoxShape(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
@@ -349,14 +348,8 @@ class PhysicsDemo : DemoScene("Physics") {
 
         CAPSULE {
             override val label = "Capsule"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                isFrustumChecked = false
-                instances = this@CAPSULE.instances
-                generate {
-                    capsule()
-                }
-            }
+
+            override fun MeshBuilder.generateMesh() = capsule()
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
                 val s = rand.randomF(0.75f, 1.5f)
@@ -368,14 +361,8 @@ class PhysicsDemo : DemoScene("Physics") {
 
         CONVEX_HULL {
             override val label = "Convex Hull"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                isFrustumChecked = false
-                instances = this@CONVEX_HULL.instances
-                generate {
-                    flatIcoSphere()
-                }
-            }
+
+            override fun MeshBuilder.generateMesh() = flatIcoSphere()
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
                 val s = rand.randomF(1.25f, 2.5f)
@@ -389,31 +376,64 @@ class PhysicsDemo : DemoScene("Physics") {
 
         CYLINDER {
             override val label = "Cylinder"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                isFrustumChecked = false
-                instances = this@CYLINDER.instances
-                generate {
-                    cylinder()
+
+            override fun MeshBuilder.generateMesh() = cylinder()
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
+                val mass = shape.radius.pow(2) * shape.height * 0.5f
+                return shape to mass
+            }
+        },
+
+        MULTI_SHAPE {
+            override val label = "Multi Shape"
+
+            override fun MeshBuilder.generateMesh() {
+                cube {
+                    size.set(0.5f, 0.5f, 2f)
+                    origin.set(size).scale(-0.5f).add(Vec3f(1f, 0f, 0f))
+                }
+                cube {
+                    size.set(0.5f, 0.5f, 2f)
+                    origin.set(size).scale(-0.5f).add(Vec3f(-1f, 0f, 0f))
+                }
+                cube {
+                    size.set(2.5f, 0.5f, 0.5f)
+                    origin.set(size).scale(-0.5f).add(Vec3f(0f, 0f, 1.25f))
+                }
+                cube {
+                    size.set(2.5f, 0.5f, 0.5f)
+                    origin.set(size).scale(-0.5f).add(Vec3f(0f, 0f, -1.25f))
                 }
             }
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val shape = CylinderShape(rand.randomF(1f, 2f), rand.randomF(2f, 4f))
-                val mass = shape.radius.pow(2) * shape.height * 0.5f
+                val s = rand.randomF(1f, 2f)
+                val shape = MultiShape()
+
+                val box1 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
+                shape.addShape(ChildShape(box1, Mat4f().translate(1f * s, 0f, 0f)))
+
+                val box2 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
+                shape.addShape(ChildShape(box2, Mat4f().translate(-1f * s, 0f, 0f)))
+
+                val box3 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
+                shape.addShape(ChildShape(box3, Mat4f().translate(0f, 0f, 1.25f * s)))
+
+                val box4 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
+                shape.addShape(ChildShape(box4, Mat4f().translate(0f, 0f, -1.25f * s)))
+
+                val mass = 8 * s.pow(3)
                 return shape to mass
             }
         },
 
         SPHERE {
             override val label = "Sphere"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
-                isFrustumChecked = false
-                instances = this@SPHERE.instances
-                generate {
-                    icoSphere { steps = 2 }
-                }
+
+            override fun MeshBuilder.generateMesh() {
+                icoSphere { steps = 2 }
             }
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
@@ -425,8 +445,8 @@ class PhysicsDemo : DemoScene("Physics") {
 
         MIXED {
             override val label = "Mixed"
-            override val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
-            override val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) { }
+
+            override fun MeshBuilder.generateMesh() { }
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
                 throw IllegalStateException()
@@ -434,8 +454,16 @@ class PhysicsDemo : DemoScene("Physics") {
         };
 
         abstract val label: String
-        abstract val mesh: Mesh
-        abstract val instances: MeshInstanceList
+        val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
+        val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+            isFrustumChecked = false
+            instances = this@Shape.instances
+            generate {
+                generateMesh()
+            }
+        }
+
+        abstract fun MeshBuilder.generateMesh()
         abstract fun generateShape(rand: Random): Pair<CollisionShape, Float>
 
         override fun toString(): String {

@@ -1,9 +1,12 @@
 package de.fabmax.kool.physics.shapes
 
-import de.fabmax.kool.physics.btCollisionShape
+import de.fabmax.kool.physics.BtCollisionShape
+import de.fabmax.kool.util.MeshBuilder
 
-actual abstract class CollisionShape {
+actual interface CollisionShape {
 
-    abstract val shape: btCollisionShape
+    val btShape: BtCollisionShape
+
+    actual fun generateGeometry(target: MeshBuilder)
 
 }

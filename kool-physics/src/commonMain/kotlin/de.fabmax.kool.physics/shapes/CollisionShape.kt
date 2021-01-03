@@ -1,3 +1,9 @@
 package de.fabmax.kool.physics.shapes
 
-expect abstract class CollisionShape
+import de.fabmax.kool.util.MeshBuilder
+
+expect interface CollisionShape {
+
+    fun generateGeometry(target: MeshBuilder)
+
+}

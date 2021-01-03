@@ -4,14 +4,13 @@ import ammo.Ammo
 import ammo.btCapsuleShape
 import de.fabmax.kool.physics.Physics
 
-@Suppress("CanBeParameter")
-actual class CapsuleShape actual constructor(actual val height: Float, actual val radius: Float) : CollisionShape() {
+actual class CapsuleShape actual constructor(height: Float, radius: Float) : CommonCapsuleShape(height, radius), CollisionShape {
 
-    override val shape: btCapsuleShape
+    override val btShape: btCapsuleShape
 
     init {
         Physics.checkIsLoaded()
 
-        shape = Ammo.btCapsuleShape(radius, height)
+        btShape = Ammo.btCapsuleShape(radius, height)
     }
 }

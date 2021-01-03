@@ -1,6 +1,20 @@
 package de.fabmax.kool.physics.shapes
 
-expect class CylinderShape(radius: Float, height: Float) : CollisionShape {
-    val radius: Float
-    val height: Float
+import de.fabmax.kool.util.MeshBuilder
+
+expect class CylinderShape(height: Float, radius: Float) : CommonCylinderShape, CollisionShape
+
+abstract class CommonCylinderShape(val height: Float, val radius: Float) {
+
+    open fun generateGeometry(target: MeshBuilder) {
+        target.apply {
+            cylinder {
+                height = this@CommonCylinderShape.height
+                topRadius = radius
+                bottomRadius = radius
+                steps = 40
+            }
+        }
+    }
+
 }

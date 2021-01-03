@@ -4,15 +4,14 @@ import ammo.Ammo
 import ammo.btCylinderShape
 import de.fabmax.kool.physics.Physics
 
-@Suppress("CanBeParameter")
-actual class CylinderShape actual constructor(actual val radius: Float, actual val height: Float) : CollisionShape() {
+actual class CylinderShape actual constructor(height: Float, radius: Float) : CommonCylinderShape(height, radius), CollisionShape {
 
-    override val shape: btCylinderShape
+    override val btShape: btCylinderShape
 
     init {
         Physics.checkIsLoaded()
 
         val halfExtents = Ammo.btVector3(radius, height / 2, radius)
-        shape = Ammo.btCylinderShape(halfExtents)
+        btShape = Ammo.btCylinderShape(halfExtents)
     }
 }

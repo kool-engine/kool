@@ -9,12 +9,11 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.IndexedVertexList
 
-@Suppress("CanBeParameter")
-actual class ConvexHullShape actual constructor(actual val points: List<Vec3f>) : CollisionShape() {
+actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonConvexHullShape(points), CollisionShape {
 
-    override val shape: btConvexHullShape
+    override val btShape: btConvexHullShape
 
-    actual val geometry: IndexedVertexList
+    override val geometry: IndexedVertexList
 
     init {
         Physics.checkIsLoaded()
@@ -34,13 +33,13 @@ actual class ConvexHullShape actual constructor(actual val points: List<Vec3f>) 
 
         // create final ConvexHullShape containing only hull vertices
         //shape = tmpShape
-        shape = Ammo.btConvexHullShape()
+        btShape = Ammo.btConvexHullShape()
         val nVerts = hull.numVertices()
         for (i in 0 until nVerts) {
-            shape.addPoint(hull.getVertexAt(i), false)
+            btShape.addPoint(hull.getVertexAt(i), false)
         }
-        shape.recalcLocalAabb()
-        shape.setMargin(0f)
+        btShape.recalcLocalAabb()
+        btShape.setMargin(0f)
 
         // build triangle mesh from convex hull
         geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)

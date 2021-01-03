@@ -4,14 +4,13 @@ import ammo.Ammo
 import ammo.btSphereShape
 import de.fabmax.kool.physics.Physics
 
-@Suppress("CanBeParameter")
-actual class SphereShape actual constructor(actual val radius: Float) : CollisionShape() {
+actual class SphereShape actual constructor(radius: Float) : CommonSphereShape(radius), CollisionShape {
 
-    override val shape: btSphereShape
+    override val btShape: btSphereShape
 
     init {
         Physics.checkIsLoaded()
 
-        shape = Ammo.btSphereShape(radius)
+        btShape = Ammo.btSphereShape(radius)
     }
 }
