@@ -4,15 +4,11 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.constraints.RevoluteConstraint
 import de.fabmax.kool.physics.shapes.*
 import de.fabmax.kool.physics.shapes.MultiShape
-import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -31,16 +27,18 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     private var motorDirection = 1f
     private var numLinks = 40
 
-    private val physicsMeshes = Group()
+    private val physMeshes = BodyMeshes(false).apply { isVisible = false }
+    private val niceMeshes = BodyMeshes(true)
     private var resetPhysics = false
 
-    private val shadows = mutableListOf<ShadowMap>()
+    private val shadows = mutableListOf<SimpleShadowMap>()
     private lateinit var aoPipeline: AoPipeline
     private lateinit var ibl: EnvironmentMaps
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
-            zoom = 75.0
+            setMouseRotation(-20f, -20f)
+            zoom = 50.0
             maxZoom = 200.0
         }
         (camera as PerspectiveCamera).apply {
@@ -52,19 +50,20 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         lightSetup()
 
         // group containing physics bodies
-        +physicsMeshes
+        +physMeshes
+        +niceMeshes
 
         ctx.assetMgr.launch {
             ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
 
             Physics.awaitLoaded()
-
             val world = PhysicsWorld()
             physicsWorld = world
             resetPhysics = true
 
             // ground plane
             +textureMesh(isNormalMapped = true) {
+                isCastingShadow = false
                 generate {
                     rotate(-90f, Vec3f.X_AXIS)
                     rect {
@@ -74,8 +73,8 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     }
                 }
                 shader = pbrShader {
-                    useAlbedoMap("tiles_flat_gray.png")
-                    useNormalMap("tiles_flat_normal.png")
+                    useAlbedoMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
+                    useNormalMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                     useImageBasedLighting(ibl)
                     shadowMaps += shadows
@@ -88,7 +87,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         onUpdate += {
             if (resetPhysics) {
                 resetPhysics = false
-                makePhysicsScene(it.ctx)
+                makePhysicsScene()
             }
             physicsWorld?.stepPhysics(it.deltaT)
         }
@@ -123,9 +122,9 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         })
     }
 
-    private fun makePhysicsScene(ctx: KoolContext) {
-        physicsMeshes.children.forEach { it.dispose(ctx) }
-        physicsMeshes.removeAllChildren()
+    private fun makePhysicsScene() {
+        physMeshes.clearBodies()
+        niceMeshes.clearBodies()
 
         physicsWorld?.apply {
             clear()
@@ -157,6 +156,29 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             toggleButton("Reverse Motor Direction", motorDirection < 0) {
                 motorDirection = if (isEnabled) -1f else 1f
                 updateMotor()
+            }
+        }
+        section("Rendering") {
+            val showNiceMeshes = toggleButton("Draw Nice Meshes", niceMeshes.isVisible) { }
+            val showPhysMeshes = toggleButton("Draw Physics Meshes", physMeshes.isVisible) { }
+            var ignoreStateChange = false
+            showNiceMeshes.onStateChange += {
+                if (!ignoreStateChange) {
+                    ignoreStateChange = true
+                    niceMeshes.isVisible = isEnabled
+                    physMeshes.isVisible = !isEnabled
+                    showPhysMeshes.isEnabled = !isEnabled
+                    ignoreStateChange = false
+                }
+            }
+            showPhysMeshes.onStateChange += {
+                if (!ignoreStateChange) {
+                    ignoreStateChange = true
+                    physMeshes.isVisible = isEnabled
+                    niceMeshes.isVisible = !isEnabled
+                    showNiceMeshes.isEnabled = !isEnabled
+                    ignoreStateChange = false
+                }
             }
         }
         section("Performance") {
@@ -210,7 +232,8 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val firstLink = makeChainLink(linkMass)
         firstLink.origin = t.getOrigin(MutableVec3f())
         world.addRigidBody(firstLink)
-        addPhysicsMesh(firstLink, Color.MD_LIME.toLinear())
+        physMeshes.links += firstLink
+        niceMeshes.links += firstLink
         var prevLink = firstLink
 
         for (i in 1 until numLinks) {
@@ -225,7 +248,8 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             link.setRotation(t.getRotation(r))
 
             world.addRigidBody(link)
-            addPhysicsMesh(link, Color.MD_GREEN.toLinear())
+            physMeshes.links += link
+            niceMeshes.links += link
 
             val chainHinge = RevoluteConstraint(prevLink, link,
                 Vec3f(2f, 0f, 0f), Vec3f(-2f, 0f, 0f),
@@ -244,23 +268,19 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
         val world = physicsWorld ?: return
 
-        val axleHolder = RigidBody(BoxShape(Vec3f(22f, 3f, 2f)), 0f)
-        axleHolder.setRotation(frame.getRotation(Mat3f()))
-        axleHolder.origin = frame.transform(MutableVec3f(origin).add(Vec3f(-9f, 0f, -4f)))
-        world.addRigidBody(axleHolder)
-        addPhysicsMesh(axleHolder, Color.LIGHT_GRAY.toLinear())
-
         val axle = RigidBody(CylinderShape(7f, 1f), 0f)
         axle.setRotation(frame.getRotation(Mat3f()).rotate(90f, 0f, 0f))
         axle.origin = frame.transform(MutableVec3f(origin))
         world.addRigidBody(axle)
-        addPhysicsMesh(axle, Color.MD_LIGHT_BLUE.toLinear())
+        physMeshes.axles += axle
+        niceMeshes.axles += axle
 
         val gear = makeGear(gearR, gearMass)
         gear.setRotation(frame.getRotation(Mat3f()))
         gear.origin = frame.transform(MutableVec3f(origin))
         world.addRigidBody(gear)
-        addPhysicsMesh(gear, Color.MD_PINK.toLinear())
+        physMeshes.gears += gear
+        niceMeshes.gears += gear
 
         val motor = RevoluteConstraint(axle, gear,
             Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 0f),
@@ -278,11 +298,11 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val gearShape = MultiShape()
         gearShape.addShape(CylinderShape(3f, gearR), Mat4f().rotate(90f, 0f, 0f))
         val toothPts = listOf(
-            Vec3f(toothWt, gearR + toothH, -0.45f), Vec3f(toothWt, gearR + toothH, 0.45f),
-            Vec3f(-toothWt, gearR + toothH, -0.45f), Vec3f(-toothWt, gearR + toothH, 0.45f),
+            Vec3f(toothWt, gearR + toothH, -0.4f), Vec3f(toothWt, gearR + toothH, 0.4f),
+            Vec3f(-toothWt, gearR + toothH, -0.4f), Vec3f(-toothWt, gearR + toothH, 0.4f),
 
-            Vec3f(toothWb, gearR - 0.1f, -0.6f), Vec3f(toothWb, gearR - 0.1f, 0.6f),
-            Vec3f(-toothWb, gearR - 0.1f, -0.6f), Vec3f(-toothWb, gearR - 0.1f, 0.6f)
+            Vec3f(toothWb, gearR - 0.1f, -0.55f), Vec3f(toothWb, gearR - 0.1f, 0.55f),
+            Vec3f(-toothWb, gearR - 0.1f, -0.55f), Vec3f(-toothWb, gearR - 0.1f, 0.55f)
         )
         for (i in 0..11) {
             gearShape.addShape(ConvexHullShape(toothPts), Mat4f().rotate(0f, 0f, 30f * i - 3f))
@@ -309,16 +329,116 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         return RigidBody(shape, mass, hingeBodyProps)
     }
 
-    private fun addPhysicsMesh(body: RigidBody, color: Color) {
-        val mesh = body.toColorMesh(color)
-        (mesh.children[0] as Mesh).apply {
-            shader = pbrShader {
-                albedoSource = Albedo.VERTEX_ALBEDO
-                useImageBasedLighting(ibl)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                shadowMaps += shadows
+    private inner class BodyMeshes(val isNice: Boolean): Group() {
+        var linkMesh: Mesh? = null
+        var gearMesh: Mesh? = null
+        var axleMesh: Mesh? = null
+
+        val links = mutableListOf<RigidBody>()
+        val gears = mutableListOf<RigidBody>()
+        val axles = mutableListOf<RigidBody>()
+
+        init {
+            isFrustumChecked = false
+            onUpdate += {
+                if (links.isNotEmpty()) {
+                    getOrCreateLinkMesh(links[0]).instances!!.updateInstances(links)
+                }
+                if (gears.isNotEmpty()) {
+                    getOrCreateGearMesh(gears[0]).instances!!.updateInstances(gears)
+                }
+                if (axles.isNotEmpty()) {
+                    getOrCreateAxleMesh(axles[0]).instances!!.updateInstances(axles)
+                }
             }
         }
-        physicsMeshes += mesh
+
+        fun clearBodies() {
+            links.clear()
+            gears.clear()
+            axles.clear()
+        }
+
+        fun MeshInstanceList.updateInstances(bodies: List<RigidBody>) {
+            clear()
+            for (i in bodies.indices) {
+                addInstance {
+                    put(bodies[i].transform.matrix)
+                }
+            }
+        }
+
+        fun getOrCreateLinkMesh(protoLink: RigidBody): Mesh {
+            if (linkMesh != null) {
+                return linkMesh!!
+            }
+
+            if (!isNice) {
+                linkMesh = colorMesh {
+                    isFrustumChecked = false
+                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+                    generate {
+                        color = Color.MD_GREEN.toLinear()
+                        protoLink.collisionShape.generateGeometry(this)
+                    }
+                    shader = pbrShader {
+                        isInstanced = true
+                    }
+                }
+            } else {
+                linkMesh = GearChainMeshGen.makeNiceLinkMesh(ibl, aoPipeline.aoMap, shadows)
+            }
+            +linkMesh!!
+            return linkMesh!!
+        }
+
+        fun getOrCreateGearMesh(protoGear: RigidBody): Mesh {
+            if (gearMesh != null) {
+                return gearMesh!!
+            }
+
+            if (!isNice) {
+                gearMesh = colorMesh {
+                    isFrustumChecked = false
+                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+                    generate {
+                        color = Color.MD_PINK.toLinear()
+                        protoGear.collisionShape.generateGeometry(this)
+                    }
+                    shader = pbrShader {
+                        isInstanced = true
+                    }
+                }
+            } else {
+                gearMesh = GearChainMeshGen.makeNiceGearMesh(ibl, aoPipeline.aoMap, shadows)
+            }
+            +gearMesh!!
+            return gearMesh!!
+        }
+
+        fun getOrCreateAxleMesh(protoAxle: RigidBody): Mesh {
+            if (axleMesh != null) {
+                return axleMesh!!
+            }
+
+            if (!isNice) {
+                axleMesh = colorMesh {
+                    isFrustumChecked = false
+                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+                    generate {
+                        color = Color.MD_BLUE.toLinear()
+                        protoAxle.collisionShape.generateGeometry(this)
+                    }
+                    shader = pbrShader {
+                        isInstanced = true
+                    }
+                }
+            } else {
+                axleMesh = GearChainMeshGen.makeNiceAxleMesh(ibl, aoPipeline.aoMap, shadows)
+            }
+            +axleMesh!!
+            return axleMesh!!
+        }
     }
+
 }

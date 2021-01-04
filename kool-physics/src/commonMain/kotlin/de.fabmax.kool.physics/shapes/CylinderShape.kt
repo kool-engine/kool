@@ -10,8 +10,7 @@ abstract class CommonCylinderShape(val height: Float, val radius: Float) {
         target.apply {
             cylinder {
                 height = this@CommonCylinderShape.height
-                topRadius = radius
-                bottomRadius = radius
+                radius = this@CommonCylinderShape.radius
                 steps = 40
                 origin.set(0f, -height/2f, 0f)
             }

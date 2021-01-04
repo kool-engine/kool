@@ -42,8 +42,8 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
-        "physics" to DemoEntry("Physics / Collision") { CollisionDemo() },
-        "phys-constraints" to DemoEntry("Physics / Constraints") { ConstraintsDemo() },
+        "phys-constraints" to DemoEntry("Physics - Constraints") { ConstraintsDemo() },
+        "physics" to DemoEntry("Physics - Collision") { CollisionDemo() },
         "atmosphere" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },
         "procedural" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
         "gltf" to DemoEntry("glTF Models") { GltfDemo() },

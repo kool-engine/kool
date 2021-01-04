@@ -69,6 +69,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
     fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float) = transform.rotate(eulerX, eulerY, eulerZ)
 
+    fun scale(s: Float) = transform.scale(s, s, s)
+
     fun scale(x: Float, y: Float, z: Float) = transform.scale(x, y, z)
 
     fun setCoordSystem(origin: Vec3f, right: Vec3f, up: Vec3f, top: Vec3f? = null) {
@@ -957,6 +959,13 @@ class CylinderProps {
     var topFill = true
     var bottomFill = true
     val origin = MutableVec3f()
+
+    var radius: Float
+        get() = (bottomRadius + topRadius) / 2f
+        set(value) {
+            bottomRadius = value
+            topRadius = value
+        }
 
     fun fixNegativeSize() {
         if (height < 0) {

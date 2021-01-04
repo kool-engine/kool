@@ -9,7 +9,11 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Physics](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo. Based on 
+- [Physics - Constraints](https://fabmax.github.io/kool/kool-js/?demo=phys-constraints): A slightly more sophisticated
+  physics demo consisting of a chain running over two gears. Uses a lot of multi / compound shapes and revolute / hinge
+  constraints. Unfortunately, with ammo.js, chain segments sometimes are a bit sticky, which makes the chain a little wobbly
+  (the JVM / JBullet version runs much smoother) 
+- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo. Based on 
   bullet physics (via [ammo.js](https://github.com/kripken/ammo.js/) on javascript / [JBullet](http://jbullet.advel.cz/)
   on JVM). A few more notes on physics [further below](#physics-simulation).
 - [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.

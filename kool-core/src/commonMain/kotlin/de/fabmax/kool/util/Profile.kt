@@ -76,8 +76,32 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         positions += MutableVec3f(x, y, 0f)
     }
 
+    fun xyArc(x: Float, y: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+        val angStep = angle / steps
+        val v = MutableVec2f(x - center.x, y - center.y)
+        for (i in 0 .. steps) {
+            xy(center.x + v.x, center.y + v.y)
+            if (generateNormals) {
+                normals += MutableVec3f(v.x, v.y, 0f).norm()
+            }
+            v.rotate(angStep)
+        }
+    }
+
     fun xz(x: Float, z: Float) {
         positions += MutableVec3f(x, 0f, z)
+    }
+
+    fun xzArc(x: Float, z: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+        val angStep = angle / steps
+        val v = MutableVec2f(x - center.x, z - center.y)
+        for (i in 0 .. steps) {
+            xz(center.x + v.x, center.y + v.y)
+            if (generateNormals) {
+                normals += MutableVec3f(v.x, 0f, v.y).norm()
+            }
+            v.rotate(angStep)
+        }
     }
 
     fun uv(x: Float, y: Float) {
