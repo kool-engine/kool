@@ -6,6 +6,7 @@ import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.constraints.Constraint
 import javax.vecmath.Vector3f
 
 actual class PhysicsWorld  : CommonPhysicsWorld() {
@@ -42,5 +43,13 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
         physicsWorld.removeRigidBody(rigidBody.btRigidBody)
+    }
+
+    override fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean) {
+        physicsWorld.addConstraint(constraint.btConstraint, disableCollisionBetweenBodies)
+    }
+
+    override fun removeConstraintImpl(constraint: Constraint) {
+        physicsWorld.removeConstraint(constraint.btConstraint)
     }
 }

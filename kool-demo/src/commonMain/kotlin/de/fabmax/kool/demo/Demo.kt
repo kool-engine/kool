@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
+import de.fabmax.kool.demo.physics.CollisionDemo
+import de.fabmax.kool.demo.physics.ConstraintsDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
@@ -40,7 +42,8 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
-        "physics" to DemoEntry("Physics") { PhysicsDemo() },
+        "physics" to DemoEntry("Physics / Collision") { CollisionDemo() },
+        "phys-constraints" to DemoEntry("Physics / Constraints") { ConstraintsDemo() },
         "atmosphere" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },
         "procedural" to DemoEntry("Procedural Geometry") { ProceduralDemo() },
         "gltf" to DemoEntry("glTF Models") { GltfDemo() },

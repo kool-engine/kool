@@ -7,9 +7,6 @@ expect class MultiShape() : CommonMultiShape, CollisionShape {
 
     constructor(childShapes: List<ChildShape>)
 
-    fun addShape(childShape: ChildShape)
-
-    fun removeShape(shape: CollisionShape)
 }
 
 class ChildShape(val shape: CollisionShape, val transform: Mat4f)
@@ -17,6 +14,12 @@ class ChildShape(val shape: CollisionShape, val transform: Mat4f)
 abstract class CommonMultiShape {
 
     abstract val children: List<ChildShape>
+
+    abstract fun addShape(childShape: ChildShape)
+
+    abstract fun removeShape(shape: CollisionShape)
+
+    fun addShape(shape: CollisionShape, transform: Mat4f) = addShape(ChildShape(shape, transform))
 
     open fun generateGeometry(target: MeshBuilder) {
         children.forEach { child ->

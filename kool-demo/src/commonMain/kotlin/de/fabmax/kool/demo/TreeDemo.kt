@@ -52,7 +52,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         +sceneContent
 
         // use simple shadow map with fixed bounds to avoid noise during camera movement
-        val shadow = SimpleShadowMap(this, 0).apply { optimizeForDirectionalLight = true }
+        val shadow = SimpleShadowMap(this, 0).apply { setDefaultDepthOffset(true) }
         val shadowMaps = listOf(shadow)
         onUpdate += {
             shadow.shadowBounds = sceneContent.bounds

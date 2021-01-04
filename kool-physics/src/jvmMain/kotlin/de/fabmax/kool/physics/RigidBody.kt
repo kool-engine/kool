@@ -3,23 +3,23 @@ package de.fabmax.kool.physics
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo
 import com.bulletphysics.linearmath.DefaultMotionState
 import com.bulletphysics.linearmath.Transform
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.physics.shapes.CollisionShape
 import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
-@Suppress("CanBeParameter")
-actual class RigidBody actual constructor(actual val collisionShape: CollisionShape, actual val mass: Float) : CommonRigidBody() {
+actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties) : CommonRigidBody(collisionShape, mass) {
     val btRigidBody: BtRigidBody
-
-    actual val transform = Mat4f()
 
     private val bufOrigin = MutableVec3f()
     private val bufRotation = MutableVec4f()
     private val bufTransform = Transform()
     private val bufQuat = Quat4f()
 
-    actual var origin: Vec3f
+    override var origin: Vec3f
         get() {
             btRigidBody.getWorldTransform(bufTransform)
             bufTransform.origin.toVec3f(bufOrigin)
@@ -29,9 +29,10 @@ actual class RigidBody actual constructor(actual val collisionShape: CollisionSh
             btRigidBody.getWorldTransform(bufTransform)
             bufTransform.origin.set(value)
             btRigidBody.setWorldTransform(bufTransform)
+            updateTransform()
         }
 
-    actual var rotation: Vec4f
+    override var rotation: Vec4f
         get() {
             btRigidBody.getWorldTransform(bufTransform)
             bufTransform.getRotation(bufQuat).toVec4f(bufRotation)
@@ -41,6 +42,7 @@ actual class RigidBody actual constructor(actual val collisionShape: CollisionSh
             btRigidBody.getWorldTransform(bufTransform)
             bufTransform.setRotation(value.toBtQuat4f())
             btRigidBody.setWorldTransform(bufTransform)
+            updateTransform()
         }
 
     init {
@@ -53,18 +55,24 @@ actual class RigidBody actual constructor(actual val collisionShape: CollisionSh
             btShape.calculateLocalInertia(mass, boxInertia)
         }
         val constructionInfo = RigidBodyConstructionInfo(mass, motionState, btShape, boxInertia)
+        constructionInfo.friction = bodyProperties.friction
+        //constructionInfo.rollingFriction = bodyProperties.rollingFriction     // not available in JBullet
+        constructionInfo.restitution = bodyProperties.restitution
+        constructionInfo.linearDamping = bodyProperties.linearDamping
+        constructionInfo.angularDamping = bodyProperties.angularDamping
+        constructionInfo.linearSleepingThreshold *= bodyProperties.sleepThreshold
+        constructionInfo.angularSleepingThreshold *= bodyProperties.sleepThreshold
 
         btRigidBody = BtRigidBody(constructionInfo)
-    }
 
-    actual fun setRotation(rotation: Mat3f) {
-        val quat = rotation.getRotation(bufRotation)
-        btRigidBody.getWorldTransform(bufTransform).setRotation(quat.toBtQuat4f())
-        btRigidBody.setWorldTransform(bufTransform)
     }
 
     override fun fixedUpdate(timeStep: Float) {
         super.fixedUpdate(timeStep)
+        updateTransform()
+    }
+
+    private fun updateTransform() {
         btRigidBody.getWorldTransform(bufTransform)
         bufTransform.toMat4f(transform)
     }

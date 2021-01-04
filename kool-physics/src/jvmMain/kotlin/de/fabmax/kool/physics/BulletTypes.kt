@@ -8,13 +8,14 @@ import javax.vecmath.Vector3f
 // assign type aliases to JBullet classes to distinguish them from our own classes
 
 typealias BtCollisionShape = com.bulletphysics.collision.shapes.CollisionShape
-
 typealias BtBoxShape = com.bulletphysics.collision.shapes.BoxShape
 typealias BtCapsuleShape = com.bulletphysics.collision.shapes.CapsuleShape
 typealias BtConvexHullShape = com.bulletphysics.collision.shapes.ConvexHullShape
 typealias BtCylinderShape = com.bulletphysics.collision.shapes.CylinderShape
 typealias BtSphereShape = com.bulletphysics.collision.shapes.SphereShape
 typealias BtStaticPlaneShape = com.bulletphysics.collision.shapes.StaticPlaneShape
+
+typealias BtHingeConstraint = com.bulletphysics.dynamics.constraintsolver.HingeConstraint
 
 typealias BtRigidBody = com.bulletphysics.dynamics.RigidBody
 

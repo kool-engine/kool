@@ -6,6 +6,7 @@ import ammo.toBtVector3
 import ammo.toVec3f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.constraints.Constraint
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
     val physicsWorld: btDiscreteDynamicsWorld
@@ -40,5 +41,14 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
         physicsWorld.removeRigidBody(rigidBody.btRigidBody)
+    }
+
+    override fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean) {
+        physicsWorld.addConstraint(constraint.btConstraint, disableCollisionBetweenBodies)
+        println("constraint added")
+    }
+
+    override fun removeConstraintImpl(constraint: Constraint) {
+        physicsWorld.removeConstraint(constraint.btConstraint)
     }
 }

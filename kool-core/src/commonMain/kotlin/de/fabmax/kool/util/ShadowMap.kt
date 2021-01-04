@@ -29,10 +29,11 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
 
     val lightViewProjMat = Mat4d()
 
-    var optimizeForDirectionalLight = false
+    //var optimizeForDirectionalLight = false
     var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
+    var shaderDepthOffset = -0.005f
     var shadowBounds: BoundingBox? = null
 
     private val nearSceneCamPlane = FrustumPlane()
@@ -60,6 +61,10 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
                 ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
             }
         }
+    }
+
+    fun setDefaultDepthOffset(isDirectional: Boolean) {
+        shaderDepthOffset = if (isDirectional) -0.001f else -0.005f
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -166,7 +171,7 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
         MapRange(near, far)
     }
 
-    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode).apply { optimizeForDirectionalLight = true } }
+    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode).apply { setDefaultDepthOffset(true) } }
     val viewSpaceRanges = FloatArray(numCascades)
 
     var drawNode: Node

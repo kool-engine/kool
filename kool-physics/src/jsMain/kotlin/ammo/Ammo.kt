@@ -97,6 +97,14 @@ external interface btCompoundShape : btCollisionShape {
     fun updateChildTransform(childIndex: Int, newChildTransform: btTransform)
 }
 
+external interface btTypedConstraint {
+    fun enableFeedback(needsFeedback: Boolean)
+    fun getBreakingImpulseThreshold(): Float
+    fun setBreakingImpulseThreshold(threshold: Float)
+    fun getParam(num: Int, axis: Int): Float
+    fun setParam(num: Int, value: Float, axis: Int)
+}
+
 external interface btConeShape : btCollisionShape
 
 external interface btConstraintSolver
@@ -139,8 +147,9 @@ external interface btDiscreteDynamicsWorld : btDynamicsWorld {
     fun addRigidBody(body: btRigidBody, group: Short, mask: Short)
     fun removeRigidBody(body: btRigidBody)
 
-//    void addConstraint(btTypedConstraint constraint, optional boolean disableCollisionsBetweenLinkedBodies);
-//    void removeConstraint(btTypedConstraint constraint);
+    fun addConstraint(constraint: btTypedConstraint)
+    fun addConstraint(constraint: btTypedConstraint, disableCollisionsBetweenLinkedBodies: Boolean)
+    fun removeConstraint(constraint: btTypedConstraint)
 
     fun stepSimulation(timeStep: Float): Int
     fun stepSimulation(timeStep: Float, maxSubSteps: Int, fixedTimeStep: Float): Int
@@ -173,6 +182,17 @@ external interface btFace {
 external interface btFaceArray {
     fun size(): Int
     fun at(n: Int): btFace
+}
+
+external interface btHingeConstraint : btTypedConstraint {
+    fun setLimit(low: Float, high: Float, softness: Float, biasFactor: Float)
+    fun setLimit(low: Float, high: Float, softness: Float, biasFactor: Float, relaxationFactor: Float)
+    fun enableAngularMotor(enableMotor: Boolean, targetVelocity: Float, maxMotorImpulse: Float)
+    fun setAngularOnly(angularOnly: Boolean)
+
+    fun enableMotor(enableMotor: Boolean)
+    fun setMaxMotorImpulse(maxMotorImpulse: Float)
+    fun setMotorTarget(targetAngle: Float, dt: Float)
 }
 
 external interface btIntArray {
@@ -445,6 +465,9 @@ object Ammo {
                                    constraintSolver: btConstraintSolver,
                                    collisionConfiguration: btCollisionConfiguration): btDiscreteDynamicsWorld =
         js("new this.ammo.btDiscreteDynamicsWorld(dispatcher, pairCache, constraintSolver, collisionConfiguration)")
+
+    fun btHingeConstraint(rbA: btRigidBody, rbB: btRigidBody, pivotInA: btVector3, pivotInB: btVector3, axisInA: btVector3, axisInB: btVector3): btHingeConstraint =
+        js("new this.ammo.btHingeConstraint(rbA, rbB, pivotInA, pivotInB, axisInA, axisInB)")
 
     fun btQuaternion(x: Float, y: Float, z: Float, w: Float): btQuaternion =
         js("new this.ammo.btQuaternion(x, y, z, w)")

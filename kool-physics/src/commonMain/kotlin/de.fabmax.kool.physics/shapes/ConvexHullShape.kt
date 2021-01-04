@@ -11,8 +11,18 @@ abstract class CommonConvexHullShape(val points: List<Vec3f>) {
     abstract val geometry: IndexedVertexList
 
     open fun generateGeometry(target: MeshBuilder) {
+        val hull = geometry
         target.apply {
-            geometry.addGeometry(this@CommonConvexHullShape.geometry)
+            val inds = mutableListOf<Int>()
+            hull.forEach {
+                inds += vertex(it, it.normal)
+            }
+            for (i in 0 until hull.numIndices step 3) {
+                val i0 = inds[hull.indices[i]]
+                val i1 = inds[hull.indices[i + 1]]
+                val i2 = inds[hull.indices[i + 2]]
+                geometry.addTriIndices(i0, i1, i2)
+            }
         }
     }
 

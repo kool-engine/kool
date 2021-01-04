@@ -45,7 +45,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             +Skybox.cube(ibl.reflectionMap, 1f)
 
             val shadowMap = SimpleShadowMap(this@scene, 0).apply {
-                optimizeForDirectionalLight = true
+                setDefaultDepthOffset(true)
                 shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
             }
             val deferredCfg = DeferredPipelineConfig().apply {

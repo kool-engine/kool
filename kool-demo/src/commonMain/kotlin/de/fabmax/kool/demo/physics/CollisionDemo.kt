@@ -1,6 +1,10 @@
-package de.fabmax.kool.demo
+package de.fabmax.kool.demo.physics
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.shapes.*
@@ -18,7 +22,7 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.*
 
-class PhysicsDemo : DemoScene("Physics") {
+class CollisionDemo : DemoScene("Physics") {
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
@@ -28,8 +32,6 @@ class PhysicsDemo : DemoScene("Physics") {
     private var numSpawnBodies = 450
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
-
-    private var timeFactor = 1f
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
@@ -60,7 +62,7 @@ class PhysicsDemo : DemoScene("Physics") {
 
             Physics.awaitLoaded()
             val physicsWorld = PhysicsWorld()
-            this@PhysicsDemo.physicsWorld = physicsWorld
+            this@CollisionDemo.physicsWorld = physicsWorld
             makeGround(ibl, physicsWorld)
 
             resetPhysics()
@@ -75,8 +77,7 @@ class PhysicsDemo : DemoScene("Physics") {
             val matBuf = Mat4f()
             val removeBodies = mutableListOf<ColoredBody>()
             onUpdate += {
-                val deltaPhys = physicsWorld.stepPhysics(it.deltaT)
-                timeFactor = timeFactor * 0.9f + deltaPhys / it.deltaT * 0.1f
+                physicsWorld.stepPhysics(it.deltaT)
 
                 for (i in shapes.indices) {
                     shapes[i].instances.clear()
@@ -109,8 +110,6 @@ class PhysicsDemo : DemoScene("Physics") {
     }
 
     private fun resetPhysics() {
-        physicsWorld?.cpuTime = 0.0
-
         bodies.forEach {
             physicsWorld?.removeRigidBody(it.rigidBody)
         }
@@ -327,7 +326,7 @@ class PhysicsDemo : DemoScene("Physics") {
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${timeFactor.toString(2)} x"
+                    text = "${physicsWorld?.timeFactor?.toString(2)} x"
                 }
             }
         }
@@ -413,16 +412,16 @@ class PhysicsDemo : DemoScene("Physics") {
                 val shape = MultiShape()
 
                 val box1 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
-                shape.addShape(ChildShape(box1, Mat4f().translate(1f * s, 0f, 0f)))
+                shape.addShape(box1, Mat4f().translate(1f * s, 0f, 0f))
 
                 val box2 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
-                shape.addShape(ChildShape(box2, Mat4f().translate(-1f * s, 0f, 0f)))
+                shape.addShape(box2, Mat4f().translate(-1f * s, 0f, 0f))
 
                 val box3 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
-                shape.addShape(ChildShape(box3, Mat4f().translate(0f, 0f, 1.25f * s)))
+                shape.addShape(box3, Mat4f().translate(0f, 0f, 1.25f * s))
 
                 val box4 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
-                shape.addShape(ChildShape(box4, Mat4f().translate(0f, 0f, -1.25f * s)))
+                shape.addShape(box4, Mat4f().translate(0f, 0f, -1.25f * s))
 
                 val mass = 8 * s.pow(3)
                 return shape to mass

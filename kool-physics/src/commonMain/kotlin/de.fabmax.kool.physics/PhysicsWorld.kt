@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.constraints.Constraint
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
@@ -18,11 +19,18 @@ abstract class CommonPhysicsWorld {
     private var smartSubStepLimit = 5
 
     private val perfTimer = PerfTimer()
-    var cpuTime = 0.0
+    var cpuTime = 0f
+        private set
+    var timeFactor = 1f
+        private set
 
     private val mutBodies = mutableListOf<RigidBody>()
     val bodies: List<RigidBody>
         get() = mutBodies
+
+    private val mutConstraints = mutableListOf<Constraint>()
+    val constraints: List<Constraint>
+        get() = mutConstraints
 
     fun addRigidBody(rigidBody: RigidBody) {
         mutBodies += rigidBody
@@ -34,9 +42,22 @@ abstract class CommonPhysicsWorld {
         removeRigidBodyImpl(rigidBody)
     }
 
+    fun addConstraint(constraint: Constraint, disableCollisionBetweenBodies: Boolean = false) {
+        mutConstraints += constraint
+        addConstraintImpl(constraint, disableCollisionBetweenBodies)
+    }
+
+    fun removeConstraint(constraint: Constraint) {
+        mutConstraints -= constraint
+        removeConstraintImpl(constraint)
+    }
+
     fun clear() {
         mutBodies.forEach {
             removeRigidBodyImpl(it)
+        }
+        mutConstraints.forEach {
+            removeConstraintImpl(it)
         }
         mutBodies.clear()
     }
@@ -50,8 +71,8 @@ abstract class CommonPhysicsWorld {
             perfTimer.reset()
             singleStepPhysics(fixedStep)
             steps++
-            val ms = perfTimer.takeMs()
-            cpuTime = cpuTime * 0.8 + ms * 0.2
+            val ms = perfTimer.takeMs().toFloat()
+            cpuTime = cpuTime * 0.8f + ms * 0.2f
 
             physicsTime += fixedStep
             if (physicsTime < physicsTimeDesired) {
@@ -68,7 +89,10 @@ abstract class CommonPhysicsWorld {
             smartSubStepLimit++
         }
 
-        return steps * fixedStep
+        val timeInc = fixedStep * steps
+        timeFactor = timeFactor * 0.9f + timeInc / timeStep * 0.1f
+
+        return timeInc
     }
 
     fun singleStepPhysics(timeStep: Float) {
@@ -80,6 +104,9 @@ abstract class CommonPhysicsWorld {
 
     protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)
     protected abstract fun removeRigidBodyImpl(rigidBody: RigidBody)
+
+    protected abstract fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean)
+    protected abstract fun removeConstraintImpl(constraint: Constraint)
 
     protected abstract fun singleStepPhysicsImpl(timeStep: Float)
 }

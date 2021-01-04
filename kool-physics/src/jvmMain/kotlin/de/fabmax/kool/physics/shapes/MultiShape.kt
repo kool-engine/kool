@@ -15,12 +15,12 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
         childShapes.forEach { addShape(it) }
     }
 
-    actual fun addShape(childShape: ChildShape) {
+    override fun addShape(childShape: ChildShape) {
         mutShapes += childShape
         btShape.addChildShape(childShape.transform.toBtTransform(), childShape.shape.btShape)
     }
 
-    actual fun removeShape(shape: CollisionShape) {
+    override fun removeShape(shape: CollisionShape) {
         mutShapes.removeAll { it.shape === shape }
         btShape.removeChildShape(shape.btShape)
     }
