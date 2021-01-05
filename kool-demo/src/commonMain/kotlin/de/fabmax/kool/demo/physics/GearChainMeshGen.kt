@@ -42,7 +42,6 @@ object GearChainMeshGen {
                     xzArc(0.6f, 0.3f, Vec2f(0.6f, 0.2f), -90f, 3)
                 }
                 withTransform {
-                    rotate(-93.5f, Vec3f.Z_AXIS)
                     for (i in 0..11) {
                         withTransform {
                             rotate(i * 30f, Vec3f.Z_AXIS)
@@ -268,7 +267,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
         instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
         generate {
@@ -281,12 +280,12 @@ object GearChainMeshGen {
             }
 
             color = Color.GRAY
-            roughness = 0.1f
+            roughness = 0.2f
             metal = 1f
             profile {
                 simpleShape(true) {
-                    xyArc(-1f, -0.4f, Vec2f(-1f, 0f), 180f, 8)
-                    xyArc(-2.1f, 0.4f, Vec2f(-2.1f, 0f), 180f, 8)
+                    xyArc(0.6f, -0.3f, Vec2f(0.6f, 0f), 180f, 8)
+                    xyArc(-0.6f, 0.3f, Vec2f(-0.6f, 0f), 180f, 8)
                 }
 
                 withTransform {
@@ -298,14 +297,30 @@ object GearChainMeshGen {
                     sampleAndFillTop()
                 }
             }
+            geometry.generateNormals()
+        }
+        shader = makeMeshShader(ibl, aoMap, shadows)
+    }
 
-            color = Color.MD_BLUE_GREY.toLinear()
-            roughness = 0.3f
+    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
+        isFrustumChecked = false
+        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+        generate {
+            var roughness = 0.3f
+            var metal = 1f
+            vertexModFun = {
+                val roughMetal = getVec2fAttribute(attribRoughMetallic)!!
+                roughMetal.x = roughness
+                roughMetal.y = metal
+            }
+
+            color = Color.MD_BLUE_GREY_400.toLinear()
+            roughness = 0.4f
             metal = 1f
             profile {
                 simpleShape(true) {
-                    xyArc(-1f, 0.4f, Vec2f(-1f, 0f), 180f, 8)
-                    xyArc(2.1f, -0.4f, Vec2f(2.1f, 0f), 180f, 8)
+                    xyArc(1.5f, -0.4f, Vec2f(1.5f, 0f), 180f, 12)
+                    xyArc(-1.5f, 0.4f, Vec2f(-1.5f, 0f), 180f, 12)
                 }
 
                 for (i in 0..1) {
@@ -324,18 +339,13 @@ object GearChainMeshGen {
             color = Color.MD_BLUE_GREY_700.toLinear()
             roughness = 0.3f
             metal = 1f
-            cylinder {
-                origin.set(-1f, -0.9f, 0f)
-                steps = 16
-                radius = 0.3f
-                height = 1.8f
-            }
-            color = Color.GRAY
-            cylinder {
-                origin.set(2.1f, -0.9f, 0f)
-                steps = 16
-                radius = 0.18f
-                height = 1.8f
+            for (s in -1..1 step 2) {
+                cylinder {
+                    origin.set(1.5f * s, -0.9f, 0f)
+                    steps = 16
+                    radius = 0.18f
+                    height = 1.8f
+                }
             }
             geometry.generateNormals()
         }

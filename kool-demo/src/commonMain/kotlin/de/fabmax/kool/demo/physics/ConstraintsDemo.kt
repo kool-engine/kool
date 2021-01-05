@@ -28,7 +28,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     private var numLinks = 40
 
     private val physMeshes = BodyMeshes(false).apply { isVisible = false }
-    private val niceMeshes = BodyMeshes(true)
+    private val niceMeshes = BodyMeshes(true).apply { isVisible = true }
     private var resetPhysics = false
 
     private val shadows = mutableListOf<SimpleShadowMap>()
@@ -203,16 +203,17 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
 
     private fun computeAxleDist(): Float {
         val linkLen = 4f
-        return (numLinks - 12) / 2 * linkLen + 0.3f
+        return (numLinks - 12) / 2 * linkLen
     }
 
     private fun makeGearChain(numLinks: Int, frame: Mat4f) {
         val world = physicsWorld ?: return
 
-        val linkMass = 1f
+        val linkMass = 0.33f
         val gearMass = 10f
         val gearR = 7f
         val axleDist = computeAxleDist()
+        val tension = 0.1f
 
         if (numLinks % 2 != 0) {
             throw IllegalArgumentException("numLinks must be even")
@@ -229,40 +230,73 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             rotLinks += i
         }
 
-        val firstLink = makeChainLink(linkMass)
-        firstLink.origin = t.getOrigin(MutableVec3f())
-        world.addRigidBody(firstLink)
-        physMeshes.links += firstLink
-        niceMeshes.links += firstLink
-        var prevLink = firstLink
+        val firstOuter = makeOuterChainLink(linkMass * 2)
+        firstOuter.origin = t.getOrigin(MutableVec3f())
+        firstOuter.setRotation(t.getRotation(r))
+        world.addRigidBody(firstOuter)
+
+        var prevInner = makeInnerChainLink(linkMass)
+        t.translate(1.25f, 0f, 0f)
+        t.rotate(0f, 0f, -15f)
+        t.translate(0.75f, 0f, 0f)
+        prevInner.origin = t.getOrigin(MutableVec3f())
+        prevInner.setRotation(t.getRotation(r))
+        world.addRigidBody(prevInner)
+
+        connectLinksOuterInner(firstOuter, prevInner, tension, world)
+
+        physMeshes.linksO += firstOuter
+        niceMeshes.linksO += firstOuter
+        physMeshes.linksI += prevInner
+        niceMeshes.linksI += prevInner
 
         for (i in 1 until numLinks) {
-            val link = makeChainLink(linkMass)
-
-            t.translate(2f, 0f, 0f)
+            t.translate(0.75f, 0f, 0f)
             if (i in rotLinks) {
-                t.rotate(0f, 0f, -30f)
+                t.rotate(0f, 0f, -15f)
             }
-            t.translate(2f, 0f, 0f)
-            link.origin = t.getOrigin(MutableVec3f())
-            link.setRotation(t.getRotation(r))
+            t.translate(1.25f, 0f, 0f)
 
-            world.addRigidBody(link)
-            physMeshes.links += link
-            niceMeshes.links += link
+            val outer = makeOuterChainLink(linkMass * 2)
+            outer.origin = t.getOrigin(MutableVec3f())
+            outer.setRotation(t.getRotation(r))
+            world.addRigidBody(outer)
 
-            val chainHinge = RevoluteConstraint(prevLink, link,
-                Vec3f(2f, 0f, 0f), Vec3f(-2f, 0f, 0f),
-                Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-            world.addConstraint(chainHinge)
+            connectLinksInnerOuter(prevInner, outer, tension, world)
 
-            prevLink = link
+            prevInner = makeInnerChainLink(linkMass)
+            t.translate(1.25f, 0f, 0f)
+            if ((i + 1) in rotLinks) {
+                t.rotate(0f, 0f, -15f)
+            }
+            t.translate(0.75f, 0f, 0f)
+            prevInner.origin = t.getOrigin(MutableVec3f())
+            prevInner.setRotation(t.getRotation(r))
+            world.addRigidBody(prevInner)
+
+            connectLinksOuterInner(outer, prevInner, tension, world)
+
+            physMeshes.linksO += outer
+            niceMeshes.linksO += outer
+            physMeshes.linksI += prevInner
+            niceMeshes.linksI += prevInner
         }
 
-        val chainHinge = RevoluteConstraint(prevLink, firstLink,
-            Vec3f(2f, 0f, 0f), Vec3f(-2f, 0f, 0f),
+        connectLinksInnerOuter(prevInner, firstOuter, tension, world)
+    }
+
+    private fun connectLinksOuterInner(outer: RigidBody, inner: RigidBody, t: Float, world: PhysicsWorld) {
+        val hinge = RevoluteConstraint(outer, inner,
+            Vec3f(1.5f - t, 0f, 0f), Vec3f(-0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(chainHinge)
+        world.addConstraint(hinge)
+    }
+
+    private fun connectLinksInnerOuter(inner: RigidBody, outer: RigidBody, t: Float, world: PhysicsWorld) {
+        val hinge = RevoluteConstraint(inner, outer,
+            Vec3f(0.5f, 0f, 0f), Vec3f(-1.5f + t, 0f, 0f),
+            Vec3f.Z_AXIS, Vec3f.Z_AXIS)
+        world.addConstraint(hinge)
     }
 
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
@@ -292,152 +326,137 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     }
 
     private fun makeGear(gearR: Float, mass: Float): RigidBody {
-        val toothH = 1f
-        val toothWb = 1f
-        val toothWt = 0.7f
+        val s = 1f
+        val toothH = 1f * s
+        val toothBb = 0.55f * s
+        val toothBt = 0.4f * s
+        val toothWb = 1f * s
+        val toothWt = 0.7f * s
         val gearShape = MultiShape()
         gearShape.addShape(CylinderShape(3f, gearR), Mat4f().rotate(90f, 0f, 0f))
         val toothPts = listOf(
-            Vec3f(toothWt, gearR + toothH, -0.4f), Vec3f(toothWt, gearR + toothH, 0.4f),
-            Vec3f(-toothWt, gearR + toothH, -0.4f), Vec3f(-toothWt, gearR + toothH, 0.4f),
+            Vec3f(toothWt, gearR + toothH, -toothBt), Vec3f(toothWt, gearR + toothH, toothBt),
+            Vec3f(-toothWt, gearR + toothH, -toothBt), Vec3f(-toothWt, gearR + toothH, toothBt),
 
-            Vec3f(toothWb, gearR - 0.1f, -0.55f), Vec3f(toothWb, gearR - 0.1f, 0.55f),
-            Vec3f(-toothWb, gearR - 0.1f, -0.55f), Vec3f(-toothWb, gearR - 0.1f, 0.55f)
+            Vec3f(toothWb, gearR - 0.1f, -toothBb), Vec3f(toothWb, gearR - 0.1f, toothBb),
+            Vec3f(-toothWb, gearR - 0.1f, -toothBb), Vec3f(-toothWb, gearR - 0.1f, toothBb)
         )
         for (i in 0..11) {
-            gearShape.addShape(ConvexHullShape(toothPts), Mat4f().rotate(0f, 0f, 30f * i - 3f))
+            gearShape.addShape(ConvexHullShape(toothPts), Mat4f().rotate(0f, 0f, 30f * i))
         }
-        return RigidBody(gearShape, mass)
+
+        val gearBodyProps = rigidBodyProperties {
+            friction = 0.1f
+        }
+        return RigidBody(gearShape, mass, gearBodyProps)
     }
 
-    private fun makeChainLink(mass: Float): RigidBody {
-        val boxA = BoxShape(Vec3f(1.8f, 0.8f, 1f))
-        val boxB = BoxShape(Vec3f(3.6f, 0.8f, 1f))
-        val boxC = BoxShape(Vec3f(3.6f, 0.8f, 1f))
+    private fun makeOuterChainLink(mass: Float): RigidBody {
+        val boxA = BoxShape(Vec3f(3.4f, 0.8f, 1f))
+        val boxB = BoxShape(Vec3f(3.4f, 0.8f, 1f))
 
         val shape = MultiShape()
-        shape.addShape(boxA, Mat4f().translate(-1.6f, 0f, 0f))
-        shape.addShape(boxB, Mat4f().translate(0.7f, 0f, 1.1f))
-        shape.addShape(boxC, Mat4f().translate(0.7f, 0f, -1.1f))
+        shape.addShape(boxA, Mat4f().translate(0f, 0f, 1.1f))
+        shape.addShape(boxB, Mat4f().translate(0f, 0f, -1.1f))
 
-        val hingeBodyProps = rigidBodyProperties {
+        val linkBodyProps = rigidBodyProperties {
             friction = 0.1f
             linearDamping = 0.1f
             angularDamping = 0.5f
             sleepThreshold = 0.3f
         }
-        return RigidBody(shape, mass, hingeBodyProps)
+        return RigidBody(shape, mass, linkBodyProps)
     }
 
-    private inner class BodyMeshes(val isNice: Boolean): Group() {
-        var linkMesh: Mesh? = null
-        var gearMesh: Mesh? = null
-        var axleMesh: Mesh? = null
+    private fun makeInnerChainLink(mass: Float): RigidBody {
+        val box = BoxShape(Vec3f(1.5f, 0.8f, 1f))
 
-        val links = mutableListOf<RigidBody>()
+        val linkBodyProps = rigidBodyProperties {
+            friction = 0.1f
+            linearDamping = 0.1f
+            angularDamping = 0.5f
+            sleepThreshold = 0.3f
+        }
+        return RigidBody(box, mass, linkBodyProps)
+    }
+
+    private inner class BodyMesh(val color: Color, val onCreate: (Mesh) -> Unit) {
+        var mesh: Mesh? = null
+
+        var factory: (RigidBody) -> Mesh = { proto ->
+            colorMesh {
+                isFrustumChecked = false
+                instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+                generate {
+                    color = this@BodyMesh.color
+                    proto.collisionShape.generateGeometry(this)
+                }
+                shader = pbrShader {
+                    roughness = 1f
+                    isInstanced = true
+                    shadowMaps += shadows
+                    useImageBasedLighting(ibl)
+                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                }
+            }
+        }
+
+        fun getOrCreate(protoBody: RigidBody): Mesh {
+            if (mesh == null) {
+                mesh = factory(protoBody)
+                onCreate(mesh!!)
+            }
+            return mesh!!
+        }
+
+        fun updateInstances(bodies: List<RigidBody>) {
+            if (bodies.isNotEmpty()) {
+                getOrCreate(bodies[0]).instances!!.apply {
+                    clear()
+                    for (i in bodies.indices) {
+                        addInstance {
+                            put(bodies[i].transform.matrix)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private inner class BodyMeshes(isNice: Boolean): Group() {
+        var linkMeshO = BodyMesh(Color.MD_BLUE_GREY.toLinear()) { addNode(it) }
+        var linkMeshI = BodyMesh((Color.MD_BLUE_GREY_300.mix(Color.MD_BLUE_GREY_400, 0.5f)).toLinear()) { addNode(it) }
+        var gearMesh = BodyMesh(Color.MD_BLUE_GREY_200.toLinear()) { addNode(it) }
+        var axleMesh = BodyMesh(Color.MD_BLUE_GREY_700.toLinear()) { addNode(it) }
+
+        val linksO = mutableListOf<RigidBody>()
+        val linksI = mutableListOf<RigidBody>()
         val gears = mutableListOf<RigidBody>()
         val axles = mutableListOf<RigidBody>()
 
         init {
             isFrustumChecked = false
+
+            if (isNice) {
+                linkMeshO.factory = { GearChainMeshGen.makeNiceOuterLinkMesh(ibl, aoPipeline.aoMap, shadows) }
+                linkMeshI.factory = { GearChainMeshGen.makeNiceInnerLinkMesh(ibl, aoPipeline.aoMap, shadows) }
+                gearMesh.factory = { GearChainMeshGen.makeNiceGearMesh(ibl, aoPipeline.aoMap, shadows) }
+                axleMesh.factory = { GearChainMeshGen.makeNiceAxleMesh(ibl, aoPipeline.aoMap, shadows) }
+            }
+
             onUpdate += {
-                if (links.isNotEmpty()) {
-                    getOrCreateLinkMesh(links[0]).instances!!.updateInstances(links)
-                }
-                if (gears.isNotEmpty()) {
-                    getOrCreateGearMesh(gears[0]).instances!!.updateInstances(gears)
-                }
-                if (axles.isNotEmpty()) {
-                    getOrCreateAxleMesh(axles[0]).instances!!.updateInstances(axles)
-                }
+                linkMeshO.updateInstances(linksO)
+                linkMeshI.updateInstances(linksI)
+                gearMesh.updateInstances(gears)
+                axleMesh.updateInstances(axles)
             }
         }
 
         fun clearBodies() {
-            links.clear()
+            linksO.clear()
+            linksI.clear()
             gears.clear()
             axles.clear()
-        }
-
-        fun MeshInstanceList.updateInstances(bodies: List<RigidBody>) {
-            clear()
-            for (i in bodies.indices) {
-                addInstance {
-                    put(bodies[i].transform.matrix)
-                }
-            }
-        }
-
-        fun getOrCreateLinkMesh(protoLink: RigidBody): Mesh {
-            if (linkMesh != null) {
-                return linkMesh!!
-            }
-
-            if (!isNice) {
-                linkMesh = colorMesh {
-                    isFrustumChecked = false
-                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
-                    generate {
-                        color = Color.MD_GREEN.toLinear()
-                        protoLink.collisionShape.generateGeometry(this)
-                    }
-                    shader = pbrShader {
-                        isInstanced = true
-                    }
-                }
-            } else {
-                linkMesh = GearChainMeshGen.makeNiceLinkMesh(ibl, aoPipeline.aoMap, shadows)
-            }
-            +linkMesh!!
-            return linkMesh!!
-        }
-
-        fun getOrCreateGearMesh(protoGear: RigidBody): Mesh {
-            if (gearMesh != null) {
-                return gearMesh!!
-            }
-
-            if (!isNice) {
-                gearMesh = colorMesh {
-                    isFrustumChecked = false
-                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
-                    generate {
-                        color = Color.MD_PINK.toLinear()
-                        protoGear.collisionShape.generateGeometry(this)
-                    }
-                    shader = pbrShader {
-                        isInstanced = true
-                    }
-                }
-            } else {
-                gearMesh = GearChainMeshGen.makeNiceGearMesh(ibl, aoPipeline.aoMap, shadows)
-            }
-            +gearMesh!!
-            return gearMesh!!
-        }
-
-        fun getOrCreateAxleMesh(protoAxle: RigidBody): Mesh {
-            if (axleMesh != null) {
-                return axleMesh!!
-            }
-
-            if (!isNice) {
-                axleMesh = colorMesh {
-                    isFrustumChecked = false
-                    instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
-                    generate {
-                        color = Color.MD_BLUE.toLinear()
-                        protoAxle.collisionShape.generateGeometry(this)
-                    }
-                    shader = pbrShader {
-                        isInstanced = true
-                    }
-                }
-            } else {
-                axleMesh = GearChainMeshGen.makeNiceAxleMesh(ibl, aoPipeline.aoMap, shadows)
-            }
-            +axleMesh!!
-            return axleMesh!!
         }
     }
 
