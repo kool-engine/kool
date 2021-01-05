@@ -44,3 +44,7 @@ fun Transform.set(mat: Mat4f): Transform {
     setFromOpenGLMatrix(mat.matrix)
     return this
 }
+
+internal object BulletTypes {
+    val IDENTITY = Transform().apply { setIdentity() }
+}

@@ -4,9 +4,11 @@ import ammo.Ammo
 import ammo.btConvexHullShape
 import ammo.toBtVector3
 import ammo.toVec3f
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 
 actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonConvexHullShape(points), CollisionShape {
@@ -52,4 +54,9 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
         }
         geometry.generateNormals()
     }
+
+    private val boundsHelper = ShapeBoundsHelper(btShape)
+    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
+    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
+
 }

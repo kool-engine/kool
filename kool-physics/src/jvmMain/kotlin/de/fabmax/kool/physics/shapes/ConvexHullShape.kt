@@ -2,11 +2,13 @@ package de.fabmax.kool.physics.shapes
 
 import com.bulletphysics.collision.shapes.ShapeHull
 import com.bulletphysics.util.ObjectArrayList
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.BtConvexHullShape
 import de.fabmax.kool.physics.toBtVector3f
 import de.fabmax.kool.physics.toVec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 import javax.vecmath.Vector3f
 
@@ -46,5 +48,9 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
         }
         geometry.generateNormals()
     }
+
+    private val boundsHelper = ShapeBoundsHelper(btShape)
+    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
+    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
 
 }

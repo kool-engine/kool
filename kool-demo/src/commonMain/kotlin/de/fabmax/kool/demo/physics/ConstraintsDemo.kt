@@ -9,26 +9,30 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.constraints.RevoluteConstraint
 import de.fabmax.kool.physics.shapes.*
 import de.fabmax.kool.physics.shapes.MultiShape
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
+import kotlin.math.max
 
 class ConstraintsDemo : DemoScene("Physics Constraints") {
 
     private var physicsWorld: PhysicsWorld? = null
 
     private var motorGearConstraint: RevoluteConstraint? = null
-    private var motorStrength = 50f
-    private var motorSpeed = 3f
+    private var motorStrength = 100f
+    private var motorSpeed = 4f
     private var motorDirection = 1f
     private var numLinks = 40
 
     private val physMeshes = BodyMeshes(false).apply { isVisible = false }
     private val niceMeshes = BodyMeshes(true).apply { isVisible = true }
+    private lateinit var constraintInfo: ConstraintsInfoMesh
     private var resetPhysics = false
 
     private val shadows = mutableListOf<SimpleShadowMap>()
@@ -60,6 +64,8 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             val world = PhysicsWorld()
             physicsWorld = world
             resetPhysics = true
+            constraintInfo = ConstraintsInfoMesh(world).apply { isVisible = false }
+            +constraintInfo
 
             // ground plane
             +textureMesh(isNormalMapped = true) {
@@ -145,7 +151,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     resetPhysics = true
                 }
             }
-            sliderWithValue("Motor Strength:", motorStrength, 0f, 100f, 0) {
+            sliderWithValue("Motor Strength:", motorStrength, 0f, 200f, 0) {
                 motorStrength = value
                 updateMotor()
             }
@@ -180,6 +186,9 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     ignoreStateChange = false
                 }
             }
+            toggleButton("Draw Constraints", false) {
+                constraintInfo.isVisible = isEnabled
+            }
         }
         section("Performance") {
             textWithValue("Physics:", "0.00 ms").apply {
@@ -190,6 +199,16 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
                     text = "${physicsWorld?.timeFactor?.toString(2)} x"
+                }
+            }
+            textWithValue("Number of Bodies:", "").apply {
+                onUpdate += {
+                    text = "${physicsWorld?.bodies?.size ?: 0}"
+                }
+            }
+            textWithValue("Number of Constraints:", "").apply {
+                onUpdate += {
+                    text = "${physicsWorld?.constraints?.size ?: 0}"
                 }
             }
         }
@@ -209,7 +228,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     private fun makeGearChain(numLinks: Int, frame: Mat4f) {
         val world = physicsWorld ?: return
 
-        val linkMass = 0.33f
+        val linkMass = 1f
         val gearMass = 10f
         val gearR = 7f
         val axleDist = computeAxleDist()
@@ -219,13 +238,17 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             throw IllegalArgumentException("numLinks must be even")
         }
 
+        makeChain(linkMass, tension, gearR, axleDist, frame, world)
         makeGearAndAxle(gearR, Vec3f(0f, axleDist / 2f, 0f), gearMass, true, frame)
         makeGearAndAxle(gearR, Vec3f(0f, -axleDist / 2f, 0f), gearMass, false, frame)
 
+    }
+
+    private fun makeChain(linkMass: Float, tension: Float, gearR: Float, axleDist: Float, frame: Mat4f, world: PhysicsWorld) {
         val t = Mat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.4f, 0f)
         val r = Mat3f()
 
-        val rotLinks = mutableSetOf(1, 2, 3, numLinks - 2, numLinks - 1)
+        val rotLinks = mutableSetOf(1, 2, 3, numLinks - 2, numLinks - 1, numLinks)
         for (i in (numLinks / 2 - 2)..(numLinks / 2 + 3)) {
             rotLinks += i
         }
@@ -289,14 +312,14 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val hinge = RevoluteConstraint(outer, inner,
             Vec3f(1.5f - t, 0f, 0f), Vec3f(-0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(hinge)
+        world.addConstraint(hinge, true)
     }
 
     private fun connectLinksInnerOuter(inner: RigidBody, outer: RigidBody, t: Float, world: PhysicsWorld) {
         val hinge = RevoluteConstraint(inner, outer,
             Vec3f(0.5f, 0f, 0f), Vec3f(-1.5f + t, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(hinge)
+        world.addConstraint(hinge, true)
     }
 
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
@@ -346,7 +369,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         }
 
         val gearBodyProps = rigidBodyProperties {
-            friction = 0.1f
+            friction = 0.2f
         }
         return RigidBody(gearShape, mass, gearBodyProps)
     }
@@ -360,7 +383,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         shape.addShape(boxB, Mat4f().translate(0f, 0f, -1.1f))
 
         val linkBodyProps = rigidBodyProperties {
-            friction = 0.1f
+            friction = 0.2f
             linearDamping = 0.1f
             angularDamping = 0.5f
             sleepThreshold = 0.3f
@@ -372,7 +395,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val box = BoxShape(Vec3f(1.5f, 0.8f, 1f))
 
         val linkBodyProps = rigidBodyProperties {
-            friction = 0.1f
+            friction = 0.2f
             linearDamping = 0.1f
             angularDamping = 0.5f
             sleepThreshold = 0.3f
@@ -460,4 +483,71 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         }
     }
 
+    private class ConstraintsInfoMesh(val world: PhysicsWorld) : LineMesh() {
+        val gradient = ColorGradient.RED_YELLOW_GREEN.inverted()
+
+        // keep temp vectors as members to not re-allocate them all the time
+        val tmpP1 = MutableVec3f()
+        val tmpP2 = MutableVec3f()
+        val tmpA1 = MutableVec3f()
+        val tmpA2 = MutableVec3f()
+
+        val tmpL1 = MutableVec3f()
+        val tmpL2 = MutableVec3f()
+
+        val tmpBnds = BoundingBox()
+
+        init {
+            shader = unlitShader {
+                lineWidth = 3f
+            }
+        }
+
+        override fun update(updateEvent: RenderPass.UpdateEvent) {
+            if (isVisible) {
+                clear()
+                world.constraints.forEach {
+                    when (it) {
+                        is RevoluteConstraint -> renderRevoluteConstraint(it)
+                    }
+                }
+            }
+            super.update(updateEvent)
+        }
+
+        private fun renderRevoluteConstraint(rc: RevoluteConstraint) {
+            val tA = rc.bodyA.transform
+            val tB = rc.bodyB.transform
+
+            tA.transform(tmpA1.set(rc.axisA), 0f)
+            tA.transform(tmpP1.set(rc.pivotA))
+            rc.bodyA.collisionShape.getAabb(tmpBnds)
+            val lenA = tmpBnds.size * rc.axisA * 0.5f + 1f
+
+            tB.transform(tmpA2.set(rc.axisB), 0f)
+            tB.transform(tmpP2.set(rc.pivotB))
+            rc.bodyB.collisionShape.getAabb(tmpBnds)
+            val lenB = tmpBnds.size * rc.axisB * 0.5f + 1f
+
+            val drawLen = max(lenA, lenB)
+            val diff = tmpP1.distance(tmpP2) + (1 - tmpA1 * tmpA2)
+            val color = gradient.getColor(diff, 0f, 0.5f)
+
+            tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)
+            tmpL2.set(tmpA1).scale(-drawLen).add(tmpP1)
+            addLine(tmpL1, tmpL2, color)
+
+            tmpL1.set(tmpA2).scale(drawLen).add(tmpP2)
+            tmpL2.set(tmpA2).scale(-drawLen).add(tmpP2)
+            addLine(tmpL1, tmpL2, color)
+
+            tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)
+            tmpL2.set(tmpA2).scale(drawLen).add(tmpP2)
+            addLine(tmpL1, tmpL2, color)
+
+            tmpL1.set(tmpA1).scale(-drawLen).add(tmpP1)
+            tmpL2.set(tmpA2).scale(-drawLen).add(tmpP2)
+            addLine(tmpL1, tmpL2, color)
+        }
+    }
 }

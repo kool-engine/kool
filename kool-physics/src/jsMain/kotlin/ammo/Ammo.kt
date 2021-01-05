@@ -67,6 +67,8 @@ external interface btCollisionShape {
     fun calculateLocalInertia(mass: Float, inertia: btVector3)
     fun setMargin(margin: Float)
     fun getMargin(): Float
+    fun getAabb(t: btTransform, aabbMin: btVector3, aabbMax: btVector3)
+    fun getBoundingSphereAndRadius(center: btVector3): Float
 }
 
 external interface btCollisionWorld {
@@ -412,11 +414,14 @@ object Ammo {
     val isInitialized: Boolean
         get() = ammo != null
 
+    internal lateinit var IDENTITY: btTransform
+
     fun initAmmo() {
         if (ammo == null) {
             ammoPromise.then { ammo: dynamic ->
                 logI { "loaded ammo.js" }
                 this.ammo = ammo
+                IDENTITY = btTransform().apply { setIdentity() }
                 onLoadListeners.forEach { it() }
             }
         }

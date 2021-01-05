@@ -30,6 +30,8 @@ class CollisionDemo : DemoScene("Physics") {
     private val shapes = Cycler(*Shape.values())
 
     private var numSpawnBodies = 450
+    private var friction = 0.5f
+    private var restitution = 0f
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
 
@@ -137,7 +139,11 @@ class CollisionDemo : DemoScene("Physics") {
             val type = types[rand.randomI(types.indices)]
             val (shape, mass) = type.generateShape(rand)
 
-            val body = RigidBody(shape, mass)
+            val bodyProps = RigidBodyProperties().apply {
+                friction = this@CollisionDemo.friction
+                restitution = this@CollisionDemo.restitution
+            }
+            val body = RigidBody(shape, mass, bodyProps)
             body.origin = Vec3f(x, y, z)
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
             physicsWorld?.addRigidBody(body)
@@ -244,7 +250,7 @@ class CollisionDemo : DemoScene("Physics") {
 
     private fun instancedBodyShader(ibl: EnvironmentMaps): PbrShader {
         val cfg = PbrMaterialConfig().apply {
-            roughness = 0.6f
+            roughness = 1f
             isInstanced = true
             shadowMaps += shadows
             useImageBasedLighting(ibl)
@@ -314,8 +320,14 @@ class CollisionDemo : DemoScene("Physics") {
             sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 1000f, 0) {
                 numSpawnBodies = value.toInt()
             }
+            sliderWithValue("Friction:", friction, 0f, 2f, 2) {
+                friction = value
+            }
+            sliderWithValue("Restitution:", restitution, 0f, 1f, 2) {
+                restitution = value
+            }
             gap(10f)
-            button("Reset Physics") { resetPhysics() }
+            button("Apply") { resetPhysics() }
             gap(10f)
         }
         section("Performance") {

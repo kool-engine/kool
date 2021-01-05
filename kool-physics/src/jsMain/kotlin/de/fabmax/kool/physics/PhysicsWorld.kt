@@ -45,7 +45,6 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
 
     override fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean) {
         physicsWorld.addConstraint(constraint.btConstraint, disableCollisionBetweenBodies)
-        println("constraint added")
     }
 
     override fun removeConstraintImpl(constraint: Constraint) {

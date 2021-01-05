@@ -7,9 +7,15 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
 
-actual class RevoluteConstraint actual constructor(bodyA: RigidBody, bodyB: RigidBody,
+@Suppress("CanBeParameter")
+actual class RevoluteConstraint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
                                                    pivotA: Vec3f, pivotB: Vec3f,
                                                    axisA: Vec3f, axisB: Vec3f) : Constraint {
+
+    actual val pivotA = Vec3f(pivotA)
+    actual val pivotB = Vec3f(pivotB)
+    actual val axisA = Vec3f(axisA)
+    actual val axisB = Vec3f(axisB)
 
     override val btConstraint: btHingeConstraint
 

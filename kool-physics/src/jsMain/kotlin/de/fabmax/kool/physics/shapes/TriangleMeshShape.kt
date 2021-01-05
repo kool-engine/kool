@@ -2,7 +2,9 @@ package de.fabmax.kool.physics.shapes
 
 import ammo.Ammo
 import ammo.btBvhTriangleMeshShape
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
 
@@ -31,4 +33,9 @@ actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) :
         val mesh = Ammo.btTriangleIndexVertexArray(numTris, indices, 12, numVerts, verts, 12)
         btShape = Ammo.btBvhTriangleMeshShape(mesh, true)
     }
+
+    private val boundsHelper = ShapeBoundsHelper(btShape)
+    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
+    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
+
 }

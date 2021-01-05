@@ -64,7 +64,6 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         constructionInfo.angularSleepingThreshold *= bodyProperties.sleepThreshold
 
         btRigidBody = BtRigidBody(constructionInfo)
-
     }
 
     override fun fixedUpdate(timeStep: Float) {

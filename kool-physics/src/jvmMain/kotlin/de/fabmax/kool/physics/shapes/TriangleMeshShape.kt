@@ -2,6 +2,8 @@ package de.fabmax.kool.physics.shapes
 
 import com.bulletphysics.collision.shapes.BvhTriangleMeshShape
 import com.bulletphysics.collision.shapes.TriangleIndexVertexArray
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
 import java.nio.ByteBuffer
@@ -34,5 +36,9 @@ actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) :
             geometry.numVertices, vertices, 12)
         btShape = BvhTriangleMeshShape(indexedVertexArray, true)
     }
+
+    private val boundsHelper = ShapeBoundsHelper(btShape)
+    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
+    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
 
 }
