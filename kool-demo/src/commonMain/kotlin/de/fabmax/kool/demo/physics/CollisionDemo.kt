@@ -60,7 +60,7 @@ class CollisionDemo : DemoScene("Physics") {
         }
 
         ctx.assetMgr.launch {
-            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
+            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
 
             Physics.awaitLoaded()
             val physicsWorld = PhysicsWorld()
@@ -176,43 +176,54 @@ class CollisionDemo : DemoScene("Physics") {
     private fun Scene.makeGround(ibl: EnvironmentMaps, physicsWorld: PhysicsWorld) {
         val frame = mutableListOf<RigidBody>()
 
+        val groundBodyProps = RigidBodyProperties().apply {
+            collisionGroup = 2
+            clearCollidesWith(2)
+        }
+
         val groundShape = BoxShape(Vec3f(100f, 1f, 100f))
-        val ground = RigidBody(groundShape, 0f)
+        val ground = RigidBody(groundShape, 0f, groundBodyProps)
         ground.origin = Vec3f(0f, -0.5f, 0f)
         physicsWorld.addRigidBody(ground)
 
         val frameLtShape = BoxShape(Vec3f(3f, 6f, 100f))
-        val frameLt = RigidBody(frameLtShape, 0f)
+        val frameLt = RigidBody(frameLtShape, 0f, groundBodyProps)
         frameLt.origin = Vec3f(-51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameLt)
         frame += frameLt
 
         val frameRtShape = BoxShape(Vec3f(3f, 6f, 100f))
-        val frameRt = RigidBody(frameRtShape, 0f)
+        val frameRt = RigidBody(frameRtShape, 0f, groundBodyProps)
         frameRt.origin = Vec3f(51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameRt)
         frame += frameRt
 
         val frameFtShape = BoxShape(Vec3f(106f, 6f, 3f))
-        val frameFt = RigidBody(frameFtShape, 0f)
+        val frameFt = RigidBody(frameFtShape, 0f, groundBodyProps)
         frameFt.origin = Vec3f(0f, 2f, 51.5f)
         physicsWorld.addRigidBody(frameFt)
         frame += frameFt
 
         val frameBkShape = BoxShape(Vec3f(106f, 6f, 3f))
-        val frameBk = RigidBody(frameBkShape, 0f)
+        val frameBk = RigidBody(frameBkShape, 0f, groundBodyProps)
         frameBk.origin = Vec3f(0f, 2f, -51.5f)
         physicsWorld.addRigidBody(frameBk)
         frame += frameBk
 
-        val groundTex = groundTexture()
+
+        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
+        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
         onDispose += {
-            groundTex.dispose()
+            groundAlbedo.dispose()
+            groundNormal.dispose()
         }
 
         // render textured ground box
-        +textureMesh {
+        +textureMesh(isNormalMapped = true) {
             generate {
+                vertexModFun = {
+                    texCoord.set(x / 10, z / 10)
+                }
                 cube {
                     size.set(groundShape.size)
                     origin.set(size).scale(-0.5f).add(ground.origin)
@@ -223,7 +234,8 @@ class CollisionDemo : DemoScene("Physics") {
                 shadowMaps += shadows
                 useImageBasedLighting(ibl)
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useAlbedoMap(groundTex)
+                useAlbedoMap(groundAlbedo)
+                useNormalMap(groundNormal)
             }
         }
 
@@ -269,28 +281,6 @@ class CollisionDemo : DemoScene("Physics") {
             }
         }
         return PbrShader(cfg, model)
-    }
-
-    private fun groundTexture(): Texture2d {
-        val props = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
-        return Texture2d(props, "groundTex") {
-            val w = 64
-            val h = 64
-            val buf = createUint8Buffer(w * h * 4)
-            val grad = ColorGradient(Color.MD_BLUE_GREY_600, Color.WHITE)
-            val rand = Random(18594253)
-            for (y in 0 until h) {
-                for (x in 0 until w) {
-                    val c = grad.getColor(rand.randomF())
-                    val i = (y * w + x) * 4
-                    buf[i] = (c.r * 255).toInt().toByte()
-                    buf[i + 1] = (c.g * 255).toInt().toByte()
-                    buf[i + 2] = (c.b * 255).toInt().toByte()
-                    buf[i + 3] = (c.a * 255).toInt().toByte()
-                }
-            }
-            TextureData2d(buf, w, h, TexFormat.RGBA)
-        }
     }
 
     private class ColoredBody(val rigidBody: RigidBody, val color: MutableColor, val shape: Shape) {

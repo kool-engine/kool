@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.constraints
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.BtHingeConstraint
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.physics.toBtVector3f
@@ -17,6 +18,14 @@ actual class RevoluteConstraint actual constructor(actual val bodyA: RigidBody, 
 
     override val btConstraint: BtHingeConstraint = BtHingeConstraint(bodyA.btRigidBody, bodyB.btRigidBody,
         pivotA.toBtVector3f(), pivotB.toBtVector3f(), axisA.toBtVector3f(), axisB.toBtVector3f())
+
+    actual fun setAngleLimit(lowerLimit: Float, upperLimit: Float) {
+        btConstraint.setLimit(lowerLimit.toRad(), upperLimit.toRad())
+    }
+
+    actual fun clearAngleLimit() {
+        btConstraint.setLimit(-1e30f, 1e30f)
+    }
 
     actual fun disableAngularMotor() {
         btConstraint.enableAngularMotor(false, 0f, 0f)

@@ -6,6 +6,10 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.util.logI
 import kotlin.js.Promise
 
+external interface btActionInterface {
+    fun updateAction(collisionWorld: btCollisionWorld, deltaTimeStep: Float)
+}
+
 external interface btBoxShape : btCollisionShape
 
 external interface btBroadphaseInterface {
@@ -167,8 +171,8 @@ external interface btDispatcher {
 }
 
 external interface btDynamicsWorld : btCollisionWorld {
-//    fun addAction(action: btActionInterface)
-//    fun removeAction(action: btActionInterface)
+    fun addAction(action: btActionInterface)
+    fun removeAction(action: btActionInterface)
 //    fun getSolverInfo(): btContactSolverInfo
 //    fun setInternalTickCallback(cb: VoidPtr, worldUserInfo: VoidPtr)
 //    fun setInternalTickCallback(cb: VoidPtr, worldUserInfo: VoidPtr, isPreTick: Boolean)
@@ -253,6 +257,39 @@ external interface btQuaternion {
     fun op_mul(s: Float): btQuaternion
     fun op_mulq(q: btQuaternion): btQuaternion
     fun op_div(s: Float): btQuaternion
+}
+
+external interface btRaycastVehicle : btActionInterface {
+    fun applyEngineForce(force: Float, wheel: Int)
+    fun setSteeringValue(steering: Float, wheel: Int)
+    fun getWheelTransformWS(wheelIndex: Int): btTransform
+    fun updateWheelTransform(wheelIndex: Int, interpolatedTransform: Boolean)
+    fun addWheel(connectionPointCS0: btVector3, wheelDirectionCS0: btVector3, wheelAxleCS: btVector3,
+                 suspensionRestLength: Float, wheelRadius: Float, tuning: btVehicleTuning, isFrontWheel: Boolean):  btWheelInfo
+    fun getNumWheels(): Int
+    fun getRigidBody(): btRigidBody
+    fun getWheelInfo(index: Int): btWheelInfo
+    fun setBrake(brake: Float, wheelIndex: Int)
+    fun setCoordinateSystem(rightIndex: Int, upIndex: Int, forwardIndex: Int)
+//    float getCurrentSpeedKmHour();
+//    [Const, Ref] btTransform getChassisWorldTransform();
+//    float rayCast([Ref] btWheelInfo wheel);
+//    void updateVehicle(float step);
+//    void resetSuspension();
+//    float getSteeringValue(long wheel);
+//    fun updateWheelTransformsWS(wheel: btWheelInfo)
+//    fun updateWheelTransformsWS(wheel: btWheelInfo, interpolatedTransform: Boolean)
+//    void setPitchControl(float pitch);
+//    void updateSuspension(float deltaTime);
+//    void updateFriction(float timeStep);
+//    long getRightAxis();
+//    long getUpAxis();
+//    long getForwardAxis();
+//    [Value] btVector3 getForwardVector();
+//    long getUserConstraintType();
+//    void setUserConstraintType(long userConstraintType);
+//    void setUserConstraintId(long uid);
+//    long getUserConstraintId();
 }
 
 external interface btRigidBody : btCollisionObject {
@@ -363,6 +400,58 @@ external interface btVector3Array {
     fun at(n: Int): btVector3
 }
 
+external interface btVehicleRaycaster {
+    fun castRay(from: btVector3, to: btVector3, result: btVehicleRaycasterResult)
+}
+
+external interface btVehicleRaycasterResult {
+    val m_hitPointInWorld: btVector3
+    val m_hitNormalInWorld: btVector3
+    val m_distFraction: Float
+}
+
+external interface btVehicleTuning {
+    var m_suspensionStiffness: Float
+    var m_suspensionCompression: Float
+    var m_suspensionDamping: Float
+    var m_maxSuspensionTravelCm: Float
+    var m_frictionSlip: Float
+    var m_maxSuspensionForce: Float
+}
+
+external interface btWheelInfo {
+    var m_suspensionStiffness: Float
+    var m_frictionSlip: Float
+    var m_engineForce: Float
+    var m_rollInfluence: Float
+    var m_suspensionRestLength1: Float
+    var m_wheelsRadius: Float
+    var m_wheelsDampingCompression: Float
+    var m_wheelsDampingRelaxation: Float
+    var m_steering: Float
+    var m_maxSuspensionForce: Float
+    var m_maxSuspensionTravelCm: Float
+    var m_wheelsSuspensionForce: Float
+    var m_bIsFrontWheel: Boolean
+
+    //val m_raycastInfo: RaycastInfo
+    val m_chassisConnectionPointCS: btVector3
+    val m_worldTransform: btTransform
+    val m_wheelDirectionCS: btVector3
+    val m_wheelAxleCS: btVector3
+
+    var m_rotation: Float
+    var m_deltaRotation: Float
+    var m_brake: Float
+    var m_clippedInvContactDotSuspension: Float
+    var m_suspensionRelativeVelocity: Float
+    var m_skidInfo: Float
+
+    fun getSuspensionRestLength(): Float
+    //fun updateWheel(chassis: btRigidBody, raycastInfo: RaycastInfo)
+}
+
+
 fun btQuaternion.set(v: Vec4f) = setValue(v.x, v.y, v.z, v.w)
 fun btQuaternion.toVec4f(result: MutableVec4f = MutableVec4f()) = result.set(x(), y(), z(), w())
 
@@ -465,30 +554,38 @@ object Ammo {
     fun btDefaultMotionState(startTrans: btTransform, centerOfMassOffset: btTransform): btDefaultMotionState =
         js("new this.ammo.btDefaultMotionState(startTrans, centerOfMassOffset)")
 
+    fun btDefaultVehicleRaycaster(world: btDynamicsWorld): btVehicleRaycaster =
+        js("new this.ammo.btDefaultVehicleRaycaster(world)")
+
     fun btDiscreteDynamicsWorld(dispatcher: btDispatcher,
-                                   pairCache: btBroadphaseInterface,
-                                   constraintSolver: btConstraintSolver,
-                                   collisionConfiguration: btCollisionConfiguration): btDiscreteDynamicsWorld =
+                                pairCache: btBroadphaseInterface,
+                                constraintSolver: btConstraintSolver,
+                                collisionConfiguration: btCollisionConfiguration): btDiscreteDynamicsWorld =
         js("new this.ammo.btDiscreteDynamicsWorld(dispatcher, pairCache, constraintSolver, collisionConfiguration)")
 
-    fun btHingeConstraint(rbA: btRigidBody, rbB: btRigidBody, pivotInA: btVector3, pivotInB: btVector3, axisInA: btVector3, axisInB: btVector3): btHingeConstraint =
+    fun btHingeConstraint(rbA: btRigidBody, rbB: btRigidBody,
+                          pivotInA: btVector3, pivotInB: btVector3,
+                          axisInA: btVector3, axisInB: btVector3): btHingeConstraint =
         js("new this.ammo.btHingeConstraint(rbA, rbB, pivotInA, pivotInB, axisInA, axisInB)")
 
     fun btQuaternion(x: Float, y: Float, z: Float, w: Float): btQuaternion =
         js("new this.ammo.btQuaternion(x, y, z, w)")
 
+    fun btRaycastVehicle(tuning: btVehicleTuning, chassis: btRigidBody, raycaster: btVehicleRaycaster): btRaycastVehicle =
+        js("new this.ammo.btRaycastVehicle(tuning, chassis, raycaster)")
+
     fun btRigidBody(constructionInfo: btRigidBodyConstructionInfo): btRigidBody =
         js("new this.ammo.btRigidBody(constructionInfo)")
 
     fun btRigidBodyConstructionInfo(mass: Float,
-                                       motionState: btMotionState,
-                                       collisionShape: btCollisionShape): btRigidBodyConstructionInfo =
+                                    motionState: btMotionState,
+                                    collisionShape: btCollisionShape): btRigidBodyConstructionInfo =
         js("new this.ammo.btRigidBodyConstructionInfo(mass, motionState, collisionShape)")
 
     fun btRigidBodyConstructionInfo(mass: Float,
-                                       motionState: btMotionState,
-                                       collisionShape: btCollisionShape,
-                                       localInertia: btVector3): btRigidBodyConstructionInfo =
+                                    motionState: btMotionState,
+                                    collisionShape: btCollisionShape,
+                                    localInertia: btVector3): btRigidBodyConstructionInfo =
         js("new this.ammo.btRigidBodyConstructionInfo(mass, motionState, collisionShape, localInertia)")
 
     fun btSequentialImpulseConstraintSolver(): btSequentialImpulseConstraintSolver =
@@ -505,9 +602,17 @@ object Ammo {
 
     fun btTransform(q: btQuaternion, v: btVector3): btTransform = js("new this.ammo.btTransform(q, v)")
 
-    fun btTriangleIndexVertexArray(numTriangles: Int, triangleIndexBase: IntArray, triangleIndexStride: Int, numVertices: Int, vertexBase: FloatArray, vertexStride: Int): btTriangleIndexVertexArray =
+    fun btTriangleIndexVertexArray(numTriangles: Int,
+                                   triangleIndexBase: IntArray,
+                                   triangleIndexStride: Int,
+                                   numVertices: Int,
+                                   vertexBase: FloatArray,
+                                   vertexStride: Int): btTriangleIndexVertexArray =
         js("new this.ammo.btTriangleIndexVertexArray(numTriangles, triangleIndexBase, triangleIndexStride, numVertices, vertexBase, vertexStride)")
 
     fun btVector3(x: Float, y: Float, z: Float): btVector3 = js("new this.ammo.btVector3(x, y, z)")
 
+    fun btVehicleTuning(): btVehicleTuning = js("new this.ammo.btVehicleTuning()")
+
+    val DISABLE_DEACTIVATION = 4
 }

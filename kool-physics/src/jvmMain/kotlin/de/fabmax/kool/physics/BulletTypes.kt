@@ -19,6 +19,8 @@ typealias BtHingeConstraint = com.bulletphysics.dynamics.constraintsolver.HingeC
 
 typealias BtRigidBody = com.bulletphysics.dynamics.RigidBody
 
+typealias BtRaycastVehicle = com.bulletphysics.dynamics.vehicle.RaycastVehicle
+
 // conversion functions from / to bullet types
 
 fun Vec3f.toBtVector3f(result: Vector3f = Vector3f()) = result.set(this)
@@ -45,6 +47,6 @@ fun Transform.set(mat: Mat4f): Transform {
     return this
 }
 
-internal object BulletTypes {
+internal object BulletObjects {
     val IDENTITY = Transform().apply { setIdentity() }
 }

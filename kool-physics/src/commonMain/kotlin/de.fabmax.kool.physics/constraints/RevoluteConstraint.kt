@@ -20,4 +20,7 @@ expect class RevoluteConstraint(bodyA: RigidBody, bodyB: RigidBody,
 
     fun enableAngularMotor(targetVelocity: Float, maxImpulse: Float)
 
+    fun setAngleLimit(lowerLimit: Float, upperLimit: Float)
+
+    fun clearAngleLimit()
 }

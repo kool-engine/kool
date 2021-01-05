@@ -5,12 +5,16 @@ import com.bulletphysics.collision.dispatch.CollisionDispatcher
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver
+import com.bulletphysics.dynamics.vehicle.DefaultVehicleRaycaster
+import com.bulletphysics.dynamics.vehicle.VehicleRaycaster
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.constraints.Constraint
+import de.fabmax.kool.physics.vehicle.Vehicle
 import javax.vecmath.Vector3f
 
 actual class PhysicsWorld  : CommonPhysicsWorld() {
     val physicsWorld: DiscreteDynamicsWorld
+    val vehicleRaycaster: VehicleRaycaster
 
     private val bufGravity = Vector3f()
 
@@ -31,6 +35,8 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
 
         physicsWorld = DiscreteDynamicsWorld(dispatcher, pairCache, solver, collisionConfiguration)
         physicsWorld.setGravity(Vec3f(0f, -9.81f, 0f).toBtVector3f())
+
+        vehicleRaycaster = DefaultVehicleRaycaster(physicsWorld)
     }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
@@ -38,7 +44,7 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
     }
 
     override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        physicsWorld.addRigidBody(rigidBody.btRigidBody)
+        physicsWorld.addRigidBody(rigidBody.btRigidBody, rigidBody.collisionGroup.toShort(), rigidBody.collisionMask.toShort())
     }
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
@@ -51,5 +57,13 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
 
     override fun removeConstraintImpl(constraint: Constraint) {
         physicsWorld.removeConstraint(constraint.btConstraint)
+    }
+
+    override fun addVehicleImpl(vehicle: Vehicle) {
+        physicsWorld.addVehicle(vehicle.btVehicle)
+    }
+
+    override fun removeVehicleImpl(vehicle: Vehicle) {
+        physicsWorld.removeVehicle(vehicle.btVehicle)
     }
 }

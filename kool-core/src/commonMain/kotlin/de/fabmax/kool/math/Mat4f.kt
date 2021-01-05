@@ -479,7 +479,7 @@ open class Mat4f {
         return this
     }
 
-    fun setRotation(mat3: Mat3f) {
+    fun setRotation(mat3: Mat3f): Mat4f {
         for (row in 0..2) {
             for (col in 0..2) {
                 this[row, col] = mat3[row, col]
@@ -488,9 +488,10 @@ open class Mat4f {
         val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
         val s = 1f / sqrt(l0)
         scale(s, s, s)
+        return this
     }
 
-    fun setRotation(mat4: Mat4f) {
+    fun setRotation(mat4: Mat4f): Mat4f {
         for (row in 0..2) {
             for (col in 0..2) {
                 this[row, col] = mat4[row, col]
@@ -499,6 +500,7 @@ open class Mat4f {
         val l0 = this[0, 0] * this[0, 0] + this[1, 0] * this[1, 0] + this[2, 0] * this[2, 0] + this[3, 0] * this[3, 0]
         val s = 1f / sqrt(l0)
         scale(s, s, s)
+        return this
     }
 
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f): Mat4f {

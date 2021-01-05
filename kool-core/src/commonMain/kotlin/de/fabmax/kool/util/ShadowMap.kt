@@ -220,6 +220,11 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
     }
 
     class MapRange(var near: Float, var far: Float) {
+        fun set(near: Float, far: Float) {
+            this.near = near
+            this.far = far
+        }
+
         override fun toString(): String {
             return "[$near..$far]"
         }

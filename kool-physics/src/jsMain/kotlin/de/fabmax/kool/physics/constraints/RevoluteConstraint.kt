@@ -4,6 +4,7 @@ import ammo.Ammo
 import ammo.btHingeConstraint
 import ammo.toBtVector3
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
 
@@ -24,6 +25,14 @@ actual class RevoluteConstraint actual constructor(actual val bodyA: RigidBody, 
 
         btConstraint = Ammo.btHingeConstraint(bodyA.btRigidBody, bodyB.btRigidBody,
             pivotA.toBtVector3(), pivotB.toBtVector3(), axisA.toBtVector3(), axisB.toBtVector3())
+    }
+
+    actual fun setAngleLimit(lowerLimit: Float, upperLimit: Float) {
+        btConstraint.setLimit(lowerLimit.toRad(), upperLimit.toRad(), 0.9f, 0.3f, 1.0f)
+    }
+
+    actual fun clearAngleLimit() {
+        btConstraint.setLimit(-1e30f, 1e30f, 0.9f, 0.3f, 1.0f)
     }
 
     actual fun disableAngularMotor() {

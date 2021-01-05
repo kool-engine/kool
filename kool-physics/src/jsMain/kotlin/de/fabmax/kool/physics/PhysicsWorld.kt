@@ -1,15 +1,14 @@
 package de.fabmax.kool.physics
 
-import ammo.Ammo
-import ammo.btDiscreteDynamicsWorld
-import ammo.toBtVector3
-import ammo.toVec3f
+import ammo.*
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.constraints.Constraint
+import de.fabmax.kool.physics.vehicle.Vehicle
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
     val physicsWorld: btDiscreteDynamicsWorld
+    val vehicleRaycaster: btVehicleRaycaster
 
     private val bufGravity = MutableVec3f()
 
@@ -29,6 +28,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
 
         physicsWorld = Ammo.btDiscreteDynamicsWorld(dispatcher, pairCache, solver, collisionConfiguration)
         physicsWorld.setGravity(Vec3f(0f, -9.81f, 0f).toBtVector3())
+        vehicleRaycaster = Ammo.btDefaultVehicleRaycaster(physicsWorld)
     }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
@@ -36,7 +36,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
     }
 
     override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        physicsWorld.addRigidBody(rigidBody.btRigidBody)
+        physicsWorld.addRigidBody(rigidBody.btRigidBody, rigidBody.collisionGroup.toShort(), rigidBody.collisionMask.toShort())
     }
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
@@ -49,5 +49,13 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
 
     override fun removeConstraintImpl(constraint: Constraint) {
         physicsWorld.removeConstraint(constraint.btConstraint)
+    }
+
+    override fun addVehicleImpl(vehicle: Vehicle) {
+        physicsWorld.addAction(vehicle.btVehicle)
+    }
+
+    override fun removeVehicleImpl(vehicle: Vehicle) {
+        physicsWorld.removeAction(vehicle.btVehicle)
     }
 }

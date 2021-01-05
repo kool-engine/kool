@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.shapes
 
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.physics.BtCollisionShape
-import de.fabmax.kool.physics.BulletTypes
+import de.fabmax.kool.physics.BulletObjects
 import de.fabmax.kool.util.BoundingBox
 import javax.vecmath.Vector3f
 
@@ -12,7 +12,7 @@ class ShapeBoundsHelper(val btShape: BtCollisionShape) {
     private val tmpR = FloatArray(1)
 
     fun getAabb(result: BoundingBox): BoundingBox {
-        btShape.getAabb(BulletTypes.IDENTITY, tmpV1, tmpV2)
+        btShape.getAabb(BulletObjects.IDENTITY, tmpV1, tmpV2)
         return result.set(tmpV1.x, tmpV1.y, tmpV1.z, tmpV2.x, tmpV2.y, tmpV2.z)
     }
 

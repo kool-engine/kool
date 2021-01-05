@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import com.bulletphysics.collision.dispatch.CollisionObject
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo
 import com.bulletphysics.linearmath.DefaultMotionState
 import com.bulletphysics.linearmath.Transform
@@ -11,7 +12,9 @@ import de.fabmax.kool.physics.shapes.CollisionShape
 import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
-actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties) : CommonRigidBody(collisionShape, mass) {
+actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
+    : CommonRigidBody(collisionShape, mass, bodyProperties)
+{
     val btRigidBody: BtRigidBody
 
     private val bufOrigin = MutableVec3f()
@@ -64,6 +67,10 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         constructionInfo.angularSleepingThreshold *= bodyProperties.sleepThreshold
 
         btRigidBody = BtRigidBody(constructionInfo)
+
+        if (!bodyProperties.canSleep) {
+            btRigidBody.activationState = CollisionObject.DISABLE_DEACTIVATION
+        }
     }
 
     override fun fixedUpdate(timeStep: Float) {

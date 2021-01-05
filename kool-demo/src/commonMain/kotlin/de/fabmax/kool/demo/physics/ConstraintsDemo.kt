@@ -67,6 +67,13 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             constraintInfo = ConstraintsInfoMesh(world).apply { isVisible = false }
             +constraintInfo
 
+            val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
+            val groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
+            onDispose += {
+                groundAlbedo.dispose()
+                groundNormal.dispose()
+            }
+
             // ground plane
             +textureMesh(isNormalMapped = true) {
                 isCastingShadow = false
@@ -79,8 +86,8 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     }
                 }
                 shader = pbrShader {
-                    useAlbedoMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
-                    useNormalMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
+                    useAlbedoMap(groundAlbedo)
+                    useNormalMap(groundAlbedo)
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                     useImageBasedLighting(ibl)
                     shadowMaps += shadows

@@ -2,6 +2,8 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.constraints.Constraint
+import de.fabmax.kool.physics.shapes.PlaneShape
+import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
@@ -32,6 +34,10 @@ abstract class CommonPhysicsWorld {
     val constraints: List<Constraint>
         get() = mutConstraints
 
+    private val mutVehicles = mutableListOf<Vehicle>()
+    val vehicles: List<Vehicle>
+        get() = mutVehicles
+
     fun addRigidBody(rigidBody: RigidBody) {
         mutBodies += rigidBody
         addRigidBodyImpl(rigidBody)
@@ -52,14 +58,29 @@ abstract class CommonPhysicsWorld {
         removeConstraintImpl(constraint)
     }
 
+    fun addVehicle(vehicle: Vehicle) {
+        mutVehicles += vehicle
+        addVehicleImpl(vehicle)
+    }
+
+    fun removeVehicle(vehicle: Vehicle) {
+        mutVehicles -= vehicle
+        removeVehicleImpl(vehicle)
+    }
+
     fun clear() {
         mutBodies.forEach {
             removeRigidBodyImpl(it)
         }
+        mutBodies.clear()
         mutConstraints.forEach {
             removeConstraintImpl(it)
         }
-        mutBodies.clear()
+        mutConstraints.clear()
+        mutVehicles.forEach {
+            removeVehicleImpl(it)
+        }
+        mutVehicles.clear()
     }
 
     fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5, fixedStep: Float = 1f / 60f): Float {
@@ -108,5 +129,17 @@ abstract class CommonPhysicsWorld {
     protected abstract fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean)
     protected abstract fun removeConstraintImpl(constraint: Constraint)
 
+    protected abstract fun addVehicleImpl(vehicle: Vehicle)
+    protected abstract fun removeVehicleImpl(vehicle: Vehicle)
+
     protected abstract fun singleStepPhysicsImpl(timeStep: Float)
+
+    /**
+     * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.
+     */
+    fun addDefaultGroundPlane(): RigidBody {
+        val plane = RigidBody(PlaneShape(Vec3f.Y_AXIS, 0f), 0f)
+        addRigidBody(plane)
+        return plane
+    }
 }

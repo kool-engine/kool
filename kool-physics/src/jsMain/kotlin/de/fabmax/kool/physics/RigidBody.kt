@@ -7,7 +7,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.physics.shapes.CollisionShape
 
-actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties) : CommonRigidBody(collisionShape, mass) {
+actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
+    : CommonRigidBody(collisionShape, mass, bodyProperties)
+{
     val btRigidBody: btRigidBody
 
     private val bufOrigin = MutableVec3f()
@@ -46,6 +48,10 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         constructionInfo.m_angularSleepingThreshold *= bodyProperties.sleepThreshold
 
         btRigidBody = Ammo.btRigidBody(constructionInfo)
+
+        if (!bodyProperties.canSleep) {
+            btRigidBody.setActivationState(Ammo.DISABLE_DEACTIVATION)
+        }
     }
 
     override fun fixedUpdate(timeStep: Float) {

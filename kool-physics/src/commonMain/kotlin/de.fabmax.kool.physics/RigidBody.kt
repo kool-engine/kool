@@ -2,6 +2,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.shapes.CollisionShape
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
@@ -9,7 +10,10 @@ import de.fabmax.kool.util.Color
 
 expect class RigidBody(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties = RigidBodyProperties()): CommonRigidBody
 
-abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Float) {
+abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Float, bodyProperties: RigidBodyProperties) {
+
+    val collisionGroup = bodyProperties.collisionGroup
+    val collisionMask = bodyProperties.collisionMask
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
@@ -23,19 +27,26 @@ abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Flo
         this.rotation = rotation.getRotation(bufRotation)
     }
 
+    fun setTransform(transform: Mat4f) {
+        this.origin = transform.transform(MutableVec3f())
+        this.rotation = transform.getRotation(bufRotation)
+    }
+
     internal open fun fixedUpdate(timeStep: Float) {
         for (i in onFixedUpdate.indices) {
             onFixedUpdate[i](timeStep)
         }
     }
 
-    fun toColorMesh(meshColor: Color) = group {
+    fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit = { }) = group {
         +colorMesh {
             generate {
                 color = meshColor
                 collisionShape.generateGeometry(this)
             }
-            shader = pbrShader { }
+            shader = pbrShader {
+                materialCfg()
+            }
             onUpdate += {
                 this@group.transform.set(this@CommonRigidBody.transform)
                 this@group.setDirty()
