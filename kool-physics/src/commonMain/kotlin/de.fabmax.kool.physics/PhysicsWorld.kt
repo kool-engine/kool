@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.constraints.Constraint
+import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.shapes.PlaneShape
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.util.PerfTimer
@@ -30,9 +30,9 @@ abstract class CommonPhysicsWorld {
     val bodies: List<RigidBody>
         get() = mutBodies
 
-    private val mutConstraints = mutableListOf<Constraint>()
-    val constraints: List<Constraint>
-        get() = mutConstraints
+    private val mutJoints = mutableListOf<Joint>()
+    val joints: List<Joint>
+        get() = mutJoints
 
     private val mutVehicles = mutableListOf<Vehicle>()
     val vehicles: List<Vehicle>
@@ -48,14 +48,14 @@ abstract class CommonPhysicsWorld {
         removeRigidBodyImpl(rigidBody)
     }
 
-    fun addConstraint(constraint: Constraint, disableCollisionBetweenBodies: Boolean = false) {
-        mutConstraints += constraint
-        addConstraintImpl(constraint, disableCollisionBetweenBodies)
+    fun addJoint(joint: Joint, disableCollisionBetweenBodies: Boolean = false) {
+        mutJoints += joint
+        addJointImpl(joint, disableCollisionBetweenBodies)
     }
 
-    fun removeConstraint(constraint: Constraint) {
-        mutConstraints -= constraint
-        removeConstraintImpl(constraint)
+    fun removeJoint(joint: Joint) {
+        mutJoints -= joint
+        removeJointImpl(joint)
     }
 
     fun addVehicle(vehicle: Vehicle) {
@@ -73,10 +73,10 @@ abstract class CommonPhysicsWorld {
             removeRigidBodyImpl(it)
         }
         mutBodies.clear()
-        mutConstraints.forEach {
-            removeConstraintImpl(it)
+        mutJoints.forEach {
+            removeJointImpl(it)
         }
-        mutConstraints.clear()
+        mutJoints.clear()
         mutVehicles.forEach {
             removeVehicleImpl(it)
         }
@@ -126,8 +126,8 @@ abstract class CommonPhysicsWorld {
     protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)
     protected abstract fun removeRigidBodyImpl(rigidBody: RigidBody)
 
-    protected abstract fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean)
-    protected abstract fun removeConstraintImpl(constraint: Constraint)
+    protected abstract fun addJointImpl(joint: Joint, disableCollisionBetweenBodies: Boolean)
+    protected abstract fun removeJointImpl(joint: Joint)
 
     protected abstract fun addVehicleImpl(vehicle: Vehicle)
     protected abstract fun removeVehicleImpl(vehicle: Vehicle)

@@ -3,7 +3,7 @@ package de.fabmax.kool.physics
 import ammo.*
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.constraints.Constraint
+import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.vehicle.Vehicle
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
@@ -43,12 +43,12 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         physicsWorld.removeRigidBody(rigidBody.btRigidBody)
     }
 
-    override fun addConstraintImpl(constraint: Constraint, disableCollisionBetweenBodies: Boolean) {
-        physicsWorld.addConstraint(constraint.btConstraint, disableCollisionBetweenBodies)
+    override fun addJointImpl(joint: Joint, disableCollisionBetweenBodies: Boolean) {
+        physicsWorld.addConstraint(joint.btConstraint, disableCollisionBetweenBodies)
     }
 
-    override fun removeConstraintImpl(constraint: Constraint) {
-        physicsWorld.removeConstraint(constraint.btConstraint)
+    override fun removeJointImpl(joint: Joint) {
+        physicsWorld.removeConstraint(joint.btConstraint)
     }
 
     override fun addVehicleImpl(vehicle: Vehicle) {

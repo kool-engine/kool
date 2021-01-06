@@ -6,7 +6,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.constraints.RevoluteConstraint
+import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.physics.shapes.*
 import de.fabmax.kool.physics.shapes.MultiShape
 import de.fabmax.kool.pipeline.RenderPass
@@ -20,11 +20,11 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
 
-class ConstraintsDemo : DemoScene("Physics Constraints") {
+class JointssDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
 
-    private var motorGearConstraint: RevoluteConstraint? = null
+    private var motorGearConstraint: RevoluteJoint? = null
     private var motorStrength = 100f
     private var motorSpeed = 4f
     private var motorDirection = 1f
@@ -87,7 +87,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                 }
                 shader = pbrShader {
                     useAlbedoMap(groundAlbedo)
-                    useNormalMap(groundAlbedo)
+                    useNormalMap(groundNormal)
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                     useImageBasedLighting(ibl)
                     shadowMaps += shadows
@@ -193,7 +193,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     ignoreStateChange = false
                 }
             }
-            toggleButton("Draw Constraints", false) {
+            toggleButton("Draw Joints", false) {
                 constraintInfo.isVisible = isEnabled
             }
         }
@@ -213,9 +213,9 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
                     text = "${physicsWorld?.bodies?.size ?: 0}"
                 }
             }
-            textWithValue("Number of Constraints:", "").apply {
+            textWithValue("Number of Joints:", "").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.constraints?.size ?: 0}"
+                    text = "${physicsWorld?.joints?.size ?: 0}"
                 }
             }
         }
@@ -260,7 +260,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
             rotLinks += i
         }
 
-        val firstOuter = makeOuterChainLink(linkMass * 2)
+        val firstOuter = makeOuterChainLink(linkMass)
         firstOuter.origin = t.getOrigin(MutableVec3f())
         firstOuter.setRotation(t.getRotation(r))
         world.addRigidBody(firstOuter)
@@ -316,17 +316,17 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
     }
 
     private fun connectLinksOuterInner(outer: RigidBody, inner: RigidBody, t: Float, world: PhysicsWorld) {
-        val hinge = RevoluteConstraint(outer, inner,
+        val hinge = RevoluteJoint(outer, inner,
             Vec3f(1.5f - t, 0f, 0f), Vec3f(-0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(hinge, true)
+        world.addJoint(hinge, true)
     }
 
     private fun connectLinksInnerOuter(inner: RigidBody, outer: RigidBody, t: Float, world: PhysicsWorld) {
-        val hinge = RevoluteConstraint(inner, outer,
-            Vec3f(0.5f, 0f, 0f), Vec3f(-1.5f + t, 0f, 0f),
+        val hinge = RevoluteJoint(outer, inner,
+            Vec3f(-1.5f + t, 0f, 0f), Vec3f(0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(hinge, true)
+        world.addJoint(hinge, true)
     }
 
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
@@ -346,10 +346,10 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         physMeshes.gears += gear
         niceMeshes.gears += gear
 
-        val motor = RevoluteConstraint(axle, gear,
+        val motor = RevoluteJoint(axle, gear,
             Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 0f),
             Vec3f.Y_AXIS, Vec3f.Z_AXIS)
-        world.addConstraint(motor, true)
+        world.addJoint(motor, true)
         if (isDriven) {
             motorGearConstraint = motor
         }
@@ -494,6 +494,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val gradient = ColorGradient.RED_YELLOW_GREEN.inverted()
 
         // keep temp vectors as members to not re-allocate them all the time
+        val tmpAx = MutableVec3f()
         val tmpP1 = MutableVec3f()
         val tmpP2 = MutableVec3f()
         val tmpA1 = MutableVec3f()
@@ -505,6 +506,7 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         val tmpBnds = BoundingBox()
 
         init {
+            isCastingShadow = false
             shader = unlitShader {
                 lineWidth = 3f
             }
@@ -513,28 +515,32 @@ class ConstraintsDemo : DemoScene("Physics Constraints") {
         override fun update(updateEvent: RenderPass.UpdateEvent) {
             if (isVisible) {
                 clear()
-                world.constraints.forEach {
+                world.joints.forEach {
                     when (it) {
-                        is RevoluteConstraint -> renderRevoluteConstraint(it)
+                        is RevoluteJoint -> renderRevoluteConstraint(it)
                     }
                 }
             }
             super.update(updateEvent)
         }
 
-        private fun renderRevoluteConstraint(rc: RevoluteConstraint) {
+        private fun renderRevoluteConstraint(rc: RevoluteJoint) {
             val tA = rc.bodyA.transform
             val tB = rc.bodyB.transform
 
-            tA.transform(tmpA1.set(rc.axisA), 0f)
-            tA.transform(tmpP1.set(rc.pivotA))
+            rc.frameA.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            rc.frameA.transform(tmpP1.set(Vec3f.ZERO), 1f)
+            tA.transform(tmpA1.set(tmpAx), 0f)
+            tA.transform(tmpP1)
             rc.bodyA.collisionShape.getAabb(tmpBnds)
-            val lenA = tmpBnds.size * rc.axisA * 0.5f + 1f
+            val lenA = tmpBnds.size * tmpAx * 0.5f + 1f
 
-            tB.transform(tmpA2.set(rc.axisB), 0f)
-            tB.transform(tmpP2.set(rc.pivotB))
+            rc.frameB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            rc.frameB.transform(tmpP2.set(Vec3f.ZERO), 1f)
+            tB.transform(tmpA2.set(tmpAx), 0f)
+            tB.transform(tmpP2)
             rc.bodyB.collisionShape.getAabb(tmpBnds)
-            val lenB = tmpBnds.size * rc.axisB * 0.5f + 1f
+            val lenB = tmpBnds.size * tmpAx * 0.5f + 1f
 
             val drawLen = max(lenA, lenB)
             val diff = tmpP1.distance(tmpP2) + (1 - tmpA1 * tmpA2)

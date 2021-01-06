@@ -1,8 +1,8 @@
-package de.fabmax.kool.physics.constraints
+package de.fabmax.kool.physics.joints
 
 import ammo.btTypedConstraint
 
-actual interface Constraint {
+actual interface Joint {
 
     val btConstraint: btTypedConstraint
 

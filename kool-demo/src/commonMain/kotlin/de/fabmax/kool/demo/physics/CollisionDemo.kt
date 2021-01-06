@@ -22,7 +22,7 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.*
 
-class CollisionDemo : DemoScene("Physics") {
+class CollisionDemo : DemoScene("Physics - Collision") {
 
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()

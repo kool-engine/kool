@@ -564,6 +564,10 @@ object Ammo {
         js("new this.ammo.btDiscreteDynamicsWorld(dispatcher, pairCache, constraintSolver, collisionConfiguration)")
 
     fun btHingeConstraint(rbA: btRigidBody, rbB: btRigidBody,
+                          rbAFrame: btTransform, rbBFrame: btTransform): btHingeConstraint =
+        js("new this.ammo.btHingeConstraint(rbA, rbB, rbAFrame, rbBFrame)")
+
+    fun btHingeConstraint(rbA: btRigidBody, rbB: btRigidBody,
                           pivotInA: btVector3, pivotInB: btVector3,
                           axisInA: btVector3, axisInB: btVector3): btHingeConstraint =
         js("new this.ammo.btHingeConstraint(rbA, rbB, pivotInA, pivotInB, axisInA, axisInB)")
