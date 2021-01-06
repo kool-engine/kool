@@ -12,7 +12,7 @@ expect class RigidBody(collisionShape: CollisionShape, mass: Float, bodyProperti
 
 abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Float, bodyProperties: RigidBodyProperties) {
 
-    val collisionGroup = bodyProperties.collisionGroup
+    val collisionGroup = bodyProperties.collisionGroupBits
     val collisionMask = bodyProperties.collisionMask
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()

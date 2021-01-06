@@ -177,8 +177,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frame = mutableListOf<RigidBody>()
 
         val groundBodyProps = RigidBodyProperties().apply {
-            collisionGroup = 2
-            clearCollidesWith(2)
+            setCollisionGroup(2, false)
         }
 
         val groundShape = BoxShape(Vec3f(100f, 1f, 100f))

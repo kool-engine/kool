@@ -20,7 +20,7 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
 
-class JointssDemo : DemoScene("Physics - Joints") {
+class JointsDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
 
@@ -38,6 +38,10 @@ class JointssDemo : DemoScene("Physics - Joints") {
     private val shadows = mutableListOf<SimpleShadowMap>()
     private lateinit var aoPipeline: AoPipeline
     private lateinit var ibl: EnvironmentMaps
+
+    private val staticBodyProps = RigidBodyProperties().apply {
+        setCollisionGroup(2, false)
+    }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
@@ -141,7 +145,7 @@ class JointssDemo : DemoScene("Physics - Joints") {
 
         physicsWorld?.apply {
             clear()
-            addRigidBody(RigidBody(PlaneShape(Vec3f.Y_AXIS, -20f), 0f))
+            addRigidBody(RigidBody(PlaneShape(Vec3f.Y_AXIS, -20f), 0f, staticBodyProps))
         }
 
         val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)
@@ -332,7 +336,7 @@ class JointssDemo : DemoScene("Physics - Joints") {
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
         val world = physicsWorld ?: return
 
-        val axle = RigidBody(CylinderShape(7f, 1f), 0f)
+        val axle = RigidBody(CylinderShape(7f, 1f), 0f, staticBodyProps)
         axle.setRotation(frame.getRotation(Mat3f()).rotate(90f, 0f, 0f))
         axle.origin = frame.transform(MutableVec3f(origin))
         world.addRigidBody(axle)

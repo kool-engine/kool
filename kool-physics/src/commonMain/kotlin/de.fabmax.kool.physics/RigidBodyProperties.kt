@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics
 
 class RigidBodyProperties {
-    var collisionGroup = 1
+    var collisionGroupBits = 1
     var collisionMask = 0xffffffff.toInt()
 
     var friction = 0.5f
@@ -13,12 +13,19 @@ class RigidBodyProperties {
     var sleepThreshold = 1f
     var canSleep = true
 
+    fun setCollisionGroup(group: Int, selfGroupCollision: Boolean = true) {
+        collisionGroupBits = 1 shl group
+        if (!selfGroupCollision) {
+            clearCollidesWith(group)
+        }
+    }
+
     fun clearCollidesWith(group: Int) {
-        collisionMask = collisionMask and group.inv()
+        collisionMask = collisionMask and (1 shl group).inv()
     }
 
     fun setCollidesWith(group: Int) {
-        collisionMask = collisionMask or group
+        collisionMask = collisionMask or (1 shl group)
     }
 }
 
