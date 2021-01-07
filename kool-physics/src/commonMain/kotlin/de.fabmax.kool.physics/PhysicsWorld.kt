@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.shapes.PlaneShape
@@ -138,8 +139,9 @@ abstract class CommonPhysicsWorld {
      * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.
      */
     fun addDefaultGroundPlane(): RigidBody {
-        val plane = RigidBody(PlaneShape(Vec3f.Y_AXIS, 0f), 0f)
-        addRigidBody(plane)
-        return plane
+        val groundPlane = RigidBody(PlaneShape(), 0f)
+        groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+        addRigidBody(groundPlane)
+        return groundPlane
     }
 }

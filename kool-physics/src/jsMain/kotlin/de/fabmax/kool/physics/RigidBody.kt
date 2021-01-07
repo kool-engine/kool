@@ -1,57 +1,54 @@
 package de.fabmax.kool.physics
 
-import ammo.*
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.physics.shapes.CollisionShape
+import physx.*
 
 actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
     : CommonRigidBody(collisionShape, mass, bodyProperties)
 {
-    val btRigidBody: btRigidBody
+    val pxActor: PxRigidActor
 
     private val bufOrigin = MutableVec3f()
     private val bufRotation = MutableVec4f()
 
     override var origin: Vec3f
-        get() = btRigidBody.getWorldTransform().getOrigin().toVec3f(bufOrigin)
+        get() = pxActor.getGlobalPose().translation.toVec3f(bufOrigin)
         set(value) {
-            btRigidBody.getWorldTransform().getOrigin().set(value)
+            val t = pxActor.getGlobalPose()
+            t.translation.set(value)
+            pxActor.setGlobalPose(t, true)
             updateTransform()
         }
 
     override var rotation: Vec4f
-        get() = btRigidBody.getWorldTransform().getRotation().toVec4f(bufRotation)
+        get() = pxActor.getGlobalPose().rotation.toVec4f(bufRotation)
         set(value) {
-            btRigidBody.getWorldTransform().setRotation(value.toBtQuaternion())
+            val t = pxActor.getGlobalPose()
+            t.rotation.set(value)
+            pxActor.setGlobalPose(t, true)
             updateTransform()
         }
 
     init {
         Physics.checkIsLoaded()
 
-        val motionState = Ammo.btDefaultMotionState()
-        val boxInertia = Ammo.btVector3(0f, 0f, 0f)
-        val btShape = collisionShape.btShape
+        val collisionFilter = PhysX.PxFilterData(bodyProperties.collisionGroupBits, bodyProperties.collisionMask, 0, 0)
+        val material = PhysX.physics.createMaterial(bodyProperties.friction, bodyProperties.friction, bodyProperties.restitution)
+        val flags = PhysX.PxShapeFlags(PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE.value or PhysX.PxShapeFlag.eSIMULATION_SHAPE.value)
+
+        val pose = PxTransform()
         if (mass > 0f) {
-            btShape.calculateLocalInertia(mass, boxInertia)
+            pxActor = PhysX.physics.createRigidDynamic(pose)
+            //pxActor.
+        } else {
+            pxActor = PhysX.physics.createRigidStatic(pose)
         }
-        val constructionInfo = Ammo.btRigidBodyConstructionInfo(mass, motionState, btShape, boxInertia)
-        constructionInfo.m_friction = bodyProperties.friction
-        constructionInfo.m_rollingFriction = bodyProperties.rollingFriction
-        constructionInfo.m_restitution = bodyProperties.restitution
-        constructionInfo.m_linearDamping = bodyProperties.linearDamping
-        constructionInfo.m_angularDamping = bodyProperties.angularDamping
-        constructionInfo.m_linearSleepingThreshold *= bodyProperties.sleepThreshold
-        constructionInfo.m_angularSleepingThreshold *= bodyProperties.sleepThreshold
 
-        btRigidBody = Ammo.btRigidBody(constructionInfo)
-
-        if (!bodyProperties.canSleep) {
-            btRigidBody.setActivationState(Ammo.DISABLE_DEACTIVATION)
-        }
+        collisionShape.attachTo(pxActor, material, flags, collisionFilter)
     }
 
     override fun fixedUpdate(timeStep: Float) {
@@ -60,6 +57,6 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     }
 
     private fun updateTransform() {
-        btRigidBody.getWorldTransform().toMat4f(transform)
+        pxActor.getGlobalPose().toMat4f(transform)
     }
 }

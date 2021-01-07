@@ -1,9 +1,9 @@
 package de.fabmax.kool.physics.joints
 
-import ammo.btTypedConstraint
+import physx.PxJoint
 
 actual interface Joint {
 
-    val btConstraint: btTypedConstraint
+    val pxJoint: PxJoint
 
 }

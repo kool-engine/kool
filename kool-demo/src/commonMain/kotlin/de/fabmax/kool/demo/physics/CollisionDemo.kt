@@ -359,32 +359,32 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
         },
 
-        CONVEX_HULL {
-            override val label = "Convex Hull"
-
-            override fun MeshBuilder.generateMesh() = flatIcoSphere()
-
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val s = rand.randomF(1.25f, 2.5f)
-                val icoPoints = mutableListOf<Vec3f>()
-                mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
-                val shape = ConvexHullShape(icoPoints)
-                val mass = s.pow(3)
-                return shape to mass
-            }
-        },
-
-        CYLINDER {
-            override val label = "Cylinder"
-
-            override fun MeshBuilder.generateMesh() = cylinder()
-
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
-                val mass = shape.radius.pow(2) * shape.height * 0.5f
-                return shape to mass
-            }
-        },
+//        CONVEX_HULL {
+//            override val label = "Convex Hull"
+//
+//            override fun MeshBuilder.generateMesh() = flatIcoSphere()
+//
+//            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+//                val s = rand.randomF(1.25f, 2.5f)
+//                val icoPoints = mutableListOf<Vec3f>()
+//                mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
+//                val shape = ConvexHullShape(icoPoints)
+//                val mass = s.pow(3)
+//                return shape to mass
+//            }
+//        },
+//
+//        CYLINDER {
+//            override val label = "Cylinder"
+//
+//            override fun MeshBuilder.generateMesh() = cylinder()
+//
+//            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+//                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
+//                val mass = shape.radius.pow(2) * shape.height * 0.5f
+//                return shape to mass
+//            }
+//        },
 
         MULTI_SHAPE {
             override val label = "Multi Shape"
@@ -522,26 +522,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         fun MeshBuilder.capsule(halfHeight: Float = 1.25f, radius: Float = 1f) {
             profile {
                 simpleShape(false) {
-                    val steps = 8
-                    for (i in 0..steps) {
-                        val a = (i / steps.toFloat() * PI / 2 + PI * 1.5).toFloat()
-                        val x = cos(a)
-                        val y = sin(a)
-                        xy(x * radius, y * radius - halfHeight)
-                        normals += MutableVec3f(x, y, 0f)
-                    }
-                    for (i in 0..steps) {
-                        val a = (i / steps.toFloat() * PI / 2).toFloat()
-                        val x = cos(a)
-                        val y = sin(a)
-                        xy(x * radius, y * radius + halfHeight)
-                        normals += MutableVec3f(x, y, 0f)
-                    }
+                    xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f, 10, true)
+                    xyArc(Vec2f(-halfHeight, radius), Vec2f(-halfHeight, 0f), 90f, 10, true)
                 }
-
                 for (i in 0 .. 20) {
                     sample()
-                    rotate(0f, -360f / 20, 0f)
+                    rotate(360f / 20, 0f, 0f)
                 }
             }
         }

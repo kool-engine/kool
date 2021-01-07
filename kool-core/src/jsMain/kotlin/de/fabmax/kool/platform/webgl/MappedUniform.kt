@@ -179,7 +179,6 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                 texture.loadingState = Texture.LoadingState.LOADING
                 val defTex = ctx.assetMgr.loadTextureAsync(loader)
                 defTex.invokeOnCompletion { ex ->
-                    println("tex loaded: $texture")
                     if (ex != null) {
                         logE { "Texture loading failed: $ex" }
                         texture.loadingState = Texture.LoadingState.LOADING_FAILED

@@ -1,54 +1,50 @@
 package de.fabmax.kool.physics.joints
 
-import ammo.Ammo
-import ammo.btHingeConstraint
-import ammo.toBtTransform
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.FLT_EPSILON
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
+import physx.PhysX
+import physx.PxRevoluteJoint
+import physx.toPxTransform
 
 @Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
                                               frameA: Mat4f, frameB: Mat4f) : Joint {
 
 
-    actual val frameA: Mat4f
-    actual val frameB: Mat4f
+    actual val frameA = Mat4f().set(frameA)
+    actual val frameB = Mat4f().set(frameB)
 
     actual constructor(bodyA: RigidBody, bodyB: RigidBody,
                        pivotA: Vec3f, pivotB: Vec3f,
                        axisA: Vec3f, axisB: Vec3f)
             : this(bodyA, bodyB, computeFrame(pivotA, axisA), computeFrame(pivotB, axisB))
 
-    override val btConstraint: btHingeConstraint
+    override val pxJoint: PxRevoluteJoint
 
     init {
         Physics.checkIsLoaded()
 
-        // Bullet hinge constraint rotates around z-Axis, given frames assume x-axis
-        val fA = Mat4f().set(frameA).rotate(90f, Vec3f.Y_AXIS)
-        val fB = Mat4f().set(frameB).rotate(90f, Vec3f.Y_AXIS)
-        btConstraint = Ammo.btHingeConstraint(bodyA.btRigidBody, bodyB.btRigidBody,
-            fA.toBtTransform(), fB.toBtTransform())
-
-        this.frameA = fA.set(frameA)
-        this.frameB = fB.set(frameB)
+        pxJoint = PhysX.PxRevoluteJointCreate(bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
     }
 
     actual fun setAngleLimit(lowerLimit: Float, upperLimit: Float) {
-        btConstraint.setLimit(lowerLimit.toRad(), upperLimit.toRad(), 0.9f, 0.3f, 1.0f)
+        //btConstraint.setLimit(lowerLimit.toRad(), upperLimit.toRad(), 0.9f, 0.3f, 1.0f)
     }
 
     actual fun clearAngleLimit() {
-        btConstraint.setLimit(-1e30f, 1e30f, 0.9f, 0.3f, 1.0f)
+        //btConstraint.setLimit(-1e30f, 1e30f, 0.9f, 0.3f, 1.0f)
     }
 
     actual fun disableAngularMotor() {
-        btConstraint.enableAngularMotor(false, 0f, 0f)
+        //btConstraint.enableAngularMotor(false, 0f, 0f)
     }
 
     actual fun enableAngularMotor(targetVelocity: Float, maxImpulse: Float) {
-        btConstraint.enableAngularMotor(true, targetVelocity, maxImpulse)
+        //btConstraint.enableAngularMotor(true, targetVelocity, maxImpulse)
     }
 
     companion object {

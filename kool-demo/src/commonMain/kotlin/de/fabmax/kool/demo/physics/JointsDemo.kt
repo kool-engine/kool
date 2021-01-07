@@ -145,7 +145,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         physicsWorld?.apply {
             clear()
-            addRigidBody(RigidBody(PlaneShape(Vec3f.Y_AXIS, -20f), 0f, staticBodyProps))
+            val groundPlane = RigidBody(PlaneShape(), 0f, staticBodyProps)
+            groundPlane.origin = Vec3f(0f, -20f, 0f)
+            groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+            addRigidBody(groundPlane)
         }
 
         val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)

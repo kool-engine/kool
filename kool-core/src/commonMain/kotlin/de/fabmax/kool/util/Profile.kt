@@ -76,9 +76,9 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         positions += MutableVec3f(x, y, 0f)
     }
 
-    fun xyArc(x: Float, y: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+    fun xyArc(start: Vec2f, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
         val angStep = angle / steps
-        val v = MutableVec2f(x - center.x, y - center.y)
+        val v = MutableVec2f(start.x - center.x, start.y - center.y)
         for (i in 0 .. steps) {
             xy(center.x + v.x, center.y + v.y)
             if (generateNormals) {

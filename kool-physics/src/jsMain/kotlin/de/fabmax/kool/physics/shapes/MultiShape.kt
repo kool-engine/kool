@@ -1,11 +1,9 @@
 package de.fabmax.kool.physics.shapes
 
-import ammo.Ammo
-import ammo.btCompoundShape
-import ammo.toBtTransform
 import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
+import physx.*
 
 actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShape {
 
@@ -13,17 +11,15 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
     override val children: List<ChildShape>
         get() = mutShapes
 
-    override val btShape: btCompoundShape
-
-    init {
-        Physics.checkIsLoaded()
-
-        btShape = Ammo.btCompoundShape()
+    override fun getAabb(result: BoundingBox): BoundingBox {
+        // todo
+        return result.set(Vec3f(-1f), Vec3f(1f))
     }
 
-    private val boundsHelper = ShapeBoundsHelper(btShape)
-    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
-    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
+    override fun getBoundingSphere(result: MutableVec4f): MutableVec4f {
+        // todo
+        return result.set(0f, 0f, 0f, 1f)
+    }
 
     actual constructor(childShapes: List<ChildShape>) : this() {
         childShapes.forEach { addShape(it) }
@@ -31,11 +27,17 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
 
     override fun addShape(childShape: ChildShape) {
         mutShapes += childShape
-        btShape.addChildShape(childShape.transform.toBtTransform(), childShape.shape.btShape)
+        //childShape.shape.localPose.set(childShape.transform)
     }
 
     override fun removeShape(shape: CollisionShape) {
         mutShapes.removeAll { it.shape === shape }
-        btShape.removeChildShape(shape.btShape)
+    }
+
+    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape? {
+        children.forEach {
+            it.shape.attachTo(actor, material, flags, collisionFilter)?.setLocalPose(it.transform.toPxTransform())
+        }
+        return null
     }
 }

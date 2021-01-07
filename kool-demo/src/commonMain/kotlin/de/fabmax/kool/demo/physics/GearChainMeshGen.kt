@@ -189,11 +189,11 @@ object GearChainMeshGen {
                 simpleShape(true) {
                     xy(-2f, 0f)
                     xy(-2f, 0f)
-                    xyArc(-2f, 0.3f, Vec2f(-1.8f, 0.3f), -90f, 6)
-                    xyArc(-1f, 0.5f, Vec2f(-1f, 0.7f), 90f, 6)
-                    xyArc(-0.8f, 1f, Vec2f(0f, 1f), -180f, 30)
-                    xyArc(0.8f, 0.7f, Vec2f(1f, 0.7f), 90f, 6)
-                    xyArc(1.8f, 0.5f, Vec2f(1.8f, 0.3f), -90f, 6)
+                    xyArc(Vec2f(-2f, 0.3f), Vec2f(-1.8f, 0.3f), -90f, 6)
+                    xyArc(Vec2f(-1f, 0.5f), Vec2f(-1f, 0.7f), 90f, 6)
+                    xyArc(Vec2f(-0.8f, 1f), Vec2f(0f, 1f), -180f, 30)
+                    xyArc(Vec2f(0.8f, 0.7f), Vec2f(1f, 0.7f), 90f, 6)
+                    xyArc(Vec2f(1.8f, 0.5f), Vec2f(1.8f, 0.3f), -90f, 6)
                     xy(2f, 0f)
                     xy(2f, 0f)
                 }
@@ -284,8 +284,8 @@ object GearChainMeshGen {
             metal = 1f
             profile {
                 simpleShape(true) {
-                    xyArc(0.6f, -0.3f, Vec2f(0.6f, 0f), 180f, 8)
-                    xyArc(-0.6f, 0.3f, Vec2f(-0.6f, 0f), 180f, 8)
+                    xyArc(Vec2f(0.6f, -0.3f), Vec2f(0.6f, 0f), 180f, 8)
+                    xyArc(Vec2f(-0.6f, 0.3f), Vec2f(-0.6f, 0f), 180f, 8)
                 }
 
                 withTransform {
@@ -319,8 +319,8 @@ object GearChainMeshGen {
             metal = 1f
             profile {
                 simpleShape(true) {
-                    xyArc(1.5f, -0.4f, Vec2f(1.5f, 0f), 180f, 12)
-                    xyArc(-1.5f, 0.4f, Vec2f(-1.5f, 0f), 180f, 12)
+                    xyArc(Vec2f(1.5f, -0.4f), Vec2f(1.5f, 0f), 180f, 12)
+                    xyArc(Vec2f(-1.5f, 0.4f), Vec2f(-1.5f, 0f), 180f, 12)
                 }
 
                 for (i in 0..1) {

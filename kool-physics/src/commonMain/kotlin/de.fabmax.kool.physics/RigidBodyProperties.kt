@@ -2,11 +2,10 @@ package de.fabmax.kool.physics
 
 class RigidBodyProperties {
     var collisionGroupBits = 1
-    var collisionMask = 0xffffffff.toInt()
+    var collisionMask = 0x7fffffff
 
     var friction = 0.5f
-    var rollingFriction = 0f
-    var restitution = 0f
+    var restitution = 0.2f
 
     var linearDamping = 0f
     var angularDamping = 0f

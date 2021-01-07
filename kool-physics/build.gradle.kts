@@ -30,7 +30,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("ammo.js", File(projectDir, "npm/node_modules/ammo.js")))
+                implementation(npm("physx-js", "0.3.0"))
             }
         }
 

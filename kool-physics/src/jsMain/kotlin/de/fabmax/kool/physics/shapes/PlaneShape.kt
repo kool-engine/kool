@@ -1,28 +1,19 @@
 package de.fabmax.kool.physics.shapes
 
-import ammo.Ammo
-import ammo.btStaticPlaneShape
-import ammo.toBtVector3
 import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.math.Plane
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.BoundingBox
+import physx.*
 
-actual class PlaneShape actual constructor(planeNormal: Vec3f, planeConstant: Float) : CommonPlaneShape(planeNormal, planeConstant), CollisionShape {
+actual class PlaneShape : CommonPlaneShape(), CollisionShape {
 
-    override val btShape: btStaticPlaneShape
+    override fun getAabb(result: BoundingBox) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
+    override fun getBoundingSphere(result: MutableVec4f) = result.set(0f, 0f, 0f, 1e10f)
 
-    init {
-        Physics.checkIsLoaded()
-
-        btShape = Ammo.btStaticPlaneShape(planeNormal.toBtVector3(), planeConstant)
+    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
+        val geometry = PhysX.PxPlaneGeometry()
+        val shape = PhysX.physics.createShape(geometry, material, true, flags)
+        shape.setSimulationFilterData(collisionFilter)
+        actor.attachShape(shape)
+        return shape
     }
-
-    private val boundsHelper = ShapeBoundsHelper(btShape)
-    override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
-    override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
-
-    actual constructor(plane: Plane) : this(plane.n, plane.toVec4().w)
-
 }
