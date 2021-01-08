@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
@@ -19,5 +20,12 @@ actual class CapsuleShape actual constructor(height: Float, radius: Float) : Com
         shape.setSimulationFilterData(collisionFilter)
         actor.attachShape(shape)
         return shape
+    }
+
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+        val h = height - radius
+        val iy = 0.5f * mass * radius * radius
+        val ixz = 1f / 12f * mass * (3 * radius * radius + h * h)
+        return result.set(ixz, iy, ixz)
     }
 }

@@ -25,8 +25,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private var physicsWorld: PhysicsWorld? = null
 
     private var motorGearConstraint: RevoluteJoint? = null
-    private var motorStrength = 100f
-    private var motorSpeed = 4f
+    private var motorStrength = 50f
+    private var motorSpeed = 0f
     private var motorDirection = 1f
     private var numLinks = 40
 
@@ -165,7 +165,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     resetPhysics = true
                 }
             }
-            sliderWithValue("Motor Strength:", motorStrength, 0f, 200f, 0) {
+            sliderWithValue("Motor Strength:", motorStrength, 0f, 100f, 0) {
                 motorStrength = value
                 updateMotor()
             }
@@ -244,22 +244,22 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val linkMass = 1f
         val gearMass = 10f
-        val gearR = 7f
+        val gearR = 6.95f
         val axleDist = computeAxleDist()
-        val tension = 0.1f
+        val tension = 0.05f
 
         if (numLinks % 2 != 0) {
             throw IllegalArgumentException("numLinks must be even")
         }
 
-        makeChain(linkMass, tension, gearR, axleDist, frame, world)
         makeGearAndAxle(gearR, Vec3f(0f, axleDist / 2f, 0f), gearMass, true, frame)
         makeGearAndAxle(gearR, Vec3f(0f, -axleDist / 2f, 0f), gearMass, false, frame)
+        makeChain(linkMass, tension, gearR, axleDist, frame, world)
 
     }
 
     private fun makeChain(linkMass: Float, tension: Float, gearR: Float, axleDist: Float, frame: Mat4f, world: PhysicsWorld) {
-        val t = Mat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.4f, 0f)
+        val t = Mat4f().set(frame).translate(0f, axleDist / 2f + gearR + 0.6f, 0f)
         val r = Mat3f()
 
         val rotLinks = mutableSetOf(1, 2, 3, numLinks - 2, numLinks - 1, numLinks)
@@ -273,9 +273,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
         world.addRigidBody(firstOuter)
 
         var prevInner = makeInnerChainLink(linkMass)
-        t.translate(1.25f, 0f, 0f)
+        t.translate(1.5f, 0f, 0f)
         t.rotate(0f, 0f, -15f)
-        t.translate(0.75f, 0f, 0f)
+        t.translate(0.5f, 0f, 0f)
         prevInner.origin = t.getOrigin(MutableVec3f())
         prevInner.setRotation(t.getRotation(r))
         world.addRigidBody(prevInner)
@@ -288,11 +288,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
         niceMeshes.linksI += prevInner
 
         for (i in 1 until numLinks) {
-            t.translate(0.75f, 0f, 0f)
+            t.translate(0.5f, 0f, 0f)
             if (i in rotLinks) {
                 t.rotate(0f, 0f, -15f)
             }
-            t.translate(1.25f, 0f, 0f)
+            t.translate(1.5f, 0f, 0f)
 
             val outer = makeOuterChainLink(linkMass * 2)
             outer.origin = t.getOrigin(MutableVec3f())
@@ -302,11 +302,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             connectLinksInnerOuter(prevInner, outer, tension, world)
 
             prevInner = makeInnerChainLink(linkMass)
-            t.translate(1.25f, 0f, 0f)
+            t.translate(1.5f, 0f, 0f)
             if ((i + 1) in rotLinks) {
                 t.rotate(0f, 0f, -15f)
             }
-            t.translate(0.75f, 0f, 0f)
+            t.translate(0.5f, 0f, 0f)
             prevInner.origin = t.getOrigin(MutableVec3f())
             prevInner.setRotation(t.getRotation(r))
             world.addRigidBody(prevInner)
@@ -406,7 +406,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeInnerChainLink(mass: Float): RigidBody {
-        val box = BoxShape(Vec3f(1.5f, 0.8f, 1f))
+        val box = BoxShape(Vec3f(1.5f, 1.2f, 1f))
 
         val linkBodyProps = rigidBodyProperties {
             friction = 0.2f

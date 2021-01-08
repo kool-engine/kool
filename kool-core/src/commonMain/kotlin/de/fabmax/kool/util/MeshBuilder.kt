@@ -140,6 +140,17 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         circle(props)
     }
 
+    fun fillPolygon(indices: List<Int>) {
+        val points = indices.map { Vec3f(geometry.vertexIt.apply { index = it }.position) }
+        val poly = PolyUtil.fillPolygon(points)
+        for (i in 0 until poly.numTriangles) {
+            val i0 = indices[poly.indices[i * 3]]
+            val i1 = indices[poly.indices[i * 3 + 1]]
+            val i2 = indices[poly.indices[i * 3 + 2]]
+            geometry.addTriIndices(i0, i1, i2)
+        }
+    }
+
     fun circle(props: CircleProps) {
         var i1 = 0
         val iCenter = vertex(props.center, Vec3f.Z_AXIS, props.uvCenter)

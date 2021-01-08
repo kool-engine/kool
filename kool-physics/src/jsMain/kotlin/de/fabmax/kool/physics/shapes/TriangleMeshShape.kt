@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.util.BoundingBox
@@ -23,5 +24,10 @@ actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) :
         collisionFilter: PxFilterData
     ): PxShape? {
         return null
+    }
+
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+        // tri mesh does not have a meaningful inertia
+        return result.set(1f, 1f, 1f)
     }
 }

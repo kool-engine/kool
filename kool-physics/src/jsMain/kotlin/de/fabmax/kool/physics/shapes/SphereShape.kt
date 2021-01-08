@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
@@ -19,5 +20,10 @@ actual class SphereShape actual constructor(radius: Float) : CommonSphereShape(r
         shape.setSimulationFilterData(collisionFilter)
         actor.attachShape(shape)
         return shape
+    }
+
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+        val i = 2f / 5f * mass * radius * radius
+        return result.set(i, i, i)
     }
 }

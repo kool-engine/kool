@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Color
 
 expect class RigidBody(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties = RigidBodyProperties()): CommonRigidBody
 
-abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Float, bodyProperties: RigidBodyProperties) {
+abstract class CommonRigidBody(val collisionShape: CollisionShape, val isStatic: Boolean, bodyProperties: RigidBodyProperties) {
 
     val collisionGroup = bodyProperties.collisionGroupBits
     val collisionMask = bodyProperties.collisionMask
@@ -20,6 +20,9 @@ abstract class CommonRigidBody(val collisionShape: CollisionShape, val mass: Flo
     val transform = Mat4f()
     abstract var origin: Vec3f
     abstract var rotation: Vec4f
+
+    abstract var mass: Float
+    abstract var inertia: Vec3f
 
     private val bufRotation = MutableVec4f()
 

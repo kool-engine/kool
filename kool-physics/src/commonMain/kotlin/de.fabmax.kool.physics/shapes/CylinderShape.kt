@@ -11,7 +11,7 @@ abstract class CommonCylinderShape(val height: Float, val radius: Float) {
             cylinder {
                 height = this@CommonCylinderShape.height
                 radius = this@CommonCylinderShape.radius
-                steps = 40
+                steps = 30
                 origin.set(0f, -height/2f, 0f)
             }
         }

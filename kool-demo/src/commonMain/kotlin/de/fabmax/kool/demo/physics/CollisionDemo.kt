@@ -359,32 +359,32 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
         },
 
-//        CONVEX_HULL {
-//            override val label = "Convex Hull"
-//
-//            override fun MeshBuilder.generateMesh() = flatIcoSphere()
-//
-//            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-//                val s = rand.randomF(1.25f, 2.5f)
-//                val icoPoints = mutableListOf<Vec3f>()
-//                mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
-//                val shape = ConvexHullShape(icoPoints)
-//                val mass = s.pow(3)
-//                return shape to mass
-//            }
-//        },
-//
-//        CYLINDER {
-//            override val label = "Cylinder"
-//
-//            override fun MeshBuilder.generateMesh() = cylinder()
-//
-//            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-//                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
-//                val mass = shape.radius.pow(2) * shape.height * 0.5f
-//                return shape to mass
-//            }
-//        },
+        CONVEX_HULL {
+            override val label = "Convex Hull"
+
+            override fun MeshBuilder.generateMesh() = flatIcoSphere()
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val s = rand.randomF(1.25f, 2.5f)
+                val icoPoints = mutableListOf<Vec3f>()
+                mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
+                val shape = ConvexHullShape(icoPoints)
+                val mass = s.pow(3)
+                return shape to mass
+            }
+        },
+
+        CYLINDER {
+            override val label = "Cylinder"
+
+            override fun MeshBuilder.generateMesh() = cylinder()
+
+            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
+                val mass = shape.radius.pow(2) * shape.height * 0.5f
+                return shape to mass
+            }
+        },
 
         MULTI_SHAPE {
             override val label = "Multi Shape"

@@ -22,7 +22,6 @@ actual object Physics : CoroutineScope {
         if (!isLoading) {
             logD { "Loading physx-js..." }
             isLoading = true
-            PhysX.initPhysX()
             PhysX.onLoadListener {
                 loadingDeferred.complete(Unit)
             }

@@ -15,4 +15,5 @@ actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), Co
     override fun getAabb(result: BoundingBox) = boundsHelper.getAabb(result)
     override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
 
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f) = getBtInertia(mass, result)
 }

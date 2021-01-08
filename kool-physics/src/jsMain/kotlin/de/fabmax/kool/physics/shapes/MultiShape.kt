@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
 import physx.*
 
@@ -12,13 +12,24 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
         get() = mutShapes
 
     override fun getAabb(result: BoundingBox): BoundingBox {
-        // todo
-        return result.set(Vec3f(-1f), Vec3f(1f))
+        result.clear()
+        val v = MutableVec3f()
+        val childAabb = BoundingBox()
+        for (i in mutShapes.indices) {
+            mutShapes[i].shape.getAabb(childAabb)
+            mutShapes[i].transform.transform(v.set(childAabb.min))
+            result.add(v)
+            mutShapes[i].transform.transform(v.set(childAabb.max))
+            result.add(v)
+        }
+        return result
     }
 
     override fun getBoundingSphere(result: MutableVec4f): MutableVec4f {
-        // todo
-        return result.set(0f, 0f, 0f, 1f)
+        val aabb = getAabb(BoundingBox())
+        val r = aabb.size.length() / 2
+        result.set(aabb.center, r)
+        return result
     }
 
     actual constructor(childShapes: List<ChildShape>) : this() {
@@ -27,7 +38,6 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
 
     override fun addShape(childShape: ChildShape) {
         mutShapes += childShape
-        //childShape.shape.localPose.set(childShape.transform)
     }
 
     override fun removeShape(shape: CollisionShape) {
@@ -39,5 +49,14 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
             it.shape.attachTo(actor, material, flags, collisionFilter)?.setLocalPose(it.transform.toPxTransform())
         }
         return null
+    }
+
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+        // rough approximation: use inertia of bounding box
+        val aabb = getAabb(BoundingBox())
+        result.x = (mass / 12f) * (aabb.size.y * aabb.size.y + aabb.size.z * aabb.size.z)
+        result.y = (mass / 12f) * (aabb.size.x * aabb.size.x + aabb.size.z * aabb.size.z)
+        result.z = (mass / 12f) * (aabb.size.x * aabb.size.x + aabb.size.y * aabb.size.y)
+        return result
     }
 }

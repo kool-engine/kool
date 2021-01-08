@@ -90,7 +90,7 @@ object GearChainMeshGen {
             color = Color.MD_BLUE_GREY_200.toLinear()
             profile {
                 simpleShape(true) {
-                    roundRectXz(6.7f, 0f, 0.6f, 2.4f, 0.2f, 3)
+                    roundRectXz(6.65f, 0f, 0.6f, 2.4f, 0.2f, 3)
                 }
                 withTransform {
                     sample()
@@ -283,21 +283,42 @@ object GearChainMeshGen {
             roughness = 0.2f
             metal = 1f
             profile {
-                simpleShape(true) {
-                    xyArc(Vec2f(0.6f, -0.3f), Vec2f(0.6f, 0f), 180f, 8)
-                    xyArc(Vec2f(-0.6f, 0.3f), Vec2f(-0.6f, 0f), 180f, 8)
+                val firstInds = mutableListOf<Int>()
+                val lastInds = mutableListOf<Int>()
+
+                fun Profile.sampleWithInds() {
+                    sample()
+                    firstInds += shapes[0].sampledVertIndices.first()
+                    lastInds.add(0, shapes[0].sampledVertIndices.last())
+                }
+
+                simpleShape(false) {
+                    xyArc(Vec2f(-0.45f, -0.5f), Vec2f(-0.45f, -0.35f), -90f, 4, true)
+                    xyArc(Vec2f(-0.6f, 0.35f), Vec2f(-0.45f, 0.35f), -90f, 4, true)
                 }
 
                 withTransform {
+                    rotate(90f, 0f, 90f)
+                    sampleWithInds()
                     translate(0f, 0f, -0.5f)
-                    sampleAndFillBottom()
-                    sample(false)
-                    translate(0f, 0f, 1f)
-                    sample()
-                    sampleAndFillTop()
+                    sampleWithInds()
+                    for (i in 1..10) {
+                        rotate(-18f, Vec3f.Y_AXIS)
+                        sampleWithInds()
+                    }
+                    translate(0f, 0f, -1f)
+                    sampleWithInds()
+                    for (i in 1..10) {
+                        rotate(-18f, Vec3f.Y_AXIS)
+                        sampleWithInds()
+                    }
+                    translate(0f, 0f, -0.5f)
+                    sampleWithInds()
                 }
+
+                fillPolygon(firstInds)
+                fillPolygon(lastInds)
             }
-            geometry.generateNormals()
         }
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
@@ -318,20 +339,44 @@ object GearChainMeshGen {
             roughness = 0.4f
             metal = 1f
             profile {
-                simpleShape(true) {
-                    xyArc(Vec2f(1.5f, -0.4f), Vec2f(1.5f, 0f), 180f, 12)
-                    xyArc(Vec2f(-1.5f, 0.4f), Vec2f(-1.5f, 0f), 180f, 12)
+                val firstInds = mutableListOf<Int>()
+                val lastInds = mutableListOf<Int>()
+
+                fun Profile.sampleWithInds(connect: Boolean = true) {
+                    sample(connect)
+                    firstInds += shapes[0].sampledVertIndices.first()
+                    lastInds.add(0, shapes[0].sampledVertIndices.last())
                 }
 
-                for (i in 0..1) {
+                simpleShape(false) {
+                    xyArc(Vec2f(-0.35f, -0.1f), Vec2f(-0.35f, -0.05f), -90f, 4, true)
+                    xyArc(Vec2f(-0.4f, 0.05f), Vec2f(-0.35f, 0.05f), -90f, 4, true)
+                }
+
+                for (s in -1..1 step 2) {
+                    firstInds.clear()
+                    lastInds.clear()
                     withTransform {
-                        translate(0f, 0f, -0.8f + 1.4f * i)
-                        sampleAndFillBottom()
-                        sample(false)
-                        translate(0f, 0f, 0.2f)
-                        sample()
-                        sampleAndFillTop()
+                        translate(0f, 0f, 0.7f * s)
+                        rotate(90f, 0f, 90f)
+                        sampleWithInds(false)
+                        translate(0f, 0f, -1.5f)
+                        sampleWithInds()
+                        for (i in 1..10) {
+                            rotate(-18f, Vec3f.Y_AXIS)
+                            sampleWithInds()
+                        }
+                        translate(0f, 0f, -3f)
+                        sampleWithInds()
+                        for (i in 1..10) {
+                            rotate(-18f, Vec3f.Y_AXIS)
+                            sampleWithInds()
+                        }
+                        translate(0f, 0f, -1.5f)
+                        sampleWithInds()
                     }
+                    fillPolygon(firstInds)
+                    fillPolygon(lastInds)
                 }
             }
             rotate(90f, Vec3f.X_AXIS)
@@ -347,7 +392,7 @@ object GearChainMeshGen {
                     height = 1.8f
                 }
             }
-            geometry.generateNormals()
+            //geometry.generateNormals()
         }
         shader = makeMeshShader(ibl, aoMap, shadows)
     }

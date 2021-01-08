@@ -40,11 +40,21 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
     }
 
     actual fun disableAngularMotor() {
-        //btConstraint.enableAngularMotor(false, 0f, 0f)
+        pxJoint.setDriveVelocity(0f, true)
+        pxJoint.setDriveForceLimit(0f)
+
+        val flags = pxJoint.getRevoluteJointFlags()
+        flags.clear(PhysX.PxRevoluteJointFlag.eDRIVE_ENABLED)
+        pxJoint.setRevoluteJointFlags(flags)
     }
 
     actual fun enableAngularMotor(targetVelocity: Float, maxImpulse: Float) {
-        //btConstraint.enableAngularMotor(true, targetVelocity, maxImpulse)
+        pxJoint.setDriveVelocity(targetVelocity, true)
+        pxJoint.setDriveForceLimit(maxImpulse)
+
+        val flags = pxJoint.getRevoluteJointFlags()
+        flags.set(PhysX.PxRevoluteJointFlag.eDRIVE_ENABLED)
+        pxJoint.setRevoluteJointFlags(flags)
     }
 
     companion object {

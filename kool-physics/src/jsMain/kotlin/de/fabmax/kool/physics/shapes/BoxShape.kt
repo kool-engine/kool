@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
@@ -27,5 +28,12 @@ actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), Co
         shape.setSimulationFilterData(collisionFilter)
         actor.attachShape(shape)
         return shape
+    }
+
+    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
+        result.x = (mass / 12f) * (size.y * size.y + size.z * size.z)
+        result.y = (mass / 12f) * (size.x * size.x + size.z * size.z)
+        result.z = (mass / 12f) * (size.x * size.x + size.y * size.y)
+        return result
     }
 }

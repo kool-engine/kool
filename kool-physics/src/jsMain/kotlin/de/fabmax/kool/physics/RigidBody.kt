@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.shapes.CollisionShape
 import physx.*
 
 actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
-    : CommonRigidBody(collisionShape, mass, bodyProperties)
+    : CommonRigidBody(collisionShape, mass == 0f, bodyProperties)
 {
     val pxActor: PxRigidActor
 
@@ -33,6 +33,16 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
             updateTransform()
         }
 
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    override var mass: Float
+        get() = if (isStatic) 0f else (pxActor as PxRigidDynamic).getMass()
+        set(value) { if (!isStatic) (pxActor as PxRigidDynamic).setMass(value) }
+
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    override var inertia: Vec3f
+        get() = if (isStatic) Vec3f.ZERO else (pxActor as PxRigidDynamic).getMassSpaceInertiaTensor().toVec3f()
+        set(value) { if (!isStatic) (pxActor as PxRigidDynamic).setMassSpaceInertiaTensor(value.toPxVec3()) }
+
     init {
         Physics.checkIsLoaded()
 
@@ -41,11 +51,13 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         val flags = PhysX.PxShapeFlags(PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE.value or PhysX.PxShapeFlag.eSIMULATION_SHAPE.value)
 
         val pose = PxTransform()
-        if (mass > 0f) {
-            pxActor = PhysX.physics.createRigidDynamic(pose)
-            //pxActor.
+        pxActor = if (mass > 0f) {
+            val rigidBody = PhysX.physics.createRigidDynamic(pose)
+            rigidBody.setMass(mass)
+            rigidBody.setMassSpaceInertiaTensor(collisionShape.estimateInertiaForMass(mass, MutableVec3f()).toPxVec3())
+            rigidBody
         } else {
-            pxActor = PhysX.physics.createRigidStatic(pose)
+            PhysX.physics.createRigidStatic(pose)
         }
 
         collisionShape.attachTo(pxActor, material, flags, collisionFilter)

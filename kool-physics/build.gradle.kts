@@ -30,7 +30,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js", "0.3.0"))
+                implementation(npm("physx-js", File(projectDir, "npm/node_modules/physx-js")))
             }
         }
 

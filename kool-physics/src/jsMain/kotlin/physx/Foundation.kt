@@ -16,7 +16,7 @@ class PxQuat {
 }
 fun PxQuat.toVec4f(result: MutableVec4f = MutableVec4f()) = result.set(x, y, z, w)
 fun PxQuat.set(v: Vec4f): PxQuat { x = v.x; y = v.y; z = v.z; w = v.w; return this }
-fun Vec4f.toPxQuat(result: PxQuat = PxQuat()) { result.set(this) }
+fun Vec4f.toPxQuat(result: PxQuat = PxQuat()) = result.set(this)
 
 class PxTransform {
     var rotation = PxQuat()
@@ -56,6 +56,12 @@ class PxVec3 {
 fun PxVec3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x, y, z)
 fun PxVec3.set(v: Vec3f): PxVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3f.toPxVec3(result: PxVec3 = PxVec3()) = result.set(this)
+
+external interface PxVec3Vector {
+    fun push_back(v: PxVec3)
+    fun get(at: Int): PxVec3
+    fun delete()
+}
 
 class PxVec4 {
     var x = 0f

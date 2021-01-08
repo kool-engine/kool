@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
@@ -19,4 +20,5 @@ expect interface CollisionShape {
      */
     fun getBoundingSphere(result: MutableVec4f): MutableVec4f
 
+    fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f
 }

@@ -22,6 +22,12 @@ external interface PxRigidActor: PxActor {
 }
 
 external interface PxRigidBody: PxRigidActor {
+    fun getMass(): Float
+    fun setMass(mess: Float)
+
+    fun setMassSpaceInertiaTensor(inertia: PxVec3)
+    fun getMassSpaceInertiaTensor(): PxVec3
+
     /*
 
       .function("setAngularDamping", &PxRigidBody::setAngularDamping)
@@ -30,8 +36,6 @@ external interface PxRigidBody: PxRigidActor {
       .function("getLinearDamping", &PxRigidBody::getLinearDamping)
       .function("setAngularVelocity", &PxRigidBody::setAngularVelocity)
       .function("getAngularVelocity", &PxRigidBody::getAngularVelocity)
-      .function("setMass", &PxRigidBody::setMass)
-      .function("getMass", &PxRigidBody::getMass)
       .function("setCMassLocalPose", &PxRigidBody::setCMassLocalPose, allow_raw_pointers())
       .function("setLinearVelocity", &PxRigidBody::setLinearVelocity)
       .function("getLinearVelocity", &PxRigidBody::getLinearVelocity)

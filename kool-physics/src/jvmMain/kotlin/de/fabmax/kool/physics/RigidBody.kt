@@ -13,7 +13,7 @@ import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
 actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
-    : CommonRigidBody(collisionShape, mass, bodyProperties)
+    : CommonRigidBody(collisionShape, mass == 0f, bodyProperties)
 {
     val btRigidBody: BtRigidBody
 
@@ -21,6 +21,8 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     private val bufRotation = MutableVec4f()
     private val bufTransform = Transform()
     private val bufQuat = Quat4f()
+
+    private val initMass = mass
 
     override var origin: Vec3f
         get() {
@@ -48,6 +50,20 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
             updateTransform()
         }
 
+    override var mass: Float
+        get() = if (isStatic) 0f else 1f / btRigidBody.invMass
+        set(value) { btRigidBody.setMassProps(value, inertia.toBtVector3f()) }
+
+    override var inertia: Vec3f
+        get() = if (isStatic) Vec3f.ZERO else {
+            val i = btRigidBody.getInvInertiaDiagLocal(Vector3f()).toVec3f()
+            i.x = if (i.x != 0f) 1f / i.x else 0f
+            i.y = if (i.y != 0f) 1f / i.y else 0f
+            i.z = if (i.z != 0f) 1f / i.z else 0f
+            i
+        }
+        set(value) { if (!isStatic) btRigidBody.setMassProps(mass, value.toBtVector3f()) }
+
     init {
         val startTransform = Transform()
         startTransform.setIdentity()
@@ -59,7 +75,6 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         }
         val constructionInfo = RigidBodyConstructionInfo(mass, motionState, btShape, boxInertia)
         constructionInfo.friction = bodyProperties.friction
-        //constructionInfo.rollingFriction = bodyProperties.rollingFriction     // not available in JBullet
         constructionInfo.restitution = bodyProperties.restitution
         constructionInfo.linearDamping = bodyProperties.linearDamping
         constructionInfo.angularDamping = bodyProperties.angularDamping
