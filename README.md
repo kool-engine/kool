@@ -11,11 +11,9 @@ I also have a few demos in place (roughly in order of creation; once loaded, you
 hamburger button in the upper left corner):
 - [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): A slightly more sophisticated
   physics demo consisting of a chain running over two gears. Uses a lot of multi / compound shapes and revolute / hinge
-  joints. Unfortunately, with ammo.js, chain segments sometimes are a bit sticky, which makes the chain a little wobbly
-  (the JVM / JBullet version runs smoother but wobbles more at standstill). 
-- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo. Based on 
-  bullet physics (via [ammo.js](https://github.com/kripken/ammo.js/) on javascript / [JBullet](http://jbullet.advel.cz/)
-  on JVM). A few more notes on physics [further below](#physics-simulation).
+  joints.  Based on nVidia PhysX (via [physx-js](https://github.com/ashconnell/physx-js) on javascript /
+  [JBullet](http://jbullet.advel.cz/) on JVM). A few more notes on physics [further below](#physics-simulation) 
+- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo.
 - [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.
   Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
   deferred pbr shader with extensions for rendering the oceans and night side.
@@ -75,17 +73,21 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 
 Multiplatform physics simulation is quite hard to achieve. My current approach is to build a thin abstraction layer
 which is then implemented with separate physics engines for javascript and JVM. There are a few options for
-physics engines to use: For JS there are [ammo.js](https://github.com/kripken/ammo.js/),
-[cannon.js](https://github.com/schteppe/cannon.js) and [Oimo.js](https://github.com/lo-th/Oimo.js/) to only name a few.
+physics engines to use: For JS there are [physx-js](https://github.com/ashconnell/physx-js), 
+[ammo.js](https://github.com/kripken/ammo.js/) and [Oimo.js](https://github.com/lo-th/Oimo.js/) to only name a few.
 On JVM the only standalone physics engines I know of are [JBullet](http://jbullet.advel.cz/) and
 [ode4j](https://github.com/tzaeschke/ode4j) (there also are [jMonkey](https://jmonkeyengine.org/) and
 [libGDX](https://libgdx.badlogicgames.com/), which both use JNI wrappers for native bullet physics, but those seem to be
 integrated into their engine-ecosystems rather tightly).
 
-I opted for ammo.js and JBullet because they are both based on bullet 2.x and therefore have a similar API.
-However, especially JBullet lacks a lot of advanced features (multi-threading, soft-bodies etc.) and is not actively
-developed anymore - the latest release is 10 years old. So it might be a good idea to switch to a JNI-wrapper solution
-at some point in the future.
+My initial approach was to use ammo.js and JBullet since they have a similar API and are easy to use. However, I
+now switched to [physx-js](https://github.com/ashconnell/physx-js) which offers an incredibly much better simulation
+accuracy at the same speed. Unfortunately the js bindings provided by physx-js are still in an early state and I had to
+add a few bindings myself in order to get my demos running. My binding code is pretty ugly right now. Hopefully I
+get it a bit cleaner soon, so I can release it back into the wild.
+
+The JVM version is still stuck with JBullet and that won't change until I find JNI bindings for a better
+engine (or find the time to write them myself...)
 
 Another interesting aspect is performance (and again JBullet is not great there). I have not done very detailed benchmarks
 yet, but here are a few numbers for the [box collision demo](https://fabmax.github.io/kool/kool-js/?demo=physics)
@@ -95,10 +97,12 @@ with 1000 boxes on my machine (Ryzen 2700X). Times were measured as required tim
 | ------------------- | -------------------- | ------:|
 | JBullet             | Java 11 (OpenJ9)     | ~20 ms |
 | JBullet             | Java 11 (Graal 20.3) | ~16 ms |
+| physx-js (wasm)     | Firefox 84           | ~8 ms  |
+| physx-js (wasm)     | Chrome 87            | ~8 ms  |
 | ammo.js (js)        | Firefox 84           | ~25 ms |
 | ammo.js (js)        | Chrome 87            | ~16 ms |
 | ammo.js (wasm)      | Firefox 84           | ~8 ms  |
-| ammo.js (wasm)      | Chrome 87            | ~8 ms |
+| ammo.js (wasm)      | Chrome 87            | ~8 ms  |
 
 ## A Hello World Example
 
