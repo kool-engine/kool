@@ -16,19 +16,19 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     private val bufRotation = MutableVec4f()
 
     override var origin: Vec3f
-        get() = pxActor.getGlobalPose().translation.toVec3f(bufOrigin)
+        get() = pxActor.getGlobalPose().p.toVec3f(bufOrigin)
         set(value) {
             val t = pxActor.getGlobalPose()
-            t.translation.set(value)
+            t.p.set(value)
             pxActor.setGlobalPose(t, true)
             updateTransform()
         }
 
     override var rotation: Vec4f
-        get() = pxActor.getGlobalPose().rotation.toVec4f(bufRotation)
+        get() = pxActor.getGlobalPose().q.toVec4f(bufRotation)
         set(value) {
             val t = pxActor.getGlobalPose()
-            t.rotation.set(value)
+            t.q.set(value)
             pxActor.setGlobalPose(t, true)
             updateTransform()
         }
@@ -48,9 +48,9 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
 
         val collisionFilter = PhysX.PxFilterData(bodyProperties.collisionGroupBits, bodyProperties.collisionMask, 0, 0)
         val material = PhysX.physics.createMaterial(bodyProperties.friction, bodyProperties.friction, bodyProperties.restitution)
-        val flags = PhysX.PxShapeFlags(PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE.value or PhysX.PxShapeFlag.eSIMULATION_SHAPE.value)
+        val flags = PhysX.PxShapeFlags(PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE or PhysX.PxShapeFlag.eSIMULATION_SHAPE)
 
-        val pose = PxTransform()
+        val pose = PhysX.PxTransform()
         pxActor = if (mass > 0f) {
             val rigidBody = PhysX.physics.createRigidDynamic(pose)
             rigidBody.setMass(mass)

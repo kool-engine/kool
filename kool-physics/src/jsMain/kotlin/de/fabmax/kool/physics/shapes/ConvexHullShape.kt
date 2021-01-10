@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 import physx.*
-import physx.PhysX.toPxVec3Vector
 
 actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonConvexHullShape(points), CollisionShape {
 
@@ -22,7 +21,7 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
         Physics.checkIsLoaded()
 
         pxMesh = toConvexMesh(points)
-        geometry = putMeshData(pxMesh)
+        geometry = makeMeshData(pxMesh)
 
         bounds.add(points)
     }
@@ -32,7 +31,7 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
 
     override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
         val scaling = PhysX.PxMeshScale(Vec3f(1f).toPxVec3(), Vec4f(0f, 0f, 0f, 1f).toPxQuat())
-        val meshFlags = PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS.value)
+        val meshFlags = PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS)
         val geometry = PhysX.PxConvexMeshGeometry(pxMesh, scaling, meshFlags)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
         shape.setSimulationFilterData(collisionFilter)
@@ -42,27 +41,29 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
 
     companion object {
         fun toConvexMesh(points: List<Vec3f>): PxConvexMesh {
-            val vec3Vector = points.toPxVec3Vector()
-            val mesh = PhysX.createConvexMesh(vec3Vector, PhysX.cooking, PhysX.physics)
-            vec3Vector.delete()
-            return mesh
+            val vec3Vector = points.toVectorPxVec3()
+            val desc = PhysX.PxConvexMeshDesc()
+            desc.flags = PhysX.PxConvexFlags(PhysX.PxConvexFlag.eCOMPUTE_CONVEX)
+            desc.points.count = points.size
+            desc.points.stride = 3 * 4      // point consists of 3 floats with 4 bytes each
+            desc.points.data = vec3Vector.data()
+            return PhysX.cooking.createConvexMesh(desc, PhysX.physics.getPhysicsInsertionCallback())
         }
 
-        fun putMeshData(convexMesh: PxConvexMesh): IndexedVertexList {
+        fun makeMeshData(convexMesh: PxConvexMesh): IndexedVertexList {
             val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
 
             val v = MutableVec3f()
             val polyIndices = mutableListOf<Int>()
+            val poly = PhysX.PxHullPolygon()
             for (i in 0 until convexMesh.getNbPolygons()) {
                 polyIndices.clear()
 
-                val attribs = PhysX.PxConvexMesh_getPolyAttribs(convexMesh, i)
-                val nbVerts = (attribs shr 16) and 0xffff
-                val indexBase = attribs and 0xffff
-                for (j in 0 until nbVerts) {
-                    val vi = PhysX.PxConvexMesh_getIndex(convexMesh, indexBase + j)
-                    PhysX.PxConvexMesh_getVertex(convexMesh, vi).toVec3f(v)
-                    polyIndices += geometry.addVertex(v)
+                convexMesh.getPolygonData(i, poly)
+                for (j in 0 until poly.mNbVerts) {
+                    val vi = PhysX.Px.getU8At(convexMesh.getIndexBuffer(), poly.mIndexBase + j)
+                    val pt = PhysX.Px.getVec3At(convexMesh.getVertices(), vi)
+                    polyIndices += geometry.addVertex(pt.toVec3f(v))
                 }
 
                 for (j in 2 until polyIndices.size) {

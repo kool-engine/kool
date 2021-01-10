@@ -23,23 +23,10 @@ external interface PxRigidActor: PxActor {
 
 external interface PxRigidBody: PxRigidActor {
     fun getMass(): Float
-    fun setMass(mess: Float)
+    fun setMass(mass: Float)
 
     fun setMassSpaceInertiaTensor(inertia: PxVec3)
     fun getMassSpaceInertiaTensor(): PxVec3
-
-    /*
-
-      .function("setAngularDamping", &PxRigidBody::setAngularDamping)
-      .function("getAngularDamping", &PxRigidBody::getAngularDamping)
-      .function("setLinearDamping", &PxRigidBody::setLinearDamping)
-      .function("getLinearDamping", &PxRigidBody::getLinearDamping)
-      .function("setAngularVelocity", &PxRigidBody::setAngularVelocity)
-      .function("getAngularVelocity", &PxRigidBody::getAngularVelocity)
-      .function("setCMassLocalPose", &PxRigidBody::setCMassLocalPose, allow_raw_pointers())
-      .function("setLinearVelocity", &PxRigidBody::setLinearVelocity)
-      .function("getLinearVelocity", &PxRigidBody::getLinearVelocity)
-     */
 }
 
 external interface PxRigidDynamic: PxRigidBody
@@ -70,6 +57,7 @@ external interface PxPhysics {
     fun createMaterial(staticFriction: Float, dynamicFriction: Float, restitution: Float): PxMaterial
 
     // Deletion Listeners
+    fun getPhysicsInsertionCallback(): PxPhysicsInsertionCallback
 }
 
 external interface PxScene {
@@ -77,13 +65,45 @@ external interface PxScene {
     fun removeActor(actor: PxActor, wakeOnLostTouch: Boolean)
 
     // Simulation
-    fun simulate(elapsedTime: Float, controlSimulation: Boolean)
+    fun simulate(elapsedTime: Float)
     fun fetchResults(block: Boolean): Boolean
     fun getGravity(): PxVec3
     fun setGravity(vec: PxVec3)
 }
 
-external interface PxSceneDesc
+external interface PxSceneDesc {
+    var gravity: PxVec3
+    var filterShader: PxSimulationFilterShader
+    var cpuDispatcher: PxCpuDispatcher
+    var flags: PxSceneFlags
+}
+
+external interface PxSceneFlag {
+    val eENABLE_ACTIVE_ACTORS: Int
+    val eENABLE_CCD: Int
+    val eDISABLE_CCD_RESWEEP: Int
+    val eADAPTIVE_FORCE: Int
+    val eENABLE_PCM: Int
+    val eDISABLE_CONTACT_REPORT_BUFFER_RESIZE: Int
+    val eDISABLE_CONTACT_CACHE: Int
+    val eREQUIRE_RW_LOCK: Int
+    val eENABLE_STABILIZATION: Int
+    val eENABLE_AVERAGE_POINT: Int
+    val eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS: Int
+    val eENABLE_GPU_DYNAMICS: Int
+    val eENABLE_ENHANCED_DETERMINISM: Int
+    val eENABLE_FRICTION_EVERY_ITERATION: Int
+    val eMUTABLE_FLAGS: Int
+
+    fun isSet(flags: PxSceneFlags, flag: Int): Boolean
+    fun set(flags: PxSceneFlags, flag: Int)
+    fun clear(flags: PxSceneFlags, flag: Int)
+}
+
+external interface PxSceneFlags
+fun PxSceneFlags.isSet(flag: Int) = PhysX.PxSceneFlag.isSet(this, flag)
+fun PxSceneFlags.set(flag: Int) = PhysX.PxSceneFlag.set(this, flag)
+fun PxSceneFlags.clear(flag: Int) = PhysX.PxSceneFlag.clear(this, flag)
 
 external interface PxShape {
     // Pose Manipulation
@@ -96,10 +116,19 @@ external interface PxShape {
 }
 
 external interface PxShapeFlag {
-    val eSIMULATION_SHAPE: Enum
-    val eSCENE_QUERY_SHAPE: Enum
-    val eTRIGGER_SHAPE: Enum
-    val eVISUALIZATION: Enum
+    val eSIMULATION_SHAPE: Int
+    val eSCENE_QUERY_SHAPE: Int
+    val eTRIGGER_SHAPE: Int
+    val eVISUALIZATION: Int
+
+    fun isSet(flags: PxShapeFlags, flag: Int): Boolean
+    fun set(flags: PxShapeFlags, flag: Int)
+    fun clear(flags: PxShapeFlags, flag: Int)
 }
 
 external interface PxShapeFlags
+fun PxShapeFlags.isSet(flag: Int) = PhysX.PxShapeFlag.isSet(this, flag)
+fun PxShapeFlags.set(flag: Int) = PhysX.PxShapeFlag.set(this, flag)
+fun PxShapeFlags.clear(flag: Int) = PhysX.PxShapeFlag.clear(this, flag)
+
+external interface PxSimulationFilterShader

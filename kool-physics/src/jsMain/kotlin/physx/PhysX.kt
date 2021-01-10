@@ -2,13 +2,12 @@
 
 package physx
 
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.logI
 import kotlin.js.Promise
 
 object PhysX {
     @JsName("physx")
-    private lateinit var physx: StaticPhysX
+    private var physx: dynamic = null
     private val physxPromise: Promise<dynamic> = js("require('physx-js')")()
 
     private val onLoadListeners = mutableListOf<() -> Unit>()
@@ -16,29 +15,49 @@ object PhysX {
     var isInitialized = false
         private set
 
+    lateinit var Px: PxStatics
+        private set
+    lateinit var PxConvexFlag: PxConvexFlag
+        private set
+    lateinit var PxConvexMeshGeometryFlag: PxConvexMeshGeometryFlag
+        private set
+    lateinit var PxRevoluteJointFlag: PxRevoluteJointFlag
+        private set
+    lateinit var PxSceneFlag: PxSceneFlag
+        private set
+    lateinit var PxShapeFlag: PxShapeFlag
+        private set
+
     lateinit var foundation: PxFoundation
+        private set
     lateinit var physics: PxPhysics
+        private set
     lateinit var cooking: PxCooking
+        private set
 
     init {
-        physxPromise.then { px: StaticPhysX ->
+        physxPromise.then { px: dynamic ->
             physx = px
+            Px = js("new px.PxStatics()")
+            PxConvexFlag = js("new px.PxConvexFlag()")
+            PxConvexMeshGeometryFlag = js("new px.PxConvexMeshGeometryFlag()")
+            PxRevoluteJointFlag = js("new px.PxRevoluteJointFlag()")
+            PxSceneFlag = js("new px.PxSceneFlag()")
+            PxShapeFlag = js("new px.PxShapeFlag()")
 
             val errorCallback = PxDefaultErrorCallback()
             val allocator = PxDefaultAllocator()
-            foundation = px.PxCreateFoundation(px.PX_PHYSICS_VERSION, allocator, errorCallback)
+            foundation = Px.CreateFoundation(Px.PHYSICS_VERSION, allocator, errorCallback)
 
             val scale = PxTolerancesScale()
-            physics = px.PxCreatePhysics(px.PX_PHYSICS_VERSION, foundation, scale, false, null)
+            physics = Px.CreatePhysics(Px.PHYSICS_VERSION, foundation, scale)
 
-            px.PxInitExtensions(physics, null)
+            Px.InitExtensions(physics)
 
             val cookingParams = PxCookingParams(scale)
-            cooking = px.PxCreateCooking(px.PX_PHYSICS_VERSION, foundation, cookingParams)
+            cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
 
-            logI { "PhysX loaded, version: ${pxVersionToString(px.PX_PHYSICS_VERSION)}" }
-
-            //test()
+            logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
 
             isInitialized = true
             onLoadListeners.forEach { it() }
@@ -59,44 +78,29 @@ object PhysX {
         return "$major.$minor.$bugfix"
     }
 
+
+
     // helper functions
-
-    fun List<Vec3f>.toPxVec3Vector(): PxVec3Vector {
-        val vector: PxVec3Vector = js("new this.physx.PxVec3Vector()")
-        forEach { vector.push_back(it.toPxVec3()) }
-        return vector
-    }
-
-    fun createConvexMesh(vertices: PxVec3Vector, cooking: PxCooking, physics: PxPhysics): PxConvexMesh = js("this.physx.createConvexMesh(vertices, cooking, physics)")
-
-    fun PxConvexMesh_getVertex(mesh: PxConvexMesh, index: Int): PxVec3 = js("this.physx.PxConvexMesh_getVertex(mesh, index)")
-
-    fun PxConvexMesh_getIndex(mesh: PxConvexMesh, index: Int): Int = js("this.physx.PxConvexMesh_getIndex(mesh, index)")
-
-    fun PxConvexMesh_getPolyAttribs(mesh: PxConvexMesh, polyIndex: Int): Int = js("this.physx.PxConvexMesh_getPolyAttribs(mesh, polyIndex)")
 
     // delegates to static functions
 
-    val PxShapeFlag: PxShapeFlag get() = js("this.physx.PxShapeFlag")
+    fun PxSceneFlags(flags: Int): PxSceneFlags = js("new this.physx.PxSceneFlags(flags)")
+
     fun PxShapeFlags(flags: Int): PxShapeFlags = js("new this.physx.PxShapeFlags(flags)")
 
-    val PxConvexMeshGeometryFlag: PxConvexMeshGeometryFlag get() = js("this.physx.PxConvexMeshGeometryFlag")
+    fun PxConvexFlags(flags: Int): PxConvexFlags = js("new this.physx.PxConvexFlags(flags)")
+
     fun PxConvexMeshGeometryFlags(flags: Int): PxConvexMeshGeometryFlags = js("new this.physx.PxConvexMeshGeometryFlags(flags)")
 
-    val PxRevoluteJointFlag: PxRevoluteJointFlag get() = js("this.physx.PxRevoluteJointFlag")
-    //fun PxRevoluteJointFlags(flags: Int): PxRevoluteJointFlags = js("new this.physx.PxRevoluteJointFlags(flags)")
-
-//    fun PxCreateCooking(version: Int, foundation: PxFoundation, cookingParams: PxCookingParams) =
-//        physx.PxCreateCooking(version, foundation, cookingParams)
-
-    fun PxRevoluteJointCreate(actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform) =
-        physx.PxRevoluteJointCreate(physics, actor0, localFrame0, actor1, localFrame1)
+    fun PxRevoluteJointFlags(flags: Int): PxRevoluteJointFlags = js("new this.physx.PxRevoluteJointFlags(flags)")
 
     // object factories
 
     fun PxBoxGeometry(hx: Float, hy: Float, hz: Float): PxBoxGeometry = js("new this.physx.PxBoxGeometry(hx, hy, hz)")
 
     fun PxCapsuleGeometry(radius: Float, halfHeight: Float): PxCapsuleGeometry = js("new this.physx.PxCapsuleGeometry(radius, halfHeight)")
+
+    fun PxConvexMeshDesc(): PxConvexMeshDesc = js("new this.physx.PxConvexMeshDesc()")
 
     fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConvexMeshGeometryFlags): PxConvexMeshGeometry =
         js("new this.physx.PxConvexMeshGeometry(mesh, scaling, flags)")
@@ -109,25 +113,29 @@ object PhysX {
 
     fun PxFilterData(w0: Int, w1: Int, w2: Int, w3: Int): PxFilterData = js("new this.physx.PxFilterData(w0, w1, w2, w3)")
 
+    fun PxHullPolygon(): PxHullPolygon = js("new this.physx.PxHullPolygon()")
+
     fun PxMeshScale(scale: PxVec3, rotation: PxQuat): PxMeshScale = js("new this.physx.PxMeshScale(scale, rotation)")
 
     fun PxPlaneGeometry(): PxPlaneGeometry = js("new this.physx.PxPlaneGeometry()")
 
-    //fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc = js("new this.physx.PxSceneDesc(scale)")
-    fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc = js("this.physx.getDefaultSceneDesc(scale, 0, null)")
+    fun PxQuat(): PxQuat = js("new this.physx.PxQuat(0, 0, 0, 1)")
+    fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat = js("new this.physx.PxQuat(x, y, z, w)")
 
-    fun PxSphereGeometry(ir: Float): PxSphereBoxGeometry = js("new this.physx.PxSphereGeometry(ir)")
+    fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc = js("new this.physx.PxSceneDesc(scale)")
+
+    fun PxSphereGeometry(ir: Float): PxSphereGeometry = js("new this.physx.PxSphereGeometry(ir)")
 
     fun PxTolerancesScale(): PxTolerancesScale = js("new this.physx.PxTolerancesScale()")
-}
 
-external interface StaticPhysX {
-    val PX_PHYSICS_VERSION: Int
+    fun PxTransform(): PxTransform {
+        val t: PxTransform = js("new this.physx.PxTransform()")
+        t.setIdentity()
+        return t
+    }
 
-    fun PxCreateFoundation(version: Int, allocator: PxDefaultAllocator, errorCallback: PxDefaultErrorCallback): PxFoundation
-    fun PxCreatePhysics(version: Int, foundation: PxFoundation, scale: PxTolerancesScale, trackOutstandingAllocations: Boolean, pvd: PxPvd?): PxPhysics
-    fun PxCreateCooking(version: Int, foundation: PxFoundation, cookingParams: PxCookingParams): PxCooking
-    fun PxInitExtensions(physics: PxPhysics, pvd: PxPvd?)
+    fun PxVec3(): PxVec3 = js("new this.physx.PxVec3(0, 0, 0, 0)")
+    fun PxVec3(x: Float, y: Float, z: Float): PxVec3 = js("new this.physx.PxVec3(x, y, z)")
 
-    fun PxRevoluteJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxRevoluteJoint
+    fun VectorPxVec3(): VectorPxVec3 = js("new this.physx.VectorPxVec3()")
 }

@@ -26,7 +26,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
     private var motorGearConstraint: RevoluteJoint? = null
     private var motorStrength = 50f
-    private var motorSpeed = 0f
+    private var motorSpeed = 1.5f
     private var motorDirection = 1f
     private var numLinks = 40
 
@@ -39,8 +39,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private lateinit var aoPipeline: AoPipeline
     private lateinit var ibl: EnvironmentMaps
 
+    private val staticCollGroup = 2
     private val staticBodyProps = RigidBodyProperties().apply {
-        setCollisionGroup(2, false)
+        setCollisionGroup(staticCollGroup, false)
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
@@ -255,7 +256,6 @@ class JointsDemo : DemoScene("Physics - Joints") {
         makeGearAndAxle(gearR, Vec3f(0f, axleDist / 2f, 0f), gearMass, true, frame)
         makeGearAndAxle(gearR, Vec3f(0f, -axleDist / 2f, 0f), gearMass, false, frame)
         makeChain(linkMass, tension, gearR, axleDist, frame, world)
-
     }
 
     private fun makeChain(linkMass: Float, tension: Float, gearR: Float, axleDist: Float, frame: Mat4f, world: PhysicsWorld) {
@@ -326,14 +326,14 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val hinge = RevoluteJoint(outer, inner,
             Vec3f(1.5f - t, 0f, 0f), Vec3f(-0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addJoint(hinge, true)
+        world.addJoint(hinge)
     }
 
     private fun connectLinksInnerOuter(inner: RigidBody, outer: RigidBody, t: Float, world: PhysicsWorld) {
         val hinge = RevoluteJoint(outer, inner,
             Vec3f(-1.5f + t, 0f, 0f), Vec3f(0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
-        world.addJoint(hinge, true)
+        world.addJoint(hinge)
     }
 
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
@@ -356,7 +356,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val motor = RevoluteJoint(axle, gear,
             Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 0f),
             Vec3f.Y_AXIS, Vec3f.Z_AXIS)
-        world.addJoint(motor, true)
+        world.addJoint(motor)
         if (isDriven) {
             motorGearConstraint = motor
         }
@@ -384,6 +384,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val gearBodyProps = rigidBodyProperties {
             friction = 0.2f
+            clearCollidesWith(staticCollGroup)
         }
         return RigidBody(gearShape, mass, gearBodyProps)
     }
@@ -406,7 +407,23 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeInnerChainLink(mass: Float): RigidBody {
-        val box = BoxShape(Vec3f(1.5f, 1.2f, 1f))
+        val w1 = 0.95f
+        val h1 = 0.2f
+        val w2 = 0.7f
+        val h2 = 0.6f
+        val d = 0.5f
+        val points = listOf(
+            Vec3f(-w1, -h1, -d), Vec3f(-w1, -h1, d),
+            Vec3f(-w1,  h1, -d), Vec3f(-w1,  h1, d),
+            Vec3f( w1, -h1, -d), Vec3f( w1, -h1, d),
+            Vec3f( w1,  h1, -d), Vec3f( w1,  h1, d),
+
+            Vec3f(-w2, -h2, -d), Vec3f(-w2, -h2, d),
+            Vec3f(-w2,  h2, -d), Vec3f(-w2,  h2, d),
+            Vec3f( w2, -h2, -d), Vec3f( w2, -h2, d),
+            Vec3f( w2,  h2, -d), Vec3f( w2,  h2, d),
+        )
+        val shape = ConvexHullShape(points)
 
         val linkBodyProps = rigidBodyProperties {
             friction = 0.2f
@@ -414,7 +431,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             angularDamping = 0.5f
             sleepThreshold = 0.3f
         }
-        return RigidBody(box, mass, linkBodyProps)
+        return RigidBody(shape, mass, linkBodyProps)
     }
 
     private inner class BodyMesh(val color: Color, val onCreate: (Mesh) -> Unit) {

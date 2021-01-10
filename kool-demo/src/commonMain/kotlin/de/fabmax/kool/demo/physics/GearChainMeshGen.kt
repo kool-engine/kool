@@ -135,9 +135,9 @@ object GearChainMeshGen {
                             translate(1.2f * d, 0f, 0f)
                             rotate(-20f * d, 0f, -45f * d)
                             sample(connect = false)
-                            for (j in 0..11) {
-                                rotate(2.5f * d, 0f, 8f * d)
-                                translate(0f, 0.57f, 0f)
+                            for (j in 0..22) {
+                                rotate(1.25f * d, 0f, 4f * d)
+                                translate(0f, 0.285f, 0f)
                                 sample()
                             }
                         }

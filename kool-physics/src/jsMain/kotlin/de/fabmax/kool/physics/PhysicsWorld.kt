@@ -4,10 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.vehicle.Vehicle
-import physx.PhysX
-import physx.PxScene
-import physx.toPxVec3
-import physx.toVec3f
+import physx.*
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
     val scene: PxScene
@@ -23,11 +20,15 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         Physics.checkIsLoaded()
 
         val sceneDesc = PhysX.PxSceneDesc(PhysX.physics.getTolerancesScale())
+        sceneDesc.gravity = PhysX.PxVec3(0f, -9.81f, 0f)
+        sceneDesc.cpuDispatcher = PhysX.Px.DefaultCpuDispatcherCreate(0)
+        sceneDesc.filterShader = PhysX.Px.DefaultFilterShader()
+        sceneDesc.flags.set(PhysX.PxSceneFlag.eENABLE_CCD)
         scene = PhysX.physics.createScene(sceneDesc)
     }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
-        scene.simulate(timeStep, true)
+        scene.simulate(timeStep)
         scene.fetchResults(true)
     }
 
@@ -39,19 +40,19 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         scene.removeActor(rigidBody.pxActor, true)
     }
 
-    override fun addJointImpl(joint: Joint, disableCollisionBetweenBodies: Boolean) {
-        //scene.addConstraint(joint.btConstraint, disableCollisionBetweenBodies)
+    override fun addJointImpl(joint: Joint) {
+        // nothing to do here
     }
 
     override fun removeJointImpl(joint: Joint) {
-        //scene.removeConstraint(joint.btConstraint)
+        // nothing to do here
     }
 
     override fun addVehicleImpl(vehicle: Vehicle) {
-        //scene.addAction(vehicle.btVehicle)
+        // nothing to do here
     }
 
     override fun removeVehicleImpl(vehicle: Vehicle) {
-        //scene.removeAction(vehicle.btVehicle)
+        // nothing to do here
     }
 }

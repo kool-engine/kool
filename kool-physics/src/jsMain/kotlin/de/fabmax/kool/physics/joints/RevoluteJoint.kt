@@ -6,9 +6,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
-import physx.PhysX
-import physx.PxRevoluteJoint
-import physx.toPxTransform
+import physx.*
 
 @Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
@@ -28,7 +26,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
     init {
         Physics.checkIsLoaded()
 
-        pxJoint = PhysX.PxRevoluteJointCreate(bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
+        pxJoint = PhysX.Px.RevoluteJointCreate(PhysX.physics, bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
     }
 
     actual fun setAngleLimit(lowerLimit: Float, upperLimit: Float) {

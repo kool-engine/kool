@@ -45,7 +45,7 @@ actual class CylinderShape actual constructor(height: Float, radius: Float) : Co
 
     override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
         val scaling = PhysX.PxMeshScale(Vec3f(1f).toPxVec3(), Vec4f(0f, 0f, 0f, 1f).toPxQuat())
-        val meshFlags = PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS.value)
+        val meshFlags = PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS)
         val geometry = PhysX.PxConvexMeshGeometry(pxMesh, scaling, meshFlags)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
         shape.setSimulationFilterData(collisionFilter)

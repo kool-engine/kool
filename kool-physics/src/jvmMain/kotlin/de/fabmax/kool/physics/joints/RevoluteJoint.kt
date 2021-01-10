@@ -43,8 +43,8 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
     }
 
     actual fun enableAngularMotor(targetVelocity: Float, maxImpulse: Float) {
-        // jbullet requires drastically smaller impulse values for similar results compared to ammo.js
-        val impulseCorrection = 0.1f
+        // jbullet requires drastically smaller impulse values for similar results compared to PhysX
+        val impulseCorrection = -0.1f
         btConstraint.enableAngularMotor(true, targetVelocity, maxImpulse * impulseCorrection)
     }
 

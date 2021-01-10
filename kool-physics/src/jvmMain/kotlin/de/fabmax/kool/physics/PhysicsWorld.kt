@@ -51,8 +51,8 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
         physicsWorld.removeRigidBody(rigidBody.btRigidBody)
     }
 
-    override fun addJointImpl(joint: Joint, disableCollisionBetweenBodies: Boolean) {
-        physicsWorld.addConstraint(joint.btConstraint, disableCollisionBetweenBodies)
+    override fun addJointImpl(joint: Joint) {
+        physicsWorld.addConstraint(joint.btConstraint)
     }
 
     override fun removeJointImpl(joint: Joint) {

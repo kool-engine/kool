@@ -21,13 +21,16 @@ external interface PxRevoluteJoint: PxJoint {
 }
 
 external interface PxRevoluteJointFlag {
-    val eLIMIT_ENABLED: PxRevoluteJointFlag
-    val eDRIVE_ENABLED: PxRevoluteJointFlag
-    val eDRIVE_FREESPIN: PxRevoluteJointFlag
+    val eLIMIT_ENABLED: Int
+    val eDRIVE_ENABLED: Int
+    val eDRIVE_FREESPIN: Int
+
+    fun isSet(flags: PxRevoluteJointFlags, flag: Int): Boolean
+    fun set(flags: PxRevoluteJointFlags, flag: Int)
+    fun clear(flags: PxRevoluteJointFlags, flag: Int)
 }
 
-external interface PxRevoluteJointFlags {
-    fun isSet(flag: PxRevoluteJointFlag)
-    fun set(flag: PxRevoluteJointFlag)
-    fun clear(flag: PxRevoluteJointFlag)
-}
+external interface PxRevoluteJointFlags
+fun PxRevoluteJointFlags.isSet(flag: Int) = PhysX.PxRevoluteJointFlag.isSet(this, flag)
+fun PxRevoluteJointFlags.set(flag: Int) = PhysX.PxRevoluteJointFlag.set(this, flag)
+fun PxRevoluteJointFlags.clear(flag: Int) = PhysX.PxRevoluteJointFlag.clear(this, flag)

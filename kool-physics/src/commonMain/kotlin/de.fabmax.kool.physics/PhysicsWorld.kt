@@ -49,9 +49,9 @@ abstract class CommonPhysicsWorld {
         removeRigidBodyImpl(rigidBody)
     }
 
-    fun addJoint(joint: Joint, disableCollisionBetweenBodies: Boolean = false) {
+    fun addJoint(joint: Joint) {
         mutJoints += joint
-        addJointImpl(joint, disableCollisionBetweenBodies)
+        addJointImpl(joint)
     }
 
     fun removeJoint(joint: Joint) {
@@ -127,7 +127,7 @@ abstract class CommonPhysicsWorld {
     protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)
     protected abstract fun removeRigidBodyImpl(rigidBody: RigidBody)
 
-    protected abstract fun addJointImpl(joint: Joint, disableCollisionBetweenBodies: Boolean)
+    protected abstract fun addJointImpl(joint: Joint)
     protected abstract fun removeJointImpl(joint: Joint)
 
     protected abstract fun addVehicleImpl(vehicle: Vehicle)

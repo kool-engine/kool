@@ -39,7 +39,9 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
+    //private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
+    //private val defaultScene = DemoEntry("Physics - Collision") { CollisionDemo() }
+    private val defaultScene = DemoEntry("Physics - Collision") { JointsDemo() }
 
     private val demos = mutableMapOf(
         "phys-joints" to DemoEntry("Physics - Joints") { JointsDemo() },

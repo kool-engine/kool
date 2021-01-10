@@ -27,11 +27,11 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    private val shapes = Cycler(*Shape.values())
+    private val shapes = Cycler(*Shape.values()).apply { index = 6 }
 
     private var numSpawnBodies = 450
     private var friction = 0.5f
-    private var restitution = 0f
+    private var restitution = 0.2f
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
 
