@@ -4,7 +4,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.vehicle.Vehicle
-import physx.*
+import physx.PhysX
+import physx.PxScene
+import physx.toPxVec3
+import physx.toVec3f
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
     val scene: PxScene
@@ -23,7 +26,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         sceneDesc.gravity = PhysX.PxVec3(0f, -9.81f, 0f)
         sceneDesc.cpuDispatcher = PhysX.Px.DefaultCpuDispatcherCreate(0)
         sceneDesc.filterShader = PhysX.Px.DefaultFilterShader()
-        sceneDesc.flags.set(PxSceneFlag.eENABLE_CCD)
+        sceneDesc.flags.set(PhysX.PxSceneFlag.eENABLE_CCD)
         scene = PhysX.physics.createScene(sceneDesc)
     }
 

@@ -1,12 +1,12 @@
 package physx
 
-external interface PxBoxGeometry: PxGeometry
+external interface PxBoxGeometry : PxGeometry
 
-external interface PxBVHStructure
+external interface PxBVHStructure : PxBase
 
-external interface PxCapsuleGeometry: PxGeometry
+external interface PxCapsuleGeometry : PxGeometry
 
-external interface PxConvexMesh {
+external interface PxConvexMesh : PxBase {
     fun getNbVertices(): Int
     fun getNbPolygons(): Int
     fun getPolygonData(index: Int, data: PxHullPolygon)
@@ -14,18 +14,13 @@ external interface PxConvexMesh {
     fun getIndexBuffer(): Int
 }
 
-external interface PxConvexMeshGeometry: PxGeometry
+external interface PxConvexMeshGeometry : PxGeometry
 
-@Suppress("UnsafeCastFromDynamic")
-object PxConvexMeshGeometryFlag {
-    val eTIGHT_BOUNDS: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS()
+external interface PxConvexMeshGeometryFlag {
+    val eTIGHT_BOUNDS: Int
 }
 
-external interface PxConvexMeshGeometryFlags {
-    fun isSet(flag: Int): Boolean
-    fun set(flag: Int)
-    fun clear(flag: Int)
-}
+external interface PxConvexMeshGeometryFlags : PxFlags
 
 external interface PxGeometry
 
@@ -38,6 +33,6 @@ external interface PxHullPolygon {
 
 external interface PxMeshScale
 
-external interface PxPlaneGeometry: PxGeometry
+external interface PxPlaneGeometry : PxGeometry
 
-external interface PxSphereGeometry: PxGeometry
+external interface PxSphereGeometry : PxGeometry

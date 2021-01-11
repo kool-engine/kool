@@ -7,7 +7,7 @@ import kotlin.js.Promise
 
 object PhysX {
     @JsName("physx")
-    internal var physx: dynamic = null
+    private var physx: dynamic = null
     private val physxPromise: Promise<dynamic> = js("require('physx-js')")()
 
     private val onLoadListeners = mutableListOf<() -> Unit>()
@@ -15,6 +15,19 @@ object PhysX {
     var isInitialized = false
         private set
 
+    // enums
+    val PxActorFlag: PxActorFlag get() = physx
+    val PxActorType: PxActorType get() = physx
+    val PxBaseFlag: PxBaseFlag get() = physx
+    val PxConvexFlag: PxConvexFlag get() = physx
+    val PxConvexMeshGeometryFlag: PxConvexMeshGeometryFlag get() = physx
+    val PxForceMode: PxForceMode get() = physx
+    val PxRevoluteJointFlag: PxRevoluteJointFlag get() = physx
+    val PxRigidBodyFlag: PxRigidBodyFlag get() = physx
+    val PxSceneFlag: PxSceneFlag get() = physx
+    val PxShapeFlag: PxShapeFlag get() = physx
+
+    // top-level functions
     lateinit var Px: PxStatics
         private set
 

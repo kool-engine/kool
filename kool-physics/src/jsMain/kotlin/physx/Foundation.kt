@@ -2,15 +2,60 @@ package physx
 
 import de.fabmax.kool.math.*
 
+external interface PxBase {
+    fun release()
+    fun getConcreteTypeName(): String
+    fun getConcreteType(): Int
+    fun setBaseFlag(flag: Int, value: Boolean)
+    fun setBaseFlags(inFlags: PxBaseFlags)
+    fun getBaseFlags(): PxBaseFlags
+    fun isReleasable(): Int
+}
+
+external interface PxBaseFlag {
+    val eOWNS_MEMORY: Int
+    val eIS_RELEASABLE: Int
+}
+
+external interface PxBaseFlags : PxFlags
+
+external interface PxBounds3 {
+    var minimum: PxVec3
+    var maximum: PxVec3
+    fun setEmpty()
+    fun setMaximal()
+    fun include(v: PxVec3)
+    fun isEmpty(): Boolean
+    fun intersects(b: PxBounds3): Boolean
+    fun intersects1D(b: PxBounds3, axis: Int): Boolean
+    fun contains(v: PxVec3): Boolean
+    fun isInside(box: PxBounds3): Boolean
+    fun getCenter(): PxVec3
+    fun getDimensions(): PxVec3
+    fun getExtents(): PxVec3
+    fun scaleSafe(scale: Float)
+    fun scaleFast(scale: Float)
+    fun fattenSafe(distance: Float)
+    fun fattenFast(distance: Float)
+    fun isFinite(): Boolean
+    fun isValid(): Boolean
+}
+
 external interface PxBoundedData {
     var count: Int
     var stride: Int
     var data: Int
 }
 
-external interface PxFoundation
-
 external interface PxCpuDispatcher
+
+external interface PxFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
+
+external interface PxFoundation
 
 external interface PxPhysicsInsertionCallback
 

@@ -48,7 +48,7 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
 
         val collisionFilter = PhysX.PxFilterData(bodyProperties.collisionGroupBits, bodyProperties.collisionMask, 0, 0)
         val material = PhysX.physics.createMaterial(bodyProperties.friction, bodyProperties.friction, bodyProperties.restitution)
-        val flags = PhysX.PxShapeFlags(PxShapeFlag.eSCENE_QUERY_SHAPE or PxShapeFlag.eSIMULATION_SHAPE)
+        val flags = PhysX.PxShapeFlags(PhysX.PxShapeFlag.eSCENE_QUERY_SHAPE or PhysX.PxShapeFlag.eSIMULATION_SHAPE)
 
         val pose = PhysX.PxTransform()
         pxActor = if (mass > 0f) {
