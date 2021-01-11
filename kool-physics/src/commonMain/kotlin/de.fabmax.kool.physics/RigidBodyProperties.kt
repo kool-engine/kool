@@ -7,9 +7,8 @@ class RigidBodyProperties {
     var friction = 0.5f
     var restitution = 0.2f
 
-    var linearDamping = 0f
-    var angularDamping = 0f
-    var sleepThreshold = 1f
+    var linearDamping = 0.05f
+    var angularDamping = 0.0f
     var canSleep = true
 
     fun setCollisionGroup(group: Int, selfGroupCollision: Boolean = true) {

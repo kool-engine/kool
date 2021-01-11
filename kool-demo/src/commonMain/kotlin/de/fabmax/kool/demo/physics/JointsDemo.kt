@@ -18,6 +18,8 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
+import kotlin.math.abs
+import kotlin.math.acos
 import kotlin.math.max
 
 class JointsDemo : DemoScene("Physics - Joints") {
@@ -201,7 +203,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     ignoreStateChange = false
                 }
             }
-            toggleButton("Draw Joints", false) {
+            toggleButton("Draw Joint Indicators", false) {
                 constraintInfo.isVisible = isEnabled
             }
         }
@@ -399,9 +401,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val linkBodyProps = rigidBodyProperties {
             friction = 0.2f
-            linearDamping = 0.1f
-            angularDamping = 0.5f
-            sleepThreshold = 0.3f
+            linearDamping = 0.05f
+            angularDamping = 0.1f
         }
         return RigidBody(shape, mass, linkBodyProps)
     }
@@ -427,9 +428,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val linkBodyProps = rigidBodyProperties {
             friction = 0.2f
-            linearDamping = 0.1f
-            angularDamping = 0.5f
-            sleepThreshold = 0.3f
+            linearDamping = 0.05f
+            angularDamping = 0.1f
         }
         return RigidBody(shape, mass, linkBodyProps)
     }
@@ -567,7 +567,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val lenB = tmpBnds.size * tmpAx * 0.5f + 1f
 
             val drawLen = max(lenA, lenB)
-            val diff = tmpP1.distance(tmpP2) + (1 - tmpA1 * tmpA2)
+            val diff = tmpP1.distance(tmpP2) + abs(acos(tmpA1 * tmpA2).toDeg()) / 20
             val color = gradient.getColor(diff, 0f, 0.5f)
 
             tmpL1.set(tmpA1).scale(drawLen).add(tmpP1)

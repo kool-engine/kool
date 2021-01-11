@@ -27,6 +27,11 @@ external interface PxRigidBody: PxRigidActor {
 
     fun setMassSpaceInertiaTensor(inertia: PxVec3)
     fun getMassSpaceInertiaTensor(): PxVec3
+
+    fun setLinearDamping(linDamp: Float)
+    fun getLinearDamping(): Float
+    fun setAngularDamping(angDamp: Float)
+    fun getAngularDamping(): Float
 }
 
 external interface PxRigidDynamic: PxRigidBody
@@ -78,32 +83,30 @@ external interface PxSceneDesc {
     var flags: PxSceneFlags
 }
 
-external interface PxSceneFlag {
-    val eENABLE_ACTIVE_ACTORS: Int
-    val eENABLE_CCD: Int
-    val eDISABLE_CCD_RESWEEP: Int
-    val eADAPTIVE_FORCE: Int
-    val eENABLE_PCM: Int
-    val eDISABLE_CONTACT_REPORT_BUFFER_RESIZE: Int
-    val eDISABLE_CONTACT_CACHE: Int
-    val eREQUIRE_RW_LOCK: Int
-    val eENABLE_STABILIZATION: Int
-    val eENABLE_AVERAGE_POINT: Int
-    val eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS: Int
-    val eENABLE_GPU_DYNAMICS: Int
-    val eENABLE_ENHANCED_DETERMINISM: Int
-    val eENABLE_FRICTION_EVERY_ITERATION: Int
-    val eMUTABLE_FLAGS: Int
-
-    fun isSet(flags: PxSceneFlags, flag: Int): Boolean
-    fun set(flags: PxSceneFlags, flag: Int)
-    fun clear(flags: PxSceneFlags, flag: Int)
+@Suppress("UnsafeCastFromDynamic")
+object PxSceneFlag {
+    val eENABLE_ACTIVE_ACTORS: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_ACTIVE_ACTORS()
+    val eENABLE_CCD: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_CCD()
+    val eDISABLE_CCD_RESWEEP: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eDISABLE_CCD_RESWEEP()
+    val eADAPTIVE_FORCE: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eADAPTIVE_FORCE()
+    val eENABLE_PCM: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_PCM()
+    val eDISABLE_CONTACT_REPORT_BUFFER_RESIZE: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE()
+    val eDISABLE_CONTACT_CACHE: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_CACHE()
+    val eREQUIRE_RW_LOCK: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eREQUIRE_RW_LOCK()
+    val eENABLE_STABILIZATION: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_STABILIZATION()
+    val eENABLE_AVERAGE_POINT: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_AVERAGE_POINT()
+    val eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS()
+    val eENABLE_GPU_DYNAMICS: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_GPU_DYNAMICS()
+    val eENABLE_ENHANCED_DETERMINISM: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_ENHANCED_DETERMINISM()
+    val eENABLE_FRICTION_EVERY_ITERATION: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eENABLE_FRICTION_EVERY_ITERATION()
+    val eMUTABLE_FLAGS: Int get() = PhysX.physx._emscripten_enum_physx_PxSceneFlag_eMUTABLE_FLAGS()
 }
 
-external interface PxSceneFlags
-fun PxSceneFlags.isSet(flag: Int) = PhysX.PxSceneFlag.isSet(this, flag)
-fun PxSceneFlags.set(flag: Int) = PhysX.PxSceneFlag.set(this, flag)
-fun PxSceneFlags.clear(flag: Int) = PhysX.PxSceneFlag.clear(this, flag)
+external interface PxSceneFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
 
 external interface PxShape {
     // Pose Manipulation
@@ -115,20 +118,18 @@ external interface PxShape {
     fun getSimulationFilterData(): PxFilterData
 }
 
-external interface PxShapeFlag {
-    val eSIMULATION_SHAPE: Int
-    val eSCENE_QUERY_SHAPE: Int
-    val eTRIGGER_SHAPE: Int
-    val eVISUALIZATION: Int
-
-    fun isSet(flags: PxShapeFlags, flag: Int): Boolean
-    fun set(flags: PxShapeFlags, flag: Int)
-    fun clear(flags: PxShapeFlags, flag: Int)
+@Suppress("UnsafeCastFromDynamic")
+object PxShapeFlag {
+    val eSIMULATION_SHAPE: Int get() = PhysX.physx._emscripten_enum_physx_PxShapeFlag_eSIMULATION_SHAPE()
+    val eSCENE_QUERY_SHAPE: Int get() = PhysX.physx._emscripten_enum_physx_PxShapeFlag_eSCENE_QUERY_SHAPE()
+    val eTRIGGER_SHAPE: Int get() = PhysX.physx._emscripten_enum_physx_PxShapeFlag_eTRIGGER_SHAPE()
+    val eVISUALIZATION: Int get() = PhysX.physx._emscripten_enum_physx_PxShapeFlag_eVISUALIZATION()
 }
 
-external interface PxShapeFlags
-fun PxShapeFlags.isSet(flag: Int) = PhysX.PxShapeFlag.isSet(this, flag)
-fun PxShapeFlags.set(flag: Int) = PhysX.PxShapeFlag.set(this, flag)
-fun PxShapeFlags.clear(flag: Int) = PhysX.PxShapeFlag.clear(this, flag)
+external interface PxShapeFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
 
 external interface PxSimulationFilterShader

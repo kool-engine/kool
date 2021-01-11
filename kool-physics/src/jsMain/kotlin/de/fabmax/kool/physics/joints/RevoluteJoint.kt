@@ -6,7 +6,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
-import physx.*
+import physx.PhysX
+import physx.PxRevoluteJoint
+import physx.PxRevoluteJointFlag
+import physx.toPxTransform
 
 @Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
@@ -42,7 +45,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
         pxJoint.setDriveForceLimit(0f)
 
         val flags = pxJoint.getRevoluteJointFlags()
-        flags.clear(PhysX.PxRevoluteJointFlag.eDRIVE_ENABLED)
+        flags.clear(PxRevoluteJointFlag.eDRIVE_ENABLED)
         pxJoint.setRevoluteJointFlags(flags)
     }
 
@@ -51,7 +54,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
         pxJoint.setDriveForceLimit(maxImpulse)
 
         val flags = pxJoint.getRevoluteJointFlags()
-        flags.set(PhysX.PxRevoluteJointFlag.eDRIVE_ENABLED)
+        flags.set(PxRevoluteJointFlag.eDRIVE_ENABLED)
         pxJoint.setRevoluteJointFlags(flags)
     }
 

@@ -23,7 +23,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         sceneDesc.gravity = PhysX.PxVec3(0f, -9.81f, 0f)
         sceneDesc.cpuDispatcher = PhysX.Px.DefaultCpuDispatcherCreate(0)
         sceneDesc.filterShader = PhysX.Px.DefaultFilterShader()
-        sceneDesc.flags.set(PhysX.PxSceneFlag.eENABLE_CCD)
+        sceneDesc.flags.set(PxSceneFlag.eENABLE_CCD)
         scene = PhysX.physics.createScene(sceneDesc)
     }
 

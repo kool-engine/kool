@@ -78,8 +78,8 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         constructionInfo.restitution = bodyProperties.restitution
         constructionInfo.linearDamping = bodyProperties.linearDamping
         constructionInfo.angularDamping = bodyProperties.angularDamping
-        constructionInfo.linearSleepingThreshold *= bodyProperties.sleepThreshold
-        constructionInfo.angularSleepingThreshold *= bodyProperties.sleepThreshold
+//        constructionInfo.linearSleepingThreshold *= bodyProperties.sleepThreshold
+//        constructionInfo.angularSleepingThreshold *= bodyProperties.sleepThreshold
 
         btRigidBody = BtRigidBody(constructionInfo)
 

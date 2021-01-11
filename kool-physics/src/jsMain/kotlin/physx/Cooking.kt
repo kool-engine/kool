@@ -5,19 +5,24 @@ external interface PxConvexMeshDesc {
     var flags: PxConvexFlags
 }
 
-external interface PxConvexFlag {
-    val eCOMPUTE_CONVEX: Int
-    val eCHECK_ZERO_AREA_TRIANGLES: Int
-
-    fun isSet(flags: PxConvexFlags, flag: Int): Boolean
-    fun set(flags: PxConvexFlags, flag: Int)
-    fun clear(flags: PxConvexFlags, flag: Int)
+@Suppress("UnsafeCastFromDynamic")
+object PxConvexFlag {
+    val e16_BIT_INDICES: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eENABLE_ACTIVE_ACTORS()
+    val eCOMPUTE_CONVEX: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eCOMPUTE_CONVEX()
+    val eCHECK_ZERO_AREA_TRIANGLES: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eCHECK_ZERO_AREA_TRIANGLES()
+    val eQUANTIZE_INPUT: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eQUANTIZE_INPUT()
+    val eDISABLE_MESH_VALIDATION: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eDISABLE_MESH_VALIDATION()
+    val ePLANE_SHIFTING: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_ePLANE_SHIFTING()
+    val eFAST_INERTIA_COMPUTATION: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eFAST_INERTIA_COMPUTATION()
+    val eGPU_COMPATIBLE: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eGPU_COMPATIBLE()
+    val eSHIFT_VERTICES: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexFlag_eSHIFT_VERTICES()
 }
 
-external interface PxConvexFlags
-fun PxConvexFlags.isSet(flag: Int) = PhysX.PxConvexFlag.isSet(this, flag)
-fun PxConvexFlags.set(flag: Int) = PhysX.PxConvexFlag.set(this, flag)
-fun PxConvexFlags.clear(flag: Int) = PhysX.PxConvexFlag.clear(this, flag)
+external interface PxConvexFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
 
 external interface PxCooking {
     fun createConvexMesh(desc: PxConvexMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxConvexMesh

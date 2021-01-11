@@ -7,7 +7,7 @@ import kotlin.js.Promise
 
 object PhysX {
     @JsName("physx")
-    private var physx: dynamic = null
+    internal var physx: dynamic = null
     private val physxPromise: Promise<dynamic> = js("require('physx-js')")()
 
     private val onLoadListeners = mutableListOf<() -> Unit>()
@@ -16,16 +16,6 @@ object PhysX {
         private set
 
     lateinit var Px: PxStatics
-        private set
-    lateinit var PxConvexFlag: PxConvexFlag
-        private set
-    lateinit var PxConvexMeshGeometryFlag: PxConvexMeshGeometryFlag
-        private set
-    lateinit var PxRevoluteJointFlag: PxRevoluteJointFlag
-        private set
-    lateinit var PxSceneFlag: PxSceneFlag
-        private set
-    lateinit var PxShapeFlag: PxShapeFlag
         private set
 
     lateinit var foundation: PxFoundation
@@ -39,11 +29,6 @@ object PhysX {
         physxPromise.then { px: dynamic ->
             physx = px
             Px = js("new px.PxStatics()")
-            PxConvexFlag = js("new px.PxConvexFlag()")
-            PxConvexMeshGeometryFlag = js("new px.PxConvexMeshGeometryFlag()")
-            PxRevoluteJointFlag = js("new px.PxRevoluteJointFlag()")
-            PxSceneFlag = js("new px.PxSceneFlag()")
-            PxShapeFlag = js("new px.PxShapeFlag()")
 
             val errorCallback = PxDefaultErrorCallback()
             val allocator = PxDefaultAllocator()
@@ -78,29 +63,17 @@ object PhysX {
         return "$major.$minor.$bugfix"
     }
 
-
-
-    // helper functions
-
-    // delegates to static functions
-
-    fun PxSceneFlags(flags: Int): PxSceneFlags = js("new this.physx.PxSceneFlags(flags)")
-
-    fun PxShapeFlags(flags: Int): PxShapeFlags = js("new this.physx.PxShapeFlags(flags)")
-
-    fun PxConvexFlags(flags: Int): PxConvexFlags = js("new this.physx.PxConvexFlags(flags)")
-
-    fun PxConvexMeshGeometryFlags(flags: Int): PxConvexMeshGeometryFlags = js("new this.physx.PxConvexMeshGeometryFlags(flags)")
-
-    fun PxRevoluteJointFlags(flags: Int): PxRevoluteJointFlags = js("new this.physx.PxRevoluteJointFlags(flags)")
-
     // object factories
 
     fun PxBoxGeometry(hx: Float, hy: Float, hz: Float): PxBoxGeometry = js("new this.physx.PxBoxGeometry(hx, hy, hz)")
 
     fun PxCapsuleGeometry(radius: Float, halfHeight: Float): PxCapsuleGeometry = js("new this.physx.PxCapsuleGeometry(radius, halfHeight)")
 
+    fun PxConvexFlags(flags: Int): PxConvexFlags = js("new this.physx.PxConvexFlags(flags)")
+
     fun PxConvexMeshDesc(): PxConvexMeshDesc = js("new this.physx.PxConvexMeshDesc()")
+
+    fun PxConvexMeshGeometryFlags(flags: Int): PxConvexMeshGeometryFlags = js("new this.physx.PxConvexMeshGeometryFlags(flags)")
 
     fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConvexMeshGeometryFlags): PxConvexMeshGeometry =
         js("new this.physx.PxConvexMeshGeometry(mesh, scaling, flags)")
@@ -122,7 +95,13 @@ object PhysX {
     fun PxQuat(): PxQuat = js("new this.physx.PxQuat(0, 0, 0, 1)")
     fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat = js("new this.physx.PxQuat(x, y, z, w)")
 
+    fun PxRevoluteJointFlags(flags: Int): PxRevoluteJointFlags = js("new this.physx.PxRevoluteJointFlags(flags)")
+
     fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc = js("new this.physx.PxSceneDesc(scale)")
+
+    fun PxSceneFlags(flags: Int): PxSceneFlags = js("new this.physx.PxSceneFlags(flags)")
+
+    fun PxShapeFlags(flags: Int): PxShapeFlags = js("new this.physx.PxShapeFlags(flags)")
 
     fun PxSphereGeometry(ir: Float): PxSphereGeometry = js("new this.physx.PxSphereGeometry(ir)")
 
@@ -130,12 +109,12 @@ object PhysX {
 
     fun PxTransform(): PxTransform {
         val t: PxTransform = js("new this.physx.PxTransform()")
-        t.setIdentity()
-        return t
+        return t.setIdentity()
     }
 
     fun PxVec3(): PxVec3 = js("new this.physx.PxVec3(0, 0, 0, 0)")
     fun PxVec3(x: Float, y: Float, z: Float): PxVec3 = js("new this.physx.PxVec3(x, y, z)")
 
     fun VectorPxVec3(): VectorPxVec3 = js("new this.physx.VectorPxVec3()")
+
 }

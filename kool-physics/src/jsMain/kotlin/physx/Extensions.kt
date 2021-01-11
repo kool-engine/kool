@@ -20,17 +20,15 @@ external interface PxRevoluteJoint: PxJoint {
     fun setRevoluteJointFlags(flags: PxRevoluteJointFlags)
 }
 
-external interface PxRevoluteJointFlag {
-    val eLIMIT_ENABLED: Int
-    val eDRIVE_ENABLED: Int
-    val eDRIVE_FREESPIN: Int
-
-    fun isSet(flags: PxRevoluteJointFlags, flag: Int): Boolean
-    fun set(flags: PxRevoluteJointFlags, flag: Int)
-    fun clear(flags: PxRevoluteJointFlags, flag: Int)
+@Suppress("UnsafeCastFromDynamic")
+object PxRevoluteJointFlag {
+    val eLIMIT_ENABLED: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED()
+    val eDRIVE_ENABLED: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED()
+    val eDRIVE_FREESPIN: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN()
 }
 
-external interface PxRevoluteJointFlags
-fun PxRevoluteJointFlags.isSet(flag: Int) = PhysX.PxRevoluteJointFlag.isSet(this, flag)
-fun PxRevoluteJointFlags.set(flag: Int) = PhysX.PxRevoluteJointFlag.set(this, flag)
-fun PxRevoluteJointFlags.clear(flag: Int) = PhysX.PxRevoluteJointFlag.clear(this, flag)
+external interface PxRevoluteJointFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}

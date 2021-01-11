@@ -16,18 +16,16 @@ external interface PxConvexMesh {
 
 external interface PxConvexMeshGeometry: PxGeometry
 
-external interface PxConvexMeshGeometryFlag {
-    val eTIGHT_BOUNDS: Int
-
-    fun isSet(flags: PxConvexMeshGeometryFlags, flag: Int): Boolean
-    fun set(flags: PxConvexMeshGeometryFlags, flag: Int)
-    fun clear(flags: PxConvexMeshGeometryFlags, flag: Int)
+@Suppress("UnsafeCastFromDynamic")
+object PxConvexMeshGeometryFlag {
+    val eTIGHT_BOUNDS: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS()
 }
 
-external interface PxConvexMeshGeometryFlags
-fun PxConvexMeshGeometryFlags.isSet(flag: Int) = PhysX.PxConvexMeshGeometryFlag.isSet(this, flag)
-fun PxConvexMeshGeometryFlags.set(flag: Int) = PhysX.PxConvexMeshGeometryFlag.set(this, flag)
-fun PxConvexMeshGeometryFlags.clear(flag: Int) = PhysX.PxConvexMeshGeometryFlag.clear(this, flag)
+external interface PxConvexMeshGeometryFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
 
 external interface PxGeometry
 
