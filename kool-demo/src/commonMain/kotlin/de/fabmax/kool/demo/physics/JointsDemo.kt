@@ -386,7 +386,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         val gearBodyProps = rigidBodyProperties {
-            friction = 0.2f
+            material = Material(0.2f)
             clearCollidesWith(staticCollGroup)
         }
         return RigidBody(gearShape, mass, gearBodyProps)
@@ -401,7 +401,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         shape.addShape(boxB, Mat4f().translate(0f, 0f, -1.1f))
 
         val linkBodyProps = rigidBodyProperties {
-            friction = 0.2f
+            material = Material(0.2f)
             linearDamping = 0.05f
             angularDamping = 0.1f
         }
@@ -428,7 +428,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val shape = ConvexHullShape(points)
 
         val linkBodyProps = rigidBodyProperties {
-            friction = 0.2f
+            material = Material(0.2f)
             linearDamping = 0.05f
             angularDamping = 0.1f
         }

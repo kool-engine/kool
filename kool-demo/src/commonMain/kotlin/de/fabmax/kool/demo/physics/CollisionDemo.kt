@@ -140,8 +140,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val (shape, mass) = type.generateShape(rand)
 
             val bodyProps = RigidBodyProperties().apply {
-                friction = this@CollisionDemo.friction
-                restitution = this@CollisionDemo.restitution
+                material = Material(friction, friction, restitution)
             }
             val body = RigidBody(shape, mass, bodyProps)
             body.origin = Vec3f(x, y, z)

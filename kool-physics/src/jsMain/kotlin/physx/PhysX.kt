@@ -2,6 +2,8 @@
 
 package physx
 
+import de.fabmax.kool.physics.Material
+import de.fabmax.kool.physics.PhysicsFilterData
 import de.fabmax.kool.util.logI
 import kotlin.js.Promise
 
@@ -38,6 +40,8 @@ object PhysX {
 
     lateinit var defaultBodyFlags: PxShapeFlags
         private set
+
+    private val pxMaterials = mutableMapOf<Material, PxMaterial>()
 
     init {
         physxPromise.then { px: dynamic ->
@@ -78,6 +82,10 @@ object PhysX {
         return "$major.$minor.$bugfix"
     }
 
+    fun getPxMaterial(material: Material) = pxMaterials.getOrPut(material) {
+        physics.createMaterial(material.staticFriction, material.dynamicFriction, material.restitution)
+    }
+
     // object factories
     fun destroy(pxObject: Any) = physx.destroy(pxObject)
 
@@ -105,6 +113,7 @@ object PhysX {
 
     fun PxDefaultErrorCallback(): PxDefaultErrorCallback = js("new this.physx.PxDefaultErrorCallback()")
 
+    fun PxFilterData(filterData: PhysicsFilterData) = PxFilterData(filterData.data[0], filterData.data[1], filterData.data[2], filterData.data[3])
     fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0, w3: Int = 0): PxFilterData = js("new this.physx.PxFilterData(w0, w1, w2, w3)")
 
     fun PxHullPolygon(): PxHullPolygon = js("new this.physx.PxHullPolygon()")

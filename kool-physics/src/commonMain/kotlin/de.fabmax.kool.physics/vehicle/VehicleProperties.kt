@@ -1,61 +1,66 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.Material
+import de.fabmax.kool.physics.PhysicsFilterData
 
-class VehicleProperties(numWheels: Int) {
-    val wheels = List(numWheels) { WheelProperties() }
+class VehicleProperties {
+    var chassisMass = 1500f
+    var chassisDims = Vec3f(2f, 1f, 5f)
+    var chassisCMOffset = Vec3f(0.0f, -chassisDims.y * 0.5f + 0.15f, 0.25f)
 
-    fun forEachWheel(block: (WheelProperties) -> Unit) {
-        wheels.forEach(block)
+    var numWheels = 4       // for now this is kind of fixed
+    var wheelMass = 20f
+    var wheelWidth = 0.4f
+    var wheelRadius = 0.5f
+    var maxSteerAngle = 40f
+
+    var maxBrakeTorque = 5000f
+    var maxHandBrakeTorque = 5000f
+
+    var maxCompression = 0.3f
+    var maxDroop = 0.1f
+    var springStrength = 35000f
+    var springDamperRate = 4500f
+    var camberAngleAtRest = 0.0f
+    var camberAngleAtMaxDroop = 0.05f
+    var camberAngleAtMaxCompression = -0.05f
+
+    var peakEngineTorque = 1000f
+    var peakEngineRpm = 6000f
+    var gearSwitchTime = 0.5f
+    var clutchStrength = 10f
+
+    var frontAntiRollBarStiffness = 10000f
+    var rearAntiRollBarStiffness = 10000f
+
+    var chassisMOI = Vec3f(0f)
+    var wheelMOI = 0f
+
+    var chassisMaterial = Material(0.5f,0.5f, 0.6f)
+    var chassisSimFilterData = PhysicsFilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
+        VehicleUtils.COLLISION_FLAG_CHASSIS,
+        VehicleUtils.COLLISION_FLAG_CHASSIS_AGAINST
+    )
+    var wheelMaterial = Material(0.5f,0.5f, 0.6f)
+    var wheelSimFilterData = PhysicsFilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
+        VehicleUtils.COLLISION_FLAG_WHEEL,
+        VehicleUtils.COLLISION_FLAG_WHEEL_AGAINST
+    )
+
+    init {
+        updateChassisMoiFromDimensionsAndMass()
+        updateWheelMoiFromRadiusAndMass()
     }
 
-    companion object {
-        fun defaultVehicleProperties(trackWidth: Float, wheelBase: Float, axleHeight: Float, wheelRadius: Float = 0.4f): VehicleProperties {
-            return VehicleProperties(4).apply {
-                val w = trackWidth * 0.5f
-                val l = wheelBase * 0.5f
-                wheels[CommonVehicle.FRONT_LEFT].apply {
-                    position = Vec3f(w, axleHeight, l)
-                    radius = wheelRadius
-                    isSteering = true
-                    isMotor = false
-                }
-                wheels[CommonVehicle.FRONT_RIGHT].apply {
-                    position = Vec3f(-w, axleHeight, l)
-                    radius = wheelRadius
-                    isSteering = true
-                    isMotor = false
-                }
-                wheels[CommonVehicle.REAR_LEFT].apply {
-                    position = Vec3f(w, axleHeight, -l)
-                    radius = wheelRadius
-                    isSteering = false
-                    isMotor = true
-                }
-                wheels[CommonVehicle.REAR_RIGHT].apply {
-                    position = Vec3f(-w, axleHeight, -l)
-                    radius = wheelRadius
-                    isSteering = false
-                    isMotor = true
-                }
-            }
-        }
+    fun updateChassisMoiFromDimensionsAndMass() {
+        chassisMOI = Vec3f(
+            (chassisDims.y * chassisDims.y + chassisDims.z * chassisDims.z) * chassisMass / 12.0f,
+            (chassisDims.x * chassisDims.x + chassisDims.z * chassisDims.z) * chassisMass / 12.0f * 0.8f,
+            (chassisDims.x * chassisDims.x + chassisDims.y * chassisDims.y) * chassisMass / 12.0f)
     }
-}
 
-class WheelProperties {
-    var position = Vec3f(0f)
-    var radius = 0.4f
-
-    var isSteering = false
-    var isMotor = false
-    var isBrake = true
-
-    var suspensionStiffness = 20.0f
-    var suspensionCompression = 4.4f
-    var suspensionDamping = 2.3f
-    var maxSuspensionTravelCm = 50f
-    var suspensionRestLength = 0.6f
-    var friction = 1.25f
-    var maxSuspensionForce = 6000f
+    fun updateWheelMoiFromRadiusAndMass() {
+        wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius
+    }
 }

@@ -3,12 +3,10 @@ package de.fabmax.kool.physics.vehicle
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.PhysicsWorld
 
-expect class Vehicle(world: PhysicsWorld) : CommonVehicle {
+expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld) : CommonVehicle {
 
     val chassisTransform: Mat4f
     val wheelTransforms: List<Mat4f>
-
-    fun updateWheelTransform(wheelIndex: Int, result: Mat4f): Mat4f
 
 }
 

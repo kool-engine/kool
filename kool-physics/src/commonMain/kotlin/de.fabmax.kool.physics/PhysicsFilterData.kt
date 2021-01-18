@@ -3,7 +3,7 @@ package de.fabmax.kool.physics
 class PhysicsFilterData() {
     val data = IntArray(4)
 
-    constructor(word0: Int, word1: Int, word2: Int, word3: Int) : this() {
+    constructor(word0: Int, word1: Int = 0, word2: Int = 0, word3: Int = 0) : this() {
         set(word0, word1, word2, word3)
     }
 

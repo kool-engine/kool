@@ -4,8 +4,7 @@ class RigidBodyProperties {
     val simFilterData = PhysicsFilterData()
     val queryFilterData = PhysicsFilterData()
 
-    var friction = 0.5f
-    var restitution = 0.2f
+    var material = Material(0.5f, 0.5f, 0.2f)
 
     var linearDamping = 0.05f
     var angularDamping = 0.0f

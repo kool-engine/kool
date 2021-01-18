@@ -75,8 +75,8 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
             btShape.calculateLocalInertia(mass, boxInertia)
         }
         val constructionInfo = RigidBodyConstructionInfo(mass, motionState, btShape, boxInertia)
-        constructionInfo.friction = bodyProperties.friction
-        constructionInfo.restitution = bodyProperties.restitution
+        constructionInfo.friction = bodyProperties.material.staticFriction
+        constructionInfo.restitution = bodyProperties.material.restitution
         constructionInfo.linearDamping = bodyProperties.linearDamping
         constructionInfo.angularDamping = bodyProperties.angularDamping
 //        constructionInfo.linearSleepingThreshold *= bodyProperties.sleepThreshold

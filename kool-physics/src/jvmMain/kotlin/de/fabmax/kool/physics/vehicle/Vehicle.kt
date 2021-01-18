@@ -1,17 +1,14 @@
 package de.fabmax.kool.physics.vehicle
 
-import com.bulletphysics.dynamics.vehicle.VehicleTuning
 import com.bulletphysics.dynamics.vehicle.WheelInfo
 import com.bulletphysics.linearmath.Transform
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.BtRaycastVehicle
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.toBtVector3f
-import de.fabmax.kool.physics.toMat4f
 import javax.vecmath.Vector3f
 
-actual class Vehicle actual constructor(world: PhysicsWorld): CommonVehicle() {
+actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: PhysicsWorld): CommonVehicle() {
 
     val btVehicle: BtRaycastVehicle
         get() = TODO()
@@ -73,26 +70,26 @@ actual class Vehicle actual constructor(world: PhysicsWorld): CommonVehicle() {
 //        }
     }
 
-    actual fun updateWheelTransform(wheelIndex: Int, result: Mat4f): Mat4f {
-        btVehicle.updateWheelTransform(wheelIndex, false)
-        btVehicle.getWheelTransformWS(wheelIndex, tmpTransform).toMat4f(result)
-        return result
-    }
+//    actual fun updateWheelTransform(wheelIndex: Int, result: Mat4f): Mat4f {
+//        btVehicle.updateWheelTransform(wheelIndex, false)
+//        btVehicle.getWheelTransformWS(wheelIndex, tmpTransform).toMat4f(result)
+//        return result
+//    }
 
-    private fun addWheel(props: WheelProperties, tuning: VehicleTuning): WheelInfo {
-        tuning.suspensionCompression = props.suspensionCompression
-        tuning.suspensionDamping = props.suspensionDamping
-
-        val wheelInfo = btVehicle.addWheel(props.position.toBtVector3f(), wheelDirectionCS0, wheelAxleCS,
-            props.suspensionRestLength, props.radius, tuning, props.isSteering)
-
-        wheelInfo.suspensionStiffness = props.suspensionStiffness
-        wheelInfo.maxSuspensionTravelCm = props.maxSuspensionTravelCm
-        //wheelInfo.maxSuspensionForce = props.maxSuspensionForce       // not available in JBullet
-        wheelInfo.frictionSlip = props.friction
-
-        return wheelInfo
-    }
+//    private fun addWheel(props: WheelProperties, tuning: VehicleTuning): WheelInfo {
+//        tuning.suspensionCompression = props.suspensionCompression
+//        tuning.suspensionDamping = props.suspensionDamping
+//
+//        val wheelInfo = btVehicle.addWheel(props.position.toBtVector3f(), wheelDirectionCS0, wheelAxleCS,
+//            props.suspensionRestLength, props.radius, tuning, props.isSteering)
+//
+//        wheelInfo.suspensionStiffness = props.suspensionStiffness
+//        wheelInfo.maxSuspensionTravelCm = props.maxSuspensionTravelCm
+//        //wheelInfo.maxSuspensionForce = props.maxSuspensionForce       // not available in JBullet
+//        wheelInfo.frictionSlip = props.friction
+//
+//        return wheelInfo
+//    }
 
     companion object {
         private val wheelDirectionCS0 = Vector3f(0f, -1f, 0f)

@@ -46,7 +46,7 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     init {
         Physics.checkIsLoaded()
 
-        val material = PhysX.physics.createMaterial(bodyProperties.friction, bodyProperties.friction, bodyProperties.restitution)
+        val material = PhysX.getPxMaterial(bodyProperties.material)
 
         val pose = PhysX.PxTransform()
         pxActor = if (mass > 0f) {
