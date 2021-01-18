@@ -10,14 +10,15 @@ external interface PxConvexMesh : PxBase {
     fun getNbVertices(): Int
     fun getNbPolygons(): Int
     fun getPolygonData(index: Int, data: PxHullPolygon)
-    fun getVertices(): Int
-    fun getIndexBuffer(): Int
+    fun getVertices(): PxVec3
+    fun getIndexBuffer(): PxU8Ptr
 }
 
 external interface PxConvexMeshGeometry : PxGeometry
 
-external interface PxConvexMeshGeometryFlag {
-    val eTIGHT_BOUNDS: Int
+@Suppress("UnsafeCastFromDynamic")
+object PxConvexMeshGeometryFlag {
+    val eTIGHT_BOUNDS: Int get() = PhysX.physx._emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS()
 }
 
 external interface PxConvexMeshGeometryFlags : PxFlags

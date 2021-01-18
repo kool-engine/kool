@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics
 
 class RigidBodyProperties {
-    var collisionGroupBits = 1
-    var collisionMask = 0x7fffffff
+    val simFilterData = PhysicsFilterData()
+    val queryFilterData = PhysicsFilterData()
 
     var friction = 0.5f
     var restitution = 0.2f
@@ -11,19 +11,25 @@ class RigidBodyProperties {
     var angularDamping = 0.0f
     var canSleep = true
 
-    fun setCollisionGroup(group: Int, selfGroupCollision: Boolean = true) {
-        collisionGroupBits = 1 shl group
-        if (!selfGroupCollision) {
-            clearCollidesWith(group)
-        }
+    init {
+        setCollisionGroup(0)
+        collidesWithEverything()
+    }
+
+    fun setCollisionGroup(group: Int) {
+        simFilterData.data[0] = 1 shl group
     }
 
     fun clearCollidesWith(group: Int) {
-        collisionMask = collisionMask and (1 shl group).inv()
+        simFilterData.clearBit(1, group)
     }
 
     fun setCollidesWith(group: Int) {
-        collisionMask = collisionMask or (1 shl group)
+        simFilterData.setBit(1, group)
+    }
+
+    fun collidesWithEverything() {
+        simFilterData.data[1] = -1
     }
 }
 

@@ -6,12 +6,12 @@ import de.fabmax.kool.physics.BtCylinderShape
 import de.fabmax.kool.util.BoundingBox
 import javax.vecmath.Vector3f
 
-actual class CylinderShape actual constructor(height: Float, radius: Float) : CommonCylinderShape(height, radius), CollisionShape {
+actual class CylinderShape actual constructor(length: Float, radius: Float) : CommonCylinderShape(length, radius), CollisionShape {
 
     override val btShape: BtCylinderShape
 
     init {
-        val halfExtents = Vector3f(radius, height / 2, radius)
+        val halfExtents = Vector3f(radius, length / 2, radius)
         btShape = BtCylinderShape(halfExtents)
     }
 

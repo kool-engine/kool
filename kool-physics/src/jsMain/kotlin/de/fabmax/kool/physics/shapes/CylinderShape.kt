@@ -3,17 +3,17 @@ package de.fabmax.kool.physics.shapes
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.RigidBodyProperties
 import de.fabmax.kool.util.BoundingBox
 import physx.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-actual class CylinderShape actual constructor(height: Float, radius: Float) : CommonCylinderShape(height, radius), CollisionShape {
+actual class CylinderShape actual constructor(length: Float, radius: Float) : CommonCylinderShape(length, radius), CollisionShape {
 
-    private val pxMesh: PxConvexMesh
+    val pxMesh: PxConvexMesh
 
     init {
         Physics.checkIsLoaded()
@@ -23,37 +23,38 @@ actual class CylinderShape actual constructor(height: Float, radius: Float) : Co
         val points = mutableListOf<Vec3f>()
         for (i in 0 until n) {
             val a = i * 2f * PI.toFloat() / n
-            val x = cos(a) * radius
+            val y = cos(a) * radius
             val z = sin(a) * radius
-            points.add(Vec3f(x, height * -0.5f, z))
-            points.add(Vec3f(x, height * 0.5f, z))
+            points.add(Vec3f(length * -0.5f, y, z))
+            points.add(Vec3f(length * 0.5f, y, z))
         }
 
         pxMesh = ConvexHullShape.toConvexMesh(points)
     }
 
     override fun getAabb(result: BoundingBox): BoundingBox {
-        result.set(-radius, -height * 0.5f, -radius,
-            radius, height * 0.5f, radius * 0.5f)
+        result.set(-radius, -length * 0.5f, -radius,
+            radius, length * 0.5f, radius * 0.5f)
         return result
     }
     override fun getBoundingSphere(result: MutableVec4f): MutableVec4f {
-        return result.set(Vec3f.ZERO, height * 0.5f + radius)
+        return result.set(Vec3f.ZERO, length * 0.5f + radius)
     }
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
-        val scaling = PhysX.PxMeshScale(Vec3f(1f).toPxVec3(), Vec4f(0f, 0f, 0f, 1f).toPxQuat())
-        val meshFlags = PhysX.PxConvexMeshGeometryFlags(PhysX.PxConvexMeshGeometryFlag.eTIGHT_BOUNDS)
-        val geometry = PhysX.PxConvexMeshGeometry(pxMesh, scaling, meshFlags)
+    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+        //val scaling = PhysX.PxMeshScale(Vec3f(1f).toPxVec3(), Vec4f(0f, 0f, 0f, 1f).toPxQuat())
+        //val meshFlags = PhysX.PxConvexMeshGeometryFlags(PxConvexMeshGeometryFlag.eTIGHT_BOUNDS)
+        //val geometry = PhysX.PxConvexMeshGeometry(pxMesh, scaling, meshFlags)
+        val geometry = PhysX.PxConvexMeshGeometry(pxMesh)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        shape.setSimulationFilterData(collisionFilter)
+        setFilterDatas(shape, bodyProps)
         actor.attachShape(shape)
         return shape
     }
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
         val iy = 0.5f * mass * radius * radius
-        val ixz = 1f / 12f * mass * (3 * radius * radius + height * height)
+        val ixz = 1f / 12f * mass * (3 * radius * radius + length * length)
         return result.set(ixz, iy, ixz)
     }
 }

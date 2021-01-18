@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.shapes
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.RigidBodyProperties
 import de.fabmax.kool.util.BoundingBox
 import physx.*
 
@@ -14,10 +15,10 @@ actual class SphereShape actual constructor(radius: Float) : CommonSphereShape(r
 
     override fun getBoundingSphere(result: MutableVec4f): MutableVec4f = result.set(Vec3f.ZERO, radius)
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
+    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
         val geometry = PhysX.PxSphereGeometry(radius)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        shape.setSimulationFilterData(collisionFilter)
+        setFilterDatas(shape, bodyProps)
         actor.attachShape(shape)
         return shape
     }

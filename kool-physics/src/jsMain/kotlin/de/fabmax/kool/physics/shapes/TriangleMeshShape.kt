@@ -3,9 +3,13 @@ package de.fabmax.kool.physics.shapes
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.RigidBodyProperties
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
-import physx.*
+import physx.PxMaterial
+import physx.PxRigidActor
+import physx.PxShape
+import physx.PxShapeFlags
 
 actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) : CommonTriangleMeshShape(geometry), CollisionShape {
 
@@ -21,7 +25,7 @@ actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) :
         actor: PxRigidActor,
         material: PxMaterial,
         flags: PxShapeFlags,
-        collisionFilter: PxFilterData
+        bodyProps: RigidBodyProperties
     ): PxShape? {
         return null
     }

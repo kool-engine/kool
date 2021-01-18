@@ -13,16 +13,17 @@ import javax.vecmath.Quat4f
 import javax.vecmath.Vector3f
 
 actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
-    : CommonRigidBody(collisionShape, mass == 0f, bodyProperties)
+    : CommonRigidBody(collisionShape, mass == 0f)
 {
     val btRigidBody: BtRigidBody
+
+    val collisionGroup = bodyProperties.simFilterData.data[0]
+    val collisionMask = bodyProperties.simFilterData.data[1]
 
     private val bufOrigin = MutableVec3f()
     private val bufRotation = MutableVec4f()
     private val bufTransform = Transform()
     private val bufQuat = Quat4f()
-
-    private val initMass = mass
 
     override var origin: Vec3f
         get() {

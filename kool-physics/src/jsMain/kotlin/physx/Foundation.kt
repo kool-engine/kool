@@ -2,6 +2,24 @@ package physx
 
 import de.fabmax.kool.math.*
 
+external interface PxTopLevelFunctions {
+    val PHYSICS_VERSION: Int
+
+    fun DefaultFilterShader(): PxSimulationFilterShader
+    fun DefaultWheelSceneQueryPreFilterBlocking(): PxBatchQueryPreFilterShader
+    fun DefaultWheelSceneQueryPostFilterBlocking(): PxBatchQueryPostFilterShader
+
+    fun CreateFoundation(version: Int, allocator: PxDefaultAllocator, errorCallback: PxDefaultErrorCallback): PxFoundation
+    fun CreatePhysics(version: Int, foundation: PxFoundation, scale: PxTolerancesScale): PxPhysics
+    fun CreateCooking(version: Int, foundation: PxFoundation, cookingParams: PxCookingParams): PxCooking
+    fun DefaultCpuDispatcherCreate(numThreads: Int): PxCpuDispatcher
+    fun InitExtensions(physics: PxPhysics)
+    fun RevoluteJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxRevoluteJoint
+
+    fun getU8At(base: PxU8Ptr, index: Int): Int
+    fun getVec3At(base: PxVec3, index: Int): PxVec3
+}
+
 external interface PxBase {
     fun release()
     fun getConcreteTypeName(): String
@@ -12,9 +30,10 @@ external interface PxBase {
     fun isReleasable(): Int
 }
 
-external interface PxBaseFlag {
-    val eOWNS_MEMORY: Int
-    val eIS_RELEASABLE: Int
+@Suppress("UnsafeCastFromDynamic")
+object PxBaseFlag {
+    val eOWNS_MEMORY: Int get() = PhysX.physx._emscripten_enum_physx_PxBaseFlag_eOWNS_MEMORY()
+    val eIS_RELEASABLE: Int get() = PhysX.physx._emscripten_enum_physx_PxBaseFlag_eIS_RELEASABLE()
 }
 
 external interface PxBaseFlags : PxFlags
@@ -44,7 +63,7 @@ external interface PxBounds3 {
 external interface PxBoundedData {
     var count: Int
     var stride: Int
-    var data: Int
+    var data: PxVec3
 }
 
 external interface PxCpuDispatcher
@@ -104,16 +123,31 @@ fun PxVec3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x, y, z)
 fun PxVec3.set(v: Vec3f): PxVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3f.toPxVec3(result: PxVec3 = PhysX.PxVec3()) = result.set(this)
 
-external interface VectorPxVec3 {
-    fun push_back(v: PxVec3)
-    fun get(at: Int): PxVec3
-    fun data(): Int
+external interface PxU8Ptr
+external interface PxRealPtr
+
+@Suppress("FunctionName")
+external interface StdVector<T> {
+    fun at(index: Int): T
+    fun data(): T
+    fun push_back(v: T)
+    fun size(): Int
 }
-fun List<Vec3f>.toVectorPxVec3(): VectorPxVec3 {
-    val vector = PhysX.VectorPxVec3()
-    val pxVec3 = PhysX.PxVec3()
-    forEach {
-        vector.push_back(it.toPxVec3(pxVec3))
-    }
+
+@Suppress("ClassName", "FunctionName")
+external interface Vector_PxReal {
+    fun at(index: Int): Float
+    fun data(): PxRealPtr
+    fun push_back(v: Float)
+    fun size(): Int
+}
+
+@Suppress("ClassName")
+external interface Vector_PxVec3 : StdVector<PxVec3>
+
+@Suppress("FunctionName")
+fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
+    val vector = PhysX.Vector_PxVec3(size)
+    forEachIndexed { i, v -> v.toPxVec3(vector.at(i)) }
     return vector
 }

@@ -4,10 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.vehicle.Vehicle
-import physx.PhysX
-import physx.PxScene
-import physx.toPxVec3
-import physx.toVec3f
+import physx.*
 
 actual class PhysicsWorld : CommonPhysicsWorld() {
     val scene: PxScene
@@ -20,15 +17,33 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         }
 
     init {
-        Physics.checkIsLoaded()
+        //val cb = PhysX.PxSimulationEventCallback()
+        //cb.cbFun = { cnt -> numContacts += cnt }
 
         val sceneDesc = PhysX.PxSceneDesc(PhysX.physics.getTolerancesScale())
         sceneDesc.gravity = PhysX.PxVec3(0f, -9.81f, 0f)
+        //sceneDesc.simulationEventCallback = cb
         sceneDesc.cpuDispatcher = PhysX.Px.DefaultCpuDispatcherCreate(0)
         sceneDesc.filterShader = PhysX.Px.DefaultFilterShader()
-        sceneDesc.flags.set(PhysX.PxSceneFlag.eENABLE_CCD)
+        sceneDesc.flags.set(PxSceneFlag.eENABLE_CCD)
         scene = PhysX.physics.createScene(sceneDesc)
+
+        PhysX.PxVehicle.InitVehicleSDK(PhysX.physics)
+        PhysX.PxVehicle.VehicleSetBasisVectors(Vec3f.Y_AXIS.toPxVec3(), Vec3f.Z_AXIS.toPxVec3())
+        PhysX.PxVehicle.VehicleSetUpdateMode(physx_PxVehicleUpdateMode.eVELOCITY_CHANGE)
+//        vehicleTest()
     }
+
+//    private fun vehicleTest() {
+//        println("vehicle sdk initialized")
+//
+//        val vehicle = Vehicle(this)
+//        println("vehicle created")
+//
+//        vehicle.vehicle.setToRestState()
+//        vehicle.vehicle.mDriveDynData.forceGearChange(physx_PxVehicleGear.eFIRST)
+//        vehicle.vehicle.mDriveDynData.mUseAutoGears = true
+//    }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
         scene.simulate(timeStep)
@@ -36,7 +51,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
     }
 
     override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        scene.addActor(rigidBody.pxActor, null)
+        scene.addActor(rigidBody.pxActor)
     }
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
@@ -52,7 +67,7 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
     }
 
     override fun addVehicleImpl(vehicle: Vehicle) {
-        // nothing to do here
+        scene.addActor(vehicle.vehicle.getRigidDynamicActor())
     }
 
     override fun removeVehicleImpl(vehicle: Vehicle) {

@@ -41,9 +41,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private lateinit var aoPipeline: AoPipeline
     private lateinit var ibl: EnvironmentMaps
 
-    private val staticCollGroup = 2
+    private val staticCollGroup = 1
     private val staticBodyProps = RigidBodyProperties().apply {
-        setCollisionGroup(staticCollGroup, false)
+        setCollisionGroup(staticCollGroup)
+        clearCollidesWith(staticCollGroup)
     }
 
     override fun setupMainScene(ctx: KoolContext) = scene {

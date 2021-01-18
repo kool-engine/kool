@@ -122,6 +122,9 @@ abstract class CommonPhysicsWorld {
         for (i in mutBodies.indices) {
             mutBodies[i].fixedUpdate(timeStep)
         }
+        for (i in mutVehicles.indices) {
+            mutVehicles[i].fixedUpdate(timeStep)
+        }
     }
 
     protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)

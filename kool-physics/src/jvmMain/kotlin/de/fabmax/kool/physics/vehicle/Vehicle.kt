@@ -1,17 +1,20 @@
 package de.fabmax.kool.physics.vehicle
 
-import com.bulletphysics.collision.dispatch.CollisionObject
 import com.bulletphysics.dynamics.vehicle.VehicleTuning
 import com.bulletphysics.dynamics.vehicle.WheelInfo
 import com.bulletphysics.linearmath.Transform
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.BtRaycastVehicle
+import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.toBtVector3f
+import de.fabmax.kool.physics.toMat4f
 import javax.vecmath.Vector3f
 
-actual class Vehicle actual constructor(chassis: RigidBody, vehicleProperties: VehicleProperties, world: PhysicsWorld): CommonVehicle(chassis, vehicleProperties) {
+actual class Vehicle actual constructor(world: PhysicsWorld): CommonVehicle() {
 
     val btVehicle: BtRaycastVehicle
+        get() = TODO()
 
     private val tmpTransform = Transform()
     private val tmpBtVec1 = Vector3f()
@@ -19,16 +22,19 @@ actual class Vehicle actual constructor(chassis: RigidBody, vehicleProperties: V
 
     private val wheelInfos = mutableListOf<WheelInfo>()
 
+    actual val chassisTransform = Mat4f()
+    actual val wheelTransforms = List(4) { Mat4f() }
+
     init {
-        val tuning = VehicleTuning()
-        btVehicle = BtRaycastVehicle(tuning, chassis.btRigidBody, world.vehicleRaycaster)
-        btVehicle.setCoordinateSystem(0, 1, 2)
-
-        vehicleProperties.wheels.forEach {
-            wheelInfos += addWheel(it, tuning)
-        }
-
-        chassis.btRigidBody.activationState = CollisionObject.DISABLE_DEACTIVATION
+//        val tuning = VehicleTuning()
+//        btVehicle = BtRaycastVehicle(tuning, chassis.btRigidBody, world.vehicleRaycaster)
+//        btVehicle.setCoordinateSystem(0, 1, 2)
+//
+//        vehicleProperties.wheels.forEach {
+//            wheelInfos += addWheel(it, tuning)
+//        }
+//
+//        chassis.btRigidBody.activationState = CollisionObject.DISABLE_DEACTIVATION
     }
 
     override fun setSteerAngle(wheelIndex: Int, value: Float) {
@@ -41,6 +47,30 @@ actual class Vehicle actual constructor(chassis: RigidBody, vehicleProperties: V
 
     override fun setBrake(wheelIndex: Int, value: Float) {
         btVehicle.setBrake(value, wheelIndex)
+    }
+
+    override fun setSteerAngle(value: Float) {
+//        for (i in vehicleProperties.wheels.indices) {
+//            if (vehicleProperties.wheels[i].isSteering) {
+//                setSteerAngle(i, value)
+//            }
+//        }
+    }
+
+    override fun setEngineForce(value: Float) {
+//        for (i in vehicleProperties.wheels.indices) {
+//            if (vehicleProperties.wheels[i].isMotor) {
+//                setEngineForce(i, value)
+//            }
+//        }
+    }
+
+    override fun setBrake(value: Float) {
+//        for (i in vehicleProperties.wheels.indices) {
+//            if (vehicleProperties.wheels[i].isBrake) {
+//                setBrake(i, value)
+//            }
+//        }
     }
 
     actual fun updateWheelTransform(wheelIndex: Int, result: Mat4f): Mat4f {

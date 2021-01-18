@@ -10,10 +10,7 @@ import de.fabmax.kool.util.Color
 
 expect class RigidBody(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties = RigidBodyProperties()): CommonRigidBody
 
-abstract class CommonRigidBody(val collisionShape: CollisionShape, val isStatic: Boolean, bodyProperties: RigidBodyProperties) {
-
-    val collisionGroup = bodyProperties.collisionGroupBits
-    val collisionMask = bodyProperties.collisionMask
+abstract class CommonRigidBody(val collisionShape: CollisionShape, val isStatic: Boolean) {
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 

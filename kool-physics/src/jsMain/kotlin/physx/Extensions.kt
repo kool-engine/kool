@@ -20,10 +20,11 @@ external interface PxRevoluteJoint : PxJoint {
     fun setRevoluteJointFlags(flags: PxRevoluteJointFlags)
 }
 
-external interface PxRevoluteJointFlag {
-    val eLIMIT_ENABLED: Int
-    val eDRIVE_ENABLED: Int
-    val eDRIVE_FREESPIN: Int
+@Suppress("UnsafeCastFromDynamic")
+object PxRevoluteJointFlag {
+    val eLIMIT_ENABLED: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED()
+    val eDRIVE_ENABLED: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED()
+    val eDRIVE_FREESPIN: Int get() = PhysX.physx._emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN()
 }
 
 external interface PxRevoluteJointFlags : PxFlags

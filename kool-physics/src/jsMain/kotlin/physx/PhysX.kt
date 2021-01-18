@@ -7,7 +7,7 @@ import kotlin.js.Promise
 
 object PhysX {
     @JsName("physx")
-    private var physx: dynamic = null
+    internal var physx: dynamic = null
     private val physxPromise: Promise<dynamic> = js("require('physx-js')")()
 
     private val onLoadListeners = mutableListOf<() -> Unit>()
@@ -15,21 +15,19 @@ object PhysX {
     var isInitialized = false
         private set
 
-    // enums
-    val PxActorFlag: PxActorFlag get() = physx
-    val PxActorType: PxActorType get() = physx
-    val PxBaseFlag: PxBaseFlag get() = physx
-    val PxConvexFlag: PxConvexFlag get() = physx
-    val PxConvexMeshGeometryFlag: PxConvexMeshGeometryFlag get() = physx
-    val PxForceMode: PxForceMode get() = physx
-    val PxRevoluteJointFlag: PxRevoluteJointFlag get() = physx
-    val PxRigidBodyFlag: PxRigidBodyFlag get() = physx
-    val PxSceneFlag: PxSceneFlag get() = physx
-    val PxShapeFlag: PxShapeFlag get() = physx
+    // enum constants are available by their name in the root-module, so in theory it is possible to define them
+    // as external interface and simply return the root-module. However in PhysX some enums have members with
+    // the same name (e.g. PxRigidBodyFlag::eENABLE_CCD = 4 and PxSceneFlag::eENABLE_CCD = 2). In that case the value
+    // accessible via the root-module is undefined.
+    // As a work around enums are defined as object which return the internal emscripten mapping function which is
+    // prefixed with the enum name, e.g.: physx._emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD()
+    //
+    //val PxRigidBodyFlag: PxRigidBodyFlag get() = physx
+    //val PxSceneFlag: PxSceneFlag get() = physx
 
     // top-level functions
-    lateinit var Px: PxStatics
-        private set
+    val Px: PxTopLevelFunctions get() = physx.PxTopLevelFunctions.prototype
+    val PxVehicle: PxVehicleTopLevelFunctions get() = physx.PxVehicleTopLevelFunctions.prototype
 
     lateinit var foundation: PxFoundation
         private set
@@ -38,10 +36,12 @@ object PhysX {
     lateinit var cooking: PxCooking
         private set
 
+    lateinit var defaultBodyFlags: PxShapeFlags
+        private set
+
     init {
         physxPromise.then { px: dynamic ->
             physx = px
-            Px = js("new px.PxStatics()")
 
             val errorCallback = PxDefaultErrorCallback()
             val allocator = PxDefaultAllocator()
@@ -54,6 +54,8 @@ object PhysX {
 
             val cookingParams = PxCookingParams(scale)
             cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
+
+            defaultBodyFlags = PxShapeFlags(PxShapeFlag.eSCENE_QUERY_SHAPE or PxShapeFlag.eSIMULATION_SHAPE)
 
             logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
 
@@ -77,6 +79,10 @@ object PhysX {
     }
 
     // object factories
+    fun destroy(pxObject: Any) = physx.destroy(pxObject)
+
+    fun PxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int): PxBatchQueryDesc =
+        js("new this.physx.PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute)")
 
     fun PxBoxGeometry(hx: Float, hy: Float, hz: Float): PxBoxGeometry = js("new this.physx.PxBoxGeometry(hx, hy, hz)")
 
@@ -88,6 +94,8 @@ object PhysX {
 
     fun PxConvexMeshGeometryFlags(flags: Int): PxConvexMeshGeometryFlags = js("new this.physx.PxConvexMeshGeometryFlags(flags)")
 
+    fun PxConvexMeshGeometry(mesh: PxConvexMesh): PxConvexMeshGeometry = js("new this.physx.PxConvexMeshGeometry(mesh)")
+    fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale): PxConvexMeshGeometry = js("new this.physx.PxConvexMeshGeometry(mesh, scaling)")
     fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConvexMeshGeometryFlags): PxConvexMeshGeometry =
         js("new this.physx.PxConvexMeshGeometry(mesh, scaling, flags)")
 
@@ -97,7 +105,7 @@ object PhysX {
 
     fun PxDefaultErrorCallback(): PxDefaultErrorCallback = js("new this.physx.PxDefaultErrorCallback()")
 
-    fun PxFilterData(w0: Int, w1: Int, w2: Int, w3: Int): PxFilterData = js("new this.physx.PxFilterData(w0, w1, w2, w3)")
+    fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0, w3: Int = 0): PxFilterData = js("new this.physx.PxFilterData(w0, w1, w2, w3)")
 
     fun PxHullPolygon(): PxHullPolygon = js("new this.physx.PxHullPolygon()")
 
@@ -116,6 +124,8 @@ object PhysX {
 
     fun PxShapeFlags(flags: Int): PxShapeFlags = js("new this.physx.PxShapeFlags(flags)")
 
+    fun PxSimulationEventCallback(): PxSimulationEventCallback = js("new this.physx.JsPxSimulationEventCallback()")
+
     fun PxSphereGeometry(ir: Float): PxSphereGeometry = js("new this.physx.PxSphereGeometry(ir)")
 
     fun PxTolerancesScale(): PxTolerancesScale = js("new this.physx.PxTolerancesScale()")
@@ -128,6 +138,87 @@ object PhysX {
     fun PxVec3(): PxVec3 = js("new this.physx.PxVec3(0, 0, 0, 0)")
     fun PxVec3(x: Float, y: Float, z: Float): PxVec3 = js("new this.physx.PxVec3(x, y, z)")
 
-    fun VectorPxVec3(): VectorPxVec3 = js("new this.physx.VectorPxVec3()")
+    fun PxVehicleAntiRollBarData(): PxVehicleAntiRollBarData = js("new this.physx.PxVehicleAntiRollBarData()")
+
+    fun PxVehicleChassisData(): PxVehicleChassisData = js("new this.physx.PxVehicleChassisData()")
+
+    fun PxVehicleDifferential4WData(): PxVehicleDifferential4WData = js("new this.physx.PxVehicleDifferential4WData()")
+
+    fun PxVehicleDrivableSurfaceToTireFrictionPairs(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
+        this.physx.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
+
+    fun PxVehicleDrivableSurfaceType(): PxVehicleDrivableSurfaceType = js("new this.physx.PxVehicleDrivableSurfaceType()")
+
+    fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = physx.PxVehicleDrive4W.prototype.allocate(nbWheels)
+
+    fun PxVehicleDriveSimData4W(): PxVehicleDriveSimData4W = js("new this.physx.PxVehicleDriveSimData4W()")
+
+    fun PxVehicleEngineData(): PxVehicleEngineData = js("new this.physx.PxVehicleEngineData()")
+
+    fun PxVehicleSuspensionData(): PxVehicleSuspensionData = js("new this.physx.PxVehicleSuspensionData()")
+
+    fun PxVehicleTireData(): PxVehicleTireData = js("new this.physx.PxVehicleTireData()")
+
+    fun PxVehicleWheelData(): PxVehicleWheelData = js("new this.physx.PxVehicleWheelData()")
+
+    fun PxVehicleWheelQueryResult(): PxVehicleWheelQueryResult = js("new this.physx.PxVehicleWheelQueryResult()")
+
+    fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = physx.PxVehicleWheelsSimData.prototype.allocate(nbWheels)
+
+    fun PxWheelQueryResult(): PxWheelQueryResult = js("new this.physx.PxWheelQueryResult()")
+
+    fun Vector_PxReal(size: Int = 0): Vector_PxReal = if (size == 0) {
+        js("new this.physx.Vector_PxReal()")
+    } else {
+        js("new this.physx.Vector_PxReal(size)")
+    }
+
+    fun Vector_PxVec3(size: Int = 0): Vector_PxVec3 = if (size == 0) {
+        js("new this.physx.Vector_PxVec3()")
+    } else {
+        js("new this.physx.Vector_PxVec3(size)")
+    }
+
+    fun Vector_PxRaycastHit(size: Int = 0): Vector_PxRaycastHit = if (size == 0) {
+        js("new this.physx.Vector_PxRaycastHit()")
+    } else {
+        js("new this.physx.Vector_PxRaycastHit(size)")
+    }
+
+    fun Vector_PxRaycastQueryResult(size: Int = 0): Vector_PxRaycastQueryResult = if (size == 0) {
+        js("new this.physx.Vector_PxRaycastQueryResult()")
+    } else {
+        js("new this.physx.Vector_PxRaycastQueryResult(size)")
+    }
+
+    fun Vector_PxSweepHit(size: Int = 0): Vector_PxSweepHit = if (size == 0) {
+        js("new this.physx.Vector_PxSweepHit()")
+    } else {
+        js("new this.physx.Vector_PxSweepHit(size)")
+    }
+
+    fun Vector_PxSweepQueryResult(size: Int = 0): Vector_PxSweepQueryResult = if (size == 0) {
+        js("new this.physx.Vector_PxSweepQueryResult()")
+    } else {
+        js("new this.physx.Vector_PxSweepQueryResult(size)")
+    }
+
+    fun Vector_PxVehicleDrivableSurfaceType(size: Int = 0): Vector_PxVehicleDrivableSurfaceType = if (size == 0) {
+        js("new this.physx.Vector_PxVehicleDrivableSurfaceType()")
+    } else {
+        js("new this.physx.Vector_PxVehicleDrivableSurfaceType(size)")
+    }
+
+    fun Vector_PxWheelQueryResult(size: Int = 0): Vector_PxWheelQueryResult = if (size == 0) {
+        js("new this.physx.Vector_PxWheelQueryResult()")
+    } else {
+        js("new this.physx.Vector_PxWheelQueryResult(size)")
+    }
+
+    fun Vector_PxVehicleWheels(size: Int = 0): Vector_PxVehicleWheels = if (size == 0) {
+        js("new this.physx.Vector_PxVehicleWheels()")
+    } else {
+        js("new this.physx.Vector_PxVehicleWheels(size)")
+    }
 
 }

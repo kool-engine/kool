@@ -177,7 +177,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frame = mutableListOf<RigidBody>()
 
         val groundBodyProps = RigidBodyProperties().apply {
-            setCollisionGroup(2, false)
+            setCollisionGroup(2)
+            clearCollidesWith(2)
         }
 
         val groundShape = BoxShape(Vec3f(100f, 1f, 100f))
@@ -293,7 +294,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     val s = shape.points[0].length()
                     scale.set(s, s, s)
                 }
-                is CylinderShape -> scale.set(shape.radius, shape.height, shape.radius)
+                is CylinderShape -> scale.set(shape.radius, shape.length, shape.radius)
                 is MultiShape -> {
                     val s = (shape.children[0].shape as BoxShape).size.z / 2f
                     scale.set(s, s, s)
@@ -381,7 +382,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
             override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
                 val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
-                val mass = shape.radius.pow(2) * shape.height * 0.5f
+                val mass = shape.radius.pow(2) * shape.length * 0.5f
                 return shape to mass
             }
         },

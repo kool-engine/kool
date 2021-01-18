@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.shapes
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.RigidBodyProperties
 import de.fabmax.kool.util.BoundingBox
 import physx.*
 import kotlin.math.sqrt
@@ -22,10 +23,10 @@ actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), Co
         return result.set(Vec3f.ZERO, r)
     }
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, collisionFilter: PxFilterData): PxShape {
+    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
         val geometry = PhysX.PxBoxGeometry(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        shape.setSimulationFilterData(collisionFilter)
+        setFilterDatas(shape, bodyProps)
         actor.attachShape(shape)
         return shape
     }
