@@ -109,10 +109,10 @@ class VehicleDemo : DemoScene("Vehicle") {
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
-            ctx.inputMgr.registerKeyListener('a', "steer left", callback = steerLeft)
-            ctx.inputMgr.registerKeyListener('d', "steer left", callback = steerRight)
-            ctx.inputMgr.registerKeyListener('w', "steer left", callback = accelerate)
-            ctx.inputMgr.registerKeyListener('s', "steer left", callback = brake)
+            ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
+            ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
+            ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
+            ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
         }
     }
 
