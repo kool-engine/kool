@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
 
 expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld) : CommonVehicle {
@@ -8,53 +9,28 @@ expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld) : Com
     val chassisTransform: Mat4f
     val wheelTransforms: List<Mat4f>
 
+    val velocity: Vec3f
+    val forwardSpeed: Float
+
+    var isReverse: Boolean
+
 }
 
 abstract class CommonVehicle {
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
-    abstract fun setSteerAngle(wheelIndex: Int, value: Float)
+    abstract fun setSteerInput(value: Float)
 
-    abstract fun setEngineForce(wheelIndex: Int, value: Float)
+    abstract fun setThrottleInput(value: Float)
 
-    abstract fun setBrake(wheelIndex: Int, value: Float)
-
-    abstract fun setSteerAngle(value: Float)
-
-    abstract fun setEngineForce(value: Float)
-
-    abstract fun setBrake(value: Float)
+    abstract fun setBrakeInput(value: Float)
 
     internal open fun fixedUpdate(timeStep: Float) {
         for (i in onFixedUpdate.indices) {
             onFixedUpdate[i](timeStep)
         }
     }
-
-//    fun setSteerAngle(value: Float) {
-//        for (i in vehicleProperties.wheels.indices) {
-//            if (vehicleProperties.wheels[i].isSteering) {
-//                setSteerAngle(i, value)
-//            }
-//        }
-//    }
-//
-//    fun setEngineForce(value: Float) {
-//        for (i in vehicleProperties.wheels.indices) {
-//            if (vehicleProperties.wheels[i].isMotor) {
-//                setEngineForce(i, value)
-//            }
-//        }
-//    }
-//
-//    fun setBrake(value: Float) {
-//        for (i in vehicleProperties.wheels.indices) {
-//            if (vehicleProperties.wheels[i].isBrake) {
-//                setBrake(i, value)
-//            }
-//        }
-//    }
 
     companion object {
         const val FRONT_LEFT = 0

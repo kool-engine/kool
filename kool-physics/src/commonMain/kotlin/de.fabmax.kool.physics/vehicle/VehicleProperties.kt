@@ -3,6 +3,7 @@ package de.fabmax.kool.physics.vehicle
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.PhysicsFilterData
+import de.fabmax.kool.physics.shapes.CollisionShape
 
 class VehicleProperties {
     var chassisMass = 1500f
@@ -14,6 +15,10 @@ class VehicleProperties {
     var wheelWidth = 0.4f
     var wheelRadius = 0.5f
     var maxSteerAngle = 40f
+    var wheelFrontZ = 1.75f
+    var wheelRearZ = -1.75f
+    var trackWidth = 1.8f
+    var wheelCenterHeightOffset = -0.5f     // relative to center of chassis dims
 
     var maxBrakeTorque = 5000f
     var maxHandBrakeTorque = 5000f
@@ -37,6 +42,9 @@ class VehicleProperties {
     var chassisMOI = Vec3f(0f)
     var wheelMOI = 0f
 
+    var groundMaterialFrictions = mapOf<Material, Float>()
+
+    var chassisShapes = emptyList<CollisionShape>()
     var chassisMaterial = Material(0.5f,0.5f, 0.6f)
     var chassisSimFilterData = PhysicsFilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
         VehicleUtils.COLLISION_FLAG_CHASSIS,
@@ -51,6 +59,11 @@ class VehicleProperties {
     init {
         updateChassisMoiFromDimensionsAndMass()
         updateWheelMoiFromRadiusAndMass()
+    }
+
+    fun setSymmetricWheelBase(wheelBase: Float) {
+        wheelFrontZ = wheelBase * 0.5f
+        wheelRearZ = wheelBase * -0.5f
     }
 
     fun updateChassisMoiFromDimensionsAndMass() {

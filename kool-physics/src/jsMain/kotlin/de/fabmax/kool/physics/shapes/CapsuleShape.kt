@@ -15,10 +15,10 @@ actual class CapsuleShape actual constructor(height: Float, radius: Float) : Com
 
     override fun getBoundingSphere(result: MutableVec4f): MutableVec4f = result.set(Vec3f.ZERO, height / 2f + radius)
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
         val geometry = PhysX.PxCapsuleGeometry(radius, height / 2f)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        setFilterDatas(shape, bodyProps)
+        bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)
         return shape
     }

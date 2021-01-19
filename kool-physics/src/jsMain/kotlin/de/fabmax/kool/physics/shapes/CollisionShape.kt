@@ -18,7 +18,7 @@ actual interface CollisionShape {
 
     actual fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f
 
-    fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape?
+    fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape?
 
     fun PhysicsFilterData.toPxFilterData(target: PxFilterData) {
         target.word0 = data[0]

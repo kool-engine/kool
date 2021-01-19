@@ -4,9 +4,11 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.shapes.ConvexHullShape
+import de.fabmax.kool.physics.shapes.BoxShape
+import de.fabmax.kool.physics.shapes.CollisionShape
 import de.fabmax.kool.physics.shapes.CylinderShape
 import physx.*
 import kotlin.math.PI
@@ -14,6 +16,7 @@ import kotlin.math.PI
 actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private val world: PhysicsWorld): CommonVehicle() {
 
     val vehicle: PxVehicleDrive4W
+    private val vehActor: PxRigidDynamic
 
     private val vehicleAsVector: Vector_PxVehicleWheels
     private val wheelQueryResults: Vector_PxWheelQueryResult
@@ -26,12 +29,32 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     actual val chassisTransform = Mat4f()
     actual val wheelTransforms = List(4) { Mat4f() }
 
+    private var chassisVelocity = MutableVec3f()
+    actual val velocity: Vec3f
+        get() = chassisVelocity
+
+    private var fwdSpeed = 0f
+    actual val forwardSpeed: Float
+        get() = fwdSpeed
+
+    actual var isReverse = false
+
     init {
         Physics.checkIsLoaded()
 
         queryData = VehicleSceneQueryData(1, 4, 1, 1)
         query = queryData.setupBatchedSceneQuery(world.scene)
-        frictionPairs = FrictionPairs(1, listOf(PhysX.physics.createMaterial(0.25f, 0.25f, 0.25f)))
+        //frictionPairs = FrictionPairs(1, listOf(PhysX.physics.createMaterial(0.25f, 0.25f, 0.25f)))
+
+        val gndMaterials = if (vehicleProps.groundMaterialFrictions.isEmpty()) {
+            listOf(Material(0.5f).pxMaterial)
+        } else {
+            vehicleProps.groundMaterialFrictions.keys.map { it.pxMaterial }.toList()
+        }
+        frictionPairs = FrictionPairs(1, gndMaterials)
+        vehicleProps.groundMaterialFrictions.forEach { (mat, friction) ->
+            frictionPairs.setTypePairFriction(mat.pxMaterial, 0, friction)
+        }
 
         vehicle = createVehicle4w(vehicleProps)
         vehicleAsVector = PhysX.Vector_PxVehicleWheels()
@@ -42,7 +65,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         vehicleWheelQueryResult.nbWheelQueryResults = wheelQueryResults.size()
         vehicleWheelQueryResult.wheelQueryResults = wheelQueryResults.data()
 
-        val vehActor = vehicle.getRigidDynamicActor()
+        vehActor = vehicle.getRigidDynamicActor()
         val startTransform = PhysX.PxTransform()
         startTransform.p.set(Vec3f(0f, 3f, 0f))
         startTransform.toMat4f(chassisTransform)
@@ -54,6 +77,12 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     }
 
     override fun fixedUpdate(timeStep: Float) {
+        if (isReverse && vehicle.mDriveDynData.mTargetGear != physx_PxVehicleGear.eREVERSE) {
+            vehicle.mDriveDynData.forceGearChange(physx_PxVehicleGear.eREVERSE)
+        } else if (!isReverse && vehicle.mDriveDynData.mTargetGear == physx_PxVehicleGear.eREVERSE) {
+            vehicle.mDriveDynData.forceGearChange(physx_PxVehicleGear.eFIRST)
+        }
+
         PhysX.PxVehicle.PxVehicleSuspensionRaycasts(query, vehicleAsVector, queryData.numQueriesPerBatch, queryData.raycastResults.data())
         PhysX.PxVehicle.PxVehicleUpdates(timeStep, world.scene.getGravity(), frictionPairs.frictionPairs, vehicleAsVector, vehicleWheelQueryResult)
 
@@ -65,19 +94,13 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             }
         }
 
+        vehActor.getLinearVelocity().toVec3f(chassisVelocity)
+        fwdSpeed = vehicle.computeForwardSpeed()
+
         super.fixedUpdate(timeStep)
     }
 
-    override fun setSteerAngle(wheelIndex: Int, value: Float) {
-    }
-
-    override fun setEngineForce(wheelIndex: Int, value: Float) {
-    }
-
-    override fun setBrake(wheelIndex: Int, value: Float) {
-    }
-
-    override fun setSteerAngle(value: Float) {
+    override fun setSteerInput(value: Float) {
         if (value < 0) {
             vehicle.mDriveDynData.setAnalogInput(physx_PxVehicleDrive4WControl.eANALOG_INPUT_STEER_RIGHT, 0f)
             vehicle.mDriveDynData.setAnalogInput(physx_PxVehicleDrive4WControl.eANALOG_INPUT_STEER_LEFT, -value)
@@ -87,43 +110,37 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         }
     }
 
-    override fun setEngineForce(value: Float) {
+    override fun setThrottleInput(value: Float) {
         vehicle.mDriveDynData.setAnalogInput(physx_PxVehicleDrive4WControl.eANALOG_INPUT_ACCEL, value)
     }
 
-    override fun setBrake(value: Float) {
+    override fun setBrakeInput(value: Float) {
         vehicle.mDriveDynData.setAnalogInput(physx_PxVehicleDrive4WControl.eANALOG_INPUT_BRAKE, value)
     }
 
-    private fun createChassisConvexMesh(dimension: Vec3f): PxConvexMesh {
-        val hx = dimension.x * 0.5f
-        val hy = dimension.y * 0.5f
-        val hz = dimension.z * 0.5f
-        return ConvexHullShape.toConvexMesh(listOf(
-            Vec3f(-hx, -hy, -hz), Vec3f(hx, -hy, -hz),
-            Vec3f(-hx, -hy,  hz), Vec3f(hx, -hy,  hz),
-            Vec3f(-hx,  hy, -hz), Vec3f(hx,  hy, -hz),
-            Vec3f(-hx,  hy,  hz), Vec3f(hx,  hy,  hz)
-        ))
-    }
-
-    private fun computeWheelCenterActorOffsets(wheelFrontZ: Float, wheelRearZ: Float, vehicleProps: VehicleProperties): List<MutableVec3f> {
+    private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
         // chassisDims.z is the distance from the rear of the chassis to the front of the chassis.
         // The front has z = 0.5*chassisDims.z and the rear has z = -0.5*chassisDims.z.
         // Compute a position for the front wheel and the rear wheel along the z-axis.
         // Compute the separation between each wheel along the z-axis.
 
-        val dimX = vehicleProps.chassisDims.x
-        val dimY = vehicleProps.chassisDims.y
-        //val wheelR = vehicleDesc.wheelRadius
-        val wheelW = vehicleProps.wheelWidth + 0.1f
+//        val dimX = vehicleProps.chassisDims.x
+//        val dimY = vehicleProps.chassisDims.y
+//        //val wheelR = vehicleDesc.wheelRadius
+//        val wheelW = vehicleProps.wheelWidth + 0.1f
+//
+//        val offsets = List(4) { MutableVec3f() }
+//        offsets[REAR_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelRearZ)
+//        offsets[REAR_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelRearZ)
+//        offsets[FRONT_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
+//        offsets[FRONT_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
 
-        val offsets = MutableList(4) { MutableVec3f() }
-        offsets[REAR_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelRearZ)
-        offsets[REAR_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelRearZ)
-        offsets[FRONT_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
-        offsets[FRONT_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
-
+        val tw = vehicleProps.trackWidth * 0.5f
+        val offsets = List(4) { MutableVec3f() }
+        offsets[FRONT_LEFT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)
+        offsets[FRONT_RIGHT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)
+        offsets[REAR_LEFT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
+        offsets[REAR_RIGHT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
         return offsets
     }
 
@@ -238,8 +255,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Construct a physx actor with shapes for the chassis and wheels.
         // Set the rigid body mass, moment of inertia, and center of mass offset.
 
-        val chassisMaterial = PhysX.getPxMaterial(vehicleProps.chassisMaterial)
-        val wheelMaterial = PhysX.getPxMaterial(vehicleProps.wheelMaterial)
+        val chassisMaterial = vehicleProps.chassisMaterial.pxMaterial
+        val wheelMaterial = vehicleProps.wheelMaterial.pxMaterial
         val chassisSimFilterData = PhysX.PxFilterData(vehicleProps.chassisSimFilterData)
         val wheelSimFilterData = PhysX.PxFilterData(vehicleProps.wheelSimFilterData)
 
@@ -247,11 +264,14 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         val wheelMesh = CylinderShape(vehicleProps.wheelWidth, vehicleProps.wheelRadius)
         // Assume all wheels are identical for simplicity.
         val wheelConvexMeshes = List(4) { wheelMesh.pxMesh }
-        val wheelMaterials = List(4) { wheelMaterial }
 
         // Chassis just has a single convex shape for simplicity.
-        val chassisConvexMeshes = listOf(createChassisConvexMesh(vehicleProps.chassisDims))
-        val chassisMaterials = listOf(chassisMaterial)
+        //val chassisConvexMeshes = listOf(createChassisConvexMesh(vehicleProps.chassisDims))
+        val chassisShapes = if (vehicleProps.chassisShapes.isEmpty()) {
+            listOf(BoxShape(vehicleProps.chassisDims))
+        } else {
+            vehicleProps.chassisShapes
+        }
 
         val rigidBodyData = PhysX.PxVehicleChassisData()
         rigidBodyData.mMOI = vehicleProps.chassisMOI.toPxVec3()
@@ -259,15 +279,13 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         rigidBodyData.mCMOffset = vehicleProps.chassisCMOffset.toPxVec3()
 
         val veh4WActor = createVehicleActor(rigidBodyData,
-            wheelMaterials, wheelConvexMeshes, wheelSimFilterData,
-            chassisMaterials, chassisConvexMeshes, chassisSimFilterData)
+            wheelMaterial, wheelConvexMeshes, wheelSimFilterData,
+            chassisMaterial, chassisShapes, chassisSimFilterData)
 
         // Set up the sim data for the wheels.
         val wheelsSimData = PhysX.PxVehicleWheelsSimData_allocate(vehicleProps.numWheels)
         // Compute the wheel center offsets from the origin.
-        val frontZ = vehicleProps.chassisDims.z * 0.3f
-        val rearZ = vehicleProps.chassisDims.z * -0.3f
-        val wheelOffsets = computeWheelCenterActorOffsets(frontZ, rearZ, vehicleProps)
+        val wheelOffsets = computeWheelCenterActorOffsets(vehicleProps)
 
         // Set up the simulation data for all wheels.
         setupWheelsSimulationData(vehicleProps, wheelOffsets, wheelsSimData)
@@ -318,8 +336,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     }
 
     private fun createVehicleActor(chassisData: PxVehicleChassisData,
-                                   wheelMaterials: List<PxMaterial>, wheelConvexMeshes: List<PxConvexMesh>, wheelSimFilterData: PxFilterData,
-                                   chassisMaterials: List<PxMaterial>, chassisConvexMeshes: List<PxConvexMesh>, chassisSimFilterData: PxFilterData
+                                   wheelMaterial: PxMaterial, wheelConvexMeshes: List<PxConvexMesh>, wheelSimFilterData: PxFilterData,
+                                   chassisMaterial: PxMaterial, chassisShapes: List<CollisionShape>, chassisSimFilterData: PxFilterData
     ): PxRigidDynamic {
 
         // We need a rigid body actor for the vehicle.
@@ -336,16 +354,15 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Add all the wheel shapes to the actor.
         wheelConvexMeshes.forEachIndexed { i, mesh ->
             val geom = PhysX.PxConvexMeshGeometry(mesh)
-            val wheelShape = PhysX.physics.createShape(geom, wheelMaterials[i], true, PhysX.defaultBodyFlags)
+            val wheelShape = PhysX.physics.createShape(geom, wheelMaterial, true, PhysX.defaultBodyFlags)
             wheelShape.setQueryFilterData(wheelQryFilterData)
             wheelShape.setSimulationFilterData(wheelSimFilterData)
             vehActor.attachShape(wheelShape)
         }
 
         // Add the chassis shapes to the actor.
-        chassisConvexMeshes.forEachIndexed { i, mesh ->
-            val geom = PhysX.PxConvexMeshGeometry(mesh)
-            val chassisShape = PhysX.physics.createShape(geom, chassisMaterials[i], true, PhysX.defaultBodyFlags)
+        chassisShapes.forEachIndexed { i, shape ->
+            val chassisShape = shape.attachTo(vehActor, PhysX.defaultBodyFlags, chassisMaterial, null)!!
             chassisShape.setQueryFilterData(chassisQryFilterData)
             chassisShape.setSimulationFilterData(chassisSimFilterData)
             vehActor.attachShape(chassisShape)

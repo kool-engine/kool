@@ -23,9 +23,9 @@ actual class TriangleMeshShape actual constructor(geometry: IndexedVertexList) :
     override fun getBoundingSphere(result: MutableVec4f): MutableVec4f = TODO()
     override fun attachTo(
         actor: PxRigidActor,
-        material: PxMaterial,
         flags: PxShapeFlags,
-        bodyProps: RigidBodyProperties
+        material: PxMaterial,
+        bodyProps: RigidBodyProperties?
     ): PxShape? {
         return null
     }

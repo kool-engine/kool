@@ -9,10 +9,13 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): A slightly more sophisticated
-  physics demo consisting of a chain running over two gears. Uses a lot of multi / compound shapes and revolute / hinge
-  joints.  Based on nVidia PhysX (via [physx-js](https://github.com/ashconnell/physx-js) on javascript /
-  [JBullet](http://jbullet.advel.cz/) on JVM). A few more notes on physics [further below](#physics-simulation) 
+- [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D) 
+  based on the nVidia PhysX vehicles SDK (via emscripten/WebIDL bindings:
+  [physx-js-webidl](https://github.com/fabmax/physx-js-webidl)). Still work in progress and currently does not work
+  on JVM. A few more notes on physics [further below](#physics-simulation)
+- [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
+  running over two gears. Uses a lot of multi / compound shapes and revolute / hinge joints. Based on nVidia
+  PhysX on javascript / [JBullet](http://jbullet.advel.cz/) on JVM). 
 - [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo.
 - [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.
   Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
@@ -71,23 +74,21 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 
 ## Physics Simulation
 
-Multiplatform physics simulation is quite hard to achieve. My current approach is to build a thin abstraction layer
-which is then implemented with separate physics engines for javascript and JVM. There are a few options for
-physics engines to use: For JS there are [physx-js](https://github.com/ashconnell/physx-js), 
-[ammo.js](https://github.com/kripken/ammo.js/) and [Oimo.js](https://github.com/lo-th/Oimo.js/) to only name a few.
-On JVM the only standalone physics engines I know of are [JBullet](http://jbullet.advel.cz/) and
-[ode4j](https://github.com/tzaeschke/ode4j) (there also are [jMonkey](https://jmonkeyengine.org/) and
-[libGDX](https://libgdx.badlogicgames.com/), which both use JNI wrappers for native bullet physics, but those seem to be
-integrated into their engine-ecosystems rather tightly).
+Multiplatform physics simulation is quite hard to achieve. My initial approach was to write a thin abstraction layer
+which I could then implement with different physics engines on javascript and JVM.
 
-My initial approach was to use ammo.js and JBullet since they have a similar API and are easy to use. However, I
-now switched to [physx-js](https://github.com/ashconnell/physx-js) which offers an incredibly much better simulation
-accuracy at the same speed. Unfortunately the js bindings provided by physx-js are still in an early state and I had to
-add a few bindings myself in order to get my demos running. My binding code is pretty ugly right now. Hopefully I
-get it a bit cleaner soon, so I can release it back into the wild.
+However, after experimenting
+with [ammo.js](https://github.com/kripken/ammo.js/) and [physx-js](https://github.com/ashconnell/physx-js), I realized
+that PhysX is far better than the other (Bullet-based) engines. On the other hand physx-js is in a rather early state
+and only provides bindings for the very basic PhysX functions. I tried to extend the bindings myself, but the project
+uses [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html), which is tedious to use.
+In the end I started re-writing the PhysX javascript bindings from scratch based on
+[WebIDL](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/WebIDL-Binder.html). That project is
+available here: [physx-js-webidl](https://github.com/fabmax/physx-js-webidl).
 
-The JVM version is still stuck with JBullet and that won't change until I find JNI bindings for a better
-engine (or find the time to write them myself...)
+The only remaining problem is that there are no PhysX bindings for JVM, but, after playing around with PhysX,
+[JBullet](http://jbullet.advel.cz/) (or any other physics engine available for JVM) really is not an option anymore.
+So I guess I have to write an PhysX JNI wrapper myself...
 
 Another interesting aspect is performance (and again JBullet is not great there). I have not done very detailed benchmarks
 yet, but here are a few numbers for the [box collision demo](https://fabmax.github.io/kool/kool-js/?demo=physics)

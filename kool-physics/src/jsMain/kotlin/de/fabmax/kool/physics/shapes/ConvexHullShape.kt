@@ -29,10 +29,10 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
     override fun getAabb(result: BoundingBox) = result.set(bounds)
     override fun getBoundingSphere(result: MutableVec4f) = result.set(bounds.center, bounds.size.length() / 2)
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
         val geometry = PhysX.PxConvexMeshGeometry(pxMesh)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        setFilterDatas(shape, bodyProps)
+        bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)
         return shape
     }

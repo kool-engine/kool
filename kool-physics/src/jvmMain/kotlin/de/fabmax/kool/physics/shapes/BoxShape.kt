@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
@@ -7,7 +8,7 @@ import de.fabmax.kool.physics.BtBoxShape
 import de.fabmax.kool.physics.toBtVector3f
 import de.fabmax.kool.util.BoundingBox
 
-actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), CollisionShape {
+actual class BoxShape actual constructor(size: Vec3f, localPose: Mat4f?) : CommonBoxShape(size), CollisionShape {
 
     override val btShape: BtBoxShape = BtBoxShape(size.scale(0.5f, MutableVec3f()).toBtVector3f())
 
@@ -16,4 +17,10 @@ actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), Co
     override fun getBoundingSphere(result: MutableVec4f) = boundsHelper.getBoundingSphere(result)
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f) = getBtInertia(mass, result)
+
+    init {
+        if (localPose != null) {
+            throw IllegalArgumentException("JBullet does not support custom local poses for primitive shapes")
+        }
+    }
 }

@@ -1,3 +1,7 @@
 package de.fabmax.kool.physics
 
-data class Material(val staticFriction: Float, val dynamicFriction: Float = staticFriction, val restitution: Float = 0.2f)
+expect class Material(staticFriction: Float, dynamicFriction: Float = staticFriction, restitution: Float = 0.2f) {
+    val staticFriction: Float
+    val dynamicFriction: Float
+    val restitution: Float
+}

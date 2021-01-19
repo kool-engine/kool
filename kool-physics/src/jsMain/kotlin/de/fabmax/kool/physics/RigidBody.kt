@@ -46,8 +46,6 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     init {
         Physics.checkIsLoaded()
 
-        val material = PhysX.getPxMaterial(bodyProperties.material)
-
         val pose = PhysX.PxTransform()
         pxActor = if (mass > 0f) {
             val rigidBody = PhysX.physics.createRigidDynamic(pose)
@@ -60,7 +58,7 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
             PhysX.physics.createRigidStatic(pose)
         }
 
-        collisionShape.attachTo(pxActor, material, PhysX.defaultBodyFlags, bodyProperties)
+        collisionShape.attachTo(pxActor, PhysX.defaultBodyFlags, bodyProperties.material.pxMaterial, bodyProperties)
     }
 
     override fun fixedUpdate(timeStep: Float) {

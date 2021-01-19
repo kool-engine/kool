@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.vehicle
 import com.bulletphysics.dynamics.vehicle.WheelInfo
 import com.bulletphysics.linearmath.Transform
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.BtRaycastVehicle
 import de.fabmax.kool.physics.PhysicsWorld
 import javax.vecmath.Vector3f
@@ -22,6 +22,11 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
     actual val chassisTransform = Mat4f()
     actual val wheelTransforms = List(4) { Mat4f() }
 
+    actual val forwardSpeed = 0f
+    actual val velocity = Vec3f(0f)
+
+    actual var isReverse = false
+
     init {
 //        val tuning = VehicleTuning()
 //        btVehicle = BtRaycastVehicle(tuning, chassis.btRigidBody, world.vehicleRaycaster)
@@ -34,19 +39,19 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
 //        chassis.btRigidBody.activationState = CollisionObject.DISABLE_DEACTIVATION
     }
 
-    override fun setSteerAngle(wheelIndex: Int, value: Float) {
-        btVehicle.setSteeringValue(value.toRad(), wheelIndex)
-    }
+//    override fun setSteerAngle(wheelIndex: Int, value: Float) {
+//        btVehicle.setSteeringValue(value.toRad(), wheelIndex)
+//    }
+//
+//    override fun setEngineForce(wheelIndex: Int, value: Float) {
+//        btVehicle.applyEngineForce(value, wheelIndex)
+//    }
+//
+//    override fun setBrake(wheelIndex: Int, value: Float) {
+//        btVehicle.setBrake(value, wheelIndex)
+//    }
 
-    override fun setEngineForce(wheelIndex: Int, value: Float) {
-        btVehicle.applyEngineForce(value, wheelIndex)
-    }
-
-    override fun setBrake(wheelIndex: Int, value: Float) {
-        btVehicle.setBrake(value, wheelIndex)
-    }
-
-    override fun setSteerAngle(value: Float) {
+    override fun setSteerInput(value: Float) {
 //        for (i in vehicleProperties.wheels.indices) {
 //            if (vehicleProperties.wheels[i].isSteering) {
 //                setSteerAngle(i, value)
@@ -54,7 +59,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
 //        }
     }
 
-    override fun setEngineForce(value: Float) {
+    override fun setThrottleInput(value: Float) {
 //        for (i in vehicleProperties.wheels.indices) {
 //            if (vehicleProperties.wheels[i].isMotor) {
 //                setEngineForce(i, value)
@@ -62,7 +67,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
 //        }
     }
 
-    override fun setBrake(value: Float) {
+    override fun setBrakeInput(value: Float) {
 //        for (i in vehicleProperties.wheels.indices) {
 //            if (vehicleProperties.wheels[i].isBrake) {
 //                setBrake(i, value)

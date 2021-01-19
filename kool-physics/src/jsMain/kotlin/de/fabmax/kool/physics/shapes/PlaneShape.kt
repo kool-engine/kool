@@ -11,10 +11,10 @@ actual class PlaneShape : CommonPlaneShape(), CollisionShape {
     override fun getAabb(result: BoundingBox) = result.set(0f, -1e10f, -1e10f, 0f, 1e10f, 1e10f)
     override fun getBoundingSphere(result: MutableVec4f) = result.set(0f, 0f, 0f, 1e10f)
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
         val geometry = PhysX.PxPlaneGeometry()
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        setFilterDatas(shape, bodyProps)
+        bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)
         return shape
     }

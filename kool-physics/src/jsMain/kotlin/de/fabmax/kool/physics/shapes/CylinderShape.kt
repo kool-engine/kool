@@ -41,13 +41,13 @@ actual class CylinderShape actual constructor(length: Float, radius: Float) : Co
         return result.set(Vec3f.ZERO, length * 0.5f + radius)
     }
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
         //val scaling = PhysX.PxMeshScale(Vec3f(1f).toPxVec3(), Vec4f(0f, 0f, 0f, 1f).toPxQuat())
         //val meshFlags = PhysX.PxConvexMeshGeometryFlags(PxConvexMeshGeometryFlag.eTIGHT_BOUNDS)
         //val geometry = PhysX.PxConvexMeshGeometry(pxMesh, scaling, meshFlags)
         val geometry = PhysX.PxConvexMeshGeometry(pxMesh)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        setFilterDatas(shape, bodyProps)
+        bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)
         return shape
     }

@@ -45,9 +45,9 @@ actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShap
         mutShapes.removeAll { it.shape === shape }
     }
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape? {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape? {
         children.forEach {
-            it.shape.attachTo(actor, material, flags, bodyProps)?.setLocalPose(it.transform.toPxTransform())
+            it.shape.attachTo(actor, flags, material, bodyProps)?.setLocalPose(it.transform.toPxTransform())
         }
         return null
     }

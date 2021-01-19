@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.CollisionDemo
 import de.fabmax.kool.demo.physics.JointsDemo
+import de.fabmax.kool.demo.physics.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
@@ -39,11 +40,10 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    //private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
-    //private val defaultScene = DemoEntry("Physics - Collision") { CollisionDemo() }
-    private val defaultScene = DemoEntry("Physics - Collision") { JointsDemo() }
+    private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
 
     private val demos = mutableMapOf(
+        "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() },
         "phys-joints" to DemoEntry("Physics - Joints") { JointsDemo() },
         "physics" to DemoEntry("Physics - Collision") { CollisionDemo() },
         "atmosphere" to DemoEntry("Atmospheric Scattering") { AtmosphereDemo() },

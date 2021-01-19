@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.shapes
 
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
@@ -8,7 +9,7 @@ import de.fabmax.kool.util.BoundingBox
 import physx.*
 import kotlin.math.sqrt
 
-actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), CollisionShape {
+actual class BoxShape actual constructor(size: Vec3f, private val localPose: Mat4f?) : CommonBoxShape(size), CollisionShape {
 
     override fun getAabb(result: BoundingBox): BoundingBox {
         result.set(-size.x * 0.5f, -size.y * 0.5f, -size.z * 0.5f,
@@ -23,10 +24,11 @@ actual class BoxShape actual constructor(size: Vec3f) : CommonBoxShape(size), Co
         return result.set(Vec3f.ZERO, r)
     }
 
-    override fun attachTo(actor: PxRigidActor, material: PxMaterial, flags: PxShapeFlags, bodyProps: RigidBodyProperties): PxShape {
+    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
         val geometry = PhysX.PxBoxGeometry(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
         val shape = PhysX.physics.createShape(geometry, material, true, flags)
-        setFilterDatas(shape, bodyProps)
+        localPose?.let { shape.setLocalPose(it.toPxTransform(shape.getLocalPose())) }
+        bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)
         return shape
     }

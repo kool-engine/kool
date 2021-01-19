@@ -2,7 +2,6 @@
 
 package physx
 
-import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.PhysicsFilterData
 import de.fabmax.kool.util.logI
 import kotlin.js.Promise
@@ -41,8 +40,6 @@ object PhysX {
     lateinit var defaultBodyFlags: PxShapeFlags
         private set
 
-    private val pxMaterials = mutableMapOf<Material, PxMaterial>()
-
     init {
         physxPromise.then { px: dynamic ->
             physx = px
@@ -80,10 +77,6 @@ object PhysX {
         val minor = (pxVersion shr 16) and 0xff
         val bugfix = (pxVersion shr 8) and 0xff
         return "$major.$minor.$bugfix"
-    }
-
-    fun getPxMaterial(material: Material) = pxMaterials.getOrPut(material) {
-        physics.createMaterial(material.staticFriction, material.dynamicFriction, material.restitution)
     }
 
     // object factories
