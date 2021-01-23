@@ -1,9 +1,8 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.physics.Physics
-import physx.PhysX
-import physx.PxMaterial
-import physx.PxVehicleDrivableSurfaceToTireFrictionPairs
+import de.fabmax.kool.physics.PxVehicleDrivableSurfaceToTireFrictionPairs_allocate
+import physx.*
 
 class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val surfaceTypes: List<Int>) {
 
@@ -15,15 +14,18 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
     init {
         Physics.checkIsLoaded()
 
-        val materials = Array(materials.size) { materials[it] }
         val nbSurfaceTypes = surfaceTypes.size
+        val materialVec = Vector_PxMaterial(materials.size)
+        materials.forEach {
+            materialVec.push_back(it)
+        }
 
-        frictionPairs = PhysX.PxVehicleDrivableSurfaceToTireFrictionPairs(nbTireTypes, nbSurfaceTypes)
+        frictionPairs = PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(nbTireTypes, nbSurfaceTypes)
 
-        val surfaceTypes = PhysX.Vector_PxVehicleDrivableSurfaceType()
-        surfaceTypes.push_back(PhysX.PxVehicleDrivableSurfaceType().apply { mType = 1 })
+        val surfaceTypes = Vector_PxVehicleDrivableSurfaceType()
+        surfaceTypes.push_back(PxVehicleDrivableSurfaceType().apply { mType = 1 })
 
-        frictionPairs.setup(nbTireTypes, nbSurfaceTypes, materials, surfaceTypes.data())
+        frictionPairs.setup(nbTireTypes, nbSurfaceTypes, materialVec.data(), surfaceTypes.data())
 
         // initialize friction pairs with 1.0
         for (s in 0 until nbSurfaceTypes) {

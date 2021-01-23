@@ -20,30 +20,18 @@ actual class PhysicsWorld : CommonPhysicsWorld() {
         //val cb = PhysX.PxSimulationEventCallback()
         //cb.cbFun = { cnt -> numContacts += cnt }
 
-        val sceneDesc = PhysX.PxSceneDesc(PhysX.physics.getTolerancesScale())
-        sceneDesc.gravity = PhysX.PxVec3(0f, -9.81f, 0f)
+        val sceneDesc = PxSceneDesc(Physics.physics.getTolerancesScale())
+        sceneDesc.gravity = PxVec3(0f, -9.81f, 0f)
         //sceneDesc.simulationEventCallback = cb
-        sceneDesc.cpuDispatcher = PhysX.Px.DefaultCpuDispatcherCreate(0)
-        sceneDesc.filterShader = PhysX.Px.DefaultFilterShader()
-        sceneDesc.flags.set(PxSceneFlag.eENABLE_CCD)
-        scene = PhysX.physics.createScene(sceneDesc)
+        sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
+        sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
+        sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_CCD)
+        scene = Physics.physics.createScene(sceneDesc)
 
-        PhysX.PxVehicle.InitVehicleSDK(PhysX.physics)
-        PhysX.PxVehicle.VehicleSetBasisVectors(Vec3f.Y_AXIS.toPxVec3(), Vec3f.Z_AXIS.toPxVec3())
-        PhysX.PxVehicle.VehicleSetUpdateMode(physx_PxVehicleUpdateMode.eVELOCITY_CHANGE)
-//        vehicleTest()
+        Physics.PxVehicle.InitVehicleSDK(Physics.physics)
+        Physics.PxVehicle.VehicleSetBasisVectors(Vec3f.Y_AXIS.toPxVec3(), Vec3f.Z_AXIS.toPxVec3())
+        Physics.PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
     }
-
-//    private fun vehicleTest() {
-//        println("vehicle sdk initialized")
-//
-//        val vehicle = Vehicle(this)
-//        println("vehicle created")
-//
-//        vehicle.vehicle.setToRestState()
-//        vehicle.vehicle.mDriveDynData.forceGearChange(physx_PxVehicleGear.eFIRST)
-//        vehicle.vehicle.mDriveDynData.mUseAutoGears = true
-//    }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
         scene.simulate(timeStep)

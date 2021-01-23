@@ -1,7 +1,5 @@
 package de.fabmax.kool.physics
 
-import physx.PhysX
-
 @Suppress("CanBeParameter")
 actual class Material actual constructor(
     actual val staticFriction: Float,
@@ -10,7 +8,7 @@ actual class Material actual constructor(
 
     val pxMaterial by lazy {
         Physics.checkIsLoaded()
-        PhysX.physics.createMaterial(staticFriction, dynamicFriction, restitution)
+        Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }
 
 }

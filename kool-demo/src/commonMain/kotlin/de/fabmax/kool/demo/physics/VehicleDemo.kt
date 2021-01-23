@@ -144,6 +144,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                             color = Color.DARK_GRAY.toLinear()
                             rotate(90f, Vec3f.Z_AXIS)
                             cylinder {
+                                steps = 32
                                 radius = vehicleProps.wheelRadius
                                 height = vehicleProps.wheelWidth
                                 origin.set(0f, -height * 0.5f, 0f)

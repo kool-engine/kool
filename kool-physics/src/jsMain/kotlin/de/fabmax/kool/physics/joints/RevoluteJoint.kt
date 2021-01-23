@@ -6,10 +6,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBody
-import physx.PhysX
+import de.fabmax.kool.physics.toPxTransform
 import physx.PxRevoluteJoint
-import physx.PxRevoluteJointFlag
-import physx.toPxTransform
+import physx.PxRevoluteJointFlagEnum
 
 @Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
@@ -29,7 +28,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
     init {
         Physics.checkIsLoaded()
 
-        pxJoint = PhysX.Px.RevoluteJointCreate(PhysX.physics, bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
+        pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
     }
 
     actual fun setAngleLimit(lowerLimit: Float, upperLimit: Float) {
@@ -45,7 +44,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
         pxJoint.setDriveForceLimit(0f)
 
         val flags = pxJoint.getRevoluteJointFlags()
-        flags.clear(PxRevoluteJointFlag.eDRIVE_ENABLED)
+        flags.clear(PxRevoluteJointFlagEnum.eDRIVE_ENABLED)
         pxJoint.setRevoluteJointFlags(flags)
     }
 
@@ -54,7 +53,7 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
         pxJoint.setDriveForceLimit(maxImpulse)
 
         val flags = pxJoint.getRevoluteJointFlags()
-        flags.set(PxRevoluteJointFlag.eDRIVE_ENABLED)
+        flags.set(PxRevoluteJointFlagEnum.eDRIVE_ENABLED)
         pxJoint.setRevoluteJointFlags(flags)
     }
 

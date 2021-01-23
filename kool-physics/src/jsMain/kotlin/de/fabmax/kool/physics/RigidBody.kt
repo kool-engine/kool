@@ -5,7 +5,8 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.physics.shapes.CollisionShape
-import physx.*
+import physx.PxRigidActor
+import physx.PxRigidDynamic
 
 actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
     : CommonRigidBody(collisionShape, mass == 0f)
@@ -20,7 +21,7 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         set(value) {
             val t = pxActor.getGlobalPose()
             t.p.set(value)
-            pxActor.setGlobalPose(t, true)
+            pxActor.setGlobalPose(t)
             updateTransform()
         }
 
@@ -29,7 +30,7 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         set(value) {
             val t = pxActor.getGlobalPose()
             t.q.set(value)
-            pxActor.setGlobalPose(t, true)
+            pxActor.setGlobalPose(t)
             updateTransform()
         }
 
@@ -46,19 +47,19 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     init {
         Physics.checkIsLoaded()
 
-        val pose = PhysX.PxTransform()
+        val pose = PxTransform()
         pxActor = if (mass > 0f) {
-            val rigidBody = PhysX.physics.createRigidDynamic(pose)
+            val rigidBody = Physics.physics.createRigidDynamic(pose)
             rigidBody.setMass(mass)
             rigidBody.setMassSpaceInertiaTensor(collisionShape.estimateInertiaForMass(mass, MutableVec3f()).toPxVec3())
             rigidBody.setAngularDamping(bodyProperties.angularDamping)
             rigidBody.setLinearDamping(bodyProperties.linearDamping)
             rigidBody
         } else {
-            PhysX.physics.createRigidStatic(pose)
+            Physics.physics.createRigidStatic(pose)
         }
 
-        collisionShape.attachTo(pxActor, PhysX.defaultBodyFlags, bodyProperties.material.pxMaterial, bodyProperties)
+        collisionShape.attachTo(pxActor, Physics.defaultBodyFlags, bodyProperties.material.pxMaterial, bodyProperties)
     }
 
     override fun fixedUpdate(timeStep: Float) {

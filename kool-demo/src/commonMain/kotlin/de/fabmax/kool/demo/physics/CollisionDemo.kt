@@ -293,7 +293,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     val s = shape.points[0].length()
                     scale.set(s, s, s)
                 }
-                is CylinderShape -> scale.set(shape.radius, shape.length, shape.radius)
+                is CylinderShape -> scale.set(shape.length, shape.radius, shape.radius)
                 is MultiShape -> {
                     val s = (shape.children[0].shape as BoxShape).size.z / 2f
                     scale.set(s, s, s)
@@ -573,6 +573,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 val bottomVertInds = mutableListOf<Int>()
                 val topVerts = mutableListOf<Vec3f>()
                 val bottomVerts = mutableListOf<Vec3f>()
+                rotate(90f, Vec3f.Z_AXIS)
                 for (i in 0 .. 40) {
                     rotate(0f, -360f / 40, 0f)
                     sample()

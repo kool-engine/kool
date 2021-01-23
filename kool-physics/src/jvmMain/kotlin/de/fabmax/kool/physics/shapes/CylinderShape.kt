@@ -11,7 +11,7 @@ actual class CylinderShape actual constructor(length: Float, radius: Float) : Co
     override val btShape: BtCylinderShape
 
     init {
-        val halfExtents = Vector3f(radius, length / 2, radius)
+        val halfExtents = Vector3f(length / 2, radius, radius)
         btShape = BtCylinderShape(halfExtents)
     }
 

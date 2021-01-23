@@ -4,7 +4,9 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidBodyProperties
+import de.fabmax.kool.physics.toPxTransform
 import de.fabmax.kool.util.BoundingBox
 import physx.*
 import kotlin.math.sqrt
@@ -25,8 +27,8 @@ actual class BoxShape actual constructor(size: Vec3f, private val localPose: Mat
     }
 
     override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
-        val geometry = PhysX.PxBoxGeometry(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
-        val shape = PhysX.physics.createShape(geometry, material, true, flags)
+        val geometry = PxBoxGeometry(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f)
+        val shape = Physics.physics.createShape(geometry, material, true, flags)
         localPose?.let { shape.setLocalPose(it.toPxTransform(shape.getLocalPose())) }
         bodyProps?.let { setFilterDatas(shape, it) }
         actor.attachShape(shape)

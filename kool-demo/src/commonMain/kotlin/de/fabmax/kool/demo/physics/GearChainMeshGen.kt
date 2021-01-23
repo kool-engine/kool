@@ -184,6 +184,9 @@ object GearChainMeshGen {
             metal = 0f
             roughness = 0f
 
+            rotate(-90f, Vec3f.Z_AXIS)
+            rotate(90f, Vec3f.Y_AXIS)
+
             color = Color.MD_RED.toLinear()
             profile {
                 simpleShape(true) {

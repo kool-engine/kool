@@ -2809,10 +2809,28 @@ var _emscripten_bind_PxGeometry___destroy___0 = Module["_emscripten_bind_PxGeome
 var _emscripten_bind_PxCpuDispatcher___destroy___0 = Module["_emscripten_bind_PxCpuDispatcher___destroy___0"] = createExportWrapper("emscripten_bind_PxCpuDispatcher___destroy___0");
 
 /** @type {function(...*):?} */
-var _emscripten_bind_VoidPtr___destroy___0 = Module["_emscripten_bind_VoidPtr___destroy___0"] = createExportWrapper("emscripten_bind_VoidPtr___destroy___0");
+var _emscripten_bind_PxJoint_release_0 = Module["_emscripten_bind_PxJoint_release_0"] = createExportWrapper("emscripten_bind_PxJoint_release_0");
 
 /** @type {function(...*):?} */
-var _emscripten_bind_PxTopLevelFunctions_PxTopLevelFunctions_0 = Module["_emscripten_bind_PxTopLevelFunctions_PxTopLevelFunctions_0"] = createExportWrapper("emscripten_bind_PxTopLevelFunctions_PxTopLevelFunctions_0");
+var _emscripten_bind_PxJoint_getConcreteTypeName_0 = Module["_emscripten_bind_PxJoint_getConcreteTypeName_0"] = createExportWrapper("emscripten_bind_PxJoint_getConcreteTypeName_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxJoint_getConcreteType_0 = Module["_emscripten_bind_PxJoint_getConcreteType_0"] = createExportWrapper("emscripten_bind_PxJoint_getConcreteType_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxJoint_setBaseFlag_2 = Module["_emscripten_bind_PxJoint_setBaseFlag_2"] = createExportWrapper("emscripten_bind_PxJoint_setBaseFlag_2");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxJoint_setBaseFlags_1 = Module["_emscripten_bind_PxJoint_setBaseFlags_1"] = createExportWrapper("emscripten_bind_PxJoint_setBaseFlags_1");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxJoint_getBaseFlags_0 = Module["_emscripten_bind_PxJoint_getBaseFlags_0"] = createExportWrapper("emscripten_bind_PxJoint_getBaseFlags_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxJoint_isReleasable_0 = Module["_emscripten_bind_PxJoint_isReleasable_0"] = createExportWrapper("emscripten_bind_PxJoint_isReleasable_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_VoidPtr___destroy___0 = Module["_emscripten_bind_VoidPtr___destroy___0"] = createExportWrapper("emscripten_bind_VoidPtr___destroy___0");
 
 /** @type {function(...*):?} */
 var _emscripten_bind_PxTopLevelFunctions_DefaultFilterShader_0 = Module["_emscripten_bind_PxTopLevelFunctions_DefaultFilterShader_0"] = createExportWrapper("emscripten_bind_PxTopLevelFunctions_DefaultFilterShader_0");
@@ -4681,9 +4699,6 @@ var _emscripten_bind_PxVehicleWheelQueryResult_get_nbWheelQueryResults_0 = Modul
 var _emscripten_bind_PxVehicleWheelQueryResult_set_nbWheelQueryResults_1 = Module["_emscripten_bind_PxVehicleWheelQueryResult_set_nbWheelQueryResults_1"] = createExportWrapper("emscripten_bind_PxVehicleWheelQueryResult_set_nbWheelQueryResults_1");
 
 /** @type {function(...*):?} */
-var _emscripten_bind_PxVehicleWheelsPtr___destroy___0 = Module["_emscripten_bind_PxVehicleWheelsPtr___destroy___0"] = createExportWrapper("emscripten_bind_PxVehicleWheelsPtr___destroy___0");
-
-/** @type {function(...*):?} */
 var _emscripten_bind_PxVehicleWheelsDynData_setToRestState_0 = Module["_emscripten_bind_PxVehicleWheelsDynData_setToRestState_0"] = createExportWrapper("emscripten_bind_PxVehicleWheelsDynData_setToRestState_0");
 
 /** @type {function(...*):?} */
@@ -5377,7 +5392,7 @@ var _emscripten_bind_PxTolerancesScale_PxTolerancesScale_0 = Module["_emscripten
 var _emscripten_bind_PxTolerancesScale___destroy___0 = Module["_emscripten_bind_PxTolerancesScale___destroy___0"] = createExportWrapper("emscripten_bind_PxTolerancesScale___destroy___0");
 
 /** @type {function(...*):?} */
-var _emscripten_bind_PxTransform_PxTransform_0 = Module["_emscripten_bind_PxTransform_PxTransform_0"] = createExportWrapper("emscripten_bind_PxTransform_PxTransform_0");
+var _emscripten_bind_PxTransform_PxTransform_1 = Module["_emscripten_bind_PxTransform_PxTransform_1"] = createExportWrapper("emscripten_bind_PxTransform_PxTransform_1");
 
 /** @type {function(...*):?} */
 var _emscripten_bind_PxTransform_PxTransform_2 = Module["_emscripten_bind_PxTransform_PxTransform_2"] = createExportWrapper("emscripten_bind_PxTransform_PxTransform_2");
@@ -5440,27 +5455,6 @@ var _emscripten_bind_PxDefaultAllocator___destroy___0 = Module["_emscripten_bind
 var _emscripten_bind_PxDefaultCpuDispatcher___destroy___0 = Module["_emscripten_bind_PxDefaultCpuDispatcher___destroy___0"] = createExportWrapper("emscripten_bind_PxDefaultCpuDispatcher___destroy___0");
 
 /** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_release_0 = Module["_emscripten_bind_PxJoint_release_0"] = createExportWrapper("emscripten_bind_PxJoint_release_0");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_getConcreteTypeName_0 = Module["_emscripten_bind_PxJoint_getConcreteTypeName_0"] = createExportWrapper("emscripten_bind_PxJoint_getConcreteTypeName_0");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_getConcreteType_0 = Module["_emscripten_bind_PxJoint_getConcreteType_0"] = createExportWrapper("emscripten_bind_PxJoint_getConcreteType_0");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_setBaseFlag_2 = Module["_emscripten_bind_PxJoint_setBaseFlag_2"] = createExportWrapper("emscripten_bind_PxJoint_setBaseFlag_2");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_setBaseFlags_1 = Module["_emscripten_bind_PxJoint_setBaseFlags_1"] = createExportWrapper("emscripten_bind_PxJoint_setBaseFlags_1");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_getBaseFlags_0 = Module["_emscripten_bind_PxJoint_getBaseFlags_0"] = createExportWrapper("emscripten_bind_PxJoint_getBaseFlags_0");
-
-/** @type {function(...*):?} */
-var _emscripten_bind_PxJoint_isReleasable_0 = Module["_emscripten_bind_PxJoint_isReleasable_0"] = createExportWrapper("emscripten_bind_PxJoint_isReleasable_0");
-
-/** @type {function(...*):?} */
 var _emscripten_bind_PxRevoluteJoint_setDriveVelocity_1 = Module["_emscripten_bind_PxRevoluteJoint_setDriveVelocity_1"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_setDriveVelocity_1");
 
 /** @type {function(...*):?} */
@@ -5488,6 +5482,27 @@ var _emscripten_bind_PxRevoluteJoint_setRevoluteJointFlags_1 = Module["_emscript
 var _emscripten_bind_PxRevoluteJoint_getRevoluteJointFlags_0 = Module["_emscripten_bind_PxRevoluteJoint_getRevoluteJointFlags_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_getRevoluteJointFlags_0");
 
 /** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_release_0 = Module["_emscripten_bind_PxRevoluteJoint_release_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_release_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_getConcreteTypeName_0 = Module["_emscripten_bind_PxRevoluteJoint_getConcreteTypeName_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_getConcreteTypeName_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_getConcreteType_0 = Module["_emscripten_bind_PxRevoluteJoint_getConcreteType_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_getConcreteType_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_setBaseFlag_2 = Module["_emscripten_bind_PxRevoluteJoint_setBaseFlag_2"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_setBaseFlag_2");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_setBaseFlags_1 = Module["_emscripten_bind_PxRevoluteJoint_setBaseFlags_1"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_setBaseFlags_1");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_getBaseFlags_0 = Module["_emscripten_bind_PxRevoluteJoint_getBaseFlags_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_getBaseFlags_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxRevoluteJoint_isReleasable_0 = Module["_emscripten_bind_PxRevoluteJoint_isReleasable_0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint_isReleasable_0");
+
+/** @type {function(...*):?} */
 var _emscripten_bind_PxRevoluteJoint___destroy___0 = Module["_emscripten_bind_PxRevoluteJoint___destroy___0"] = createExportWrapper("emscripten_bind_PxRevoluteJoint___destroy___0");
 
 /** @type {function(...*):?} */
@@ -5504,6 +5519,30 @@ var _emscripten_bind_PxRevoluteJointFlags_clear_1 = Module["_emscripten_bind_PxR
 
 /** @type {function(...*):?} */
 var _emscripten_bind_PxRevoluteJointFlags___destroy___0 = Module["_emscripten_bind_PxRevoluteJointFlags___destroy___0"] = createExportWrapper("emscripten_bind_PxRevoluteJointFlags___destroy___0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_PxMaterialPtr___destroy___0 = Module["_emscripten_bind_PxMaterialPtr___destroy___0"] = createExportWrapper("emscripten_bind_PxMaterialPtr___destroy___0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_0 = Module["_emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_0"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_1 = Module["_emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_1"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_1");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_at_1 = Module["_emscripten_bind_Vector_PxMaterial_at_1"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_at_1");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_data_0 = Module["_emscripten_bind_Vector_PxMaterial_data_0"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_data_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_size_0 = Module["_emscripten_bind_Vector_PxMaterial_size_0"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_size_0");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial_push_back_1 = Module["_emscripten_bind_Vector_PxMaterial_push_back_1"] = createExportWrapper("emscripten_bind_Vector_PxMaterial_push_back_1");
+
+/** @type {function(...*):?} */
+var _emscripten_bind_Vector_PxMaterial___destroy___0 = Module["_emscripten_bind_Vector_PxMaterial___destroy___0"] = createExportWrapper("emscripten_bind_Vector_PxMaterial___destroy___0");
 
 /** @type {function(...*):?} */
 var _emscripten_bind_Vector_PxReal_Vector_PxReal_0 = Module["_emscripten_bind_Vector_PxReal_Vector_PxReal_0"] = createExportWrapper("emscripten_bind_Vector_PxReal_Vector_PxReal_0");
@@ -5674,6 +5713,9 @@ var _emscripten_bind_Vector_PxWheelQueryResult_push_back_1 = Module["_emscripten
 var _emscripten_bind_Vector_PxWheelQueryResult___destroy___0 = Module["_emscripten_bind_Vector_PxWheelQueryResult___destroy___0"] = createExportWrapper("emscripten_bind_Vector_PxWheelQueryResult___destroy___0");
 
 /** @type {function(...*):?} */
+var _emscripten_bind_PxVehicleWheelsPtr___destroy___0 = Module["_emscripten_bind_PxVehicleWheelsPtr___destroy___0"] = createExportWrapper("emscripten_bind_PxVehicleWheelsPtr___destroy___0");
+
+/** @type {function(...*):?} */
 var _emscripten_bind_Vector_PxVehicleWheels_Vector_PxVehicleWheels_0 = Module["_emscripten_bind_Vector_PxVehicleWheels_Vector_PxVehicleWheels_0"] = createExportWrapper("emscripten_bind_Vector_PxVehicleWheels_Vector_PxVehicleWheels_0");
 
 /** @type {function(...*):?} */
@@ -5695,331 +5737,331 @@ var _emscripten_bind_Vector_PxVehicleWheels_push_back_1 = Module["_emscripten_bi
 var _emscripten_bind_Vector_PxVehicleWheels___destroy___0 = Module["_emscripten_bind_Vector_PxVehicleWheels___destroy___0"] = createExportWrapper("emscripten_bind_Vector_PxVehicleWheels___destroy___0");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorFlag_eVISUALIZATION = Module["_emscripten_enum_physx_PxActorFlag_eVISUALIZATION"] = createExportWrapper("emscripten_enum_physx_PxActorFlag_eVISUALIZATION");
+var _emscripten_enum_PxActorFlagEnum_eVISUALIZATION = Module["_emscripten_enum_PxActorFlagEnum_eVISUALIZATION"] = createExportWrapper("emscripten_enum_PxActorFlagEnum_eVISUALIZATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorFlag_eDISABLE_GRAVITY = Module["_emscripten_enum_physx_PxActorFlag_eDISABLE_GRAVITY"] = createExportWrapper("emscripten_enum_physx_PxActorFlag_eDISABLE_GRAVITY");
+var _emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY = Module["_emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY"] = createExportWrapper("emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorFlag_eSEND_SLEEP_NOTIFIES = Module["_emscripten_enum_physx_PxActorFlag_eSEND_SLEEP_NOTIFIES"] = createExportWrapper("emscripten_enum_physx_PxActorFlag_eSEND_SLEEP_NOTIFIES");
+var _emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES = Module["_emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES"] = createExportWrapper("emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorFlag_eDISABLE_SIMULATION = Module["_emscripten_enum_physx_PxActorFlag_eDISABLE_SIMULATION"] = createExportWrapper("emscripten_enum_physx_PxActorFlag_eDISABLE_SIMULATION");
+var _emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION = Module["_emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION"] = createExportWrapper("emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorType_eRIGID_STATIC = Module["_emscripten_enum_physx_PxActorType_eRIGID_STATIC"] = createExportWrapper("emscripten_enum_physx_PxActorType_eRIGID_STATIC");
+var _emscripten_enum_PxActorTypeEnum_eRIGID_STATIC = Module["_emscripten_enum_PxActorTypeEnum_eRIGID_STATIC"] = createExportWrapper("emscripten_enum_PxActorTypeEnum_eRIGID_STATIC");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorType_eRIGID_DYNAMIC = Module["_emscripten_enum_physx_PxActorType_eRIGID_DYNAMIC"] = createExportWrapper("emscripten_enum_physx_PxActorType_eRIGID_DYNAMIC");
+var _emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC = Module["_emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC"] = createExportWrapper("emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorType_eARTICULATION_LINK = Module["_emscripten_enum_physx_PxActorType_eARTICULATION_LINK"] = createExportWrapper("emscripten_enum_physx_PxActorType_eARTICULATION_LINK");
+var _emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK = Module["_emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK"] = createExportWrapper("emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorType_eACTOR_COUNT = Module["_emscripten_enum_physx_PxActorType_eACTOR_COUNT"] = createExportWrapper("emscripten_enum_physx_PxActorType_eACTOR_COUNT");
+var _emscripten_enum_PxActorTypeEnum_eACTOR_COUNT = Module["_emscripten_enum_PxActorTypeEnum_eACTOR_COUNT"] = createExportWrapper("emscripten_enum_PxActorTypeEnum_eACTOR_COUNT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxActorType_eACTOR_FORCE_DWORD = Module["_emscripten_enum_physx_PxActorType_eACTOR_FORCE_DWORD"] = createExportWrapper("emscripten_enum_physx_PxActorType_eACTOR_FORCE_DWORD");
+var _emscripten_enum_PxActorTypeEnum_eACTOR_FORCE_DWORD = Module["_emscripten_enum_PxActorTypeEnum_eACTOR_FORCE_DWORD"] = createExportWrapper("emscripten_enum_PxActorTypeEnum_eACTOR_FORCE_DWORD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxForceMode_eFORCE = Module["_emscripten_enum_physx_PxForceMode_eFORCE"] = createExportWrapper("emscripten_enum_physx_PxForceMode_eFORCE");
+var _emscripten_enum_PxForceModeEnum_eFORCE = Module["_emscripten_enum_PxForceModeEnum_eFORCE"] = createExportWrapper("emscripten_enum_PxForceModeEnum_eFORCE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxForceMode_eIMPULSE = Module["_emscripten_enum_physx_PxForceMode_eIMPULSE"] = createExportWrapper("emscripten_enum_physx_PxForceMode_eIMPULSE");
+var _emscripten_enum_PxForceModeEnum_eIMPULSE = Module["_emscripten_enum_PxForceModeEnum_eIMPULSE"] = createExportWrapper("emscripten_enum_PxForceModeEnum_eIMPULSE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxForceMode_eVELOCITY_CHANGE = Module["_emscripten_enum_physx_PxForceMode_eVELOCITY_CHANGE"] = createExportWrapper("emscripten_enum_physx_PxForceMode_eVELOCITY_CHANGE");
+var _emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE = Module["_emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE"] = createExportWrapper("emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxForceMode_eACCELERATION = Module["_emscripten_enum_physx_PxForceMode_eACCELERATION"] = createExportWrapper("emscripten_enum_physx_PxForceMode_eACCELERATION");
+var _emscripten_enum_PxForceModeEnum_eACCELERATION = Module["_emscripten_enum_PxForceModeEnum_eACCELERATION"] = createExportWrapper("emscripten_enum_PxForceModeEnum_eACCELERATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_ePOSITION = Module["_emscripten_enum_physx_PxHitFlag_ePOSITION"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_ePOSITION");
+var _emscripten_enum_PxHitFlagEnum_ePOSITION = Module["_emscripten_enum_PxHitFlagEnum_ePOSITION"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_ePOSITION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eNORMAL = Module["_emscripten_enum_physx_PxHitFlag_eNORMAL"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eNORMAL");
+var _emscripten_enum_PxHitFlagEnum_eNORMAL = Module["_emscripten_enum_PxHitFlagEnum_eNORMAL"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eNORMAL");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eUV = Module["_emscripten_enum_physx_PxHitFlag_eUV"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eUV");
+var _emscripten_enum_PxHitFlagEnum_eUV = Module["_emscripten_enum_PxHitFlagEnum_eUV"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eUV");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eASSUME_NO_INITIAL_OVERLAP = Module["_emscripten_enum_physx_PxHitFlag_eASSUME_NO_INITIAL_OVERLAP"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eASSUME_NO_INITIAL_OVERLAP");
+var _emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP = Module["_emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eMESH_MULTIPLE = Module["_emscripten_enum_physx_PxHitFlag_eMESH_MULTIPLE"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eMESH_MULTIPLE");
+var _emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE = Module["_emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eMESH_ANY = Module["_emscripten_enum_physx_PxHitFlag_eMESH_ANY"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eMESH_ANY");
+var _emscripten_enum_PxHitFlagEnum_eMESH_ANY = Module["_emscripten_enum_PxHitFlagEnum_eMESH_ANY"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eMESH_ANY");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eMESH_BOTH_SIDES = Module["_emscripten_enum_physx_PxHitFlag_eMESH_BOTH_SIDES"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eMESH_BOTH_SIDES");
+var _emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES = Module["_emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_ePRECISE_SWEEP = Module["_emscripten_enum_physx_PxHitFlag_ePRECISE_SWEEP"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_ePRECISE_SWEEP");
+var _emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP = Module["_emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eMTD = Module["_emscripten_enum_physx_PxHitFlag_eMTD"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eMTD");
+var _emscripten_enum_PxHitFlagEnum_eMTD = Module["_emscripten_enum_PxHitFlagEnum_eMTD"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eMTD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eFACE_INDEX = Module["_emscripten_enum_physx_PxHitFlag_eFACE_INDEX"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eFACE_INDEX");
+var _emscripten_enum_PxHitFlagEnum_eFACE_INDEX = Module["_emscripten_enum_PxHitFlagEnum_eFACE_INDEX"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eFACE_INDEX");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eDEFAULT = Module["_emscripten_enum_physx_PxHitFlag_eDEFAULT"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eDEFAULT");
+var _emscripten_enum_PxHitFlagEnum_eDEFAULT = Module["_emscripten_enum_PxHitFlagEnum_eDEFAULT"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eDEFAULT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxHitFlag_eMODIFIABLE_FLAGS = Module["_emscripten_enum_physx_PxHitFlag_eMODIFIABLE_FLAGS"] = createExportWrapper("emscripten_enum_physx_PxHitFlag_eMODIFIABLE_FLAGS");
+var _emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS = Module["_emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS"] = createExportWrapper("emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eKINEMATIC = Module["_emscripten_enum_physx_PxRigidBodyFlag_eKINEMATIC"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eKINEMATIC");
+var _emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC = Module["_emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES = Module["_emscripten_enum_physx_PxRigidBodyFlag_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES");
+var _emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES = Module["_emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD = Module["_emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD");
+var _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD = Module["_emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_FRICTION = Module["_emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_FRICTION"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_FRICTION");
+var _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION = Module["_emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_POSE_INTEGRATION_PREVIEW = Module["_emscripten_enum_physx_PxRigidBodyFlag_eENABLE_POSE_INTEGRATION_PREVIEW"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eENABLE_POSE_INTEGRATION_PREVIEW");
+var _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW = Module["_emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_SPECULATIVE_CCD = Module["_emscripten_enum_physx_PxRigidBodyFlag_eENABLE_SPECULATIVE_CCD"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eENABLE_SPECULATIVE_CCD");
+var _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD = Module["_emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_MAX_CONTACT_IMPULSE = Module["_emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_MAX_CONTACT_IMPULSE"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_MAX_CONTACT_IMPULSE");
+var _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE = Module["_emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidBodyFlag_eRETAIN_ACCELERATIONS = Module["_emscripten_enum_physx_PxRigidBodyFlag_eRETAIN_ACCELERATIONS"] = createExportWrapper("emscripten_enum_physx_PxRigidBodyFlag_eRETAIN_ACCELERATIONS");
+var _emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS = Module["_emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS"] = createExportWrapper("emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_X = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_X"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_X");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Y = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Y"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Y");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Z = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Z"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Z");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_X = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_X"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_X");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Y = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Y"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Y");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Z = Module["_emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Z"] = createExportWrapper("emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Z");
+var _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z = Module["_emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z"] = createExportWrapper("emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_ACTIVE_ACTORS = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_ACTIVE_ACTORS"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_ACTIVE_ACTORS");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_CCD = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_CCD"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_CCD");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_CCD = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_CCD"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_CCD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eDISABLE_CCD_RESWEEP = Module["_emscripten_enum_physx_PxSceneFlag_eDISABLE_CCD_RESWEEP"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eDISABLE_CCD_RESWEEP");
+var _emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP = Module["_emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eADAPTIVE_FORCE = Module["_emscripten_enum_physx_PxSceneFlag_eADAPTIVE_FORCE"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eADAPTIVE_FORCE");
+var _emscripten_enum_PxSceneFlagEnum_eADAPTIVE_FORCE = Module["_emscripten_enum_PxSceneFlagEnum_eADAPTIVE_FORCE"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eADAPTIVE_FORCE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_PCM = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_PCM"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_PCM");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_PCM = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_PCM"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_PCM");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE = Module["_emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE");
+var _emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE = Module["_emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_CACHE = Module["_emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_CACHE"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_CACHE");
+var _emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE = Module["_emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eREQUIRE_RW_LOCK = Module["_emscripten_enum_physx_PxSceneFlag_eREQUIRE_RW_LOCK"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eREQUIRE_RW_LOCK");
+var _emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK = Module["_emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_STABILIZATION = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_STABILIZATION"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_STABILIZATION");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_AVERAGE_POINT = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_AVERAGE_POINT"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_AVERAGE_POINT");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS = Module["_emscripten_enum_physx_PxSceneFlag_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS");
+var _emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS = Module["_emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_GPU_DYNAMICS = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_GPU_DYNAMICS"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_GPU_DYNAMICS");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_ENHANCED_DETERMINISM = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_ENHANCED_DETERMINISM"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_ENHANCED_DETERMINISM");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eENABLE_FRICTION_EVERY_ITERATION = Module["_emscripten_enum_physx_PxSceneFlag_eENABLE_FRICTION_EVERY_ITERATION"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eENABLE_FRICTION_EVERY_ITERATION");
+var _emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION = Module["_emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxSceneFlag_eMUTABLE_FLAGS = Module["_emscripten_enum_physx_PxSceneFlag_eMUTABLE_FLAGS"] = createExportWrapper("emscripten_enum_physx_PxSceneFlag_eMUTABLE_FLAGS");
+var _emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS = Module["_emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS"] = createExportWrapper("emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxShapeFlag_eSIMULATION_SHAPE = Module["_emscripten_enum_physx_PxShapeFlag_eSIMULATION_SHAPE"] = createExportWrapper("emscripten_enum_physx_PxShapeFlag_eSIMULATION_SHAPE");
+var _emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE = Module["_emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE"] = createExportWrapper("emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxShapeFlag_eSCENE_QUERY_SHAPE = Module["_emscripten_enum_physx_PxShapeFlag_eSCENE_QUERY_SHAPE"] = createExportWrapper("emscripten_enum_physx_PxShapeFlag_eSCENE_QUERY_SHAPE");
+var _emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE = Module["_emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE"] = createExportWrapper("emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxShapeFlag_eTRIGGER_SHAPE = Module["_emscripten_enum_physx_PxShapeFlag_eTRIGGER_SHAPE"] = createExportWrapper("emscripten_enum_physx_PxShapeFlag_eTRIGGER_SHAPE");
+var _emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE = Module["_emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE"] = createExportWrapper("emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxShapeFlag_eVISUALIZATION = Module["_emscripten_enum_physx_PxShapeFlag_eVISUALIZATION"] = createExportWrapper("emscripten_enum_physx_PxShapeFlag_eVISUALIZATION");
+var _emscripten_enum_PxShapeFlagEnum_eVISUALIZATION = Module["_emscripten_enum_PxShapeFlagEnum_eVISUALIZATION"] = createExportWrapper("emscripten_enum_PxShapeFlagEnum_eVISUALIZATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleClutchAccuracyMode_eESTIMATE = Module["_emscripten_enum_physx_PxVehicleClutchAccuracyMode_eESTIMATE"] = createExportWrapper("emscripten_enum_physx_PxVehicleClutchAccuracyMode_eESTIMATE");
+var _emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE = Module["_emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE"] = createExportWrapper("emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleClutchAccuracyMode_eBEST_POSSIBLE = Module["_emscripten_enum_physx_PxVehicleClutchAccuracyMode_eBEST_POSSIBLE"] = createExportWrapper("emscripten_enum_physx_PxVehicleClutchAccuracyMode_eBEST_POSSIBLE");
+var _emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE = Module["_emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE"] = createExportWrapper("emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_4WD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_4WD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_4WD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_FRONTWD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_FRONTWD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_FRONTWD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_REARWD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_REARWD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_REARWD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_4WD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_4WD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_4WD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_FRONTWD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_FRONTWD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_FRONTWD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_REARWD = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_REARWD"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_REARWD");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDifferential4WData_eMAX_NB_DIFF_TYPES = Module["_emscripten_enum_physx_PxVehicleDifferential4WData_eMAX_NB_DIFF_TYPES"] = createExportWrapper("emscripten_enum_physx_PxVehicleDifferential4WData_eMAX_NB_DIFF_TYPES");
+var _emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES = Module["_emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES"] = createExportWrapper("emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_ACCEL = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_ACCEL"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_ACCEL");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_BRAKE = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_BRAKE"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_BRAKE");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_HANDBRAKE = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_HANDBRAKE"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_HANDBRAKE");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_LEFT = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_LEFT"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_LEFT");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_RIGHT = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_RIGHT"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_RIGHT");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleDrive4WControl_eMAX_NB_DRIVE4W_ANALOG_INPUTS = Module["_emscripten_enum_physx_PxVehicleDrive4WControl_eMAX_NB_DRIVE4W_ANALOG_INPUTS"] = createExportWrapper("emscripten_enum_physx_PxVehicleDrive4WControl_eMAX_NB_DRIVE4W_ANALOG_INPUTS");
+var _emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS = Module["_emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS"] = createExportWrapper("emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eREVERSE = Module["_emscripten_enum_physx_PxVehicleGear_eREVERSE"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eREVERSE");
+var _emscripten_enum_PxVehicleGearEnum_eREVERSE = Module["_emscripten_enum_PxVehicleGearEnum_eREVERSE"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eREVERSE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eNEUTRAL = Module["_emscripten_enum_physx_PxVehicleGear_eNEUTRAL"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eNEUTRAL");
+var _emscripten_enum_PxVehicleGearEnum_eNEUTRAL = Module["_emscripten_enum_PxVehicleGearEnum_eNEUTRAL"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eNEUTRAL");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eFIRST = Module["_emscripten_enum_physx_PxVehicleGear_eFIRST"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eFIRST");
+var _emscripten_enum_PxVehicleGearEnum_eFIRST = Module["_emscripten_enum_PxVehicleGearEnum_eFIRST"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eFIRST");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eSECOND = Module["_emscripten_enum_physx_PxVehicleGear_eSECOND"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eSECOND");
+var _emscripten_enum_PxVehicleGearEnum_eSECOND = Module["_emscripten_enum_PxVehicleGearEnum_eSECOND"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eSECOND");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTHIRD = Module["_emscripten_enum_physx_PxVehicleGear_eTHIRD"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTHIRD");
+var _emscripten_enum_PxVehicleGearEnum_eTHIRD = Module["_emscripten_enum_PxVehicleGearEnum_eTHIRD"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTHIRD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eFOURTH = Module["_emscripten_enum_physx_PxVehicleGear_eFOURTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eFOURTH");
+var _emscripten_enum_PxVehicleGearEnum_eFOURTH = Module["_emscripten_enum_PxVehicleGearEnum_eFOURTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eFOURTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eFIFTH = Module["_emscripten_enum_physx_PxVehicleGear_eFIFTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eFIFTH");
+var _emscripten_enum_PxVehicleGearEnum_eFIFTH = Module["_emscripten_enum_PxVehicleGearEnum_eFIFTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eFIFTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eSIXTH = Module["_emscripten_enum_physx_PxVehicleGear_eSIXTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eSIXTH");
+var _emscripten_enum_PxVehicleGearEnum_eSIXTH = Module["_emscripten_enum_PxVehicleGearEnum_eSIXTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eSIXTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eSEVENTH = Module["_emscripten_enum_physx_PxVehicleGear_eSEVENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eSEVENTH");
+var _emscripten_enum_PxVehicleGearEnum_eSEVENTH = Module["_emscripten_enum_PxVehicleGearEnum_eSEVENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eSEVENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eEIGHTH = Module["_emscripten_enum_physx_PxVehicleGear_eEIGHTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eEIGHTH");
+var _emscripten_enum_PxVehicleGearEnum_eEIGHTH = Module["_emscripten_enum_PxVehicleGearEnum_eEIGHTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eEIGHTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eNINTH = Module["_emscripten_enum_physx_PxVehicleGear_eNINTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eNINTH");
+var _emscripten_enum_PxVehicleGearEnum_eNINTH = Module["_emscripten_enum_PxVehicleGearEnum_eNINTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eNINTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTENTH = Module["_emscripten_enum_physx_PxVehicleGear_eTENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTENTH");
+var _emscripten_enum_PxVehicleGearEnum_eTENTH = Module["_emscripten_enum_PxVehicleGearEnum_eTENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eELEVENTH = Module["_emscripten_enum_physx_PxVehicleGear_eELEVENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eELEVENTH");
+var _emscripten_enum_PxVehicleGearEnum_eELEVENTH = Module["_emscripten_enum_PxVehicleGearEnum_eELEVENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eELEVENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWELFTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWELFTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWELFTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWELFTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWELFTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWELFTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTHIRTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eTHIRTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTHIRTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eFOURTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eFOURTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eFOURTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eFOURTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eFOURTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eFOURTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eFIFTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eFIFTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eFIFTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eFIFTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eFIFTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eFIFTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eSIXTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eSIXTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eSIXTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eSIXTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eSIXTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eSIXTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eSEVENTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eSEVENTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eSEVENTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eEIGHTEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eEIGHTEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eEIGHTEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eNINETEENTH = Module["_emscripten_enum_physx_PxVehicleGear_eNINETEENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eNINETEENTH");
+var _emscripten_enum_PxVehicleGearEnum_eNINETEENTH = Module["_emscripten_enum_PxVehicleGearEnum_eNINETEENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eNINETEENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTIETH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTIETH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTIETH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTIETH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTIETH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTIETH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYFIRST = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYFIRST"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYFIRST");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYSECOND = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYSECOND"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYSECOND");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYTHIRD = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYTHIRD"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYTHIRD");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYFOURTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYFOURTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYFOURTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYFIFTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYFIFTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYFIFTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYSIXTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYSIXTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYSIXTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYSEVENTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYSEVENTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYSEVENTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYEIGHTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYEIGHTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYEIGHTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTWENTYNINTH = Module["_emscripten_enum_physx_PxVehicleGear_eTWENTYNINTH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTWENTYNINTH");
+var _emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH = Module["_emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eTHIRTIETH = Module["_emscripten_enum_physx_PxVehicleGear_eTHIRTIETH"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eTHIRTIETH");
+var _emscripten_enum_PxVehicleGearEnum_eTHIRTIETH = Module["_emscripten_enum_PxVehicleGearEnum_eTHIRTIETH"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eTHIRTIETH");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleGear_eGEARSRATIO_COUNT = Module["_emscripten_enum_physx_PxVehicleGear_eGEARSRATIO_COUNT"] = createExportWrapper("emscripten_enum_physx_PxVehicleGear_eGEARSRATIO_COUNT");
+var _emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT = Module["_emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT"] = createExportWrapper("emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleUpdateMode_eVELOCITY_CHANGE = Module["_emscripten_enum_physx_PxVehicleUpdateMode_eVELOCITY_CHANGE"] = createExportWrapper("emscripten_enum_physx_PxVehicleUpdateMode_eVELOCITY_CHANGE");
+var _emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE = Module["_emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE"] = createExportWrapper("emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleUpdateMode_eACCELERATION = Module["_emscripten_enum_physx_PxVehicleUpdateMode_eACCELERATION"] = createExportWrapper("emscripten_enum_physx_PxVehicleUpdateMode_eACCELERATION");
+var _emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION = Module["_emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION"] = createExportWrapper("emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxVehicleWheelsSimFlag_eLIMIT_SUSPENSION_EXPANSION_VELOCITY = Module["_emscripten_enum_physx_PxVehicleWheelsSimFlag_eLIMIT_SUSPENSION_EXPANSION_VELOCITY"] = createExportWrapper("emscripten_enum_physx_PxVehicleWheelsSimFlag_eLIMIT_SUSPENSION_EXPANSION_VELOCITY");
+var _emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY = Module["_emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY"] = createExportWrapper("emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY");
 
 /** @type {function(...*):?} */
 var _emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE = Module["_emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE"] = createExportWrapper("emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE");
@@ -6028,49 +6070,52 @@ var _emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE = Module["_emscript
 var _emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE = Module["_emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE"] = createExportWrapper("emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS = Module["_emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS"] = createExportWrapper("emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS");
+var _emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS = Module["_emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS"] = createExportWrapper("emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_e16_BIT_INDICES = Module["_emscripten_enum_physx_PxConvexFlag_e16_BIT_INDICES"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_e16_BIT_INDICES");
+var _emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES = Module["_emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eCOMPUTE_CONVEX = Module["_emscripten_enum_physx_PxConvexFlag_eCOMPUTE_CONVEX"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eCOMPUTE_CONVEX");
+var _emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX = Module["_emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eCHECK_ZERO_AREA_TRIANGLES = Module["_emscripten_enum_physx_PxConvexFlag_eCHECK_ZERO_AREA_TRIANGLES"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eCHECK_ZERO_AREA_TRIANGLES");
+var _emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES = Module["_emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eQUANTIZE_INPUT = Module["_emscripten_enum_physx_PxConvexFlag_eQUANTIZE_INPUT"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eQUANTIZE_INPUT");
+var _emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT = Module["_emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eDISABLE_MESH_VALIDATION = Module["_emscripten_enum_physx_PxConvexFlag_eDISABLE_MESH_VALIDATION"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eDISABLE_MESH_VALIDATION");
+var _emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION = Module["_emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_ePLANE_SHIFTING = Module["_emscripten_enum_physx_PxConvexFlag_ePLANE_SHIFTING"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_ePLANE_SHIFTING");
+var _emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING = Module["_emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eFAST_INERTIA_COMPUTATION = Module["_emscripten_enum_physx_PxConvexFlag_eFAST_INERTIA_COMPUTATION"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eFAST_INERTIA_COMPUTATION");
+var _emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION = Module["_emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eGPU_COMPATIBLE = Module["_emscripten_enum_physx_PxConvexFlag_eGPU_COMPATIBLE"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eGPU_COMPATIBLE");
+var _emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE = Module["_emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxConvexFlag_eSHIFT_VERTICES = Module["_emscripten_enum_physx_PxConvexFlag_eSHIFT_VERTICES"] = createExportWrapper("emscripten_enum_physx_PxConvexFlag_eSHIFT_VERTICES");
+var _emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES = Module["_emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES"] = createExportWrapper("emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxBaseFlag_eOWNS_MEMORY = Module["_emscripten_enum_physx_PxBaseFlag_eOWNS_MEMORY"] = createExportWrapper("emscripten_enum_physx_PxBaseFlag_eOWNS_MEMORY");
+var _emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY = Module["_emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY"] = createExportWrapper("emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxBaseFlag_eIS_RELEASABLE = Module["_emscripten_enum_physx_PxBaseFlag_eIS_RELEASABLE"] = createExportWrapper("emscripten_enum_physx_PxBaseFlag_eIS_RELEASABLE");
+var _emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE = Module["_emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE"] = createExportWrapper("emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED = Module["_emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED"] = createExportWrapper("emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED");
+var _emscripten_enum_PxIDENTITYEnum_PxIdentity = Module["_emscripten_enum_PxIDENTITYEnum_PxIdentity"] = createExportWrapper("emscripten_enum_PxIDENTITYEnum_PxIdentity");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED = Module["_emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED"] = createExportWrapper("emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED");
+var _emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED = Module["_emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED"] = createExportWrapper("emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED");
 
 /** @type {function(...*):?} */
-var _emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN = Module["_emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN"] = createExportWrapper("emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN");
+var _emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED = Module["_emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED"] = createExportWrapper("emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED");
+
+/** @type {function(...*):?} */
+var _emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN = Module["_emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN"] = createExportWrapper("emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN");
 
 /** @type {function(...*):?} */
 var _free = Module["_free"] = createExportWrapper("free");
@@ -7749,6 +7794,52 @@ Module['PxCpuDispatcher'] = PxCpuDispatcher;
   var self = this.ptr;
   _emscripten_bind_PxCpuDispatcher___destroy___0(self);
 };
+// PxJoint
+/** @suppress {undefinedVars, duplicate} @this{Object} */function PxJoint() { throw "cannot construct a PxJoint, no constructor in IDL" }
+PxJoint.prototype = Object.create(PxBase.prototype);
+PxJoint.prototype.constructor = PxJoint;
+PxJoint.prototype.__class__ = PxJoint;
+PxJoint.__cache__ = {};
+Module['PxJoint'] = PxJoint;
+
+PxJoint.prototype['release'] = PxJoint.prototype.release = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_PxJoint_release_0(self);
+};;
+
+PxJoint.prototype['getConcreteTypeName'] = PxJoint.prototype.getConcreteTypeName = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return UTF8ToString(_emscripten_bind_PxJoint_getConcreteTypeName_0(self));
+};;
+
+PxJoint.prototype['getConcreteType'] = PxJoint.prototype.getConcreteType = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return _emscripten_bind_PxJoint_getConcreteType_0(self);
+};;
+
+PxJoint.prototype['setBaseFlag'] = PxJoint.prototype.setBaseFlag = /** @suppress {undefinedVars, duplicate} @this{Object} */function(flag, value) {
+  var self = this.ptr;
+  if (flag && typeof flag === 'object') flag = flag.ptr;
+  if (value && typeof value === 'object') value = value.ptr;
+  _emscripten_bind_PxJoint_setBaseFlag_2(self, flag, value);
+};;
+
+PxJoint.prototype['setBaseFlags'] = PxJoint.prototype.setBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function(inFlags) {
+  var self = this.ptr;
+  if (inFlags && typeof inFlags === 'object') inFlags = inFlags.ptr;
+  _emscripten_bind_PxJoint_setBaseFlags_1(self, inFlags);
+};;
+
+PxJoint.prototype['getBaseFlags'] = PxJoint.prototype.getBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_PxJoint_getBaseFlags_0(self), PxBaseFlags);
+};;
+
+PxJoint.prototype['isReleasable'] = PxJoint.prototype.isReleasable = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_PxJoint_isReleasable_0(self));
+};;
+
 // VoidPtr
 /** @suppress {undefinedVars, duplicate} @this{Object} */function VoidPtr() { throw "cannot construct a VoidPtr, no constructor in IDL" }
 VoidPtr.prototype = Object.create(WrapperObject.prototype);
@@ -7762,10 +7853,7 @@ Module['VoidPtr'] = VoidPtr;
   _emscripten_bind_VoidPtr___destroy___0(self);
 };
 // PxTopLevelFunctions
-/** @suppress {undefinedVars, duplicate} @this{Object} */function PxTopLevelFunctions() {
-  this.ptr = _emscripten_bind_PxTopLevelFunctions_PxTopLevelFunctions_0();
-  getCache(PxTopLevelFunctions)[this.ptr] = this;
-};;
+/** @suppress {undefinedVars, duplicate} @this{Object} */function PxTopLevelFunctions() { throw "cannot construct a PxTopLevelFunctions, no constructor in IDL" }
 PxTopLevelFunctions.prototype = Object.create(WrapperObject.prototype);
 PxTopLevelFunctions.prototype.constructor = PxTopLevelFunctions;
 PxTopLevelFunctions.prototype.__class__ = PxTopLevelFunctions;
@@ -10215,9 +10303,9 @@ PxVehicleDrivableSurfaceToTireFrictionPairs.prototype['allocate'] = PxVehicleDri
 
 PxVehicleDrivableSurfaceToTireFrictionPairs.prototype['setup'] = PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.setup = /** @suppress {undefinedVars, duplicate} @this{Object} */function(nbTireTypes, nbSurfaceTypes, drivableSurfaceMaterials, drivableSurfaceTypes) {
   var self = this.ptr;
-  ensureCache.prepare();
   if (nbTireTypes && typeof nbTireTypes === 'object') nbTireTypes = nbTireTypes.ptr;
   if (nbSurfaceTypes && typeof nbSurfaceTypes === 'object') nbSurfaceTypes = nbSurfaceTypes.ptr;
+  if (drivableSurfaceMaterials && typeof drivableSurfaceMaterials === 'object') drivableSurfaceMaterials = drivableSurfaceMaterials.ptr;
   if (drivableSurfaceTypes && typeof drivableSurfaceTypes === 'object') drivableSurfaceTypes = drivableSurfaceTypes.ptr;
   _emscripten_bind_PxVehicleDrivableSurfaceToTireFrictionPairs_setup_4(self, nbTireTypes, nbSurfaceTypes, drivableSurfaceMaterials, drivableSurfaceTypes);
 };;
@@ -11330,18 +11418,6 @@ Module['PxVehicleWheelQueryResult'] = PxVehicleWheelQueryResult;
   _emscripten_bind_PxVehicleWheelQueryResult_set_nbWheelQueryResults_1(self, arg0);
 };
     Object.defineProperty(PxVehicleWheelQueryResult.prototype, 'nbWheelQueryResults', { get: PxVehicleWheelQueryResult.prototype.get_nbWheelQueryResults, set: PxVehicleWheelQueryResult.prototype.set_nbWheelQueryResults });
-// PxVehicleWheelsPtr
-/** @suppress {undefinedVars, duplicate} @this{Object} */function PxVehicleWheelsPtr() { throw "cannot construct a PxVehicleWheelsPtr, no constructor in IDL" }
-PxVehicleWheelsPtr.prototype = Object.create(WrapperObject.prototype);
-PxVehicleWheelsPtr.prototype.constructor = PxVehicleWheelsPtr;
-PxVehicleWheelsPtr.prototype.__class__ = PxVehicleWheelsPtr;
-PxVehicleWheelsPtr.__cache__ = {};
-Module['PxVehicleWheelsPtr'] = PxVehicleWheelsPtr;
-
-  PxVehicleWheelsPtr.prototype['__destroy__'] = PxVehicleWheelsPtr.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  _emscripten_bind_PxVehicleWheelsPtr___destroy___0(self);
-};
 // PxVehicleWheelsDynData
 /** @suppress {undefinedVars, duplicate} @this{Object} */function PxVehicleWheelsDynData() { throw "cannot construct a PxVehicleWheelsDynData, no constructor in IDL" }
 PxVehicleWheelsDynData.prototype = Object.create(WrapperObject.prototype);
@@ -12497,7 +12573,7 @@ Module['PxBoundedData'] = PxBoundedData;
     Object.defineProperty(PxBoundedData.prototype, 'stride', { get: PxBoundedData.prototype.get_stride, set: PxBoundedData.prototype.set_stride });
   PxBoundedData.prototype['get_data'] = PxBoundedData.prototype.get_data = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
-  return _emscripten_bind_PxBoundedData_get_data_0(self);
+  return wrapPointer(_emscripten_bind_PxBoundedData_get_data_0(self), VoidPtr);
 };
     PxBoundedData.prototype['set_data'] = PxBoundedData.prototype.set_data = /** @suppress {undefinedVars, duplicate} @this{Object} */function(arg0) {
   var self = this.ptr;
@@ -12756,7 +12832,6 @@ Module['PxTolerancesScale'] = PxTolerancesScale;
 /** @suppress {undefinedVars, duplicate} @this{Object} */function PxTransform(p0, q0) {
   if (p0 && typeof p0 === 'object') p0 = p0.ptr;
   if (q0 && typeof q0 === 'object') q0 = q0.ptr;
-  if (p0 === undefined) { this.ptr = _emscripten_bind_PxTransform_PxTransform_0(); getCache(PxTransform)[this.ptr] = this;return }
   if (q0 === undefined) { this.ptr = _emscripten_bind_PxTransform_PxTransform_1(p0); getCache(PxTransform)[this.ptr] = this;return }
   this.ptr = _emscripten_bind_PxTransform_PxTransform_2(p0, q0);
   getCache(PxTransform)[this.ptr] = this;
@@ -12893,55 +12968,9 @@ Module['PxDefaultCpuDispatcher'] = PxDefaultCpuDispatcher;
   var self = this.ptr;
   _emscripten_bind_PxDefaultCpuDispatcher___destroy___0(self);
 };
-// PxJoint
-/** @suppress {undefinedVars, duplicate} @this{Object} */function PxJoint() { throw "cannot construct a PxJoint, no constructor in IDL" }
-PxJoint.prototype = Object.create(PxBase.prototype);
-PxJoint.prototype.constructor = PxJoint;
-PxJoint.prototype.__class__ = PxJoint;
-PxJoint.__cache__ = {};
-Module['PxJoint'] = PxJoint;
-
-PxJoint.prototype['release'] = PxJoint.prototype.release = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  _emscripten_bind_PxJoint_release_0(self);
-};;
-
-PxJoint.prototype['getConcreteTypeName'] = PxJoint.prototype.getConcreteTypeName = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return UTF8ToString(_emscripten_bind_PxJoint_getConcreteTypeName_0(self));
-};;
-
-PxJoint.prototype['getConcreteType'] = PxJoint.prototype.getConcreteType = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return _emscripten_bind_PxJoint_getConcreteType_0(self);
-};;
-
-PxJoint.prototype['setBaseFlag'] = PxJoint.prototype.setBaseFlag = /** @suppress {undefinedVars, duplicate} @this{Object} */function(flag, value) {
-  var self = this.ptr;
-  if (flag && typeof flag === 'object') flag = flag.ptr;
-  if (value && typeof value === 'object') value = value.ptr;
-  _emscripten_bind_PxJoint_setBaseFlag_2(self, flag, value);
-};;
-
-PxJoint.prototype['setBaseFlags'] = PxJoint.prototype.setBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function(inFlags) {
-  var self = this.ptr;
-  if (inFlags && typeof inFlags === 'object') inFlags = inFlags.ptr;
-  _emscripten_bind_PxJoint_setBaseFlags_1(self, inFlags);
-};;
-
-PxJoint.prototype['getBaseFlags'] = PxJoint.prototype.getBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_PxJoint_getBaseFlags_0(self), PxBaseFlags);
-};;
-
-PxJoint.prototype['isReleasable'] = PxJoint.prototype.isReleasable = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
-  var self = this.ptr;
-  return !!(_emscripten_bind_PxJoint_isReleasable_0(self));
-};;
-
 // PxRevoluteJoint
 /** @suppress {undefinedVars, duplicate} @this{Object} */function PxRevoluteJoint() { throw "cannot construct a PxRevoluteJoint, no constructor in IDL" }
-PxRevoluteJoint.prototype = Object.create(WrapperObject.prototype);
+PxRevoluteJoint.prototype = Object.create(PxJoint.prototype);
 PxRevoluteJoint.prototype.constructor = PxRevoluteJoint;
 PxRevoluteJoint.prototype.__class__ = PxRevoluteJoint;
 PxRevoluteJoint.__cache__ = {};
@@ -12993,6 +13022,44 @@ PxRevoluteJoint.prototype['getRevoluteJointFlags'] = PxRevoluteJoint.prototype.g
   return wrapPointer(_emscripten_bind_PxRevoluteJoint_getRevoluteJointFlags_0(self), PxRevoluteJointFlags);
 };;
 
+PxRevoluteJoint.prototype['release'] = PxRevoluteJoint.prototype.release = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_PxRevoluteJoint_release_0(self);
+};;
+
+PxRevoluteJoint.prototype['getConcreteTypeName'] = PxRevoluteJoint.prototype.getConcreteTypeName = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return UTF8ToString(_emscripten_bind_PxRevoluteJoint_getConcreteTypeName_0(self));
+};;
+
+PxRevoluteJoint.prototype['getConcreteType'] = PxRevoluteJoint.prototype.getConcreteType = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return _emscripten_bind_PxRevoluteJoint_getConcreteType_0(self);
+};;
+
+PxRevoluteJoint.prototype['setBaseFlag'] = PxRevoluteJoint.prototype.setBaseFlag = /** @suppress {undefinedVars, duplicate} @this{Object} */function(flag, value) {
+  var self = this.ptr;
+  if (flag && typeof flag === 'object') flag = flag.ptr;
+  if (value && typeof value === 'object') value = value.ptr;
+  _emscripten_bind_PxRevoluteJoint_setBaseFlag_2(self, flag, value);
+};;
+
+PxRevoluteJoint.prototype['setBaseFlags'] = PxRevoluteJoint.prototype.setBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function(inFlags) {
+  var self = this.ptr;
+  if (inFlags && typeof inFlags === 'object') inFlags = inFlags.ptr;
+  _emscripten_bind_PxRevoluteJoint_setBaseFlags_1(self, inFlags);
+};;
+
+PxRevoluteJoint.prototype['getBaseFlags'] = PxRevoluteJoint.prototype.getBaseFlags = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_PxRevoluteJoint_getBaseFlags_0(self), PxBaseFlags);
+};;
+
+PxRevoluteJoint.prototype['isReleasable'] = PxRevoluteJoint.prototype.isReleasable = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_PxRevoluteJoint_isReleasable_0(self));
+};;
+
   PxRevoluteJoint.prototype['__destroy__'] = PxRevoluteJoint.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
   _emscripten_bind_PxRevoluteJoint___destroy___0(self);
@@ -13030,6 +13097,57 @@ PxRevoluteJointFlags.prototype['clear'] = PxRevoluteJointFlags.prototype.clear =
   PxRevoluteJointFlags.prototype['__destroy__'] = PxRevoluteJointFlags.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
   var self = this.ptr;
   _emscripten_bind_PxRevoluteJointFlags___destroy___0(self);
+};
+// PxMaterialPtr
+/** @suppress {undefinedVars, duplicate} @this{Object} */function PxMaterialPtr() { throw "cannot construct a PxMaterialPtr, no constructor in IDL" }
+PxMaterialPtr.prototype = Object.create(WrapperObject.prototype);
+PxMaterialPtr.prototype.constructor = PxMaterialPtr;
+PxMaterialPtr.prototype.__class__ = PxMaterialPtr;
+PxMaterialPtr.__cache__ = {};
+Module['PxMaterialPtr'] = PxMaterialPtr;
+
+  PxMaterialPtr.prototype['__destroy__'] = PxMaterialPtr.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_PxMaterialPtr___destroy___0(self);
+};
+// Vector_PxMaterial
+/** @suppress {undefinedVars, duplicate} @this{Object} */function Vector_PxMaterial(size) {
+  if (size && typeof size === 'object') size = size.ptr;
+  if (size === undefined) { this.ptr = _emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_0(); getCache(Vector_PxMaterial)[this.ptr] = this;return }
+  this.ptr = _emscripten_bind_Vector_PxMaterial_Vector_PxMaterial_1(size);
+  getCache(Vector_PxMaterial)[this.ptr] = this;
+};;
+Vector_PxMaterial.prototype = Object.create(WrapperObject.prototype);
+Vector_PxMaterial.prototype.constructor = Vector_PxMaterial;
+Vector_PxMaterial.prototype.__class__ = Vector_PxMaterial;
+Vector_PxMaterial.__cache__ = {};
+Module['Vector_PxMaterial'] = Vector_PxMaterial;
+
+Vector_PxMaterial.prototype['at'] = Vector_PxMaterial.prototype.at = /** @suppress {undefinedVars, duplicate} @this{Object} */function(index) {
+  var self = this.ptr;
+  if (index && typeof index === 'object') index = index.ptr;
+  return wrapPointer(_emscripten_bind_Vector_PxMaterial_at_1(self, index), PxMaterial);
+};;
+
+Vector_PxMaterial.prototype['data'] = Vector_PxMaterial.prototype.data = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Vector_PxMaterial_data_0(self), PxMaterialPtr);
+};;
+
+Vector_PxMaterial.prototype['size'] = Vector_PxMaterial.prototype.size = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  return _emscripten_bind_Vector_PxMaterial_size_0(self);
+};;
+
+Vector_PxMaterial.prototype['push_back'] = Vector_PxMaterial.prototype.push_back = /** @suppress {undefinedVars, duplicate} @this{Object} */function(value) {
+  var self = this.ptr;
+  if (value && typeof value === 'object') value = value.ptr;
+  _emscripten_bind_Vector_PxMaterial_push_back_1(self, value);
+};;
+
+  Vector_PxMaterial.prototype['__destroy__'] = Vector_PxMaterial.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_Vector_PxMaterial___destroy___0(self);
 };
 // Vector_PxReal
 /** @suppress {undefinedVars, duplicate} @this{Object} */function Vector_PxReal(size) {
@@ -13343,6 +13461,18 @@ Vector_PxWheelQueryResult.prototype['push_back'] = Vector_PxWheelQueryResult.pro
   var self = this.ptr;
   _emscripten_bind_Vector_PxWheelQueryResult___destroy___0(self);
 };
+// PxVehicleWheelsPtr
+/** @suppress {undefinedVars, duplicate} @this{Object} */function PxVehicleWheelsPtr() { throw "cannot construct a PxVehicleWheelsPtr, no constructor in IDL" }
+PxVehicleWheelsPtr.prototype = Object.create(WrapperObject.prototype);
+PxVehicleWheelsPtr.prototype.constructor = PxVehicleWheelsPtr;
+PxVehicleWheelsPtr.prototype.__class__ = PxVehicleWheelsPtr;
+PxVehicleWheelsPtr.__cache__ = {};
+Module['PxVehicleWheelsPtr'] = PxVehicleWheelsPtr;
+
+  PxVehicleWheelsPtr.prototype['__destroy__'] = PxVehicleWheelsPtr.prototype.__destroy__ = /** @suppress {undefinedVars, duplicate} @this{Object} */function() {
+  var self = this.ptr;
+  _emscripten_bind_PxVehicleWheelsPtr___destroy___0(self);
+};
 // Vector_PxVehicleWheels
 /** @suppress {undefinedVars, duplicate} @this{Object} */function Vector_PxVehicleWheels(size) {
   if (size && typeof size === 'object') size = size.ptr;
@@ -13386,277 +13516,277 @@ Vector_PxVehicleWheels.prototype['push_back'] = Vector_PxVehicleWheels.prototype
   function setupEnums() {
     
 
-    // physx_PxActorFlag
+    // PxActorFlagEnum
 
-    Module['eVISUALIZATION'] = _emscripten_enum_physx_PxActorFlag_eVISUALIZATION();
+    Module['eVISUALIZATION'] = _emscripten_enum_PxActorFlagEnum_eVISUALIZATION();
 
-    Module['eDISABLE_GRAVITY'] = _emscripten_enum_physx_PxActorFlag_eDISABLE_GRAVITY();
+    Module['eDISABLE_GRAVITY'] = _emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY();
 
-    Module['eSEND_SLEEP_NOTIFIES'] = _emscripten_enum_physx_PxActorFlag_eSEND_SLEEP_NOTIFIES();
+    Module['eSEND_SLEEP_NOTIFIES'] = _emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES();
 
-    Module['eDISABLE_SIMULATION'] = _emscripten_enum_physx_PxActorFlag_eDISABLE_SIMULATION();
-
-    
-
-    // physx_PxActorType
-
-    Module['eRIGID_STATIC'] = _emscripten_enum_physx_PxActorType_eRIGID_STATIC();
-
-    Module['eRIGID_DYNAMIC'] = _emscripten_enum_physx_PxActorType_eRIGID_DYNAMIC();
-
-    Module['eARTICULATION_LINK'] = _emscripten_enum_physx_PxActorType_eARTICULATION_LINK();
-
-    Module['eACTOR_COUNT'] = _emscripten_enum_physx_PxActorType_eACTOR_COUNT();
-
-    Module['eACTOR_FORCE_DWORD'] = _emscripten_enum_physx_PxActorType_eACTOR_FORCE_DWORD();
+    Module['eDISABLE_SIMULATION'] = _emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION();
 
     
 
-    // physx_PxForceMode
+    // PxActorTypeEnum
 
-    Module['eFORCE'] = _emscripten_enum_physx_PxForceMode_eFORCE();
+    Module['eRIGID_STATIC'] = _emscripten_enum_PxActorTypeEnum_eRIGID_STATIC();
 
-    Module['eIMPULSE'] = _emscripten_enum_physx_PxForceMode_eIMPULSE();
+    Module['eRIGID_DYNAMIC'] = _emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC();
 
-    Module['eVELOCITY_CHANGE'] = _emscripten_enum_physx_PxForceMode_eVELOCITY_CHANGE();
+    Module['eARTICULATION_LINK'] = _emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK();
 
-    Module['eACCELERATION'] = _emscripten_enum_physx_PxForceMode_eACCELERATION();
+    Module['eACTOR_COUNT'] = _emscripten_enum_PxActorTypeEnum_eACTOR_COUNT();
 
-    
-
-    // physx_PxHitFlag
-
-    Module['ePOSITION'] = _emscripten_enum_physx_PxHitFlag_ePOSITION();
-
-    Module['eNORMAL'] = _emscripten_enum_physx_PxHitFlag_eNORMAL();
-
-    Module['eUV'] = _emscripten_enum_physx_PxHitFlag_eUV();
-
-    Module['eASSUME_NO_INITIAL_OVERLAP'] = _emscripten_enum_physx_PxHitFlag_eASSUME_NO_INITIAL_OVERLAP();
-
-    Module['eMESH_MULTIPLE'] = _emscripten_enum_physx_PxHitFlag_eMESH_MULTIPLE();
-
-    Module['eMESH_ANY'] = _emscripten_enum_physx_PxHitFlag_eMESH_ANY();
-
-    Module['eMESH_BOTH_SIDES'] = _emscripten_enum_physx_PxHitFlag_eMESH_BOTH_SIDES();
-
-    Module['ePRECISE_SWEEP'] = _emscripten_enum_physx_PxHitFlag_ePRECISE_SWEEP();
-
-    Module['eMTD'] = _emscripten_enum_physx_PxHitFlag_eMTD();
-
-    Module['eFACE_INDEX'] = _emscripten_enum_physx_PxHitFlag_eFACE_INDEX();
-
-    Module['eDEFAULT'] = _emscripten_enum_physx_PxHitFlag_eDEFAULT();
-
-    Module['eMODIFIABLE_FLAGS'] = _emscripten_enum_physx_PxHitFlag_eMODIFIABLE_FLAGS();
+    Module['eACTOR_FORCE_DWORD'] = _emscripten_enum_PxActorTypeEnum_eACTOR_FORCE_DWORD();
 
     
 
-    // physx_PxRigidBodyFlag
+    // PxForceModeEnum
 
-    Module['eKINEMATIC'] = _emscripten_enum_physx_PxRigidBodyFlag_eKINEMATIC();
+    Module['eFORCE'] = _emscripten_enum_PxForceModeEnum_eFORCE();
 
-    Module['eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES'] = _emscripten_enum_physx_PxRigidBodyFlag_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES();
+    Module['eIMPULSE'] = _emscripten_enum_PxForceModeEnum_eIMPULSE();
 
-    Module['eENABLE_CCD'] = _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD();
+    Module['eVELOCITY_CHANGE'] = _emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE();
 
-    Module['eENABLE_CCD_FRICTION'] = _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_FRICTION();
-
-    Module['eENABLE_POSE_INTEGRATION_PREVIEW'] = _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_POSE_INTEGRATION_PREVIEW();
-
-    Module['eENABLE_SPECULATIVE_CCD'] = _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_SPECULATIVE_CCD();
-
-    Module['eENABLE_CCD_MAX_CONTACT_IMPULSE'] = _emscripten_enum_physx_PxRigidBodyFlag_eENABLE_CCD_MAX_CONTACT_IMPULSE();
-
-    Module['eRETAIN_ACCELERATIONS'] = _emscripten_enum_physx_PxRigidBodyFlag_eRETAIN_ACCELERATIONS();
+    Module['eACCELERATION'] = _emscripten_enum_PxForceModeEnum_eACCELERATION();
 
     
 
-    // physx_PxRigidDynamicLockFlag
+    // PxHitFlagEnum
 
-    Module['eLOCK_LINEAR_X'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_X();
+    Module['ePOSITION'] = _emscripten_enum_PxHitFlagEnum_ePOSITION();
 
-    Module['eLOCK_LINEAR_Y'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Y();
+    Module['eNORMAL'] = _emscripten_enum_PxHitFlagEnum_eNORMAL();
 
-    Module['eLOCK_LINEAR_Z'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_LINEAR_Z();
+    Module['eUV'] = _emscripten_enum_PxHitFlagEnum_eUV();
 
-    Module['eLOCK_ANGULAR_X'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_X();
+    Module['eASSUME_NO_INITIAL_OVERLAP'] = _emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP();
 
-    Module['eLOCK_ANGULAR_Y'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Y();
+    Module['eMESH_MULTIPLE'] = _emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE();
 
-    Module['eLOCK_ANGULAR_Z'] = _emscripten_enum_physx_PxRigidDynamicLockFlag_eLOCK_ANGULAR_Z();
+    Module['eMESH_ANY'] = _emscripten_enum_PxHitFlagEnum_eMESH_ANY();
 
-    
+    Module['eMESH_BOTH_SIDES'] = _emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES();
 
-    // physx_PxSceneFlag
+    Module['ePRECISE_SWEEP'] = _emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP();
 
-    Module['eENABLE_ACTIVE_ACTORS'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_ACTIVE_ACTORS();
+    Module['eMTD'] = _emscripten_enum_PxHitFlagEnum_eMTD();
 
-    Module['eENABLE_CCD'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_CCD();
+    Module['eFACE_INDEX'] = _emscripten_enum_PxHitFlagEnum_eFACE_INDEX();
 
-    Module['eDISABLE_CCD_RESWEEP'] = _emscripten_enum_physx_PxSceneFlag_eDISABLE_CCD_RESWEEP();
+    Module['eDEFAULT'] = _emscripten_enum_PxHitFlagEnum_eDEFAULT();
 
-    Module['eADAPTIVE_FORCE'] = _emscripten_enum_physx_PxSceneFlag_eADAPTIVE_FORCE();
-
-    Module['eENABLE_PCM'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_PCM();
-
-    Module['eDISABLE_CONTACT_REPORT_BUFFER_RESIZE'] = _emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE();
-
-    Module['eDISABLE_CONTACT_CACHE'] = _emscripten_enum_physx_PxSceneFlag_eDISABLE_CONTACT_CACHE();
-
-    Module['eREQUIRE_RW_LOCK'] = _emscripten_enum_physx_PxSceneFlag_eREQUIRE_RW_LOCK();
-
-    Module['eENABLE_STABILIZATION'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_STABILIZATION();
-
-    Module['eENABLE_AVERAGE_POINT'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_AVERAGE_POINT();
-
-    Module['eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS'] = _emscripten_enum_physx_PxSceneFlag_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS();
-
-    Module['eENABLE_GPU_DYNAMICS'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_GPU_DYNAMICS();
-
-    Module['eENABLE_ENHANCED_DETERMINISM'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_ENHANCED_DETERMINISM();
-
-    Module['eENABLE_FRICTION_EVERY_ITERATION'] = _emscripten_enum_physx_PxSceneFlag_eENABLE_FRICTION_EVERY_ITERATION();
-
-    Module['eMUTABLE_FLAGS'] = _emscripten_enum_physx_PxSceneFlag_eMUTABLE_FLAGS();
+    Module['eMODIFIABLE_FLAGS'] = _emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS();
 
     
 
-    // physx_PxShapeFlag
+    // PxRigidBodyFlagEnum
 
-    Module['eSIMULATION_SHAPE'] = _emscripten_enum_physx_PxShapeFlag_eSIMULATION_SHAPE();
+    Module['eKINEMATIC'] = _emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC();
 
-    Module['eSCENE_QUERY_SHAPE'] = _emscripten_enum_physx_PxShapeFlag_eSCENE_QUERY_SHAPE();
+    Module['eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES'] = _emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES();
 
-    Module['eTRIGGER_SHAPE'] = _emscripten_enum_physx_PxShapeFlag_eTRIGGER_SHAPE();
+    Module['eENABLE_CCD'] = _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD();
 
-    Module['eVISUALIZATION'] = _emscripten_enum_physx_PxShapeFlag_eVISUALIZATION();
+    Module['eENABLE_CCD_FRICTION'] = _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION();
 
-    
+    Module['eENABLE_POSE_INTEGRATION_PREVIEW'] = _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW();
 
-    // physx_PxVehicleClutchAccuracyMode
+    Module['eENABLE_SPECULATIVE_CCD'] = _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD();
 
-    Module['eESTIMATE'] = _emscripten_enum_physx_PxVehicleClutchAccuracyMode_eESTIMATE();
+    Module['eENABLE_CCD_MAX_CONTACT_IMPULSE'] = _emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE();
 
-    Module['eBEST_POSSIBLE'] = _emscripten_enum_physx_PxVehicleClutchAccuracyMode_eBEST_POSSIBLE();
-
-    
-
-    // physx_PxVehicleDifferential4WData
-
-    Module['eDIFF_TYPE_LS_4WD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_4WD();
-
-    Module['eDIFF_TYPE_LS_FRONTWD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_FRONTWD();
-
-    Module['eDIFF_TYPE_LS_REARWD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_REARWD();
-
-    Module['eDIFF_TYPE_OPEN_4WD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_4WD();
-
-    Module['eDIFF_TYPE_OPEN_FRONTWD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_FRONTWD();
-
-    Module['eDIFF_TYPE_OPEN_REARWD'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_REARWD();
-
-    Module['eMAX_NB_DIFF_TYPES'] = _emscripten_enum_physx_PxVehicleDifferential4WData_eMAX_NB_DIFF_TYPES();
+    Module['eRETAIN_ACCELERATIONS'] = _emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS();
 
     
 
-    // physx_PxVehicleDrive4WControl
+    // PxRigidDynamicLockFlagEnum
 
-    Module['eANALOG_INPUT_ACCEL'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_ACCEL();
+    Module['eLOCK_LINEAR_X'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X();
 
-    Module['eANALOG_INPUT_BRAKE'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_BRAKE();
+    Module['eLOCK_LINEAR_Y'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y();
 
-    Module['eANALOG_INPUT_HANDBRAKE'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_HANDBRAKE();
+    Module['eLOCK_LINEAR_Z'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z();
 
-    Module['eANALOG_INPUT_STEER_LEFT'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_LEFT();
+    Module['eLOCK_ANGULAR_X'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X();
 
-    Module['eANALOG_INPUT_STEER_RIGHT'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_RIGHT();
+    Module['eLOCK_ANGULAR_Y'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y();
 
-    Module['eMAX_NB_DRIVE4W_ANALOG_INPUTS'] = _emscripten_enum_physx_PxVehicleDrive4WControl_eMAX_NB_DRIVE4W_ANALOG_INPUTS();
-
-    
-
-    // physx_PxVehicleGear
-
-    Module['eREVERSE'] = _emscripten_enum_physx_PxVehicleGear_eREVERSE();
-
-    Module['eNEUTRAL'] = _emscripten_enum_physx_PxVehicleGear_eNEUTRAL();
-
-    Module['eFIRST'] = _emscripten_enum_physx_PxVehicleGear_eFIRST();
-
-    Module['eSECOND'] = _emscripten_enum_physx_PxVehicleGear_eSECOND();
-
-    Module['eTHIRD'] = _emscripten_enum_physx_PxVehicleGear_eTHIRD();
-
-    Module['eFOURTH'] = _emscripten_enum_physx_PxVehicleGear_eFOURTH();
-
-    Module['eFIFTH'] = _emscripten_enum_physx_PxVehicleGear_eFIFTH();
-
-    Module['eSIXTH'] = _emscripten_enum_physx_PxVehicleGear_eSIXTH();
-
-    Module['eSEVENTH'] = _emscripten_enum_physx_PxVehicleGear_eSEVENTH();
-
-    Module['eEIGHTH'] = _emscripten_enum_physx_PxVehicleGear_eEIGHTH();
-
-    Module['eNINTH'] = _emscripten_enum_physx_PxVehicleGear_eNINTH();
-
-    Module['eTENTH'] = _emscripten_enum_physx_PxVehicleGear_eTENTH();
-
-    Module['eELEVENTH'] = _emscripten_enum_physx_PxVehicleGear_eELEVENTH();
-
-    Module['eTWELFTH'] = _emscripten_enum_physx_PxVehicleGear_eTWELFTH();
-
-    Module['eTHIRTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eTHIRTEENTH();
-
-    Module['eFOURTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eFOURTEENTH();
-
-    Module['eFIFTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eFIFTEENTH();
-
-    Module['eSIXTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eSIXTEENTH();
-
-    Module['eSEVENTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eSEVENTEENTH();
-
-    Module['eEIGHTEENTH'] = _emscripten_enum_physx_PxVehicleGear_eEIGHTEENTH();
-
-    Module['eNINETEENTH'] = _emscripten_enum_physx_PxVehicleGear_eNINETEENTH();
-
-    Module['eTWENTIETH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTIETH();
-
-    Module['eTWENTYFIRST'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYFIRST();
-
-    Module['eTWENTYSECOND'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYSECOND();
-
-    Module['eTWENTYTHIRD'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYTHIRD();
-
-    Module['eTWENTYFOURTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYFOURTH();
-
-    Module['eTWENTYFIFTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYFIFTH();
-
-    Module['eTWENTYSIXTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYSIXTH();
-
-    Module['eTWENTYSEVENTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYSEVENTH();
-
-    Module['eTWENTYEIGHTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYEIGHTH();
-
-    Module['eTWENTYNINTH'] = _emscripten_enum_physx_PxVehicleGear_eTWENTYNINTH();
-
-    Module['eTHIRTIETH'] = _emscripten_enum_physx_PxVehicleGear_eTHIRTIETH();
-
-    Module['eGEARSRATIO_COUNT'] = _emscripten_enum_physx_PxVehicleGear_eGEARSRATIO_COUNT();
+    Module['eLOCK_ANGULAR_Z'] = _emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z();
 
     
 
-    // physx_PxVehicleUpdateMode
+    // PxSceneFlagEnum
 
-    Module['eVELOCITY_CHANGE'] = _emscripten_enum_physx_PxVehicleUpdateMode_eVELOCITY_CHANGE();
+    Module['eENABLE_ACTIVE_ACTORS'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS();
 
-    Module['eACCELERATION'] = _emscripten_enum_physx_PxVehicleUpdateMode_eACCELERATION();
+    Module['eENABLE_CCD'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_CCD();
+
+    Module['eDISABLE_CCD_RESWEEP'] = _emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP();
+
+    Module['eADAPTIVE_FORCE'] = _emscripten_enum_PxSceneFlagEnum_eADAPTIVE_FORCE();
+
+    Module['eENABLE_PCM'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_PCM();
+
+    Module['eDISABLE_CONTACT_REPORT_BUFFER_RESIZE'] = _emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE();
+
+    Module['eDISABLE_CONTACT_CACHE'] = _emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE();
+
+    Module['eREQUIRE_RW_LOCK'] = _emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK();
+
+    Module['eENABLE_STABILIZATION'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION();
+
+    Module['eENABLE_AVERAGE_POINT'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT();
+
+    Module['eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS'] = _emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS();
+
+    Module['eENABLE_GPU_DYNAMICS'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS();
+
+    Module['eENABLE_ENHANCED_DETERMINISM'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM();
+
+    Module['eENABLE_FRICTION_EVERY_ITERATION'] = _emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION();
+
+    Module['eMUTABLE_FLAGS'] = _emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS();
 
     
 
-    // physx_PxVehicleWheelsSimFlag
+    // PxShapeFlagEnum
 
-    Module['eLIMIT_SUSPENSION_EXPANSION_VELOCITY'] = _emscripten_enum_physx_PxVehicleWheelsSimFlag_eLIMIT_SUSPENSION_EXPANSION_VELOCITY();
+    Module['eSIMULATION_SHAPE'] = _emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE();
+
+    Module['eSCENE_QUERY_SHAPE'] = _emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE();
+
+    Module['eTRIGGER_SHAPE'] = _emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE();
+
+    Module['eVISUALIZATION'] = _emscripten_enum_PxShapeFlagEnum_eVISUALIZATION();
+
+    
+
+    // PxVehicleClutchAccuracyModeEnum
+
+    Module['eESTIMATE'] = _emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE();
+
+    Module['eBEST_POSSIBLE'] = _emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE();
+
+    
+
+    // PxVehicleDifferential4WDataEnum
+
+    Module['eDIFF_TYPE_LS_4WD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD();
+
+    Module['eDIFF_TYPE_LS_FRONTWD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD();
+
+    Module['eDIFF_TYPE_LS_REARWD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD();
+
+    Module['eDIFF_TYPE_OPEN_4WD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD();
+
+    Module['eDIFF_TYPE_OPEN_FRONTWD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD();
+
+    Module['eDIFF_TYPE_OPEN_REARWD'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD();
+
+    Module['eMAX_NB_DIFF_TYPES'] = _emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES();
+
+    
+
+    // PxVehicleDrive4WControlEnum
+
+    Module['eANALOG_INPUT_ACCEL'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL();
+
+    Module['eANALOG_INPUT_BRAKE'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE();
+
+    Module['eANALOG_INPUT_HANDBRAKE'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE();
+
+    Module['eANALOG_INPUT_STEER_LEFT'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT();
+
+    Module['eANALOG_INPUT_STEER_RIGHT'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT();
+
+    Module['eMAX_NB_DRIVE4W_ANALOG_INPUTS'] = _emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS();
+
+    
+
+    // PxVehicleGearEnum
+
+    Module['eREVERSE'] = _emscripten_enum_PxVehicleGearEnum_eREVERSE();
+
+    Module['eNEUTRAL'] = _emscripten_enum_PxVehicleGearEnum_eNEUTRAL();
+
+    Module['eFIRST'] = _emscripten_enum_PxVehicleGearEnum_eFIRST();
+
+    Module['eSECOND'] = _emscripten_enum_PxVehicleGearEnum_eSECOND();
+
+    Module['eTHIRD'] = _emscripten_enum_PxVehicleGearEnum_eTHIRD();
+
+    Module['eFOURTH'] = _emscripten_enum_PxVehicleGearEnum_eFOURTH();
+
+    Module['eFIFTH'] = _emscripten_enum_PxVehicleGearEnum_eFIFTH();
+
+    Module['eSIXTH'] = _emscripten_enum_PxVehicleGearEnum_eSIXTH();
+
+    Module['eSEVENTH'] = _emscripten_enum_PxVehicleGearEnum_eSEVENTH();
+
+    Module['eEIGHTH'] = _emscripten_enum_PxVehicleGearEnum_eEIGHTH();
+
+    Module['eNINTH'] = _emscripten_enum_PxVehicleGearEnum_eNINTH();
+
+    Module['eTENTH'] = _emscripten_enum_PxVehicleGearEnum_eTENTH();
+
+    Module['eELEVENTH'] = _emscripten_enum_PxVehicleGearEnum_eELEVENTH();
+
+    Module['eTWELFTH'] = _emscripten_enum_PxVehicleGearEnum_eTWELFTH();
+
+    Module['eTHIRTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH();
+
+    Module['eFOURTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eFOURTEENTH();
+
+    Module['eFIFTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eFIFTEENTH();
+
+    Module['eSIXTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eSIXTEENTH();
+
+    Module['eSEVENTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH();
+
+    Module['eEIGHTEENTH'] = _emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH();
+
+    Module['eNINETEENTH'] = _emscripten_enum_PxVehicleGearEnum_eNINETEENTH();
+
+    Module['eTWENTIETH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTIETH();
+
+    Module['eTWENTYFIRST'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST();
+
+    Module['eTWENTYSECOND'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND();
+
+    Module['eTWENTYTHIRD'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD();
+
+    Module['eTWENTYFOURTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH();
+
+    Module['eTWENTYFIFTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH();
+
+    Module['eTWENTYSIXTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH();
+
+    Module['eTWENTYSEVENTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH();
+
+    Module['eTWENTYEIGHTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH();
+
+    Module['eTWENTYNINTH'] = _emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH();
+
+    Module['eTHIRTIETH'] = _emscripten_enum_PxVehicleGearEnum_eTHIRTIETH();
+
+    Module['eGEARSRATIO_COUNT'] = _emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT();
+
+    
+
+    // PxVehicleUpdateModeEnum
+
+    Module['eVELOCITY_CHANGE'] = _emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE();
+
+    Module['eACCELERATION'] = _emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION();
+
+    
+
+    // PxVehicleWheelsSimFlagEnum
+
+    Module['eLIMIT_SUSPENSION_EXPANSION_VELOCITY'] = _emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY();
 
     
 
@@ -13668,49 +13798,55 @@ Vector_PxVehicleWheels.prototype['push_back'] = Vector_PxVehicleWheels.prototype
 
     
 
-    // physx_PxConvexMeshGeometryFlag
+    // PxConvexMeshGeometryFlagEnum
 
-    Module['eTIGHT_BOUNDS'] = _emscripten_enum_physx_PxConvexMeshGeometryFlag_eTIGHT_BOUNDS();
-
-    
-
-    // physx_PxConvexFlag
-
-    Module['e16_BIT_INDICES'] = _emscripten_enum_physx_PxConvexFlag_e16_BIT_INDICES();
-
-    Module['eCOMPUTE_CONVEX'] = _emscripten_enum_physx_PxConvexFlag_eCOMPUTE_CONVEX();
-
-    Module['eCHECK_ZERO_AREA_TRIANGLES'] = _emscripten_enum_physx_PxConvexFlag_eCHECK_ZERO_AREA_TRIANGLES();
-
-    Module['eQUANTIZE_INPUT'] = _emscripten_enum_physx_PxConvexFlag_eQUANTIZE_INPUT();
-
-    Module['eDISABLE_MESH_VALIDATION'] = _emscripten_enum_physx_PxConvexFlag_eDISABLE_MESH_VALIDATION();
-
-    Module['ePLANE_SHIFTING'] = _emscripten_enum_physx_PxConvexFlag_ePLANE_SHIFTING();
-
-    Module['eFAST_INERTIA_COMPUTATION'] = _emscripten_enum_physx_PxConvexFlag_eFAST_INERTIA_COMPUTATION();
-
-    Module['eGPU_COMPATIBLE'] = _emscripten_enum_physx_PxConvexFlag_eGPU_COMPATIBLE();
-
-    Module['eSHIFT_VERTICES'] = _emscripten_enum_physx_PxConvexFlag_eSHIFT_VERTICES();
+    Module['eTIGHT_BOUNDS'] = _emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS();
 
     
 
-    // physx_PxBaseFlag
+    // PxConvexFlagEnum
 
-    Module['eOWNS_MEMORY'] = _emscripten_enum_physx_PxBaseFlag_eOWNS_MEMORY();
+    Module['e16_BIT_INDICES'] = _emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES();
 
-    Module['eIS_RELEASABLE'] = _emscripten_enum_physx_PxBaseFlag_eIS_RELEASABLE();
+    Module['eCOMPUTE_CONVEX'] = _emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX();
+
+    Module['eCHECK_ZERO_AREA_TRIANGLES'] = _emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES();
+
+    Module['eQUANTIZE_INPUT'] = _emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT();
+
+    Module['eDISABLE_MESH_VALIDATION'] = _emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION();
+
+    Module['ePLANE_SHIFTING'] = _emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING();
+
+    Module['eFAST_INERTIA_COMPUTATION'] = _emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION();
+
+    Module['eGPU_COMPATIBLE'] = _emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE();
+
+    Module['eSHIFT_VERTICES'] = _emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES();
 
     
 
-    // physx_PxRevoluteJointFlag
+    // PxBaseFlagEnum
 
-    Module['eLIMIT_ENABLED'] = _emscripten_enum_physx_PxRevoluteJointFlag_eLIMIT_ENABLED();
+    Module['eOWNS_MEMORY'] = _emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY();
 
-    Module['eDRIVE_ENABLED'] = _emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_ENABLED();
+    Module['eIS_RELEASABLE'] = _emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE();
 
-    Module['eDRIVE_FREESPIN'] = _emscripten_enum_physx_PxRevoluteJointFlag_eDRIVE_FREESPIN();
+    
+
+    // PxIDENTITYEnum
+
+    Module['PxIdentity'] = _emscripten_enum_PxIDENTITYEnum_PxIdentity();
+
+    
+
+    // PxRevoluteJointFlagEnum
+
+    Module['eLIMIT_ENABLED'] = _emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED();
+
+    Module['eDRIVE_ENABLED'] = _emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED();
+
+    Module['eDRIVE_FREESPIN'] = _emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN();
 
   }
   if (runtimeInitialized) setupEnums();

@@ -343,7 +343,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val world = physicsWorld ?: return
 
         val axle = RigidBody(CylinderShape(7f, 1f), 0f, staticBodyProps)
-        axle.setRotation(frame.getRotation(Mat3f()).rotate(90f, 0f, 0f))
+        axle.setRotation(frame.getRotation(Mat3f()).rotate(0f, -90f, 0f))
         axle.origin = frame.transform(MutableVec3f(origin))
         world.addRigidBody(axle)
         physMeshes.axles += axle
@@ -358,7 +358,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val motor = RevoluteJoint(axle, gear,
             Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 0f),
-            Vec3f.Y_AXIS, Vec3f.Z_AXIS)
+            Vec3f.X_AXIS, Vec3f.Z_AXIS)
         world.addJoint(motor)
         if (isDriven) {
             motorGearConstraint = motor
@@ -373,7 +373,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val toothWb = 1f * s
         val toothWt = 0.7f * s
         val gearShape = MultiShape()
-        gearShape.addShape(CylinderShape(3f, gearR), Mat4f().rotate(90f, 0f, 0f))
+        gearShape.addShape(CylinderShape(3f, gearR), Mat4f().rotate(0f, 90f, 0f))
         val toothPts = listOf(
             Vec3f(toothWt, gearR + toothH, -toothBt), Vec3f(toothWt, gearR + toothH, toothBt),
             Vec3f(-toothWt, gearR + toothH, -toothBt), Vec3f(-toothWt, gearR + toothH, toothBt),

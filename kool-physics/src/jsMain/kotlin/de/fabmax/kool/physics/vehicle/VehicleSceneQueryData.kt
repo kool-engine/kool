@@ -5,7 +5,7 @@ import physx.*
 
 class VehicleSceneQueryData(maxNumVehicles: Int, numWheelsPerVehicle: Int,
                             maxNumHitPointsPerWheel: Int, numVehiclesInBatch: Int = 1,
-                            val preFilterShader: PxBatchQueryPreFilterShader? = PhysX.Px.DefaultWheelSceneQueryPreFilterBlocking(),
+                            val preFilterShader: PxBatchQueryPreFilterShader? = Physics.Px.DefaultWheelSceneQueryPreFilterBlocking(),
                             val postFilterShader: PxBatchQueryPostFilterShader? = null) {
 
     val numQueriesPerBatch = numVehiclesInBatch * numWheelsPerVehicle
@@ -23,15 +23,15 @@ class VehicleSceneQueryData(maxNumVehicles: Int, numWheelsPerVehicle: Int,
         val maxNumWheels = maxNumVehicles * numWheelsPerVehicle
         val maxNumHitPoints = maxNumWheels * maxNumHitPointsPerWheel
 
-        raycastResults = PhysX.Vector_PxRaycastQueryResult(maxNumWheels)
-        raycastHitBuffer = PhysX.Vector_PxRaycastHit(maxNumHitPoints)
-        sweepResults = PhysX.Vector_PxSweepQueryResult(maxNumWheels)
-        sweepHitBuffer = PhysX.Vector_PxSweepHit(maxNumHitPoints)
+        raycastResults = Vector_PxRaycastQueryResult(maxNumWheels)
+        raycastHitBuffer = Vector_PxRaycastHit(maxNumHitPoints)
+        sweepResults = Vector_PxSweepQueryResult(maxNumWheels)
+        sweepHitBuffer = Vector_PxSweepHit(maxNumHitPoints)
     }
 
     fun setupBatchedSceneQuery(scene: PxScene): PxBatchQuery {
         val maxNumHitResultsInBatch = numQueriesPerBatch * numHitResultsPerQuery
-        val sqDesc = PhysX.PxBatchQueryDesc(numQueriesPerBatch, numHitResultsPerQuery, 0)
+        val sqDesc = PxBatchQueryDesc(numQueriesPerBatch, numHitResultsPerQuery, 0)
 
         sqDesc.queryMemory.userRaycastResultBuffer = raycastResults.data()
         sqDesc.queryMemory.userRaycastTouchBuffer = raycastHitBuffer.data()
@@ -41,8 +41,8 @@ class VehicleSceneQueryData(maxNumVehicles: Int, numWheelsPerVehicle: Int,
         sqDesc.queryMemory.userSweepTouchBuffer = sweepHitBuffer.data()
         sqDesc.queryMemory.sweepTouchBufferSize = maxNumHitResultsInBatch
 
-        sqDesc.preFilterShader = preFilterShader
-        sqDesc.postFilterShader = postFilterShader
+        preFilterShader?.let { sqDesc.preFilterShader = it }
+        postFilterShader?.let { sqDesc.postFilterShader = it }
 
         return scene.createBatchQuery(sqDesc)
     }

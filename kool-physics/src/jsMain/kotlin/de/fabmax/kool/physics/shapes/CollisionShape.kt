@@ -28,11 +28,11 @@ actual interface CollisionShape {
     }
 
     fun setFilterDatas(shape: PxShape, bodyProps: RigidBodyProperties) {
-        val pxFilterData = PhysX.PxFilterData()
+        val pxFilterData = PxFilterData()
         bodyProps.simFilterData.toPxFilterData(pxFilterData)
         shape.setSimulationFilterData(pxFilterData)
         bodyProps.queryFilterData.toPxFilterData(pxFilterData)
         shape.setQueryFilterData(pxFilterData)
-        PhysX.destroy(pxFilterData)
+        PhysxJsLoader.destroy(pxFilterData)
     }
 }

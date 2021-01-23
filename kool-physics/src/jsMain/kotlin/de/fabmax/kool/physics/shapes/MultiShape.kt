@@ -3,8 +3,12 @@ package de.fabmax.kool.physics.shapes
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.physics.RigidBodyProperties
+import de.fabmax.kool.physics.toPxTransform
 import de.fabmax.kool.util.BoundingBox
-import physx.*
+import physx.PxMaterial
+import physx.PxRigidActor
+import physx.PxShape
+import physx.PxShapeFlags
 
 actual class MultiShape actual constructor() : CommonMultiShape(), CollisionShape {
 

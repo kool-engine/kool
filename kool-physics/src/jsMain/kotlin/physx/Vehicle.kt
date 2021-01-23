@@ -1,4 +1,7 @@
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName")
+/*
+ * Generated from WebIDL by webidl-util
+ */
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "unused")
 
 package physx
 
@@ -6,11 +9,9 @@ external interface PxVehicleTopLevelFunctions {
     fun InitVehicleSDK(physics: PxPhysics): Boolean
     fun PxVehicleComputeSprungMasses(nbSprungMasses: Int, sprungMassCoordinates: PxVec3, centreOfMass: PxVec3, totalMass: Float, gravityDirection: Int, sprungMasses: PxRealPtr)
     fun PxVehicleSuspensionRaycasts(batchQuery: PxBatchQuery, vehicles: Vector_PxVehicleWheels, nbSceneQueryResults: Int, sceneQueryResults: PxRaycastQueryResult)
-    fun PxVehicleUpdates(timestep: Float, gravity: PxVec3, vehicleDrivableSurfaceToTireFrictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs,
-                         vehicles: Vector_PxVehicleWheels, vehicleWheelQueryResults: PxVehicleWheelQueryResult)
+    fun PxVehicleUpdates(timestep: Float, gravity: PxVec3, vehicleDrivableSurfaceToTireFrictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs, vehicles: Vector_PxVehicleWheels, vehicleWheelQueryResults: PxVehicleWheelQueryResult)
     fun VehicleSetBasisVectors(up: PxVec3, forward: PxVec3)
-    fun VehicleSetUpdateMode(vehicleUpdateMode: Int) // physx_PxVehicleUpdateMode
-
+    fun VehicleSetUpdateMode(vehicleUpdateMode: Int)
     fun PxVehicleTireData_getFrictionVsSlipGraph(tireData: PxVehicleTireData, m: Int, n: Int): Float
     fun PxVehicleTireData_setFrictionVsSlipGraph(tireData: PxVehicleTireData, m: Int, n: Int, value: Float)
 }
@@ -21,26 +22,35 @@ external interface PxVehicleAckermannGeometryData {
     var mRearWidth: Float
     var mAxleSeparation: Float
 }
+fun PxVehicleAckermannGeometryData(): PxVehicleAckermannGeometryData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleAckermannGeometryData()")
+}
 
 external interface PxVehicleAntiRollBarData {
     var mWheel0: Int
     var mWheel1: Int
     var mStiffness: Float
 }
+fun PxVehicleAntiRollBarData(): PxVehicleAntiRollBarData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleAntiRollBarData()")
+}
 
 external interface PxVehicleAutoBoxData {
+    var mUpRatios: Array<Float>
+    var mDownRatios: Array<Float>
+
     fun setLatency(latency: Float)
     fun getLatency(): Float
-    fun getUpRatios(a: Int): Float          // physx_PxVehicleGear
-    fun setUpRatios(a: Int, ratio: Float)   // physx_PxVehicleGear
-    fun getDownRatios(a: Int): Float        // physx_PxVehicleGear
-    fun setDownRatios(a: Int, ratio: Float) // physx_PxVehicleGear
-
-    fun get_mUpRatios(index: Int): Float
-    fun set_mUpRatios(index: Int, value: Float): Float
-
-    fun get_mDownRatios(index: Int): Float
-    fun set_mDownRatios(index: Int, value: Float): Float
+    fun getUpRatios(a: Int): Float
+    fun setUpRatios(a: Int, ratio: Float)
+    fun getDownRatios(a: Int): Float
+    fun setDownRatios(a: Int, ratio: Float)
+}
+fun PxVehicleAutoBoxData(): PxVehicleAutoBoxData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleAutoBoxData()")
 }
 
 external interface PxVehicleChassisData {
@@ -48,16 +58,19 @@ external interface PxVehicleChassisData {
     var mMass: Float
     var mCMOffset: PxVec3
 }
-
-object physx_PxVehicleClutchAccuracyMode {
-    val eESTIMATE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleClutchAccuracyMode_eESTIMATE()
-    val eBEST_POSSIBLE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleClutchAccuracyMode_eBEST_POSSIBLE()
+fun PxVehicleChassisData(): PxVehicleChassisData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleChassisData()")
 }
 
 external interface PxVehicleClutchData {
     var mStrength: Float
     var mAccuracyMode: Int
     var mEstimateIterations: Int
+}
+fun PxVehicleClutchData(): PxVehicleClutchData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleClutchData()")
 }
 
 external interface PxVehicleDifferential4WData {
@@ -67,21 +80,16 @@ external interface PxVehicleDifferential4WData {
     var mCentreBias: Float
     var mFrontBias: Float
     var mRearBias: Float
-    var mType: Int // physx_PxVehicleDifferential4WData
+    var mType: Int
 }
-
-object physx_PxVehicleDifferential4WData {
-    val eDIFF_TYPE_LS_4WD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_4WD()
-    val eDIFF_TYPE_LS_FRONTWD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_FRONTWD()
-    val eDIFF_TYPE_LS_REARWD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_LS_REARWD()
-    val eDIFF_TYPE_OPEN_4WD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_4WD()
-    val eDIFF_TYPE_OPEN_FRONTWD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_FRONTWD()
-    val eDIFF_TYPE_OPEN_REARWD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eDIFF_TYPE_OPEN_REARWD()
-    val eMAX_NB_DIFF_TYPES: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDifferential4WData_eMAX_NB_DIFF_TYPES()
+fun PxVehicleDifferential4WData(): PxVehicleDifferential4WData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleDifferential4WData()")
 }
 
 external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
-    fun setup(nbTireTypes: Int, nbSurfaceTypes: Int, drivableSurfaceMaterials: Array<PxMaterial>, drivableSurfaceTypes: PxVehicleDrivableSurfaceType)
+    fun allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs
+    fun setup(nbTireTypes: Int, nbSurfaceTypes: Int, drivableSurfaceMaterials: PxMaterialPtr, drivableSurfaceTypes: PxVehicleDrivableSurfaceType)
     fun release()
     fun setTypePairFriction(surfaceType: Int, tireType: Int, value: Float)
     fun getTypePairFriction(surfaceType: Int, tireType: Int): Float
@@ -92,29 +100,26 @@ external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
 external interface PxVehicleDrivableSurfaceType {
     var mType: Int
 }
+fun PxVehicleDrivableSurfaceType(): PxVehicleDrivableSurfaceType {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleDrivableSurfaceType()")
+}
 
 external interface PxVehicleDrive : PxVehicleWheels {
-    val mDriveDynData: PxVehicleDriveDynData
+    var mDriveDynData: PxVehicleDriveDynData
 }
 
 external interface PxVehicleDrive4W : PxVehicleDrive {
-    val mDriveSimData: PxVehicleDriveSimData4W
+    var mDriveSimData: PxVehicleDriveSimData4W
 
+    fun allocate(nbWheels: Int): PxVehicleDrive4W
     fun free()
     fun setup(physics: PxPhysics, vehActor: PxRigidDynamic, wheelsData: PxVehicleWheelsSimData, driveData: PxVehicleDriveSimData4W, nbNonDrivenWheels: Int)
     fun setToRestState()
 }
 
-object physx_PxVehicleDrive4WControl {
-    val eANALOG_INPUT_ACCEL: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_ACCEL()
-    val eANALOG_INPUT_BRAKE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_BRAKE()
-    val eANALOG_INPUT_HANDBRAKE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_HANDBRAKE()
-    val eANALOG_INPUT_STEER_LEFT: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_LEFT()
-    val eANALOG_INPUT_STEER_RIGHT: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eANALOG_INPUT_STEER_RIGHT()
-    val eMAX_NB_DRIVE4W_ANALOG_INPUTS: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleDrive4WControl_eMAX_NB_DRIVE4W_ANALOG_INPUTS()
-}
-
 external interface PxVehicleDriveDynData {
+    var mControlAnalogVals: Array<Float>
     var mUseAutoGears: Boolean
     var mGearUpPressed: Boolean
     var mGearDownPressed: Boolean
@@ -127,12 +132,28 @@ external interface PxVehicleDriveDynData {
     fun setToRestState()
     fun setAnalogInput(type: Int, analogVal: Float)
     fun getAnalogInput(type: Int): Float
+    fun setGearUp(digitalVal: Boolean)
+    fun setGearDown(digitalVal: Boolean)
+    fun getGearUp(): Boolean
+    fun getGearDown(): Boolean
+    fun setUseAutoGears(useAutoGears: Boolean)
+    fun getUseAutoGears(): Boolean
     fun toggleAutoGears()
+    fun setCurrentGear(currentGear: Int)
+    fun getCurrentGear(): Int
+    fun setTargetGear(targetGear: Int)
+    fun getTargetGear(): Int
     fun startGearChange(targetGear: Int)
     fun forceGearChange(targetGear: Int)
+    fun setEngineRotationSpeed(speed: Float)
+    fun getEngineRotationSpeed(): Float
+    fun getGearSwitchTime(): Float
+    fun getAutoBoxSwitchTime(): Float
     fun getNbAnalogInput(): Int
     fun setGearChange(gearChange: Int)
     fun getGearChange(): Int
+    fun setGearSwitchTime(switchTime: Float)
+    fun setAutoBoxSwitchTime(autoBoxSwitchTime: Float)
 }
 
 external interface PxVehicleDriveSimData {
@@ -141,16 +162,24 @@ external interface PxVehicleDriveSimData {
     fun getGearsData(): PxVehicleGearsData
     fun setGearsData(gears: PxVehicleGearsData)
     fun getClutchData(): PxVehicleClutchData
-    fun setClutchData(clutch:  PxVehicleClutchData)
+    fun setClutchData(clutch: PxVehicleClutchData)
     fun getAutoBoxData(): PxVehicleAutoBoxData
-    fun setAutoBoxData(clutch:  PxVehicleAutoBoxData)
+    fun setAutoBoxData(clutch: PxVehicleAutoBoxData)
+}
+fun PxVehicleDriveSimData(): PxVehicleDriveSimData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleDriveSimData()")
 }
 
 external interface PxVehicleDriveSimData4W : PxVehicleDriveSimData {
     fun getDiffData(): PxVehicleDifferential4WData
     fun getAckermannGeometryData(): PxVehicleAckermannGeometryData
-    fun setDiffData(diff:  PxVehicleDifferential4WData)
+    fun setDiffData(diff: PxVehicleDifferential4WData)
     fun setAckermannGeometryData(ackermannData: PxVehicleAckermannGeometryData)
+}
+fun PxVehicleDriveSimData4W(): PxVehicleDriveSimData4W {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleDriveSimData4W()")
 }
 
 external interface PxVehicleEngineData {
@@ -162,11 +191,14 @@ external interface PxVehicleEngineData {
     var mDampingRateZeroThrottleClutchEngaged: Float
     var mDampingRateZeroThrottleClutchDisengaged: Float
 }
+fun PxVehicleEngineData(): PxVehicleEngineData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleEngineData()")
+}
 
 external interface PxEngineTorqueLookupTable {
-    val mNbDataPairs: Int
-    fun get_mDataPairs(index: Int): Float
-    fun set_mDataPairs(index: Int, value: Float): Float
+    var mDataPairs: Array<Float>
+    var mNbDataPairs: Int
 
     fun addPair(x: Float, y: Float)
     fun getYVal(x: Float): Float
@@ -175,50 +207,23 @@ external interface PxEngineTorqueLookupTable {
     fun getX(i: Int): Float
     fun getY(i: Int): Float
 }
+fun PxEngineTorqueLookupTable(): PxEngineTorqueLookupTable {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxEngineTorqueLookupTable()")
+}
 
 external interface PxVehicleGearsData {
+    var mRatios: Array<Float>
     var mFinalRatio: Float
     var mNbRatios: Int
     var mSwitchTime: Float
 
-    fun getGearRatio(a: Int): Float         // physx_PxVehicleGear
-    fun setGearRatio(a: Int, ratio: Float)  // physx_PxVehicleGear
+    fun getGearRatio(a: Int): Float
+    fun setGearRatio(a: Int, ratio: Float)
 }
-
-object physx_PxVehicleGear {
-    val eREVERSE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eREVERSE()
-    val eNEUTRAL: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eNEUTRAL()
-    val eFIRST: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eFIRST()
-    val eSECOND: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eSECOND()
-    val eTHIRD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTHIRD()
-    val eFOURTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eFOURTH()
-    val eFIFTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eFIFTH()
-    val eSIXTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eSIXTH()
-    val eSEVENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eSEVENTH()
-    val eEIGHTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eEIGHTH()
-    val eNINTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eNINTH()
-    val eTENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTENTH()
-    val eELEVENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eELEVENTH()
-    val eTWELFTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWELFTH()
-    val eTHIRTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTHIRTEENTH()
-    val eFOURTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eFOURTEENTH()
-    val eFIFTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eFIFTEENTH()
-    val eSIXTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eSIXTEENTH()
-    val eSEVENTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eSEVENTEENTH()
-    val eEIGHTEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eEIGHTEENTH()
-    val eNINETEENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eNINETEENTH()
-    val eTWENTIETH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTIETH()
-    val eTWENTYFIRST: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYFIRST()
-    val eTWENTYSECOND: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYSECOND()
-    val eTWENTYTHIRD: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYTHIRD()
-    val eTWENTYFOURTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYFOURTH()
-    val eTWENTYFIFTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYFIFTH()
-    val eTWENTYSIXTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYSIXTH()
-    val eTWENTYSEVENTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYSEVENTH()
-    val eTWENTYEIGHTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYEIGHTH()
-    val eTWENTYNINTH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTWENTYNINTH()
-    val eTHIRTIETH: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eTHIRTIETH()
-    val eGEARSRATIO_COUNT: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleGear_eGEARSRATIO_COUNT()
+fun PxVehicleGearsData(): PxVehicleGearsData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleGearsData()")
 }
 
 external interface PxVehicleSuspensionData {
@@ -230,7 +235,12 @@ external interface PxVehicleSuspensionData {
     var mCamberAtRest: Float
     var mCamberAtMaxCompression: Float
     var mCamberAtMaxDroop: Float
+
     fun setMassAndPreserveNaturalFrequency(newSprungMass: Float)
+}
+fun PxVehicleSuspensionData(): PxVehicleSuspensionData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleSuspensionData()")
 }
 
 external interface PxVehicleTireData {
@@ -238,8 +248,11 @@ external interface PxVehicleTireData {
     var mLatStiffY: Float
     var mLongitudinalStiffnessPerUnitGravity: Float
     var mCamberStiffnessPerUnitGravity: Float
-    //attribute float[][] mFrictionVsSlipGraph;     // 2-dimensional array is not supported by WebIDL -> use top-level getter / setter functions
     var mType: Int
+}
+fun PxVehicleTireData(): PxVehicleTireData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleTireData()")
 }
 
 external interface PxVehicleTireLoadFilterData {
@@ -247,12 +260,12 @@ external interface PxVehicleTireLoadFilterData {
     var mMinFilteredNormalisedLoad: Float
     var mMaxNormalisedLoad: Float
     var mMaxFilteredNormalisedLoad: Float
+
     fun getDenominator(): Float
 }
-
-object physx_PxVehicleUpdateMode {
-    val eVELOCITY_CHANGE: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleUpdateMode_eVELOCITY_CHANGE()
-    val eACCELERATION: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleUpdateMode_eACCELERATION()
+fun PxVehicleTireLoadFilterData(): PxVehicleTireLoadFilterData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleTireLoadFilterData()")
 }
 
 external interface PxVehicleWheelData {
@@ -266,13 +279,24 @@ external interface PxVehicleWheelData {
     var mMaxSteer: Float
     var mToeAngle: Float
 }
+fun PxVehicleWheelData(): PxVehicleWheelData {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleWheelData()")
+}
 
 external interface PxVehicleWheelQueryResult {
     var wheelQueryResults: PxWheelQueryResult
     var nbWheelQueryResults: Int
 }
+fun PxVehicleWheelQueryResult(): PxVehicleWheelQueryResult {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleWheelQueryResult()")
+}
 
 external interface PxVehicleWheels : PxBase {
+    var mWheelsSimData: PxVehicleWheelsSimData
+    var mWheelsDynData: PxVehicleWheelsDynData
+
     fun getVehicleType(): Int
     fun getRigidDynamicActor(): PxRigidDynamic
     fun computeForwardSpeed(): Float
@@ -280,25 +304,23 @@ external interface PxVehicleWheels : PxBase {
     fun getNbNonDrivenWheels(): Int
 }
 
-external interface PxVehicleWheelsPtr
-
 external interface PxVehicleWheelsDynData {
     fun setToRestState()
     fun setWheelRotationSpeed(wheelIdx: Int, speed: Float)
     fun getWheelRotationSpeed(wheelIdx: Int): Float
     fun setWheelRotationAngle(wheelIdx: Int, angle: Float)
-    fun getWheelRotationAngle(wheelIdx: Int)
+    fun getWheelRotationAngle(wheelIdx: Int): Float
     fun copy(src: PxVehicleWheelsDynData, srcWheel: Int, trgWheel: Int)
     fun getNbWheelRotationSpeed(): Int
     fun getNbWheelRotationAngle(): Int
 }
 
 external interface PxVehicleWheelsSimData {
+    fun allocate(nbWheels: Int): PxVehicleWheelsSimData
     fun setChassisMass(chassisMass: Float)
     fun free()
     fun copy(src: PxVehicleWheelsSimData, srcWheel: Int, trgWheel: Int)
     fun getNbWheels(): Int
-
     fun getSuspensionData(id: Int): PxVehicleSuspensionData
     fun getWheelData(id: Int): PxVehicleWheelData
     fun getTireData(id: Int): PxVehicleTireData
@@ -311,7 +333,6 @@ external interface PxVehicleWheelsSimData {
     fun getNbAntiRollBars(): Int
     fun getAntiRollBarData(antiRollId: Int): PxVehicleAntiRollBarData
     fun getTireLoadFilterData(): PxVehicleTireLoadFilterData
-
     fun setSuspensionData(id: Int, susp: PxVehicleSuspensionData)
     fun setWheelData(id: Int, wheel: PxVehicleWheelData)
     fun setTireData(id: Int, tire: PxVehicleTireData)
@@ -323,7 +344,6 @@ external interface PxVehicleWheelsSimData {
     fun setSceneQueryFilterData(suspId: Int, sqFilterData: PxFilterData)
     fun setTireLoadFilterData(tireLoadFilter: PxVehicleTireLoadFilterData)
     fun addAntiRollBarData(antiRoll: PxVehicleAntiRollBarData): Int
-
     fun disableWheel(wheel: Int)
     fun enableWheel(wheel: Int)
     fun getIsWheelDisabled(wheel: Int): Boolean
@@ -331,7 +351,6 @@ external interface PxVehicleWheelsSimData {
     fun setMinLongSlipDenominator(minLongSlipDenominator: Float)
     fun setFlags(flags: PxVehicleWheelsSimFlags)
     fun getFlags(): PxVehicleWheelsSimFlags
-
     fun getNbWheels4(): Int
     fun getNbSuspensionData(): Int
     fun getNbWheelData(): Int
@@ -357,41 +376,112 @@ external interface PxVehicleWheelsSimData {
     fun setAntiRollBarData(id: Int, antiRoll: PxVehicleAntiRollBarData)
 }
 
-object physx_PxVehicleWheelsSimFlag {
-    val eLIMIT_SUSPENSION_EXPANSION_VELOCITY: Int get() = PhysX.physx._emscripten_enum_physx_PxVehicleWheelsSimFlag_eLIMIT_SUSPENSION_EXPANSION_VELOCITY()
+external interface PxVehicleWheelsSimFlags {
+    fun isSet(flag: Int): Boolean
+    fun set(flag: Int)
+    fun clear(flag: Int)
+}
+fun PxVehicleWheelsSimFlags(flags: Int): PxVehicleWheelsSimFlags {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxVehicleWheelsSimFlags(flags)")
 }
 
-external interface PxVehicleWheelsSimFlags : PxFlags
-
 external interface PxWheelQueryResult {
-    val suspLineStart: PxVec3
-    val suspLineDir: PxVec3
-    val suspLineLength: Float
-    val isInAir: Boolean
-    val tireContactActor: PxActor
-    val tireContactShape: PxShape
-    val tireSurfaceMaterial: PxMaterial
-    val tireSurfaceType: Int
-    val tireContactPoint: PxVec3
-    val tireContactNormal: PxVec3
-    val tireFriction: Float
-    val suspJounce: Float
-    val suspSpringForce: Float
-    val tireLongitudinalDir: PxVec3
-    val tireLateralDir: PxVec3
-    val longitudinalSlip: Float
-    val lateralSlip: Float
-    val steerAngle: Float
-    val localPose: PxTransform
+    var suspLineStart: PxVec3
+    var suspLineDir: PxVec3
+    var suspLineLength: Float
+    var isInAir: Boolean
+    var tireContactActor: PxActor
+    var tireContactShape: PxShape
+    var tireSurfaceMaterial: PxMaterial
+    var tireSurfaceType: Int
+    var tireContactPoint: PxVec3
+    var tireContactNormal: PxVec3
+    var tireFriction: Float
+    var suspJounce: Float
+    var suspSpringForce: Float
+    var tireLongitudinalDir: PxVec3
+    var tireLateralDir: PxVec3
+    var longitudinalSlip: Float
+    var lateralSlip: Float
+    var steerAngle: Float
+    var localPose: PxTransform
+}
+fun PxWheelQueryResult(): PxWheelQueryResult {
+    val module = PhysxJsLoader.physxJs
+    return js("new module.PxWheelQueryResult()")
+}
+
+object PxVehicleClutchAccuracyModeEnum {
+    val eESTIMATE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE()
+    val eBEST_POSSIBLE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE()
+}
+
+object PxVehicleDifferential4WDataEnum {
+    val eDIFF_TYPE_LS_4WD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD()
+    val eDIFF_TYPE_LS_FRONTWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD()
+    val eDIFF_TYPE_LS_REARWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD()
+    val eDIFF_TYPE_OPEN_4WD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD()
+    val eDIFF_TYPE_OPEN_FRONTWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD()
+    val eDIFF_TYPE_OPEN_REARWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD()
+    val eMAX_NB_DIFF_TYPES: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES()
+}
+
+object PxVehicleDrive4WControlEnum {
+    val eANALOG_INPUT_ACCEL: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL()
+    val eANALOG_INPUT_BRAKE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE()
+    val eANALOG_INPUT_HANDBRAKE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE()
+    val eANALOG_INPUT_STEER_LEFT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT()
+    val eANALOG_INPUT_STEER_RIGHT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT()
+    val eMAX_NB_DRIVE4W_ANALOG_INPUTS: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS()
+}
+
+object PxVehicleGearEnum {
+    val eREVERSE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eREVERSE()
+    val eNEUTRAL: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNEUTRAL()
+    val eFIRST: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIRST()
+    val eSECOND: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSECOND()
+    val eTHIRD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRD()
+    val eFOURTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFOURTH()
+    val eFIFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIFTH()
+    val eSIXTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSIXTH()
+    val eSEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSEVENTH()
+    val eEIGHTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eEIGHTH()
+    val eNINTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNINTH()
+    val eTENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTENTH()
+    val eELEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eELEVENTH()
+    val eTWELFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWELFTH()
+    val eTHIRTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH()
+    val eFOURTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFOURTEENTH()
+    val eFIFTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIFTEENTH()
+    val eSIXTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSIXTEENTH()
+    val eSEVENTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH()
+    val eEIGHTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH()
+    val eNINETEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNINETEENTH()
+    val eTWENTIETH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTIETH()
+    val eTWENTYFIRST: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST()
+    val eTWENTYSECOND: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND()
+    val eTWENTYTHIRD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD()
+    val eTWENTYFOURTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH()
+    val eTWENTYFIFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH()
+    val eTWENTYSIXTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH()
+    val eTWENTYSEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH()
+    val eTWENTYEIGHTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH()
+    val eTWENTYNINTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH()
+    val eTHIRTIETH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRTIETH()
+    val eGEARSRATIO_COUNT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT()
+}
+
+object PxVehicleUpdateModeEnum {
+    val eVELOCITY_CHANGE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE()
+    val eACCELERATION: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION()
+}
+
+object PxVehicleWheelsSimFlagEnum {
+    val eLIMIT_SUSPENSION_EXPANSION_VELOCITY: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY()
 }
 
 object VehicleSurfaceTypeMask {
-    val DRIVABLE_SURFACE: Int get() = PhysX.physx._emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE()
-    val UNDRIVABLE_SURFACE: Int get() = PhysX.physx._emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE()
+    val DRIVABLE_SURFACE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE()
+    val UNDRIVABLE_SURFACE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE()
 }
-
-external interface Vector_PxVehicleDrivableSurfaceType : StdVector<PxVehicleDrivableSurfaceType>
-
-external interface Vector_PxWheelQueryResult : StdVector<PxWheelQueryResult>
-
-external interface Vector_PxVehicleWheels : StdVector<PxVehicleWheels>

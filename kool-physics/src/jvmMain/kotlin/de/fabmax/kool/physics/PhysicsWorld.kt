@@ -44,7 +44,6 @@ actual class PhysicsWorld  : CommonPhysicsWorld() {
     }
 
     override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        println("grp: ${rigidBody.collisionGroup}, mask: ${rigidBody.collisionMask}")
         physicsWorld.addRigidBody(rigidBody.btRigidBody, rigidBody.collisionGroup.toShort(), rigidBody.collisionMask.toShort())
     }
 
