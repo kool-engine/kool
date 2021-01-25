@@ -7,10 +7,7 @@ import kotlin.math.*
 
 open class Mat4d {
 
-    var matrix = DoubleArray(16)
-        protected set
-    var offset = 0
-        protected set
+    val matrix = DoubleArray(16)
 
     init {
         setIdentity()
@@ -18,8 +15,7 @@ open class Mat4d {
 
     fun translate(tx: Double, ty: Double, tz: Double): Mat4d {
         for (i in 0..3) {
-            val mi = offset + i
-            matrix[12 + mi] += matrix[mi] * tx + matrix[4 + mi] * ty + matrix[8 + mi] * tz
+            matrix[12 + i] += matrix[i] * tx + matrix[4 + i] * ty + matrix[8 + i] * tz
         }
         return this
     }
@@ -28,12 +24,10 @@ open class Mat4d {
 
     fun translate(tx: Double, ty: Double, tz: Double, result: Mat4d): Mat4d {
         for (i in 0..11) {
-            result.matrix[result.offset + i] = matrix[offset + i]
+            result.matrix[i] = matrix[i]
         }
         for (i in 0..3) {
-            val mi = offset + i
-            result.matrix[result.offset + 12 + i] =
-                    matrix[mi] * tx + matrix[4 + mi] * ty + matrix[8 + mi] * tz + matrix[12 + mi]
+            result.matrix[12 + i] = matrix[i] * tx + matrix[4 + i] * ty + matrix[8 + i] * tz + matrix[12 + i]
         }
         return result
     }
@@ -73,10 +67,9 @@ open class Mat4d {
 
     fun scale(sx: Double, sy: Double, sz: Double): Mat4d {
         for (i in 0..3) {
-            val mi = offset + i
-            matrix[mi] *= sx
-            matrix[4 + mi] *= sy
-            matrix[8 + mi] *= sz
+            matrix[i] *= sx
+            matrix[4 + i] *= sy
+            matrix[8 + i] *= sz
         }
         return this
     }
@@ -85,12 +78,10 @@ open class Mat4d {
 
     fun scale(sx: Double, sy: Double, sz: Double, result: Mat4d): Mat4d {
         for (i in 0..3) {
-            val smi = result.offset + i
-            val mi = offset + i
-            result.matrix[smi] = matrix[mi] * sx
-            result.matrix[4 + smi] = matrix[4 + mi] * sy
-            result.matrix[8 + smi] = matrix[8 + mi] * sz
-            result.matrix[12 + smi] = matrix[12 + mi]
+            result.matrix[0] = matrix[0] * sx
+            result.matrix[4 + i] = matrix[4 + i] * sy
+            result.matrix[8 + i] = matrix[8 + i] * sz
+            result.matrix[12 + i] = matrix[12 + i]
         }
         return result
     }
@@ -111,11 +102,11 @@ open class Mat4d {
 
     fun transpose(result: Mat4d): Mat4d {
         for (i in 0..3) {
-            val mBase = i * 4 + offset
-            result.matrix[i + result.offset] = matrix[mBase]
-            result.matrix[i + 4 + result.offset] = matrix[mBase + 1]
-            result.matrix[i + 8 + result.offset] = matrix[mBase + 2]
-            result.matrix[i + 12 + result.offset] = matrix[mBase + 3]
+            val mBase = i * 4
+            result.matrix[i] = matrix[mBase]
+            result.matrix[i + 4] = matrix[mBase + 1]
+            result.matrix[i + 8] = matrix[mBase + 2]
+            result.matrix[i + 12] = matrix[mBase + 3]
         }
         return result
     }
@@ -128,25 +119,25 @@ open class Mat4d {
         // Invert a 4 x 4 matrix using Cramer's Rule
 
         // transpose matrix
-        val src0 = matrix[offset + 0]
-        val src4 = matrix[offset + 1]
-        val src8 = matrix[offset + 2]
-        val src12 = matrix[offset + 3]
+        val src0 = matrix[0]
+        val src4 = matrix[1]
+        val src8 = matrix[2]
+        val src12 = matrix[3]
 
-        val src1 = matrix[offset + 4]
-        val src5 = matrix[offset + 5]
-        val src9 = matrix[offset + 6]
-        val src13 = matrix[offset + 7]
+        val src1 = matrix[4]
+        val src5 = matrix[5]
+        val src9 = matrix[6]
+        val src13 = matrix[7]
 
-        val src2 = matrix[offset + 8]
-        val src6 = matrix[offset + 9]
-        val src10 = matrix[offset + 10]
-        val src14 = matrix[offset + 11]
+        val src2 = matrix[8]
+        val src6 = matrix[9]
+        val src10 = matrix[10]
+        val src14 = matrix[11]
 
-        val src3 = matrix[offset + 12]
-        val src7 = matrix[offset + 13]
-        val src11 = matrix[offset + 14]
-        val src15 = matrix[offset + 15]
+        val src3 = matrix[12]
+        val src7 = matrix[13]
+        val src11 = matrix[14]
+        val src15 = matrix[15]
 
         // calculate pairs for first 8 elements (cofactors)
         val atmp0 = src10 * src15
@@ -205,25 +196,25 @@ open class Mat4d {
 
         // calculate matrix inverse
         val invdet = 1.0 / det
-        result.matrix[result.offset] = dst0 * invdet
-        result.matrix[1 + result.offset] = dst1 * invdet
-        result.matrix[2 + result.offset] = dst2 * invdet
-        result.matrix[3 + result.offset] = dst3 * invdet
+        result.matrix[0] = dst0 * invdet
+        result.matrix[1] = dst1 * invdet
+        result.matrix[2] = dst2 * invdet
+        result.matrix[3] = dst3 * invdet
 
-        result.matrix[4 + result.offset] = dst4 * invdet
-        result.matrix[5 + result.offset] = dst5 * invdet
-        result.matrix[6 + result.offset] = dst6 * invdet
-        result.matrix[7 + result.offset] = dst7 * invdet
+        result.matrix[4] = dst4 * invdet
+        result.matrix[5] = dst5 * invdet
+        result.matrix[6] = dst6 * invdet
+        result.matrix[7] = dst7 * invdet
 
-        result.matrix[8 + result.offset] = dst8 * invdet
-        result.matrix[9 + result.offset] = dst9 * invdet
-        result.matrix[10 + result.offset] = dst10 * invdet
-        result.matrix[11 + result.offset] = dst11 * invdet
+        result.matrix[8] = dst8 * invdet
+        result.matrix[9] = dst9 * invdet
+        result.matrix[10] = dst10 * invdet
+        result.matrix[11] = dst11 * invdet
 
-        result.matrix[12 + result.offset] = dst12 * invdet
-        result.matrix[13 + result.offset] = dst13 * invdet
-        result.matrix[14 + result.offset] = dst14 * invdet
-        result.matrix[15 + result.offset] = dst15 * invdet
+        result.matrix[12] = dst12 * invdet
+        result.matrix[13] = dst13 * invdet
+        result.matrix[14] = dst14 * invdet
+        result.matrix[15] = dst15 * invdet
 
         return true
     }
@@ -290,7 +281,7 @@ open class Mat4d {
 
     fun add(other: Mat4d): Mat4d {
         for (i in 0..15) {
-            matrix[offset + i] += other.matrix[other.offset + i]
+            matrix[i] += other.matrix[i]
         }
         return this
     }
@@ -307,9 +298,9 @@ open class Mat4d {
             for (j in 0..3) {
                 var x = 0.0
                 for (k in 0..3) {
-                    x += matrix[offset + j + k * 4] * other.matrix[other.offset + i * 4 + k]
+                    x += matrix[j + k * 4] * other.matrix[i * 4 + k]
                 }
-                result.matrix[result.offset + i * 4 + j] = x
+                result.matrix[i * 4 + j] = x
             }
         }
         return result
@@ -317,40 +308,40 @@ open class Mat4d {
 
     fun set(other: Mat4d): Mat4d {
         for (i in 0..15) {
-            matrix[offset + i] = other.matrix[other.offset + i]
+            matrix[i] = other.matrix[i]
         }
         return this
     }
 
     fun set(other: Mat4f): Mat4d {
         for (i in 0..15) {
-            matrix[offset + i] = other.matrix[other.offset + i].toDouble()
+            matrix[i] = other.matrix[i].toDouble()
         }
         return this
     }
 
     fun set(doubles: List<Double>): Mat4d {
         for (i in 0..15) {
-            matrix[offset + i] = doubles[i]
+            matrix[i] = doubles[i]
         }
         return this
     }
 
     fun setZero(): Mat4d {
         for (i in 0..15) {
-            matrix[offset + i] = 0.0
+            matrix[i] = 0.0
         }
         return this
     }
 
     fun setIdentity(): Mat4d {
         for (i in 1..15) {
-            matrix[offset + i] = 0.0
+            matrix[i] = 0.0
         }
-        matrix[offset] = 1.0
-        matrix[offset + 5] = 1.0
-        matrix[offset + 10] = 1.0
-        matrix[offset + 15] = 1.0
+        matrix[0] = 1.0
+        matrix[5] = 1.0
+        matrix[10] = 1.0
+        matrix[15] = 1.0
         return this
     }
 
@@ -370,25 +361,25 @@ open class Mat4d {
         val sc = si * ch
         val ss = si * sh
 
-        matrix[offset + 0] = cj * ch
-        matrix[offset + 4] = sj * sc - cs
-        matrix[offset + 8] = sj * cc + ss
-        matrix[offset + 12] = 0.0
+        matrix[0] = cj * ch
+        matrix[4] = sj * sc - cs
+        matrix[8] = sj * cc + ss
+        matrix[12] = 0.0
 
-        matrix[offset + 1] = cj * sh
-        matrix[offset + 5] = sj * ss + cc
-        matrix[offset + 9] = sj * cs - sc
-        matrix[offset + 13] = 0.0
+        matrix[1] = cj * sh
+        matrix[5] = sj * ss + cc
+        matrix[9] = sj * cs - sc
+        matrix[13] = 0.0
 
-        matrix[offset + 2] = -sj
-        matrix[offset + 6] = cj * si
-        matrix[offset + 10] = cj * ci
-        matrix[offset + 14] = 0.0
+        matrix[2] = -sj
+        matrix[6] = cj * si
+        matrix[10] = cj * ci
+        matrix[14] = 0.0
 
-        matrix[offset + 3] = 0.0
-        matrix[offset + 7] = 0.0
-        matrix[offset + 11] = 0.0
-        matrix[offset + 15] = 1.0
+        matrix[3] = 0.0
+        matrix[7] = 0.0
+        matrix[11] = 0.0
+        matrix[15] = 1.0
 
         return this
     }
@@ -398,45 +389,45 @@ open class Mat4d {
         var x = axX
         var y = axY
         var z = axZ
-        matrix[offset + 3] = 0.0
-        matrix[offset + 7] = 0.0
-        matrix[offset + 11] = 0.0
-        matrix[offset + 12] = 0.0
-        matrix[offset + 13] = 0.0
-        matrix[offset + 14] = 0.0
-        matrix[offset + 15] = 1.0
+        matrix[3] = 0.0
+        matrix[7] = 0.0
+        matrix[11] = 0.0
+        matrix[12] = 0.0
+        matrix[13] = 0.0
+        matrix[14] = 0.0
+        matrix[15] = 1.0
         val s = sin(a)
         val c = cos(a)
         if (1.0 == x && 0.0 == y && 0.0 == z) {
-            matrix[offset + 5] = c
-            matrix[offset + 10] = c
-            matrix[offset + 6] = s
-            matrix[offset + 9] = -s
-            matrix[offset + 1] = 0.0
-            matrix[offset + 2] = 0.0
-            matrix[offset + 4] = 0.0
-            matrix[offset + 8] = 0.0
-            matrix[offset + 0] = 1.0
+            matrix[5] = c
+            matrix[10] = c
+            matrix[6] = s
+            matrix[9] = -s
+            matrix[1] = 0.0
+            matrix[2] = 0.0
+            matrix[4] = 0.0
+            matrix[8] = 0.0
+            matrix[0] = 1.0
         } else if (0.0 == x && 1.0 == y && 0.0 == z) {
-            matrix[offset + 0] = c
-            matrix[offset + 10] = c
-            matrix[offset + 8] = s
-            matrix[offset + 2] = -s
-            matrix[offset + 1] = 0.0
-            matrix[offset + 4] = 0.0
-            matrix[offset + 6] = 0.0
-            matrix[offset + 9] = 0.0
-            matrix[offset + 5] = 1.0
+            matrix[0] = c
+            matrix[10] = c
+            matrix[8] = s
+            matrix[2] = -s
+            matrix[1] = 0.0
+            matrix[4] = 0.0
+            matrix[6] = 0.0
+            matrix[9] = 0.0
+            matrix[5] = 1.0
         } else if (0.0 == x && 0.0 == y && 1.0 == z) {
-            matrix[offset + 0] = c
-            matrix[offset + 5] = c
-            matrix[offset + 1] = s
-            matrix[offset + 4] = -s
-            matrix[offset + 2] = 0.0
-            matrix[offset + 6] = 0.0
-            matrix[offset + 8] = 0.0
-            matrix[offset + 9] = 0.0
-            matrix[offset + 10] = 1.0
+            matrix[0] = c
+            matrix[5] = c
+            matrix[1] = s
+            matrix[4] = -s
+            matrix[2] = 0.0
+            matrix[6] = 0.0
+            matrix[8] = 0.0
+            matrix[9] = 0.0
+            matrix[10] = 1.0
         } else {
             val len = sqrt(x*x + y*y + z*z)
             if (!isFuzzyEqual(len, 1.0)) {
@@ -452,15 +443,15 @@ open class Mat4d {
             val xs = x * s
             val ys = y * s
             val zs = z * s
-            matrix[offset + 0] = x * x * nc + c
-            matrix[offset + 4] = xy * nc - zs
-            matrix[offset + 8] = zx * nc + ys
-            matrix[offset + 1] = xy * nc + zs
-            matrix[offset + 5] = y * y * nc + c
-            matrix[offset + 9] = yz * nc - xs
-            matrix[offset + 2] = zx * nc - ys
-            matrix[offset + 6] = yz * nc + xs
-            matrix[offset + 10] = z * z * nc + c
+            matrix[0] = x * x * nc + c
+            matrix[4] = xy * nc - zs
+            matrix[8] = zx * nc + ys
+            matrix[1] = xy * nc + zs
+            matrix[5] = y * y * nc + c
+            matrix[9] = yz * nc - xs
+            matrix[2] = zx * nc - ys
+            matrix[6] = yz * nc + xs
+            matrix[10] = z * z * nc + c
         }
         return this
     }
@@ -558,25 +549,25 @@ open class Mat4d {
         val uy = sz * fx - sx * fz
         val uz = sx * fy - sy * fx
 
-        matrix[offset + 0] = sx
-        matrix[offset + 1] = ux
-        matrix[offset + 2] = -fx
-        matrix[offset + 3] = 0.0
+        matrix[0] = sx
+        matrix[1] = ux
+        matrix[2] = -fx
+        matrix[3] = 0.0
 
-        matrix[offset + 4] = sy
-        matrix[offset + 5] = uy
-        matrix[offset + 6] = -fy
-        matrix[offset + 7] = 0.0
+        matrix[4] = sy
+        matrix[5] = uy
+        matrix[6] = -fy
+        matrix[7] = 0.0
 
-        matrix[offset + 8] = sz
-        matrix[offset + 9] = uz
-        matrix[offset + 10] = -fz
-        matrix[offset + 11] = 0.0
+        matrix[8] = sz
+        matrix[9] = uz
+        matrix[10] = -fz
+        matrix[11] = 0.0
 
-        matrix[offset + 12] = 0.0
-        matrix[offset + 13] = 0.0
-        matrix[offset + 14] = 0.0
-        matrix[offset + 15] = 1.0
+        matrix[12] = 0.0
+        matrix[13] = 0.0
+        matrix[14] = 0.0
+        matrix[15] = 1.0
 
         return translate(-px, -py, -pz)
     }
@@ -604,22 +595,22 @@ open class Mat4d {
         val tx = -(right + left) * width
         val ty = -(top + bottom) * height
         val tz = -(far + near) * depth
-        matrix[offset + 0] = x
-        matrix[offset + 5] = y
-        matrix[offset + 10] = z
-        matrix[offset + 12] = tx
-        matrix[offset + 13] = ty
-        matrix[offset + 14] = tz
-        matrix[offset + 15] = 1.0
-        matrix[offset + 1] = 0.0
-        matrix[offset + 2] = 0.0
-        matrix[offset + 3] = 0.0
-        matrix[offset + 4] = 0.0
-        matrix[offset + 6] = 0.0
-        matrix[offset + 7] = 0.0
-        matrix[offset + 8] = 0.0
-        matrix[offset + 9] = 0.0
-        matrix[offset + 11] = 0.0
+        matrix[0] = x
+        matrix[5] = y
+        matrix[10] = z
+        matrix[12] = tx
+        matrix[13] = ty
+        matrix[14] = tz
+        matrix[15] = 1.0
+        matrix[1] = 0.0
+        matrix[2] = 0.0
+        matrix[3] = 0.0
+        matrix[4] = 0.0
+        matrix[6] = 0.0
+        matrix[7] = 0.0
+        matrix[8] = 0.0
+        matrix[9] = 0.0
+        matrix[11] = 0.0
 
         return this
     }
@@ -631,39 +622,39 @@ open class Mat4d {
         val f = 1.0 / tan(fovy * (PI / 360.0))
         val rangeReciprocal = 1.0 / (near - far)
 
-        matrix[offset + 0] = f / aspect
-        matrix[offset + 1] = 0.0
-        matrix[offset + 2] = 0.0
-        matrix[offset + 3] = 0.0
+        matrix[0] = f / aspect
+        matrix[1] = 0.0
+        matrix[2] = 0.0
+        matrix[3] = 0.0
 
-        matrix[offset + 4] = 0.0
-        matrix[offset + 5] = f
-        matrix[offset + 6] = 0.0
-        matrix[offset + 7] = 0.0
+        matrix[4] = 0.0
+        matrix[5] = f
+        matrix[6] = 0.0
+        matrix[7] = 0.0
 
-        matrix[offset + 8] = 0.0
-        matrix[offset + 9] = 0.0
-        matrix[offset + 10] = (far + near) * rangeReciprocal
-        matrix[offset + 11] = -1.0
+        matrix[8] = 0.0
+        matrix[9] = 0.0
+        matrix[10] = (far + near) * rangeReciprocal
+        matrix[11] = -1.0
 
-        matrix[offset + 12] = 0.0
-        matrix[offset + 13] = 0.0
-        matrix[offset + 14] = 2.0 * far * near * rangeReciprocal
-        matrix[offset + 15] = 0.0
+        matrix[12] = 0.0
+        matrix[13] = 0.0
+        matrix[14] = 2.0 * far * near * rangeReciprocal
+        matrix[15] = 0.0
 
         return this
     }
 
-    operator fun get(i: Int): Double = matrix[offset + i]
+    operator fun get(i: Int): Double = matrix[i]
 
-    operator fun get(row: Int, col: Int): Double = matrix[offset + col * 4 + row]
+    operator fun get(row: Int, col: Int): Double = matrix[col * 4 + row]
 
     operator fun set(i: Int, value: Double) {
-        matrix[offset + i] = value
+        matrix[i] = value
     }
 
     operator fun set(row: Int, col: Int, value: Double) {
-        matrix[offset + col * 4 + row] = value
+        matrix[col * 4 + row] = value
     }
 
     fun setRow(row: Int, vec: Vec3d, w: Double) {
@@ -783,7 +774,7 @@ open class Mat4d {
 
     fun toBuffer(buffer: Float32Buffer): Float32Buffer {
         for (i in 0 until 16) {
-            buffer.put(matrix[offset + i].toFloat())
+            buffer.put(matrix[i].toFloat())
         }
         buffer.flip()
         return buffer
@@ -792,7 +783,7 @@ open class Mat4d {
     fun toList(): List<Double> {
         val list = mutableListOf<Double>()
         for (i in 0..15) {
-            list += matrix[offset + i]
+            list += matrix[i]
         }
         return list
     }
@@ -818,23 +809,16 @@ class Mat4dStack(val stackSize: Int = DEFAULT_STACK_SIZE) : Mat4d() {
         const val DEFAULT_STACK_SIZE = 32
     }
 
-    var stackIndex = 0
-        private set(value) {
-            field = value
-            offset = value * 16
-        }
-
-    init {
-        matrix = DoubleArray(16 * stackSize)
-        setIdentity()
-    }
+    private var stackIndex = 0
+    private val stack = DoubleArray(16 * stackSize)
 
     fun push(): Mat4dStack {
         if (stackIndex >= stackSize) {
             throw KoolException("Matrix stack overflow")
         }
+        val offset = stackIndex * 16
         for (i in 0 .. 15) {
-            matrix[offset + 16 + i] = matrix[offset + i]
+            stack[offset + i] = matrix[i]
         }
         stackIndex++
         return this
@@ -845,6 +829,10 @@ class Mat4dStack(val stackSize: Int = DEFAULT_STACK_SIZE) : Mat4d() {
             throw KoolException("Matrix stack underflow")
         }
         stackIndex--
+        val offset = stackIndex * 16
+        for (i in 0 .. 15) {
+            matrix[i] = stack[offset + i]
+        }
         return this
     }
 
