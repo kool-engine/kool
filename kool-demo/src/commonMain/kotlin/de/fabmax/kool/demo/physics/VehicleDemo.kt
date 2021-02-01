@@ -6,8 +6,8 @@ import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.physics.joints.RevoluteJoint
-import de.fabmax.kool.physics.shapes.*
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
@@ -37,13 +37,11 @@ class VehicleDemo : DemoScene("Vehicle") {
 
     private val groundMaterial = Material(0.5f)
     private val gndProps = RigidBodyProperties().apply {
-        material = groundMaterial
         simFilterData.set(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST)
         VehicleUtils.setupDrivableSurface(this)
     }
 
     private val obstacleProps = RigidBodyProperties().apply {
-        material = groundMaterial
         simFilterData.set(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
         VehicleUtils.setupDrivableSurface(this)
     }
@@ -67,9 +65,6 @@ class VehicleDemo : DemoScene("Vehicle") {
             val world = PhysicsWorld()
             val steerAnimator = ValueAnimator()
             val throttleBrakeHandler = ThrottleBrakeHandler()
-
-            gndProps.material = groundMaterial
-            obstacleProps.material = groundMaterial
 
             makeGround(world)
             makeRamp(Mat4f().translate(0f, 0f, 30f), world)
@@ -127,10 +122,10 @@ class VehicleDemo : DemoScene("Vehicle") {
         val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
 
         vehicleProps.chassisShapes = listOf(
-            BoxShape(vehicleProps.chassisDims),
+            BoxGeometry(vehicleProps.chassisDims) to Mat4f(),
             // add additional shapes which act as collision dummys for wheel vs. drivable object collisions
-            BoxShape(wheelBumperDims, Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)),
-            BoxShape(wheelBumperDims, Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ))
+            BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
+            BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
         )
         vehicle = Vehicle(vehicleProps, world)
         world.addVehicle(vehicle)
@@ -199,8 +194,9 @@ class VehicleDemo : DemoScene("Vehicle") {
             val x = (c - 1) * stepX * -0.5f
 
             for (i in 0 until c) {
-                val boxShape = BoxShape(Vec3f(size))
-                val body = RigidBody(boxShape, 250f, obstacleProps)
+                val boxShape = BoxGeometry(Vec3f(size))
+                val body = RigidBody(250f, obstacleProps)
+                body.attachShape(boxShape, groundMaterial)
                 val pos = MutableVec3f(x + i * stepX, size * 0.5f + r * size, 0f)
                 frame.transform(pos)
                 body.origin = pos
@@ -213,21 +209,23 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeRocker(frame: Mat4f, world: PhysicsWorld) {
-        val anchor = RigidBody(BoxShape(Vec3f(7.5f, 1.5f, 0.3f)), 0f, obstacleProps)
+        val anchor = RigidBody(0f, obstacleProps)
+        anchor.attachShape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), groundMaterial)
         anchor.origin = frame.transform(MutableVec3f(0f, 0.75f, 0f))
-        val rocker = RigidBody(BoxShape(Vec3f(7.5f, 0.15f, 15f)), 500f, obstacleProps)
+        val rocker = RigidBody(500f, obstacleProps)
+        rocker.attachShape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), groundMaterial)
         rocker.origin = frame.transform(MutableVec3f(0f, 1.7f, 0f))
         world.addRigidBody(anchor)
         world.addRigidBody(rocker)
         +anchor.toPrettyMesh(Color.MD_ORANGE.toLinear())
         +rocker.toPrettyMesh(Color.MD_ORANGE_100.toLinear())
 
-        val joint = RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
-        world.addJoint(joint)
+        RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }
 
     private fun Scene.makeRamp(frame: Mat4f, world: PhysicsWorld) {
-        val ramp = RigidBody(BoxShape(Vec3f(10f, 2f, 10f)), 0f, obstacleProps)
+        val ramp = RigidBody(0f, obstacleProps)
+        ramp.attachShape(BoxGeometry(Vec3f(10f, 2f, 10f)), groundMaterial)
         ramp.origin = frame.transform(MutableVec3f(0f, 0f, 0f))
         ramp.setRotation(Mat3f().rotate(-11f, 0f, 0f))
         world.addRigidBody(ramp)
@@ -238,7 +236,8 @@ class VehicleDemo : DemoScene("Vehicle") {
         for (i in 0 until 30) {
             val c = if (i % 2 == 0) Color.MD_ORANGE_300 else Color.MD_ORANGE_100
             for (s in -1 .. 1 step 2) {
-                val bump = RigidBody(CylinderShape(4f, 0.5f), 0f, obstacleProps)
+                val bump = RigidBody(0f, obstacleProps)
+                bump.attachShape(CylinderGeometry(4f, 0.5f), groundMaterial)
                 bump.origin = frame.transform(MutableVec3f(2f * s, -0.3f, i * 3.1f + s * 0.4f))
                 //bump.setRotation(Mat3f().rotate(0f, 0f, 90f))
                 world.addRigidBody(bump)
@@ -272,7 +271,8 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +gndMesh
 
-        ground = RigidBody(PlaneShape(), 0f, gndProps)
+        ground = RigidBody(0f, gndProps)
+        ground.attachShape(PlaneGeometry(), groundMaterial)
         ground.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         world.addRigidBody(ground)
     }
@@ -318,7 +318,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         fun update(forwardSpeed: Float, deltaT: Float) {
             if (abs(forwardSpeed) < 0.1f && downKeyPressed) {
                 reverseTriggerTime += deltaT
-                if (reverseTriggerTime > 0.5f) {
+                if (reverseTriggerTime > 0.2f) {
                     isReverse = true
                 }
             } else {

@@ -7,8 +7,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.shapes.*
-import de.fabmax.kool.physics.shapes.MultiShape
+import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -34,6 +33,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private var restitution = 0.2f
     private var physicsWorld: PhysicsWorld? = null
     private val bodies = mutableListOf<ColoredBody>()
+
+    private var material = Material(friction, friction, restitution)
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         defaultCamTransform().apply {
@@ -123,6 +124,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             listOf(shapes.current)
         }
 
+        material.release()
+        material = Material(friction, friction, restitution)
+
         val stacks = max(1, numSpawnBodies / 50)
         val centers = makeCenters(stacks)
 
@@ -139,10 +143,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val type = types[rand.randomI(types.indices)]
             val (shape, mass) = type.generateShape(rand)
 
-            val bodyProps = RigidBodyProperties().apply {
-                material = Material(friction, friction, restitution)
+            val body = RigidBody(mass)
+            shape.geoms.forEachIndexed { si, s ->
+                body.attachShape(s, material, shape.poses[si])
             }
-            val body = RigidBody(shape, mass, bodyProps)
             body.origin = Vec3f(x, y, z)
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
             physicsWorld?.addRigidBody(body)
@@ -180,31 +184,37 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             clearCollidesWith(2)
         }
 
-        val groundShape = BoxShape(Vec3f(100f, 1f, 100f))
-        val ground = RigidBody(groundShape, 0f, groundBodyProps)
+        val groundMaterial = Material(0.5f, 0.5f, 0.2f)
+        val groundShape = BoxGeometry(Vec3f(100f, 1f, 100f))
+        val ground = RigidBody(0f, groundBodyProps)
+        ground.attachShape(groundShape, groundMaterial)
         ground.origin = Vec3f(0f, -0.5f, 0f)
         physicsWorld.addRigidBody(ground)
 
-        val frameLtShape = BoxShape(Vec3f(3f, 6f, 100f))
-        val frameLt = RigidBody(frameLtShape, 0f, groundBodyProps)
+        val frameLtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
+        val frameLt = RigidBody(0f, groundBodyProps)
+        frameLt.attachShape(frameLtShape, groundMaterial)
         frameLt.origin = Vec3f(-51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameLt)
         frame += frameLt
 
-        val frameRtShape = BoxShape(Vec3f(3f, 6f, 100f))
-        val frameRt = RigidBody(frameRtShape, 0f, groundBodyProps)
+        val frameRtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
+        val frameRt = RigidBody(0f, groundBodyProps)
+        frameRt.attachShape(frameRtShape, groundMaterial)
         frameRt.origin = Vec3f(51.5f, 2f, 0f)
         physicsWorld.addRigidBody(frameRt)
         frame += frameRt
 
-        val frameFtShape = BoxShape(Vec3f(106f, 6f, 3f))
-        val frameFt = RigidBody(frameFtShape, 0f, groundBodyProps)
+        val frameFtShape = BoxGeometry(Vec3f(106f, 6f, 3f))
+        val frameFt = RigidBody(0f, groundBodyProps)
+        frameFt.attachShape(frameFtShape, groundMaterial)
         frameFt.origin = Vec3f(0f, 2f, 51.5f)
         physicsWorld.addRigidBody(frameFt)
         frame += frameFt
 
-        val frameBkShape = BoxShape(Vec3f(106f, 6f, 3f))
-        val frameBk = RigidBody(frameBkShape, 0f, groundBodyProps)
+        val frameBkShape = BoxGeometry(Vec3f(106f, 6f, 3f))
+        val frameBk = RigidBody(0f, groundBodyProps)
+        frameBk.attachShape(frameBkShape, groundMaterial)
         frameBk.origin = Vec3f(0f, 2f, -51.5f)
         physicsWorld.addRigidBody(frameBk)
         frame += frameBk
@@ -242,7 +252,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         +colorMesh {
             generate {
                 frame.forEach {
-                    val shape = it.collisionShape as BoxShape
+                    val shape = it.shapes[0].first as BoxGeometry
                     cube {
                         size.set(shape.size)
                         origin.set(size).scale(-0.5f).add(it.origin)
@@ -286,19 +296,24 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val scale = MutableVec3f()
 
         init {
-            when (val shape = rigidBody.collisionShape) {
-                is BoxShape -> scale.set(shape.size)
-                is CapsuleShape -> scale.set(shape.radius, shape.radius, shape.radius)
-                is ConvexHullShape -> {
+            when (val shape = rigidBody.shapes[0].first) {
+                is BoxGeometry -> {
+                    if (rigidBody.shapes.size == 1) {
+                        // Box
+                        scale.set(shape.size)
+                    } else {
+                        // Multi shape
+                        val s = shape.size.z / 2f
+                        scale.set(s, s, s)
+                    }
+                }
+                is CapsuleGeometry -> scale.set(shape.radius, shape.radius, shape.radius)
+                is ConvexMeshGeometry -> {
                     val s = shape.points[0].length()
                     scale.set(s, s, s)
                 }
-                is CylinderShape -> scale.set(shape.length, shape.radius, shape.radius)
-                is MultiShape -> {
-                    val s = (shape.children[0].shape as BoxShape).size.z / 2f
-                    scale.set(s, s, s)
-                }
-                is SphereShape -> scale.set(shape.radius, shape.radius, shape.radius)
+                is CylinderGeometry -> scale.set(shape.length, shape.radius, shape.radius)
+                is SphereGeometry -> scale.set(shape.radius, shape.radius, shape.radius)
             }
         }
     }
@@ -306,7 +321,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
         section("Physics") {
             cycler("Body Shape:", shapes) { _, _ -> }
-            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 1000f, 0) {
+            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 5000f, 0) {
                 numSpawnBodies = value.toInt()
             }
             sliderWithValue("Friction:", friction, 0f, 2f, 2) {
@@ -333,16 +348,31 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
     }
 
+    private class ShapeGeometries() {
+        val geoms = mutableListOf<CollisionGeometry>()
+        val poses = mutableListOf<Mat4f>()
+
+        constructor(geom: CollisionGeometry) : this() {
+            geoms += geom
+            poses += Mat4f()
+        }
+
+        fun addShape(geom: CollisionGeometry, pose: Mat4f) {
+            geoms += geom
+            poses += pose
+        }
+    }
+
     private enum class Shape {
         BOX {
             override val label = "Box"
 
             override fun MeshBuilder.generateMesh() = bevelBox()
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val shape = BoxShape(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
+                val shape = BoxGeometry(Vec3f(rand.randomF(2f, 3f), rand.randomF(2f, 3f), rand.randomF(2f, 3f)))
                 val mass = shape.size.x * shape.size.y * shape.size.z
-                return shape to mass
+                return ShapeGeometries(shape) to mass
             }
         },
 
@@ -351,11 +381,11 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
             override fun MeshBuilder.generateMesh() = capsule()
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
                 val s = rand.randomF(0.75f, 1.5f)
-                val shape = CapsuleShape(2.5f * s, s)
+                val shape = CapsuleGeometry(2.5f * s, s)
                 val mass = shape.radius.pow(3)
-                return shape to mass
+                return ShapeGeometries(shape) to mass
             }
         },
 
@@ -364,13 +394,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
             override fun MeshBuilder.generateMesh() = flatIcoSphere()
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
                 val s = rand.randomF(1.25f, 2.5f)
                 val icoPoints = mutableListOf<Vec3f>()
                 mesh.geometry.forEach { icoPoints.add(it.position.scale(s, MutableVec3f())) }
-                val shape = ConvexHullShape(icoPoints)
+                val shape = ConvexMeshGeometry(icoPoints)
                 val mass = s.pow(3)
-                return shape to mass
+                return ShapeGeometries(shape) to mass
             }
         },
 
@@ -379,10 +409,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
             override fun MeshBuilder.generateMesh() = cylinder()
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val shape = CylinderShape(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
+                val shape = CylinderGeometry(rand.randomF(2f, 4f), rand.randomF(1f, 2f))
                 val mass = shape.radius.pow(2) * shape.length * 0.5f
-                return shape to mass
+                return ShapeGeometries(shape) to mass
             }
         },
 
@@ -408,24 +438,24 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
             }
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
                 val s = rand.randomF(1f, 2f)
-                val shape = MultiShape()
+                val geoms = ShapeGeometries()
 
-                val box1 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
-                shape.addShape(box1, Mat4f().translate(1f * s, 0f, 0f))
+                val box1 = BoxGeometry(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
+                geoms.addShape(box1, Mat4f().translate(1f * s, 0f, 0f))
 
-                val box2 = BoxShape(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
-                shape.addShape(box2, Mat4f().translate(-1f * s, 0f, 0f))
+                val box2 = BoxGeometry(MutableVec3f(0.5f, 0.5f, 2f).scale(s))
+                geoms.addShape(box2, Mat4f().translate(-1f * s, 0f, 0f))
 
-                val box3 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
-                shape.addShape(box3, Mat4f().translate(0f, 0f, 1.25f * s))
+                val box3 = BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
+                geoms.addShape(box3, Mat4f().translate(0f, 0f, 1.25f * s))
 
-                val box4 = BoxShape(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
-                shape.addShape(box4, Mat4f().translate(0f, 0f, -1.25f * s))
+                val box4 = BoxGeometry(MutableVec3f(2.5f, 0.5f, 0.5f).scale(s))
+                geoms.addShape(box4, Mat4f().translate(0f, 0f, -1.25f * s))
 
                 val mass = 8 * s.pow(3)
-                return shape to mass
+                return geoms to mass
             }
         },
 
@@ -436,10 +466,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 icoSphere { steps = 2 }
             }
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
-                val shape = SphereShape(rand.randomF(1.25f, 2.5f))
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
+                val shape = SphereGeometry(rand.randomF(1.25f, 2.5f))
                 val mass = shape.radius.pow(3)
-                return shape to mass
+                return ShapeGeometries(shape) to mass
             }
         },
 
@@ -448,7 +478,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
             override fun MeshBuilder.generateMesh() { }
 
-            override fun generateShape(rand: Random): Pair<CollisionShape, Float> {
+            override fun generateShape(rand: Random): Pair<ShapeGeometries, Float> {
                 throw IllegalStateException()
             }
         };
@@ -464,7 +494,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         abstract fun MeshBuilder.generateMesh()
-        abstract fun generateShape(rand: Random): Pair<CollisionShape, Float>
+        abstract fun generateShape(rand: Random): Pair<ShapeGeometries, Float>
 
         override fun toString(): String {
             return label

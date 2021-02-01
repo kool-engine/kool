@@ -1,20 +1,22 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.physics.shapes.CollisionShape
+import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.geometry.CollisionGeometry
+import physx.PhysxJsLoader
 import physx.PxRigidActor
 import physx.PxRigidDynamic
+import physx.PxShape
 
-actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: Float, bodyProperties: RigidBodyProperties)
-    : CommonRigidBody(collisionShape, mass == 0f)
+actual class RigidBody actual constructor(mass: Float, bodyProperties: RigidBodyProperties)
+    : CommonRigidBody(mass == 0f)
 {
     val pxActor: PxRigidActor
 
     private val bufOrigin = MutableVec3f()
     private val bufRotation = MutableVec4f()
+
+    private val simFilterData = FilterData().set(bodyProperties.simFilterData)
+    private val queryFilterData = FilterData().set(bodyProperties.queryFilterData)
 
     override var origin: Vec3f
         get() = pxActor.getGlobalPose().p.toVec3f(bufOrigin)
@@ -42,7 +44,11 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
     @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     override var inertia: Vec3f
         get() = if (isStatic) Vec3f.ZERO else (pxActor as PxRigidDynamic).getMassSpaceInertiaTensor().toVec3f()
-        set(value) { if (!isStatic) (pxActor as PxRigidDynamic).setMassSpaceInertiaTensor(value.toPxVec3()) }
+        set(value) {
+            if (!isStatic) (pxActor as PxRigidDynamic).setMassSpaceInertiaTensor(value.toPxVec3())
+            isInertiaSet = true
+        }
+    private var isInertiaSet = false
 
     init {
         Physics.checkIsLoaded()
@@ -51,15 +57,25 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
         pxActor = if (mass > 0f) {
             val rigidBody = Physics.physics.createRigidDynamic(pose)
             rigidBody.setMass(mass)
-            rigidBody.setMassSpaceInertiaTensor(collisionShape.estimateInertiaForMass(mass, MutableVec3f()).toPxVec3())
             rigidBody.setAngularDamping(bodyProperties.angularDamping)
             rigidBody.setLinearDamping(bodyProperties.linearDamping)
             rigidBody
         } else {
             Physics.physics.createRigidStatic(pose)
         }
+    }
 
-        collisionShape.attachTo(pxActor, Physics.defaultBodyFlags, bodyProperties.material.pxMaterial, bodyProperties)
+    actual fun attachShape(geometry: CollisionGeometry, material: Material, localPose: Mat4f): RigidBody {
+        val shape = Physics.physics.createShape(geometry.pxGeometry, material.pxMaterial, true)
+        shape.setFilterDatas()
+        shape.setLocalPose(localPose.toPxTransform(shape.getLocalPose()))
+        pxActor.attachShape(shape)
+        mutShapes += geometry to localPose
+
+        if (!isInertiaSet) {
+            inertia = geometry.estimateInertiaForMass(mass)
+        }
+        return this
     }
 
     override fun fixedUpdate(timeStep: Float) {
@@ -69,5 +85,14 @@ actual class RigidBody actual constructor(collisionShape: CollisionShape, mass: 
 
     private fun updateTransform() {
         pxActor.getGlobalPose().toMat4f(transform)
+    }
+
+    private fun PxShape.setFilterDatas() {
+        val pxFilterData = physx.PxFilterData()
+        simFilterData.toPxFilterData(pxFilterData)
+        setSimulationFilterData(pxFilterData)
+        queryFilterData.toPxFilterData(pxFilterData)
+        setQueryFilterData(pxFilterData)
+        PhysxJsLoader.destroy(pxFilterData)
     }
 }

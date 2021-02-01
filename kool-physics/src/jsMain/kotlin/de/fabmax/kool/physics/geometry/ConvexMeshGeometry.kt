@@ -1,42 +1,26 @@
-package de.fabmax.kool.physics.shapes
+package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidBodyProperties
 import de.fabmax.kool.physics.toVec3f
 import de.fabmax.kool.physics.toVector_PxVec3
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.IndexedVertexList
 import physx.*
 
-actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonConvexHullShape(points), CollisionShape {
+actual class ConvexMeshGeometry actual constructor(points: List<Vec3f>) : CommonConvexMeshGeometry(points), CollisionGeometry {
 
     val pxMesh: PxConvexMesh
-    private val bounds = BoundingBox()
-
-    override val geometry: IndexedVertexList
+    override val pxGeometry: PxGeometry
+    override val convexHull: IndexedVertexList
 
     init {
         Physics.checkIsLoaded()
 
         pxMesh = toConvexMesh(points)
-        geometry = makeMeshData(pxMesh)
-
-        bounds.add(points)
-    }
-
-    override fun getAabb(result: BoundingBox) = result.set(bounds)
-    override fun getBoundingSphere(result: MutableVec4f) = result.set(bounds.center, bounds.size.length() / 2)
-
-    override fun attachTo(actor: PxRigidActor, flags: PxShapeFlags, material: PxMaterial, bodyProps: RigidBodyProperties?): PxShape {
-        val geometry = PxConvexMeshGeometry(pxMesh)
-        val shape = Physics.physics.createShape(geometry, material, true, flags)
-        bodyProps?.let { setFilterDatas(shape, it) }
-        actor.attachShape(shape)
-        return shape
+        pxGeometry = PxConvexMeshGeometry(pxMesh)
+        convexHull = makeMeshData(pxMesh)
     }
 
     companion object {
@@ -76,13 +60,5 @@ actual class ConvexHullShape actual constructor(points: List<Vec3f>) : CommonCon
             geometry.generateNormals()
             return geometry
         }
-    }
-
-    override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {
-        // rough approximation: use inertia of bounding box
-        result.x = (mass / 12f) * (bounds.size.y * bounds.size.y + bounds.size.z * bounds.size.z)
-        result.z = (mass / 12f) * (bounds.size.x * bounds.size.x + bounds.size.y * bounds.size.y)
-        result.y = (mass / 12f) * (bounds.size.x * bounds.size.x + bounds.size.z * bounds.size.z)
-        return result
     }
 }

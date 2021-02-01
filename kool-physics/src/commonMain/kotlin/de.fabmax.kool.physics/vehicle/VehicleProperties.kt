@@ -1,9 +1,10 @@
 package de.fabmax.kool.physics.vehicle
 
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.FilterData
 import de.fabmax.kool.physics.Material
-import de.fabmax.kool.physics.PhysicsFilterData
-import de.fabmax.kool.physics.shapes.CollisionShape
+import de.fabmax.kool.physics.geometry.CollisionGeometry
 
 class VehicleProperties {
     var chassisMass = 1500f
@@ -44,14 +45,14 @@ class VehicleProperties {
 
     var groundMaterialFrictions = mapOf<Material, Float>()
 
-    var chassisShapes = emptyList<CollisionShape>()
+    var chassisShapes = emptyList<Pair<CollisionGeometry, Mat4f>>()
     var chassisMaterial = Material(0.5f,0.5f, 0.6f)
-    var chassisSimFilterData = PhysicsFilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
+    var chassisSimFilterData = FilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
         VehicleUtils.COLLISION_FLAG_CHASSIS,
         VehicleUtils.COLLISION_FLAG_CHASSIS_AGAINST
     )
     var wheelMaterial = Material(0.5f,0.5f, 0.6f)
-    var wheelSimFilterData = PhysicsFilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
+    var wheelSimFilterData = FilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
         VehicleUtils.COLLISION_FLAG_WHEEL,
         VehicleUtils.COLLISION_FLAG_WHEEL_AGAINST
     )

@@ -1,69 +1,58 @@
 package de.fabmax.kool.physics
 
-import com.bulletphysics.collision.broadphase.DbvtBroadphase
-import com.bulletphysics.collision.dispatch.CollisionDispatcher
-import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration
-import com.bulletphysics.dynamics.DiscreteDynamicsWorld
-import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver
-import com.bulletphysics.dynamics.vehicle.DefaultVehicleRaycaster
-import com.bulletphysics.dynamics.vehicle.VehicleRaycaster
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.joints.Joint
 import de.fabmax.kool.physics.vehicle.Vehicle
-import javax.vecmath.Vector3f
+import physx.PxTopLevelFunctions
+import physx.physics.PxScene
+import physx.physics.PxSceneDesc
+import physx.physics.PxSceneFlagEnum
+import physx.vehicle.PxVehicleTopLevelFunctions
+import physx.vehicle.PxVehicleUpdateModeEnum
 
-actual class PhysicsWorld  : CommonPhysicsWorld() {
-    val physicsWorld: DiscreteDynamicsWorld
-    val vehicleRaycaster: VehicleRaycaster
+actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld() {
+    val scene: PxScene
 
-    private val bufGravity = Vector3f()
-
-    actual var gravity : Vec3f
-        get() {
-            physicsWorld.getGravity(bufGravity)
-            return bufGravity.toVec3f()
-        }
+    private val bufPxGravity = gravity.toPxVec3()
+    private val bufGravity = MutableVec3f()
+    actual var gravity: Vec3f
+        get() = scene.gravity.toVec3f(bufGravity)
         set(value) {
-            physicsWorld.setGravity(bufGravity.set(value))
+            scene.gravity = value.toPxVec3(bufPxGravity)
         }
 
     init {
-        val collisionConfiguration = DefaultCollisionConfiguration()
-        val dispatcher = CollisionDispatcher(collisionConfiguration)
-        val pairCache = DbvtBroadphase()
-        val solver = SequentialImpulseConstraintSolver()
+        val sceneDesc = PxSceneDesc(Physics.physics.tolerancesScale)
+        sceneDesc.gravity = bufPxGravity
+        sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(8)
+        sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
+        sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_CCD)
+        scene = Physics.physics.createScene(sceneDesc)
 
-        physicsWorld = DiscreteDynamicsWorld(dispatcher, pairCache, solver, collisionConfiguration)
-        physicsWorld.setGravity(Vec3f(0f, -9.81f, 0f).toBtVector3f())
-
-        vehicleRaycaster = DefaultVehicleRaycaster(physicsWorld)
+        // init vehicle simulation framework
+        PxVehicleTopLevelFunctions.InitVehicleSDK(Physics.physics)
+        PxVehicleTopLevelFunctions.VehicleSetBasisVectors(Vec3f.Y_AXIS.toPxVec3(), Vec3f.Z_AXIS.toPxVec3())
+        PxVehicleTopLevelFunctions.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
     }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
-        physicsWorld.stepSimulation(timeStep)
+        scene.simulate(timeStep)
+        scene.fetchResults(true)
     }
 
     override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        physicsWorld.addRigidBody(rigidBody.btRigidBody, rigidBody.collisionGroup.toShort(), rigidBody.collisionMask.toShort())
+        scene.addActor(rigidBody.pxActor)
     }
 
     override fun removeRigidBodyImpl(rigidBody: RigidBody) {
-        physicsWorld.removeRigidBody(rigidBody.btRigidBody)
-    }
-
-    override fun addJointImpl(joint: Joint) {
-        physicsWorld.addConstraint(joint.btConstraint)
-    }
-
-    override fun removeJointImpl(joint: Joint) {
-        physicsWorld.removeConstraint(joint.btConstraint)
+        scene.removeActor(rigidBody.pxActor, true)
     }
 
     override fun addVehicleImpl(vehicle: Vehicle) {
-        physicsWorld.addVehicle(vehicle.btVehicle)
+        scene.addActor(vehicle.vehicle.rigidDynamicActor)
     }
 
     override fun removeVehicleImpl(vehicle: Vehicle) {
-        physicsWorld.removeVehicle(vehicle.btVehicle)
+        scene.removeActor(vehicle.vehicle.rigidDynamicActor)
     }
 }

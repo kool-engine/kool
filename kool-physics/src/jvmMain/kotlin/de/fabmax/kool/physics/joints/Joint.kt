@@ -1,9 +1,9 @@
 package de.fabmax.kool.physics.joints
 
-import com.bulletphysics.dynamics.constraintsolver.TypedConstraint
+import physx.extensions.PxJoint
 
 actual interface Joint {
 
-    val btConstraint: TypedConstraint
+    val pxJoint: PxJoint
 
 }

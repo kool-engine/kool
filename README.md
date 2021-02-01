@@ -10,13 +10,13 @@ as well (look below for a very short usage guide - that's all the documentation 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D) 
-  based on the nVidia PhysX vehicles SDK (via emscripten/WebIDL bindings:
-  [physx-js-webidl](https://github.com/fabmax/physx-js-webidl)). Still work in progress and currently does not work
-  on JVM. A few more notes on physics [further below](#physics-simulation)
+  based on the nVidia PhysX vehicles SDK (using 
+  [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) / [physx-jni](https://github.com/fabmax/physx-jni).
+  Still work in progress. A few more notes on physics [further below](#physics-simulation)
 - [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
-  running over two gears. Uses a lot of multi / compound shapes and revolute / hinge joints. Based on nVidia
-  PhysX on javascript / [JBullet](http://jbullet.advel.cz/) on JVM). 
-- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory box collision physics demo.
+  running over two gears. Uses a lot of multi shapes and revolute joints.
+- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with
+  various different shapes.
 - [Atmospheric Scattering](https://fabmax.github.io/kool/kool-js/?demo=atmosphere): Earth (and Moon) with volumetric atmosphere.
   Lots of interactive controls for adjusting the appearance of the atmosphere. The planet itself is rendered by a highly customized
   deferred pbr shader with extensions for rendering the oceans and night side.
@@ -71,39 +71,6 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - A small GUI framework for simple in-game menus / controls
-
-## Physics Simulation
-
-Multiplatform physics simulation is quite hard to achieve. My initial approach was to write a thin abstraction layer
-which I could then implement with different physics engines on javascript and JVM.
-
-However, after experimenting
-with [ammo.js](https://github.com/kripken/ammo.js/) and [physx-js](https://github.com/ashconnell/physx-js), I realized
-that PhysX is far better than the other (Bullet-based) engines. On the other hand physx-js is in a rather early state
-and only provides bindings for the very basic PhysX functions. I tried to extend the bindings myself, but the project
-uses [Embind](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/embind.html), which is tedious to use.
-In the end I started re-writing the PhysX javascript bindings from scratch based on
-[WebIDL](https://emscripten.org/docs/porting/connecting_cpp_and_javascript/WebIDL-Binder.html). That project is
-available here: [physx-js-webidl](https://github.com/fabmax/physx-js-webidl).
-
-The only remaining problem is that there are no PhysX bindings for JVM, but, after playing around with PhysX,
-[JBullet](http://jbullet.advel.cz/) (or any other physics engine available for JVM) really is not an option anymore.
-So I guess I have to write an PhysX JNI wrapper myself...
-
-Another interesting aspect is performance (and again JBullet is not great there). I have not done very detailed benchmarks
-yet, but here are a few numbers for the [box collision demo](https://fabmax.github.io/kool/kool-js/?demo=physics)
-with 1000 boxes on my machine (Ryzen 2700X). Times were measured as required time for a single 60 Hz simulation step:
-
-| Engine              | Platform             | Time   |
-| ------------------- | -------------------- | ------:|
-| JBullet             | Java 11 (OpenJ9)     | ~20 ms |
-| JBullet             | Java 11 (Graal 20.3) | ~16 ms |
-| physx-js (wasm)     | Firefox 84           | ~8 ms  |
-| physx-js (wasm)     | Chrome 87            | ~8 ms  |
-| ammo.js (js)        | Firefox 84           | ~25 ms |
-| ammo.js (js)        | Chrome 87            | ~16 ms |
-| ammo.js (wasm)      | Firefox 84           | ~8 ms  |
-| ammo.js (wasm)      | Chrome 87            | ~8 ms  |
 
 ## A Hello World Example
 
@@ -275,6 +242,17 @@ functions of the individual nodes in the correct order.
 
 More complex shaders can be defined in exactly the same fashion. E.g. ```PhongShader``` and
 ```PbrShader``` use exactly the same mechanism.
+
+## Physics Simulation
+
+Big update on physics: After playing around with various different engines on javascript and JVM I came to the
+conclusion that all of them had some kind of flaw. So I decided to write my own bindings for
+[Nvidia PhysX](https://github.com/NVIDIAGameWorks/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
+[physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
+
+This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
+I get the features I need and, even better, I get the same features for javascript and JVM, which makes the
+multiplatform approach much easier. Nonetheless, physics integration is still in an early state.
 
 ## Usage
 

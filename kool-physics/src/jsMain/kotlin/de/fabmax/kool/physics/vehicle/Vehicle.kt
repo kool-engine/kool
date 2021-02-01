@@ -5,9 +5,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.shapes.BoxShape
-import de.fabmax.kool.physics.shapes.CollisionShape
-import de.fabmax.kool.physics.shapes.CylinderShape
+import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.physics.geometry.CollisionGeometry
+import de.fabmax.kool.physics.geometry.CylinderGeometry
 import physx.*
 import kotlin.math.PI
 
@@ -259,14 +259,14 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         val wheelSimFilterData = PxFilterData(vehicleProps.wheelSimFilterData)
 
         // Construct a convex mesh for a cylindrical wheel.
-        val wheelMesh = CylinderShape(vehicleProps.wheelWidth, vehicleProps.wheelRadius)
+        val wheelMesh = CylinderGeometry(vehicleProps.wheelWidth, vehicleProps.wheelRadius)
         // Assume all wheels are identical for simplicity.
         val wheelConvexMeshes = List(4) { wheelMesh.pxMesh }
 
         // Chassis just has a single convex shape for simplicity.
         //val chassisConvexMeshes = listOf(createChassisConvexMesh(vehicleProps.chassisDims))
         val chassisShapes = if (vehicleProps.chassisShapes.isEmpty()) {
-            listOf(BoxShape(vehicleProps.chassisDims))
+            listOf(BoxGeometry(vehicleProps.chassisDims) to Mat4f())
         } else {
             vehicleProps.chassisShapes
         }
@@ -335,7 +335,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
     private fun createVehicleActor(chassisData: PxVehicleChassisData,
                                    wheelMaterial: PxMaterial, wheelConvexMeshes: List<PxConvexMesh>, wheelSimFilterData: PxFilterData,
-                                   chassisMaterial: PxMaterial, chassisShapes: List<CollisionShape>, chassisSimFilterData: PxFilterData
+                                   chassisMaterial: PxMaterial, chassisShapes: List<Pair<CollisionGeometry, Mat4f>>, chassisSimFilterData: PxFilterData
     ): PxRigidDynamic {
 
         // We need a rigid body actor for the vehicle.
@@ -359,8 +359,9 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         }
 
         // Add the chassis shapes to the actor.
-        chassisShapes.forEach { shape ->
-            val chassisShape = shape.attachTo(vehActor, Physics.defaultBodyFlags, chassisMaterial, null)!!
+        chassisShapes.forEach { (geom, pose) ->
+            val chassisShape = Physics.physics.createShape(geom.pxGeometry, chassisMaterial, true)
+            chassisShape.setLocalPose(pose.toPxTransform(chassisShape.getLocalPose()))
             chassisShape.setQueryFilterData(chassisQryFilterData)
             chassisShape.setSimulationFilterData(chassisSimFilterData)
             vehActor.attachShape(chassisShape)

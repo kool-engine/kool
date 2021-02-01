@@ -2,13 +2,12 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.joints.Joint
-import de.fabmax.kool.physics.shapes.PlaneShape
+import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
-expect class PhysicsWorld() : CommonPhysicsWorld {
+expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
 
     var gravity: Vec3f
 
@@ -31,10 +30,6 @@ abstract class CommonPhysicsWorld {
     val bodies: List<RigidBody>
         get() = mutBodies
 
-    private val mutJoints = mutableListOf<Joint>()
-    val joints: List<Joint>
-        get() = mutJoints
-
     private val mutVehicles = mutableListOf<Vehicle>()
     val vehicles: List<Vehicle>
         get() = mutVehicles
@@ -47,16 +42,6 @@ abstract class CommonPhysicsWorld {
     fun removeRigidBody(rigidBody: RigidBody) {
         mutBodies -= rigidBody
         removeRigidBodyImpl(rigidBody)
-    }
-
-    fun addJoint(joint: Joint) {
-        mutJoints += joint
-        addJointImpl(joint)
-    }
-
-    fun removeJoint(joint: Joint) {
-        mutJoints -= joint
-        removeJointImpl(joint)
     }
 
     fun addVehicle(vehicle: Vehicle) {
@@ -74,10 +59,6 @@ abstract class CommonPhysicsWorld {
             removeRigidBodyImpl(it)
         }
         mutBodies.clear()
-        mutJoints.forEach {
-            removeJointImpl(it)
-        }
-        mutJoints.clear()
         mutVehicles.forEach {
             removeVehicleImpl(it)
         }
@@ -130,9 +111,6 @@ abstract class CommonPhysicsWorld {
     protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)
     protected abstract fun removeRigidBodyImpl(rigidBody: RigidBody)
 
-    protected abstract fun addJointImpl(joint: Joint)
-    protected abstract fun removeJointImpl(joint: Joint)
-
     protected abstract fun addVehicleImpl(vehicle: Vehicle)
     protected abstract fun removeVehicleImpl(vehicle: Vehicle)
 
@@ -142,7 +120,8 @@ abstract class CommonPhysicsWorld {
      * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.
      */
     fun addDefaultGroundPlane(): RigidBody {
-        val groundPlane = RigidBody(PlaneShape(), 0f)
+        val groundPlane = RigidBody(0f)
+        groundPlane.attachShape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
         groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         addRigidBody(groundPlane)
         return groundPlane

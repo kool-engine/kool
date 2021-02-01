@@ -238,7 +238,7 @@ open class Mat4f {
         return vec.set(x, y, z)
     }
 
-    fun transform(vec: Vec3f, w: Float = 1f, result: MutableVec3f): MutableVec3f {
+    fun transform(vec: Vec3f, w: Float, result: MutableVec3f): MutableVec3f {
         result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
         result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
         result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]

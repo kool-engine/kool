@@ -11,4 +11,7 @@ actual class Material actual constructor(
         Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }
 
+    actual fun release() {
+        pxMaterial.release()
+    }
 }

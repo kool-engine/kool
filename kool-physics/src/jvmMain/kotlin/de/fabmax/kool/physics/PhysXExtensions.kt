@@ -3,7 +3,12 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
-import physx.*
+import physx.common.PxIDENTITYEnum
+import physx.common.PxQuat
+import physx.common.PxTransform
+import physx.common.PxVec3
+import physx.physics.PxFilterData
+import physx.support.Vector_PxVec3
 
 fun FilterData.toPxFilterData(target: PxFilterData) {
     target.word0 = data[0]
@@ -53,10 +58,3 @@ fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
 fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0): PxFilterData = PxFilterData(w0, w1, w2, 0)
 fun PxFilterData(filterData: FilterData): PxFilterData =
     PxFilterData(filterData.data[0], filterData.data[1], filterData.data[2], filterData.data[3])
-
-fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
-    PhysxJsLoader.physxJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
-
-fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysxJsLoader.physxJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
-
-fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysxJsLoader.physxJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)

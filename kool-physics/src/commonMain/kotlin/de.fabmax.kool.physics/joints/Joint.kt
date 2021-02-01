@@ -1,4 +1,3 @@
 package de.fabmax.kool.physics.joints
 
-expect interface Joint {
-}
+expect interface Joint
