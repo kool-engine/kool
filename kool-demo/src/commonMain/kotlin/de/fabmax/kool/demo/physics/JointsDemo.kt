@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.RenderPass
@@ -42,7 +43,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private lateinit var ibl: EnvironmentMaps
 
     private val staticCollGroup = 1
-    private val staticBodyProps = RigidBodyProperties().apply {
+    private val staticSimFilterData = FilterData().apply {
         setCollisionGroup(staticCollGroup)
         clearCollidesWith(staticCollGroup)
     }
@@ -73,7 +74,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val world = PhysicsWorld()
             physicsWorld = world
             resetPhysics = true
-            constraintInfo = ConstraintsInfoMesh(world).apply { isVisible = false }
+            constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
             +constraintInfo
 
             val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
@@ -151,11 +152,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         physicsWorld?.apply {
             clear()
-            val groundPlane = RigidBody(0f, staticBodyProps)
-            groundPlane.attachShape(PlaneGeometry(), material)
-            groundPlane.origin = Vec3f(0f, -20f, 0f)
+            val groundPlane = RigidStatic()
+            groundPlane.setSimulationFilterData(staticSimFilterData)
+            groundPlane.attachShape(Shape(PlaneGeometry(), material))
+            groundPlane.position = Vec3f(0f, -20f, 0f)
             groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
-            addRigidBody(groundPlane)
+            addActor(groundPlane)
         }
 
         val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)
@@ -224,7 +226,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
             textWithValue("Number of Bodies:", "").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.bodies?.size ?: 0}"
+                    text = "${physicsWorld?.actors?.size ?: 0}"
                 }
             }
             textWithValue("Number of Joints:", "").apply {
@@ -274,17 +276,17 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         val firstOuter = makeOuterChainLink(linkMass)
-        firstOuter.origin = t.getOrigin(MutableVec3f())
+        firstOuter.position = t.getOrigin(MutableVec3f())
         firstOuter.setRotation(t.getRotation(r))
-        world.addRigidBody(firstOuter)
+        world.addActor(firstOuter)
 
         var prevInner = makeInnerChainLink(linkMass)
         t.translate(1.5f, 0f, 0f)
         t.rotate(0f, 0f, -15f)
         t.translate(0.5f, 0f, 0f)
-        prevInner.origin = t.getOrigin(MutableVec3f())
+        prevInner.position = t.getOrigin(MutableVec3f())
         prevInner.setRotation(t.getRotation(r))
-        world.addRigidBody(prevInner)
+        world.addActor(prevInner)
 
         connectLinksOuterInner(firstOuter, prevInner, tension)
 
@@ -301,9 +303,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
             t.translate(1.5f, 0f, 0f)
 
             val outer = makeOuterChainLink(linkMass * 2)
-            outer.origin = t.getOrigin(MutableVec3f())
+            outer.position = t.getOrigin(MutableVec3f())
             outer.setRotation(t.getRotation(r))
-            world.addRigidBody(outer)
+            world.addActor(outer)
 
             connectLinksInnerOuter(prevInner, outer, tension)
 
@@ -313,9 +315,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 t.rotate(0f, 0f, -15f)
             }
             t.translate(0.5f, 0f, 0f)
-            prevInner.origin = t.getOrigin(MutableVec3f())
+            prevInner.position = t.getOrigin(MutableVec3f())
             prevInner.setRotation(t.getRotation(r))
-            world.addRigidBody(prevInner)
+            world.addActor(prevInner)
 
             connectLinksOuterInner(outer, prevInner, tension)
 
@@ -328,14 +330,14 @@ class JointsDemo : DemoScene("Physics - Joints") {
         connectLinksInnerOuter(prevInner, firstOuter, tension)
     }
 
-    private fun connectLinksOuterInner(outer: RigidBody, inner: RigidBody, t: Float) {
+    private fun connectLinksOuterInner(outer: RigidDynamic, inner: RigidDynamic, t: Float) {
         val hinge = RevoluteJoint(outer, inner,
             Vec3f(1.5f - t, 0f, 0f), Vec3f(-0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
         joints += hinge
     }
 
-    private fun connectLinksInnerOuter(inner: RigidBody, outer: RigidBody, t: Float) {
+    private fun connectLinksInnerOuter(inner: RigidDynamic, outer: RigidDynamic, t: Float) {
         val hinge = RevoluteJoint(outer, inner,
             Vec3f(-1.5f + t, 0f, 0f), Vec3f(0.5f, 0f, 0f),
             Vec3f.Z_AXIS, Vec3f.Z_AXIS)
@@ -345,18 +347,19 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
         val world = physicsWorld ?: return
 
-        val axle = RigidBody(0f, staticBodyProps)
-        axle.attachShape(CylinderGeometry(7f, 1f), material)
+        val axle = RigidStatic()
+        axle.setSimulationFilterData(staticSimFilterData)
+        axle.attachShape(Shape(CylinderGeometry(7f, 1f), material))
         axle.setRotation(frame.getRotation(Mat3f()).rotate(0f, -90f, 0f))
-        axle.origin = frame.transform(MutableVec3f(origin))
-        world.addRigidBody(axle)
+        axle.position = frame.transform(MutableVec3f(origin))
+        world.addActor(axle)
         physMeshes.axles += axle
         niceMeshes.axles += axle
 
         val gear = makeGear(gearR, gearMass)
         gear.setRotation(frame.getRotation(Mat3f()))
-        gear.origin = frame.transform(MutableVec3f(origin))
-        world.addRigidBody(gear)
+        gear.position = frame.transform(MutableVec3f(origin))
+        world.addActor(gear)
         physMeshes.gears += gear
         niceMeshes.gears += gear
 
@@ -369,15 +372,15 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
     }
 
-    private fun makeGear(gearR: Float, mass: Float): RigidBody {
+    private fun makeGear(gearR: Float, mass: Float): RigidDynamic {
         val s = 1f
         val toothH = 1f * s
         val toothBb = 0.55f * s
         val toothBt = 0.4f * s
         val toothWb = 1f * s
         val toothWt = 0.7f * s
-        val gearShapes = mutableListOf<Pair<CollisionGeometry, Mat4f>>()
-        gearShapes += CylinderGeometry(3f, gearR) to Mat4f().rotate(0f, 90f, 0f)
+        val gearShapes = mutableListOf<Shape>()
+        gearShapes += Shape(CylinderGeometry(3f, gearR), material, Mat4f().rotate(0f, 90f, 0f))
         val toothPts = listOf(
             Vec3f(toothWt, gearR + toothH, -toothBt), Vec3f(toothWt, gearR + toothH, toothBt),
             Vec3f(-toothWt, gearR + toothH, -toothBt), Vec3f(-toothWt, gearR + toothH, toothBt),
@@ -386,39 +389,37 @@ class JointsDemo : DemoScene("Physics - Joints") {
             Vec3f(-toothWb, gearR - 0.1f, -toothBb), Vec3f(-toothWb, gearR - 0.1f, toothBb)
         )
         for (i in 0..11) {
-            gearShapes += ConvexMeshGeometry(toothPts) to Mat4f().rotate(0f, 0f, 30f * i)
+            gearShapes += Shape(ConvexMeshGeometry(toothPts), material, Mat4f().rotate(0f, 0f, 30f * i))
         }
 
-        val gearBodyProps = rigidBodyProperties {
+        val gearFilterData = FilterData().apply {
+            setCollisionGroup(0)
             clearCollidesWith(staticCollGroup)
         }
-        val gear = RigidBody(mass, gearBodyProps)
-        gearShapes.forEach { (geom, pose) ->
-            gear.attachShape(geom, material, pose)
+        val gear = RigidDynamic(mass)
+        gear.setSimulationFilterData(gearFilterData)
+        gearShapes.forEach { shape ->
+            gear.attachShape(shape)
         }
         return gear
     }
 
-    private fun makeOuterChainLink(mass: Float): RigidBody {
+    private fun makeOuterChainLink(mass: Float): RigidDynamic {
         val boxA = BoxGeometry(Vec3f(3.4f, 0.8f, 1f))
         val boxB = BoxGeometry(Vec3f(3.4f, 0.8f, 1f))
 
-        val shapes = mutableListOf<Pair<CollisionGeometry, Mat4f>>()
-        shapes += boxA to Mat4f().translate(0f, 0f, 1.1f)
-        shapes += boxB to Mat4f().translate(0f, 0f, -1.1f)
+        val shapes = mutableListOf<Shape>()
+        shapes += Shape(boxA, material, Mat4f().translate(0f, 0f, 1.1f))
+        shapes += Shape(boxB, material, Mat4f().translate(0f, 0f, -1.1f))
 
-        val linkBodyProps = rigidBodyProperties {
-            linearDamping = 0.05f
-            angularDamping = 0.1f
-        }
-        val link = RigidBody(mass, linkBodyProps)
-        shapes.forEach { (geom, pose) ->
-            link.attachShape(geom, material, pose)
+        val link = RigidDynamic(mass)
+        shapes.forEach { shape ->
+            link.attachShape(shape)
         }
         return link
     }
 
-    private fun makeInnerChainLink(mass: Float): RigidBody {
+    private fun makeInnerChainLink(mass: Float): RigidDynamic {
         val w1 = 0.95f
         val h1 = 0.2f
         val w2 = 0.7f
@@ -437,26 +438,24 @@ class JointsDemo : DemoScene("Physics - Joints") {
         )
         val shape = ConvexMeshGeometry(points)
 
-        val linkBodyProps = rigidBodyProperties {
-            linearDamping = 0.05f
-            angularDamping = 0.1f
-        }
-        return RigidBody(mass, linkBodyProps).attachShape(shape, material)
+        val link = RigidDynamic(mass)
+        link.attachShape(Shape(shape, material))
+        return link
     }
 
     private inner class BodyMesh(val color: Color, val onCreate: (Mesh) -> Unit) {
         var mesh: Mesh? = null
 
-        var factory: (RigidBody) -> Mesh = { proto ->
+        var factory: (RigidActor) -> Mesh = { proto ->
             colorMesh {
                 isFrustumChecked = false
                 instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
                 generate {
                     color = this@BodyMesh.color
-                    proto.shapes.forEach { (geom, pose) ->
+                    proto.shapes.forEach { shape ->
                         withTransform {
-                            transform.mul(pose)
-                            geom.generateMesh(this)
+                            transform.mul(shape.localPose)
+                            shape.geometry.generateMesh(this)
                         }
                     }
                 }
@@ -470,7 +469,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
         }
 
-        fun getOrCreate(protoBody: RigidBody): Mesh {
+        fun getOrCreate(protoBody: RigidActor): Mesh {
             if (mesh == null) {
                 mesh = factory(protoBody)
                 onCreate(mesh!!)
@@ -478,7 +477,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             return mesh!!
         }
 
-        fun updateInstances(bodies: List<RigidBody>) {
+        fun updateInstances(bodies: List<RigidActor>) {
             if (bodies.isNotEmpty()) {
                 getOrCreate(bodies[0]).instances!!.apply {
                     clear()
@@ -498,10 +497,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
         var gearMesh = BodyMesh(Color.MD_BLUE_GREY_200.toLinear()) { addNode(it) }
         var axleMesh = BodyMesh(Color.MD_BLUE_GREY_700.toLinear()) { addNode(it) }
 
-        val linksO = mutableListOf<RigidBody>()
-        val linksI = mutableListOf<RigidBody>()
-        val gears = mutableListOf<RigidBody>()
-        val axles = mutableListOf<RigidBody>()
+        val linksO = mutableListOf<RigidDynamic>()
+        val linksI = mutableListOf<RigidDynamic>()
+        val gears = mutableListOf<RigidDynamic>()
+        val axles = mutableListOf<RigidStatic>()
 
         init {
             isFrustumChecked = false
@@ -529,7 +528,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
     }
 
-    private inner class ConstraintsInfoMesh(val world: PhysicsWorld) : LineMesh() {
+    private inner class ConstraintsInfoMesh : LineMesh() {
         val gradient = ColorGradient.RED_YELLOW_GREEN.inverted()
 
         // keep temp vectors as members to not re-allocate them all the time
@@ -541,8 +540,6 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val tmpL1 = MutableVec3f()
         val tmpL2 = MutableVec3f()
-
-        val tmpBnds = BoundingBox()
 
         init {
             isCastingShadow = false
@@ -569,15 +566,13 @@ class JointsDemo : DemoScene("Physics - Joints") {
             rc.frameA.transform(tmpP1.set(Vec3f.ZERO), 1f)
             tA.transform(tmpA1.set(tmpAx), 0f)
             tA.transform(tmpP1)
-            rc.bodyA.getGeometryBounds(tmpBnds)
-            val lenA = tmpBnds.size * tmpAx * 0.5f + 1f
+            val lenA = rc.bodyA.worldBounds.size * tmpAx * 0.5f + 1f
 
             rc.frameB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
             rc.frameB.transform(tmpP2.set(Vec3f.ZERO), 1f)
             tB.transform(tmpA2.set(tmpAx), 0f)
             tB.transform(tmpP2)
-            rc.bodyB.getGeometryBounds(tmpBnds)
-            val lenB = tmpBnds.size * tmpAx * 0.5f + 1f
+            val lenB = rc.bodyB.worldBounds.size * tmpAx * 0.5f + 1f
 
             val drawLen = max(lenA, lenB)
             val diff = tmpP1.distance(tmpP2) + abs(acos(tmpA1 * tmpA2).toDeg()) / 20

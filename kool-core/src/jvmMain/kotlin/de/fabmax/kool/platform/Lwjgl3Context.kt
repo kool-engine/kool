@@ -31,6 +31,10 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private object SysInfo : ArrayList<String>() {
+        private var prevHeapSz = 1e9
+        private var prevHeapSzTime = 0L
+        private var avgHeapGrowth = 0.0
+
         fun set(api: String, dev: String) {
             clear()
             add(System.getProperty("java.vm.name") + " " + System.getProperty("java.version"))
@@ -44,7 +48,16 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             val rt = Runtime.getRuntime()
             val freeMem = rt.freeMemory()
             val totalMem = rt.totalMemory()
-            set(3, "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB")
+            val heapSz = (totalMem - freeMem) / 1024.0 / 1024.0
+            val t = System.currentTimeMillis()
+            if (heapSz >= prevHeapSz) {
+                val growth = (heapSz - prevHeapSz)
+                val dt = (t - prevHeapSzTime) / 1000.0
+                avgHeapGrowth = avgHeapGrowth * 0.98 + (growth / dt) * 0.02
+                prevHeapSzTime = t
+            }
+            prevHeapSz = heapSz
+            set(3, String.format(Locale.ENGLISH, "Heap: %.1f MB (+%.1f MB/s)", heapSz, avgHeapGrowth))
         }
     }
 

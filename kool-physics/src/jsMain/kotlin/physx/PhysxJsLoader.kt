@@ -42,5 +42,7 @@ object PhysxJsLoader {
         }
     }
     
-    fun destroy(nativeObject: Any) = physxJs.destroy(nativeObject)
+    fun destroy(nativeObject: Any) {
+        physxJs.destroy(nativeObject)
+    }
 }

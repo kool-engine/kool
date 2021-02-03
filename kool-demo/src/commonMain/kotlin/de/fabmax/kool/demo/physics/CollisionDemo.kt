@@ -7,6 +7,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
@@ -26,7 +27,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    private val shapes = Cycler(*Shape.values()).apply { index = 6 }
+    private val shapes = Cycler(*BodyShape.values()).apply { index = 6 }
 
     private var numSpawnBodies = 450
     private var friction = 0.5f
@@ -71,7 +72,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             resetPhysics()
 
             shapes.forEach {
-                if (it != Shape.MIXED) {
+                if (it != BodyShape.MIXED) {
                     it.mesh.shader = instancedBodyShader(ibl)
                     +it.mesh
                 }
@@ -87,10 +88,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
 
                 bodies.forEach { body ->
-                    if (body.rigidBody.origin.length() > 500f) {
+                    if (body.rigidActor.position.length() > 500f) {
                         removeBodies += body
                     } else {
-                        matBuf.set(body.rigidBody.transform).scale(body.scale)
+                        matBuf.set(body.rigidActor.transform).scale(body.scale)
                         body.shape.instances.addInstance {
                             put(matBuf.matrix)
                             put(body.color.array)
@@ -102,7 +103,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     removeBodies.forEach { body ->
                         logI { "Removing out-of-range body" }
                         bodies.remove(body)
-                        physicsWorld.removeRigidBody(body.rigidBody)
+                        physicsWorld.removeActor(body.rigidActor)
                     }
                     removeBodies.clear()
                 }
@@ -114,12 +115,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     private fun resetPhysics() {
         bodies.forEach {
-            physicsWorld?.removeRigidBody(it.rigidBody)
+            physicsWorld?.removeActor(it.rigidActor)
         }
         bodies.clear()
 
-        val types = if (shapes.current == Shape.MIXED) {
-            Shape.values().toList().filter { it != Shape.MIXED }
+        val types = if (shapes.current == BodyShape.MIXED) {
+            BodyShape.values().toList().filter { it != BodyShape.MIXED }
         } else {
             listOf(shapes.current)
         }
@@ -143,13 +144,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val type = types[rand.randomI(types.indices)]
             val (shape, mass) = type.generateShape(rand)
 
-            val body = RigidBody(mass)
+            val body = RigidDynamic(mass)
             shape.geoms.forEachIndexed { si, s ->
-                body.attachShape(s, material, shape.poses[si])
+                body.attachShape(Shape(s, material, shape.poses[si]))
             }
-            body.origin = Vec3f(x, y, z)
+            body.position = Vec3f(x, y, z)
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
-            physicsWorld?.addRigidBody(body)
+            physicsWorld?.addActor(body)
             bodies += ColoredBody(body, color, type)
         }
     }
@@ -177,46 +178,55 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     }
 
     private fun Scene.makeGround(ibl: EnvironmentMaps, physicsWorld: PhysicsWorld) {
-        val frame = mutableListOf<RigidBody>()
-
-        val groundBodyProps = RigidBodyProperties().apply {
-            setCollisionGroup(2)
-            clearCollidesWith(2)
+        val frame = mutableListOf<RigidStatic>()
+        val frameSimFilter = FilterData().apply {
+            setCollisionGroup(1)
+            clearCollidesWith(1)
         }
 
         val groundMaterial = Material(0.5f, 0.5f, 0.2f)
         val groundShape = BoxGeometry(Vec3f(100f, 1f, 100f))
-        val ground = RigidBody(0f, groundBodyProps)
-        ground.attachShape(groundShape, groundMaterial)
-        ground.origin = Vec3f(0f, -0.5f, 0f)
-        physicsWorld.addRigidBody(ground)
+        val ground = RigidStatic().apply {
+            attachShape(Shape(groundShape, groundMaterial))
+            position = Vec3f(0f, -0.5f, 0f)
+            setSimulationFilterData(frameSimFilter)
+        }
+        physicsWorld.addActor(ground)
 
         val frameLtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
-        val frameLt = RigidBody(0f, groundBodyProps)
-        frameLt.attachShape(frameLtShape, groundMaterial)
-        frameLt.origin = Vec3f(-51.5f, 2f, 0f)
-        physicsWorld.addRigidBody(frameLt)
+        val frameLt = RigidStatic().apply {
+            attachShape(Shape(frameLtShape, groundMaterial))
+            position = Vec3f(-51.5f, 2f, 0f)
+            setSimulationFilterData(frameSimFilter)
+        }
+        physicsWorld.addActor(frameLt)
         frame += frameLt
 
         val frameRtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
-        val frameRt = RigidBody(0f, groundBodyProps)
-        frameRt.attachShape(frameRtShape, groundMaterial)
-        frameRt.origin = Vec3f(51.5f, 2f, 0f)
-        physicsWorld.addRigidBody(frameRt)
+        val frameRt = RigidStatic().apply {
+            attachShape(Shape(frameRtShape, groundMaterial))
+            position = Vec3f(51.5f, 2f, 0f)
+            setSimulationFilterData(frameSimFilter)
+        }
+        physicsWorld.addActor(frameRt)
         frame += frameRt
 
         val frameFtShape = BoxGeometry(Vec3f(106f, 6f, 3f))
-        val frameFt = RigidBody(0f, groundBodyProps)
-        frameFt.attachShape(frameFtShape, groundMaterial)
-        frameFt.origin = Vec3f(0f, 2f, 51.5f)
-        physicsWorld.addRigidBody(frameFt)
+        val frameFt = RigidStatic().apply {
+            attachShape(Shape(frameFtShape, groundMaterial))
+            position = Vec3f(0f, 2f, 51.5f)
+            setSimulationFilterData(frameSimFilter)
+        }
+        physicsWorld.addActor(frameFt)
         frame += frameFt
 
         val frameBkShape = BoxGeometry(Vec3f(106f, 6f, 3f))
-        val frameBk = RigidBody(0f, groundBodyProps)
-        frameBk.attachShape(frameBkShape, groundMaterial)
-        frameBk.origin = Vec3f(0f, 2f, -51.5f)
-        physicsWorld.addRigidBody(frameBk)
+        val frameBk = RigidStatic().apply {
+            attachShape(Shape(frameBkShape, groundMaterial))
+            position = Vec3f(0f, 2f, -51.5f)
+            setSimulationFilterData(frameSimFilter)
+        }
+        physicsWorld.addActor(frameBk)
         frame += frameBk
 
 
@@ -235,7 +245,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
                 cube {
                     size.set(groundShape.size)
-                    origin.set(size).scale(-0.5f).add(ground.origin)
+                    origin.set(size).scale(-0.5f).add(ground.position)
                 }
             }
             shader = pbrShader {
@@ -252,10 +262,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         +colorMesh {
             generate {
                 frame.forEach {
-                    val shape = it.shapes[0].first as BoxGeometry
+                    val shape = it.shapes[0].geometry as BoxGeometry
                     cube {
                         size.set(shape.size)
-                        origin.set(size).scale(-0.5f).add(it.origin)
+                        origin.set(size).scale(-0.5f).add(it.position)
                     }
                 }
             }
@@ -292,13 +302,13 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         return PbrShader(cfg, model)
     }
 
-    private class ColoredBody(val rigidBody: RigidBody, val color: MutableColor, val shape: Shape) {
+    private class ColoredBody(val rigidActor: RigidActor, val color: MutableColor, val shape: BodyShape) {
         val scale = MutableVec3f()
 
         init {
-            when (val shape = rigidBody.shapes[0].first) {
+            when (val shape = rigidActor.shapes[0].geometry) {
                 is BoxGeometry -> {
-                    if (rigidBody.shapes.size == 1) {
+                    if (rigidActor.shapes.size == 1) {
                         // Box
                         scale.set(shape.size)
                     } else {
@@ -363,7 +373,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
     }
 
-    private enum class Shape {
+    private enum class BodyShape {
         BOX {
             override val label = "Box"
 
@@ -487,7 +497,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS))
         val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
             isFrustumChecked = false
-            instances = this@Shape.instances
+            instances = this@BodyShape.instances
             generate {
                 generateMesh()
             }

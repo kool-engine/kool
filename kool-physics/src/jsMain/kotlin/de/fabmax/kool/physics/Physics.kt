@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CompletableDeferred
@@ -54,6 +55,15 @@ actual object Physics : CoroutineScope {
                 cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
 
                 defaultBodyFlags = PxShapeFlags(PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE)
+
+                // init vehicle simulation framework
+                val up = Vec3f.Y_AXIS.toPxVec3(PxVec3())
+                val front = Vec3f.Z_AXIS.toPxVec3(PxVec3())
+                PxVehicle.InitVehicleSDK(physics)
+                PxVehicle.VehicleSetBasisVectors(up, front)
+                PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
+                PhysxJsLoader.destroy(up)
+                PhysxJsLoader.destroy(front)
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)

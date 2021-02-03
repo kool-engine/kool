@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -8,9 +7,7 @@ import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
 expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
-
     var gravity: Vec3f
-
 }
 
 abstract class CommonPhysicsWorld {
@@ -26,43 +23,39 @@ abstract class CommonPhysicsWorld {
     var timeFactor = 1f
         private set
 
-    private val mutBodies = mutableListOf<RigidBody>()
-    val bodies: List<RigidBody>
-        get() = mutBodies
+    private val mutActors = mutableListOf<RigidActor>()
+    val actors: List<RigidActor>
+        get() = mutActors
 
     private val mutVehicles = mutableListOf<Vehicle>()
     val vehicles: List<Vehicle>
         get() = mutVehicles
 
-    fun addRigidBody(rigidBody: RigidBody) {
-        mutBodies += rigidBody
-        addRigidBodyImpl(rigidBody)
+    open fun addActor(actor: RigidActor) {
+        mutActors += actor
     }
 
-    fun removeRigidBody(rigidBody: RigidBody) {
-        mutBodies -= rigidBody
-        removeRigidBodyImpl(rigidBody)
+    open fun removeActor(actor: RigidActor) {
+        mutActors -= actor
     }
 
-    fun addVehicle(vehicle: Vehicle) {
+    open fun addVehicle(vehicle: Vehicle) {
         mutVehicles += vehicle
-        addVehicleImpl(vehicle)
     }
 
-    fun removeVehicle(vehicle: Vehicle) {
+    open fun removeVehicle(vehicle: Vehicle) {
         mutVehicles -= vehicle
-        removeVehicleImpl(vehicle)
     }
 
     fun clear() {
-        mutBodies.forEach {
-            removeRigidBodyImpl(it)
+        val removeActors = mutableListOf<RigidActor>().apply { this += actors }
+        for (i in removeActors.lastIndex downTo 0) {
+            removeActor(removeActors[i])
         }
-        mutBodies.clear()
-        mutVehicles.forEach {
-            removeVehicleImpl(it)
+        val removeVehicles = mutableListOf<Vehicle>().apply { this += vehicles }
+        for (i in removeVehicles.lastIndex downTo 0) {
+            removeVehicle(removeVehicles[i])
         }
-        mutVehicles.clear()
     }
 
     fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5, fixedStep: Float = 1f / 60f): Float {
@@ -100,30 +93,25 @@ abstract class CommonPhysicsWorld {
 
     fun singleStepPhysics(timeStep: Float) {
         singleStepPhysicsImpl(timeStep)
-        for (i in mutBodies.indices) {
-            mutBodies[i].fixedUpdate(timeStep)
+        for (i in mutActors.indices) {
+            mutActors[i].fixedUpdate(timeStep)
         }
         for (i in mutVehicles.indices) {
             mutVehicles[i].fixedUpdate(timeStep)
         }
     }
 
-    protected abstract fun addRigidBodyImpl(rigidBody: RigidBody)
-    protected abstract fun removeRigidBodyImpl(rigidBody: RigidBody)
-
-    protected abstract fun addVehicleImpl(vehicle: Vehicle)
-    protected abstract fun removeVehicleImpl(vehicle: Vehicle)
-
     protected abstract fun singleStepPhysicsImpl(timeStep: Float)
 
     /**
      * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.
      */
-    fun addDefaultGroundPlane(): RigidBody {
-        val groundPlane = RigidBody(0f)
-        groundPlane.attachShape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
-        groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
-        addRigidBody(groundPlane)
+    fun addDefaultGroundPlane(): RigidStatic {
+        val groundPlane = RigidStatic()
+        val shape = Shape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
+        groundPlane.attachShape(shape)
+        groundPlane.setRotation(0f, 0f, 90f)
+        addActor(groundPlane)
         return groundPlane
     }
 }

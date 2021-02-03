@@ -1,15 +1,15 @@
 package de.fabmax.kool.physics.vehicle
 
-import de.fabmax.kool.physics.RigidBodyProperties
+import de.fabmax.kool.physics.FilterData
 
 object VehicleUtils {
 
-    fun setupDrivableSurface(bodyProperties: RigidBodyProperties) {
-        bodyProperties.queryFilterData.data[3] = SURFACE_FLAG_DRIVABLE
+    fun setupDrivableSurface(queryFilterData: FilterData) {
+        queryFilterData.data[3] = SURFACE_FLAG_DRIVABLE
     }
 
-    fun setupNonDrivableSurface(bodyProperties: RigidBodyProperties) {
-        bodyProperties.queryFilterData.data[3] = SURFACE_FLAG_NON_DRIVABLE
+    fun setupNonDrivableSurface(queryFilterData: FilterData) {
+        queryFilterData.data[3] = SURFACE_FLAG_NON_DRIVABLE
     }
 
     const val SURFACE_FLAG_DRIVABLE = 0xffff0000.toInt()

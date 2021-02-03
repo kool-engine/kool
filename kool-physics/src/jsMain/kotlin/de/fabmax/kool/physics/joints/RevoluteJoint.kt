@@ -3,20 +3,22 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.physics.PxTransform
+import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.toPxTransform
+import physx.PhysxJsLoader
 import physx.PxRevoluteJoint
 import physx.PxRevoluteJointFlagEnum
 
 @Suppress("CanBeParameter")
-actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actual val bodyB: RigidBody,
+actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint(), Joint {
 
 
     actual val frameA = Mat4f().set(frameA)
     actual val frameB = Mat4f().set(frameB)
 
-    actual constructor(bodyA: RigidBody, bodyB: RigidBody,
+    actual constructor(bodyA: RigidActor, bodyB: RigidActor,
                        pivotA: Vec3f, pivotB: Vec3f,
                        axisA: Vec3f, axisB: Vec3f)
             : this(bodyA, bodyB, computeFrame(pivotA, axisA), computeFrame(pivotB, axisB))
@@ -26,7 +28,11 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidBody, actua
     init {
         Physics.checkIsLoaded()
 
-        pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxActor, frameA.toPxTransform(), bodyB.pxActor, frameB.toPxTransform())
+        val frmA = frameA.toPxTransform(PxTransform())
+        val frmB = frameB.toPxTransform(PxTransform())
+        pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+        PhysxJsLoader.destroy(frmA)
+        PhysxJsLoader.destroy(frmB)
     }
 
     actual fun disableAngularMotor() {

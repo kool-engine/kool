@@ -4,16 +4,16 @@ import de.fabmax.kool.math.FLT_EPSILON
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.physics.RigidActor
 
-expect class RevoluteJoint(bodyA: RigidBody, bodyB: RigidBody, frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint, Joint {
-    val bodyA: RigidBody
-    val bodyB: RigidBody
+expect class RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint, Joint {
+    val bodyA: RigidActor
+    val bodyB: RigidActor
 
     val frameA: Mat4f
     val frameB: Mat4f
 
-    constructor(bodyA: RigidBody, bodyB: RigidBody, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f)
+    constructor(bodyA: RigidActor, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f)
 
     fun disableAngularMotor()
 

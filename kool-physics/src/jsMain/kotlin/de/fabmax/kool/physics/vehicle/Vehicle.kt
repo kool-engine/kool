@@ -117,22 +117,6 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
-        // chassisDims.z is the distance from the rear of the chassis to the front of the chassis.
-        // The front has z = 0.5*chassisDims.z and the rear has z = -0.5*chassisDims.z.
-        // Compute a position for the front wheel and the rear wheel along the z-axis.
-        // Compute the separation between each wheel along the z-axis.
-
-//        val dimX = vehicleProps.chassisDims.x
-//        val dimY = vehicleProps.chassisDims.y
-//        //val wheelR = vehicleDesc.wheelRadius
-//        val wheelW = vehicleProps.wheelWidth + 0.1f
-//
-//        val offsets = List(4) { MutableVec3f() }
-//        offsets[REAR_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelRearZ)
-//        offsets[REAR_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelRearZ)
-//        offsets[FRONT_LEFT].set((-dimX - wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
-//        offsets[FRONT_RIGHT].set((dimX + wheelW) * 0.5f, -dimY / 2, wheelFrontZ)
-
         val tw = vehicleProps.trackWidth * 0.5f
         val offsets = List(4) { MutableVec3f() }
         offsets[FRONT_LEFT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)
@@ -144,7 +128,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
     private fun setupWheelsSimulationData(vehicleProps: VehicleProperties, wheelCenterActorOffsets: List<Vec3f>, wheelsSimData: PxVehicleWheelsSimData) {
         val numWheels = vehicleProps.numWheels
-        val centerOfMass = vehicleProps.chassisCMOffset.toPxVec3()
+        val centerOfMass = vehicleProps.chassisCMOffset.toPxVec3(PxVec3())
         val pxWheelCenterActorOffsets = wheelCenterActorOffsets.toVector_PxVec3()
 
         // Set up the wheels.
@@ -220,14 +204,15 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Set the wheel, tire and suspension data.
         // Set the geometry data.
         // Set the query filter data
+        val tmpVec = PxVec3()
         for (i in 0 until numWheels) {
             wheelsSimData.setWheelData(i, wheels[i])
             wheelsSimData.setTireData(i, tires[i])
             wheelsSimData.setSuspensionData(i, suspensions[i])
-            wheelsSimData.setSuspTravelDirection(i, suspTravelDirections[i].toPxVec3())
-            wheelsSimData.setWheelCentreOffset(i, wheelCentreCMOffsets[i].toPxVec3())
-            wheelsSimData.setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i].toPxVec3())
-            wheelsSimData.setTireForceAppPointOffset(i, tireForceAppCMOffsets[i].toPxVec3())
+            wheelsSimData.setSuspTravelDirection(i, suspTravelDirections[i].toPxVec3(tmpVec))
+            wheelsSimData.setWheelCentreOffset(i, wheelCentreCMOffsets[i].toPxVec3(tmpVec))
+            wheelsSimData.setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i].toPxVec3(tmpVec))
+            wheelsSimData.setTireForceAppPointOffset(i, tireForceAppCMOffsets[i].toPxVec3(tmpVec))
             wheelsSimData.setSceneQueryFilterData(i, qryFilterData)
             wheelsSimData.setWheelShapeMapping(i, i)
         }
@@ -247,6 +232,15 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             barRear.mStiffness = vehicleProps.rearAntiRollBarStiffness
             wheelsSimData.addAntiRollBarData(barRear)
         }
+
+        wheels.forEach { PhysxJsLoader.destroy(it) }
+        tires.forEach { PhysxJsLoader.destroy(it) }
+        suspensions.forEach { PhysxJsLoader.destroy(it) }
+        PhysxJsLoader.destroy(suspSprungMasses)
+        PhysxJsLoader.destroy(qryFilterData)
+        PhysxJsLoader.destroy(tmpVec)
+        PhysxJsLoader.destroy(centerOfMass)
+        PhysxJsLoader.destroy(pxWheelCenterActorOffsets)
     }
 
     private fun createVehicle4w(vehicleProps: VehicleProperties): PxVehicleDrive4W {
@@ -271,10 +265,12 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             vehicleProps.chassisShapes
         }
 
+        val tmpVec = PxVec3()
         val rigidBodyData = PxVehicleChassisData()
-        rigidBodyData.mMOI = vehicleProps.chassisMOI.toPxVec3()
+        rigidBodyData.mMOI = vehicleProps.chassisMOI.toPxVec3(tmpVec)
         rigidBodyData.mMass = vehicleProps.chassisMass
-        rigidBodyData.mCMOffset = vehicleProps.chassisCMOffset.toPxVec3()
+        rigidBodyData.mCMOffset = vehicleProps.chassisCMOffset.toPxVec3(tmpVec)
+        PhysxJsLoader.destroy(tmpVec)
 
         val veh4WActor = createVehicleActor(rigidBodyData,
             wheelMaterial, wheelConvexMeshes, wheelSimFilterData,

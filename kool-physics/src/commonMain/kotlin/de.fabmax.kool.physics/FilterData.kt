@@ -33,12 +33,35 @@ class FilterData() {
     }
 
     fun setBit(word: Int, bit: Int): FilterData {
+        if (bit !in 0..31) {
+            throw IllegalArgumentException("bit must be within 0..31 (is $bit)")
+        }
         data[word] = data[word] or (1 shl bit)
         return this
     }
 
     fun clearBit(word: Int, bit: Int): FilterData {
+        if (bit !in 0..31) {
+            throw IllegalArgumentException("bit must be within 0..31 (is $bit)")
+        }
         data[word] = data[word] and (1 shl bit).inv()
         return this
+    }
+
+    fun setCollisionGroup(group: Int) {
+        data[0] = 0
+        setBit(0, group)
+    }
+
+    fun clearCollidesWith(group: Int) {
+        clearBit(1, group)
+    }
+
+    fun setCollidesWith(group: Int) {
+        setBit(1, group)
+    }
+
+    fun setCollidesWithEverything() {
+        data[1] = -1
     }
 }

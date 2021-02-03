@@ -32,19 +32,16 @@ class VehicleDemo : DemoScene("Vehicle") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    private lateinit var ground: RigidBody
+    private lateinit var ground: RigidStatic
     private lateinit var vehicle: Vehicle
 
     private val groundMaterial = Material(0.5f)
-    private val gndProps = RigidBodyProperties().apply {
-        simFilterData.set(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST)
-        VehicleUtils.setupDrivableSurface(this)
-    }
 
-    private val obstacleProps = RigidBodyProperties().apply {
-        simFilterData.set(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
-        VehicleUtils.setupDrivableSurface(this)
-    }
+    private val groundSimFilterData = FilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST)
+    private val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+
+    private val obstacleSimFilterData = FilterData(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
+    private val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         ctx.assetMgr.launch {
@@ -195,12 +192,14 @@ class VehicleDemo : DemoScene("Vehicle") {
 
             for (i in 0 until c) {
                 val boxShape = BoxGeometry(Vec3f(size))
-                val body = RigidBody(250f, obstacleProps)
-                body.attachShape(boxShape, groundMaterial)
+                val body = RigidDynamic(250f)
+                body.attachShape(Shape(boxShape, groundMaterial))
+                body.setSimulationFilterData(obstacleSimFilterData)
+                body.setQueryFilterData(obstacleQryFilterData)
                 val pos = MutableVec3f(x + i * stepX, size * 0.5f + r * size, 0f)
                 frame.transform(pos)
-                body.origin = pos
-                world.addRigidBody(body)
+                body.position = pos
+                world.addActor(body)
 
                 val color = if (i % 2 == 0) Color.MD_ORANGE_300 else  Color.MD_ORANGE_100
                 +body.toPrettyMesh(color.toLinear())
@@ -209,14 +208,20 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeRocker(frame: Mat4f, world: PhysicsWorld) {
-        val anchor = RigidBody(0f, obstacleProps)
-        anchor.attachShape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), groundMaterial)
-        anchor.origin = frame.transform(MutableVec3f(0f, 0.75f, 0f))
-        val rocker = RigidBody(500f, obstacleProps)
-        rocker.attachShape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), groundMaterial)
-        rocker.origin = frame.transform(MutableVec3f(0f, 1.7f, 0f))
-        world.addRigidBody(anchor)
-        world.addRigidBody(rocker)
+        val anchor = RigidStatic().apply {
+            setSimulationFilterData(obstacleSimFilterData)
+            setQueryFilterData(obstacleQryFilterData)
+            attachShape(Shape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), groundMaterial))
+            position = frame.transform(MutableVec3f(0f, 0.75f, 0f))
+        }
+        val rocker = RigidDynamic(500f).apply {
+            setSimulationFilterData(obstacleSimFilterData)
+            setQueryFilterData(obstacleQryFilterData)
+            attachShape(Shape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), groundMaterial))
+            position = frame.transform(MutableVec3f(0f, 1.7f, 0f))
+        }
+        world.addActor(anchor)
+        world.addActor(rocker)
         +anchor.toPrettyMesh(Color.MD_ORANGE.toLinear())
         +rocker.toPrettyMesh(Color.MD_ORANGE_100.toLinear())
 
@@ -224,11 +229,14 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeRamp(frame: Mat4f, world: PhysicsWorld) {
-        val ramp = RigidBody(0f, obstacleProps)
-        ramp.attachShape(BoxGeometry(Vec3f(10f, 2f, 10f)), groundMaterial)
-        ramp.origin = frame.transform(MutableVec3f(0f, 0f, 0f))
-        ramp.setRotation(Mat3f().rotate(-11f, 0f, 0f))
-        world.addRigidBody(ramp)
+        val ramp = RigidStatic().apply {
+            setSimulationFilterData(obstacleSimFilterData)
+            setQueryFilterData(obstacleQryFilterData)
+            attachShape(Shape(BoxGeometry(Vec3f(10f, 2f, 10f)), groundMaterial))
+            position = frame.transform(MutableVec3f(0f, 0f, 0f))
+            setRotation(Mat3f().rotate(-11f, 0f, 0f))
+        }
+        world.addActor(ramp)
         +ramp.toPrettyMesh(Color.MD_ORANGE_100.toLinear())
     }
 
@@ -236,11 +244,13 @@ class VehicleDemo : DemoScene("Vehicle") {
         for (i in 0 until 30) {
             val c = if (i % 2 == 0) Color.MD_ORANGE_300 else Color.MD_ORANGE_100
             for (s in -1 .. 1 step 2) {
-                val bump = RigidBody(0f, obstacleProps)
-                bump.attachShape(CylinderGeometry(4f, 0.5f), groundMaterial)
-                bump.origin = frame.transform(MutableVec3f(2f * s, -0.3f, i * 3.1f + s * 0.4f))
-                //bump.setRotation(Mat3f().rotate(0f, 0f, 90f))
-                world.addRigidBody(bump)
+                val bump = RigidStatic().apply {
+                    setSimulationFilterData(obstacleQryFilterData)
+                    setQueryFilterData(obstacleQryFilterData)
+                    attachShape(Shape(CylinderGeometry(4f, 0.5f), groundMaterial))
+                    position = frame.transform(MutableVec3f(2f * s, -0.3f, i * 3.1f + s * 0.4f))
+                }
+                world.addActor(bump)
                 +bump.toPrettyMesh(c.toLinear())
             }
         }
@@ -271,13 +281,16 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +gndMesh
 
-        ground = RigidBody(0f, gndProps)
-        ground.attachShape(PlaneGeometry(), groundMaterial)
-        ground.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
-        world.addRigidBody(ground)
+        ground = RigidStatic().apply {
+            setSimulationFilterData(groundSimFilterData)
+            setQueryFilterData(groundQryFilterData)
+            attachShape(Shape(PlaneGeometry(), groundMaterial))
+            setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
+        }
+        world.addActor(ground)
     }
 
-    private fun RigidBody.toPrettyMesh(color: Color, rough: Float = 0.8f, metal: Float = 0f) = toMesh(color) {
+    private fun RigidActor.toPrettyMesh(color: Color, rough: Float = 0.8f, metal: Float = 0f) = toMesh(color) {
         roughness = rough
         metallic = metal
         useImageBasedLighting(ibl)

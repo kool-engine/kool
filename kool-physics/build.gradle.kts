@@ -24,8 +24,8 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("de.fabmax:physx-jni:0.3.0")
-                runtimeOnly("de.fabmax:physx-jni:0.3.0:native-win64")
+                implementation("de.fabmax:physx-jni:0.3.1")
+                runtimeOnly("de.fabmax:physx-jni:0.3.1:native-win64")
             }
         }
 

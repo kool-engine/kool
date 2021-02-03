@@ -6,12 +6,12 @@ import de.fabmax.kool.physics.vehicle.Vehicle
 import physx.PxScene
 import physx.PxSceneDesc
 import physx.PxSceneFlagEnum
-import physx.PxVehicleUpdateModeEnum
+import physx.PxVec3
 
 actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld() {
     val scene: PxScene
 
-    private val bufPxGravity = gravity.toPxVec3()
+    private val bufPxGravity = gravity.toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
         get() = scene.getGravity().toVec3f(bufGravity)
@@ -27,10 +27,6 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
         sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_CCD)
         scene = Physics.physics.createScene(sceneDesc)
-
-        Physics.PxVehicle.InitVehicleSDK(Physics.physics)
-        Physics.PxVehicle.VehicleSetBasisVectors(Vec3f.Y_AXIS.toPxVec3(), Vec3f.Z_AXIS.toPxVec3())
-        Physics.PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
     }
 
     override fun singleStepPhysicsImpl(timeStep: Float) {
@@ -38,19 +34,23 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         scene.fetchResults(true)
     }
 
-    override fun addRigidBodyImpl(rigidBody: RigidBody) {
-        scene.addActor(rigidBody.pxActor)
+    override fun addActor(actor: RigidActor) {
+        super.addActor(actor)
+        scene.addActor(actor.pxRigidActor)
     }
 
-    override fun removeRigidBodyImpl(rigidBody: RigidBody) {
-        scene.removeActor(rigidBody.pxActor, true)
+    override fun removeActor(actor: RigidActor) {
+        super.removeActor(actor)
+        scene.removeActor(actor.pxRigidActor)
     }
 
-    override fun addVehicleImpl(vehicle: Vehicle) {
+    override fun addVehicle(vehicle: Vehicle) {
+        super.addVehicle(vehicle)
         scene.addActor(vehicle.vehicle.getRigidDynamicActor())
     }
 
-    override fun removeVehicleImpl(vehicle: Vehicle) {
+    override fun removeVehicle(vehicle: Vehicle) {
+        super.removeVehicle(vehicle)
         scene.removeActor(vehicle.vehicle.getRigidDynamicActor())
     }
 }
