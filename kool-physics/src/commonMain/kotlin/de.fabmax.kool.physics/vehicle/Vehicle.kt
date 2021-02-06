@@ -1,36 +1,26 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RigidDynamic
 
-expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld) : CommonVehicle {
+expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = Mat4f()) : CommonVehicle {
 
-    val chassisTransform: Mat4f
     val wheelTransforms: List<Mat4f>
 
-    val velocity: Vec3f
     val forwardSpeed: Float
 
     var isReverse: Boolean
 
 }
 
-abstract class CommonVehicle {
-
-    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
+abstract class CommonVehicle(vehicleProps: VehicleProperties, pose: Mat4f) : RigidDynamic(vehicleProps.chassisMass, pose) {
 
     abstract fun setSteerInput(value: Float)
 
     abstract fun setThrottleInput(value: Float)
 
     abstract fun setBrakeInput(value: Float)
-
-    internal open fun fixedUpdate(timeStep: Float) {
-        for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](timeStep)
-        }
-    }
 
     companion object {
         const val FRONT_LEFT = 0

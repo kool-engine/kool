@@ -2,7 +2,6 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.geometry.PlaneGeometry
-import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
@@ -27,10 +26,6 @@ abstract class CommonPhysicsWorld {
     val actors: List<RigidActor>
         get() = mutActors
 
-    private val mutVehicles = mutableListOf<Vehicle>()
-    val vehicles: List<Vehicle>
-        get() = mutVehicles
-
     open fun addActor(actor: RigidActor) {
         mutActors += actor
     }
@@ -39,22 +34,10 @@ abstract class CommonPhysicsWorld {
         mutActors -= actor
     }
 
-    open fun addVehicle(vehicle: Vehicle) {
-        mutVehicles += vehicle
-    }
-
-    open fun removeVehicle(vehicle: Vehicle) {
-        mutVehicles -= vehicle
-    }
-
     fun clear() {
         val removeActors = mutableListOf<RigidActor>().apply { this += actors }
         for (i in removeActors.lastIndex downTo 0) {
             removeActor(removeActors[i])
-        }
-        val removeVehicles = mutableListOf<Vehicle>().apply { this += vehicles }
-        for (i in removeVehicles.lastIndex downTo 0) {
-            removeVehicle(removeVehicles[i])
         }
     }
 
@@ -95,9 +78,6 @@ abstract class CommonPhysicsWorld {
         singleStepPhysicsImpl(timeStep)
         for (i in mutActors.indices) {
             mutActors[i].fixedUpdate(timeStep)
-        }
-        for (i in mutVehicles.indices) {
-            mutVehicles[i].fixedUpdate(timeStep)
         }
     }
 

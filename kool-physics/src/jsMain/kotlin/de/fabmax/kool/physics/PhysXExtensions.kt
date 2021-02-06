@@ -60,11 +60,12 @@ fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
 fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0): PxFilterData = PxFilterData(w0, w1, w2, 0)
 fun PxFilterData(filterData: FilterData): PxFilterData =
     PxFilterData(filterData.data[0], filterData.data[1], filterData.data[2], filterData.data[3])
-fun FilterData.toPxFilterData(target: PxFilterData) {
+fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     target.word0 = data[0]
     target.word1 = data[1]
     target.word2 = data[2]
     target.word3 = data[3]
+    return target
 }
 
 fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =

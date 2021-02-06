@@ -7,17 +7,17 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.util.BoundingBox
 import physx.physics.PxRigidActor
 import physx.physics.PxShape
-import kotlin.collections.forEach
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
 
 actual open class RigidActor : CommonRigidActor() {
 
     internal lateinit var pxRigidActor: PxRigidActor
     protected val pxPose = PxTransform()
-    protected val pxSimFilterData = PxFilterData()
-    protected val pxQryFilterData = PxFilterData()
+    protected val pxFilterData = PxFilterData()
     protected val pxShapes = mutableMapOf<Shape, PxShape>()
+
+    private val simFilterData = FilterData()
+    private val qryFilterData = FilterData()
 
     private val bufBounds = BoundingBox()
     private val bufPosition = MutableVec3f()
@@ -44,21 +44,22 @@ actual open class RigidActor : CommonRigidActor() {
         get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
 
     init {
-        FilterData().apply {
+        simFilterData.apply {
             setCollisionGroup(0)
             setCollidesWithEverything()
-            toPxFilterData(pxSimFilterData)
         }
     }
 
     actual fun setSimulationFilterData(simulationFilterData: FilterData) {
-        simulationFilterData.toPxFilterData(pxSimFilterData)
-        pxShapes.values.forEach { it.simulationFilterData = pxSimFilterData }
+        simFilterData.set(simulationFilterData)
+        simulationFilterData.toPxFilterData(pxFilterData)
+        pxShapes.values.forEach { it.simulationFilterData = pxFilterData }
     }
 
     actual fun setQueryFilterData(queryFilterData: FilterData) {
-        queryFilterData.toPxFilterData(pxQryFilterData)
-        pxShapes.values.forEach { it.queryFilterData = pxQryFilterData }
+        qryFilterData.set(queryFilterData)
+        queryFilterData.toPxFilterData(pxFilterData)
+        pxShapes.values.forEach { it.queryFilterData = pxFilterData }
     }
 
     override fun attachShape(shape: Shape) {
@@ -67,8 +68,11 @@ actual open class RigidActor : CommonRigidActor() {
         val pxShape = Physics.physics.createShape(shape.geometry.pxGeometry, shape.material.pxMaterial, true)
         pxShapes[shape] = pxShape
         pxShape.localPose = shape.localPose.toPxTransform(pxPose)
-        pxShape.simulationFilterData = pxSimFilterData
-        pxShape.queryFilterData = pxQryFilterData
+
+        val simFd = if (shape.simFilterData !== null) shape.simFilterData else simFilterData
+        pxShape.simulationFilterData = simFd.toPxFilterData(pxFilterData)
+        val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else qryFilterData
+        pxShape.queryFilterData = qryFd.toPxFilterData(pxFilterData)
         pxRigidActor.attachShape(pxShape)
     }
 
@@ -84,8 +88,7 @@ actual open class RigidActor : CommonRigidActor() {
         mutShapes.clear()
 
         pxPose.destroy()
-        pxSimFilterData.destroy()
-        pxQryFilterData.destroy()
+        pxFilterData.destroy()
     }
 
     override fun fixedUpdate(timeStep: Float) {

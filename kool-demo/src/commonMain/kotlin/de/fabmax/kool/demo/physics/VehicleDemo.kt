@@ -124,8 +124,10 @@ class VehicleDemo : DemoScene("Vehicle") {
             BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
             BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
         )
-        vehicle = Vehicle(vehicleProps, world)
-        world.addVehicle(vehicle)
+
+        val pose = Mat4f().translate(0f, 3f, 0f)
+        vehicle = Vehicle(vehicleProps, world, pose)
+        world.addActor(vehicle)
 
         +group {
             val wheelMeshes = mutableListOf<Group>()
@@ -172,7 +174,7 @@ class VehicleDemo : DemoScene("Vehicle") {
             }
 
             onUpdate += {
-                transform.set(vehicle.chassisTransform)
+                transform.set(vehicle.transform)
                 setDirty()
                 for (i in 0..3) {
                     wheelMeshes[i].transform.set(vehicle.wheelTransforms[i])
@@ -271,8 +273,8 @@ class VehicleDemo : DemoScene("Vehicle") {
                 }
             }
             shader = pbrShader {
-                useAlbedoMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png", true)
-                useNormalMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
+                useAlbedoMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png", true)
+                useNormalMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
                 useImageBasedLighting(ibl)
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                 albedo = Color.MD_ORANGE_100.mix(Color.WHITE, 0.5f).toLinear()

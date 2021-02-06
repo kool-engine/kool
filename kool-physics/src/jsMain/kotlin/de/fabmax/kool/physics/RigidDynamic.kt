@@ -7,13 +7,13 @@ import physx.PhysxJsLoader
 import physx.PxRigidDynamic
 import physx.PxVec3
 
-actual class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : RigidActor() {
+actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : RigidActor() {
 
     init {
         Physics.checkIsLoaded()
     }
 
-    private val pxRigidDynamic: PxRigidDynamic
+    protected val pxRigidDynamic: PxRigidDynamic
     private val pxTmpVec = PxVec3()
 
     private val bufInertia = MutableVec3f()

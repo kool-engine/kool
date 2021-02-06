@@ -230,8 +230,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         frame += frameBk
 
 
-        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
-        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
+        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
             groundAlbedo.dispose()
             groundNormal.dispose()

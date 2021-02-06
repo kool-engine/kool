@@ -77,8 +77,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
             constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
             +constraintInfo
 
-            val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_gray.png")
-            val groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_normal.png")
+            val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
+            val groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
             onDispose += {
                 groundAlbedo.dispose()
                 groundNormal.dispose()
@@ -380,7 +380,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val toothWb = 1f * s
         val toothWt = 0.7f * s
         val gearShapes = mutableListOf<Shape>()
-        gearShapes += Shape(CylinderGeometry(3f, gearR), material, Mat4f().rotate(0f, 90f, 0f))
+        gearShapes += Shape(CylinderGeometry(2.5f, gearR), material, Mat4f().rotate(0f, 90f, 0f))
         val toothPts = listOf(
             Vec3f(toothWt, gearR + toothH, -toothBt), Vec3f(toothWt, gearR + toothH, toothBt),
             Vec3f(-toothWt, gearR + toothH, -toothBt), Vec3f(-toothWt, gearR + toothH, toothBt),
@@ -405,12 +405,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private fun makeOuterChainLink(mass: Float): RigidDynamic {
-        val boxA = BoxGeometry(Vec3f(3.4f, 0.8f, 1f))
-        val boxB = BoxGeometry(Vec3f(3.4f, 0.8f, 1f))
+        val boxA = BoxGeometry(Vec3f(3.4f, 0.8f, 0.3f))
+        val boxB = BoxGeometry(Vec3f(3.4f, 0.8f, 0.3f))
 
         val shapes = mutableListOf<Shape>()
-        shapes += Shape(boxA, material, Mat4f().translate(0f, 0f, 1.1f))
-        shapes += Shape(boxB, material, Mat4f().translate(0f, 0f, -1.1f))
+        shapes += Shape(boxA, material, Mat4f().translate(0f, 0f, 0.75f))
+        shapes += Shape(boxB, material, Mat4f().translate(0f, 0f, -0.75f))
 
         val link = RigidDynamic(mass)
         shapes.forEach { shape ->

@@ -6,9 +6,9 @@ import de.fabmax.kool.math.Vec3f
 import physx.common.PxVec3
 import physx.physics.PxRigidDynamic
 
-actual class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : RigidActor() {
+actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : RigidActor() {
 
-    private val pxRigidDynamic: PxRigidDynamic
+    protected val pxRigidDynamic: PxRigidDynamic
     private val pxTmpVec = PxVec3()
 
     private val bufInertia = MutableVec3f()

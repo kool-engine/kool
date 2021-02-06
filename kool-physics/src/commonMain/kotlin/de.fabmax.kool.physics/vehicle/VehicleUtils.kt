@@ -4,12 +4,14 @@ import de.fabmax.kool.physics.FilterData
 
 object VehicleUtils {
 
-    fun setupDrivableSurface(queryFilterData: FilterData) {
+    fun setupDrivableSurface(queryFilterData: FilterData): FilterData {
         queryFilterData.data[3] = SURFACE_FLAG_DRIVABLE
+        return queryFilterData
     }
 
-    fun setupNonDrivableSurface(queryFilterData: FilterData) {
+    fun setupNonDrivableSurface(queryFilterData: FilterData): FilterData {
         queryFilterData.data[3] = SURFACE_FLAG_NON_DRIVABLE
+        return queryFilterData
     }
 
     const val SURFACE_FLAG_DRIVABLE = 0xffff0000.toInt()

@@ -2,7 +2,6 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.vehicle.Vehicle
 import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.physics.PxScene
@@ -42,15 +41,5 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
         scene.removeActor(actor.pxRigidActor)
-    }
-
-    override fun addVehicle(vehicle: Vehicle) {
-        super.addVehicle(vehicle)
-        scene.addActor(vehicle.vehicle.rigidDynamicActor)
-    }
-
-    override fun removeVehicle(vehicle: Vehicle) {
-        super.removeVehicle(vehicle)
-        scene.removeActor(vehicle.vehicle.rigidDynamicActor)
     }
 }
