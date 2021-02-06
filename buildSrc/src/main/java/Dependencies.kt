@@ -1,8 +1,8 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.4.21"
-    val kotlinCorroutinesVersion = "1.4.1"
+    val kotlinVersion = "1.4.30"
+    val kotlinCorroutinesVersion = "1.4.2"
     val kotlinSerializationVersion = "1.0.1"
 
     val lwjglVersion = "3.2.3"
