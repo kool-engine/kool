@@ -3,7 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import physx.PhysxJsLoader
+import physx.PhysXJsLoader
 import physx.PxRigidDynamic
 import physx.PxVec3
 
@@ -72,6 +72,6 @@ actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : Ri
 
     override fun release() {
         super.release()
-        PhysxJsLoader.destroy(pxTmpVec)
+        PhysXJsLoader.destroy(pxTmpVec)
     }
 }

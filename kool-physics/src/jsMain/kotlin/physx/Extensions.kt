@@ -7,7 +7,7 @@ package physx
 
 external interface PxDefaultAllocator
 fun PxDefaultAllocator(): PxDefaultAllocator {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxDefaultAllocator()")
 }
 
@@ -24,6 +24,7 @@ external interface PxRevoluteJoint : PxJoint {
     fun setDriveGearRatio(ratio: Float)
     fun getDriveGearRatio(): Float
     fun setRevoluteJointFlags(flags: PxRevoluteJointFlags)
+    fun setRevoluteJointFlag(flag: Int, value: Boolean)
     fun getRevoluteJointFlags(): PxRevoluteJointFlags
 }
 
@@ -32,13 +33,13 @@ external interface PxRevoluteJointFlags {
     fun set(flag: Int)
     fun clear(flag: Int)
 }
-fun PxRevoluteJointFlags(flags: Int): PxRevoluteJointFlags {
-    val module = PhysxJsLoader.physxJs
+fun PxRevoluteJointFlags(flags: Short): PxRevoluteJointFlags {
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxRevoluteJointFlags(flags)")
 }
 
 object PxRevoluteJointFlagEnum {
-    val eLIMIT_ENABLED: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED()
-    val eDRIVE_ENABLED: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED()
-    val eDRIVE_FREESPIN: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN()
+    val eLIMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED()
+    val eDRIVE_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED()
+    val eDRIVE_FREESPIN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN()
 }

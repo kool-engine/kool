@@ -27,7 +27,7 @@ actual class ConvexMeshGeometry actual constructor(points: List<Vec3f>) : Common
         fun toConvexMesh(points: List<Vec3f>): PxConvexMesh {
             val vec3Vector = points.toVector_PxVec3()
             val desc = PxConvexMeshDesc()
-            desc.flags = PxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX)
+            desc.flags = PxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.toShort())
             desc.points.count = points.size
             desc.points.stride = 3 * 4      // point consists of 3 floats with 4 bytes each
             desc.points.data = vec3Vector.data()

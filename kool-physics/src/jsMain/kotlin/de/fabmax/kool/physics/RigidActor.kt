@@ -5,7 +5,7 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.util.BoundingBox
-import physx.PhysxJsLoader
+import physx.PhysXJsLoader
 import physx.PxRigidActor
 import physx.PxShape
 import kotlin.collections.set
@@ -34,6 +34,7 @@ actual open class RigidActor : CommonRigidActor() {
             val pose = pxRigidActor.getGlobalPose()
             value.toPxVec3(pose.p)
             pxRigidActor.setGlobalPose(pose)
+            updateTransform()
         }
 
     override var rotation: Vec4f
@@ -92,8 +93,8 @@ actual open class RigidActor : CommonRigidActor() {
         pxShapes.clear()
         mutShapes.clear()
 
-        PhysxJsLoader.destroy(pxPose)
-        PhysxJsLoader.destroy(pxFilterData)
+        PhysXJsLoader.destroy(pxPose)
+        PhysXJsLoader.destroy(pxFilterData)
     }
 
     override fun fixedUpdate(timeStep: Float) {

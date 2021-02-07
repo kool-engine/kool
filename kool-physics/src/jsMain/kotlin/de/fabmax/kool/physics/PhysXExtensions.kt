@@ -15,7 +15,7 @@ fun BoundingBox.toPxBounds3(result: PxBounds3): PxBounds3 {
     val v = PxVec3()
     result.minimum = min.toPxVec3(v)
     result.maximum = max.toPxVec3(v)
-    PhysxJsLoader.destroy(v)
+    PhysXJsLoader.destroy(v)
     return result
 }
 
@@ -69,8 +69,8 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
 }
 
 fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
-    PhysxJsLoader.physxJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
+    PhysXJsLoader.physXJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
 
-fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysxJsLoader.physxJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
+fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysXJsLoader.physXJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
 
-fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysxJsLoader.physxJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)
+fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysXJsLoader.physXJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)

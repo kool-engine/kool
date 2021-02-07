@@ -29,6 +29,7 @@ actual open class RigidActor : CommonRigidActor() {
             val pose = pxRigidActor.globalPose
             value.toPxVec3(pose.p)
             pxRigidActor.globalPose = pose
+            updateTransform()
         }
 
     override var rotation: Vec4f

@@ -24,14 +24,18 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("de.fabmax:physx-jni:0.3.1")
-                runtimeOnly("de.fabmax:physx-jni:0.3.1:native-win64")
+                implementation(DepsJvm.lwjgl())
+                runtimeOnly(DepsJvm.lwjglNatives())
+
+                implementation("de.fabmax:physx-jni:0.3.2")
+                runtimeOnly("de.fabmax:physx-jni:0.3.2:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.3.2:native-linux64")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js", File(projectDir, "npm/node_modules/physx-js-webidl")))
+                implementation(npm("physx-js-webidl", "0.3.2"))
             }
         }
 

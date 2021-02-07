@@ -6,11 +6,11 @@ package physx
 
 import kotlin.js.Promise
 
-object PhysxJsLoader {
-    @JsName("physxJs")
-    internal var physxJs: dynamic = null
+object PhysXJsLoader {
+    @JsName("physXJs")
+    internal var physXJs: dynamic = null
     @Suppress("UnsafeCastFromDynamic")
-    private val physxJsPromise: Promise<dynamic> = js("require('physx-js')")()
+    private val physXJsPromise: Promise<dynamic> = js("require('physx-js-webidl')")()
 
     private var isLoading = false
     private var isLoaded = false
@@ -20,8 +20,8 @@ object PhysxJsLoader {
     fun loadModule() {
         if (!isLoading) {
             isLoading = true
-            physxJsPromise.then { module: dynamic ->
-                physxJs = module
+            physXJsPromise.then { module: dynamic ->
+                physXJs = module
                 isLoaded = true
                 onLoadListeners.forEach { it() }
             }
@@ -38,11 +38,11 @@ object PhysxJsLoader {
     
     fun checkIsLoaded() {
         if (!isLoaded) {
-            throw IllegalStateException("Module 'physx-js' is not loaded. Call loadModule() first and wait for loading to be finished.")
+            throw IllegalStateException("Module 'physx-js-webidl' is not loaded. Call loadModule() first and wait for loading to be finished.")
         }
     }
     
     fun destroy(nativeObject: Any) {
-        physxJs.destroy(nativeObject)
+        physXJs.destroy(nativeObject)
     }
 }

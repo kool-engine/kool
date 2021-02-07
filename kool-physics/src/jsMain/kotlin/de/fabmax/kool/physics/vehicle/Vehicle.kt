@@ -121,7 +121,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         chassisData.mMOI = vehicleProps.chassisMOI.toPxVec3(tmpVec)
         chassisData.mMass = vehicleProps.chassisMass
         chassisData.mCMOffset = vehicleProps.chassisCMOffset.toPxVec3(tmpVec)
-        PhysxJsLoader.destroy(tmpVec)
+        PhysXJsLoader.destroy(tmpVec)
 
         val chassisQryFilterData = FilterData()
         VehicleUtils.setupNonDrivableSurface(chassisQryFilterData)
@@ -131,7 +131,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         inertia = chassisData.mMOI.toVec3f()
         val cMassTransform = PxTransform().apply { p = chassisData.mCMOffset }
         pxRigidDynamic.setCMassLocalPose(cMassTransform)
-        PhysxJsLoader.destroy(cMassTransform)
+        PhysXJsLoader.destroy(cMassTransform)
 
         // Add wheel shapes to the actor. Must happen before chassis shapes because first
         // four shapes are treated as wheels
@@ -248,7 +248,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             barFront.mWheel1 = FRONT_RIGHT
             barFront.mStiffness = vehicleProps.frontAntiRollBarStiffness
             wheelsSimData.addAntiRollBarData(barFront)
-            PhysxJsLoader.destroy(barFront)
+            PhysXJsLoader.destroy(barFront)
         }
         if (vehicleProps.rearAntiRollBarStiffness > 0f) {
             val barRear = PxVehicleAntiRollBarData()
@@ -256,17 +256,17 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             barRear.mWheel1 = REAR_RIGHT
             barRear.mStiffness = vehicleProps.rearAntiRollBarStiffness
             wheelsSimData.addAntiRollBarData(barRear)
-            PhysxJsLoader.destroy(barRear)
+            PhysXJsLoader.destroy(barRear)
         }
 
-        wheels.forEach { PhysxJsLoader.destroy(it) }
-        tires.forEach { PhysxJsLoader.destroy(it) }
-        suspensions.forEach { PhysxJsLoader.destroy(it) }
-        PhysxJsLoader.destroy(suspSprungMasses)
-        PhysxJsLoader.destroy(qryFilterData)
-        PhysxJsLoader.destroy(tmpVec)
-        PhysxJsLoader.destroy(centerOfMass)
-        PhysxJsLoader.destroy(pxWheelCenterActorOffsets)
+        wheels.forEach { PhysXJsLoader.destroy(it) }
+        tires.forEach { PhysXJsLoader.destroy(it) }
+        suspensions.forEach { PhysXJsLoader.destroy(it) }
+        PhysXJsLoader.destroy(suspSprungMasses)
+        PhysXJsLoader.destroy(qryFilterData)
+        PhysXJsLoader.destroy(tmpVec)
+        PhysXJsLoader.destroy(centerOfMass)
+        PhysXJsLoader.destroy(pxWheelCenterActorOffsets)
     }
 
     private fun createVehicle4w(vehicleProps: VehicleProperties): PxVehicleDrive4W {

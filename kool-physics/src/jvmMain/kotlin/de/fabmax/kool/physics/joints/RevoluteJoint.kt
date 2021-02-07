@@ -35,18 +35,12 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
     actual fun disableAngularMotor() {
         pxJoint.driveVelocity = 0f
         pxJoint.driveForceLimit = 0f
-
-        val flags = pxJoint.revoluteJointFlags
-        flags.clear(PxRevoluteJointFlagEnum.eDRIVE_ENABLED)
-        pxJoint.revoluteJointFlags = flags
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
     }
 
     actual fun enableAngularMotor(angularVelocity: Float, forceLimit: Float) {
         pxJoint.driveVelocity = angularVelocity
         pxJoint.driveForceLimit = forceLimit
-
-        val flags = pxJoint.revoluteJointFlags
-        flags.set(PxRevoluteJointFlagEnum.eDRIVE_ENABLED)
-        pxJoint.revoluteJointFlags = flags
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 }

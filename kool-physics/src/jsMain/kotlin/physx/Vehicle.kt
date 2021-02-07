@@ -23,7 +23,7 @@ external interface PxVehicleAckermannGeometryData {
     var mAxleSeparation: Float
 }
 fun PxVehicleAckermannGeometryData(): PxVehicleAckermannGeometryData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleAckermannGeometryData()")
 }
 
@@ -33,7 +33,7 @@ external interface PxVehicleAntiRollBarData {
     var mStiffness: Float
 }
 fun PxVehicleAntiRollBarData(): PxVehicleAntiRollBarData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleAntiRollBarData()")
 }
 
@@ -49,7 +49,7 @@ external interface PxVehicleAutoBoxData {
     fun setDownRatios(a: Int, ratio: Float)
 }
 fun PxVehicleAutoBoxData(): PxVehicleAutoBoxData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleAutoBoxData()")
 }
 
@@ -59,7 +59,7 @@ external interface PxVehicleChassisData {
     var mCMOffset: PxVec3
 }
 fun PxVehicleChassisData(): PxVehicleChassisData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleChassisData()")
 }
 
@@ -69,7 +69,7 @@ external interface PxVehicleClutchData {
     var mEstimateIterations: Int
 }
 fun PxVehicleClutchData(): PxVehicleClutchData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleClutchData()")
 }
 
@@ -83,7 +83,7 @@ external interface PxVehicleDifferential4WData {
     var mType: Int
 }
 fun PxVehicleDifferential4WData(): PxVehicleDifferential4WData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDifferential4WData()")
 }
 
@@ -101,7 +101,7 @@ external interface PxVehicleDrivableSurfaceType {
     var mType: Int
 }
 fun PxVehicleDrivableSurfaceType(): PxVehicleDrivableSurfaceType {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDrivableSurfaceType()")
 }
 
@@ -167,7 +167,7 @@ external interface PxVehicleDriveSimData {
     fun setAutoBoxData(clutch: PxVehicleAutoBoxData)
 }
 fun PxVehicleDriveSimData(): PxVehicleDriveSimData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDriveSimData()")
 }
 
@@ -178,7 +178,7 @@ external interface PxVehicleDriveSimData4W : PxVehicleDriveSimData {
     fun setAckermannGeometryData(ackermannData: PxVehicleAckermannGeometryData)
 }
 fun PxVehicleDriveSimData4W(): PxVehicleDriveSimData4W {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDriveSimData4W()")
 }
 
@@ -192,7 +192,7 @@ external interface PxVehicleEngineData {
     var mDampingRateZeroThrottleClutchDisengaged: Float
 }
 fun PxVehicleEngineData(): PxVehicleEngineData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleEngineData()")
 }
 
@@ -208,7 +208,7 @@ external interface PxEngineTorqueLookupTable {
     fun getY(i: Int): Float
 }
 fun PxEngineTorqueLookupTable(): PxEngineTorqueLookupTable {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxEngineTorqueLookupTable()")
 }
 
@@ -222,7 +222,7 @@ external interface PxVehicleGearsData {
     fun setGearRatio(a: Int, ratio: Float)
 }
 fun PxVehicleGearsData(): PxVehicleGearsData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleGearsData()")
 }
 
@@ -239,7 +239,7 @@ external interface PxVehicleSuspensionData {
     fun setMassAndPreserveNaturalFrequency(newSprungMass: Float)
 }
 fun PxVehicleSuspensionData(): PxVehicleSuspensionData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleSuspensionData()")
 }
 
@@ -251,7 +251,7 @@ external interface PxVehicleTireData {
     var mType: Int
 }
 fun PxVehicleTireData(): PxVehicleTireData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleTireData()")
 }
 
@@ -264,7 +264,7 @@ external interface PxVehicleTireLoadFilterData {
     fun getDenominator(): Float
 }
 fun PxVehicleTireLoadFilterData(): PxVehicleTireLoadFilterData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleTireLoadFilterData()")
 }
 
@@ -280,7 +280,7 @@ external interface PxVehicleWheelData {
     var mToeAngle: Float
 }
 fun PxVehicleWheelData(): PxVehicleWheelData {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleWheelData()")
 }
 
@@ -289,7 +289,7 @@ external interface PxVehicleWheelQueryResult {
     var nbWheelQueryResults: Int
 }
 fun PxVehicleWheelQueryResult(): PxVehicleWheelQueryResult {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleWheelQueryResult()")
 }
 
@@ -382,7 +382,7 @@ external interface PxVehicleWheelsSimFlags {
     fun clear(flag: Int)
 }
 fun PxVehicleWheelsSimFlags(flags: Int): PxVehicleWheelsSimFlags {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleWheelsSimFlags(flags)")
 }
 
@@ -408,80 +408,80 @@ external interface PxWheelQueryResult {
     var localPose: PxTransform
 }
 fun PxWheelQueryResult(): PxWheelQueryResult {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxWheelQueryResult()")
 }
 
 object PxVehicleClutchAccuracyModeEnum {
-    val eESTIMATE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE()
-    val eBEST_POSSIBLE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE()
+    val eESTIMATE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE()
+    val eBEST_POSSIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE()
 }
 
 object PxVehicleDifferential4WDataEnum {
-    val eDIFF_TYPE_LS_4WD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD()
-    val eDIFF_TYPE_LS_FRONTWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD()
-    val eDIFF_TYPE_LS_REARWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD()
-    val eDIFF_TYPE_OPEN_4WD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD()
-    val eDIFF_TYPE_OPEN_FRONTWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD()
-    val eDIFF_TYPE_OPEN_REARWD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD()
-    val eMAX_NB_DIFF_TYPES: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES()
+    val eDIFF_TYPE_LS_4WD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_4WD()
+    val eDIFF_TYPE_LS_FRONTWD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_FRONTWD()
+    val eDIFF_TYPE_LS_REARWD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_LS_REARWD()
+    val eDIFF_TYPE_OPEN_4WD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_4WD()
+    val eDIFF_TYPE_OPEN_FRONTWD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_FRONTWD()
+    val eDIFF_TYPE_OPEN_REARWD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eDIFF_TYPE_OPEN_REARWD()
+    val eMAX_NB_DIFF_TYPES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDifferential4WDataEnum_eMAX_NB_DIFF_TYPES()
 }
 
 object PxVehicleDrive4WControlEnum {
-    val eANALOG_INPUT_ACCEL: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL()
-    val eANALOG_INPUT_BRAKE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE()
-    val eANALOG_INPUT_HANDBRAKE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE()
-    val eANALOG_INPUT_STEER_LEFT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT()
-    val eANALOG_INPUT_STEER_RIGHT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT()
-    val eMAX_NB_DRIVE4W_ANALOG_INPUTS: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS()
+    val eANALOG_INPUT_ACCEL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_ACCEL()
+    val eANALOG_INPUT_BRAKE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_BRAKE()
+    val eANALOG_INPUT_HANDBRAKE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_HANDBRAKE()
+    val eANALOG_INPUT_STEER_LEFT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT()
+    val eANALOG_INPUT_STEER_RIGHT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT()
+    val eMAX_NB_DRIVE4W_ANALOG_INPUTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS()
 }
 
 object PxVehicleGearEnum {
-    val eREVERSE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eREVERSE()
-    val eNEUTRAL: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNEUTRAL()
-    val eFIRST: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIRST()
-    val eSECOND: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSECOND()
-    val eTHIRD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRD()
-    val eFOURTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFOURTH()
-    val eFIFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIFTH()
-    val eSIXTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSIXTH()
-    val eSEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSEVENTH()
-    val eEIGHTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eEIGHTH()
-    val eNINTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNINTH()
-    val eTENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTENTH()
-    val eELEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eELEVENTH()
-    val eTWELFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWELFTH()
-    val eTHIRTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH()
-    val eFOURTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFOURTEENTH()
-    val eFIFTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eFIFTEENTH()
-    val eSIXTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSIXTEENTH()
-    val eSEVENTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH()
-    val eEIGHTEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH()
-    val eNINETEENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eNINETEENTH()
-    val eTWENTIETH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTIETH()
-    val eTWENTYFIRST: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST()
-    val eTWENTYSECOND: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND()
-    val eTWENTYTHIRD: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD()
-    val eTWENTYFOURTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH()
-    val eTWENTYFIFTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH()
-    val eTWENTYSIXTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH()
-    val eTWENTYSEVENTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH()
-    val eTWENTYEIGHTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH()
-    val eTWENTYNINTH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH()
-    val eTHIRTIETH: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eTHIRTIETH()
-    val eGEARSRATIO_COUNT: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT()
+    val eREVERSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eREVERSE()
+    val eNEUTRAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eNEUTRAL()
+    val eFIRST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eFIRST()
+    val eSECOND: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eSECOND()
+    val eTHIRD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTHIRD()
+    val eFOURTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eFOURTH()
+    val eFIFTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eFIFTH()
+    val eSIXTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eSIXTH()
+    val eSEVENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eSEVENTH()
+    val eEIGHTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eEIGHTH()
+    val eNINTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eNINTH()
+    val eTENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTENTH()
+    val eELEVENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eELEVENTH()
+    val eTWELFTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWELFTH()
+    val eTHIRTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTHIRTEENTH()
+    val eFOURTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eFOURTEENTH()
+    val eFIFTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eFIFTEENTH()
+    val eSIXTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eSIXTEENTH()
+    val eSEVENTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eSEVENTEENTH()
+    val eEIGHTEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eEIGHTEENTH()
+    val eNINETEENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eNINETEENTH()
+    val eTWENTIETH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTIETH()
+    val eTWENTYFIRST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIRST()
+    val eTWENTYSECOND: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSECOND()
+    val eTWENTYTHIRD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYTHIRD()
+    val eTWENTYFOURTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFOURTH()
+    val eTWENTYFIFTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYFIFTH()
+    val eTWENTYSIXTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSIXTH()
+    val eTWENTYSEVENTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYSEVENTH()
+    val eTWENTYEIGHTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYEIGHTH()
+    val eTWENTYNINTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTWENTYNINTH()
+    val eTHIRTIETH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eTHIRTIETH()
+    val eGEARSRATIO_COUNT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearEnum_eGEARSRATIO_COUNT()
 }
 
 object PxVehicleUpdateModeEnum {
-    val eVELOCITY_CHANGE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE()
-    val eACCELERATION: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION()
+    val eVELOCITY_CHANGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleUpdateModeEnum_eVELOCITY_CHANGE()
+    val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleUpdateModeEnum_eACCELERATION()
 }
 
 object PxVehicleWheelsSimFlagEnum {
-    val eLIMIT_SUSPENSION_EXPANSION_VELOCITY: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY()
+    val eLIMIT_SUSPENSION_EXPANSION_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleWheelsSimFlagEnum_eLIMIT_SUSPENSION_EXPANSION_VELOCITY()
 }
 
 object VehicleSurfaceTypeMask {
-    val DRIVABLE_SURFACE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE()
-    val UNDRIVABLE_SURFACE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE()
+    val DRIVABLE_SURFACE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_VehicleSurfaceTypeMask_DRIVABLE_SURFACE()
+    val UNDRIVABLE_SURFACE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_VehicleSurfaceTypeMask_UNDRIVABLE_SURFACE()
 }

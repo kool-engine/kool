@@ -22,8 +22,8 @@ actual object Physics : CoroutineScope {
         get() = loadingDeferred.isCompleted
 
     // static top-level PhysX functions
-    val Px: PxTopLevelFunctions get() = PhysxJsLoader.physxJs.PxTopLevelFunctions.prototype
-    val PxVehicle: PxVehicleTopLevelFunctions get() = PhysxJsLoader.physxJs.PxVehicleTopLevelFunctions.prototype
+    val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
+    val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
 
     // default PhysX facilities
     lateinit var foundation: PxFoundation
@@ -41,7 +41,7 @@ actual object Physics : CoroutineScope {
             logD { "Loading physx-js..." }
             isLoading = true
 
-            PhysxJsLoader.addOnLoadListener {
+            PhysXJsLoader.addOnLoadListener {
                 val errorCallback = PxDefaultErrorCallback()
                 val allocator = PxDefaultAllocator()
                 foundation = Px.CreateFoundation(Px.PHYSICS_VERSION, allocator, errorCallback)
@@ -54,7 +54,7 @@ actual object Physics : CoroutineScope {
                 val cookingParams = PxCookingParams(scale)
                 cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
 
-                defaultBodyFlags = PxShapeFlags(PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE)
+                defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
 
                 // init vehicle simulation framework
                 val up = Vec3f.Y_AXIS.toPxVec3(PxVec3())
@@ -62,13 +62,13 @@ actual object Physics : CoroutineScope {
                 PxVehicle.InitVehicleSDK(physics)
                 PxVehicle.VehicleSetBasisVectors(up, front)
                 PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-                PhysxJsLoader.destroy(up)
-                PhysxJsLoader.destroy(front)
+                PhysXJsLoader.destroy(up)
+                PhysXJsLoader.destroy(front)
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)
             }
-            PhysxJsLoader.loadModule()
+            PhysXJsLoader.loadModule()
         }
     }
 

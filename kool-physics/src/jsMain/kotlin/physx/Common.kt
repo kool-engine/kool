@@ -20,8 +20,8 @@ external interface PxBaseFlags {
     fun set(flag: Int)
     fun clear(flag: Int)
 }
-fun PxBaseFlags(flags: Int): PxBaseFlags {
-    val module = PhysxJsLoader.physxJs
+fun PxBaseFlags(flags: Short): PxBaseFlags {
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxBaseFlags(flags)")
 }
 
@@ -56,11 +56,11 @@ external interface PxBounds3 {
     fun isValid(): Boolean
 }
 fun PxBounds3(): PxBounds3 {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxBounds3()")
 }
 fun PxBounds3(minimum: PxVec3, maximum: PxVec3): PxBounds3 {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxBounds3(minimum, maximum)")
 }
 
@@ -68,11 +68,13 @@ external interface PxCpuDispatcher
 
 external interface PxDefaultErrorCallback
 fun PxDefaultErrorCallback(): PxDefaultErrorCallback {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxDefaultErrorCallback()")
 }
 
-external interface PxFoundation
+external interface PxFoundation {
+    fun release()
+}
 
 external interface PxPhysicsInsertionCallback
 
@@ -83,17 +85,17 @@ external interface PxQuat {
     var w: Float
 }
 fun PxQuat(): PxQuat {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxQuat()")
 }
 fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxQuat(x, y, z, w)")
 }
 
 external interface PxTolerancesScale
 fun PxTolerancesScale(): PxTolerancesScale {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxTolerancesScale()")
 }
 
@@ -102,11 +104,11 @@ external interface PxTransform {
     var p: PxVec3
 }
 fun PxTransform(r: Int): PxTransform {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxTransform(r)")
 }
 fun PxTransform(p0: PxVec3, q0: PxQuat): PxTransform {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxTransform(p0, q0)")
 }
 
@@ -120,19 +122,19 @@ external interface PxVec3 {
     var z: Float
 }
 fun PxVec3(): PxVec3 {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVec3()")
 }
 fun PxVec3(x: Float, y: Float, z: Float): PxVec3 {
-    val module = PhysxJsLoader.physxJs
+    val module = PhysXJsLoader.physXJs
     return js("new module.PxVec3(x, y, z)")
 }
 
 object PxBaseFlagEnum {
-    val eOWNS_MEMORY: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
-    val eIS_RELEASABLE: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE()
+    val eOWNS_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
+    val eIS_RELEASABLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE()
 }
 
 object PxIDENTITYEnum {
-    val PxIdentity: Int get() = PhysxJsLoader.physxJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
+    val PxIdentity: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
 }
