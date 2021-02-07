@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.physics
+package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
@@ -24,6 +24,7 @@ import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.sign
 
 class VehicleDemo : DemoScene("Vehicle") {
@@ -42,6 +43,8 @@ class VehicleDemo : DemoScene("Vehicle") {
 
     private val obstacleSimFilterData = FilterData(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     private val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+
+    private var dashboard: VehicleUi? = null
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         ctx.assetMgr.launch {
@@ -78,10 +81,10 @@ class VehicleDemo : DemoScene("Vehicle") {
             onUpdate += {
                 throttleBrakeHandler.update(vehicle.forwardSpeed, it.deltaT)
                 vehicle.isReverse = throttleBrakeHandler.isReverse
-                vehicle.setSteerInput(steerAnimator.tick(it.deltaT))
-                vehicle.setThrottleInput(throttleBrakeHandler.throttle.value)
-                vehicle.setBrakeInput(throttleBrakeHandler.brake.value)
-                world.stepPhysics(it.deltaT)
+                vehicle.steerInput = steerAnimator.tick(it.deltaT)
+                vehicle.throttleInput = throttleBrakeHandler.throttle.value
+                vehicle.brakeInput = throttleBrakeHandler.brake.value
+                updateDashboard()
             }
 
             val steerLeft: (InputManager.KeyEvent) -> Unit = {
@@ -105,6 +108,39 @@ class VehicleDemo : DemoScene("Vehicle") {
             ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
             ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
             ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
+            ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
+                val pos = vehicle.position
+                vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
+
+                val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
+                val headDeg = atan2(head.x, head.z).toDeg()
+                val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
+                vehicle.setRotation(ori)
+                vehicle.linearVelocity = Vec3f.ZERO
+                vehicle.angularVelocity = Vec3f.ZERO
+            }
+
+            world.registerHandlers(this@scene)
+        }
+    }
+
+    override fun setupMenu(ctx: KoolContext): Scene {
+        dashboard = VehicleUi(ctx)
+        return dashboard!!.uiScene
+    }
+
+    private fun updateDashboard() {
+        dashboard?.apply {
+            speedKph = vehicle.forwardSpeed * 3.6f
+            rpm = vehicle.engineSpeedRpm
+            torqueNm = vehicle.engineTorqueNm
+            powerKW = vehicle.enginePowerW / 1000f
+            gear = vehicle.currentGear
+            steering = vehicle.steerInput
+            throttle = vehicle.throttleInput
+            brake = vehicle.brakeInput
+            longitudinalAcceleration = vehicle.longitudinalAcceleration
+            lateralAcceleration = vehicle.lateralAcceleration
         }
     }
 

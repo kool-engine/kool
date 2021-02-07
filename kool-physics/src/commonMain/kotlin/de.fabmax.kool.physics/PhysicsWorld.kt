@@ -1,7 +1,9 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
@@ -9,10 +11,13 @@ expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: In
     var gravity: Vec3f
 }
 
-abstract class CommonPhysicsWorld {
+abstract class CommonPhysicsWorld() {
     var physicsTime = 0.0
     var physicsTimeDesired = 0.0
 
+    var singleStepTime = 1f / 60f
+    var isStepAsync = true
+    var isStepInProgress = false
     var smartSubSteps = true
     private var smartSubStepLimit = 5
 
@@ -25,6 +30,34 @@ abstract class CommonPhysicsWorld {
     private val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
         get() = mutActors
+
+    private var registeredAtScene: Scene? = null
+    private val onRenderSceneHook: Scene.(KoolContext) -> Unit = { ctx ->
+        if (isStepInProgress) {
+            fetchStepResults()
+        }
+
+        stepPhysics(ctx.deltaT)
+
+        if (isStepAsync && isContinueStep(physicsTime, physicsTimeDesired + singleStepTime, singleStepTime)) {
+            singleStepPhysics()
+            physicsTime += singleStepTime
+        }
+    }
+
+    open fun registerHandlers(scene: Scene) {
+        unregisterHandlers()
+        registeredAtScene = scene
+        scene.onRenderScene += onRenderSceneHook
+    }
+
+    open fun unregisterHandlers() {
+        registeredAtScene?.let { it.onRenderScene += onRenderSceneHook }
+    }
+
+    open fun dispose() {
+        unregisterHandlers()
+    }
 
     open fun addActor(actor: RigidActor) {
         mutActors += actor
@@ -41,20 +74,23 @@ abstract class CommonPhysicsWorld {
         }
     }
 
-    fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5, fixedStep: Float = 1f / 60f): Float {
+    fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5): Float {
         var steps = 0
         var stepLimit = if (smartSubSteps) min(smartSubStepLimit, maxSubSteps) else maxSubSteps
 
         physicsTimeDesired += timeStep
-        while (physicsTime < physicsTimeDesired && stepLimit > 0) {
+        while (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime) && stepLimit > 0) {
             perfTimer.reset()
-            singleStepPhysics(fixedStep)
+
+            singleStepPhysics()
+            fetchStepResults()
             steps++
+
             val ms = perfTimer.takeMs().toFloat()
             cpuTime = cpuTime * 0.8f + ms * 0.2f
 
-            physicsTime += fixedStep
-            if (physicsTime < physicsTimeDesired) {
+            physicsTime += singleStepTime
+            if (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime)) {
                 stepLimit--
             }
         }
@@ -68,20 +104,26 @@ abstract class CommonPhysicsWorld {
             smartSubStepLimit++
         }
 
-        val timeInc = fixedStep * steps
+        val timeInc = singleStepTime * steps
         timeFactor = timeFactor * 0.9f + timeInc / timeStep * 0.1f
 
         return timeInc
     }
 
-    fun singleStepPhysics(timeStep: Float) {
-        singleStepPhysicsImpl(timeStep)
-        for (i in mutActors.indices) {
-            mutActors[i].fixedUpdate(timeStep)
-        }
+    private fun isContinueStep(physicsTime: Double, physicsTimeDesired: Double, step: Float): Boolean {
+        return physicsTimeDesired - physicsTime > step * 0.5
     }
 
-    protected abstract fun singleStepPhysicsImpl(timeStep: Float)
+    protected open fun singleStepPhysics() {
+        isStepInProgress = true
+    }
+
+    protected open fun fetchStepResults() {
+        isStepInProgress = false
+        for (i in mutActors.indices) {
+            mutActors[i].fixedUpdate(singleStepTime)
+        }
+    }
 
     /**
      * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.

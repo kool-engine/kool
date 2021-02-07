@@ -14,7 +14,7 @@ import physx.support.Vector_PxReal
 import physx.support.Vector_PxVehicleWheels
 import physx.support.Vector_PxWheelQueryResult
 import physx.vehicle.*
-import kotlin.math.PI
+import kotlin.math.max
 
 actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private val world: PhysicsWorld, pose: Mat4f) : CommonVehicle(vehicleProps, pose) {
 
@@ -30,9 +30,54 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
     actual val wheelTransforms = List(4) { Mat4f() }
 
-    private var fwdSpeed = 0f
+    override var steerInput = 0f
+        set(value) {
+            field = value
+            if (value < 0) {
+                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
+                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, -value)
+            } else {
+                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, 0f)
+                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, value)
+            }
+        }
+    override var throttleInput = 0f
+        set(value) {
+            field = value
+            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_ACCEL, value)
+        }
+    override var brakeInput = 0f
+        set(value) {
+            field = value
+            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_BRAKE, value)
+        }
+
+    private val peakTorque = vehicleProps.peakEngineTorque
+
+    private val linearSpeed = MutableVec3f()
+    private val prevLinearSpeed = MutableVec3f()
+    private val linearAccel = MutableVec3f()
+    private var engineSpd = 0f
+    private var engineTq = 0f
+    private var engineP = 0f
+    private var curGear = 0
+
     actual val forwardSpeed: Float
-        get() = fwdSpeed
+        get() = linearSpeed.z
+    actual val sidewaysSpeed: Float
+        get() = linearSpeed.x
+    actual val longitudinalAcceleration: Float
+        get() = linearAccel.z
+    actual val lateralAcceleration: Float
+        get() = linearAccel.x
+    actual val engineSpeedRpm: Float
+        get() = engineSpd
+    actual val engineTorqueNm: Float
+        get() = engineTq
+    actual val enginePowerW: Float
+        get() = engineP
+    actual val currentGear: Int
+        get() = curGear
 
     actual var isReverse = false
 
@@ -80,27 +125,20 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
                 localPose.toMat4f(wheelTransforms[i])
             }
         }
-        fwdSpeed = vehicle.computeForwardSpeed()
+
+        val engioneSpdOmega = vehicle.mDriveDynData.engineRotationSpeed
+        engineSpd = max(750f, engioneSpdOmega * OMEGA_TO_RPM)
+        engineTq = vehicle.mDriveSimData.engineData.mTorqueCurve.getYVal(engioneSpdOmega) * peakTorque * throttleInput
+        engineP = engineTq * engioneSpdOmega
+        curGear = vehicle.mDriveDynData.currentGear - PxVehicleGearEnum.eNEUTRAL
+
+        prevLinearSpeed.set(linearSpeed)
+        linearSpeed.z = vehicle.computeForwardSpeed()
+        linearSpeed.x = vehicle.computeSidewaysSpeed()
+        linearAccel.z = linearAccel.z * 0.5f + (linearSpeed.z - prevLinearSpeed.z) / timeStep * 0.5f
+        linearAccel.x = linearAccel.x * 0.5f + (linearSpeed.x - prevLinearSpeed.x) / timeStep * 0.5f
 
         super.fixedUpdate(timeStep)
-    }
-
-    override fun setSteerInput(value: Float) {
-        if (value < 0) {
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, -value)
-        } else {
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, 0f)
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, value)
-        }
-    }
-
-    override fun setThrottleInput(value: Float) {
-        vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_ACCEL, value)
-    }
-
-    override fun setBrakeInput(value: Float) {
-        vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_BRAKE, value)
     }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
@@ -292,7 +330,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Engine
         driveSimData.engineData.apply {
             mPeakTorque = vehicleProps.peakEngineTorque
-            mMaxOmega = (vehicleProps.peakEngineRpm / 60f) * 2f * PI.toFloat()
+            mMaxOmega = vehicleProps.peakEngineRpm / OMEGA_TO_RPM
         }
         // Gears
         driveSimData.gearsData.apply {

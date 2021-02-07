@@ -67,6 +67,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             Physics.awaitLoaded()
             val physicsWorld = PhysicsWorld()
             this@CollisionDemo.physicsWorld = physicsWorld
+            // disable async physics to get accurate physics cpu time measurements
+            physicsWorld.isStepAsync = false
             makeGround(ibl, physicsWorld)
 
             resetPhysics()
@@ -81,8 +83,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val matBuf = Mat4f()
             val removeBodies = mutableListOf<ColoredBody>()
             onUpdate += {
-                physicsWorld.stepPhysics(it.deltaT)
-
                 for (i in shapes.indices) {
                     shapes[i].instances.clear()
                 }
@@ -110,6 +110,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
 
             +Skybox.cube(ibl.reflectionMap, 1f)
+            physicsWorld.registerHandlers(this@scene)
         }
     }
 

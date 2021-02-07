@@ -72,6 +72,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
             Physics.awaitLoaded()
             val world = PhysicsWorld()
+            // disable async physics to get accurate physics cpu time measurements
+            world.isStepAsync = false
             physicsWorld = world
             resetPhysics = true
             constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
@@ -105,6 +107,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
 
             +Skybox.cube(ibl.reflectionMap, 1f)
+            world.registerHandlers(this@scene)
         }
 
         onUpdate += {
@@ -112,7 +115,6 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 resetPhysics = false
                 makePhysicsScene()
             }
-            physicsWorld?.stepPhysics(it.deltaT)
         }
     }
 
