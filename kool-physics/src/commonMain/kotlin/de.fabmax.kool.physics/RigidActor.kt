@@ -8,14 +8,12 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 
-expect open class RigidActor : CommonRigidActor {
+expect open class RigidActor : CommonRigidActor, Releasable {
     val worldBounds: BoundingBox
 
     fun setSimulationFilterData(simulationFilterData: FilterData)
 
     fun setQueryFilterData(queryFilterData: FilterData)
-
-    open fun release()
 }
 
 abstract class CommonRigidActor {

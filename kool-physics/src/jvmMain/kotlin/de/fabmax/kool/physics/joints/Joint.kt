@@ -1,9 +1,13 @@
 package de.fabmax.kool.physics.joints
 
+import de.fabmax.kool.physics.Releasable
 import physx.extensions.PxJoint
 
-actual interface Joint {
+actual interface Joint : Releasable {
 
     val pxJoint: PxJoint
 
+    override fun release() {
+        pxJoint.release()
+    }
 }

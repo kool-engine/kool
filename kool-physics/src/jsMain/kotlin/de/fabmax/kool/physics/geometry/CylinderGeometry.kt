@@ -2,7 +2,6 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
-import physx.PxConvexMesh
 import physx.PxConvexMeshGeometry
 import physx.PxGeometry
 import kotlin.math.PI
@@ -11,7 +10,7 @@ import kotlin.math.sin
 
 actual class CylinderGeometry actual constructor(length: Float, radius: Float) : CommonCylinderGeometry(length, radius), CollisionGeometry {
 
-    val pxMesh: PxConvexMesh
+    val convexMesh: ConvexMesh
     override val pxGeometry: PxGeometry
 
     init {
@@ -28,7 +27,7 @@ actual class CylinderGeometry actual constructor(length: Float, radius: Float) :
             points.add(Vec3f(length * 0.5f, y, z))
         }
 
-        pxMesh = ConvexMeshGeometry.toConvexMesh(points)
-        pxGeometry = PxConvexMeshGeometry(pxMesh)
+        convexMesh = ConvexMesh(points)
+        pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh)
     }
 }

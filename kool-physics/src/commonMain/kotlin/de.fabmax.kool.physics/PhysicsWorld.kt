@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
-expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
+expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld, Releasable {
     var gravity: Vec3f
 }
 
@@ -52,7 +52,7 @@ abstract class CommonPhysicsWorld() {
     }
 
     open fun unregisterHandlers() {
-        registeredAtScene?.let { it.onRenderScene += onRenderSceneHook }
+        registeredAtScene?.let { it.onRenderScene -= onRenderSceneHook }
     }
 
     open fun dispose() {

@@ -9,7 +9,7 @@ import physx.physics.PxRigidActor
 import physx.physics.PxShape
 import kotlin.collections.set
 
-actual open class RigidActor : CommonRigidActor() {
+actual open class RigidActor : CommonRigidActor(), Releasable {
 
     internal lateinit var pxRigidActor: PxRigidActor
     protected val pxPose = PxTransform()
@@ -82,7 +82,7 @@ actual open class RigidActor : CommonRigidActor() {
         super.detachShape(shape)
     }
 
-    actual open fun release() {
+    override fun release() {
         pxRigidActor.release()
         // attached PxShapes are auto-released when pxRigidDynamic is released, just clear the lists
         pxShapes.clear()

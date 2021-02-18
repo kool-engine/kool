@@ -4,9 +4,18 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
+import org.lwjgl.system.MemoryStack
 import physx.common.*
-import physx.physics.PxFilterData
+import physx.cooking.PxConvexFlags
+import physx.cooking.PxConvexMeshDesc
+import physx.cooking.PxTriangleMeshDesc
+import physx.extensions.PxRevoluteJointFlags
+import physx.geomutils.PxConvexMeshGeometryFlags
+import physx.geomutils.PxHullPolygon
+import physx.geomutils.PxMeshScale
+import physx.physics.*
 import physx.support.Vector_PxVec3
+import physx.vehicle.PxVehicleWheelsSimFlags
 
 fun PxBounds3.toBoundingBox(result: BoundingBox): BoundingBox {
     val min = minimum
@@ -70,3 +79,34 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
+fun MemoryStack.createPxBoundedData() = PxBoundedData.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxFilterData() = PxFilterData.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) =
+    PxFilterData.createAt(this, MemoryStack::nmalloc, w0, w1, w2, w3)
+fun MemoryStack.createPxHullPolygon() = PxHullPolygon.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxMeshScale(s: PxVec3, r: PxQuat) = PxMeshScale.createAt(this, MemoryStack::nmalloc, s, r)
+fun MemoryStack.createPxVec3() = PxVec3.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxVec3(x: Float, y: Float, z: Float) = PxVec3.createAt(this, MemoryStack::nmalloc, x, y, z)
+
+fun MemoryStack.createPxQuat() = PxQuat.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxQuat(x: Float, y: Float, z: Float, w: Float) =
+    PxQuat.createAt(this, MemoryStack::nmalloc, x, y, z, w)
+
+fun MemoryStack.createPxTransform() = PxTransform.createAt(this, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
+fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) =
+    PxTransform.createAt(this, MemoryStack::nmalloc, p, q)
+
+fun MemoryStack.createPxConvexMeshDesc() = PxConvexMeshDesc.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxTriangleMeshDesc() = PxTriangleMeshDesc.createAt(this, MemoryStack::nmalloc)
+
+fun MemoryStack.createPxActorFlags(flags: Int) = PxActorFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxBaseFlags(flags: Int) = PxBaseFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
+fun MemoryStack.createPxConvexFlags(flags: Int) = PxConvexFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
+fun MemoryStack.createPxConvexMeshGeometryFlags(flags: Int) = PxConvexMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxHitFlags(flags: Int) = PxHitFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
+fun MemoryStack.createPxRevoluteJointFlags(flags: Int) = PxRevoluteJointFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
+fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxSceneFlags(flags: Int) = PxSceneFlags.createAt(this, MemoryStack::nmalloc, flags)
+fun MemoryStack.createPxShapeFlags(flags: Int) = PxShapeFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxVehicleWheelsSimFlags(flags: Int) = PxVehicleWheelsSimFlags.createAt(this, MemoryStack::nmalloc, flags)

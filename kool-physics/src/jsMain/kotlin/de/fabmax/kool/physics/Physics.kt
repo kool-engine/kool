@@ -22,6 +22,7 @@ actual object Physics : CoroutineScope {
         get() = loadingDeferred.isCompleted
 
     // static top-level PhysX functions
+    val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
     val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
 
@@ -42,8 +43,11 @@ actual object Physics : CoroutineScope {
             isLoading = true
 
             PhysXJsLoader.addOnLoadListener {
-                val errorCallback = PxDefaultErrorCallback()
                 val allocator = PxDefaultAllocator()
+                val errorCallback = JavaErrorCallback()
+                errorCallback.reportError = { code, message, file, line ->
+                    PhysicsLogging.logPhysics(code, message, file, line)
+                }
                 foundation = Px.CreateFoundation(Px.PHYSICS_VERSION, allocator, errorCallback)
 
                 val scale = PxTolerancesScale()
@@ -52,6 +56,7 @@ actual object Physics : CoroutineScope {
                 Px.InitExtensions(physics)
 
                 val cookingParams = PxCookingParams(scale)
+                cookingParams.suppressTriangleMeshRemapTable = true
                 cooking = Px.CreateCooking(Px.PHYSICS_VERSION, foundation, cookingParams)
 
                 defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())

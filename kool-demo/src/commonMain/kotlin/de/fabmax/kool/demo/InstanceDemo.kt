@@ -7,11 +7,13 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.PhongShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.InstancedLodController
@@ -21,7 +23,7 @@ import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import kotlin.math.roundToInt
 
-class InstanceDemo() : DemoScene("Instanced Drawing") {
+class InstanceDemo : DemoScene("Instanced Drawing") {
 
     private var nBunnies = 10
     private var isLodColors = false
@@ -32,12 +34,12 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
     private val lodController = InstancedLodController<BunnyInstance>()
 
     private val lods = mutableListOf(
-            Lod(8, 10f, MutableColor(Color.MD_PURPLE)),
-            Lod(32, 20f, MutableColor(Color.MD_RED)),
-            Lod(128, 30f, MutableColor(Color.MD_AMBER)),
-            Lod(500, 40f, MutableColor(Color.MD_LIME)),
-            Lod(2000, 50f, MutableColor(Color.MD_GREEN)),
-            Lod(10000, 1000f, MutableColor(Color.MD_BLUE))
+            Lod(8, 10f, MutableColor(Color.MD_PURPLE.toLinear())),
+            Lod(32, 20f, MutableColor(Color.MD_RED.toLinear())),
+            Lod(128, 30f, MutableColor(Color.MD_AMBER.toLinear())),
+            Lod(500, 40f, MutableColor(Color.MD_LIME.toLinear())),
+            Lod(2000, 50f, MutableColor(Color.MD_GREEN.toLinear())),
+            Lod(10000, 1000f, MutableColor(Color.MD_BLUE.toLinear()))
     )
 
     override fun setupMainScene(ctx: KoolContext) = scene {
@@ -88,7 +90,6 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
                     modelRadius = geometry.bounds.max.distance(geometry.bounds.center)
                 }
 
-                //shader = instanceColorPhongShader()
                 shader = instanceColorPbrShader()
 
                 isFrustumChecked = false
@@ -143,23 +144,6 @@ class InstanceDemo() : DemoScene("Instanced Drawing") {
             }
         }
         return PbrShader(cfg, model)
-    }
-
-    private fun instanceColorPhongShader(): Shader {
-        val cfg = PhongShader.PhongConfig().apply {
-            albedoSource = Albedo.STATIC_ALBEDO
-            isInstanced = true
-        }
-        val model = PhongShader.defaultPhongModel(cfg).apply {
-            val ifInstColor: StageInterfaceNode
-            vertexStage {
-                ifInstColor = stageInterfaceNode("ifInstColor", instanceAttributeNode(Attribute.COLORS).output)
-            }
-            fragmentStage {
-                findNodeByType<PhongMaterialNode>()!!.inAlbedo = ifInstColor.output
-            }
-        }
-        return PhongShader(cfg, model)
     }
 
     private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {

@@ -1,3 +1,5 @@
 package de.fabmax.kool.physics.joints
 
-expect interface Joint
+import de.fabmax.kool.physics.Releasable
+
+expect interface Joint : Releasable

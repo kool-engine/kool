@@ -221,7 +221,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Set up the suspensions
         // Compute the mass supported by each suspension spring.
         val suspSprungMasses = Vector_PxReal(numWheels)
-        Physics.PxVehicle.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(), centerOfMass, vehicleProps.chassisMass, 1, suspSprungMasses.data())
+        val suspSprungMassesRealPtr = Physics.TypeHelpers.voidToRealPtr(suspSprungMasses.data())
+        Physics.PxVehicle.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(), centerOfMass, vehicleProps.chassisMass, 1, suspSprungMassesRealPtr)
         // Set the suspension data.
         val suspensions = List(numWheels) { i ->
             val susp = PxVehicleSuspensionData()
@@ -301,11 +302,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         wheels.forEach { PhysXJsLoader.destroy(it) }
         tires.forEach { PhysXJsLoader.destroy(it) }
         suspensions.forEach { PhysXJsLoader.destroy(it) }
-        PhysXJsLoader.destroy(suspSprungMasses)
-        PhysXJsLoader.destroy(qryFilterData)
-        PhysXJsLoader.destroy(tmpVec)
-        PhysXJsLoader.destroy(centerOfMass)
-        PhysXJsLoader.destroy(pxWheelCenterActorOffsets)
+        PhysXJsLoader.destroy(suspSprungMasses, qryFilterData, tmpVec, centerOfMass, pxWheelCenterActorOffsets)
     }
 
     private fun createVehicle4w(vehicleProps: VehicleProperties): PxVehicleDrive4W {

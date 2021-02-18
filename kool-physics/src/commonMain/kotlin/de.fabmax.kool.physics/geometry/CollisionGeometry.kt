@@ -1,10 +1,11 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
 
-expect interface CollisionGeometry {
+expect interface CollisionGeometry : Releasable {
 
     fun generateMesh(target: MeshBuilder)
 

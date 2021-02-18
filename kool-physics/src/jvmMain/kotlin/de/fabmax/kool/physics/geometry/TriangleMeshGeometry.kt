@@ -1,0 +1,43 @@
+package de.fabmax.kool.physics.geometry
+
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.createPxMeshScale
+import de.fabmax.kool.physics.createPxQuat
+import de.fabmax.kool.physics.createPxVec3
+import de.fabmax.kool.physics.toPxVec3
+import de.fabmax.kool.util.IndexedVertexList
+import org.lwjgl.system.MemoryStack
+import physx.geomutils.PxTriangleMeshGeometry
+
+actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh, scale: Vec3f) : CommonTriangleMeshGeometry(triangleMesh), CollisionGeometry {
+
+    override val pxGeometry: PxTriangleMeshGeometry
+
+    init {
+        MemoryStack.stackPush().use { mem ->
+            val s = scale.toPxVec3(mem.createPxVec3())
+            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = mem.createPxMeshScale(s, r)
+            pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
+        }
+
+        if (triangleMesh.releaseWithGeometry) {
+            if (triangleMesh.refCnt > 0) {
+                // PxTriangleMesh starts with a ref count of 1, only increment it if this is not the first
+                // geometry which uses it
+                triangleMesh.pxTriangleMesh.acquireReference()
+            }
+            triangleMesh.refCnt++
+        }
+    }
+
+    actual constructor(geometry: IndexedVertexList) : this(TriangleMesh(geometry))
+
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        if (triangleMesh.releaseWithGeometry) {
+            triangleMesh.pxTriangleMesh.release()
+        }
+    }
+}

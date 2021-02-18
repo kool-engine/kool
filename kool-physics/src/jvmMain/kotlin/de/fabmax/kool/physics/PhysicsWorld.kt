@@ -8,7 +8,7 @@ import physx.physics.PxScene
 import physx.physics.PxSceneDesc
 import physx.physics.PxSceneFlagEnum
 
-actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld() {
+actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val scene: PxScene
 
     private val bufPxGravity = gravity.toPxVec3(PxVec3())
@@ -46,5 +46,9 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
         scene.removeActor(actor.pxRigidActor)
+    }
+
+    override fun release() {
+        scene.release()
     }
 }

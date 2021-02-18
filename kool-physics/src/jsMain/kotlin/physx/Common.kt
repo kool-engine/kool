@@ -7,19 +7,62 @@ package physx
 
 external interface PxBase {
     fun release()
+
+    /**
+     * @return WebIDL type: DOMString (Const)
+     */
     fun getConcreteTypeName(): String
+
+    /**
+     * @return WebIDL type: long
+     */
     fun getConcreteType(): Int
+
+    /**
+     * @param flag  WebIDL type: [PxBaseFlagEnum] (enum)
+     * @param value WebIDL type: boolean
+     */
     fun setBaseFlag(flag: Int, value: Boolean)
+
+    /**
+     * @param inFlags WebIDL type: [PxBaseFlags] (Ref)
+     */
     fun setBaseFlags(inFlags: PxBaseFlags)
+
+    /**
+     * @return WebIDL type: [PxBaseFlags] (Value)
+     */
     fun getBaseFlags(): PxBaseFlags
+
+    /**
+     * @return WebIDL type: boolean
+     */
     fun isReleasable(): Boolean
+
 }
 
 external interface PxBaseFlags {
+    /**
+     * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
     fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
+     */
     fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
+     */
     fun clear(flag: Int)
+
 }
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
 fun PxBaseFlags(flags: Short): PxBaseFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxBaseFlags(flags)")
@@ -28,37 +71,130 @@ fun PxBaseFlags(flags: Short): PxBaseFlags {
 external interface PxBaseTask
 
 external interface PxBoundedData {
+    /**
+     * WebIDL type: unsigned long
+     */
     var count: Int
+    /**
+     * WebIDL type: unsigned long
+     */
     var stride: Int
+    /**
+     * WebIDL type: VoidPtr (Const)
+     */
     var data: Any
 }
 
+fun PxBoundedData(): PxBoundedData {
+    val module = PhysXJsLoader.physXJs
+    return js("new module.PxBoundedData()")
+}
+
 external interface PxBounds3 {
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
     var minimum: PxVec3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
     var maximum: PxVec3
 
     fun setEmpty()
+
     fun setMaximal()
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     */
     fun include(v: PxVec3)
+
+    /**
+     * @return WebIDL type: boolean
+     */
     fun isEmpty(): Boolean
+
+    /**
+     * @param b WebIDL type: [PxBounds3] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
     fun intersects(b: PxBounds3): Boolean
+
+    /**
+     * @param b    WebIDL type: [PxBounds3] (Const, Ref)
+     * @param axis WebIDL type: unsigned long
+     * @return WebIDL type: boolean
+     */
     fun intersects1D(b: PxBounds3, axis: Int): Boolean
+
+    /**
+     * @param v WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
     fun contains(v: PxVec3): Boolean
+
+    /**
+     * @param box WebIDL type: [PxBounds3] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
     fun isInside(box: PxBounds3): Boolean
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
     fun getCenter(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
     fun getDimensions(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
     fun getExtents(): PxVec3
+
+    /**
+     * @param scale WebIDL type: float
+     */
     fun scaleSafe(scale: Float)
+
+    /**
+     * @param scale WebIDL type: float
+     */
     fun scaleFast(scale: Float)
+
+    /**
+     * @param distance WebIDL type: float
+     */
     fun fattenSafe(distance: Float)
+
+    /**
+     * @param distance WebIDL type: float
+     */
     fun fattenFast(distance: Float)
+
+    /**
+     * @return WebIDL type: boolean
+     */
     fun isFinite(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
     fun isValid(): Boolean
+
 }
+
 fun PxBounds3(): PxBounds3 {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxBounds3()")
 }
+
+/**
+ * @param minimum WebIDL type: [PxVec3] (Const, Ref)
+ * @param maximum WebIDL type: [PxVec3] (Const, Ref)
+ */
 fun PxBounds3(minimum: PxVec3, maximum: PxVec3): PxBounds3 {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxBounds3(minimum, maximum)")
@@ -66,65 +202,153 @@ fun PxBounds3(minimum: PxVec3, maximum: PxVec3): PxBounds3 {
 
 external interface PxCpuDispatcher
 
-external interface PxDefaultErrorCallback
+external interface PxDefaultErrorCallback : PxErrorCallback
+
 fun PxDefaultErrorCallback(): PxDefaultErrorCallback {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxDefaultErrorCallback()")
 }
 
+external interface PxErrorCallback {
+    /**
+     * @param code    WebIDL type: [PxErrorCodeEnum] (enum)
+     * @param message WebIDL type: DOMString (Const)
+     * @param file    WebIDL type: DOMString (Const)
+     * @param line    WebIDL type: long
+     */
+    fun reportError(code: Int, message: String, file: String, line: Int)
+
+}
+
+external interface JavaErrorCallback : PxErrorCallback {
+    /**
+     * param code    WebIDL type: [PxErrorCodeEnum] (enum)
+     * param message WebIDL type: DOMString (Const)
+     * param file    WebIDL type: DOMString (Const)
+     * param line    WebIDL type: long
+     */
+    var reportError: (code: Int, message: String, file: String, line: Int) -> Unit
+
+}
+
+fun JavaErrorCallback(): JavaErrorCallback {
+    val module = PhysXJsLoader.physXJs
+    return js("new module.JavaErrorCallback()")
+}
+
 external interface PxFoundation {
     fun release()
+
 }
 
 external interface PxPhysicsInsertionCallback
 
 external interface PxQuat {
+    /**
+     * WebIDL type: float
+     */
     var x: Float
+    /**
+     * WebIDL type: float
+     */
     var y: Float
+    /**
+     * WebIDL type: float
+     */
     var z: Float
+    /**
+     * WebIDL type: float
+     */
     var w: Float
 }
+
 fun PxQuat(): PxQuat {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxQuat()")
 }
+
+/**
+ * @param x WebIDL type: float
+ * @param y WebIDL type: float
+ * @param z WebIDL type: float
+ * @param w WebIDL type: float
+ */
 fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxQuat(x, y, z, w)")
 }
 
 external interface PxTolerancesScale
+
 fun PxTolerancesScale(): PxTolerancesScale {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTolerancesScale()")
 }
 
 external interface PxTransform {
+    /**
+     * WebIDL type: [PxQuat] (Value)
+     */
     var q: PxQuat
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
     var p: PxVec3
 }
+
+/**
+ * @param r WebIDL type: [PxIDENTITYEnum] (enum)
+ */
 fun PxTransform(r: Int): PxTransform {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTransform(r)")
 }
+
+/**
+ * @param p0 WebIDL type: [PxVec3] (Const, Ref)
+ * @param q0 WebIDL type: [PxQuat] (Const, Ref)
+ */
 fun PxTransform(p0: PxVec3, q0: PxQuat): PxTransform {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTransform(p0, q0)")
 }
 
-external interface PxRealPtr
-
-external interface PxU8Ptr
+external interface PxU16StridedData {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var stride: Int
+    /**
+     * WebIDL type: [PxU16Ptr] (Const, Value)
+     */
+    var data: PxU16Ptr
+}
 
 external interface PxVec3 {
+    /**
+     * WebIDL type: float
+     */
     var x: Float
+    /**
+     * WebIDL type: float
+     */
     var y: Float
+    /**
+     * WebIDL type: float
+     */
     var z: Float
 }
+
 fun PxVec3(): PxVec3 {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVec3()")
 }
+
+/**
+ * @param x WebIDL type: float
+ * @param y WebIDL type: float
+ * @param z WebIDL type: float
+ */
 fun PxVec3(x: Float, y: Float, z: Float): PxVec3 {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVec3(x, y, z)")
@@ -135,6 +359,20 @@ object PxBaseFlagEnum {
     val eIS_RELEASABLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE()
 }
 
+object PxErrorCodeEnum {
+    val eNO_ERROR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eNO_ERROR()
+    val eDEBUG_INFO: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_INFO()
+    val eDEBUG_WARNING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_WARNING()
+    val eINVALID_PARAMETER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_PARAMETER()
+    val eINVALID_OPERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_OPERATION()
+    val eOUT_OF_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eOUT_OF_MEMORY()
+    val eINTERNAL_ERROR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINTERNAL_ERROR()
+    val eABORT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eABORT()
+    val ePERF_WARNING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_ePERF_WARNING()
+    val eMASK_ALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eMASK_ALL()
+}
+
 object PxIDENTITYEnum {
     val PxIdentity: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
 }
+

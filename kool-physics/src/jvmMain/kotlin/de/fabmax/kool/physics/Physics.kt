@@ -6,12 +6,14 @@ import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import physx.PxTopLevelFunctions
-import physx.common.PxDefaultErrorCallback
+import physx.common.JavaErrorCallback
 import physx.common.PxFoundation
 import physx.common.PxTolerancesScale
 import physx.common.PxVec3
 import physx.cooking.PxCooking
 import physx.cooking.PxCookingParams
+import physx.cooking.PxMeshMidPhaseEnum
+import physx.cooking.PxMidphaseDesc
 import physx.extensions.PxDefaultAllocator
 import physx.physics.PxPhysics
 import physx.physics.PxShapeFlagEnum
@@ -39,9 +41,8 @@ actual object Physics : CoroutineScope {
         logD { "Loading physx-js..." }
 
         val version = PxTopLevelFunctions.getPHYSICS_VERSION()
-        val errorCallback = PxDefaultErrorCallback()
         val allocator = PxDefaultAllocator()
-        foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, errorCallback)
+        foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, KoolErrorCallback())
 
         val scale = PxTolerancesScale()
         physics = PxTopLevelFunctions.CreatePhysics(version, foundation, scale)
@@ -49,6 +50,13 @@ actual object Physics : CoroutineScope {
         PxTopLevelFunctions.InitExtensions(physics)
 
         val cookingParams = PxCookingParams(scale)
+        cookingParams.midphaseDesc = PxMidphaseDesc().apply {
+            setToDefault(PxMeshMidPhaseEnum.eBVH34)
+            val bvh34 = mbvH34Desc
+            bvh34.numPrimsPerLeaf = 4
+            mbvH34Desc = bvh34
+        }
+        cookingParams.suppressTriangleMeshRemapTable = true
         cooking = PxTopLevelFunctions.CreateCooking(version, foundation, cookingParams)
 
         defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
@@ -74,5 +82,11 @@ actual object Physics : CoroutineScope {
         val minor = (pxVersion shr 16) and 0xff
         val bugfix = (pxVersion shr 8) and 0xff
         return "$major.$minor.$bugfix"
+    }
+
+    private class KoolErrorCallback : JavaErrorCallback() {
+        override fun reportError(code: Int, message: String, file: String, line: Int) {
+            PhysicsLogging.logPhysics(code, message, file, line)
+        }
     }
 }

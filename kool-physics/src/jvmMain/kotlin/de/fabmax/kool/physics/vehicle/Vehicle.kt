@@ -10,6 +10,7 @@ import de.fabmax.kool.physics.geometry.CylinderGeometry
 import physx.common.PxVec3
 import physx.physics.PxBatchQuery
 import physx.physics.PxFilterData
+import physx.support.TypeHelpers
 import physx.support.Vector_PxReal
 import physx.support.Vector_PxVehicleWheels
 import physx.support.Vector_PxWheelQueryResult
@@ -225,7 +226,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Set up the suspensions
         // Compute the mass supported by each suspension spring.
         val suspSprungMasses = Vector_PxReal(numWheels)
-        PxVehicleTopLevelFunctions.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(), centerOfMass, vehicleProps.chassisMass, 1, suspSprungMasses.data())
+        val suspSprungMassesRealPtr = TypeHelpers.voidToRealPtr(suspSprungMasses.data())
+        PxVehicleTopLevelFunctions.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(), centerOfMass, vehicleProps.chassisMass, 1, suspSprungMassesRealPtr)
         // Set the suspension data.
         val suspensions = List(numWheels) { i ->
             val susp = PxVehicleSuspensionData()

@@ -10,7 +10,7 @@ import physx.PxRigidActor
 import physx.PxShape
 import kotlin.collections.set
 
-actual open class RigidActor : CommonRigidActor() {
+actual open class RigidActor : CommonRigidActor(), Releasable {
 
     init {
         Physics.checkIsLoaded()
@@ -87,14 +87,13 @@ actual open class RigidActor : CommonRigidActor() {
         super.detachShape(shape)
     }
 
-    actual open fun release() {
+    override fun release() {
         pxRigidActor.release()
         // attached PxShapes are auto-released when pxRigidDynamic is released, just clear the lists
         pxShapes.clear()
         mutShapes.clear()
 
-        PhysXJsLoader.destroy(pxPose)
-        PhysXJsLoader.destroy(pxFilterData)
+        PhysXJsLoader.destroy(pxPose, pxFilterData)
     }
 
     override fun fixedUpdate(timeStep: Float) {

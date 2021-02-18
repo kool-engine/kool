@@ -5,33 +5,234 @@
 
 package physx
 
-external interface PxConvexFlags {
-    fun isSet(flag: Int): Boolean
-    fun set(flag: Int)
-    fun clear(flag: Int)
+external interface PxBVH33MidphaseDesc {
+    /**
+     * WebIDL type: float
+     */
+    var meshSizePerformanceTradeOff: Float
+    /**
+     * WebIDL type: [PxMeshCookingHintEnum] (enum)
+     */
+    var meshCookingHint: Int
+
+    fun setToDefault()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
 }
+
+external interface PxBVH34MidphaseDesc {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var numPrimsPerLeaf: Int
+
+    fun setToDefault()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+external interface PxConvexFlags {
+    /**
+     * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
 fun PxConvexFlags(flags: Short): PxConvexFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxConvexFlags(flags)")
 }
 
 external interface PxConvexMeshDesc {
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
     var points: PxBoundedData
+    /**
+     * WebIDL type: [PxConvexFlags] (Value)
+     */
     var flags: PxConvexFlags
 }
+
 fun PxConvexMeshDesc(): PxConvexMeshDesc {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxConvexMeshDesc()")
 }
 
 external interface PxCooking {
+    fun release()
+
+    /**
+     * @param desc              WebIDL type: [PxConvexMeshDesc] (Const, Ref)
+     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @return WebIDL type: [PxConvexMesh]
+     */
     fun createConvexMesh(desc: PxConvexMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxConvexMesh
+
+    /**
+     * @param desc              WebIDL type: [PxTriangleMeshDesc] (Const, Ref)
+     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @return WebIDL type: [PxTriangleMesh]
+     */
+    fun createTriangleMesh(desc: PxTriangleMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxTriangleMesh
+
 }
 
-external interface PxCookingParams
+external interface PxCookingParams {
+    /**
+     * WebIDL type: float
+     */
+    var areaTestEpsilon: Float
+    /**
+     * WebIDL type: float
+     */
+    var planeTolerance: Float
+    /**
+     * WebIDL type: [PxConvexMeshCookingTypeEnum] (enum)
+     */
+    var convexMeshCookingType: Int
+    /**
+     * WebIDL type: boolean
+     */
+    var suppressTriangleMeshRemapTable: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var buildTriangleAdjacencies: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var buildGPUData: Boolean
+    /**
+     * WebIDL type: [PxTolerancesScale] (Value)
+     */
+    var scale: PxTolerancesScale
+    /**
+     * WebIDL type: [PxMeshPreprocessingFlags] (Value)
+     */
+    var meshPreprocessParams: PxMeshPreprocessingFlags
+    /**
+     * WebIDL type: float
+     */
+    var meshWeldTolerance: Float
+    /**
+     * WebIDL type: [PxMidphaseDesc] (Value)
+     */
+    var midphaseDesc: PxMidphaseDesc
+    /**
+     * WebIDL type: unsigned long
+     */
+    var gaussMapLimit: Int
+}
+
+/**
+ * @param sc WebIDL type: [PxTolerancesScale] (Const, Ref)
+ */
 fun PxCookingParams(sc: PxTolerancesScale): PxCookingParams {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxCookingParams(sc)")
+}
+
+external interface PxMeshPreprocessingFlags {
+    /**
+     * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned long
+ */
+fun PxMeshPreprocessingFlags(flags: Int): PxMeshPreprocessingFlags {
+    val module = PhysXJsLoader.physXJs
+    return js("new module.PxMeshPreprocessingFlags(flags)")
+}
+
+external interface PxMidphaseDesc {
+    /**
+     * WebIDL type: [PxBVH33MidphaseDesc] (Value)
+     */
+    var mBVH33Desc: PxBVH33MidphaseDesc
+    /**
+     * WebIDL type: [PxBVH34MidphaseDesc] (Value)
+     */
+    var mBVH34Desc: PxBVH34MidphaseDesc
+
+    /**
+     * @return WebIDL type: [PxMeshMidPhaseEnum] (enum)
+     */
+    fun getType(): Int
+
+    /**
+     * @param type WebIDL type: [PxMeshMidPhaseEnum] (enum)
+     */
+    fun setToDefault(type: Int)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxMidphaseDesc(): PxMidphaseDesc {
+    val module = PhysXJsLoader.physXJs
+    return js("new module.PxMidphaseDesc()")
+}
+
+external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
+    /**
+     * WebIDL type: [PxU16StridedData] (Value)
+     */
+    var materialIndices: PxU16StridedData
+
+    override fun setToDefault()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    override fun isValid(): Boolean
+
+}
+
+fun PxTriangleMeshDesc(): PxTriangleMeshDesc {
+    val module = PhysXJsLoader.physXJs
+    return js("new module.PxTriangleMeshDesc()")
 }
 
 object PxConvexFlagEnum {
@@ -45,3 +246,25 @@ object PxConvexFlagEnum {
     val eGPU_COMPATIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE()
     val eSHIFT_VERTICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES()
 }
+
+object PxConvexMeshCookingTypeEnum {
+    val eQUICKHULL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshCookingTypeEnum_eQUICKHULL()
+}
+
+object PxMeshCookingHintEnum {
+    val eSIM_PERFORMANCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eSIM_PERFORMANCE()
+    val eCOOKING_PERFORMANCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eCOOKING_PERFORMANCE()
+}
+
+object PxMeshPreprocessingFlagEnum {
+    val eWELD_VERTICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eWELD_VERTICES()
+    val eDISABLE_CLEAN_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH()
+    val eDISABLE_ACTIVE_EDGES_PRECOMPUTE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE()
+    val eFORCE_32BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES()
+}
+
+object PxMeshMidPhaseEnum {
+    val eBVH33: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH33()
+    val eBVH34: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH34()
+}
+

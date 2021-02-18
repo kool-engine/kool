@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -15,11 +16,10 @@ import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTA
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND_AGAINST
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
@@ -67,10 +67,25 @@ class VehicleDemo : DemoScene("Vehicle") {
             val throttleBrakeHandler = ThrottleBrakeHandler()
 
             makeGround(world)
-            makeRamp(Mat4f().translate(0f, 0f, 30f), world)
-            makeBumps(Mat4f().translate(20f, 0f, 0f), world)
             makeBoxes(Mat4f().translate(-20f, 0f, 30f), world)
             makeRocker(Mat4f().translate(-20f, 0f, 90f), world)
+
+            +colorMesh {
+                generate {
+                    makeRamp(Mat4f().translate(0f, 0f, 30f))
+                    makeBumps(Mat4f().translate(20f, 0f, 0f))
+                    makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
+                }
+                shader = pbrShader {
+                    albedoSource = Albedo.VERTEX_ALBEDO
+                    shadowMaps += shadows
+                    useImageBasedLighting(ibl)
+                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                }
+
+                makeStaticCollisionBody(geometry, world)
+            }
+
             makeRaycastVehicle(world)
 
             (camera as PerspectiveCamera).apply {
@@ -136,7 +151,7 @@ class VehicleDemo : DemoScene("Vehicle") {
             torqueNm = vehicle.engineTorqueNm
             powerKW = vehicle.enginePowerW / 1000f
             gear = vehicle.currentGear
-            steering = vehicle.steerInput
+            steering = -vehicle.steerInput
             throttle = vehicle.throttleInput
             brake = vehicle.brakeInput
             longitudinalAcceleration = vehicle.longitudinalAcceleration
@@ -266,32 +281,96 @@ class VehicleDemo : DemoScene("Vehicle") {
         RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }
 
-    private fun Scene.makeRamp(frame: Mat4f, world: PhysicsWorld) {
-        val ramp = RigidStatic().apply {
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
-            attachShape(Shape(BoxGeometry(Vec3f(10f, 2f, 10f)), groundMaterial))
-            position = frame.transform(MutableVec3f(0f, 0f, 0f))
-            setRotation(Mat3f().rotate(-11f, 0f, 0f))
+    private fun MeshBuilder.makeRamp(frame: Mat4f) {
+        color = Color.MD_ORANGE_100.toLinear()
+        withTransform {
+            transform.mul(frame)
+            rotate(-11f, 0f, 0f)
+            cube {
+                size.set(10f, 2f, 10f)
+                centered()
+            }
         }
-        world.addActor(ramp)
-        +ramp.toPrettyMesh(Color.MD_ORANGE_100.toLinear())
     }
 
-    private fun Scene.makeBumps(frame: Mat4f, world: PhysicsWorld) {
+    private fun MeshBuilder.makeBumps(frame: Mat4f) {
         for (i in 0 until 30) {
             val c = if (i % 2 == 0) Color.MD_ORANGE_300 else Color.MD_ORANGE_100
             for (s in -1 .. 1 step 2) {
-                val bump = RigidStatic().apply {
-                    setSimulationFilterData(obstacleQryFilterData)
-                    setQueryFilterData(obstacleQryFilterData)
-                    attachShape(Shape(CylinderGeometry(4f, 0.5f), groundMaterial))
-                    position = frame.transform(MutableVec3f(2f * s, -0.3f, i * 3.1f + s * 0.4f))
+                withTransform {
+                    transform.mul(frame)
+                    translate(2f * s, -0.3f, i * 3.1f + s * 0.4f)
+                    rotate(90f, Vec3f.Z_AXIS)
+                    translate(0f, -2f, 0f)
+                    color = c.toLinear()
+                    cylinder {
+                        radius = 0.5f
+                        height = 4f
+                        steps = 32
+                    }
                 }
-                world.addActor(bump)
-                +bump.toPrettyMesh(c.toLinear())
             }
         }
+    }
+
+    private fun MeshBuilder.makeHalfPipe(frame: Mat4f) {
+        withTransform {
+            transform.mul(frame)
+            profile {
+                val multiShape = multiShape {
+                    simpleShape(false) {
+                        xy(24f, 0f)
+                        xy(24f, 10f)
+                    }
+                    simpleShape(false) {
+                        xy(24f, 10f)
+                        xy(20f, 10f)
+                    }
+                    simpleShape(false) {
+                        xyArc(Vec2f(20f, 10f), Vec2f(10f, 10f), -90f, 20)
+                    }
+                }
+
+                color = Color.MD_ORANGE_100.toLinear()
+                sample()
+                val inds = mutableListOf<Int>()
+                inds += multiShape.shapes[0].sampledVertIndices
+                inds += multiShape.shapes[1].sampledVertIndices
+                inds += multiShape.shapes[2].sampledVertIndices
+                fillPolygon(inds.reversed())
+
+                sample(false)
+                for (i in 0 until 5) {
+                    translate(0f, 0f, 5f)
+                    sample()
+                }
+                for (i in 0 until 50) {
+                    rotate(180f / 50f, 0f, -1f, 0f)
+                    sample()
+                }
+                for (i in 0 until 5) {
+                    translate(0f, 0f, 5f)
+                    sample()
+                }
+                sample(false)
+                inds.clear()
+                inds += multiShape.shapes[0].sampledVertIndices
+                inds += multiShape.shapes[1].sampledVertIndices
+                inds += multiShape.shapes[2].sampledVertIndices
+                fillPolygon(inds)
+
+                geometry.generateNormals()
+            }
+        }
+    }
+
+    private fun makeStaticCollisionBody(mesh: IndexedVertexList, world: PhysicsWorld) {
+        val meshBody = RigidStatic().apply {
+            setSimulationFilterData(obstacleSimFilterData)
+            setQueryFilterData(obstacleQryFilterData)
+            attachShape(Shape(TriangleMeshGeometry(mesh), groundMaterial))
+        }
+        world.addActor(meshBody)
     }
 
     private fun Scene.makeGround(world: PhysicsWorld) {

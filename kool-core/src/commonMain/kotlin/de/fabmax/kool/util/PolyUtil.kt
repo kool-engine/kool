@@ -42,7 +42,7 @@ object PolyUtil {
         while (abs(e1 * e0) > 0.8 && i < noDuplicates.size) {
             e1.set(noDuplicates[(i + 1) % noDuplicates.size]).subtract(noDuplicates[i++]).norm()
         }
-        return e0.cross(e1, MutableVec3f())
+        return e0.cross(e1, MutableVec3f()).norm()
     }
 
     fun projectXy(points: List<Vec3f>, n: Vec3f): List<Vec3f> {

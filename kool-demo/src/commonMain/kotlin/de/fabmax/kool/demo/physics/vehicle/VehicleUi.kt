@@ -86,7 +86,7 @@ class VehicleUi(ctx: KoolContext) {
     private lateinit var steeringBar: HorizontalBar
     private lateinit var gMeter: GMeter
 
-    val uiScene = uiScene {
+    val uiScene = uiScene(dpi = ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi { BlankComponentUi() }
@@ -110,8 +110,7 @@ class VehicleUi(ctx: KoolContext) {
                 speedValue = this
                 layoutSpec.setOrigin(dps(75f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(170f * scale), dps(90f * scale), full())
-                //font.setCustom(Font(FontProps("Roboto Thin,${Font.SYSTEM_FONT}", 150 * scale, style = Font.ITALIC, chars = "-01234567890"), ctx))
-                font.setCustom(uiFont("Roboto Thin,${Font.SYSTEM_FONT}", 89 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890"))
+                font.setCustom(uiFont(fontFamily, 89 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890"))
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "0"
             }
@@ -125,7 +124,6 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("gearValue") {
                 gearValue = this
-                //layoutSpec.setOrigin(dps(285f  * scale), dps(60f * scale), zero())
                 layoutSpec.setOrigin(dps(274f  * scale), dps(65f * scale), zero())
                 layoutSpec.setSize(dps(75f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
@@ -133,7 +131,6 @@ class VehicleUi(ctx: KoolContext) {
                 text = "N"
             }
             +label("gearLabel") {
-                //layoutSpec.setOrigin(dps(335f  * scale), dps(60f * scale), zero())
                 layoutSpec.setOrigin(dps(324f  * scale), dps(65f * scale), zero())
                 layoutSpec.setSize(dps(175f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
@@ -143,7 +140,6 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("torqueValue") {
                 torqueValue = this
-                //layoutSpec.setOrigin(dps(279.5f  * scale), dps(35f * scale), zero())
                 layoutSpec.setOrigin(dps(274f  * scale), dps(40f * scale), zero())
                 layoutSpec.setSize(dps(74.5f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
@@ -151,7 +147,6 @@ class VehicleUi(ctx: KoolContext) {
                 text = "0"
             }
             +label("torqueUnit") {
-                //layoutSpec.setOrigin(dps(329.5f  * scale), dps(35f * scale), zero())
                 layoutSpec.setOrigin(dps(324f  * scale), dps(40f * scale), zero())
                 layoutSpec.setSize(dps(174.5f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
@@ -251,6 +246,6 @@ class VehicleUi(ctx: KoolContext) {
 
     companion object {
         const val scale = 1f
-        const val fontFamily = "Roboto Light,${Font.SYSTEM_FONT}"
+        const val fontFamily = Font.SYSTEM_FONT
     }
 }

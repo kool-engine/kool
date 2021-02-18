@@ -1,70 +1,43 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.toVec3f
-import de.fabmax.kool.physics.toVector_PxVec3
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.util.IndexedVertexList
-import physx.PxTopLevelFunctions
-import physx.cooking.PxConvexFlagEnum
-import physx.cooking.PxConvexFlags
-import physx.cooking.PxConvexMeshDesc
-import physx.geomutils.PxConvexMesh
+import de.fabmax.kool.physics.createPxMeshScale
+import de.fabmax.kool.physics.createPxQuat
+import de.fabmax.kool.physics.createPxVec3
+import de.fabmax.kool.physics.toPxVec3
+import org.lwjgl.system.MemoryStack
 import physx.geomutils.PxConvexMeshGeometry
 import physx.geomutils.PxGeometry
-import physx.geomutils.PxHullPolygon
 
-actual class ConvexMeshGeometry actual constructor(points: List<Vec3f>) : CommonConvexMeshGeometry(points), CollisionGeometry {
-
-    val pxMesh: PxConvexMesh
+actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh), CollisionGeometry {
 
     override val pxGeometry: PxGeometry
-    override val convexHull: IndexedVertexList
 
     init {
-        pxMesh = toConvexMesh(points)
-        pxGeometry = PxConvexMeshGeometry(pxMesh)
-        convexHull = makeMeshData(pxMesh)
-    }
-
-    companion object {
-        fun toConvexMesh(points: List<Vec3f>): PxConvexMesh {
-            val vec3Vector = points.toVector_PxVec3()
-            val desc = PxConvexMeshDesc()
-            desc.flags = PxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.toShort())
-            desc.points.count = points.size
-            desc.points.stride = 3 * 4      // point consists of 3 floats with 4 bytes each
-            desc.points.data = vec3Vector.data()
-            return Physics.cooking.createConvexMesh(desc, Physics.physics.getPhysicsInsertionCallback())
+        MemoryStack.stackPush().use { mem ->
+            val s = scale.toPxVec3(mem.createPxVec3())
+            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = mem.createPxMeshScale(s, r)
+            pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
         }
 
-        fun makeMeshData(convexMesh: PxConvexMesh): IndexedVertexList {
-            val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
-
-            val v = MutableVec3f()
-            val polyIndices = mutableListOf<Int>()
-            val poly = PxHullPolygon()
-            for (i in 0 until convexMesh.getNbPolygons()) {
-                polyIndices.clear()
-
-                convexMesh.getPolygonData(i, poly)
-                for (j in 0 until poly.mNbVerts) {
-                    val vi = PxTopLevelFunctions.getU8At(convexMesh.getIndexBuffer(), poly.mIndexBase + j)
-                    val pt = PxTopLevelFunctions.getVec3At(convexMesh.getVertices(), vi)
-                    polyIndices += geometry.addVertex(pt.toVec3f(v))
-                }
-
-                for (j in 2 until polyIndices.size) {
-                    val v0 = polyIndices[0]
-                    val v1 = polyIndices[j - 1]
-                    val v2 = polyIndices[j]
-                    geometry.addTriIndices(v0, v1, v2)
-                }
+        if (convexMesh.releaseWithGeometry) {
+            if (convexMesh.refCnt > 0) {
+                // PxConvexMesh starts with a ref count of 1, only increment it if this is not the first
+                // geometry which uses it
+                convexMesh.pxConvexMesh.acquireReference()
             }
-            geometry.generateNormals()
-            return geometry
+            convexMesh.refCnt++
+        }
+    }
+
+    actual constructor(points: List<Vec3f>) : this(ConvexMesh(points))
+
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        if (convexMesh.releaseWithGeometry) {
+            convexMesh.pxConvexMesh.release()
         }
     }
 }

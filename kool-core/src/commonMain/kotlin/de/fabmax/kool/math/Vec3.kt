@@ -136,6 +136,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     companion object {
         val ZERO = Vec3f(0f)
+        val ONES = Vec3f(1f)
         val X_AXIS = Vec3f(1f, 0f, 0f)
         val Y_AXIS = Vec3f(0f, 1f, 0f)
         val Z_AXIS = Vec3f(0f, 0f, 1f)
