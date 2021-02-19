@@ -7,11 +7,11 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
 import kotlin.math.min
 
-expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld, Releasable {
+expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
     var gravity: Vec3f
 }
 
-abstract class CommonPhysicsWorld() {
+abstract class CommonPhysicsWorld : Releasable {
     var physicsTime = 0.0
     var physicsTimeDesired = 0.0
 
@@ -55,8 +55,12 @@ abstract class CommonPhysicsWorld() {
         registeredAtScene?.let { it.onRenderScene -= onRenderSceneHook }
     }
 
-    open fun dispose() {
+    override fun release() {
+        if (isStepInProgress) {
+            fetchStepResults()
+        }
         unregisterHandlers()
+        clear(true)
     }
 
     open fun addActor(actor: RigidActor) {
@@ -67,10 +71,13 @@ abstract class CommonPhysicsWorld() {
         mutActors -= actor
     }
 
-    fun clear() {
+    fun clear(releaseActors: Boolean = true) {
         val removeActors = mutableListOf<RigidActor>().apply { this += actors }
         for (i in removeActors.lastIndex downTo 0) {
             removeActor(removeActors[i])
+            if (releaseActors) {
+                removeActors[i].release()
+            }
         }
     }
 

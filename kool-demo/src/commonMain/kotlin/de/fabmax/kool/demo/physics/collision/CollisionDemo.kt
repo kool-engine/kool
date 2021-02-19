@@ -112,6 +112,18 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             +Skybox.cube(ibl.reflectionMap, 1f)
             physicsWorld.registerHandlers(this@scene)
         }
+
+        onDispose += {
+            cleanUp()
+        }
+    }
+
+    private fun cleanUp() {
+        physicsWorld?.apply {
+            clear()
+            release()
+        }
+        shapeGenCtx.material.release()
     }
 
     private fun resetPhysics() {

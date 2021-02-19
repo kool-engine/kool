@@ -16,6 +16,7 @@ import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTA
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND_AGAINST
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
@@ -32,15 +33,14 @@ class VehicleDemo : DemoScene("Vehicle") {
     private lateinit var ibl: EnvironmentMaps
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
+    private val keyListeners = mutableListOf<InputManager.KeyEventListener>()
 
-    private lateinit var ground: RigidStatic
+    private lateinit var physicsWorld: PhysicsWorld
     private lateinit var vehicle: Vehicle
 
     private val groundMaterial = Material(0.5f)
-
     private val groundSimFilterData = FilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST)
     private val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
-
     private val obstacleSimFilterData = FilterData(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     private val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
 
@@ -62,13 +62,13 @@ class VehicleDemo : DemoScene("Vehicle") {
             +Skybox.cube(ibl.reflectionMap, 1f)
 
             Physics.awaitLoaded()
-            val world = PhysicsWorld()
+            physicsWorld = PhysicsWorld()
             val steerAnimator = ValueAnimator()
             val throttleBrakeHandler = ThrottleBrakeHandler()
 
-            makeGround(world)
-            makeBoxes(Mat4f().translate(-20f, 0f, 30f), world)
-            makeRocker(Mat4f().translate(-20f, 0f, 90f), world)
+            makeGround(physicsWorld)
+            makeBoxes(Mat4f().translate(-20f, 0f, 30f), physicsWorld)
+            makeRocker(Mat4f().translate(-20f, 0f, 90f), physicsWorld)
 
             +colorMesh {
                 generate {
@@ -83,10 +83,10 @@ class VehicleDemo : DemoScene("Vehicle") {
                     useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                 }
 
-                makeStaticCollisionBody(geometry, world)
+                makeStaticCollisionBody(geometry, physicsWorld)
             }
 
-            makeRaycastVehicle(world)
+            makeRaycastVehicle(physicsWorld)
 
             (camera as PerspectiveCamera).apply {
                 clipNear = 1f
@@ -115,15 +115,15 @@ class VehicleDemo : DemoScene("Vehicle") {
                 throttleBrakeHandler.downKeyPressed = it.isPressed
             }
 
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
-            ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
-            ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
-            ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
-            ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
-            ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
+            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
+            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
+            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
+            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
+            keyListeners += ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
+            keyListeners += ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
+            keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
+            keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
+            keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
                 val pos = vehicle.position
                 vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
 
@@ -135,8 +135,20 @@ class VehicleDemo : DemoScene("Vehicle") {
                 vehicle.angularVelocity = Vec3f.ZERO
             }
 
-            world.registerHandlers(this@scene)
+            physicsWorld.registerHandlers(this@scene)
         }
+
+        onDispose += {
+            cleanUp(it)
+        }
+    }
+
+    private fun cleanUp(ctx: KoolContext) {
+        physicsWorld.clear()
+        physicsWorld.release()
+        groundMaterial.release()
+
+        keyListeners.forEach { ctx.inputMgr.removeKeyListener(it) }
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
@@ -379,6 +391,13 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeGround(world: PhysicsWorld) {
+        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+        onDispose += {
+            groundAlbedo.dispose()
+            groundNormal.dispose()
+        }
+
         val gndMesh = textureMesh(isNormalMapped = true) {
             generate {
                 isCastingShadow = false
@@ -393,8 +412,8 @@ class VehicleDemo : DemoScene("Vehicle") {
                 }
             }
             shader = pbrShader {
-                useAlbedoMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png", true)
-                useNormalMap("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+                useAlbedoMap(groundAlbedo, true)
+                useNormalMap(groundNormal)
                 useImageBasedLighting(ibl)
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                 albedo = Color.MD_ORANGE_100.mix(Color.WHITE, 0.5f).toLinear()
@@ -403,7 +422,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +gndMesh
 
-        ground = RigidStatic().apply {
+        val ground = RigidStatic().apply {
             setSimulationFilterData(groundSimFilterData)
             setQueryFilterData(groundQryFilterData)
             attachShape(Shape(PlaneGeometry(), groundMaterial))

@@ -93,7 +93,7 @@ class GMeterUi(private val gMeter: GMeter) : ComponentUi {
     }
 
     private fun MeshBuilder.drawMeter(w: Float) {
-        bgMeshBuilder.color = Color.WHITE.withAlpha(0.35f)
+        bgMeshBuilder.color = Color.WHITE.withAlpha(0.2f)
         for (i in 1..3) {
             circle {
                 steps = 40
@@ -101,7 +101,7 @@ class GMeterUi(private val gMeter: GMeter) : ComponentUi {
                 radius = gMeter.height / 6f * i
             }
         }
-        bgMeshBuilder.color = Color.WHITE.withAlpha(0.75f)
+        bgMeshBuilder.color = Color.WHITE.withAlpha(0.5f)
         line(0f, gMeter.height / 2, gMeter.width, gMeter.height / 2, w)
         line(gMeter.width / 2, 0f, gMeter.width / 2, gMeter.height, w)
     }

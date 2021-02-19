@@ -51,6 +51,7 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
     }
 
     override fun release() {
+        super.release()
         scene.release()
         bufPxGravity.destroy()
     }

@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.physics
+package de.fabmax.kool.demo.physics.joints
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f

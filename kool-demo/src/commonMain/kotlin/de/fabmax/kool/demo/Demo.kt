@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
-import de.fabmax.kool.demo.physics.JointsDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
+import de.fabmax.kool.demo.physics.joints.JointsDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.physics.Physics

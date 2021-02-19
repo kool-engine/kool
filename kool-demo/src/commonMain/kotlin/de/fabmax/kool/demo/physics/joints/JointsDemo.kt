@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.physics
+package de.fabmax.kool.demo.physics.joints
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
@@ -116,6 +116,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 makePhysicsScene()
             }
         }
+
+        onDispose += {
+            cleanUp()
+        }
     }
 
     private fun Scene.lightSetup() {
@@ -150,10 +154,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private fun makePhysicsScene() {
         physMeshes.clearBodies()
         niceMeshes.clearBodies()
+        joints.forEach { it.release() }
         joints.clear()
 
         physicsWorld?.apply {
             clear()
+
             val groundPlane = RigidStatic()
             groundPlane.setSimulationFilterData(staticSimFilterData)
             groundPlane.attachShape(Shape(PlaneGeometry(), material))
@@ -165,6 +171,15 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val frame = Mat4f().rotate(90f, Vec3f.Z_AXIS)
         makeGearChain(numLinks, frame)
         updateMotor()
+    }
+
+    private fun cleanUp() {
+        joints.forEach { it.release() }
+        physicsWorld?.apply {
+            clear()
+            release()
+        }
+        material.release()
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
@@ -349,14 +364,16 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private fun makeGearAndAxle(gearR: Float, origin: Vec3f, gearMass: Float, isDriven: Boolean, frame: Mat4f) {
         val world = physicsWorld ?: return
 
+        val axleGeom = CylinderGeometry(7f, 1f)
         val axle = RigidStatic()
         axle.setSimulationFilterData(staticSimFilterData)
-        axle.attachShape(Shape(CylinderGeometry(7f, 1f), material))
+        axle.attachShape(Shape(axleGeom, material))
         axle.setRotation(frame.getRotation(Mat3f()).rotate(0f, -90f, 0f))
         axle.position = frame.transform(MutableVec3f(origin))
         world.addActor(axle)
         physMeshes.axles += axle
         niceMeshes.axles += axle
+        axleGeom.release()
 
         val gear = makeGear(gearR, gearMass)
         gear.setRotation(frame.getRotation(Mat3f()))
@@ -382,7 +399,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         val toothWb = 1f * s
         val toothWt = 0.7f * s
         val gearShapes = mutableListOf<Shape>()
-        gearShapes += Shape(CylinderGeometry(2.5f, gearR), material, Mat4f().rotate(0f, 90f, 0f))
+
         val toothPts = listOf(
             Vec3f(toothWt, gearR + toothH, -toothBt), Vec3f(toothWt, gearR + toothH, toothBt),
             Vec3f(-toothWt, gearR + toothH, -toothBt), Vec3f(-toothWt, gearR + toothH, toothBt),
@@ -390,8 +407,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
             Vec3f(toothWb, gearR - 0.1f, -toothBb), Vec3f(toothWb, gearR - 0.1f, toothBb),
             Vec3f(-toothWb, gearR - 0.1f, -toothBb), Vec3f(-toothWb, gearR - 0.1f, toothBb)
         )
+        val toothGeom = ConvexMeshGeometry(toothPts)
+        val cylGeom = CylinderGeometry(2.5f, gearR)
+
+        gearShapes += Shape(cylGeom, material, Mat4f().rotate(0f, 90f, 0f))
         for (i in 0..11) {
-            gearShapes += Shape(ConvexMeshGeometry(toothPts), material, Mat4f().rotate(0f, 0f, 30f * i))
+            gearShapes += Shape(toothGeom, material, Mat4f().rotate(0f, 0f, 30f * i))
         }
 
         val gearFilterData = FilterData().apply {
@@ -403,6 +424,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         gearShapes.forEach { shape ->
             gear.attachShape(shape)
         }
+        toothGeom.release()
+        cylGeom.release()
         return gear
     }
 
@@ -418,6 +441,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
         shapes.forEach { shape ->
             link.attachShape(shape)
         }
+        boxA.release()
+        boxB.release()
         return link
     }
 
@@ -438,10 +463,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             Vec3f( w2, -h2, -d), Vec3f( w2, -h2, d),
             Vec3f( w2,  h2, -d), Vec3f( w2,  h2, d),
         )
-        val shape = ConvexMeshGeometry(points)
+        val geom = ConvexMeshGeometry(points)
 
         val link = RigidDynamic(mass)
-        link.attachShape(Shape(shape, material))
+        link.attachShape(Shape(geom, material))
+        geom.release()
         return link
     }
 
