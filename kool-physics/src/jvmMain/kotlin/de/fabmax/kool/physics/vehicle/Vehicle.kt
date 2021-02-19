@@ -5,11 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.physics.geometry.CylinderGeometry
-import physx.common.PxVec3
+import org.lwjgl.system.MemoryStack
 import physx.physics.PxBatchQuery
-import physx.physics.PxFilterData
 import physx.support.TypeHelpers
 import physx.support.Vector_PxReal
 import physx.support.Vector_PxVehicleWheels
@@ -111,6 +108,19 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         vehicle.mDriveDynData.mUseAutoGears = true
     }
 
+    override fun release() {
+        vehicle.release()
+        vehicleAsVector.destroy()
+        wheelQueryResults.destroy()
+        vehicleWheelQueryResult.destroy()
+        
+        queryData.release()
+        query.release()
+        frictionPairs.release()
+
+        super.release()
+    }
+
     override fun fixedUpdate(timeStep: Float) {
         if (isReverse && vehicle.mDriveDynData.mTargetGear != PxVehicleGearEnum.eREVERSE) {
             vehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eREVERSE)
@@ -118,19 +128,19 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             vehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
         }
 
+        // update vehicle simulation state
         PxVehicleTopLevelFunctions.PxVehicleSuspensionRaycasts(query, vehicleAsVector, queryData.numQueriesPerBatch, queryData.raycastResults.data())
         PxVehicleTopLevelFunctions.PxVehicleUpdates(timeStep, world.scene.gravity, frictionPairs.frictionPairs, vehicleAsVector, vehicleWheelQueryResult)
-
         for (i in 0 until 4) {
             wheelQueryResults.at(i).apply {
                 localPose.toMat4f(wheelTransforms[i])
             }
         }
 
-        val engioneSpdOmega = vehicle.mDriveDynData.engineRotationSpeed
-        engineSpd = max(750f, engioneSpdOmega * OMEGA_TO_RPM)
-        engineTq = vehicle.mDriveSimData.engineData.mTorqueCurve.getYVal(engioneSpdOmega) * peakTorque * throttleInput
-        engineP = engineTq * engioneSpdOmega
+        val engineSpdOmega = vehicle.mDriveDynData.engineRotationSpeed
+        engineSpd = max(750f, engineSpdOmega * OMEGA_TO_RPM)
+        engineTq = vehicle.mDriveSimData.engineData.mTorqueCurve.getYVal(engineSpdOmega) * peakTorque * throttleInput
+        engineP = engineTq * engineSpdOmega
         curGear = vehicle.mDriveDynData.currentGear - PxVehicleGearEnum.eNEUTRAL
 
         prevLinearSpeed.set(linearSpeed)
@@ -153,165 +163,32 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     }
 
     private fun setupVehicleActor(vehicleProps: VehicleProperties) {
-        // Chassis just has a single convex shape for simplicity.
-        val chassisShapes = if (vehicleProps.chassisShapes.isEmpty()) {
-            listOf(BoxGeometry(vehicleProps.chassisDims) to Mat4f())
-        } else {
-            vehicleProps.chassisShapes
+        MemoryStack.stackPush().use { mem ->
+            // Chassis just has a single convex shape for simplicity.
+            val chassisShapes = if (vehicleProps.chassisShapes.isEmpty()) {
+                listOf(VehicleUtils.defaultChassisShape(vehicleProps.chassisDims))
+            } else {
+                vehicleProps.chassisShapes
+            }
+
+            val wheelShapes = if (vehicleProps.wheelShapes.size != 4) {
+                List(4) { VehicleUtils.defaultWheelShape(vehicleProps.wheelRadius, vehicleProps.wheelWidth) }
+            } else {
+                vehicleProps.wheelShapes
+            }
+
+            inertia = vehicleProps.chassisMOI
+            val cMassTransform = mem.createPxTransform()
+            cMassTransform.p = vehicleProps.chassisCMOffset.toPxVec3(mem.createPxVec3())
+            pxRigidDynamic.cMassLocalPose = cMassTransform
+
+            // Add shapes to the actor. Wheel shapes must added first because first
+            // four shapes are treated as wheels (based on shape index)
+            for(i in 0..3) {
+                attachShape(wheelShapes[i])
+            }
+            chassisShapes.forEach { attachShape(it) }
         }
-
-        val tmpVec = PxVec3()
-        val chassisData = PxVehicleChassisData()
-        chassisData.mmoi = vehicleProps.chassisMOI.toPxVec3(tmpVec)
-        chassisData.mMass = vehicleProps.chassisMass
-        chassisData.mcmOffset = vehicleProps.chassisCMOffset.toPxVec3(tmpVec)
-        tmpVec.destroy()
-
-        val chassisQryFilterData = FilterData()
-        VehicleUtils.setupNonDrivableSurface(chassisQryFilterData)
-        val wheelQryFilterData = FilterData()
-        VehicleUtils.setupNonDrivableSurface(wheelQryFilterData)
-
-        inertia = chassisData.mmoi.toVec3f()
-        val cMassTransform = PxTransform().apply { p = chassisData.mcmOffset }
-        pxRigidDynamic.cMassLocalPose = cMassTransform
-        cMassTransform.destroy()
-
-        // Add wheel shapes to the actor. Must happen before chassis shapes because first
-        // four shapes are treated as wheels
-        val wheelMesh = CylinderGeometry(vehicleProps.wheelWidth, vehicleProps.wheelRadius)
-        for(i in 0..3) {
-            val shape = Shape(wheelMesh, vehicleProps.wheelMaterial,
-                simFilterData = vehicleProps.wheelSimFilterData, queryFilterData = wheelQryFilterData)
-            attachShape(shape)
-        }
-
-        // add chassis shapes to the actor
-        chassisShapes.forEach { (geom, pose) ->
-            val shape = Shape(geom, vehicleProps.chassisMaterial, pose,
-                vehicleProps.chassisSimFilterData, chassisQryFilterData)
-            attachShape(shape)
-        }
-    }
-
-    private fun setupWheelsSimulationData(vehicleProps: VehicleProperties, wheelCenterActorOffsets: List<Vec3f>, wheelsSimData: PxVehicleWheelsSimData) {
-        val numWheels = vehicleProps.numWheels
-        val centerOfMass = vehicleProps.chassisCMOffset.toPxVec3(PxVec3())
-        val pxWheelCenterActorOffsets = wheelCenterActorOffsets.toVector_PxVec3()
-
-        // Set up the wheels.
-        val wheels = List(numWheels) {
-            val wheel = PxVehicleWheelData()
-            wheel.mMass = vehicleProps.wheelMass
-            wheel.mmoi = vehicleProps.wheelMOI
-            wheel.mRadius = vehicleProps.wheelRadius
-            wheel.mWidth = vehicleProps.wheelWidth
-            wheel.mMaxBrakeTorque = vehicleProps.maxBrakeTorque
-            wheel
-        }
-        // Enable the handbrake for the rear wheels only.
-        wheels[REAR_LEFT].mMaxHandBrakeTorque = vehicleProps.maxHandBrakeTorque
-        wheels[REAR_RIGHT].mMaxHandBrakeTorque = vehicleProps.maxHandBrakeTorque
-        // Enable steering for the front wheels only.
-        wheels[FRONT_LEFT].mMaxSteer = vehicleProps.maxSteerAngle.toRad()
-        wheels[FRONT_RIGHT].mMaxSteer = vehicleProps.maxSteerAngle.toRad()
-
-        // Set up the tires.
-        val tires = List(numWheels) {
-            val tire = PxVehicleTireData()
-            tire.mType = FrictionPairs.TIRE_TYPE_NORMAL
-            tire
-        }
-
-        // Set up the suspensions
-        // Compute the mass supported by each suspension spring.
-        val suspSprungMasses = Vector_PxReal(numWheels)
-        val suspSprungMassesRealPtr = TypeHelpers.voidToRealPtr(suspSprungMasses.data())
-        PxVehicleTopLevelFunctions.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(), centerOfMass, vehicleProps.chassisMass, 1, suspSprungMassesRealPtr)
-        // Set the suspension data.
-        val suspensions = List(numWheels) { i ->
-            val susp = PxVehicleSuspensionData()
-            susp.mMaxCompression = vehicleProps.maxCompression
-            susp.mMaxDroop = vehicleProps.maxDroop
-            susp.mSpringStrength = vehicleProps.springStrength
-            susp.mSpringDamperRate = vehicleProps.springDamperRate
-            susp.mSprungMass = suspSprungMasses.at(i)
-            susp
-        }
-        // Set the camber angles.
-        for (i in 0 until numWheels step 2) {
-            suspensions[i + 0].mCamberAtRest =  vehicleProps.camberAngleAtRest
-            suspensions[i + 1].mCamberAtRest =  -vehicleProps.camberAngleAtRest
-            suspensions[i + 0].mCamberAtMaxDroop = vehicleProps.camberAngleAtMaxDroop
-            suspensions[i + 1].mCamberAtMaxDroop = -vehicleProps.camberAngleAtMaxDroop
-            suspensions[i + 0].mCamberAtMaxCompression = vehicleProps.camberAngleAtMaxCompression
-            suspensions[i + 1].mCamberAtMaxCompression = -vehicleProps.camberAngleAtMaxCompression
-        }
-
-        // Set up the wheel geometry.
-        val suspTravelDirections = mutableListOf<Vec3f>()
-        val wheelCentreCMOffsets = mutableListOf<Vec3f>()
-        val suspForceAppCMOffsets = mutableListOf<Vec3f>()
-        val tireForceAppCMOffsets = mutableListOf<Vec3f>()
-        // Set the geometry data.
-        for (i in 0 until numWheels) {
-            // Vertical suspension travel.
-            suspTravelDirections += MutableVec3f(Vec3f.NEG_Y_AXIS)
-            // Wheel center offset is offset from rigid body center of mass.
-            val cmOffset = wheelCenterActorOffsets[i].subtract(vehicleProps.chassisCMOffset, MutableVec3f())
-            wheelCentreCMOffsets += cmOffset
-            // Suspension force application point 0.3 metres below rigid body center of mass.
-            suspForceAppCMOffsets += MutableVec3f(cmOffset.x, -0.3f, cmOffset.z)
-            // Tire force application point 0.3 metres below rigid body center of mass.
-            tireForceAppCMOffsets += MutableVec3f(cmOffset.x, -0.3f, cmOffset.z)
-        }
-
-        // Set up the filter data of the raycast that will be issued by each suspension.
-        val qryFilterData = PxFilterData()
-        qryFilterData.word3 = VehicleUtils.SURFACE_FLAG_NON_DRIVABLE
-
-        // Set the wheel, tire and suspension data.
-        // Set the geometry data.
-        // Set the query filter data
-        val tmpVec = PxVec3()
-        for (i in 0 until numWheels) {
-            wheelsSimData.setWheelData(i, wheels[i])
-            wheelsSimData.setTireData(i, tires[i])
-            wheelsSimData.setSuspensionData(i, suspensions[i])
-            wheelsSimData.setSuspTravelDirection(i, suspTravelDirections[i].toPxVec3(tmpVec))
-            wheelsSimData.setWheelCentreOffset(i, wheelCentreCMOffsets[i].toPxVec3(tmpVec))
-            wheelsSimData.setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i].toPxVec3(tmpVec))
-            wheelsSimData.setTireForceAppPointOffset(i, tireForceAppCMOffsets[i].toPxVec3(tmpVec))
-            wheelsSimData.setSceneQueryFilterData(i, qryFilterData)
-            wheelsSimData.setWheelShapeMapping(i, i)
-        }
-
-        // Add a front and rear anti-roll bar
-        if (vehicleProps.frontAntiRollBarStiffness > 0f) {
-            val barFront = PxVehicleAntiRollBarData()
-            barFront.mWheel0 = FRONT_LEFT
-            barFront.mWheel1 = FRONT_RIGHT
-            barFront.mStiffness = vehicleProps.frontAntiRollBarStiffness
-            wheelsSimData.addAntiRollBarData(barFront)
-            barFront.destroy()
-        }
-        if (vehicleProps.rearAntiRollBarStiffness > 0f) {
-            val barRear = PxVehicleAntiRollBarData()
-            barRear.mWheel0 = REAR_LEFT
-            barRear.mWheel1 = REAR_RIGHT
-            barRear.mStiffness = vehicleProps.rearAntiRollBarStiffness
-            wheelsSimData.addAntiRollBarData(barRear)
-            barRear.destroy()
-        }
-
-        wheels.forEach { it.destroy() }
-        tires.forEach { it.destroy() }
-        suspensions.forEach { it.destroy() }
-        suspSprungMasses.destroy()
-        qryFilterData.destroy()
-        tmpVec.destroy()
-        centerOfMass.destroy()
-        pxWheelCenterActorOffsets.destroy()
     }
 
     private fun createVehicle4w(vehicleProps: VehicleProperties): PxVehicleDrive4W {
@@ -345,12 +222,9 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Ackermann steer accuracy
         driveSimData.ackermannGeometryData.apply {
             mAccuracy = 1f
-            mAxleSeparation = wheelsSimData.getWheelCentreOffset(FRONT_LEFT).z -
-                    wheelsSimData.getWheelCentreOffset(REAR_LEFT).z
-            mFrontWidth = wheelsSimData.getWheelCentreOffset(FRONT_RIGHT).x -
-                    wheelsSimData.getWheelCentreOffset(FRONT_LEFT).x
-            mRearWidth = wheelsSimData.getWheelCentreOffset(REAR_RIGHT).x -
-                    wheelsSimData.getWheelCentreOffset(REAR_LEFT).x
+            mAxleSeparation = wheelsSimData.getWheelCentreOffset(FRONT_LEFT).z - wheelsSimData.getWheelCentreOffset(REAR_LEFT).z
+            mFrontWidth = wheelsSimData.getWheelCentreOffset(FRONT_RIGHT).x - wheelsSimData.getWheelCentreOffset(FRONT_LEFT).x
+            mRearWidth = wheelsSimData.getWheelCentreOffset(REAR_RIGHT).x - wheelsSimData.getWheelCentreOffset(REAR_LEFT).x
         }
 
         // Create a vehicle from the wheels and drive sim data.
@@ -359,7 +233,116 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
         // Free the sim data because we don't need that any more.
         wheelsSimData.free()
+        driveSimData.destroy()
 
         return vehDrive4W
+    }
+
+    private fun setupWheelsSimulationData(vehicleProps: VehicleProperties, wheelCenterActorOffsets: List<Vec3f>, wheelsSimData: PxVehicleWheelsSimData) {
+        MemoryStack.stackPush().use { mem ->
+            val numWheels = vehicleProps.numWheels
+            val centerOfMass = vehicleProps.chassisCMOffset.toPxVec3(mem.createPxVec3())
+            val pxWheelCenterActorOffsets = wheelCenterActorOffsets.toVector_PxVec3()
+
+            // Set up the wheels.
+            val wheels = List(numWheels) {
+                val wheel = mem.createPxVehicleWheelData()
+                wheel.mMass = vehicleProps.wheelMass
+                wheel.mmoi = vehicleProps.wheelMOI
+                wheel.mRadius = vehicleProps.wheelRadius
+                wheel.mWidth = vehicleProps.wheelWidth
+                wheel.mMaxBrakeTorque = vehicleProps.maxBrakeTorque
+                wheel
+            }
+            // Enable the handbrake for the rear wheels only.
+            wheels[REAR_LEFT].mMaxHandBrakeTorque = vehicleProps.maxHandBrakeTorque
+            wheels[REAR_RIGHT].mMaxHandBrakeTorque = vehicleProps.maxHandBrakeTorque
+            // Enable steering for the front wheels only.
+            wheels[FRONT_LEFT].mMaxSteer = vehicleProps.maxSteerAngle.toRad()
+            wheels[FRONT_RIGHT].mMaxSteer = vehicleProps.maxSteerAngle.toRad()
+
+            // Set up the tires.
+            val tires = List(numWheels) {
+                val tire = mem.createPxVehicleTireData()
+                tire.mType = FrictionPairs.TIRE_TYPE_NORMAL
+                tire
+            }
+
+            // Set up the suspensions
+            // Compute the mass supported by each suspension spring.
+            val suspSprungMasses = Vector_PxReal(numWheels)
+            val suspSprungMassesRealPtr = TypeHelpers.voidToRealPtr(suspSprungMasses.data())
+            PxVehicleTopLevelFunctions.PxVehicleComputeSprungMasses(numWheels, pxWheelCenterActorOffsets.data(),
+                centerOfMass, vehicleProps.chassisMass, 1, suspSprungMassesRealPtr)
+            // Set the suspension data.
+            val suspensions = List(numWheels) { i ->
+                mem.createPxVehicleSuspensionData().apply {
+                    mMaxCompression = vehicleProps.maxCompression
+                    mMaxDroop = vehicleProps.maxDroop
+                    mSpringStrength = vehicleProps.springStrength
+                    mSpringDamperRate = vehicleProps.springDamperRate
+                    mSprungMass = suspSprungMasses.at(i)
+
+                    val camberSign = if (i % 2 == 1) -1f else 1f
+                    mCamberAtRest = vehicleProps.camberAngleAtRest * camberSign
+                    mCamberAtMaxDroop = vehicleProps.camberAngleAtMaxDroop * camberSign
+                    mCamberAtMaxCompression = vehicleProps.camberAngleAtMaxCompression * camberSign
+                }
+            }
+
+            // Set up the wheel geometry.
+            val suspTravelDirections = mutableListOf<Vec3f>()
+            val wheelCentreCMOffsets = mutableListOf<Vec3f>()
+            val suspForceAppCMOffsets = mutableListOf<Vec3f>()
+            val tireForceAppCMOffsets = mutableListOf<Vec3f>()
+            // Set the geometry data.
+            for (i in 0 until numWheels) {
+                // Vertical suspension travel.
+                suspTravelDirections += MutableVec3f(Vec3f.NEG_Y_AXIS)
+                // Wheel center offset is offset from rigid body center of mass.
+                val cmOffset = wheelCenterActorOffsets[i].subtract(vehicleProps.chassisCMOffset, MutableVec3f())
+                wheelCentreCMOffsets += cmOffset
+                // Suspension force application point 0.3 metres below rigid body center of mass.
+                suspForceAppCMOffsets += MutableVec3f(cmOffset.x, -0.3f, cmOffset.z)
+                // Tire force application point 0.3 metres below rigid body center of mass.
+                tireForceAppCMOffsets += MutableVec3f(cmOffset.x, -0.3f, cmOffset.z)
+            }
+
+            // Set up the filter data of the raycast that will be issued by each suspension.
+            val qryFilterData = mem.createPxFilterData(0, 0, 0, VehicleUtils.SURFACE_FLAG_NON_DRIVABLE)
+
+            // Set the wheel, tire and suspension data, the geometry data and the query filter data
+            val tmpVec = mem.createPxVec3()
+            for (i in 0 until numWheels) {
+                wheelsSimData.setWheelData(i, wheels[i])
+                wheelsSimData.setTireData(i, tires[i])
+                wheelsSimData.setSuspensionData(i, suspensions[i])
+                wheelsSimData.setSuspTravelDirection(i, suspTravelDirections[i].toPxVec3(tmpVec))
+                wheelsSimData.setWheelCentreOffset(i, wheelCentreCMOffsets[i].toPxVec3(tmpVec))
+                wheelsSimData.setSuspForceAppPointOffset(i, suspForceAppCMOffsets[i].toPxVec3(tmpVec))
+                wheelsSimData.setTireForceAppPointOffset(i, tireForceAppCMOffsets[i].toPxVec3(tmpVec))
+                wheelsSimData.setSceneQueryFilterData(i, qryFilterData)
+                wheelsSimData.setWheelShapeMapping(i, i)
+            }
+
+            // Add a front and rear anti-roll bar
+            if (vehicleProps.frontAntiRollBarStiffness > 0f) {
+                val barFront = mem.createPxVehicleAntiRollBarData()
+                barFront.mWheel0 = FRONT_LEFT
+                barFront.mWheel1 = FRONT_RIGHT
+                barFront.mStiffness = vehicleProps.frontAntiRollBarStiffness
+                wheelsSimData.addAntiRollBarData(barFront)
+            }
+            if (vehicleProps.rearAntiRollBarStiffness > 0f) {
+                val barRear = mem.createPxVehicleAntiRollBarData()
+                barRear.mWheel0 = REAR_LEFT
+                barRear.mWheel1 = REAR_RIGHT
+                barRear.mStiffness = vehicleProps.rearAntiRollBarStiffness
+                wheelsSimData.addAntiRollBarData(barRear)
+            }
+
+            suspSprungMasses.destroy()
+            pxWheelCenterActorOffsets.destroy()
+        }
     }
 }

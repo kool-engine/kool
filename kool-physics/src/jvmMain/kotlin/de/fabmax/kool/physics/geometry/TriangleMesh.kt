@@ -16,6 +16,7 @@ actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexL
     internal var refCnt = 0
 
     init {
+        Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val pointVector = Vector_PxVec3()
             val indexVector = Vector_PxU32()

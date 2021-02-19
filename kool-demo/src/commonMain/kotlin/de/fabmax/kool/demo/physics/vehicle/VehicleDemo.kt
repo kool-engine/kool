@@ -169,11 +169,16 @@ class VehicleDemo : DemoScene("Vehicle") {
 
         val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
 
+        val chassisBox = VehicleUtils.defaultChassisShape(vehicleProps.chassisDims)
         vehicleProps.chassisShapes = listOf(
-            BoxGeometry(vehicleProps.chassisDims) to Mat4f(),
+            chassisBox,
             // add additional shapes which act as collision dummys for wheel vs. drivable object collisions
-            BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
-            BoxGeometry(wheelBumperDims) to Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
+            Shape(BoxGeometry(wheelBumperDims), chassisBox.material,
+                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
+                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData),
+            Shape(BoxGeometry(wheelBumperDims), chassisBox.material,
+                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ),
+                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData)
         )
 
         val pose = Mat4f().translate(0f, 3f, 0f)

@@ -12,7 +12,15 @@ fun PxDefaultAllocator(): PxDefaultAllocator {
     return js("new module.PxDefaultAllocator()")
 }
 
+fun PxDefaultAllocator.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxDefaultCpuDispatcher : PxCpuDispatcher
+
+fun PxDefaultCpuDispatcher.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxJoint : PxBase
 
@@ -71,6 +79,23 @@ external interface PxRevoluteJoint : PxJoint {
 
 }
 
+fun PxRevoluteJoint.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxRevoluteJoint.driveVelocity
+    get() = getDriveVelocity()
+    set(value) { setDriveVelocity(value) }
+var PxRevoluteJoint.driveForceLimit
+    get() = getDriveForceLimit()
+    set(value) { setDriveForceLimit(value) }
+var PxRevoluteJoint.driveGearRatio
+    get() = getDriveGearRatio()
+    set(value) { setDriveGearRatio(value) }
+var PxRevoluteJoint.revoluteJointFlags
+    get() = getRevoluteJointFlags()
+    set(value) { setRevoluteJointFlags(value) }
+
 external interface PxRevoluteJointFlags {
     /**
      * @param flag WebIDL type: [PxRevoluteJointFlagEnum] (enum)
@@ -96,6 +121,10 @@ external interface PxRevoluteJointFlags {
 fun PxRevoluteJointFlags(flags: Short): PxRevoluteJointFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxRevoluteJointFlags(flags)")
+}
+
+fun PxRevoluteJointFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxRevoluteJointFlagEnum {

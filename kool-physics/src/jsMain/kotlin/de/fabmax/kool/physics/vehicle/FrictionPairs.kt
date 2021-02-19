@@ -2,9 +2,10 @@ package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PxVehicleDrivableSurfaceToTireFrictionPairs_allocate
+import de.fabmax.kool.physics.Releasable
 import physx.*
 
-class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val surfaceTypes: List<Int>) {
+class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val surfaceTypes: List<Int>) : Releasable {
 
     constructor(nbTireTypes: Int, materials: List<PxMaterial>) :
             this(nbTireTypes, materials, materials.indices.toList())
@@ -33,6 +34,9 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
                 frictionPairs.setTypePairFriction(s, t, 1f)
             }
         }
+
+        materialVec.destroy()
+        surfaceTypes.destroy()
     }
 
     fun setTypePairFriction(material: PxMaterial, tireType: Int, friction: Float) {
@@ -45,6 +49,10 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
         }
         val surfaceType = surfaceTypes[iMaterial]
         frictionPairs.setTypePairFriction(surfaceType, tireType, friction)
+    }
+
+    override fun release() {
+        frictionPairs.release()
     }
 
     companion object {

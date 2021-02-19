@@ -2,10 +2,11 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.toPxVec3
 import de.fabmax.kool.util.IndexedVertexList
-import physx.*
+import physx.PxTriangleMeshGeometry
 
 actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh, scale: Vec3f) : CommonTriangleMeshGeometry(triangleMesh), CollisionGeometry {
 
@@ -13,11 +14,12 @@ actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh,
 
     init {
         Physics.checkIsLoaded()
-        val s = scale.toPxVec3(PxVec3())
-        val r = PxQuat(0f, 0f, 0f, 1f)
-        val meshScale = PxMeshScale(s, r)
-        pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
-        PhysXJsLoader.destroy(s, r, meshScale)
+        MemoryStack.stackPush().use { mem ->
+            val s = scale.toPxVec3(mem.createPxVec3())
+            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = mem.createPxMeshScale(s, r)
+            pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
+        }
 
         if (triangleMesh.releaseWithGeometry) {
             if (triangleMesh.refCnt > 0) {

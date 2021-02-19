@@ -7,17 +7,45 @@ package physx
 
 external interface PxActorPtr
 
+fun PxActorPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxMaterialPtr
+
+fun PxMaterialPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxVehicleWheelsPtr
 
+fun PxVehicleWheelsPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxRealPtr
+
+fun PxRealPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxU8Ptr
 
+fun PxU8Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxU16Ptr
 
+fun PxU16Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxU32Ptr
+
+fun PxU32Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface TypeHelpers {
     /**
@@ -95,6 +123,10 @@ external interface TypeHelpers {
 
 }
 
+fun TypeHelpers.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxMaterial {
     /**
      * @param index WebIDL type: unsigned long
@@ -130,6 +162,10 @@ fun Vector_PxMaterial(): Vector_PxMaterial {
 fun Vector_PxMaterial(size: Int): Vector_PxMaterial {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxMaterial(size)")
+}
+
+fun Vector_PxMaterial.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface Vector_PxReal {
@@ -169,6 +205,10 @@ fun Vector_PxReal(size: Int): Vector_PxReal {
     return js("new module.Vector_PxReal(size)")
 }
 
+fun Vector_PxReal.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxU16 {
     /**
      * @param index WebIDL type: unsigned long
@@ -204,6 +244,10 @@ fun Vector_PxU16(): Vector_PxU16 {
 fun Vector_PxU16(size: Int): Vector_PxU16 {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxU16(size)")
+}
+
+fun Vector_PxU16.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface Vector_PxU32 {
@@ -243,6 +287,10 @@ fun Vector_PxU32(size: Int): Vector_PxU32 {
     return js("new module.Vector_PxU32(size)")
 }
 
+fun Vector_PxU32.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxVec3 {
     /**
      * @param index WebIDL type: unsigned long
@@ -278,6 +326,10 @@ fun Vector_PxVec3(): Vector_PxVec3 {
 fun Vector_PxVec3(size: Int): Vector_PxVec3 {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxVec3(size)")
+}
+
+fun Vector_PxVec3.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface Vector_PxRaycastQueryResult {
@@ -317,6 +369,10 @@ fun Vector_PxRaycastQueryResult(size: Int): Vector_PxRaycastQueryResult {
     return js("new module.Vector_PxRaycastQueryResult(size)")
 }
 
+fun Vector_PxRaycastQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxSweepQueryResult {
     /**
      * @param index WebIDL type: unsigned long
@@ -352,6 +408,10 @@ fun Vector_PxSweepQueryResult(): Vector_PxSweepQueryResult {
 fun Vector_PxSweepQueryResult(size: Int): Vector_PxSweepQueryResult {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxSweepQueryResult(size)")
+}
+
+fun Vector_PxSweepQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface Vector_PxRaycastHit {
@@ -391,6 +451,10 @@ fun Vector_PxRaycastHit(size: Int): Vector_PxRaycastHit {
     return js("new module.Vector_PxRaycastHit(size)")
 }
 
+fun Vector_PxRaycastHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxSweepHit {
     /**
      * @param index WebIDL type: unsigned long
@@ -426,6 +490,10 @@ fun Vector_PxSweepHit(): Vector_PxSweepHit {
 fun Vector_PxSweepHit(size: Int): Vector_PxSweepHit {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxSweepHit(size)")
+}
+
+fun Vector_PxSweepHit.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface Vector_PxVehicleDrivableSurfaceType {
@@ -465,6 +533,10 @@ fun Vector_PxVehicleDrivableSurfaceType(size: Int): Vector_PxVehicleDrivableSurf
     return js("new module.Vector_PxVehicleDrivableSurfaceType(size)")
 }
 
+fun Vector_PxVehicleDrivableSurfaceType.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxWheelQueryResult {
     /**
      * @param index WebIDL type: unsigned long
@@ -502,6 +574,10 @@ fun Vector_PxWheelQueryResult(size: Int): Vector_PxWheelQueryResult {
     return js("new module.Vector_PxWheelQueryResult(size)")
 }
 
+fun Vector_PxWheelQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxVehicleWheels {
     /**
      * @param index WebIDL type: unsigned long
@@ -537,5 +613,9 @@ fun Vector_PxVehicleWheels(): Vector_PxVehicleWheels {
 fun Vector_PxVehicleWheels(size: Int): Vector_PxVehicleWheels {
     val module = PhysXJsLoader.physXJs
     return js("new module.Vector_PxVehicleWheels(size)")
+}
+
+fun Vector_PxVehicleWheels.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 

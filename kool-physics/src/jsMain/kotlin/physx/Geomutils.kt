@@ -17,6 +17,10 @@ fun PxBoxGeometry(hx: Float, hy: Float, hz: Float): PxBoxGeometry {
     return js("new module.PxBoxGeometry(hx, hy, hz)")
 }
 
+fun PxBoxGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxBVHStructure : PxBase
 
 external interface PxCapsuleGeometry : PxGeometry
@@ -28,6 +32,10 @@ external interface PxCapsuleGeometry : PxGeometry
 fun PxCapsuleGeometry(radius: Float, halfHeight: Float): PxCapsuleGeometry {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxCapsuleGeometry(radius, halfHeight)")
+}
+
+fun PxCapsuleGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxConvexMesh : PxBase {
@@ -77,6 +85,19 @@ external interface PxConvexMesh : PxBase {
 
 }
 
+val PxConvexMesh.nbVertices
+    get() = getNbVertices()
+val PxConvexMesh.vertices
+    get() = getVertices()
+val PxConvexMesh.indexBuffer
+    get() = getIndexBuffer()
+val PxConvexMesh.nbPolygons
+    get() = getNbPolygons()
+val PxConvexMesh.referenceCount
+    get() = getReferenceCount()
+val PxConvexMesh.localBounds
+    get() = getLocalBounds()
+
 external interface PxConvexMeshGeometry : PxGeometry
 
 /**
@@ -106,6 +127,10 @@ fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConv
     return js("new module.PxConvexMeshGeometry(mesh, scaling, flags)")
 }
 
+fun PxConvexMeshGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxConvexMeshGeometryFlags {
     /**
      * @param flag WebIDL type: [PxConvexMeshGeometryFlagEnum] (enum)
@@ -133,7 +158,15 @@ fun PxConvexMeshGeometryFlags(flags: Byte): PxConvexMeshGeometryFlags {
     return js("new module.PxConvexMeshGeometryFlags(flags)")
 }
 
+fun PxConvexMeshGeometryFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxGeometry
+
+fun PxGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxHullPolygon {
     /**
@@ -153,6 +186,10 @@ external interface PxHullPolygon {
 fun PxHullPolygon(): PxHullPolygon {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxHullPolygon()")
+}
+
+fun PxHullPolygon.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxMeshFlags {
@@ -182,6 +219,10 @@ fun PxMeshFlags(flags: Byte): PxMeshFlags {
     return js("new module.PxMeshFlags(flags)")
 }
 
+fun PxMeshFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxMeshGeometryFlags {
     /**
      * @param flag WebIDL type: [PxMeshGeometryFlagEnum] (enum)
@@ -209,6 +250,10 @@ fun PxMeshGeometryFlags(flags: Byte): PxMeshGeometryFlags {
     return js("new module.PxMeshGeometryFlags(flags)")
 }
 
+fun PxMeshGeometryFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxMeshScale
 
 fun PxMeshScale(): PxMeshScale {
@@ -233,11 +278,19 @@ fun PxMeshScale(s: PxVec3, r: PxQuat): PxMeshScale {
     return js("new module.PxMeshScale(s, r)")
 }
 
+fun PxMeshScale.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxPlaneGeometry : PxGeometry
 
 fun PxPlaneGeometry(): PxPlaneGeometry {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxPlaneGeometry()")
+}
+
+fun PxPlaneGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxSimpleTriangleMesh {
@@ -268,6 +321,10 @@ fun PxSimpleTriangleMesh(): PxSimpleTriangleMesh {
     return js("new module.PxSimpleTriangleMesh()")
 }
 
+fun PxSimpleTriangleMesh.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSphereGeometry : PxGeometry
 
 /**
@@ -276,6 +333,10 @@ external interface PxSphereGeometry : PxGeometry
 fun PxSphereGeometry(ir: Float): PxSphereGeometry {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxSphereGeometry(ir)")
+}
+
+fun PxSphereGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxTriangleMesh : PxBase {
@@ -339,6 +400,25 @@ external interface PxTriangleMesh : PxBase {
 
 }
 
+val PxTriangleMesh.nbVertices
+    get() = getNbVertices()
+val PxTriangleMesh.vertices
+    get() = getVertices()
+val PxTriangleMesh.verticesForModification
+    get() = getVerticesForModification()
+val PxTriangleMesh.nbTriangles
+    get() = getNbTriangles()
+val PxTriangleMesh.triangles
+    get() = getTriangles()
+val PxTriangleMesh.triangleMeshFlags
+    get() = getTriangleMeshFlags()
+val PxTriangleMesh.trianglesRemap
+    get() = getTrianglesRemap()
+val PxTriangleMesh.localBounds
+    get() = getLocalBounds()
+val PxTriangleMesh.referenceCount
+    get() = getReferenceCount()
+
 external interface PxTriangleMeshFlags {
     /**
      * @param flag WebIDL type: [PxTriangleMeshFlagEnum] (enum)
@@ -364,6 +444,10 @@ external interface PxTriangleMeshFlags {
 fun PxTriangleMeshFlags(flags: Byte): PxTriangleMeshFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTriangleMeshFlags(flags)")
+}
+
+fun PxTriangleMeshFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxTriangleMeshGeometry : PxGeometry {
@@ -399,6 +483,10 @@ fun PxTriangleMeshGeometry(mesh: PxTriangleMesh, scaling: PxMeshScale): PxTriang
 fun PxTriangleMeshGeometry(mesh: PxTriangleMesh, scaling: PxMeshScale, flags: PxMeshGeometryFlags): PxTriangleMeshGeometry {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTriangleMeshGeometry(mesh, scaling, flags)")
+}
+
+fun PxTriangleMeshGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxConvexMeshGeometryFlagEnum {

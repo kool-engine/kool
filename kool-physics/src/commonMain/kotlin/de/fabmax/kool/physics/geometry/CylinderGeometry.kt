@@ -4,6 +4,9 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 expect class CylinderGeometry(length: Float, radius: Float) : CommonCylinderGeometry, CollisionGeometry
 
@@ -32,5 +35,19 @@ abstract class CommonCylinderGeometry(val length: Float, val radius: Float) {
         val ix = 0.5f * mass * radius * radius
         val iyz = 1f / 12f * mass * (3 * radius * radius + length * length)
         return result.set(ix, iyz, iyz)
+    }
+
+    companion object {
+        fun convexMeshPoints(length: Float, radius: Float, n: Int = 32): List<Vec3f> {
+            val points = mutableListOf<Vec3f>()
+            for (i in 0 until n) {
+                val a = i * 2f * PI.toFloat() / n
+                val y = cos(a) * radius
+                val z = sin(a) * radius
+                points.add(Vec3f(length * -0.5f, y, z))
+                points.add(Vec3f(length * 0.5f, y, z))
+            }
+            return points
+        }
     }
 }

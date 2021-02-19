@@ -1,6 +1,13 @@
 package de.fabmax.kool.physics.vehicle
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.FilterData
+import de.fabmax.kool.physics.Material
+import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.physics.geometry.CommonCylinderGeometry
+import de.fabmax.kool.physics.geometry.ConvexMesh
+import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 
 object VehicleUtils {
 
@@ -12,6 +19,33 @@ object VehicleUtils {
     fun setupNonDrivableSurface(queryFilterData: FilterData): FilterData {
         queryFilterData.data[3] = SURFACE_FLAG_NON_DRIVABLE
         return queryFilterData
+    }
+
+    fun defaultChassisShape(boxSize: Vec3f): Shape {
+        val geom = BoxGeometry(boxSize)
+        val simFilterData = FilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST)
+        val qryFilterData = setupNonDrivableSurface(FilterData())
+        return Shape(geom, defaultChassisMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
+    }
+
+    fun defaultWheelShape(radius: Float, width: Float): Shape {
+        val mesh = defaultWheelMesh
+        val geom = ConvexMeshGeometry(mesh, Vec3f(width, radius, radius))
+        val simFilterData = FilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST)
+        val qryFilterData = setupNonDrivableSurface(FilterData())
+        return Shape(geom, defaultWheelMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
+    }
+
+    val defaultChassisMaterial by lazy {
+        Material(0.5f, 0.5f, 0.5f)
+    }
+    val defaultWheelMaterial by lazy {
+        Material(0.5f, 0.5f, 0.5f)
+    }
+    val defaultWheelMesh by lazy {
+        ConvexMesh(CommonCylinderGeometry.convexMeshPoints(1f, 1f)).apply {
+            releaseWithGeometry = false
+        }
     }
 
     const val SURFACE_FLAG_DRIVABLE = 0xffff0000.toInt()

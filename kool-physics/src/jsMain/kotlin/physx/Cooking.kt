@@ -24,6 +24,10 @@ external interface PxBVH33MidphaseDesc {
 
 }
 
+fun PxBVH33MidphaseDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxBVH34MidphaseDesc {
     /**
      * WebIDL type: unsigned long
@@ -37,6 +41,10 @@ external interface PxBVH34MidphaseDesc {
      */
     fun isValid(): Boolean
 
+}
+
+fun PxBVH34MidphaseDesc.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxConvexFlags {
@@ -66,6 +74,10 @@ fun PxConvexFlags(flags: Short): PxConvexFlags {
     return js("new module.PxConvexFlags(flags)")
 }
 
+fun PxConvexFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxConvexMeshDesc {
     /**
      * WebIDL type: [PxBoundedData] (Value)
@@ -80,6 +92,10 @@ external interface PxConvexMeshDesc {
 fun PxConvexMeshDesc(): PxConvexMeshDesc {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxConvexMeshDesc()")
+}
+
+fun PxConvexMeshDesc.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxCooking {
@@ -156,6 +172,10 @@ fun PxCookingParams(sc: PxTolerancesScale): PxCookingParams {
     return js("new module.PxCookingParams(sc)")
 }
 
+fun PxCookingParams.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxMeshPreprocessingFlags {
     /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
@@ -181,6 +201,10 @@ external interface PxMeshPreprocessingFlags {
 fun PxMeshPreprocessingFlags(flags: Int): PxMeshPreprocessingFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxMeshPreprocessingFlags(flags)")
+}
+
+fun PxMeshPreprocessingFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxMidphaseDesc {
@@ -215,6 +239,13 @@ fun PxMidphaseDesc(): PxMidphaseDesc {
     return js("new module.PxMidphaseDesc()")
 }
 
+fun PxMidphaseDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxMidphaseDesc.type
+    get() = getType()
+
 external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
     /**
      * WebIDL type: [PxU16StridedData] (Value)
@@ -233,6 +264,10 @@ external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
 fun PxTriangleMeshDesc(): PxTriangleMeshDesc {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTriangleMeshDesc()")
+}
+
+fun PxTriangleMeshDesc.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxConvexFlagEnum {

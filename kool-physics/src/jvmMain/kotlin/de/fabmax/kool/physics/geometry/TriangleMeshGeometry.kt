@@ -2,10 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.createPxMeshScale
-import de.fabmax.kool.physics.createPxQuat
-import de.fabmax.kool.physics.createPxVec3
-import de.fabmax.kool.physics.toPxVec3
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.IndexedVertexList
 import org.lwjgl.system.MemoryStack
 import physx.geomutils.PxTriangleMeshGeometry
@@ -15,6 +12,7 @@ actual class TriangleMeshGeometry actual constructor(triangleMesh: TriangleMesh,
     override val pxGeometry: PxTriangleMeshGeometry
 
     init {
+        Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)

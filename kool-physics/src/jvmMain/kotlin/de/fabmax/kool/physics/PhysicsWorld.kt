@@ -20,6 +20,8 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         }
 
     init {
+        Physics.checkIsLoaded()
+
         val sceneDesc = PxSceneDesc(Physics.physics.tolerancesScale)
         sceneDesc.gravity = bufPxGravity
         sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(8)
@@ -50,5 +52,6 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
 
     override fun release() {
         scene.release()
+        bufPxGravity.destroy()
     }
 }

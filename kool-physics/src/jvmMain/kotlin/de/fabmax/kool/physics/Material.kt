@@ -8,6 +8,7 @@ actual class Material actual constructor(
     actual val restitution: Float) : Releasable {
 
     val pxMaterial: PxMaterial by lazy {
+        Physics.checkIsLoaded()
         Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }
 

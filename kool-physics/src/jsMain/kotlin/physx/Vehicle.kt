@@ -68,6 +68,10 @@ external interface PxVehicleTopLevelFunctions {
 
 }
 
+fun PxVehicleTopLevelFunctions.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleAckermannGeometryData {
     /**
      * WebIDL type: float
@@ -92,6 +96,10 @@ fun PxVehicleAckermannGeometryData(): PxVehicleAckermannGeometryData {
     return js("new module.PxVehicleAckermannGeometryData()")
 }
 
+fun PxVehicleAckermannGeometryData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleAntiRollBarData {
     /**
      * WebIDL type: unsigned long
@@ -110,6 +118,10 @@ external interface PxVehicleAntiRollBarData {
 fun PxVehicleAntiRollBarData(): PxVehicleAntiRollBarData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleAntiRollBarData()")
+}
+
+fun PxVehicleAntiRollBarData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleAutoBoxData {
@@ -163,6 +175,14 @@ fun PxVehicleAutoBoxData(): PxVehicleAutoBoxData {
     return js("new module.PxVehicleAutoBoxData()")
 }
 
+fun PxVehicleAutoBoxData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxVehicleAutoBoxData.latency
+    get() = getLatency()
+    set(value) { setLatency(value) }
+
 external interface PxVehicleChassisData {
     /**
      * WebIDL type: [PxVec3] (Value)
@@ -183,6 +203,10 @@ fun PxVehicleChassisData(): PxVehicleChassisData {
     return js("new module.PxVehicleChassisData()")
 }
 
+fun PxVehicleChassisData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleClutchData {
     /**
      * WebIDL type: float
@@ -201,6 +225,10 @@ external interface PxVehicleClutchData {
 fun PxVehicleClutchData(): PxVehicleClutchData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleClutchData()")
+}
+
+fun PxVehicleClutchData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleDifferential4WData {
@@ -237,6 +265,10 @@ external interface PxVehicleDifferential4WData {
 fun PxVehicleDifferential4WData(): PxVehicleDifferential4WData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDifferential4WData()")
+}
+
+fun PxVehicleDifferential4WData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
@@ -283,6 +315,11 @@ external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
 
 }
 
+val PxVehicleDrivableSurfaceToTireFrictionPairs.maxNbSurfaceTypes
+    get() = getMaxNbSurfaceTypes()
+val PxVehicleDrivableSurfaceToTireFrictionPairs.maxNbTireTypes
+    get() = getMaxNbTireTypes()
+
 external interface PxVehicleDrivableSurfaceType {
     /**
      * WebIDL type: unsigned long
@@ -293,6 +330,10 @@ external interface PxVehicleDrivableSurfaceType {
 fun PxVehicleDrivableSurfaceType(): PxVehicleDrivableSurfaceType {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDrivableSurfaceType()")
+}
+
+fun PxVehicleDrivableSurfaceType.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleDrive : PxVehicleWheels {
@@ -490,6 +531,40 @@ external interface PxVehicleDriveDynData {
 
 }
 
+fun PxVehicleDriveDynData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxVehicleDriveDynData.targetGear
+    get() = getTargetGear()
+val PxVehicleDriveDynData.nbAnalogInput
+    get() = getNbAnalogInput()
+
+var PxVehicleDriveDynData.gearUp
+    get() = getGearUp()
+    set(value) { setGearUp(value) }
+var PxVehicleDriveDynData.gearDown
+    get() = getGearDown()
+    set(value) { setGearDown(value) }
+var PxVehicleDriveDynData.useAutoGears
+    get() = getUseAutoGears()
+    set(value) { setUseAutoGears(value) }
+var PxVehicleDriveDynData.currentGear
+    get() = getCurrentGear()
+    set(value) { setCurrentGear(value) }
+var PxVehicleDriveDynData.engineRotationSpeed
+    get() = getEngineRotationSpeed()
+    set(value) { setEngineRotationSpeed(value) }
+var PxVehicleDriveDynData.gearSwitchTime
+    get() = getGearSwitchTime()
+    set(value) { setGearSwitchTime(value) }
+var PxVehicleDriveDynData.autoBoxSwitchTime
+    get() = getAutoBoxSwitchTime()
+    set(value) { setAutoBoxSwitchTime(value) }
+var PxVehicleDriveDynData.gearChange
+    get() = getGearChange()
+    set(value) { setGearChange(value) }
+
 external interface PxVehicleDriveSimData {
     /**
      * @return WebIDL type: [PxVehicleEngineData] (Const, Ref)
@@ -538,6 +613,23 @@ fun PxVehicleDriveSimData(): PxVehicleDriveSimData {
     return js("new module.PxVehicleDriveSimData()")
 }
 
+fun PxVehicleDriveSimData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxVehicleDriveSimData.engineData
+    get() = getEngineData()
+    set(value) { setEngineData(value) }
+var PxVehicleDriveSimData.gearsData
+    get() = getGearsData()
+    set(value) { setGearsData(value) }
+var PxVehicleDriveSimData.clutchData
+    get() = getClutchData()
+    set(value) { setClutchData(value) }
+var PxVehicleDriveSimData.autoBoxData
+    get() = getAutoBoxData()
+    set(value) { setAutoBoxData(value) }
+
 external interface PxVehicleDriveSimData4W : PxVehicleDriveSimData {
     /**
      * @return WebIDL type: [PxVehicleDifferential4WData] (Const, Ref)
@@ -565,6 +657,17 @@ fun PxVehicleDriveSimData4W(): PxVehicleDriveSimData4W {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleDriveSimData4W()")
 }
+
+fun PxVehicleDriveSimData4W.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxVehicleDriveSimData4W.diffData
+    get() = getDiffData()
+    set(value) { setDiffData(value) }
+var PxVehicleDriveSimData4W.ackermannGeometryData
+    get() = getAckermannGeometryData()
+    set(value) { setAckermannGeometryData(value) }
 
 external interface PxVehicleEngineData {
     /**
@@ -600,6 +703,10 @@ external interface PxVehicleEngineData {
 fun PxVehicleEngineData(): PxVehicleEngineData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleEngineData()")
+}
+
+fun PxVehicleEngineData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxEngineTorqueLookupTable {
@@ -650,6 +757,13 @@ fun PxEngineTorqueLookupTable(): PxEngineTorqueLookupTable {
     return js("new module.PxEngineTorqueLookupTable()")
 }
 
+fun PxEngineTorqueLookupTable.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxEngineTorqueLookupTable.nbDataPairs
+    get() = getNbDataPairs()
+
 external interface PxVehicleGearsData {
     /**
      * WebIDL type: float
@@ -685,6 +799,10 @@ external interface PxVehicleGearsData {
 fun PxVehicleGearsData(): PxVehicleGearsData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleGearsData()")
+}
+
+fun PxVehicleGearsData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleSuspensionData {
@@ -733,6 +851,10 @@ fun PxVehicleSuspensionData(): PxVehicleSuspensionData {
     return js("new module.PxVehicleSuspensionData()")
 }
 
+fun PxVehicleSuspensionData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleTireData {
     /**
      * WebIDL type: float
@@ -759,6 +881,10 @@ external interface PxVehicleTireData {
 fun PxVehicleTireData(): PxVehicleTireData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleTireData()")
+}
+
+fun PxVehicleTireData.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleTireLoadFilterData {
@@ -790,6 +916,13 @@ fun PxVehicleTireLoadFilterData(): PxVehicleTireLoadFilterData {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleTireLoadFilterData()")
 }
+
+fun PxVehicleTireLoadFilterData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxVehicleTireLoadFilterData.denominator
+    get() = getDenominator()
 
 external interface PxVehicleWheelData {
     /**
@@ -835,6 +968,10 @@ fun PxVehicleWheelData(): PxVehicleWheelData {
     return js("new module.PxVehicleWheelData()")
 }
 
+fun PxVehicleWheelData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleWheelQueryResult {
     /**
      * WebIDL type: [PxWheelQueryResult]
@@ -849,6 +986,10 @@ external interface PxVehicleWheelQueryResult {
 fun PxVehicleWheelQueryResult(): PxVehicleWheelQueryResult {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleWheelQueryResult()")
+}
+
+fun PxVehicleWheelQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxVehicleWheels : PxBase {
@@ -887,6 +1028,13 @@ external interface PxVehicleWheels : PxBase {
     fun getNbNonDrivenWheels(): Int
 
 }
+
+val PxVehicleWheels.vehicleType
+    get() = getVehicleType()
+val PxVehicleWheels.rigidDynamicActor
+    get() = getRigidDynamicActor()
+val PxVehicleWheels.nbNonDrivenWheels
+    get() = getNbNonDrivenWheels()
 
 external interface PxVehicleWheelsDynData {
     fun setToRestState()
@@ -933,6 +1081,15 @@ external interface PxVehicleWheelsDynData {
     fun getNbWheelRotationAngle(): Int
 
 }
+
+fun PxVehicleWheelsDynData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxVehicleWheelsDynData.nbWheelRotationSpeed
+    get() = getNbWheelRotationSpeed()
+val PxVehicleWheelsDynData.nbWheelRotationAngle
+    get() = getNbWheelRotationAngle()
 
 external interface PxVehicleWheelsSimData {
     /**
@@ -1253,6 +1410,60 @@ external interface PxVehicleWheelsSimData {
 
 }
 
+fun PxVehicleWheelsSimData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxVehicleWheelsSimData.nbWheels
+    get() = getNbWheels()
+val PxVehicleWheelsSimData.nbAntiRollBars
+    get() = getNbAntiRollBars()
+val PxVehicleWheelsSimData.nbWheels4
+    get() = getNbWheels4()
+val PxVehicleWheelsSimData.nbSuspensionData
+    get() = getNbSuspensionData()
+val PxVehicleWheelsSimData.nbWheelData
+    get() = getNbWheelData()
+val PxVehicleWheelsSimData.nbSuspTravelDirection
+    get() = getNbSuspTravelDirection()
+val PxVehicleWheelsSimData.nbTireData
+    get() = getNbTireData()
+val PxVehicleWheelsSimData.nbSuspForceAppPointOffset
+    get() = getNbSuspForceAppPointOffset()
+val PxVehicleWheelsSimData.nbTireForceAppPointOffset
+    get() = getNbTireForceAppPointOffset()
+val PxVehicleWheelsSimData.nbWheelCentreOffset
+    get() = getNbWheelCentreOffset()
+val PxVehicleWheelsSimData.nbWheelShapeMapping
+    get() = getNbWheelShapeMapping()
+val PxVehicleWheelsSimData.nbSceneQueryFilterData
+    get() = getNbSceneQueryFilterData()
+val PxVehicleWheelsSimData.nbWheelEnabledState
+    get() = getNbWheelEnabledState()
+val PxVehicleWheelsSimData.nbAntiRollBars4
+    get() = getNbAntiRollBars4()
+val PxVehicleWheelsSimData.nbAntiRollBarData
+    get() = getNbAntiRollBarData()
+
+var PxVehicleWheelsSimData.tireLoadFilterData
+    get() = getTireLoadFilterData()
+    set(value) { setTireLoadFilterData(value) }
+var PxVehicleWheelsSimData.flags
+    get() = getFlags()
+    set(value) { setFlags(value) }
+var PxVehicleWheelsSimData.minLongSlipDenominator
+    get() = getMinLongSlipDenominator()
+    set(value) { setMinLongSlipDenominator(value) }
+var PxVehicleWheelsSimData.thresholdLongSpeed
+    get() = getThresholdLongSpeed()
+    set(value) { setThresholdLongSpeed(value) }
+var PxVehicleWheelsSimData.lowForwardSpeedSubStepCount
+    get() = getLowForwardSpeedSubStepCount()
+    set(value) { setLowForwardSpeedSubStepCount(value) }
+var PxVehicleWheelsSimData.highForwardSpeedSubStepCount
+    get() = getHighForwardSpeedSubStepCount()
+    set(value) { setHighForwardSpeedSubStepCount(value) }
+
 external interface PxVehicleWheelsSimFlags {
     /**
      * @param flag WebIDL type: [PxVehicleWheelsSimFlagEnum] (enum)
@@ -1278,6 +1489,10 @@ external interface PxVehicleWheelsSimFlags {
 fun PxVehicleWheelsSimFlags(flags: Int): PxVehicleWheelsSimFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxVehicleWheelsSimFlags(flags)")
+}
+
+fun PxVehicleWheelsSimFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxWheelQueryResult {
@@ -1362,6 +1577,10 @@ external interface PxWheelQueryResult {
 fun PxWheelQueryResult(): PxWheelQueryResult {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxWheelQueryResult()")
+}
+
+fun PxWheelQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxVehicleClutchAccuracyModeEnum {

@@ -2,15 +2,15 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PxTransform
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.toPxTransform
-import physx.PhysXJsLoader
 import physx.PxRevoluteJoint
 import physx.PxRevoluteJointFlagEnum
+import physx.driveForceLimit
+import physx.driveVelocity
 
-@Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint(), Joint {
 
@@ -27,23 +27,22 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
 
     init {
         Physics.checkIsLoaded()
-
-        val frmA = frameA.toPxTransform(PxTransform())
-        val frmB = frameB.toPxTransform(PxTransform())
-        pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
-        PhysXJsLoader.destroy(frmA)
-        PhysXJsLoader.destroy(frmB)
+        MemoryStack.stackPush().use { mem ->
+            val frmA = frameA.toPxTransform(mem.createPxTransform())
+            val frmB = frameB.toPxTransform(mem.createPxTransform())
+            pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+        }
     }
 
     actual fun disableAngularMotor() {
-        pxJoint.setDriveVelocity(0f, true)
-        pxJoint.setDriveForceLimit(0f)
+        pxJoint.driveVelocity = 0f
+        pxJoint.driveForceLimit = 0f
         pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
     }
 
     actual fun enableAngularMotor(angularVelocity: Float, forceLimit: Float) {
-        pxJoint.setDriveVelocity(angularVelocity, true)
-        pxJoint.setDriveForceLimit(forceLimit)
+        pxJoint.driveVelocity = angularVelocity
+        pxJoint.driveForceLimit = forceLimit
         pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 }

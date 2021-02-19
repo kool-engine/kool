@@ -3,9 +3,10 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PxTransform
 import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
+import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
@@ -25,11 +26,12 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
     override val pxJoint: PxRevoluteJoint
 
     init {
-        val frmA = frameA.toPxTransform(PxTransform())
-        val frmB = frameB.toPxTransform(PxTransform())
-        pxJoint = PxTopLevelFunctions.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
-        frmA.destroy()
-        frmB.destroy()
+        Physics.checkIsLoaded()
+        MemoryStack.stackPush().use { mem ->
+            val frmA = frameA.toPxTransform(mem.createPxTransform())
+            val frmB = frameB.toPxTransform(mem.createPxTransform())
+            pxJoint = PxTopLevelFunctions.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
+        }
     }
 
     actual fun disableAngularMotor() {

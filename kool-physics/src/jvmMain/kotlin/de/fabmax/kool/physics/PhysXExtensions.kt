@@ -15,7 +15,7 @@ import physx.geomutils.PxHullPolygon
 import physx.geomutils.PxMeshScale
 import physx.physics.*
 import physx.support.Vector_PxVec3
-import physx.vehicle.PxVehicleWheelsSimFlags
+import physx.vehicle.*
 
 fun PxBounds3.toBoundingBox(result: BoundingBox): BoundingBox {
     val min = minimum
@@ -96,8 +96,15 @@ fun MemoryStack.createPxTransform() = PxTransform.createAt(this, MemoryStack::nm
 fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) =
     PxTransform.createAt(this, MemoryStack::nmalloc, p, q)
 
+fun MemoryStack.createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
+    PxBatchQueryDesc.createAt(this, MemoryStack::nmalloc, maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute)
 fun MemoryStack.createPxConvexMeshDesc() = PxConvexMeshDesc.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxTriangleMeshDesc() = PxTriangleMeshDesc.createAt(this, MemoryStack::nmalloc)
+
+fun MemoryStack.createPxVehicleAntiRollBarData() = PxVehicleAntiRollBarData.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxVehicleSuspensionData() = PxVehicleSuspensionData.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxVehicleTireData() = PxVehicleTireData.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxVehicleWheelData() = PxVehicleWheelData.createAt(this, MemoryStack::nmalloc)
 
 fun MemoryStack.createPxActorFlags(flags: Int) = PxActorFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxBaseFlags(flags: Int) = PxBaseFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())

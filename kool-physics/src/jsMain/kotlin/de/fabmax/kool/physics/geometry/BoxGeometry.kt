@@ -3,11 +3,10 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import physx.PxBoxGeometry
-import physx.PxGeometry
 
 actual class BoxGeometry actual constructor(size: Vec3f) : CommonBoxGeometry(size), CollisionGeometry {
 
-    override val pxGeometry: PxGeometry
+    override val pxGeometry: PxBoxGeometry
 
     init {
         Physics.checkIsLoaded()

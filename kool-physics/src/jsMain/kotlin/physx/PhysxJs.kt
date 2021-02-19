@@ -74,3 +74,7 @@ external interface PxTopLevelFunctions {
 
 }
 
+fun PxTopLevelFunctions.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+

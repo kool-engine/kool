@@ -1,10 +1,8 @@
 package de.fabmax.kool.physics.vehicle
 
-import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.FilterData
 import de.fabmax.kool.physics.Material
-import de.fabmax.kool.physics.geometry.CollisionGeometry
+import de.fabmax.kool.physics.Shape
 
 class VehicleProperties {
     var chassisMass = 1500f
@@ -34,7 +32,7 @@ class VehicleProperties {
 
     var peakEngineTorque = 1000f
     var peakEngineRpm = 6000f
-    var gearSwitchTime = 0.5f
+    var gearSwitchTime = 0.35f
     var clutchStrength = 10f
 
     var frontAntiRollBarStiffness = 10000f
@@ -45,17 +43,8 @@ class VehicleProperties {
 
     var groundMaterialFrictions = mapOf<Material, Float>()
 
-    var chassisShapes = emptyList<Pair<CollisionGeometry, Mat4f>>()
-    var chassisMaterial = Material(0.5f,0.5f, 0.6f)
-    var chassisSimFilterData = FilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
-        VehicleUtils.COLLISION_FLAG_CHASSIS,
-        VehicleUtils.COLLISION_FLAG_CHASSIS_AGAINST
-    )
-    var wheelMaterial = Material(0.5f,0.5f, 0.6f)
-    var wheelSimFilterData = FilterData(   // word0 = collide type, word1 = collide against types, word2 = PxPairFlags
-        VehicleUtils.COLLISION_FLAG_WHEEL,
-        VehicleUtils.COLLISION_FLAG_WHEEL_AGAINST
-    )
+    var chassisShapes = emptyList<Shape>()
+    var wheelShapes = emptyList<Shape>()
 
     init {
         updateChassisMoiFromDimensionsAndMass()

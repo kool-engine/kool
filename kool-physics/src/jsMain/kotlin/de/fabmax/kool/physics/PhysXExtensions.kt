@@ -5,6 +5,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
 import physx.*
+import kotlin.contracts.contract
 
 fun PxBounds3.toBoundingBox(result: BoundingBox): BoundingBox {
     val min = minimum
@@ -74,3 +75,64 @@ fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, ma
 fun PxVehicleDrive4W_allocate(nbWheels: Int): PxVehicleDrive4W = PhysXJsLoader.physXJs.PxVehicleDrive4W.prototype.allocate(nbWheels)
 
 fun PxVehicleWheelsSimData_allocate(nbWheels: Int): PxVehicleWheelsSimData = PhysXJsLoader.physXJs.PxVehicleWheelsSimData.prototype.allocate(nbWheels)
+
+class MemoryStack private constructor() {
+    val autoDeletables = mutableListOf<Any>()
+
+    fun <T: Any> autoDelete(obj: T): T {
+        autoDeletables += obj
+        return obj
+    }
+
+    inline fun <R> use(block: (MemoryStack) -> R): R {
+        contract {
+            callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+        }
+        try {
+            return block(this)
+        } finally {
+            autoDeletables.forEach { PhysXJsLoader.destroy(it) }
+            autoDeletables.clear()
+        }
+    }
+
+    companion object {
+        fun stackPush(): MemoryStack = MemoryStack()
+    }
+
+    fun createPxBoundedData() = autoDelete(PxBoundedData())
+    fun createPxFilterData() = autoDelete(PxFilterData())
+    fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3))
+    fun createPxHullPolygon() = autoDelete(PxHullPolygon())
+    fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r))
+    fun createPxVec3() = autoDelete(PxVec3())
+    fun createPxVec3(x: Float, y: Float, z: Float) = autoDelete(PxVec3(x, y, z))
+
+    fun createPxQuat() = autoDelete(PxQuat())
+    fun createPxQuat(x: Float, y: Float, z: Float, w: Float) = autoDelete(PxQuat(x, y, z, w))
+
+    fun createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity))
+    fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q))
+
+    fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
+        autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
+    fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())
+    fun createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc())
+
+    fun createPxVehicleAntiRollBarData() = autoDelete(PxVehicleAntiRollBarData())
+    fun createPxVehicleSuspensionData() = autoDelete(PxVehicleSuspensionData())
+    fun createPxVehicleTireData() = autoDelete(PxVehicleTireData())
+    fun createPxVehicleWheelData() = autoDelete(PxVehicleWheelData())
+
+    fun createPxActorFlags(flags: Int) = autoDelete(PxActorFlags(flags.toByte()))
+    fun createPxBaseFlags(flags: Int) = autoDelete(PxBaseFlags(flags.toShort()))
+    fun createPxConvexFlags(flags: Int) = autoDelete(PxConvexFlags(flags.toShort()))
+    fun createPxConvexMeshGeometryFlags(flags: Int) = autoDelete(PxConvexMeshGeometryFlags(flags.toByte()))
+    fun createPxHitFlags(flags: Int) = autoDelete(PxHitFlags(flags.toShort()))
+    fun createPxRevoluteJointFlags(flags: Int) = autoDelete(PxRevoluteJointFlags(flags.toShort()))
+    fun createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toByte()))
+    fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()))
+    fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags))
+    fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()))
+    fun createPxVehicleWheelsSimFlags(flags: Int) = autoDelete(PxVehicleWheelsSimFlags(flags))
+}

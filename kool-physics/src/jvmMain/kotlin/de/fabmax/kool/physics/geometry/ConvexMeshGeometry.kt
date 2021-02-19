@@ -2,10 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.createPxMeshScale
-import de.fabmax.kool.physics.createPxQuat
-import de.fabmax.kool.physics.createPxVec3
-import de.fabmax.kool.physics.toPxVec3
+import de.fabmax.kool.physics.*
 import org.lwjgl.system.MemoryStack
 import physx.geomutils.PxConvexMeshGeometry
 import physx.geomutils.PxGeometry
@@ -15,6 +12,7 @@ actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale
     override val pxGeometry: PxGeometry
 
     init {
+        Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)

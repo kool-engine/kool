@@ -2,9 +2,11 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.toPxVec3
-import physx.*
+import physx.PxConvexMeshGeometry
+import physx.PxGeometry
 
 actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh), CollisionGeometry {
 
@@ -12,11 +14,12 @@ actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale
 
     init {
         Physics.checkIsLoaded()
-        val s = scale.toPxVec3(PxVec3())
-        val r = PxQuat(0f, 0f, 0f, 1f)
-        val meshScale = PxMeshScale(s, r)
-        pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
-        PhysXJsLoader.destroy(s, r, meshScale)
+        MemoryStack.stackPush().use { mem ->
+            val s = scale.toPxVec3(mem.createPxVec3())
+            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = mem.createPxMeshScale(s, r)
+            pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
+        }
 
         if (convexMesh.releaseWithGeometry) {
             if (convexMesh.refCnt > 0) {

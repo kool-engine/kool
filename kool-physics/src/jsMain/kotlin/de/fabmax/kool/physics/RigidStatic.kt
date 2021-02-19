@@ -5,10 +5,6 @@ import physx.PxRigidStatic
 
 actual class RigidStatic actual constructor(pose: Mat4f) : RigidActor() {
 
-    init {
-        Physics.checkIsLoaded()
-    }
-
     private val pxRigidStatic: PxRigidStatic
 
     init {

@@ -44,6 +44,7 @@ kotlin {
             languageSettings.apply {
                 progressiveMode = true
                 useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
+                useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
             }
         }
     }

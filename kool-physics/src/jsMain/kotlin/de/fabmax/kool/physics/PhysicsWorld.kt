@@ -2,10 +2,7 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import physx.PxScene
-import physx.PxSceneDesc
-import physx.PxSceneFlagEnum
-import physx.PxVec3
+import physx.*
 
 actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val scene: PxScene
@@ -13,13 +10,15 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
     private val bufPxGravity = gravity.toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
-        get() = scene.getGravity().toVec3f(bufGravity)
+        get() = scene.gravity.toVec3f(bufGravity)
         set(value) {
-            scene.setGravity(value.toPxVec3(bufPxGravity))
+            scene.gravity = value.toPxVec3(bufPxGravity)
         }
 
     init {
-        val sceneDesc = PxSceneDesc(Physics.physics.getTolerancesScale())
+        Physics.checkIsLoaded()
+
+        val sceneDesc = PxSceneDesc(Physics.physics.tolerancesScale)
         sceneDesc.gravity = bufPxGravity
         // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
         sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
@@ -50,5 +49,6 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
 
     override fun release() {
         scene.release()
+        bufPxGravity.destroy()
     }
 }

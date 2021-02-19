@@ -69,6 +69,26 @@ external interface PxActor : PxBase {
 
 }
 
+val PxActor.type
+    get() = getType()
+val PxActor.scene
+    get() = getScene()
+val PxActor.worldBounds
+    get() = getWorldBounds()
+
+var PxActor.name
+    get() = getName()
+    set(value) { setName(value) }
+var PxActor.actorFlags
+    get() = getActorFlags()
+    set(value) { setActorFlags(value) }
+var PxActor.dominanceGroup
+    get() = getDominanceGroup()
+    set(value) { setDominanceGroup(value) }
+var PxActor.ownerClient
+    get() = getOwnerClient()
+    set(value) { setOwnerClient(value) }
+
 external interface PxActorFlags {
     /**
      * @param flag WebIDL type: [PxActorFlagEnum] (enum)
@@ -96,6 +116,10 @@ fun PxActorFlags(flags: Byte): PxActorFlags {
     return js("new module.PxActorFlags(flags)")
 }
 
+fun PxActorFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxActorShape {
     /**
      * WebIDL type: [PxRigidActor]
@@ -105,6 +129,10 @@ external interface PxActorShape {
      * WebIDL type: [PxShape]
      */
     var shape: PxShape
+}
+
+fun PxActorShape.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxBatchQuery {
@@ -144,6 +172,19 @@ external interface PxBatchQuery {
 
 }
 
+val PxBatchQuery.preFilterShader
+    get() = getPreFilterShader()
+val PxBatchQuery.postFilterShader
+    get() = getPostFilterShader()
+val PxBatchQuery.filterShaderData
+    get() = getFilterShaderData()
+val PxBatchQuery.filterShaderDataSize
+    get() = getFilterShaderDataSize()
+
+var PxBatchQuery.userMemory
+    get() = getUserMemory()
+    set(value) { setUserMemory(value) }
+
 external interface PxBatchQueryDesc {
     /**
      * WebIDL type: any
@@ -181,6 +222,10 @@ external interface PxBatchQueryDesc {
 fun PxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int): PxBatchQueryDesc {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute)")
+}
+
+fun PxBatchQueryDesc.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxBatchQueryMemory {
@@ -222,9 +267,21 @@ external interface PxBatchQueryMemory {
     var overlapTouchBufferSize: Int
 }
 
+fun PxBatchQueryMemory.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxBatchQueryPostFilterShader
 
+fun PxBatchQueryPostFilterShader.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxBatchQueryPreFilterShader
+
+fun PxBatchQueryPreFilterShader.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxConstraint : PxBase {
     override fun release()
@@ -287,6 +344,16 @@ external interface PxConstraint : PxBase {
 
 }
 
+val PxConstraint.scene
+    get() = getScene()
+
+var PxConstraint.flags
+    get() = getFlags()
+    set(value) { setFlags(value) }
+var PxConstraint.minResponseThreshold
+    get() = getMinResponseThreshold()
+    set(value) { setMinResponseThreshold(value) }
+
 external interface PxConstraintFlags {
     /**
      * @param flag WebIDL type: [PxConstraintFlagEnum] (enum)
@@ -314,6 +381,10 @@ fun PxConstraintFlags(flags: Short): PxConstraintFlags {
     return js("new module.PxConstraintFlags(flags)")
 }
 
+fun PxConstraintFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxConstraintInfo {
     /**
      * WebIDL type: [PxConstraint]
@@ -327,6 +398,10 @@ external interface PxConstraintInfo {
      * WebIDL type: unsigned long
      */
     var type: Int
+}
+
+fun PxConstraintInfo.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxContactPairHeaderFlags {
@@ -356,6 +431,10 @@ fun PxContactPairHeaderFlags(flags: Short): PxContactPairHeaderFlags {
     return js("new module.PxContactPairHeaderFlags(flags)")
 }
 
+fun PxContactPairHeaderFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxContactPair {
     /**
      * WebIDL type: [PxShape]
@@ -377,6 +456,10 @@ external interface PxContactPair {
      * WebIDL type: [PxPairFlags] (Value)
      */
     var events: PxPairFlags
+}
+
+fun PxContactPair.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxContactPairFlags {
@@ -406,6 +489,10 @@ fun PxContactPairFlags(flags: Short): PxContactPairFlags {
     return js("new module.PxContactPairFlags(flags)")
 }
 
+fun PxContactPairFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxContactPairHeader {
     /**
      * WebIDL type: [PxRigidActor]
@@ -423,6 +510,10 @@ external interface PxContactPairHeader {
      * WebIDL type: unsigned long
      */
     var nbPairs: Int
+}
+
+fun PxContactPairHeader.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxFilterData {
@@ -460,6 +551,10 @@ fun PxFilterData(w0: Int, w1: Int, w2: Int, w3: Int): PxFilterData {
     return js("new module.PxFilterData(w0, w1, w2, w3)")
 }
 
+fun PxFilterData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxHitFlags {
     /**
      * @param flag WebIDL type: [PxHitFlagEnum] (enum)
@@ -487,6 +582,10 @@ fun PxHitFlags(flags: Short): PxHitFlags {
     return js("new module.PxHitFlags(flags)")
 }
 
+fun PxHitFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxLocationHit : PxQueryHit {
     /**
      * WebIDL type: [PxHitFlags] (Value)
@@ -506,7 +605,15 @@ external interface PxLocationHit : PxQueryHit {
     var distance: Float
 }
 
+fun PxLocationHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxOverlapHit : PxQueryHit
+
+fun PxOverlapHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxOverlapQueryResult {
     /**
@@ -547,6 +654,13 @@ external interface PxOverlapQueryResult {
 
 }
 
+fun PxOverlapQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxOverlapQueryResult.nbAnyHits
+    get() = getNbAnyHits()
+
 external interface PxMaterial : PxBase
 
 external interface PxPairFlags {
@@ -574,6 +688,10 @@ external interface PxPairFlags {
 fun PxPairFlags(flags: Short): PxPairFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxPairFlags(flags)")
+}
+
+fun PxPairFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxPhysics {
@@ -651,11 +769,28 @@ external interface PxPhysics {
 
 }
 
+fun PxPhysics.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxPhysics.foundation
+    get() = getFoundation()
+val PxPhysics.tolerancesScale
+    get() = getTolerancesScale()
+val PxPhysics.nbShapes
+    get() = getNbShapes()
+val PxPhysics.physicsInsertionCallback
+    get() = getPhysicsInsertionCallback()
+
 external interface PxQueryHit : PxActorShape {
     /**
      * WebIDL type: unsigned long
      */
     var faceIndex: Int
+}
+
+fun PxQueryHit.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxRaycastHit : PxLocationHit {
@@ -672,6 +807,10 @@ external interface PxRaycastHit : PxLocationHit {
 fun PxRaycastHit(): PxRaycastHit {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxRaycastHit()")
+}
+
+fun PxRaycastHit.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxRaycastQueryResult {
@@ -713,6 +852,13 @@ external interface PxRaycastQueryResult {
 
 }
 
+fun PxRaycastQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxRaycastQueryResult.nbAnyHits
+    get() = getNbAnyHits()
+
 external interface PxRigidActor : PxActor {
     /**
      * @return WebIDL type: [PxTransform] (Value)
@@ -753,6 +899,13 @@ external interface PxRigidActor : PxActor {
     fun getNbShapes(): Int
 
 }
+
+val PxRigidActor.nbShapes
+    get() = getNbShapes()
+
+var PxRigidActor.globalPose
+    get() = getGlobalPose()
+    set(value) { setGlobalPose(value) }
 
 external interface PxRigidBody : PxRigidActor {
     /**
@@ -979,6 +1132,53 @@ external interface PxRigidBody : PxRigidActor {
 
 }
 
+val PxRigidBody.invMass
+    get() = getInvMass()
+val PxRigidBody.massSpaceInvInertiaTensor
+    get() = getMassSpaceInvInertiaTensor()
+val PxRigidBody.internalIslandNodeIndex
+    get() = getInternalIslandNodeIndex()
+
+var PxRigidBody.cMassLocalPose
+    get() = getCMassLocalPose()
+    set(value) { setCMassLocalPose(value) }
+var PxRigidBody.mass
+    get() = getMass()
+    set(value) { setMass(value) }
+var PxRigidBody.massSpaceInertiaTensor
+    get() = getMassSpaceInertiaTensor()
+    set(value) { setMassSpaceInertiaTensor(value) }
+var PxRigidBody.linearDamping
+    get() = getLinearDamping()
+    set(value) { setLinearDamping(value) }
+var PxRigidBody.angularDamping
+    get() = getAngularDamping()
+    set(value) { setAngularDamping(value) }
+var PxRigidBody.linearVelocity
+    get() = getLinearVelocity()
+    set(value) { setLinearVelocity(value) }
+var PxRigidBody.angularVelocity
+    get() = getAngularVelocity()
+    set(value) { setAngularVelocity(value) }
+var PxRigidBody.maxLinearVelocity
+    get() = getMaxLinearVelocity()
+    set(value) { setMaxLinearVelocity(value) }
+var PxRigidBody.maxAngularVelocity
+    get() = getMaxAngularVelocity()
+    set(value) { setMaxAngularVelocity(value) }
+var PxRigidBody.rigidBodyFlags
+    get() = getRigidBodyFlags()
+    set(value) { setRigidBodyFlags(value) }
+var PxRigidBody.minCCDAdvanceCoefficient
+    get() = getMinCCDAdvanceCoefficient()
+    set(value) { setMinCCDAdvanceCoefficient(value) }
+var PxRigidBody.maxDepenetrationVelocity
+    get() = getMaxDepenetrationVelocity()
+    set(value) { setMaxDepenetrationVelocity(value) }
+var PxRigidBody.maxContactImpulse
+    get() = getMaxContactImpulse()
+    set(value) { setMaxContactImpulse(value) }
+
 external interface PxRigidBodyFlags {
     /**
      * @param flag WebIDL type: [PxRigidBodyFlagEnum] (enum)
@@ -1004,6 +1204,10 @@ external interface PxRigidBodyFlags {
 fun PxRigidBodyFlags(flags: Byte): PxRigidBodyFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxRigidBodyFlags(flags)")
+}
+
+fun PxRigidBodyFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxRigidDynamic : PxRigidBody {
@@ -1085,6 +1289,22 @@ external interface PxRigidDynamic : PxRigidBody {
 
 }
 
+var PxRigidDynamic.sleepThreshold
+    get() = getSleepThreshold()
+    set(value) { setSleepThreshold(value) }
+var PxRigidDynamic.stabilizationThreshold
+    get() = getStabilizationThreshold()
+    set(value) { setStabilizationThreshold(value) }
+var PxRigidDynamic.rigidDynamicLockFlags
+    get() = getRigidDynamicLockFlags()
+    set(value) { setRigidDynamicLockFlags(value) }
+var PxRigidDynamic.wakeCounter
+    get() = getWakeCounter()
+    set(value) { setWakeCounter(value) }
+var PxRigidDynamic.contactReportThreshold
+    get() = getContactReportThreshold()
+    set(value) { setContactReportThreshold(value) }
+
 external interface PxRigidDynamicLockFlags {
     /**
      * @param flag WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
@@ -1110,6 +1330,10 @@ external interface PxRigidDynamicLockFlags {
 fun PxRigidDynamicLockFlags(flags: Byte): PxRigidDynamicLockFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxRigidDynamicLockFlags(flags)")
+}
+
+fun PxRigidDynamicLockFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxRigidStatic : PxRigidActor
@@ -1224,6 +1448,17 @@ external interface PxScene {
 
 }
 
+val PxScene.flags
+    get() = getFlags()
+val PxScene.physics
+    get() = getPhysics()
+val PxScene.timestamp
+    get() = getTimestamp()
+
+var PxScene.gravity
+    get() = getGravity()
+    set(value) { setGravity(value) }
+
 external interface PxSceneDesc {
     /**
      * WebIDL type: [PxVec3] (Value)
@@ -1255,6 +1490,10 @@ fun PxSceneDesc(scale: PxTolerancesScale): PxSceneDesc {
     return js("new module.PxSceneDesc(scale)")
 }
 
+fun PxSceneDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSceneFlags {
     /**
      * @param flag WebIDL type: [PxSceneFlagEnum] (enum)
@@ -1280,6 +1519,10 @@ external interface PxSceneFlags {
 fun PxSceneFlags(flags: Int): PxSceneFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxSceneFlags(flags)")
+}
+
+fun PxSceneFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxShape : PxBase {
@@ -1315,6 +1558,16 @@ external interface PxShape : PxBase {
 
 }
 
+var PxShape.localPose
+    get() = getLocalPose()
+    set(value) { setLocalPose(value) }
+var PxShape.simulationFilterData
+    get() = getSimulationFilterData()
+    set(value) { setSimulationFilterData(value) }
+var PxShape.queryFilterData
+    get() = getQueryFilterData()
+    set(value) { setQueryFilterData(value) }
+
 external interface PxShapeFlags {
     /**
      * @param flag WebIDL type: [PxShapeFlagEnum] (enum)
@@ -1342,7 +1595,15 @@ fun PxShapeFlags(flags: Byte): PxShapeFlags {
     return js("new module.PxShapeFlags(flags)")
 }
 
+fun PxShapeFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSimulationEventCallback
+
+fun PxSimulationEventCallback.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface SimpleSimulationEventCallback : PxSimulationEventCallback {
     /**
@@ -1376,6 +1637,10 @@ external interface SimpleSimulationEventCallback : PxSimulationEventCallback {
      */
     fun onTrigger(pairs: PxTriggerPair, count: Int)
 
+}
+
+fun SimpleSimulationEventCallback.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface JavaSimulationEventCallback : SimpleSimulationEventCallback {
@@ -1416,7 +1681,15 @@ external interface JavaSimulationEventCallback : SimpleSimulationEventCallback {
 
 external interface PxSimulationFilterShader
 
+fun PxSimulationFilterShader.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSweepHit : PxLocationHit
+
+fun PxSweepHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxSweepQueryResult {
     /**
@@ -1457,6 +1730,13 @@ external interface PxSweepQueryResult {
 
 }
 
+fun PxSweepQueryResult.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxSweepQueryResult.nbAnyHits
+    get() = getNbAnyHits()
+
 external interface PxTriggerPair {
     /**
      * WebIDL type: [PxShape]
@@ -1484,6 +1764,10 @@ external interface PxTriggerPair {
     var flags: PxTriggerPairFlags
 }
 
+fun PxTriggerPair.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxTriggerPairFlags {
     /**
      * @param flag WebIDL type: [PxTriggerPairFlagEnum] (enum)
@@ -1509,6 +1793,10 @@ external interface PxTriggerPairFlags {
 fun PxTriggerPairFlags(flags: Byte): PxTriggerPairFlags {
     val module = PhysXJsLoader.physXJs
     return js("new module.PxTriggerPairFlags(flags)")
+}
+
+fun PxTriggerPairFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxActorFlagEnum {

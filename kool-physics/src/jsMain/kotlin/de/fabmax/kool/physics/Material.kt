@@ -1,13 +1,13 @@
 package de.fabmax.kool.physics
 
+import physx.PxMaterial
 
-@Suppress("CanBeParameter")
 actual class Material actual constructor (
     actual val staticFriction: Float,
     actual val dynamicFriction: Float,
     actual val restitution: Float) : Releasable {
 
-    val pxMaterial by lazy {
+    val pxMaterial: PxMaterial by lazy {
         Physics.checkIsLoaded()
         Physics.physics.createMaterial(staticFriction, dynamicFriction, restitution)
     }

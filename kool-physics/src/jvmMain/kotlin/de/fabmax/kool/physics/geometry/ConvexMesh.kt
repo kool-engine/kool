@@ -21,6 +21,7 @@ actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Rel
     internal var refCnt = 0
 
     init {
+        Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val vec3Vector = points.toVector_PxVec3()
             val desc = mem.createPxConvexMeshDesc()

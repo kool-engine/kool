@@ -11,6 +11,10 @@ import kotlin.collections.set
 
 actual open class RigidActor : CommonRigidActor(), Releasable {
 
+    init {
+        Physics.checkIsLoaded()
+    }
+
     internal lateinit var pxRigidActor: PxRigidActor
     protected val pxPose = PxTransform()
     protected val pxFilterData = PxFilterData()

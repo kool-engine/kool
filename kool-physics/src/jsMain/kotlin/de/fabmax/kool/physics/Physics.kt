@@ -62,13 +62,13 @@ actual object Physics : CoroutineScope {
                 defaultBodyFlags = PxShapeFlags((PxShapeFlagEnum.eSCENE_QUERY_SHAPE or PxShapeFlagEnum.eSIMULATION_SHAPE).toByte())
 
                 // init vehicle simulation framework
-                val up = Vec3f.Y_AXIS.toPxVec3(PxVec3())
-                val front = Vec3f.Z_AXIS.toPxVec3(PxVec3())
-                PxVehicle.InitVehicleSDK(physics)
-                PxVehicle.VehicleSetBasisVectors(up, front)
-                PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
-                PhysXJsLoader.destroy(up)
-                PhysXJsLoader.destroy(front)
+                MemoryStack.stackPush().use { mem ->
+                    val up = Vec3f.Y_AXIS.toPxVec3(mem.createPxVec3())
+                    val front = Vec3f.Z_AXIS.toPxVec3(mem.createPxVec3())
+                    PxVehicle.InitVehicleSDK(physics)
+                    PxVehicle.VehicleSetBasisVectors(up, front)
+                    PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
+                }
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)

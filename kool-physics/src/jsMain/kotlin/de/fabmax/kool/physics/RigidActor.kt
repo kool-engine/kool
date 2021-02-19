@@ -5,9 +5,7 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.util.BoundingBox
-import physx.PhysXJsLoader
-import physx.PxRigidActor
-import physx.PxShape
+import physx.*
 import kotlin.collections.set
 
 actual open class RigidActor : CommonRigidActor(), Releasable {
@@ -29,25 +27,25 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
     private val bufRotation = MutableVec4f()
 
     override var position: Vec3f
-        get() = pxRigidActor.getGlobalPose().p.toVec3f(bufPosition)
+        get() = pxRigidActor.globalPose.p.toVec3f(bufPosition)
         set(value) {
-            val pose = pxRigidActor.getGlobalPose()
+            val pose = pxRigidActor.globalPose
             value.toPxVec3(pose.p)
-            pxRigidActor.setGlobalPose(pose)
+            pxRigidActor.globalPose = pose
             updateTransform()
         }
 
     override var rotation: Vec4f
-        get() = pxRigidActor.getGlobalPose().q.toVec4f(bufRotation)
+        get() = pxRigidActor.globalPose.q.toVec4f(bufRotation)
         set(value) {
-            val pose = pxRigidActor.getGlobalPose()
+            val pose = pxRigidActor.globalPose
             value.toPxQuat(pose.q)
-            pxRigidActor.setGlobalPose(pose)
+            pxRigidActor.globalPose = pose
             updateTransform()
         }
 
     actual val worldBounds: BoundingBox
-        get() = pxRigidActor.getWorldBounds().toBoundingBox(bufBounds)
+        get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
 
     init {
         simFilterData.apply {
@@ -59,13 +57,13 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
     actual fun setSimulationFilterData(simulationFilterData: FilterData) {
         simFilterData.set(simulationFilterData)
         simulationFilterData.toPxFilterData(pxFilterData)
-        pxShapes.values.forEach { it.setSimulationFilterData(pxFilterData) }
+        pxShapes.values.forEach { it.simulationFilterData = pxFilterData }
     }
 
     actual fun setQueryFilterData(queryFilterData: FilterData) {
         qryFilterData.set(queryFilterData)
         queryFilterData.toPxFilterData(pxFilterData)
-        pxShapes.values.forEach { it.setQueryFilterData(pxFilterData) }
+        pxShapes.values.forEach { it.queryFilterData = pxFilterData }
     }
 
     override fun attachShape(shape: Shape) {
@@ -73,12 +71,12 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
 
         val pxShape = Physics.physics.createShape(shape.geometry.pxGeometry, shape.material.pxMaterial, true)
         pxShapes[shape] = pxShape
-        pxShape.setLocalPose(shape.localPose.toPxTransform(pxPose))
+        pxShape.localPose = shape.localPose.toPxTransform(pxPose)
 
         val simFd = if (shape.simFilterData !== null) shape.simFilterData else simFilterData
-        pxShape.setSimulationFilterData(simFd.toPxFilterData(pxFilterData))
+        pxShape.simulationFilterData = simFd.toPxFilterData(pxFilterData)
         val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else qryFilterData
-        pxShape.setQueryFilterData(qryFd.toPxFilterData(pxFilterData))
+        pxShape.queryFilterData = qryFd.toPxFilterData(pxFilterData)
         pxRigidActor.attachShape(pxShape)
     }
 
@@ -93,7 +91,8 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
         pxShapes.clear()
         mutShapes.clear()
 
-        PhysXJsLoader.destroy(pxPose, pxFilterData)
+        pxPose.destroy()
+        pxFilterData.destroy()
     }
 
     override fun fixedUpdate(timeStep: Float) {
@@ -102,6 +101,6 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
     }
 
     protected fun updateTransform() {
-        pxRigidActor.getGlobalPose().toMat4f(transform)
+        pxRigidActor.globalPose.toMat4f(transform)
     }
 }
