@@ -349,7 +349,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
         section("Physics") {
             cycler("Body Shape:", shapeType) { _, _ -> }
-            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 5000f, 0) {
+            sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 2000f, 0) {
                 numSpawnBodies = value.toInt()
             }
             sliderWithValue("Friction:", friction, 0f, 2f, 2) {

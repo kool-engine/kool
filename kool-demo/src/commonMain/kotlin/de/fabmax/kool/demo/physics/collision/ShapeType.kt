@@ -133,7 +133,7 @@ enum class ShapeType {
     };
 
     abstract val label: String
-    val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), 10000)
+    val instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), 2000)
     val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
         isFrustumChecked = false
         instances = this@ShapeType.instances

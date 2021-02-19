@@ -17,49 +17,49 @@ class BufferResource(val target: Int, ctx: JsContext) {
         ctx.gl.bindBuffer(target, buffer)
     }
 
-    fun setData(data: Float32Buffer, usage: Int, ctx: JsContext) {
+    fun setData(data: Float32Buffer, usage: Int, length: Int, ctx: JsContext) {
         val limit = data.limit
         val pos = data.position
         data.flip()
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage)
+        ctx.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage, 0, length)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
         data.position = pos
     }
 
-    fun setData(data: Uint8Buffer, usage: Int, ctx: JsContext) {
+    fun setData(data: Uint8Buffer, usage: Int, length: Int, ctx: JsContext) {
         val limit = data.limit
         val pos = data.position
         data.flip()
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Uint8BufferImpl).buffer, usage)
+        ctx.gl.bufferData(target, (data as Uint8BufferImpl).buffer, usage, 0, length)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
         data.limit = limit
         data.position = pos
     }
 
-    fun setData(data: Uint16Buffer, usage: Int, ctx: JsContext) {
+    fun setData(data: Uint16Buffer, usage: Int, length: Int, ctx: JsContext) {
         val limit = data.limit
         val pos = data.position
         data.flip()
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Uint16BufferImpl).buffer, usage)
+        ctx.gl.bufferData(target, (data as Uint16BufferImpl).buffer, usage, 0, length)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
         data.limit = limit
         data.position = pos
     }
 
-    fun setData(data: Uint32Buffer, usage: Int, ctx: JsContext) {
+    fun setData(data: Uint32Buffer, usage: Int, length: Int, ctx: JsContext) {
         val limit = data.limit
         val pos = data.position
         data.flip()
         bind(ctx)
         ctx.engineStats.bufferDeleted(bufferId)
-        ctx.gl.bufferData(target, (data as Uint32BufferImpl).buffer, usage)
+        ctx.gl.bufferData(target, (data as Uint32BufferImpl).buffer, usage, 0, length)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
         data.position = pos
