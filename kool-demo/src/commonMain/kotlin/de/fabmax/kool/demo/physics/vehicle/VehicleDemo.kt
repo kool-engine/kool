@@ -44,6 +44,8 @@ class VehicleDemo : DemoScene("Vehicle") {
     private val obstacleSimFilterData = FilterData(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     private val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
 
+    private val vehicleGroup = Group()
+    private lateinit var vehicleMesh: Mesh
     private var dashboard: VehicleUi? = null
 
     override fun setupMainScene(ctx: KoolContext) = scene {
@@ -87,6 +89,15 @@ class VehicleDemo : DemoScene("Vehicle") {
             }
 
             makeRaycastVehicle(physicsWorld)
+            +vehicleGroup
+
+            +CamRig().apply {
+                trackedNode = vehicleMesh
+                +orbitInputTransform {
+                    setMouseRotation(0f, -30f)
+                    +camera
+                }
+            }
 
             (camera as PerspectiveCamera).apply {
                 clipNear = 1f
@@ -171,7 +182,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun Scene.makeRaycastVehicle(world: PhysicsWorld) {
+    private fun makeRaycastVehicle(world: PhysicsWorld) {
         val vehicleProps = VehicleProperties()
         vehicleProps.groundMaterialFrictions = mapOf(groundMaterial to 1.5f)
         vehicleProps.chassisDims = Vec3f(2f, 1f, 5f)
@@ -197,7 +208,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         vehicle = Vehicle(vehicleProps, world, pose)
         world.addActor(vehicle)
 
-        +group {
+        vehicleGroup.apply {
             val wheelMeshes = mutableListOf<Group>()
             for (i in 0..3) {
                 wheelMeshes += group {
@@ -221,7 +232,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                 }.also { +it }
             }
 
-            +colorMesh {
+            vehicleMesh = colorMesh {
                 generate {
                     color = Color.MD_ORANGE.toLinear()
                     cube {
@@ -235,11 +246,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                     shadowMaps += shadows
                 }
             }
-
-            +orbitInputTransform {
-                setMouseRotation(180f, -30f)
-                +camera
-            }
+            +vehicleMesh
 
             onUpdate += {
                 transform.set(vehicle.transform)
