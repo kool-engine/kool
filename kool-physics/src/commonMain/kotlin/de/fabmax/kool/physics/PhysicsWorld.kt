@@ -27,6 +27,8 @@ abstract class CommonPhysicsWorld : Releasable {
     var timeFactor = 1f
         private set
 
+    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
+
     private val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
         get() = mutActors
@@ -129,6 +131,9 @@ abstract class CommonPhysicsWorld : Releasable {
         isStepInProgress = false
         for (i in mutActors.indices) {
             mutActors[i].fixedUpdate(singleStepTime)
+        }
+        for (i in onFixedUpdate.indices) {
+            onFixedUpdate[i](singleStepTime)
         }
     }
 

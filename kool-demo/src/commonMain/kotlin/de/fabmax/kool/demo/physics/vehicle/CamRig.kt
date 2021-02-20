@@ -20,11 +20,7 @@ class CamRig : Group() {
     private val trackPosCurrent = MutableVec3f()
     private val trackDirCurrent = MutableVec3f(localFrontDir)
 
-    init {
-        onUpdate += { track() }
-    }
-
-    private fun track() {
+    fun updateTracking() {
         trackedNode?.let {
             trackPosDesired.set(Vec3f.ZERO)
             it.toGlobalCoords(trackPosDesired)

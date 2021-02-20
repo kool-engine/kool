@@ -94,8 +94,12 @@ class VehicleDemo : DemoScene("Vehicle") {
             +CamRig().apply {
                 trackedNode = vehicleMesh
                 +orbitInputTransform {
-                    setMouseRotation(0f, -30f)
+                    setMouseRotation(0f, -10f)
+                    setMouseTranslation(0f, 1.5f, 0f)
                     +camera
+                }
+                physicsWorld.onFixedUpdate += {
+                    updateTracking()
                 }
             }
 
