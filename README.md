@@ -1,4 +1,5 @@
 # kool - A Vulkan / OpenGL graphics engine written in Kotlin
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
@@ -57,7 +58,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 
 ## Features / Noticeable Stuff:
 
-- Rudimentary physics simulation
+- Physics simulation (based on Nvidia PhysX)
 - Node based dynamic shader generation
 - Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
@@ -251,22 +252,19 @@ conclusion that all of them had some kind of flaw. So I decided to write my own 
 [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
 
 This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
-I get the features I need and, even better, I get the same features for javascript and JVM, which makes the
+I get the features I need, and, even better, I get the same features for javascript and JVM, which makes the
 multiplatform approach much easier. Nonetheless, physics integration is still in an early state.
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own (multiplatform-)projects.
+If you are adventurous, you can use kool as a library in your own (multiplatform-)projects. It is published on
+maven central:
 
 Gradle setup:
 ```groovy
-repositories {
-    jcenter()
-}
-
 // JVM dependencies
 dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.6.0"
+    implementation "de.fabmax.kool:kool-core-jvm:0.7.0"
 
     // On JVM, lwjgl runtime dependencies have to be included as well
     def lwjglVersion = "3.2.3"
@@ -281,7 +279,7 @@ dependencies {
 
 // or alternatively for javascript
 dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.6.0"
+    implementation "de.fabmax.kool:kool-core-js:0.7.0"
 }
 ```
 

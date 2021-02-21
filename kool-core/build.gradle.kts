@@ -1,8 +1,12 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import java.io.FileInputStream
+import java.util.*
+
 plugins {
     kotlin("plugin.serialization") version Versions.kotlinVersion
     `maven-publish`
+    signing
 }
 
 kotlin {
@@ -80,53 +84,85 @@ kotlin {
     }
 }
 
-tasks.register("updateVersion") {
-    val koolContextSrcFile = kotlin.sourceSets.findByName("commonMain")?.kotlin
+tasks.register<VersionNameUpdate>("updateVersion") {
+    versionName = "$version"
+    filesToUpdate = listOf(
+        kotlin.sourceSets.findByName("commonMain")?.kotlin
             ?.sourceDirectories
             ?.map { File(it, "de/fabmax/kool/KoolContext.kt") }
-            ?.find { it.exists() }
-    koolContextSrcFile?.let { updateVersionCode(it, version) }
+            ?.find { it.exists() }?.absolutePath ?: ""
+    )
 }
 tasks["compileKotlinJs"].dependsOn("updateVersion")
 tasks["compileKotlinJvm"].dependsOn("updateVersion")
 
-val publishCredentials = PublishingCredentials("$rootDir/publishingCredentials.properties")
-if (publishCredentials.isAvailable) {
-    publishing {
+publishing {
+    publications {
+        publications.filterIsInstance<MavenPublication>().forEach { pub ->
+            pub.pom {
+                name.set("kool")
+                description.set("A multiplatform OpenGL / Vulkan graphics engine written in kotlin")
+                url.set("https://github.com/fabmax/kool")
+                developers {
+                    developer {
+                        name.set("Max Thiele")
+                        email.set("fabmax.thiele@gmail.com")
+                        organization.set("github")
+                        organizationUrl.set("https://github.com/fabmax")
+                    }
+                }
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://github.com/fabmax/kool.git")
+                    developerConnection.set("scm:git:ssh://github.com:fabmax/kool.git")
+                    url.set("https://github.com/fabmax/kool/tree/main")
+                }
+            }
+
+            // generating javadoc isn't supported for multiplatform projects -> add a dummy javadoc jar
+            // containing the README.md to make maven central happy
+            var docJarAppendix = pub.name
+            val docTaskName = "dummyJavadoc${pub.name}"
+            if (pub.name == "kotlinMultiplatform") {
+                docJarAppendix = ""
+            }
+            tasks.register<Jar>(docTaskName) {
+                if (docJarAppendix.isNotEmpty()) {
+                    archiveAppendix.set(docJarAppendix)
+                }
+                archiveClassifier.set("javadoc")
+                from("$rootDir/README.md")
+            }
+            pub.artifact(tasks[docTaskName])
+        }
+    }
+
+    if (File("publishingCredentials.properties").exists()) {
+        val props = Properties()
+        props.load(FileInputStream("publishingCredentials.properties"))
+
         repositories {
             maven {
-                url = uri("${publishCredentials.repoUrl}/kool-core")
+                url = if (version.toString().endsWith("-SNAPSHOT")) {
+                    uri("https://oss.sonatype.org/content/repositories/snapshots")
+                } else {
+                    uri("https://oss.sonatype.org/service/local/staging/deploy/maven2")
+                }
                 credentials {
-                    username = publishCredentials.username
-                    password = publishCredentials.password
+                    username = props.getProperty("publishUser")
+                    password = props.getProperty("publishPassword")
                 }
             }
         }
 
-        publications {
-            publications.filterIsInstance<MavenPublication>().forEach {
-                if (it.name == "kotlinMultiplatform") {
-                    // this is the publication for the common project, which only contains metadata referring to
-                    // the platform-projects. However, we need to add a jar to make the repo happy
-                    it.artifact(tasks["jvmSourcesJar"])
-                }
-
-                it.pom {
-                    name.set("kool")
-                    description.set("A multiplatform OpenGL / Vulkan graphics engine written in kotlin")
-                    url.set("https://github.com/fabmax/kool")
-                    licenses {
-                        license {
-                            name.set("The Apache License, Version 2.0")
-                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                        }
-                    }
-                    scm {
-                        connection.set("scm:git:https://github.com/fabmax/kool.git")
-                        developerConnection.set("scm:git:https://github.com/fabmax/kool.git")
-                        url.set("https://github.com/fabmax/kool")
-                    }
-                }
+        signing {
+            publications.forEach {
+                sign(it)
             }
         }
     }
