@@ -73,8 +73,8 @@ external interface PxBaseFlags {
  * @param flags WebIDL type: unsigned short
  */
 fun PxBaseFlags(flags: Short): PxBaseFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxBaseFlags(flags)")
+    fun _PxBaseFlags(_module: dynamic, flags: Short) = js("new _module.PxBaseFlags(flags)")
+    return _PxBaseFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxBaseFlags.destroy() {
@@ -103,8 +103,8 @@ external interface PxBoundedData {
 }
 
 fun PxBoundedData(): PxBoundedData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxBoundedData()")
+    fun _PxBoundedData(_module: dynamic) = js("new _module.PxBoundedData()")
+    return _PxBoundedData(PhysXJsLoader.physXJs)
 }
 
 fun PxBoundedData.destroy() {
@@ -208,8 +208,8 @@ external interface PxBounds3 {
 }
 
 fun PxBounds3(): PxBounds3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxBounds3()")
+    fun _PxBounds3(_module: dynamic) = js("new _module.PxBounds3()")
+    return _PxBounds3(PhysXJsLoader.physXJs)
 }
 
 /**
@@ -217,8 +217,8 @@ fun PxBounds3(): PxBounds3 {
  * @param maximum WebIDL type: [PxVec3] (Const, Ref)
  */
 fun PxBounds3(minimum: PxVec3, maximum: PxVec3): PxBounds3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxBounds3(minimum, maximum)")
+    fun _PxBounds3(_module: dynamic, minimum: PxVec3, maximum: PxVec3) = js("new _module.PxBounds3(minimum, maximum)")
+    return _PxBounds3(PhysXJsLoader.physXJs, minimum, maximum)
 }
 
 fun PxBounds3.destroy() {
@@ -241,8 +241,8 @@ fun PxCpuDispatcher.destroy() {
 external interface PxDefaultErrorCallback : PxErrorCallback
 
 fun PxDefaultErrorCallback(): PxDefaultErrorCallback {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxDefaultErrorCallback()")
+    fun _PxDefaultErrorCallback(_module: dynamic) = js("new _module.PxDefaultErrorCallback()")
+    return _PxDefaultErrorCallback(PhysXJsLoader.physXJs)
 }
 
 fun PxDefaultErrorCallback.destroy() {
@@ -276,8 +276,8 @@ external interface JavaErrorCallback : PxErrorCallback {
 }
 
 fun JavaErrorCallback(): JavaErrorCallback {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.JavaErrorCallback()")
+    fun _JavaErrorCallback(_module: dynamic) = js("new _module.JavaErrorCallback()")
+    return _JavaErrorCallback(PhysXJsLoader.physXJs)
 }
 
 external interface PxFoundation {
@@ -307,8 +307,8 @@ external interface PxQuat {
 }
 
 fun PxQuat(): PxQuat {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxQuat()")
+    fun _PxQuat(_module: dynamic) = js("new _module.PxQuat()")
+    return _PxQuat(PhysXJsLoader.physXJs)
 }
 
 /**
@@ -318,8 +318,8 @@ fun PxQuat(): PxQuat {
  * @param w WebIDL type: float
  */
 fun PxQuat(x: Float, y: Float, z: Float, w: Float): PxQuat {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxQuat(x, y, z, w)")
+    fun _PxQuat(_module: dynamic, x: Float, y: Float, z: Float, w: Float) = js("new _module.PxQuat(x, y, z, w)")
+    return _PxQuat(PhysXJsLoader.physXJs, x, y, z, w)
 }
 
 fun PxQuat.destroy() {
@@ -329,8 +329,8 @@ fun PxQuat.destroy() {
 external interface PxTolerancesScale
 
 fun PxTolerancesScale(): PxTolerancesScale {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTolerancesScale()")
+    fun _PxTolerancesScale(_module: dynamic) = js("new _module.PxTolerancesScale()")
+    return _PxTolerancesScale(PhysXJsLoader.physXJs)
 }
 
 fun PxTolerancesScale.destroy() {
@@ -352,8 +352,8 @@ external interface PxTransform {
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
 fun PxTransform(r: Int): PxTransform {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTransform(r)")
+    fun _PxTransform(_module: dynamic, r: Int) = js("new _module.PxTransform(r)")
+    return _PxTransform(PhysXJsLoader.physXJs, r)
 }
 
 /**
@@ -361,11 +361,26 @@ fun PxTransform(r: Int): PxTransform {
  * @param q0 WebIDL type: [PxQuat] (Const, Ref)
  */
 fun PxTransform(p0: PxVec3, q0: PxQuat): PxTransform {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTransform(p0, q0)")
+    fun _PxTransform(_module: dynamic, p0: PxVec3, q0: PxQuat) = js("new _module.PxTransform(p0, q0)")
+    return _PxTransform(PhysXJsLoader.physXJs, p0, q0)
 }
 
 fun PxTransform.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxStridedData {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var stride: Int
+    /**
+     * WebIDL type: VoidPtr (Const)
+     */
+    var data: Any
+}
+
+fun PxStridedData.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -375,9 +390,9 @@ external interface PxU16StridedData {
      */
     var stride: Int
     /**
-     * WebIDL type: [PxU16Ptr] (Const, Value)
+     * WebIDL type: [PxU16ConstPtr] (Const, Value)
      */
-    var data: PxU16Ptr
+    var data: PxU16ConstPtr
 }
 
 fun PxU16StridedData.destroy() {
@@ -400,8 +415,8 @@ external interface PxVec3 {
 }
 
 fun PxVec3(): PxVec3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVec3()")
+    fun _PxVec3(_module: dynamic) = js("new _module.PxVec3()")
+    return _PxVec3(PhysXJsLoader.physXJs)
 }
 
 /**
@@ -410,8 +425,8 @@ fun PxVec3(): PxVec3 {
  * @param z WebIDL type: float
  */
 fun PxVec3(x: Float, y: Float, z: Float): PxVec3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVec3(x, y, z)")
+    fun _PxVec3(_module: dynamic, x: Float, y: Float, z: Float) = js("new _module.PxVec3(x, y, z)")
+    return _PxVec3(PhysXJsLoader.physXJs, x, y, z)
 }
 
 fun PxVec3.destroy() {

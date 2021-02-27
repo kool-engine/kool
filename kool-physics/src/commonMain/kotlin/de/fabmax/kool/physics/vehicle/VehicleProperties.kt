@@ -19,7 +19,8 @@ class VehicleProperties {
     var trackWidth = 1.8f
     var wheelCenterHeightOffset = -0.5f     // relative to center of chassis dims
 
-    var maxBrakeTorque = 5000f
+    var maxBrakeTorqueFront = 5000f
+    var maxBrakeTorqueRear = 2500f
     var maxHandBrakeTorque = 5000f
 
     var maxCompression = 0.3f

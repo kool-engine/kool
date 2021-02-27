@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 
-expect open class RigidActor : CommonRigidActor, Releasable {
+expect open class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
 
     fun setSimulationFilterData(simulationFilterData: FilterData)
@@ -16,9 +16,11 @@ expect open class RigidActor : CommonRigidActor, Releasable {
     fun setQueryFilterData(queryFilterData: FilterData)
 }
 
-abstract class CommonRigidActor {
+abstract class CommonRigidActor : Releasable {
     abstract var position: Vec3f
     abstract var rotation: Vec4f
+
+    abstract var isTrigger: Boolean
 
     val transform = Mat4f()
 
@@ -48,6 +50,10 @@ abstract class CommonRigidActor {
 
     open fun detachShape(shape: Shape) {
         mutShapes -= shape
+    }
+
+    override fun release() {
+        mutShapes.clear()
     }
 
     internal open fun fixedUpdate(timeStep: Float) {

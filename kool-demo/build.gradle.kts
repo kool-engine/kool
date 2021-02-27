@@ -11,9 +11,10 @@ kotlin {
             }
         }
     }
-    //js(IR) { // kinda works as well but requires clean before build (1.4.21)
+    //js(IR) { // produces weird errors when trying to invoke physx bindings (1.4.31)
     js {
         browser {
+            @Suppress("EXPERIMENTAL_API_USAGE")
             distribution {
                 directory = File("${rootDir}/dist/kool-demo")
             }

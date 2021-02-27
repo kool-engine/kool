@@ -5,20 +5,18 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.util.BoundingBox
+import org.lwjgl.system.MemoryStack
+import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor
-import physx.physics.PxShape
-import kotlin.collections.set
+import physx.physics.PxShapeFlagEnum
 
-actual open class RigidActor : CommonRigidActor(), Releasable {
+actual open class RigidActor : CommonRigidActor() {
 
     init {
         Physics.checkIsLoaded()
     }
 
     internal lateinit var pxRigidActor: PxRigidActor
-    protected val pxPose = PxTransform()
-    protected val pxFilterData = PxFilterData()
-    protected val pxShapes = mutableMapOf<Shape, PxShape>()
 
     private val simFilterData = FilterData()
     private val qryFilterData = FilterData()
@@ -45,6 +43,16 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
             updateTransform()
         }
 
+    override var isTrigger: Boolean = false
+        set(value) {
+            field = value
+            MemoryStack.stackPush().use { mem ->
+                val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
+                val shapeFlags = mem.createPxShapeFlags(flags)
+                shapes.forEach { it.pxShape?.flags = shapeFlags }
+            }
+        }
+
     actual val worldBounds: BoundingBox
         get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
 
@@ -56,44 +64,46 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
     }
 
     actual fun setSimulationFilterData(simulationFilterData: FilterData) {
-        simFilterData.set(simulationFilterData)
-        simulationFilterData.toPxFilterData(pxFilterData)
-        pxShapes.values.forEach { it.simulationFilterData = pxFilterData }
+        MemoryStack.stackPush().use { mem ->
+            simFilterData.set(simulationFilterData)
+            val fd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
+            shapes.forEach { it.pxShape?.simulationFilterData = fd }
+        }
     }
 
     actual fun setQueryFilterData(queryFilterData: FilterData) {
-        qryFilterData.set(queryFilterData)
-        queryFilterData.toPxFilterData(pxFilterData)
-        pxShapes.values.forEach { it.queryFilterData = pxFilterData }
+        MemoryStack.stackPush().use { mem ->
+            qryFilterData.set(queryFilterData)
+            val fd = queryFilterData.toPxFilterData(mem.createPxFilterData())
+            shapes.forEach { it.pxShape?.queryFilterData = fd }
+        }
     }
 
     override fun attachShape(shape: Shape) {
         super.attachShape(shape)
+        MemoryStack.stackPush().use { mem ->
+            val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
+            val shapeFlags = mem.createPxShapeFlags(flags)
 
-        val pxShape = Physics.physics.createShape(shape.geometry.pxGeometry, shape.material.pxMaterial, true)
-        pxShapes[shape] = pxShape
-        pxShape.localPose = shape.localPose.toPxTransform(pxPose)
+            val pxShape = PxRigidActorExt.createExclusiveShape(pxRigidActor, shape.geometry.pxGeometry, shape.material.pxMaterial, shapeFlags)
+            pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
 
-        val simFd = if (shape.simFilterData !== null) shape.simFilterData else simFilterData
-        pxShape.simulationFilterData = simFd.toPxFilterData(pxFilterData)
-        val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else qryFilterData
-        pxShape.queryFilterData = qryFd.toPxFilterData(pxFilterData)
-        pxRigidActor.attachShape(pxShape)
+            val simFd = if (shape.simFilterData !== null) shape.simFilterData else simFilterData
+            pxShape.simulationFilterData = simFd.toPxFilterData(mem.createPxFilterData())
+            val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else qryFilterData
+            pxShape.queryFilterData = qryFd.toPxFilterData(mem.createPxFilterData())
+            shape.pxShape = pxShape
+        }
     }
 
     override fun detachShape(shape: Shape) {
-        pxShapes.remove(shape)?.release()
+        shape.pxShape?.release()
         super.detachShape(shape)
     }
 
     override fun release() {
         pxRigidActor.release()
-        // attached PxShapes are auto-released when pxRigidDynamic is released, just clear the lists
-        pxShapes.clear()
-        mutShapes.clear()
-
-        pxPose.destroy()
-        pxFilterData.destroy()
+        super.release()
     }
 
     override fun fixedUpdate(timeStep: Float) {
@@ -103,5 +113,10 @@ actual open class RigidActor : CommonRigidActor(), Releasable {
 
     protected fun updateTransform() {
         pxRigidActor.globalPose.toMat4f(transform)
+    }
+
+    companion object {
+        val SIM_SHAPE_FLAGS: Int = PxShapeFlagEnum.eSIMULATION_SHAPE or PxShapeFlagEnum.eSCENE_QUERY_SHAPE
+        val TRIGGER_SHAPE_FLAGS: Int = PxShapeFlagEnum.eTRIGGER_SHAPE
     }
 }

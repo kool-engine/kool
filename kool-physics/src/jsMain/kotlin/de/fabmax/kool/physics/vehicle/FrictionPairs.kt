@@ -16,7 +16,7 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
         Physics.checkIsLoaded()
 
         val nbSurfaceTypes = surfaceTypes.size
-        val materialVec = Vector_PxMaterial(materials.size)
+        val materialVec = Vector_PxMaterialConst(materials.size)
         materials.forEach {
             materialVec.push_back(it)
         }

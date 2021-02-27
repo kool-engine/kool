@@ -18,7 +18,7 @@ kotlin {
             }
         }
     }
-    //js(IR) { // kinda works as well but requires clean before build (1.4.21)
+    //js(IR) { // produces weird errors when trying to invoke physx bindings (1.4.31)
     js {
         browser { }
     }

@@ -17,7 +17,7 @@ kotlin {
             }
         }
     }
-    //js(IR) { // kinda works as well but requires clean before build (1.4.21)
+    //js(IR) { // produces weird errors when trying to invoke physx bindings (1.4.31)
     js {
         browser { }
     }
@@ -35,16 +35,16 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation("de.fabmax:physx-jni:0.4.1")
-                runtimeOnly("de.fabmax:physx-jni:0.4.1:native-win64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.1:native-linux64")
+                implementation("de.fabmax:physx-jni:0.4.3-SNAPSHOT")
+                runtimeOnly("de.fabmax:physx-jni:0.4.3-SNAPSHOT:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.3-SNAPSHOT:native-linux64")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "0.4.1"))
-                //implementation(npm(File("$projectDir/npm/physx-js-webidl")))
+                //implementation(npm("physx-js-webidl", "0.4.2"))
+                implementation(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }
 
@@ -56,6 +56,11 @@ kotlin {
             }
         }
     }
+}
+
+tasks.register<PhysxJsGenerator>("generatePhysxJsBindings") {
+    generatorOutput = "$projectDir/src/jsMain/kotlin/physx"
+    idlSource = "$projectDir/src/webidl/PhysXJs.idl"
 }
 
 publishing {

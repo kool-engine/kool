@@ -51,10 +51,16 @@ actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : Ri
         set(value) { pxRigidDynamic.angularDamping = value }
 
     init {
-        pose.toPxTransform(pxPose)
-        pxRigidDynamic = Physics.physics.createRigidDynamic(pxPose)
-        pxRigidActor = pxRigidDynamic
-        this.mass = mass
+        MemoryStack.stackPush().use { mem ->
+            val pxPose = pose.toPxTransform(mem.createPxTransform())
+            pxRigidDynamic = Physics.physics.createRigidDynamic(pxPose)
+            pxRigidActor = pxRigidDynamic
+            this.mass = mass
+        }
+    }
+
+    actual fun updateInertiaFromShapesAndMass() {
+        Physics.PxRigidBodyExt.setMassAndUpdateInertia(pxRigidDynamic, mass)
     }
 
     override fun attachShape(shape: Shape) {

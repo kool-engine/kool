@@ -68,9 +68,59 @@ external interface PxTopLevelFunctions {
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
      * @param actor1      WebIDL type: [PxRigidActor]
      * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxD6Joint]
+     */
+    fun D6JointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxD6Joint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxDistanceJoint]
+     */
+    fun DistanceJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxDistanceJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxFixedJoint]
+     */
+    fun FixedJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxFixedJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxPrismaticJoint]
+     */
+    fun PrismaticJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxPrismaticJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
      * @return WebIDL type: [PxRevoluteJoint]
      */
     fun RevoluteJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxRevoluteJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxSphericalJoint]
+     */
+    fun SphericalJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxSphericalJoint
 
 }
 

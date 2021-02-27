@@ -70,8 +70,8 @@ external interface PxConvexFlags {
  * @param flags WebIDL type: unsigned short
  */
 fun PxConvexFlags(flags: Short): PxConvexFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexFlags(flags)")
+    fun _PxConvexFlags(_module: dynamic, flags: Short) = js("new _module.PxConvexFlags(flags)")
+    return _PxConvexFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxConvexFlags.destroy() {
@@ -90,8 +90,8 @@ external interface PxConvexMeshDesc {
 }
 
 fun PxConvexMeshDesc(): PxConvexMeshDesc {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexMeshDesc()")
+    fun _PxConvexMeshDesc(_module: dynamic) = js("new _module.PxConvexMeshDesc()")
+    return _PxConvexMeshDesc(PhysXJsLoader.physXJs)
 }
 
 fun PxConvexMeshDesc.destroy() {
@@ -114,6 +114,13 @@ external interface PxCooking {
      * @return WebIDL type: [PxTriangleMesh]
      */
     fun createTriangleMesh(desc: PxTriangleMeshDesc, insertionCallback: PxPhysicsInsertionCallback): PxTriangleMesh
+
+    /**
+     * @param desc              WebIDL type: [PxHeightFieldDesc] (Const, Ref)
+     * @param insertionCallback WebIDL type: [PxPhysicsInsertionCallback] (Ref)
+     * @return WebIDL type: [PxHeightField]
+     */
+    fun createHeightField(desc: PxHeightFieldDesc, insertionCallback: PxPhysicsInsertionCallback): PxHeightField
 
 }
 
@@ -168,8 +175,8 @@ external interface PxCookingParams {
  * @param sc WebIDL type: [PxTolerancesScale] (Const, Ref)
  */
 fun PxCookingParams(sc: PxTolerancesScale): PxCookingParams {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxCookingParams(sc)")
+    fun _PxCookingParams(_module: dynamic, sc: PxTolerancesScale) = js("new _module.PxCookingParams(sc)")
+    return _PxCookingParams(PhysXJsLoader.physXJs, sc)
 }
 
 fun PxCookingParams.destroy() {
@@ -199,8 +206,8 @@ external interface PxMeshPreprocessingFlags {
  * @param flags WebIDL type: unsigned long
  */
 fun PxMeshPreprocessingFlags(flags: Int): PxMeshPreprocessingFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshPreprocessingFlags(flags)")
+    fun _PxMeshPreprocessingFlags(_module: dynamic, flags: Int) = js("new _module.PxMeshPreprocessingFlags(flags)")
+    return _PxMeshPreprocessingFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxMeshPreprocessingFlags.destroy() {
@@ -235,8 +242,8 @@ external interface PxMidphaseDesc {
 }
 
 fun PxMidphaseDesc(): PxMidphaseDesc {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMidphaseDesc()")
+    fun _PxMidphaseDesc(_module: dynamic) = js("new _module.PxMidphaseDesc()")
+    return _PxMidphaseDesc(PhysXJsLoader.physXJs)
 }
 
 fun PxMidphaseDesc.destroy() {
@@ -262,8 +269,8 @@ external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
 }
 
 fun PxTriangleMeshDesc(): PxTriangleMeshDesc {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTriangleMeshDesc()")
+    fun _PxTriangleMeshDesc(_module: dynamic) = js("new _module.PxTriangleMeshDesc()")
+    return _PxTriangleMeshDesc(PhysXJsLoader.physXJs)
 }
 
 fun PxTriangleMeshDesc.destroy() {

@@ -25,6 +25,8 @@ actual object Physics : CoroutineScope {
     val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
     val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
+    val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype
+    val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype
 
     // default PhysX facilities
     lateinit var foundation: PxFoundation

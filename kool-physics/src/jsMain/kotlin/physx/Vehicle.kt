@@ -92,8 +92,8 @@ external interface PxVehicleAckermannGeometryData {
 }
 
 fun PxVehicleAckermannGeometryData(): PxVehicleAckermannGeometryData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleAckermannGeometryData()")
+    fun _PxVehicleAckermannGeometryData(_module: dynamic) = js("new _module.PxVehicleAckermannGeometryData()")
+    return _PxVehicleAckermannGeometryData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleAckermannGeometryData.destroy() {
@@ -116,8 +116,8 @@ external interface PxVehicleAntiRollBarData {
 }
 
 fun PxVehicleAntiRollBarData(): PxVehicleAntiRollBarData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleAntiRollBarData()")
+    fun _PxVehicleAntiRollBarData(_module: dynamic) = js("new _module.PxVehicleAntiRollBarData()")
+    return _PxVehicleAntiRollBarData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleAntiRollBarData.destroy() {
@@ -171,8 +171,8 @@ external interface PxVehicleAutoBoxData {
 }
 
 fun PxVehicleAutoBoxData(): PxVehicleAutoBoxData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleAutoBoxData()")
+    fun _PxVehicleAutoBoxData(_module: dynamic) = js("new _module.PxVehicleAutoBoxData()")
+    return _PxVehicleAutoBoxData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleAutoBoxData.destroy() {
@@ -199,8 +199,8 @@ external interface PxVehicleChassisData {
 }
 
 fun PxVehicleChassisData(): PxVehicleChassisData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleChassisData()")
+    fun _PxVehicleChassisData(_module: dynamic) = js("new _module.PxVehicleChassisData()")
+    return _PxVehicleChassisData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleChassisData.destroy() {
@@ -223,8 +223,8 @@ external interface PxVehicleClutchData {
 }
 
 fun PxVehicleClutchData(): PxVehicleClutchData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleClutchData()")
+    fun _PxVehicleClutchData(_module: dynamic) = js("new _module.PxVehicleClutchData()")
+    return _PxVehicleClutchData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleClutchData.destroy() {
@@ -263,8 +263,8 @@ external interface PxVehicleDifferential4WData {
 }
 
 fun PxVehicleDifferential4WData(): PxVehicleDifferential4WData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleDifferential4WData()")
+    fun _PxVehicleDifferential4WData(_module: dynamic) = js("new _module.PxVehicleDifferential4WData()")
+    return _PxVehicleDifferential4WData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleDifferential4WData.destroy() {
@@ -282,10 +282,10 @@ external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
     /**
      * @param nbTireTypes              WebIDL type: unsigned long
      * @param nbSurfaceTypes           WebIDL type: unsigned long
-     * @param drivableSurfaceMaterials WebIDL type: [PxMaterialPtr]
+     * @param drivableSurfaceMaterials WebIDL type: [PxMaterialConstPtr]
      * @param drivableSurfaceTypes     WebIDL type: [PxVehicleDrivableSurfaceType] (Const)
      */
-    fun setup(nbTireTypes: Int, nbSurfaceTypes: Int, drivableSurfaceMaterials: PxMaterialPtr, drivableSurfaceTypes: PxVehicleDrivableSurfaceType)
+    fun setup(nbTireTypes: Int, nbSurfaceTypes: Int, drivableSurfaceMaterials: PxMaterialConstPtr, drivableSurfaceTypes: PxVehicleDrivableSurfaceType)
 
     fun release()
 
@@ -328,8 +328,8 @@ external interface PxVehicleDrivableSurfaceType {
 }
 
 fun PxVehicleDrivableSurfaceType(): PxVehicleDrivableSurfaceType {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleDrivableSurfaceType()")
+    fun _PxVehicleDrivableSurfaceType(_module: dynamic) = js("new _module.PxVehicleDrivableSurfaceType()")
+    return _PxVehicleDrivableSurfaceType(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleDrivableSurfaceType.destroy() {
@@ -609,8 +609,8 @@ external interface PxVehicleDriveSimData {
 }
 
 fun PxVehicleDriveSimData(): PxVehicleDriveSimData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleDriveSimData()")
+    fun _PxVehicleDriveSimData(_module: dynamic) = js("new _module.PxVehicleDriveSimData()")
+    return _PxVehicleDriveSimData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleDriveSimData.destroy() {
@@ -654,8 +654,8 @@ external interface PxVehicleDriveSimData4W : PxVehicleDriveSimData {
 }
 
 fun PxVehicleDriveSimData4W(): PxVehicleDriveSimData4W {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleDriveSimData4W()")
+    fun _PxVehicleDriveSimData4W(_module: dynamic) = js("new _module.PxVehicleDriveSimData4W()")
+    return _PxVehicleDriveSimData4W(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleDriveSimData4W.destroy() {
@@ -701,8 +701,8 @@ external interface PxVehicleEngineData {
 }
 
 fun PxVehicleEngineData(): PxVehicleEngineData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleEngineData()")
+    fun _PxVehicleEngineData(_module: dynamic) = js("new _module.PxVehicleEngineData()")
+    return _PxVehicleEngineData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleEngineData.destroy() {
@@ -753,8 +753,8 @@ external interface PxEngineTorqueLookupTable {
 }
 
 fun PxEngineTorqueLookupTable(): PxEngineTorqueLookupTable {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxEngineTorqueLookupTable()")
+    fun _PxEngineTorqueLookupTable(_module: dynamic) = js("new _module.PxEngineTorqueLookupTable()")
+    return _PxEngineTorqueLookupTable(PhysXJsLoader.physXJs)
 }
 
 fun PxEngineTorqueLookupTable.destroy() {
@@ -797,8 +797,8 @@ external interface PxVehicleGearsData {
 }
 
 fun PxVehicleGearsData(): PxVehicleGearsData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleGearsData()")
+    fun _PxVehicleGearsData(_module: dynamic) = js("new _module.PxVehicleGearsData()")
+    return _PxVehicleGearsData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleGearsData.destroy() {
@@ -847,8 +847,8 @@ external interface PxVehicleSuspensionData {
 }
 
 fun PxVehicleSuspensionData(): PxVehicleSuspensionData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleSuspensionData()")
+    fun _PxVehicleSuspensionData(_module: dynamic) = js("new _module.PxVehicleSuspensionData()")
+    return _PxVehicleSuspensionData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleSuspensionData.destroy() {
@@ -879,8 +879,8 @@ external interface PxVehicleTireData {
 }
 
 fun PxVehicleTireData(): PxVehicleTireData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleTireData()")
+    fun _PxVehicleTireData(_module: dynamic) = js("new _module.PxVehicleTireData()")
+    return _PxVehicleTireData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleTireData.destroy() {
@@ -913,8 +913,8 @@ external interface PxVehicleTireLoadFilterData {
 }
 
 fun PxVehicleTireLoadFilterData(): PxVehicleTireLoadFilterData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleTireLoadFilterData()")
+    fun _PxVehicleTireLoadFilterData(_module: dynamic) = js("new _module.PxVehicleTireLoadFilterData()")
+    return _PxVehicleTireLoadFilterData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleTireLoadFilterData.destroy() {
@@ -964,8 +964,8 @@ external interface PxVehicleWheelData {
 }
 
 fun PxVehicleWheelData(): PxVehicleWheelData {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleWheelData()")
+    fun _PxVehicleWheelData(_module: dynamic) = js("new _module.PxVehicleWheelData()")
+    return _PxVehicleWheelData(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleWheelData.destroy() {
@@ -984,8 +984,8 @@ external interface PxVehicleWheelQueryResult {
 }
 
 fun PxVehicleWheelQueryResult(): PxVehicleWheelQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleWheelQueryResult()")
+    fun _PxVehicleWheelQueryResult(_module: dynamic) = js("new _module.PxVehicleWheelQueryResult()")
+    return _PxVehicleWheelQueryResult(PhysXJsLoader.physXJs)
 }
 
 fun PxVehicleWheelQueryResult.destroy() {
@@ -1487,8 +1487,8 @@ external interface PxVehicleWheelsSimFlags {
  * @param flags WebIDL type: unsigned long
  */
 fun PxVehicleWheelsSimFlags(flags: Int): PxVehicleWheelsSimFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxVehicleWheelsSimFlags(flags)")
+    fun _PxVehicleWheelsSimFlags(_module: dynamic, flags: Int) = js("new _module.PxVehicleWheelsSimFlags(flags)")
+    return _PxVehicleWheelsSimFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxVehicleWheelsSimFlags.destroy() {
@@ -1575,8 +1575,8 @@ external interface PxWheelQueryResult {
 }
 
 fun PxWheelQueryResult(): PxWheelQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxWheelQueryResult()")
+    fun _PxWheelQueryResult(_module: dynamic) = js("new _module.PxWheelQueryResult()")
+    return _PxWheelQueryResult(PhysXJsLoader.physXJs)
 }
 
 fun PxWheelQueryResult.destroy() {

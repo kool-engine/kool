@@ -69,6 +69,9 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
+val PxRigidActor.address: Int get() = Physics.TypeHelpers.voidToAny(this)
+val PxShape.address: Int get() = Physics.TypeHelpers.voidToAny(this)
+
 fun PxVehicleDrivableSurfaceToTireFrictionPairs_allocate(maxNbTireTypes: Int, maxNbSurfaceTypes: Int): PxVehicleDrivableSurfaceToTireFrictionPairs =
     PhysXJsLoader.physXJs.PxVehicleDrivableSurfaceToTireFrictionPairs.prototype.allocate(maxNbTireTypes, maxNbSurfaceTypes)
 

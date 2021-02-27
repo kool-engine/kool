@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.4.30"
+    val kotlinVersion = "1.4.31"
     val kotlinCorroutinesVersion = "1.4.2"
     val kotlinSerializationVersion = "1.0.1"
 
@@ -39,8 +39,4 @@ object DepsJvm {
             "org.lwjgl:lwjgl:${Versions.lwjglVersion}:${Versions.lwjglNatives}"
         }
     }
-}
-
-object DepsJs {
-
 }

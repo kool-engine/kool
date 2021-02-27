@@ -245,13 +245,13 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             val pxWheelCenterActorOffsets = wheelCenterActorOffsets.toVector_PxVec3()
 
             // Set up the wheels.
-            val wheels = List(numWheels) {
+            val wheels = List(numWheels) { i ->
                 val wheel = mem.createPxVehicleWheelData()
                 wheel.mMass = vehicleProps.wheelMass
                 wheel.mmoi = vehicleProps.wheelMOI
                 wheel.mRadius = vehicleProps.wheelRadius
                 wheel.mWidth = vehicleProps.wheelWidth
-                wheel.mMaxBrakeTorque = vehicleProps.maxBrakeTorque
+                wheel.mMaxBrakeTorque = if (i == FRONT_LEFT || i == FRONT_RIGHT) vehicleProps.maxBrakeTorqueFront else vehicleProps.maxBrakeTorqueRear
                 wheel
             }
             // Enable the handbrake for the rear wheels only.

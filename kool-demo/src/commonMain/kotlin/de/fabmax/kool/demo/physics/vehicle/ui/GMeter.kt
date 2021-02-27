@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.physics.vehicle
+package de.fabmax.kool.demo.physics.vehicle.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp

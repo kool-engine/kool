@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
@@ -16,7 +17,7 @@ import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTA
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND
 import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND_AGAINST
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
@@ -49,6 +50,7 @@ class VehicleDemo : DemoScene("Vehicle") {
     private var dashboard: VehicleUi? = null
 
     override fun setupMainScene(ctx: KoolContext) = scene {
+        var inited = false
         ctx.assetMgr.launch {
             lighting.singleLight {
                 setDirectional(Vec3f(1f, -1.2f, -0.8f))
@@ -56,101 +58,112 @@ class VehicleDemo : DemoScene("Vehicle") {
             }
             ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
             aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
-            shadows += CascadedShadowMap(this@scene, 0).apply {
-                mapRanges[0].set(0f, 0.15f)
-                mapRanges[1].set(0.15f, 0.4f)
-                mapRanges[2].set(0.4f, 1f)
+            shadows += CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
+                mapRanges[0].set(0f, 0.05f)
+                mapRanges[1].set(0.05f, 0.2f)
+                mapRanges[2].set(0.2f, 1f)
             }
             +Skybox.cube(ibl.reflectionMap, 1f)
 
             Physics.awaitLoaded()
-            physicsWorld = PhysicsWorld()
-            val steerAnimator = ValueAnimator()
-            val throttleBrakeHandler = ThrottleBrakeHandler()
+            inited = true
+        }
 
-            makeGround(physicsWorld)
-            makeBoxes(Mat4f().translate(-20f, 0f, 30f), physicsWorld)
-            makeRocker(Mat4f().translate(-20f, 0f, 90f), physicsWorld)
+        onRenderScene += {
+            if (inited) {
+                inited = false
 
-            +colorMesh {
-                generate {
-                    makeRamp(Mat4f().translate(0f, 0f, 30f))
-                    makeBumps(Mat4f().translate(20f, 0f, 0f))
-                    makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
+                physicsWorld = PhysicsWorld()
+                val steerAnimator = ValueAnimator()
+                val throttleBrakeHandler = ThrottleBrakeHandler()
+
+                makeGround(physicsWorld)
+                makeBoxes(Mat4f().translate(-20f, 0f, 30f), physicsWorld)
+                makeRocker(Mat4f().translate(-20f, 0f, 90f), physicsWorld)
+
+                +colorMesh {
+                    generate {
+                        makeRamp(Mat4f().translate(0f, 0f, 30f))
+                        makeBumps(Mat4f().translate(20f, 0f, 0f))
+                        makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
+                    }
+                    shader = pbrShader {
+                        albedoSource = Albedo.VERTEX_ALBEDO
+                        shadowMaps += shadows
+                        useImageBasedLighting(ibl)
+                        useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                    }
+
+                    makeStaticCollisionBody(geometry, physicsWorld)
                 }
-                shader = pbrShader {
-                    albedoSource = Albedo.VERTEX_ALBEDO
-                    shadowMaps += shadows
-                    useImageBasedLighting(ibl)
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+
+                makeRaycastVehicle(physicsWorld)
+                +vehicleGroup
+
+                +CamRig().apply {
+                    trackedNode = vehicleMesh
+                    +orbitInputTransform {
+                        setMouseRotation(0f, -10f)
+                        setMouseTranslation(0f, 1.5f, 0f)
+                        +camera
+                        maxZoom = 500.0
+                    }
+                    physicsWorld.onFixedUpdate += {
+                        updateTracking()
+                    }
                 }
 
-                makeStaticCollisionBody(geometry, physicsWorld)
-            }
-
-            makeRaycastVehicle(physicsWorld)
-            +vehicleGroup
-
-            +CamRig().apply {
-                trackedNode = vehicleMesh
-                +orbitInputTransform {
-                    setMouseRotation(0f, -10f)
-                    setMouseTranslation(0f, 1.5f, 0f)
-                    +camera
+                (camera as PerspectiveCamera).apply {
+                    clipNear = 1f
+                    clipFar = 1000f
                 }
-                physicsWorld.onFixedUpdate += {
-                    updateTracking()
+
+                onUpdate += {
+                    throttleBrakeHandler.update(vehicle.forwardSpeed, it.deltaT)
+                    vehicle.isReverse = throttleBrakeHandler.isReverse
+                    vehicle.steerInput = steerAnimator.tick(it.deltaT)
+                    vehicle.throttleInput = throttleBrakeHandler.throttle.value
+                    vehicle.brakeInput = throttleBrakeHandler.brake.value
+                    updateDashboard()
                 }
-            }
 
-            (camera as PerspectiveCamera).apply {
-                clipNear = 1f
-                clipFar = 1000f
-            }
+                val steerLeft: (InputManager.KeyEvent) -> Unit = {
+                    if (it.isPressed) { steerAnimator.target = 1f } else { steerAnimator.target = 0f }
+                }
+                val steerRight: (InputManager.KeyEvent) -> Unit = {
+                    if (it.isPressed) { steerAnimator.target = -1f } else { steerAnimator.target = 0f }
+                }
+                val accelerate: (InputManager.KeyEvent) -> Unit = {
+                    throttleBrakeHandler.upKeyPressed = it.isPressed
+                }
+                val brake: (InputManager.KeyEvent) -> Unit = {
+                    throttleBrakeHandler.downKeyPressed = it.isPressed
+                }
 
-            onUpdate += {
-                throttleBrakeHandler.update(vehicle.forwardSpeed, it.deltaT)
-                vehicle.isReverse = throttleBrakeHandler.isReverse
-                vehicle.steerInput = steerAnimator.tick(it.deltaT)
-                vehicle.throttleInput = throttleBrakeHandler.throttle.value
-                vehicle.brakeInput = throttleBrakeHandler.brake.value
-                updateDashboard()
-            }
+                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
+                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
+                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
+                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
+                keyListeners += ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
+                keyListeners += ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
+                keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
+                keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
+                keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
+                    val pos = vehicle.position
+                    vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
 
-            val steerLeft: (InputManager.KeyEvent) -> Unit = {
-                if (it.isPressed) { steerAnimator.target = 1f } else { steerAnimator.target = 0f }
-            }
-            val steerRight: (InputManager.KeyEvent) -> Unit = {
-                if (it.isPressed) { steerAnimator.target = -1f } else { steerAnimator.target = 0f }
-            }
-            val accelerate: (InputManager.KeyEvent) -> Unit = {
-                throttleBrakeHandler.upKeyPressed = it.isPressed
-            }
-            val brake: (InputManager.KeyEvent) -> Unit = {
-                throttleBrakeHandler.downKeyPressed = it.isPressed
-            }
+                    val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
+                    val headDeg = atan2(head.x, head.z).toDeg()
+                    val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
+                    vehicle.setRotation(ori)
+                    vehicle.linearVelocity = Vec3f.ZERO
+                    vehicle.angularVelocity = Vec3f.ZERO
+                }
 
-            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
-            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
-            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
-            keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
-            keyListeners += ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
-            keyListeners += ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
-            keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
-            keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
-            keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
-                val pos = vehicle.position
-                vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
+                physicsWorld.registerHandlers(this@scene)
 
-                val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
-                val headDeg = atan2(head.x, head.z).toDeg()
-                val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
-                vehicle.setRotation(ori)
-                vehicle.linearVelocity = Vec3f.ZERO
-                vehicle.angularVelocity = Vec3f.ZERO
+                makeTrack(physicsWorld)
             }
-
-            physicsWorld.registerHandlers(this@scene)
         }
 
         onDispose += {
@@ -187,12 +200,15 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun makeRaycastVehicle(world: PhysicsWorld) {
-        val vehicleProps = VehicleProperties()
-        vehicleProps.groundMaterialFrictions = mapOf(groundMaterial to 1.5f)
-        vehicleProps.chassisDims = Vec3f(2f, 1f, 5f)
-        vehicleProps.wheelFrontZ = 1.25f
-        vehicleProps.wheelRearZ = -1.75f
-        vehicleProps.trackWidth = 2.45f
+        val vehicleProps = VehicleProperties().apply {
+            groundMaterialFrictions = mapOf(groundMaterial to 1.5f)
+            chassisDims = Vec3f(2f, 1f, 5f)
+            wheelFrontZ = 1.25f
+            wheelRearZ = -1.75f
+            trackWidth = 2.45f
+            maxBrakeTorqueFront = 2400f
+            maxBrakeTorqueRear = 1200f
+        }
 
         val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
 
@@ -392,13 +408,108 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
+    private fun Scene.makeTrack(world: PhysicsWorld) {
+        val track = Track().generate {
+            subdivs = 2
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-10f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-70f, 10f, -40f), Vec3f(-10f, 1f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-200f, 15f, 50f), Vec3f(0f, 0f, 80f)), 40)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 15f, 200f), Vec3f(100f, 0f, 0f)), 40)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(100f, 15f, 100f), Vec3f(0f, 0f, -40f)), 30)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(50f, 20f, 0f), Vec3f(0f, 0f, -40f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(50f, 20f, -120f), Vec3f(0f, 0f, -40f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-20f, 20f, -200f), Vec3f(-40f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-85f, 30f, -150f), Vec3f(0f, 0f, 25f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-20f, 30f, -100f), Vec3f(40f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(80f, 25f, -100f), Vec3f(20f, -2f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(120f, 15f, -60f), Vec3f(0f, -2f, 20f)), 15)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(80f, 10f, -20f), Vec3f(-20f, -2f, 0f)), 15)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-20f, 0f, 0f)), 15)
+        }
+        +track
+
+        makeStaticCollisionBody(track.trackMesh.geometry, world)
+
+        val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
+        val rand = Random(1337)
+        val gradient = ColorGradient(Color.MD_ORANGE_50, Color.MD_ORANGE_300)
+        val sz = 128
+        val colorData = createUint8Buffer(sz * sz * 4)
+        val roughnessData = createUint8Buffer(sz * sz)
+
+        var c = gradient.getColor(rand.randomF())
+        var len = rand.randomI(2, 5)
+        for (i in 0 until sz * sz) {
+            if (--len == 0) {
+                c = gradient.getColor(rand.randomF())
+                len = rand.randomI(2, 5)
+            }
+            colorData[i * 4 + 0] = (c.r * 255f).toInt().toByte()
+            colorData[i * 4 + 1] = (c.g * 255f).toInt().toByte()
+            colorData[i * 4 + 2] = (c.b * 255f).toInt().toByte()
+            colorData[i * 4 + 3] = (c.a * 255f).toInt().toByte()
+            roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toByte()
+        }
+
+        val albedo = Texture2d(texProps) {
+            TextureData2d(colorData, sz, sz, TexFormat.RGBA)
+        }
+        val roughness = Texture2d(texProps) {
+            TextureData2d(roughnessData, sz, sz, TexFormat.R)
+        }
+
+        onDispose += {
+            albedo.dispose()
+            roughness.dispose()
+        }
+
+        track.trackMesh.shader = pbrShader {
+            albedoSource = Albedo.TEXTURE_ALBEDO
+            shadowMaps += shadows
+            useImageBasedLighting(ibl)
+            useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+            useAlbedoMap(albedo)
+            useRoughnessMap(roughness)
+        }
+
+        val trigger = RigidStatic().apply {
+            isTrigger = true
+            setSimulationFilterData(obstacleSimFilterData)
+            setQueryFilterData(obstacleQryFilterData)
+            attachShape(Shape(BoxGeometry(Vec3f(1f, 1f, 1f)), groundMaterial))
+            position = Vec3f(0f, 0.6f, 10f)
+        }
+        +trigger.toPrettyMesh(Color.MD_GREEN)
+
+        world.registerTriggerListener(trigger, object : TriggerListener {
+            override fun onActorEntered(trigger: RigidActor, actor: RigidActor) {
+                println("actor enter")
+            }
+
+            override fun onActorExited(trigger: RigidActor, actor: RigidActor) {
+                println("actor exit")
+            }
+
+            override fun onShapeEntered(trigger: RigidActor, actor: RigidActor, shape: Shape) {
+                println("shape enter")
+            }
+
+            override fun onShapeExited(trigger: RigidActor, actor: RigidActor, shape: Shape) {
+                println("shape exit")
+            }
+        })
+
+        world.addActor(trigger)
+    }
+
     private fun makeStaticCollisionBody(mesh: IndexedVertexList, world: PhysicsWorld) {
-        val meshBody = RigidStatic().apply {
+        val body = RigidStatic().apply {
             setSimulationFilterData(obstacleSimFilterData)
             setQueryFilterData(obstacleQryFilterData)
             attachShape(Shape(TriangleMeshGeometry(mesh), groundMaterial))
         }
-        world.addActor(meshBody)
+        world.addActor(body)
     }
 
     private fun Scene.makeGround(world: PhysicsWorld) {

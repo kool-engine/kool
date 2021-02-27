@@ -8,8 +8,10 @@ actual class RigidStatic actual constructor(pose: Mat4f) : RigidActor() {
     private val pxRigidStatic: PxRigidStatic
 
     init {
-        pose.toPxTransform(pxPose)
-        pxRigidStatic = Physics.physics.createRigidStatic(pxPose)
-        pxRigidActor = pxRigidStatic
+        MemoryStack.stackPush().use { mem ->
+            val pxPose = pose.toPxTransform(mem.createPxTransform())
+            pxRigidStatic = Physics.physics.createRigidStatic(pxPose)
+            pxRigidActor = pxRigidStatic
+        }
     }
 }

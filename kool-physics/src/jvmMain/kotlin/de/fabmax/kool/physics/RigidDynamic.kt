@@ -3,7 +3,9 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
+import physx.extensions.PxRigidBodyExt
 import physx.physics.PxRigidDynamic
 
 actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : RigidActor() {
@@ -52,10 +54,16 @@ actual open class RigidDynamic actual constructor(mass: Float, pose: Mat4f) : Ri
         set(value) { pxRigidDynamic.angularDamping = value }
 
     init {
-        pose.toPxTransform(pxPose)
-        pxRigidDynamic = Physics.physics.createRigidDynamic(pxPose)
-        pxRigidActor = pxRigidDynamic
-        this.mass = mass
+        MemoryStack.stackPush().use { mem ->
+            val pxPose = pose.toPxTransform(mem.createPxTransform())
+            pxRigidDynamic = Physics.physics.createRigidDynamic(pxPose)
+            pxRigidActor = pxRigidDynamic
+            this.mass = mass
+        }
+    }
+
+    actual fun updateInertiaFromShapesAndMass() {
+        PxRigidBodyExt.setMassAndUpdateInertia(pxRigidDynamic, mass)
     }
 
     override fun attachShape(shape: Shape) {

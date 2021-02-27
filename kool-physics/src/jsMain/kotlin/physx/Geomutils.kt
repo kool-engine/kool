@@ -13,8 +13,8 @@ external interface PxBoxGeometry : PxGeometry
  * @param hz WebIDL type: float
  */
 fun PxBoxGeometry(hx: Float, hy: Float, hz: Float): PxBoxGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxBoxGeometry(hx, hy, hz)")
+    fun _PxBoxGeometry(_module: dynamic, hx: Float, hy: Float, hz: Float) = js("new _module.PxBoxGeometry(hx, hy, hz)")
+    return _PxBoxGeometry(PhysXJsLoader.physXJs, hx, hy, hz)
 }
 
 fun PxBoxGeometry.destroy() {
@@ -30,8 +30,8 @@ external interface PxCapsuleGeometry : PxGeometry
  * @param halfHeight WebIDL type: float
  */
 fun PxCapsuleGeometry(radius: Float, halfHeight: Float): PxCapsuleGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxCapsuleGeometry(radius, halfHeight)")
+    fun _PxCapsuleGeometry(_module: dynamic, radius: Float, halfHeight: Float) = js("new _module.PxCapsuleGeometry(radius, halfHeight)")
+    return _PxCapsuleGeometry(PhysXJsLoader.physXJs, radius, halfHeight)
 }
 
 fun PxCapsuleGeometry.destroy() {
@@ -50,9 +50,9 @@ external interface PxConvexMesh : PxBase {
     fun getVertices(): PxVec3
 
     /**
-     * @return WebIDL type: [PxU8Ptr] (Value)
+     * @return WebIDL type: [PxU8ConstPtr] (Value)
      */
-    fun getIndexBuffer(): PxU8Ptr
+    fun getIndexBuffer(): PxU8ConstPtr
 
     /**
      * @return WebIDL type: unsigned long
@@ -104,8 +104,8 @@ external interface PxConvexMeshGeometry : PxGeometry
  * @param mesh WebIDL type: [PxConvexMesh]
  */
 fun PxConvexMeshGeometry(mesh: PxConvexMesh): PxConvexMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexMeshGeometry(mesh)")
+    fun _PxConvexMeshGeometry(_module: dynamic, mesh: PxConvexMesh) = js("new _module.PxConvexMeshGeometry(mesh)")
+    return _PxConvexMeshGeometry(PhysXJsLoader.physXJs, mesh)
 }
 
 /**
@@ -113,8 +113,8 @@ fun PxConvexMeshGeometry(mesh: PxConvexMesh): PxConvexMeshGeometry {
  * @param scaling WebIDL type: [PxMeshScale] (Const, Ref)
  */
 fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale): PxConvexMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexMeshGeometry(mesh, scaling)")
+    fun _PxConvexMeshGeometry(_module: dynamic, mesh: PxConvexMesh, scaling: PxMeshScale) = js("new _module.PxConvexMeshGeometry(mesh, scaling)")
+    return _PxConvexMeshGeometry(PhysXJsLoader.physXJs, mesh, scaling)
 }
 
 /**
@@ -123,8 +123,8 @@ fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale): PxConvexMesh
  * @param flags   WebIDL type: [PxConvexMeshGeometryFlags] (Ref)
  */
 fun PxConvexMeshGeometry(mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConvexMeshGeometryFlags): PxConvexMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexMeshGeometry(mesh, scaling, flags)")
+    fun _PxConvexMeshGeometry(_module: dynamic, mesh: PxConvexMesh, scaling: PxMeshScale, flags: PxConvexMeshGeometryFlags) = js("new _module.PxConvexMeshGeometry(mesh, scaling, flags)")
+    return _PxConvexMeshGeometry(PhysXJsLoader.physXJs, mesh, scaling, flags)
 }
 
 fun PxConvexMeshGeometry.destroy() {
@@ -154,17 +154,350 @@ external interface PxConvexMeshGeometryFlags {
  * @param flags WebIDL type: octet
  */
 fun PxConvexMeshGeometryFlags(flags: Byte): PxConvexMeshGeometryFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxConvexMeshGeometryFlags(flags)")
+    fun _PxConvexMeshGeometryFlags(_module: dynamic, flags: Byte) = js("new _module.PxConvexMeshGeometryFlags(flags)")
+    return _PxConvexMeshGeometryFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxConvexMeshGeometryFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxGeometry
+external interface PxGeometry {
+    /**
+     * @return WebIDL type: [PxGeometryTypeEnum] (enum)
+     */
+    fun getType(): Int
+
+}
 
 fun PxGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxGeometry.type
+    get() = getType()
+
+external interface PxGeometryHolder {
+    /**
+     * @return WebIDL type: [PxGeometryTypeEnum] (enum)
+     */
+    fun getType(): Int
+
+    /**
+     * @return WebIDL type: [PxSphereGeometry] (Ref)
+     */
+    fun sphere(): PxSphereGeometry
+
+    /**
+     * @return WebIDL type: [PxPlaneGeometry] (Ref)
+     */
+    fun plane(): PxPlaneGeometry
+
+    /**
+     * @return WebIDL type: [PxCapsuleGeometry] (Ref)
+     */
+    fun capsule(): PxCapsuleGeometry
+
+    /**
+     * @return WebIDL type: [PxBoxGeometry] (Ref)
+     */
+    fun box(): PxBoxGeometry
+
+    /**
+     * @return WebIDL type: [PxConvexMeshGeometry] (Ref)
+     */
+    fun convexMesh(): PxConvexMeshGeometry
+
+    /**
+     * @return WebIDL type: [PxTriangleMeshGeometry] (Ref)
+     */
+    fun triangleMesh(): PxTriangleMeshGeometry
+
+    /**
+     * @return WebIDL type: [PxHeightFieldGeometry] (Ref)
+     */
+    fun heightField(): PxHeightFieldGeometry
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     */
+    fun storeAny(geometry: PxGeometry)
+
+}
+
+fun PxGeometryHolder(): PxGeometryHolder {
+    fun _PxGeometryHolder(_module: dynamic) = js("new _module.PxGeometryHolder()")
+    return _PxGeometryHolder(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+ */
+fun PxGeometryHolder(geometry: PxGeometry): PxGeometryHolder {
+    fun _PxGeometryHolder(_module: dynamic, geometry: PxGeometry) = js("new _module.PxGeometryHolder(geometry)")
+    return _PxGeometryHolder(PhysXJsLoader.physXJs, geometry)
+}
+
+fun PxGeometryHolder.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxGeometryHolder.type
+    get() = getType()
+
+external interface PxHeightField : PxBase {
+    /**
+     * @param destBuffer     WebIDL type: VoidPtr
+     * @param destBufferSize WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun saveCells(destBuffer: Any, destBufferSize: Int): Int
+
+    /**
+     * @param startCol     WebIDL type: long
+     * @param startRow     WebIDL type: long
+     * @param subfieldDesc WebIDL type: [PxHeightFieldDesc] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun modifySamples(startCol: Int, startRow: Int, subfieldDesc: PxHeightFieldDesc): Boolean
+
+    /**
+     * @param startCol     WebIDL type: long
+     * @param startRow     WebIDL type: long
+     * @param subfieldDesc WebIDL type: [PxHeightFieldDesc] (Const, Ref)
+     * @param shrinkBounds WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun modifySamples(startCol: Int, startRow: Int, subfieldDesc: PxHeightFieldDesc, shrinkBounds: Boolean): Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbRows(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbColumns(): Int
+
+    /**
+     * @return WebIDL type: [PxHeightFieldFormatEnum] (enum)
+     */
+    fun getFormat(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSampleStride(): Int
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getConvexEdgeThreshold(): Float
+
+    /**
+     * @return WebIDL type: [PxHeightFieldFlags] (Value)
+     */
+    fun getFlags(): PxHeightFieldFlags
+
+    /**
+     * @param x WebIDL type: float
+     * @param z WebIDL type: float
+     * @return WebIDL type: float
+     */
+    fun getHeight(x: Float, z: Float): Float
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getReferenceCount(): Int
+
+    fun acquireReference()
+
+    /**
+     * @param triangleIndex WebIDL type: unsigned long
+     * @return WebIDL type: unsigned short
+     */
+    fun getTriangleMaterialIndex(triangleIndex: Int): Short
+
+    /**
+     * @param triangleIndex WebIDL type: unsigned long
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getTriangleNormal(triangleIndex: Int): PxVec3
+
+    /**
+     * @param row    WebIDL type: unsigned long
+     * @param column WebIDL type: unsigned long
+     * @return WebIDL type: [PxHeightFieldSample] (Const, Ref)
+     */
+    fun getSample(row: Int, column: Int): PxHeightFieldSample
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getTimestamp(): Int
+
+}
+
+val PxHeightField.nbRows
+    get() = getNbRows()
+val PxHeightField.nbColumns
+    get() = getNbColumns()
+val PxHeightField.format
+    get() = getFormat()
+val PxHeightField.sampleStride
+    get() = getSampleStride()
+val PxHeightField.convexEdgeThreshold
+    get() = getConvexEdgeThreshold()
+val PxHeightField.flags
+    get() = getFlags()
+val PxHeightField.referenceCount
+    get() = getReferenceCount()
+val PxHeightField.timestamp
+    get() = getTimestamp()
+
+external interface PxHeightFieldDesc {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbRows: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbColumns: Int
+    /**
+     * WebIDL type: [PxHeightFieldFormatEnum] (enum)
+     */
+    var format: Int
+    /**
+     * WebIDL type: [PxStridedData] (Value)
+     */
+    var samples: PxStridedData
+    /**
+     * WebIDL type: float
+     */
+    var convexEdgeThreshold: Float
+    /**
+     * WebIDL type: [PxHeightFieldFlags] (Value)
+     */
+    var flags: PxHeightFieldFlags
+
+    fun setToDefault()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxHeightFieldDesc(): PxHeightFieldDesc {
+    fun _PxHeightFieldDesc(_module: dynamic) = js("new _module.PxHeightFieldDesc()")
+    return _PxHeightFieldDesc(PhysXJsLoader.physXJs)
+}
+
+fun PxHeightFieldDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxHeightFieldFlags {
+    /**
+     * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
+fun PxHeightFieldFlags(flags: Short): PxHeightFieldFlags {
+    fun _PxHeightFieldFlags(_module: dynamic, flags: Short) = js("new _module.PxHeightFieldFlags(flags)")
+    return _PxHeightFieldFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxHeightFieldFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxHeightFieldGeometry : PxGeometry {
+    /**
+     * WebIDL type: [PxHeightField]
+     */
+    var heightField: PxHeightField
+    /**
+     * WebIDL type: float
+     */
+    var heightScale: Float
+    /**
+     * WebIDL type: float
+     */
+    var rowScale: Float
+    /**
+     * WebIDL type: float
+     */
+    var columnScale: Float
+    /**
+     * WebIDL type: [PxMeshGeometryFlags] (Value)
+     */
+    var heightFieldFlags: PxMeshGeometryFlags
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxHeightFieldGeometry(): PxHeightFieldGeometry {
+    fun _PxHeightFieldGeometry(_module: dynamic) = js("new _module.PxHeightFieldGeometry()")
+    return _PxHeightFieldGeometry(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param hf          WebIDL type: [PxHeightField]
+ * @param flags       WebIDL type: [PxMeshGeometryFlags] (Ref)
+ * @param heightScale WebIDL type: float
+ * @param rowScale    WebIDL type: float
+ * @param columnScale WebIDL type: float
+ */
+fun PxHeightFieldGeometry(hf: PxHeightField, flags: PxMeshGeometryFlags, heightScale: Float, rowScale: Float, columnScale: Float): PxHeightFieldGeometry {
+    fun _PxHeightFieldGeometry(_module: dynamic, hf: PxHeightField, flags: PxMeshGeometryFlags, heightScale: Float, rowScale: Float, columnScale: Float) = js("new _module.PxHeightFieldGeometry(hf, flags, heightScale, rowScale, columnScale)")
+    return _PxHeightFieldGeometry(PhysXJsLoader.physXJs, hf, flags, heightScale, rowScale, columnScale)
+}
+
+fun PxHeightFieldGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxHeightFieldSample {
+    /**
+     * WebIDL type: short
+     */
+    var height: Short
+    /**
+     * WebIDL type: octet
+     */
+    var materialIndex0: Byte
+    /**
+     * WebIDL type: octet
+     */
+    var materialIndex1: Byte
+}
+
+fun PxHeightFieldSample.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -184,8 +517,8 @@ external interface PxHullPolygon {
 }
 
 fun PxHullPolygon(): PxHullPolygon {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxHullPolygon()")
+    fun _PxHullPolygon(_module: dynamic) = js("new _module.PxHullPolygon()")
+    return _PxHullPolygon(PhysXJsLoader.physXJs)
 }
 
 fun PxHullPolygon.destroy() {
@@ -215,8 +548,8 @@ external interface PxMeshFlags {
  * @param flags WebIDL type: octet
  */
 fun PxMeshFlags(flags: Byte): PxMeshFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshFlags(flags)")
+    fun _PxMeshFlags(_module: dynamic, flags: Byte) = js("new _module.PxMeshFlags(flags)")
+    return _PxMeshFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxMeshFlags.destroy() {
@@ -246,8 +579,8 @@ external interface PxMeshGeometryFlags {
  * @param flags WebIDL type: octet
  */
 fun PxMeshGeometryFlags(flags: Byte): PxMeshGeometryFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshGeometryFlags(flags)")
+    fun _PxMeshGeometryFlags(_module: dynamic, flags: Byte) = js("new _module.PxMeshGeometryFlags(flags)")
+    return _PxMeshGeometryFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxMeshGeometryFlags.destroy() {
@@ -257,16 +590,16 @@ fun PxMeshGeometryFlags.destroy() {
 external interface PxMeshScale
 
 fun PxMeshScale(): PxMeshScale {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshScale()")
+    fun _PxMeshScale(_module: dynamic) = js("new _module.PxMeshScale()")
+    return _PxMeshScale(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param r WebIDL type: float
  */
 fun PxMeshScale(r: Float): PxMeshScale {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshScale(r)")
+    fun _PxMeshScale(_module: dynamic, r: Float) = js("new _module.PxMeshScale(r)")
+    return _PxMeshScale(PhysXJsLoader.physXJs, r)
 }
 
 /**
@@ -274,8 +607,8 @@ fun PxMeshScale(r: Float): PxMeshScale {
  * @param r WebIDL type: [PxQuat] (Const, Ref)
  */
 fun PxMeshScale(s: PxVec3, r: PxQuat): PxMeshScale {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxMeshScale(s, r)")
+    fun _PxMeshScale(_module: dynamic, s: PxVec3, r: PxQuat) = js("new _module.PxMeshScale(s, r)")
+    return _PxMeshScale(PhysXJsLoader.physXJs, s, r)
 }
 
 fun PxMeshScale.destroy() {
@@ -285,8 +618,8 @@ fun PxMeshScale.destroy() {
 external interface PxPlaneGeometry : PxGeometry
 
 fun PxPlaneGeometry(): PxPlaneGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxPlaneGeometry()")
+    fun _PxPlaneGeometry(_module: dynamic) = js("new _module.PxPlaneGeometry()")
+    return _PxPlaneGeometry(PhysXJsLoader.physXJs)
 }
 
 fun PxPlaneGeometry.destroy() {
@@ -317,8 +650,8 @@ external interface PxSimpleTriangleMesh {
 }
 
 fun PxSimpleTriangleMesh(): PxSimpleTriangleMesh {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxSimpleTriangleMesh()")
+    fun _PxSimpleTriangleMesh(_module: dynamic) = js("new _module.PxSimpleTriangleMesh()")
+    return _PxSimpleTriangleMesh(PhysXJsLoader.physXJs)
 }
 
 fun PxSimpleTriangleMesh.destroy() {
@@ -331,8 +664,8 @@ external interface PxSphereGeometry : PxGeometry
  * @param ir WebIDL type: float
  */
 fun PxSphereGeometry(ir: Float): PxSphereGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxSphereGeometry(ir)")
+    fun _PxSphereGeometry(_module: dynamic, ir: Float) = js("new _module.PxSphereGeometry(ir)")
+    return _PxSphereGeometry(PhysXJsLoader.physXJs, ir)
 }
 
 fun PxSphereGeometry.destroy() {
@@ -376,9 +709,9 @@ external interface PxTriangleMesh : PxBase {
     fun getTriangleMeshFlags(): PxTriangleMeshFlags
 
     /**
-     * @return WebIDL type: [PxU32Ptr] (Const, Value)
+     * @return WebIDL type: [PxU32ConstPtr] (Const, Value)
      */
-    fun getTrianglesRemap(): PxU32Ptr
+    fun getTrianglesRemap(): PxU32ConstPtr
 
     /**
      * @param triangleIndex WebIDL type: unsigned long
@@ -442,8 +775,8 @@ external interface PxTriangleMeshFlags {
  * @param flags WebIDL type: octet
  */
 fun PxTriangleMeshFlags(flags: Byte): PxTriangleMeshFlags {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTriangleMeshFlags(flags)")
+    fun _PxTriangleMeshFlags(_module: dynamic, flags: Byte) = js("new _module.PxTriangleMeshFlags(flags)")
+    return _PxTriangleMeshFlags(PhysXJsLoader.physXJs, flags)
 }
 
 fun PxTriangleMeshFlags.destroy() {
@@ -462,8 +795,8 @@ external interface PxTriangleMeshGeometry : PxGeometry {
  * @param mesh WebIDL type: [PxTriangleMesh]
  */
 fun PxTriangleMeshGeometry(mesh: PxTriangleMesh): PxTriangleMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTriangleMeshGeometry(mesh)")
+    fun _PxTriangleMeshGeometry(_module: dynamic, mesh: PxTriangleMesh) = js("new _module.PxTriangleMeshGeometry(mesh)")
+    return _PxTriangleMeshGeometry(PhysXJsLoader.physXJs, mesh)
 }
 
 /**
@@ -471,8 +804,8 @@ fun PxTriangleMeshGeometry(mesh: PxTriangleMesh): PxTriangleMeshGeometry {
  * @param scaling WebIDL type: [PxMeshScale] (Const, Ref)
  */
 fun PxTriangleMeshGeometry(mesh: PxTriangleMesh, scaling: PxMeshScale): PxTriangleMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTriangleMeshGeometry(mesh, scaling)")
+    fun _PxTriangleMeshGeometry(_module: dynamic, mesh: PxTriangleMesh, scaling: PxMeshScale) = js("new _module.PxTriangleMeshGeometry(mesh, scaling)")
+    return _PxTriangleMeshGeometry(PhysXJsLoader.physXJs, mesh, scaling)
 }
 
 /**
@@ -481,8 +814,8 @@ fun PxTriangleMeshGeometry(mesh: PxTriangleMesh, scaling: PxMeshScale): PxTriang
  * @param flags   WebIDL type: [PxMeshGeometryFlags] (Ref)
  */
 fun PxTriangleMeshGeometry(mesh: PxTriangleMesh, scaling: PxMeshScale, flags: PxMeshGeometryFlags): PxTriangleMeshGeometry {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.PxTriangleMeshGeometry(mesh, scaling, flags)")
+    fun _PxTriangleMeshGeometry(_module: dynamic, mesh: PxTriangleMesh, scaling: PxMeshScale, flags: PxMeshGeometryFlags) = js("new _module.PxTriangleMeshGeometry(mesh, scaling, flags)")
+    return _PxTriangleMeshGeometry(PhysXJsLoader.physXJs, mesh, scaling, flags)
 }
 
 fun PxTriangleMeshGeometry.destroy() {
@@ -491,6 +824,24 @@ fun PxTriangleMeshGeometry.destroy() {
 
 object PxConvexMeshGeometryFlagEnum {
     val eTIGHT_BOUNDS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS()
+}
+
+object PxGeometryTypeEnum {
+    val eSPHERE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eSPHERE()
+    val ePLANE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_ePLANE()
+    val eCAPSULE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCAPSULE()
+    val eBOX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eBOX()
+    val eCONVEXMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCONVEXMESH()
+    val eTRIANGLEMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eTRIANGLEMESH()
+    val eHEIGHTFIELD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eHEIGHTFIELD()
+}
+
+object PxHeightFieldFlagEnum {
+    val eNO_BOUNDARY_EDGES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFlagEnum_eNO_BOUNDARY_EDGES()
+}
+
+object PxHeightFieldFormatEnum {
+    val eS16_TM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFormatEnum_eS16_TM()
 }
 
 object PxMeshFlagEnum {

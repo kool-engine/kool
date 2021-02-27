@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.vehicle
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.Releasable
 import physx.physics.PxMaterial
-import physx.support.Vector_PxMaterial
+import physx.support.Vector_PxMaterialConst
 import physx.support.Vector_PxVehicleDrivableSurfaceType
 import physx.vehicle.PxVehicleDrivableSurfaceToTireFrictionPairs
 import physx.vehicle.PxVehicleDrivableSurfaceType
@@ -19,7 +19,7 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
         Physics.checkIsLoaded()
 
         val nbSurfaceTypes = surfaceTypes.size
-        val materialVec = Vector_PxMaterial(materials.size)
+        val materialVec = Vector_PxMaterialConst(materials.size)
         materials.forEach {
             materialVec.push_back(it)
         }

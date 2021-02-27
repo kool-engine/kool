@@ -17,6 +17,12 @@ fun PxMaterialPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxMaterialConstPtr
+
+fun PxMaterialConstPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxVehicleWheelsPtr
 
 fun PxVehicleWheelsPtr.destroy() {
@@ -29,45 +35,45 @@ fun PxRealPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU8Ptr
+external interface PxU8ConstPtr
 
-fun PxU8Ptr.destroy() {
+fun PxU8ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU16Ptr
+external interface PxU16ConstPtr
 
-fun PxU16Ptr.destroy() {
+fun PxU16ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU32Ptr
+external interface PxU32ConstPtr
 
-fun PxU32Ptr.destroy() {
+fun PxU32ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
 external interface TypeHelpers {
     /**
-     * @param base  WebIDL type: [PxU8Ptr] (Ref)
+     * @param base  WebIDL type: [PxU8ConstPtr] (Ref)
      * @param index WebIDL type: long
      * @return WebIDL type: octet
      */
-    fun getU8At(base: PxU8Ptr, index: Int): Byte
+    fun getU8At(base: PxU8ConstPtr, index: Int): Byte
 
     /**
-     * @param base  WebIDL type: [PxU16Ptr] (Ref)
+     * @param base  WebIDL type: [PxU16ConstPtr] (Ref)
      * @param index WebIDL type: long
      * @return WebIDL type: unsigned short
      */
-    fun getU16At(base: PxU16Ptr, index: Int): Short
+    fun getU16At(base: PxU16ConstPtr, index: Int): Short
 
     /**
-     * @param base  WebIDL type: [PxU32Ptr] (Ref)
+     * @param base  WebIDL type: [PxU32ConstPtr] (Ref)
      * @param index WebIDL type: long
      * @return WebIDL type: unsigned long
      */
-    fun getU32At(base: PxU32Ptr, index: Int): Int
+    fun getU32At(base: PxU32ConstPtr, index: Int): Int
 
     /**
      * @param base  WebIDL type: [PxRealPtr] (Ref)
@@ -99,21 +105,21 @@ external interface TypeHelpers {
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU8Ptr] (Value)
+     * @return WebIDL type: [PxU8ConstPtr] (Value)
      */
-    fun voidToU8Ptr(voidPtr: Any): PxU8Ptr
+    fun voidToU8ConstPtr(voidPtr: Any): PxU8ConstPtr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU16Ptr] (Value)
+     * @return WebIDL type: [PxU16ConstPtr] (Value)
      */
-    fun voidToU16Ptr(voidPtr: Any): PxU16Ptr
+    fun voidToU16ConstPtr(voidPtr: Any): PxU16ConstPtr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU32Ptr] (Value)
+     * @return WebIDL type: [PxU32ConstPtr] (Value)
      */
-    fun voidToU32Ptr(voidPtr: Any): PxU32Ptr
+    fun voidToU32ConstPtr(voidPtr: Any): PxU32ConstPtr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
@@ -121,13 +127,19 @@ external interface TypeHelpers {
      */
     fun voidToRealPtr(voidPtr: Any): PxRealPtr
 
+    /**
+     * @param voidPtr WebIDL type: VoidPtr
+     * @return WebIDL type: any
+     */
+    fun voidToAny(voidPtr: Any): Int
+
 }
 
 fun TypeHelpers.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface Vector_PxMaterial {
+external interface Vector_PxMaterialConst {
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxMaterial] (Const)
@@ -135,9 +147,9 @@ external interface Vector_PxMaterial {
     fun at(index: Int): PxMaterial
 
     /**
-     * @return WebIDL type: [PxMaterialPtr]
+     * @return WebIDL type: [PxMaterialConstPtr]
      */
-    fun data(): PxMaterialPtr
+    fun data(): PxMaterialConstPtr
 
     /**
      * @return WebIDL type: unsigned long
@@ -145,26 +157,67 @@ external interface Vector_PxMaterial {
     fun size(): Int
 
     /**
-     * @param value WebIDL type: [PxMaterial]
+     * @param value WebIDL type: [PxMaterial] (Const)
      */
     fun push_back(value: PxMaterial)
 
 }
 
-fun Vector_PxMaterial(): Vector_PxMaterial {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxMaterial()")
+fun Vector_PxMaterialConst(): Vector_PxMaterialConst {
+    fun _Vector_PxMaterialConst(_module: dynamic) = js("new _module.Vector_PxMaterialConst()")
+    return _Vector_PxMaterialConst(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
-fun Vector_PxMaterial(size: Int): Vector_PxMaterial {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxMaterial(size)")
+fun Vector_PxMaterialConst(size: Int): Vector_PxMaterialConst {
+    fun _Vector_PxMaterialConst(_module: dynamic, size: Int) = js("new _module.Vector_PxMaterialConst(size)")
+    return _Vector_PxMaterialConst(PhysXJsLoader.physXJs, size)
 }
 
-fun Vector_PxMaterial.destroy() {
+fun Vector_PxMaterialConst.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface Vector_PxHeightFieldSample {
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxHeightFieldSample] (Ref)
+     */
+    fun at(index: Int): PxHeightFieldSample
+
+    /**
+     * @return WebIDL type: [PxHeightFieldSample]
+     */
+    fun data(): PxHeightFieldSample
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxHeightFieldSample] (Ref)
+     */
+    fun push_back(value: PxHeightFieldSample)
+
+}
+
+fun Vector_PxHeightFieldSample(): Vector_PxHeightFieldSample {
+    fun _Vector_PxHeightFieldSample(_module: dynamic) = js("new _module.Vector_PxHeightFieldSample()")
+    return _Vector_PxHeightFieldSample(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun Vector_PxHeightFieldSample(size: Int): Vector_PxHeightFieldSample {
+    fun _Vector_PxHeightFieldSample(_module: dynamic, size: Int) = js("new _module.Vector_PxHeightFieldSample(size)")
+    return _Vector_PxHeightFieldSample(PhysXJsLoader.physXJs, size)
+}
+
+fun Vector_PxHeightFieldSample.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -193,16 +246,16 @@ external interface Vector_PxReal {
 }
 
 fun Vector_PxReal(): Vector_PxReal {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxReal()")
+    fun _Vector_PxReal(_module: dynamic) = js("new _module.Vector_PxReal()")
+    return _Vector_PxReal(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxReal(size: Int): Vector_PxReal {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxReal(size)")
+    fun _Vector_PxReal(_module: dynamic, size: Int) = js("new _module.Vector_PxReal(size)")
+    return _Vector_PxReal(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxReal.destroy() {
@@ -234,16 +287,16 @@ external interface Vector_PxU16 {
 }
 
 fun Vector_PxU16(): Vector_PxU16 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxU16()")
+    fun _Vector_PxU16(_module: dynamic) = js("new _module.Vector_PxU16()")
+    return _Vector_PxU16(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxU16(size: Int): Vector_PxU16 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxU16(size)")
+    fun _Vector_PxU16(_module: dynamic, size: Int) = js("new _module.Vector_PxU16(size)")
+    return _Vector_PxU16(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxU16.destroy() {
@@ -275,16 +328,16 @@ external interface Vector_PxU32 {
 }
 
 fun Vector_PxU32(): Vector_PxU32 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxU32()")
+    fun _Vector_PxU32(_module: dynamic) = js("new _module.Vector_PxU32()")
+    return _Vector_PxU32(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxU32(size: Int): Vector_PxU32 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxU32(size)")
+    fun _Vector_PxU32(_module: dynamic, size: Int) = js("new _module.Vector_PxU32(size)")
+    return _Vector_PxU32(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxU32.destroy() {
@@ -316,16 +369,16 @@ external interface Vector_PxVec3 {
 }
 
 fun Vector_PxVec3(): Vector_PxVec3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVec3()")
+    fun _Vector_PxVec3(_module: dynamic) = js("new _module.Vector_PxVec3()")
+    return _Vector_PxVec3(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxVec3(size: Int): Vector_PxVec3 {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVec3(size)")
+    fun _Vector_PxVec3(_module: dynamic, size: Int) = js("new _module.Vector_PxVec3(size)")
+    return _Vector_PxVec3(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxVec3.destroy() {
@@ -357,16 +410,16 @@ external interface Vector_PxRaycastQueryResult {
 }
 
 fun Vector_PxRaycastQueryResult(): Vector_PxRaycastQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxRaycastQueryResult()")
+    fun _Vector_PxRaycastQueryResult(_module: dynamic) = js("new _module.Vector_PxRaycastQueryResult()")
+    return _Vector_PxRaycastQueryResult(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxRaycastQueryResult(size: Int): Vector_PxRaycastQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxRaycastQueryResult(size)")
+    fun _Vector_PxRaycastQueryResult(_module: dynamic, size: Int) = js("new _module.Vector_PxRaycastQueryResult(size)")
+    return _Vector_PxRaycastQueryResult(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxRaycastQueryResult.destroy() {
@@ -398,16 +451,16 @@ external interface Vector_PxSweepQueryResult {
 }
 
 fun Vector_PxSweepQueryResult(): Vector_PxSweepQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxSweepQueryResult()")
+    fun _Vector_PxSweepQueryResult(_module: dynamic) = js("new _module.Vector_PxSweepQueryResult()")
+    return _Vector_PxSweepQueryResult(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxSweepQueryResult(size: Int): Vector_PxSweepQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxSweepQueryResult(size)")
+    fun _Vector_PxSweepQueryResult(_module: dynamic, size: Int) = js("new _module.Vector_PxSweepQueryResult(size)")
+    return _Vector_PxSweepQueryResult(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxSweepQueryResult.destroy() {
@@ -439,16 +492,16 @@ external interface Vector_PxRaycastHit {
 }
 
 fun Vector_PxRaycastHit(): Vector_PxRaycastHit {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxRaycastHit()")
+    fun _Vector_PxRaycastHit(_module: dynamic) = js("new _module.Vector_PxRaycastHit()")
+    return _Vector_PxRaycastHit(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxRaycastHit(size: Int): Vector_PxRaycastHit {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxRaycastHit(size)")
+    fun _Vector_PxRaycastHit(_module: dynamic, size: Int) = js("new _module.Vector_PxRaycastHit(size)")
+    return _Vector_PxRaycastHit(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxRaycastHit.destroy() {
@@ -480,16 +533,16 @@ external interface Vector_PxSweepHit {
 }
 
 fun Vector_PxSweepHit(): Vector_PxSweepHit {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxSweepHit()")
+    fun _Vector_PxSweepHit(_module: dynamic) = js("new _module.Vector_PxSweepHit()")
+    return _Vector_PxSweepHit(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxSweepHit(size: Int): Vector_PxSweepHit {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxSweepHit(size)")
+    fun _Vector_PxSweepHit(_module: dynamic, size: Int) = js("new _module.Vector_PxSweepHit(size)")
+    return _Vector_PxSweepHit(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxSweepHit.destroy() {
@@ -521,16 +574,16 @@ external interface Vector_PxVehicleDrivableSurfaceType {
 }
 
 fun Vector_PxVehicleDrivableSurfaceType(): Vector_PxVehicleDrivableSurfaceType {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVehicleDrivableSurfaceType()")
+    fun _Vector_PxVehicleDrivableSurfaceType(_module: dynamic) = js("new _module.Vector_PxVehicleDrivableSurfaceType()")
+    return _Vector_PxVehicleDrivableSurfaceType(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxVehicleDrivableSurfaceType(size: Int): Vector_PxVehicleDrivableSurfaceType {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVehicleDrivableSurfaceType(size)")
+    fun _Vector_PxVehicleDrivableSurfaceType(_module: dynamic, size: Int) = js("new _module.Vector_PxVehicleDrivableSurfaceType(size)")
+    return _Vector_PxVehicleDrivableSurfaceType(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxVehicleDrivableSurfaceType.destroy() {
@@ -562,16 +615,16 @@ external interface Vector_PxWheelQueryResult {
 }
 
 fun Vector_PxWheelQueryResult(): Vector_PxWheelQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxWheelQueryResult()")
+    fun _Vector_PxWheelQueryResult(_module: dynamic) = js("new _module.Vector_PxWheelQueryResult()")
+    return _Vector_PxWheelQueryResult(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxWheelQueryResult(size: Int): Vector_PxWheelQueryResult {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxWheelQueryResult(size)")
+    fun _Vector_PxWheelQueryResult(_module: dynamic, size: Int) = js("new _module.Vector_PxWheelQueryResult(size)")
+    return _Vector_PxWheelQueryResult(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxWheelQueryResult.destroy() {
@@ -603,16 +656,16 @@ external interface Vector_PxVehicleWheels {
 }
 
 fun Vector_PxVehicleWheels(): Vector_PxVehicleWheels {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVehicleWheels()")
+    fun _Vector_PxVehicleWheels(_module: dynamic) = js("new _module.Vector_PxVehicleWheels()")
+    return _Vector_PxVehicleWheels(PhysXJsLoader.physXJs)
 }
 
 /**
  * @param size WebIDL type: unsigned long
  */
 fun Vector_PxVehicleWheels(size: Int): Vector_PxVehicleWheels {
-    val module = PhysXJsLoader.physXJs
-    return js("new module.Vector_PxVehicleWheels(size)")
+    fun _Vector_PxVehicleWheels(_module: dynamic, size: Int) = js("new _module.Vector_PxVehicleWheels(size)")
+    return _Vector_PxVehicleWheels(PhysXJsLoader.physXJs, size)
 }
 
 fun Vector_PxVehicleWheels.destroy() {

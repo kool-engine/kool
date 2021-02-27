@@ -164,6 +164,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 // after shape is attached, geometry can be released
                 s.geometry.release()
             }
+            body.updateInertiaFromShapesAndMass()
             body.position = Vec3f(x, y, z)
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
             physicsWorld?.addActor(body)

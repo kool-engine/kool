@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
@@ -101,7 +102,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
     }
 
     private fun makeMap(fontProps: FontProps, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
-        val padding = 3
+        val padding = (if (fontProps.style == Font.ITALIC) 3 else 6) * (fontProps.sizePts / 30f).clamp(1f, 3f).roundToInt()
         // line height above baseline
         val hab = (fontProps.sizePts * 1.1f).roundToInt()
         // line height below baseline

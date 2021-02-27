@@ -1,15 +1,17 @@
 package de.fabmax.kool.math
 
+import kotlin.math.PI
+import kotlin.math.acos
+
 open class BSpline<T>(var degree: Int, private val factory: () -> T, private val copy: (src: T, dst: T) -> Unit,
                  private val mix: (w0: Float, p0: T, w1: Float, p1: T, result: T) -> Unit) {
 
     val ctrlPoints = mutableListOf<T>()
 
-    private val knots = mutableListOf<Float>()
     private val d = mutableListOf<T>()
 
     fun addInterpolationEndpoints() {
-        for (i in 0 until degree) {
+        for (i in 0 until (degree - 1)) {
             ctrlPoints.add(0, ctrlPoints.first())
             ctrlPoints += ctrlPoints.last()
         }
@@ -21,12 +23,28 @@ open class BSpline<T>(var degree: Int, private val factory: () -> T, private val
             x >= 1f -> copy(ctrlPoints.last(), result)
             else -> {
                 checkTemps()
-                val xx = degree + x * (ctrlPoints.size - degree*2 + 1)
+
+                // fixme: use better b-spline algorithm
+                //  this spline implementation does not provide equidistant samples for equidistant input values
+                //  so we use this gross linearization function to improve this behavior a bit
+                val xLin = linearize(x, degree - 2)
+
+                val xx = degree + xLin * (ctrlPoints.size - degree)
                 deBoor(xx.toInt(), xx, result)
             }
         }
         return result
     }
+
+    private fun linearize(x: Float, deg: Int): Float {
+        var xx = x
+        for (i in 0 until deg) {
+            xx = linearize(xx)
+        }
+        return xx
+    }
+
+    private fun linearize(x: Float) = 1f - acos((x - 0.5f) * 2f) / PI.toFloat()
 
     private fun deBoor(k: Int, t: Float, result: T) {
         val kk = k.clamp(degree, ctrlPoints.size - 1)
@@ -36,7 +54,7 @@ open class BSpline<T>(var degree: Int, private val factory: () -> T, private val
         }
         for (r in 1..degree) {
             for (j in degree downTo r) {
-                val alpha = (t - knots[j + kk - degree]) / (knots[j + 1 + kk - r] - knots[j + kk - degree])
+                val alpha = (t - (j + kk - degree).toFloat()) / ((j + 1 + kk - r).toFloat() - (j + kk - degree).toFloat())
                 mix(1f - alpha, d[j-1], alpha, d[j], d[j])
             }
         }
@@ -44,12 +62,6 @@ open class BSpline<T>(var degree: Int, private val factory: () -> T, private val
     }
 
     private fun checkTemps() {
-        if (knots.size != ctrlPoints.size + degree) {
-            knots.clear()
-            for (i in 0 until ctrlPoints.size + degree) {
-                knots += i.toFloat()
-            }
-        }
         if (d.size != degree+1) {
             d.clear()
             for (i in 0..degree) {
@@ -71,3 +83,48 @@ class BSplineVec3f(degree: Int) : BSpline<MutableVec3f>(degree, { MutableVec3f()
             result.y = p0.y * w0 + p1.y * w1
             result.z = p0.z * w0 + p1.z * w1
         })
+
+class SimpleSpline3f {
+    val ctrlPoints = mutableListOf<CtrlPoint>()
+
+    private val splinePieces = mutableListOf<BSplineVec3f>()
+
+    fun evaluate(x: Float, result: MutableVec3f): MutableVec3f {
+        checkSplinePieces()
+        val splineI = x.toInt().clamp(0, splinePieces.lastIndex)
+        val splineF = (x - splineI).clamp(0f, 1f)
+        return splinePieces[splineI].evaluate(splineF, result)
+    }
+
+    private fun checkSplinePieces() {
+        if (splinePieces.size != ctrlPoints.size - 1) {
+            refresh()
+        }
+    }
+
+    fun refresh() {
+        splinePieces.clear()
+        for (i in 1 until ctrlPoints.size) {
+            val ctrl0 = ctrlPoints[i-1]
+            val ctrl1 = ctrlPoints[i]
+            splinePieces += BSplineVec3f(3).apply {
+                ctrlPoints += ctrl0
+                ctrlPoints += MutableVec3f(ctrl0).add(ctrl0.direction)
+                ctrlPoints += MutableVec3f(ctrl1).subtract(ctrl1.direction)
+                ctrlPoints += ctrl1
+                addInterpolationEndpoints()
+            }
+        }
+    }
+
+    class CtrlPoint(x: Float, y: Float, z: Float) : MutableVec3f(x, y, z) {
+        val direction = MutableVec3f(1f, 0f, 0f)
+
+        constructor() : this(0f, 0f, 0f)
+        constructor(pt: Vec3f) : this(pt.x, pt.y, pt.z)
+        constructor(pt: Vec3f, direction: Vec3f) : this(pt.x, pt.y, pt.z) {
+            this.direction.set(direction)
+        }
+    }
+}
+

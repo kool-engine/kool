@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.logW
 import kotlin.math.min
 
 expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
@@ -33,6 +34,8 @@ abstract class CommonPhysicsWorld : Releasable {
     val actors: List<RigidActor>
         get() = mutActors
 
+    protected val triggerListeners = mutableMapOf<RigidActor, TriggerListenerContext>()
+
     private var registeredAtScene: Scene? = null
     private val onRenderSceneHook: Scene.(KoolContext) -> Unit = { ctx ->
         if (isStepInProgress) {
@@ -55,6 +58,18 @@ abstract class CommonPhysicsWorld : Releasable {
 
     open fun unregisterHandlers() {
         registeredAtScene?.let { it.onRenderScene -= onRenderSceneHook }
+    }
+
+    fun registerTriggerListener(trigger: RigidActor, listener: TriggerListener) {
+        if (!trigger.isTrigger) {
+            logW { "Given trigger actor is not a trigger (isTrigger == false)" }
+        }
+        triggerListeners.getOrPut(trigger) { TriggerListenerContext() }.listeners += listener
+    }
+
+    fun unregisterTriggerListener(listener: TriggerListener) {
+        triggerListeners.values.forEach { it.listeners -= listener }
+        triggerListeners.keys.removeAll { k -> triggerListeners[k]?.listeners?.isEmpty() ?: false }
     }
 
     override fun release() {
@@ -81,6 +96,7 @@ abstract class CommonPhysicsWorld : Releasable {
                 removeActors[i].release()
             }
         }
+        triggerListeners.clear()
     }
 
     fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5): Float {
@@ -147,5 +163,10 @@ abstract class CommonPhysicsWorld : Releasable {
         groundPlane.setRotation(0f, 0f, 90f)
         addActor(groundPlane)
         return groundPlane
+    }
+
+    protected class TriggerListenerContext {
+        val listeners = mutableListOf<TriggerListener>()
+        val actorEnterCounts = mutableMapOf<RigidActor, Int>()
     }
 }

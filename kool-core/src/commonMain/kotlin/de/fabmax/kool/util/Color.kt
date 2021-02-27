@@ -15,6 +15,9 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     open val b get() = this[2]
     open val a get() = this[3]
 
+    val brightness: Float
+        get() = 0.299f * r + 0.587f * g + 0.114f * b
+
     fun mix(other: Color, weight: Float): MutableColor {
         return mix(other, weight, MutableColor())
     }

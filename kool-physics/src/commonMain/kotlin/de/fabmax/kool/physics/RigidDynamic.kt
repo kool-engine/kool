@@ -17,4 +17,6 @@ expect open class RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f()) : RigidA
     var linearDamping: Float
     var angularDamping: Float
 
+    fun updateInertiaFromShapesAndMass()
+
 }
