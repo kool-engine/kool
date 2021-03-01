@@ -11,7 +11,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.cos
 
-open class TrackUi(private val component: UiComponent) : ComponentUi {
+open class BarUi(private val component: UiComponent) : ComponentUi {
     protected val mesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) { }
     protected val meshBuilder = MeshBuilder(mesh.geometry)
 

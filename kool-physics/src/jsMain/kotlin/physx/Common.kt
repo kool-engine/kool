@@ -238,6 +238,8 @@ fun PxCpuDispatcher.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxCudaContextManager
+
 external interface PxDefaultErrorCallback : PxErrorCallback
 
 fun PxDefaultErrorCallback(): PxDefaultErrorCallback {

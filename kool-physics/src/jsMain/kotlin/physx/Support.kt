@@ -35,15 +35,33 @@ fun PxRealPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxU8Ptr
+
+fun PxU8Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxU8ConstPtr
 
 fun PxU8ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxU16Ptr
+
+fun PxU16Ptr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxU16ConstPtr
 
 fun PxU16ConstPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxU32Ptr
+
+fun PxU32Ptr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

@@ -135,6 +135,37 @@ fun PxActorShape.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxActorTypeFlags {
+    /**
+     * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
+fun PxActorTypeFlags(flags: Short): PxActorTypeFlags {
+    fun _PxActorTypeFlags(_module: dynamic, flags: Short) = js("new _module.PxActorTypeFlags(flags)")
+    return _PxActorTypeFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxActorTypeFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxAggregate : PxBase {
     /**
      * @param actor WebIDL type: [PxActor] (Ref)
@@ -1154,6 +1185,82 @@ fun PxBatchQueryPreFilterShader.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxBroadPhaseCaps {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbRegions: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbObjects: Int
+    /**
+     * WebIDL type: boolean
+     */
+    var needsPredefinedBounds: Boolean
+}
+
+fun PxBroadPhaseCaps(): PxBroadPhaseCaps {
+    fun _PxBroadPhaseCaps(_module: dynamic) = js("new _module.PxBroadPhaseCaps()")
+    return _PxBroadPhaseCaps(PhysXJsLoader.physXJs)
+}
+
+fun PxBroadPhaseCaps.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxBroadPhaseRegion {
+    /**
+     * WebIDL type: [PxBounds3] (Value)
+     */
+    var bounds: PxBounds3
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+}
+
+fun PxBroadPhaseRegion(): PxBroadPhaseRegion {
+    fun _PxBroadPhaseRegion(_module: dynamic) = js("new _module.PxBroadPhaseRegion()")
+    return _PxBroadPhaseRegion(PhysXJsLoader.physXJs)
+}
+
+fun PxBroadPhaseRegion.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxBroadPhaseRegionInfo {
+    /**
+     * WebIDL type: [PxBroadPhaseRegion] (Value)
+     */
+    var region: PxBroadPhaseRegion
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbStaticObjects: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbDynamicObjects: Int
+    /**
+     * WebIDL type: boolean
+     */
+    var active: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var overlap: Boolean
+}
+
+fun PxBroadPhaseRegionInfo(): PxBroadPhaseRegionInfo {
+    fun _PxBroadPhaseRegionInfo(_module: dynamic) = js("new _module.PxBroadPhaseRegionInfo()")
+    return _PxBroadPhaseRegionInfo(PhysXJsLoader.physXJs)
+}
+
+fun PxBroadPhaseRegionInfo.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxConstraint : PxBase {
     override fun release()
 
@@ -1387,6 +1494,74 @@ fun PxContactPairHeader.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxDominanceGroupPair {
+    /**
+     * WebIDL type: octet
+     */
+    var dominance0: Byte
+    /**
+     * WebIDL type: octet
+     */
+    var dominance1: Byte
+}
+
+/**
+ * @param a WebIDL type: octet
+ * @param b WebIDL type: octet
+ */
+fun PxDominanceGroupPair(a: Byte, b: Byte): PxDominanceGroupPair {
+    fun _PxDominanceGroupPair(_module: dynamic, a: Byte, b: Byte) = js("new _module.PxDominanceGroupPair(a, b)")
+    return _PxDominanceGroupPair(PhysXJsLoader.physXJs, a, b)
+}
+
+fun PxDominanceGroupPair.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxgDynamicsMemoryConfig {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var constraintBufferCapacity: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var contactBufferCapacity: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var tempBufferCapacity: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var contactStreamSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var patchStreamSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var forceStreamCapacity: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var heapCapacity: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var foundLostPairsCapacity: Int
+}
+
+fun PxgDynamicsMemoryConfig(): PxgDynamicsMemoryConfig {
+    fun _PxgDynamicsMemoryConfig(_module: dynamic) = js("new _module.PxgDynamicsMemoryConfig()")
+    return _PxgDynamicsMemoryConfig(PhysXJsLoader.physXJs)
+}
+
+fun PxgDynamicsMemoryConfig.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxFilterData {
     /**
      * WebIDL type: unsigned long
@@ -1477,6 +1652,80 @@ external interface PxLocationHit : PxQueryHit {
 }
 
 fun PxLocationHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxOverlapBuffer10 : PxOverlapCallback {
+    /**
+     * WebIDL type: [PxOverlapHit] (Value)
+     */
+    var block: PxOverlapHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxOverlapHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxOverlapHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @return WebIDL type: [PxOverlapHit] (Const)
+     */
+    fun getTouches(): PxOverlapHit
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxOverlapHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxOverlapHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getMaxNbTouches(): Int
+
+}
+
+fun PxOverlapBuffer10(): PxOverlapBuffer10 {
+    fun _PxOverlapBuffer10(_module: dynamic) = js("new _module.PxOverlapBuffer10()")
+    return _PxOverlapBuffer10(PhysXJsLoader.physXJs)
+}
+
+fun PxOverlapBuffer10.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxOverlapBuffer10.nbAnyHits
+    get() = getNbAnyHits()
+val PxOverlapBuffer10.nbTouches
+    get() = getNbTouches()
+val PxOverlapBuffer10.touches
+    get() = getTouches()
+val PxOverlapBuffer10.maxNbTouches
+    get() = getMaxNbTouches()
+
+external interface PxOverlapCallback {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun hasAnyHits(): Boolean
+
+}
+
+fun PxOverlapCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -1574,6 +1823,13 @@ external interface PxPhysics {
     fun getFoundation(): PxFoundation
 
     /**
+     * @param size                WebIDL type: unsigned long
+     * @param enableSelfCollision WebIDL type: boolean
+     * @return WebIDL type: [PxAggregate]
+     */
+    fun createAggregate(size: Int, enableSelfCollision: Boolean): PxAggregate
+
+    /**
      * @return WebIDL type: [PxTolerancesScale] (Const, Ref)
      */
     fun getTolerancesScale(): PxTolerancesScale
@@ -1663,6 +1919,74 @@ val PxPhysics.nbShapes
 val PxPhysics.physicsInsertionCallback
     get() = getPhysicsInsertionCallback()
 
+external interface PxQueryFilterData {
+    /**
+     * WebIDL type: [PxFilterData] (Value)
+     */
+    var data: PxFilterData
+    /**
+     * WebIDL type: [PxQueryFlags] (Value)
+     */
+    var flags: PxQueryFlags
+}
+
+fun PxQueryFilterData(): PxQueryFilterData {
+    fun _PxQueryFilterData(_module: dynamic) = js("new _module.PxQueryFilterData()")
+    return _PxQueryFilterData(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param fd WebIDL type: [PxFilterData] (Const, Ref)
+ * @param f  WebIDL type: [PxQueryFlags] (Ref)
+ */
+fun PxQueryFilterData(fd: PxFilterData, f: PxQueryFlags): PxQueryFilterData {
+    fun _PxQueryFilterData(_module: dynamic, fd: PxFilterData, f: PxQueryFlags) = js("new _module.PxQueryFilterData(fd, f)")
+    return _PxQueryFilterData(PhysXJsLoader.physXJs, fd, f)
+}
+
+/**
+ * @param f WebIDL type: [PxQueryFlags] (Ref)
+ */
+fun PxQueryFilterData(f: PxQueryFlags): PxQueryFilterData {
+    fun _PxQueryFilterData(_module: dynamic, f: PxQueryFlags) = js("new _module.PxQueryFilterData(f)")
+    return _PxQueryFilterData(PhysXJsLoader.physXJs, f)
+}
+
+fun PxQueryFilterData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxQueryFlags {
+    /**
+     * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
+fun PxQueryFlags(flags: Short): PxQueryFlags {
+    fun _PxQueryFlags(_module: dynamic, flags: Short) = js("new _module.PxQueryFlags(flags)")
+    return _PxQueryFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxQueryFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxQueryHit : PxActorShape {
     /**
      * WebIDL type: unsigned long
@@ -1671,6 +1995,80 @@ external interface PxQueryHit : PxActorShape {
 }
 
 fun PxQueryHit.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxRaycastBuffer10 : PxRaycastCallback {
+    /**
+     * WebIDL type: [PxRaycastHit] (Value)
+     */
+    var block: PxRaycastHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxRaycastHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxRaycastHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @return WebIDL type: [PxRaycastHit] (Const)
+     */
+    fun getTouches(): PxRaycastHit
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxRaycastHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxRaycastHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getMaxNbTouches(): Int
+
+}
+
+fun PxRaycastBuffer10(): PxRaycastBuffer10 {
+    fun _PxRaycastBuffer10(_module: dynamic) = js("new _module.PxRaycastBuffer10()")
+    return _PxRaycastBuffer10(PhysXJsLoader.physXJs)
+}
+
+fun PxRaycastBuffer10.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxRaycastBuffer10.nbAnyHits
+    get() = getNbAnyHits()
+val PxRaycastBuffer10.nbTouches
+    get() = getNbTouches()
+val PxRaycastBuffer10.touches
+    get() = getTouches()
+val PxRaycastBuffer10.maxNbTouches
+    get() = getMaxNbTouches()
+
+external interface PxRaycastCallback {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun hasAnyHits(): Boolean
+
+}
+
+fun PxRaycastCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -2221,6 +2619,11 @@ external interface PxRigidStatic : PxRigidActor
 
 external interface PxScene {
     /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+
+    /**
      * @param actor WebIDL type: [PxActor] (Ref)
      */
     fun addActor(actor: PxActor)
@@ -2243,6 +2646,137 @@ external interface PxScene {
     fun removeActor(actor: PxActor, wakeOnLostTouch: Boolean)
 
     /**
+     * @param aggregate WebIDL type: [PxAggregate] (Ref)
+     */
+    fun addAggregate(aggregate: PxAggregate)
+
+    /**
+     * @param aggregate WebIDL type: [PxAggregate] (Ref)
+     */
+    fun removeAggregate(aggregate: PxAggregate)
+
+    /**
+     * @param aggregate       WebIDL type: [PxAggregate] (Ref)
+     * @param wakeOnLostTouch WebIDL type: boolean
+     */
+    fun removeAggregate(aggregate: PxAggregate, wakeOnLostTouch: Boolean)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getWakeCounterResetValue(): Float
+
+    /**
+     * @param shift WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun shiftOrigin(shift: PxVec3)
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationBase] (Ref)
+     */
+    fun addArticulation(articulation: PxArticulationBase)
+
+    /**
+     * @param articulation WebIDL type: [PxArticulationBase] (Ref)
+     */
+    fun removeArticulation(articulation: PxArticulationBase)
+
+    /**
+     * @param articulation    WebIDL type: [PxArticulationBase] (Ref)
+     * @param wakeOnLostTouch WebIDL type: boolean
+     */
+    fun removeArticulation(articulation: PxArticulationBase, wakeOnLostTouch: Boolean)
+
+    /**
+     * @param types WebIDL type: [PxActorTypeFlags] (Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbActors(types: PxActorTypeFlags): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbArticulations(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbConstraints(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAggregates(): Int
+
+    /**
+     * @param group1    WebIDL type: octet
+     * @param group2    WebIDL type: octet
+     * @param dominance WebIDL type: [PxDominanceGroupPair] (Const, Ref)
+     */
+    fun setDominanceGroupPair(group1: Byte, group2: Byte, dominance: PxDominanceGroupPair)
+
+    /**
+     * @return WebIDL type: [PxCpuDispatcher]
+     */
+    fun getCpuDispatcher(): PxCpuDispatcher
+
+    /**
+     * @return WebIDL type: [PxCudaContextManager]
+     */
+    fun getCudaContextManager(): PxCudaContextManager
+
+    /**
+     * @return WebIDL type: octet
+     */
+    fun createClient(): Byte
+
+    /**
+     * @param callback WebIDL type: [PxSimulationEventCallback]
+     */
+    fun setSimulationEventCallback(callback: PxSimulationEventCallback)
+
+    /**
+     * @return WebIDL type: [PxSimulationEventCallback]
+     */
+    fun getSimulationEventCallback(): PxSimulationEventCallback
+
+    /**
+     * @param data     WebIDL type: VoidPtr (Const)
+     * @param dataSize WebIDL type: unsigned long
+     */
+    fun setFilterShaderData(data: Any, dataSize: Int)
+
+    /**
+     * @return WebIDL type: VoidPtr (Const)
+     */
+    fun getFilterShaderData(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getFilterShaderDataSize(): Int
+
+    /**
+     * @return WebIDL type: [PxSimulationFilterShader] (Value)
+     */
+    fun getFilterShader(): PxSimulationFilterShader
+
+    /**
+     * @param actor WebIDL type: [PxActor] (Ref)
+     */
+    fun resetFiltering(actor: PxActor)
+
+    /**
+     * @return WebIDL type: [PxPairFilteringModeEnum] (enum)
+     */
+    fun getKinematicKinematicFilteringMode(): Int
+
+    /**
+     * @return WebIDL type: [PxPairFilteringModeEnum] (enum)
+     */
+    fun getStaticKinematicFilteringMode(): Int
+
+    /**
      * @param elapsedTime WebIDL type: float
      */
     fun simulate(elapsedTime: Float)
@@ -2256,26 +2790,90 @@ external interface PxScene {
     /**
      * @param elapsedTime     WebIDL type: float
      * @param completionTask  WebIDL type: [PxBaseTask]
-     * @param scratchMemBlock WebIDL type: any
+     * @param scratchMemBlock WebIDL type: VoidPtr
      */
-    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Int)
+    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any)
 
     /**
      * @param elapsedTime         WebIDL type: float
      * @param completionTask      WebIDL type: [PxBaseTask]
-     * @param scratchMemBlock     WebIDL type: any
+     * @param scratchMemBlock     WebIDL type: VoidPtr
      * @param scratchMemBlockSize WebIDL type: unsigned long
      */
-    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Int, scratchMemBlockSize: Int)
+    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any, scratchMemBlockSize: Int)
 
     /**
      * @param elapsedTime         WebIDL type: float
      * @param completionTask      WebIDL type: [PxBaseTask]
-     * @param scratchMemBlock     WebIDL type: any
+     * @param scratchMemBlock     WebIDL type: VoidPtr
      * @param scratchMemBlockSize WebIDL type: unsigned long
      * @param controlSimulation   WebIDL type: boolean
      */
-    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Int, scratchMemBlockSize: Int, controlSimulation: Boolean)
+    fun simulate(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any, scratchMemBlockSize: Int, controlSimulation: Boolean)
+
+    fun advance()
+
+    /**
+     * @param completionTask WebIDL type: [PxBaseTask]
+     */
+    fun advance(completionTask: PxBaseTask)
+
+    /**
+     * @param elapsedTime WebIDL type: float
+     */
+    fun collide(elapsedTime: Float)
+
+    /**
+     * @param elapsedTime    WebIDL type: float
+     * @param completionTask WebIDL type: [PxBaseTask]
+     */
+    fun collide(elapsedTime: Float, completionTask: PxBaseTask)
+
+    /**
+     * @param elapsedTime     WebIDL type: float
+     * @param completionTask  WebIDL type: [PxBaseTask]
+     * @param scratchMemBlock WebIDL type: VoidPtr
+     */
+    fun collide(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any)
+
+    /**
+     * @param elapsedTime         WebIDL type: float
+     * @param completionTask      WebIDL type: [PxBaseTask]
+     * @param scratchMemBlock     WebIDL type: VoidPtr
+     * @param scratchMemBlockSize WebIDL type: unsigned long
+     */
+    fun collide(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any, scratchMemBlockSize: Int)
+
+    /**
+     * @param elapsedTime         WebIDL type: float
+     * @param completionTask      WebIDL type: [PxBaseTask]
+     * @param scratchMemBlock     WebIDL type: VoidPtr
+     * @param scratchMemBlockSize WebIDL type: unsigned long
+     * @param controlSimulation   WebIDL type: boolean
+     */
+    fun collide(elapsedTime: Float, completionTask: PxBaseTask, scratchMemBlock: Any, scratchMemBlockSize: Int, controlSimulation: Boolean)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun checkResults(): Boolean
+
+    /**
+     * @param block WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun checkResults(block: Boolean): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun fetchCollision(): Boolean
+
+    /**
+     * @param block WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun fetchCollision(block: Boolean): Boolean
 
     /**
      * @return WebIDL type: boolean
@@ -2289,6 +2887,18 @@ external interface PxScene {
     fun fetchResults(block: Boolean): Boolean
 
     /**
+     * @param continuation WebIDL type: [PxBaseTask]
+     */
+    fun processCallbacks(continuation: PxBaseTask)
+
+    fun flushSimulation()
+
+    /**
+     * @param sendPendingReports WebIDL type: boolean
+     */
+    fun flushSimulation(sendPendingReports: Boolean)
+
+    /**
      * @param vec WebIDL type: [PxVec3] (Const, Ref)
      */
     fun setGravity(vec: PxVec3)
@@ -2299,10 +2909,328 @@ external interface PxScene {
     fun getGravity(): PxVec3
 
     /**
+     * @param t WebIDL type: float
+     */
+    fun setBounceThresholdVelocity(t: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getBounceThresholdVelocity(): Float
+
+    /**
+     * @param ccdMaxPasses WebIDL type: unsigned long
+     */
+    fun setCCDMaxPasses(ccdMaxPasses: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getCCDMaxPasses(): Int
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getFrictionOffsetThreshold(): Float
+
+    /**
+     * @param frictionType WebIDL type: [PxFrictionTypeEnum] (enum)
+     */
+    fun setFrictionType(frictionType: Int)
+
+    /**
+     * @return WebIDL type: [PxFrictionTypeEnum] (enum)
+     */
+    fun getFrictionType(): Int
+
+    /**
+     * @param stats WebIDL type: [PxSimulationStatistics] (Ref)
+     */
+    fun getSimulationStatistics(stats: PxSimulationStatistics)
+
+    /**
+     * @return WebIDL type: [PxPruningStructureTypeEnum] (enum)
+     */
+    fun getStaticStructure(): Int
+
+    /**
+     * @return WebIDL type: [PxPruningStructureTypeEnum] (enum)
+     */
+    fun getDynamicStructure(): Int
+
+    fun flushQueryUpdates()
+
+    /**
      * @param desc WebIDL type: [PxBatchQueryDesc] (Const, Ref)
      * @return WebIDL type: [PxBatchQuery]
      */
     fun createBatchQuery(desc: PxBatchQueryDesc): PxBatchQuery
+
+    /**
+     * @param dynamicTreeRebuildRateHint WebIDL type: unsigned long
+     */
+    fun setDynamicTreeRebuildRateHint(dynamicTreeRebuildRateHint: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getDynamicTreeRebuildRateHint(): Int
+
+    /**
+     * @param rebuildStaticStructure  WebIDL type: boolean
+     * @param rebuildDynamicStructure WebIDL type: boolean
+     */
+    fun forceDynamicTreeRebuild(rebuildStaticStructure: Boolean, rebuildDynamicStructure: Boolean)
+
+    /**
+     * @param updateMode WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
+     */
+    fun setSceneQueryUpdateMode(updateMode: Int)
+
+    /**
+     * @return WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
+     */
+    fun getSceneQueryUpdateMode(): Int
+
+    fun sceneQueriesUpdate()
+
+    /**
+     * @param completionTask WebIDL type: [PxBaseTask]
+     */
+    fun sceneQueriesUpdate(completionTask: PxBaseTask)
+
+    /**
+     * @param completionTask    WebIDL type: [PxBaseTask]
+     * @param controlSimulation WebIDL type: boolean
+     */
+    fun sceneQueriesUpdate(completionTask: PxBaseTask, controlSimulation: Boolean)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun checkQueries(): Boolean
+
+    /**
+     * @param block WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun checkQueries(block: Boolean): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun fetchQueries(): Boolean
+
+    /**
+     * @param block WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun fetchQueries(block: Boolean): Boolean
+
+    /**
+     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance WebIDL type: float
+     * @param hitCall  WebIDL type: [PxRaycastCallback] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycast(origin: PxVec3, unitDir: PxVec3, distance: Float, hitCall: PxRaycastCallback): Boolean
+
+    /**
+     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance WebIDL type: float
+     * @param hitCall  WebIDL type: [PxRaycastCallback] (Ref)
+     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycast(origin: PxVec3, unitDir: PxVec3, distance: Float, hitCall: PxRaycastCallback, hitFlags: PxHitFlags): Boolean
+
+    /**
+     * @param origin     WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float
+     * @param hitCall    WebIDL type: [PxRaycastCallback] (Ref)
+     * @param hitFlags   WebIDL type: [PxHitFlags] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycast(origin: PxVec3, unitDir: PxVec3, distance: Float, hitCall: PxRaycastCallback, hitFlags: PxHitFlags, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance WebIDL type: float
+     * @param hitCall  WebIDL type: [PxSweepCallback] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, hitCall: PxSweepCallback): Boolean
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance WebIDL type: float
+     * @param hitCall  WebIDL type: [PxSweepCallback] (Ref)
+     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, hitCall: PxSweepCallback, hitFlags: PxHitFlags): Boolean
+
+    /**
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float
+     * @param hitCall    WebIDL type: [PxSweepCallback] (Ref)
+     * @param hitFlags   WebIDL type: [PxHitFlags] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, hitCall: PxSweepCallback, hitFlags: PxHitFlags, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param hitCall  WebIDL type: [PxOverlapCallback] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlap(geometry: PxGeometry, pose: PxTransform, hitCall: PxOverlapCallback): Boolean
+
+    /**
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param hitCall    WebIDL type: [PxOverlapCallback] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlap(geometry: PxGeometry, pose: PxTransform, hitCall: PxOverlapCallback, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSceneQueryStaticTimestamp(): Int
+
+    /**
+     * @return WebIDL type: [PxBroadPhaseTypeEnum] (enum)
+     */
+    fun getBroadPhaseType(): Int
+
+    /**
+     * @param caps WebIDL type: [PxBroadPhaseCaps] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun getBroadPhaseCaps(caps: PxBroadPhaseCaps): Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbBroadPhaseRegions(): Int
+
+    /**
+     * @param userBuffer WebIDL type: [PxBroadPhaseRegionInfo]
+     * @param bufferSize WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun getBroadPhaseRegions(userBuffer: PxBroadPhaseRegionInfo, bufferSize: Int): Int
+
+    /**
+     * @param userBuffer WebIDL type: [PxBroadPhaseRegionInfo]
+     * @param bufferSize WebIDL type: unsigned long
+     * @param startIndex WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun getBroadPhaseRegions(userBuffer: PxBroadPhaseRegionInfo, bufferSize: Int, startIndex: Int): Int
+
+    /**
+     * @param region WebIDL type: [PxBroadPhaseRegion] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun addBroadPhaseRegion(region: PxBroadPhaseRegion): Int
+
+    /**
+     * @param region         WebIDL type: [PxBroadPhaseRegion] (Const, Ref)
+     * @param populateRegion WebIDL type: boolean
+     * @return WebIDL type: unsigned long
+     */
+    fun addBroadPhaseRegion(region: PxBroadPhaseRegion, populateRegion: Boolean): Int
+
+    /**
+     * @param handle WebIDL type: unsigned long
+     * @return WebIDL type: boolean
+     */
+    fun removeBroadPhaseRegion(handle: Int): Boolean
+
+    fun lockRead()
+
+    /**
+     * @param file WebIDL type: DOMString
+     */
+    fun lockRead(file: String)
+
+    /**
+     * @param file WebIDL type: DOMString
+     * @param line WebIDL type: unsigned long
+     */
+    fun lockRead(file: String, line: Int)
+
+    fun unlockRead()
+
+    fun lockWrite()
+
+    /**
+     * @param file WebIDL type: DOMString
+     */
+    fun lockWrite(file: String)
+
+    /**
+     * @param file WebIDL type: DOMString
+     * @param line WebIDL type: unsigned long
+     */
+    fun lockWrite(file: String, line: Int)
+
+    fun unlockWrite()
+
+    /**
+     * @param numBlocks WebIDL type: unsigned long
+     */
+    fun setNbContactDataBlocks(numBlocks: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbContactDataBlocksUsed(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getMaxNbContactDataBlocksUsed(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getContactReportStreamBufferSize(): Int
+
+    /**
+     * @param solverBatchSize WebIDL type: unsigned long
+     */
+    fun setSolverBatchSize(solverBatchSize: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSolverBatchSize(): Int
+
+    /**
+     * @param solverBatchSize WebIDL type: unsigned long
+     */
+    fun setSolverArticulationBatchSize(solverBatchSize: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSolverArticulationBatchSize(): Int
 
     fun release()
 
@@ -2318,6 +3246,16 @@ external interface PxScene {
     fun getFlags(): PxSceneFlags
 
     /**
+     * @param limits WebIDL type: [PxSceneLimits] (Const, Ref)
+     */
+    fun setLimits(limits: PxSceneLimits)
+
+    /**
+     * @return WebIDL type: [PxSceneLimits] (Value)
+     */
+    fun getLimits(): PxSceneLimits
+
+    /**
      * @return WebIDL type: [PxPhysics] (Ref)
      */
     fun getPhysics(): PxPhysics
@@ -2329,6 +3267,44 @@ external interface PxScene {
 
 }
 
+val PxScene.wakeCounterResetValue
+    get() = getWakeCounterResetValue()
+val PxScene.nbArticulations
+    get() = getNbArticulations()
+val PxScene.nbConstraints
+    get() = getNbConstraints()
+val PxScene.nbAggregates
+    get() = getNbAggregates()
+val PxScene.cpuDispatcher
+    get() = getCpuDispatcher()
+val PxScene.cudaContextManager
+    get() = getCudaContextManager()
+val PxScene.filterShaderDataSize
+    get() = getFilterShaderDataSize()
+val PxScene.filterShader
+    get() = getFilterShader()
+val PxScene.kinematicKinematicFilteringMode
+    get() = getKinematicKinematicFilteringMode()
+val PxScene.staticKinematicFilteringMode
+    get() = getStaticKinematicFilteringMode()
+val PxScene.frictionOffsetThreshold
+    get() = getFrictionOffsetThreshold()
+val PxScene.staticStructure
+    get() = getStaticStructure()
+val PxScene.dynamicStructure
+    get() = getDynamicStructure()
+val PxScene.sceneQueryStaticTimestamp
+    get() = getSceneQueryStaticTimestamp()
+val PxScene.broadPhaseType
+    get() = getBroadPhaseType()
+val PxScene.nbBroadPhaseRegions
+    get() = getNbBroadPhaseRegions()
+val PxScene.nbContactDataBlocksUsed
+    get() = getNbContactDataBlocksUsed()
+val PxScene.maxNbContactDataBlocksUsed
+    get() = getMaxNbContactDataBlocksUsed()
+val PxScene.contactReportStreamBufferSize
+    get() = getContactReportStreamBufferSize()
 val PxScene.flags
     get() = getFlags()
 val PxScene.physics
@@ -2336,9 +3312,36 @@ val PxScene.physics
 val PxScene.timestamp
     get() = getTimestamp()
 
+var PxScene.simulationEventCallback
+    get() = getSimulationEventCallback()
+    set(value) { setSimulationEventCallback(value) }
 var PxScene.gravity
     get() = getGravity()
     set(value) { setGravity(value) }
+var PxScene.bounceThresholdVelocity
+    get() = getBounceThresholdVelocity()
+    set(value) { setBounceThresholdVelocity(value) }
+var PxScene.cCDMaxPasses
+    get() = getCCDMaxPasses()
+    set(value) { setCCDMaxPasses(value) }
+var PxScene.frictionType
+    get() = getFrictionType()
+    set(value) { setFrictionType(value) }
+var PxScene.dynamicTreeRebuildRateHint
+    get() = getDynamicTreeRebuildRateHint()
+    set(value) { setDynamicTreeRebuildRateHint(value) }
+var PxScene.sceneQueryUpdateMode
+    get() = getSceneQueryUpdateMode()
+    set(value) { setSceneQueryUpdateMode(value) }
+var PxScene.solverBatchSize
+    get() = getSolverBatchSize()
+    set(value) { setSolverBatchSize(value) }
+var PxScene.solverArticulationBatchSize
+    get() = getSolverArticulationBatchSize()
+    set(value) { setSolverArticulationBatchSize(value) }
+var PxScene.limits
+    get() = getLimits()
+    set(value) { setLimits(value) }
 
 external interface PxSceneDesc {
     /**
@@ -2350,17 +3353,148 @@ external interface PxSceneDesc {
      */
     var simulationEventCallback: PxSimulationEventCallback
     /**
+     * WebIDL type: VoidPtr (Const)
+     */
+    var filterShaderData: Any
+    /**
+     * WebIDL type: unsigned long
+     */
+    var filterShaderDataSize: Int
+    /**
      * WebIDL type: [PxSimulationFilterShader] (Value)
      */
     var filterShader: PxSimulationFilterShader
+    /**
+     * WebIDL type: [PxPairFilteringModeEnum] (enum)
+     */
+    var kineKineFilteringMode: Int
+    /**
+     * WebIDL type: [PxPairFilteringModeEnum] (enum)
+     */
+    var staticKineFilteringMode: Int
+    /**
+     * WebIDL type: [PxBroadPhaseTypeEnum] (enum)
+     */
+    var broadPhaseType: Int
+    /**
+     * WebIDL type: [PxSceneLimits] (Value)
+     */
+    var limits: PxSceneLimits
+    /**
+     * WebIDL type: [PxFrictionTypeEnum] (enum)
+     */
+    var frictionType: Int
+    /**
+     * WebIDL type: [PxSolverTypeEnum] (enum)
+     */
+    var solverType: Int
+    /**
+     * WebIDL type: float
+     */
+    var bounceThresholdVelocity: Float
+    /**
+     * WebIDL type: float
+     */
+    var frictionOffsetThreshold: Float
+    /**
+     * WebIDL type: float
+     */
+    var ccdMaxSeparation: Float
+    /**
+     * WebIDL type: float
+     */
+    var solverOffsetSlop: Float
+    /**
+     * WebIDL type: [PxSceneFlags] (Value)
+     */
+    var flags: PxSceneFlags
     /**
      * WebIDL type: [PxCpuDispatcher]
      */
     var cpuDispatcher: PxCpuDispatcher
     /**
-     * WebIDL type: [PxSceneFlags] (Value)
+     * WebIDL type: [PxCudaContextManager]
      */
-    var flags: PxSceneFlags
+    var cudaContextManager: PxCudaContextManager
+    /**
+     * WebIDL type: [PxPruningStructureTypeEnum] (enum)
+     */
+    var staticStructure: Int
+    /**
+     * WebIDL type: [PxPruningStructureTypeEnum] (enum)
+     */
+    var dynamicStructure: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var dynamicTreeRebuildRateHint: Int
+    /**
+     * WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
+     */
+    var sceneQueryUpdateMode: Int
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+    /**
+     * WebIDL type: unsigned long
+     */
+    var solverBatchSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var solverArticulationBatchSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbContactDataBlocks: Int
+    /**
+     * WebIDL type: float
+     */
+    var maxBiasCoefficient: Float
+    /**
+     * WebIDL type: unsigned long
+     */
+    var contactReportStreamBufferSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var ccdMaxPasses: Int
+    /**
+     * WebIDL type: float
+     */
+    var ccdThreshold: Float
+    /**
+     * WebIDL type: float
+     */
+    var wakeCounterResetValue: Float
+    /**
+     * WebIDL type: [PxBounds3] (Value)
+     */
+    var sanityBounds: PxBounds3
+    /**
+     * WebIDL type: [PxgDynamicsMemoryConfig] (Value)
+     */
+    var gpuDynamicsConfig: PxgDynamicsMemoryConfig
+    /**
+     * WebIDL type: unsigned long
+     */
+    var gpuMaxNumPartitions: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var gpuComputeVersion: Int
+
+    /**
+     * @param scale WebIDL type: [PxTolerancesScale] (Const, Ref)
+     */
+    fun setToDefault(scale: PxTolerancesScale)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
 }
 
 /**
@@ -2403,6 +3537,58 @@ fun PxSceneFlags(flags: Int): PxSceneFlags {
 }
 
 fun PxSceneFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxSceneLimits {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbActors: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbStaticShapes: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbDynamicShapes: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbAggregates: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbConstraints: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbRegions: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbBroadPhaseOverlaps: Int
+
+    fun setToDefault()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxSceneLimits(): PxSceneLimits {
+    fun _PxSceneLimits(_module: dynamic) = js("new _module.PxSceneLimits()")
+    return _PxSceneLimits(PhysXJsLoader.physXJs)
+}
+
+fun PxSceneLimits.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -2766,6 +3952,105 @@ fun PxSimulationFilterShader.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxSimulationStatistics {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbActiveConstraints: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbActiveDynamicBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbActiveKinematicBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbStaticBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbDynamicBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbKinematicBodies: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbShapes: Array<Int>
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbAggregates: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbArticulations: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbAxisSolverConstraints: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var compressedContactSize: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var requiredContactConstraintMemory: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var peakConstraintMemory: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbDiscreteContactPairsTotal: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbDiscreteContactPairsWithCacheHits: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbDiscreteContactPairsWithContacts: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbNewPairs: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbLostPairs: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbNewTouches: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbLostTouches: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbPartitions: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbBroadPhaseAdds: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbBroadPhaseRemoves: Int
+}
+
+fun PxSimulationStatistics.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSpatialVelocity {
     /**
      * WebIDL type: [PxVec3] (Value)
@@ -2778,6 +4063,80 @@ external interface PxSpatialVelocity {
 }
 
 fun PxSpatialVelocity.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxSweepBuffer10 : PxSweepCallback {
+    /**
+     * WebIDL type: [PxSweepHit] (Value)
+     */
+    var block: PxSweepHit
+    /**
+     * WebIDL type: boolean
+     */
+    var hasBlock: Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbAnyHits(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxSweepHit] (Const, Ref)
+     */
+    fun getAnyHit(index: Int): PxSweepHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTouches(): Int
+
+    /**
+     * @return WebIDL type: [PxSweepHit] (Const)
+     */
+    fun getTouches(): PxSweepHit
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxSweepHit] (Const, Ref)
+     */
+    fun getTouch(index: Int): PxSweepHit
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getMaxNbTouches(): Int
+
+}
+
+fun PxSweepBuffer10(): PxSweepBuffer10 {
+    fun _PxSweepBuffer10(_module: dynamic) = js("new _module.PxSweepBuffer10()")
+    return _PxSweepBuffer10(PhysXJsLoader.physXJs)
+}
+
+fun PxSweepBuffer10.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxSweepBuffer10.nbAnyHits
+    get() = getNbAnyHits()
+val PxSweepBuffer10.nbTouches
+    get() = getNbTouches()
+val PxSweepBuffer10.touches
+    get() = getTouches()
+val PxSweepBuffer10.maxNbTouches
+    get() = getMaxNbTouches()
+
+external interface PxSweepCallback {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun hasAnyHits(): Boolean
+
+}
+
+fun PxSweepCallback.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -2910,6 +4269,11 @@ object PxActorTypeEnum {
     val eACTOR_FORCE_DWORD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eACTOR_FORCE_DWORD()
 }
 
+object PxActorTypeFlagEnum {
+    val eRIGID_STATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_STATIC()
+    val eRIGID_DYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_DYNAMIC()
+}
+
 object PxArticulationAxisEnum {
     val eTWIST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eTWIST()
     val eSWING1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eSWING1()
@@ -2963,6 +4327,14 @@ object PxArticulationJointTypeEnum {
     val eUNDEFINED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eUNDEFINED()
 }
 
+object PxBroadPhaseTypeEnum {
+    val eSAP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eSAP()
+    val eMBP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eMBP()
+    val eABP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eABP()
+    val eGPU: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eGPU()
+    val eLAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eLAST()
+}
+
 object PxConstraintFlagEnum {
     val eBROKEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eBROKEN()
     val ePROJECT_TO_ACTOR0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_ePROJECT_TO_ACTOR0()
@@ -2998,6 +4370,13 @@ object PxForceModeEnum {
     val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eACCELERATION()
 }
 
+object PxFrictionTypeEnum {
+    val ePATCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_ePATCH()
+    val eONE_DIRECTIONAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eONE_DIRECTIONAL()
+    val eTWO_DIRECTIONAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eTWO_DIRECTIONAL()
+    val eFRICTION_COUNT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eFRICTION_COUNT()
+}
+
 object PxHitFlagEnum {
     val ePOSITION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePOSITION()
     val eNORMAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eNORMAL()
@@ -3011,6 +4390,13 @@ object PxHitFlagEnum {
     val eFACE_INDEX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eFACE_INDEX()
     val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eDEFAULT()
     val eMODIFIABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS()
+}
+
+object PxPairFilteringModeEnum {
+    val eKEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKEEP()
+    val eSUPPRESS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eSUPPRESS()
+    val eKILL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKILL()
+    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eDEFAULT()
 }
 
 object PxPairFlagEnum {
@@ -3031,6 +4417,22 @@ object PxPairFlagEnum {
     val eCONTACT_EVENT_POSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_EVENT_POSE()
     val eNEXT_FREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNEXT_FREE()
     val eCONTACT_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_DEFAULT()
+}
+
+object PxPruningStructureTypeEnum {
+    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eNONE()
+    val eDYNAMIC_AABB_TREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eDYNAMIC_AABB_TREE()
+    val eSTATIC_AABB_TREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eSTATIC_AABB_TREE()
+    val eLAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eLAST()
+}
+
+object PxQueryFlagEnum {
+    val eSTATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eSTATIC()
+    val eDYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eDYNAMIC()
+    val ePREFILTER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePREFILTER()
+    val ePOSTFILTER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePOSTFILTER()
+    val eANY_HIT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eANY_HIT()
+    val eNO_BLOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eNO_BLOCK()
 }
 
 object PxRigidBodyFlagEnum {
@@ -3071,11 +4473,22 @@ object PxSceneFlagEnum {
     val eMUTABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS()
 }
 
+object PxSceneQueryUpdateModeEnum {
+    val eBUILD_ENABLED_COMMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_ENABLED()
+    val eBUILD_ENABLED_COMMIT_DISABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_DISABLED()
+    val eBUILD_DISABLED_COMMIT_DISABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_DISABLED_COMMIT_DISABLED()
+}
+
 object PxShapeFlagEnum {
     val eSIMULATION_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE()
     val eSCENE_QUERY_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE()
     val eTRIGGER_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE()
     val eVISUALIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eVISUALIZATION()
+}
+
+object PxSolverTypeEnum {
+    val ePGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_ePGS()
+    val eTGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_eTGS()
 }
 
 object PxTriggerPairFlagEnum {

@@ -245,6 +245,112 @@ fun PxGeometryHolder.destroy() {
 val PxGeometryHolder.type
     get() = getType()
 
+external interface PxGeometryQuery {
+    /**
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist  WebIDL type: float
+     * @param geom0    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0    WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1    WebIDL type: [PxTransform] (Const, Ref)
+     * @param sweepHit WebIDL type: [PxSweepHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(unitDir: PxVec3, maxDist: Float, geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform, sweepHit: PxSweepHit): Boolean
+
+    /**
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist  WebIDL type: float
+     * @param geom0    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0    WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1    WebIDL type: [PxTransform] (Const, Ref)
+     * @param sweepHit WebIDL type: [PxSweepHit] (Ref)
+     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(unitDir: PxVec3, maxDist: Float, geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform, sweepHit: PxSweepHit, hitFlags: PxHitFlags): Boolean
+
+    /**
+     * @param unitDir   WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist   WebIDL type: float
+     * @param geom0     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0     WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1     WebIDL type: [PxTransform] (Const, Ref)
+     * @param sweepHit  WebIDL type: [PxSweepHit] (Ref)
+     * @param hitFlags  WebIDL type: [PxHitFlags] (Ref)
+     * @param inflation WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun sweep(unitDir: PxVec3, maxDist: Float, geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform, sweepHit: PxSweepHit, hitFlags: PxHitFlags, inflation: Float): Boolean
+
+    /**
+     * @param geom0 WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose0 WebIDL type: [PxTransform] (Const, Ref)
+     * @param geom1 WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose1 WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlap(geom0: PxGeometry, pose0: PxTransform, geom1: PxGeometry, pose1: PxTransform): Boolean
+
+    /**
+     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param maxDist  WebIDL type: float
+     * @param hitFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param maxHits  WebIDL type: unsigned long
+     * @param rayHits  WebIDL type: [PxRaycastHit]
+     * @return WebIDL type: unsigned long
+     */
+    fun raycast(origin: PxVec3, unitDir: PxVec3, geom: PxGeometry, pose: PxTransform, maxDist: Float, hitFlags: PxHitFlags, maxHits: Int, rayHits: PxRaycastHit): Int
+
+    /**
+     * @param point WebIDL type: [PxVec3] (Const, Ref)
+     * @param geom  WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose  WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: float
+     */
+    fun pointDistance(point: PxVec3, geom: PxGeometry, pose: PxTransform): Float
+
+    /**
+     * @param point        WebIDL type: [PxVec3] (Const, Ref)
+     * @param geom         WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose         WebIDL type: [PxTransform] (Const, Ref)
+     * @param closestPoint WebIDL type: [PxVec3]
+     * @return WebIDL type: float
+     */
+    fun pointDistance(point: PxVec3, geom: PxGeometry, pose: PxTransform, closestPoint: PxVec3): Float
+
+    /**
+     * @param geom WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxBounds3] (Value)
+     */
+    fun getWorldBounds(geom: PxGeometry, pose: PxTransform): PxBounds3
+
+    /**
+     * @param geom      WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose      WebIDL type: [PxTransform] (Const, Ref)
+     * @param inflation WebIDL type: float
+     * @return WebIDL type: [PxBounds3] (Value)
+     */
+    fun getWorldBounds(geom: PxGeometry, pose: PxTransform, inflation: Float): PxBounds3
+
+    /**
+     * @param geom WebIDL type: [PxGeometry] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(geom: PxGeometry): Boolean
+
+}
+
+fun PxGeometryQuery.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxHeightField : PxBase {
     /**
      * @param destBuffer     WebIDL type: VoidPtr
@@ -669,6 +775,50 @@ fun PxSphereGeometry(ir: Float): PxSphereGeometry {
 }
 
 fun PxSphereGeometry.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTriangle {
+    /**
+     * @param normal WebIDL type: [PxVec3] (Ref)
+     */
+    fun normal(normal: PxVec3)
+
+    /**
+     * @param normal WebIDL type: [PxVec3] (Ref)
+     */
+    fun denormalizedNormal(normal: PxVec3)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun area(): Float
+
+    /**
+     * @param u WebIDL type: float
+     * @param v WebIDL type: float
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun pointFromUV(u: Float, v: Float): PxVec3
+
+}
+
+fun PxTriangle(): PxTriangle {
+    fun _PxTriangle(_module: dynamic) = js("new _module.PxTriangle()")
+    return _PxTriangle(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param p0 WebIDL type: [PxVec3] (Const, Ref)
+ * @param p1 WebIDL type: [PxVec3] (Const, Ref)
+ * @param p2 WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxTriangle(p0: PxVec3, p1: PxVec3, p2: PxVec3): PxTriangle {
+    fun _PxTriangle(_module: dynamic, p0: PxVec3, p1: PxVec3, p2: PxVec3) = js("new _module.PxTriangle(p0, p1, p2)")
+    return _PxTriangle(PhysXJsLoader.physXJs, p0, p1, p2)
+}
+
+fun PxTriangle.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

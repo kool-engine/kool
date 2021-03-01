@@ -48,6 +48,8 @@ class VehicleDemo : DemoScene("Vehicle") {
     private val vehicleGroup = Group()
     private lateinit var vehicleMesh: Mesh
     private var dashboard: VehicleUi? = null
+    private var track: Track? = null
+    private var timer: TrackTimer? = null
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         var inited = false
@@ -62,6 +64,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                 mapRanges[0].set(0f, 0.05f)
                 mapRanges[1].set(0.05f, 0.2f)
                 mapRanges[2].set(0.2f, 1f)
+                cascades.forEach { it.directionalCamNearOffset = -40f }
             }
             +Skybox.cube(ibl.reflectionMap, 1f)
 
@@ -196,6 +199,11 @@ class VehicleDemo : DemoScene("Vehicle") {
             brake = vehicle.brakeInput
             longitudinalAcceleration = vehicle.longitudinalAcceleration
             lateralAcceleration = vehicle.lateralAcceleration
+
+            val time = timer
+            if (time != null) {
+                trackTime = time.trackTime
+            }
         }
     }
 
@@ -203,11 +211,13 @@ class VehicleDemo : DemoScene("Vehicle") {
         val vehicleProps = VehicleProperties().apply {
             groundMaterialFrictions = mapOf(groundMaterial to 1.5f)
             chassisDims = Vec3f(2f, 1f, 5f)
-            wheelFrontZ = 1.25f
-            wheelRearZ = -1.75f
+            wheelFrontZ = 1.6f
+            wheelRearZ = -1.5f
             trackWidth = 2.45f
             maxBrakeTorqueFront = 2400f
             maxBrakeTorqueRear = 1200f
+
+            updateChassisMoiFromDimensionsAndMass()
         }
 
         val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
@@ -274,6 +284,15 @@ class VehicleDemo : DemoScene("Vehicle") {
                 for (i in 0..3) {
                     wheelMeshes[i].transform.set(vehicle.wheelTransforms[i])
                     wheelMeshes[i].setDirty()
+                }
+
+                timer?.let { t ->
+                    if (t.timerState != TrackTimer.TimerState.STOPPED) {
+                        val distToTrack = track?.distanceToTrack(vehicle.position) ?: 0f
+                        if (distToTrack > 15f) {
+                            t.reset()
+                        }
+                    }
                 }
             }
         }
@@ -409,7 +428,7 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeTrack(world: PhysicsWorld) {
-        val track = Track().generate {
+        track = Track().generate {
             subdivs = 2
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-10f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
@@ -427,9 +446,9 @@ class VehicleDemo : DemoScene("Vehicle") {
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(80f, 10f, -20f), Vec3f(-20f, -2f, 0f)), 15)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-20f, 0f, 0f)), 15)
         }
-        +track
+        +track!!
 
-        makeStaticCollisionBody(track.trackMesh.geometry, world)
+        makeStaticCollisionBody(track!!.trackMesh.geometry, world)
 
         val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
         val rand = Random(1337)
@@ -464,7 +483,7 @@ class VehicleDemo : DemoScene("Vehicle") {
             roughness.dispose()
         }
 
-        track.trackMesh.shader = pbrShader {
+        track!!.trackMesh.shader = pbrShader {
             albedoSource = Albedo.TEXTURE_ALBEDO
             shadowMaps += shadows
             useImageBasedLighting(ibl)
@@ -473,34 +492,28 @@ class VehicleDemo : DemoScene("Vehicle") {
             useRoughnessMap(roughness)
         }
 
-        val trigger = RigidStatic().apply {
-            isTrigger = true
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
-            attachShape(Shape(BoxGeometry(Vec3f(1f, 1f, 1f)), groundMaterial))
-            position = Vec3f(0f, 0.6f, 10f)
+        timer = TrackTimer(vehicle, world, groundMaterial).apply {
+            enterPos = Vec3f(-15f, 2.5f, -40f)
+            enterSize = Vec3f(5f, 5f, 15f)
+
+            exitPos = Vec3f(10f, 2.5f, -40f)
+            exitSize = Vec3f(5f, 5f, 15f)
+
+            checkPos1 = Vec3f(100f, 17.5f, 150f)
+            checkSize1 = Vec3f(15f, 5f, 5f)
+
+            checkPos2 = Vec3f(-85f, 32.5f, -150f)
+            checkSize2 = Vec3f(15f, 5f, 5f)
+
+            buildTriggers()
+//            +enterTrigger.toPrettyMesh(Color.MD_GREEN.toLinear())
+//            +exitTrigger.toPrettyMesh(Color.MD_RED.toLinear())
+//            +checkTrigger1.toPrettyMesh(Color.MD_BLUE.toLinear())
+//            +checkTrigger2.toPrettyMesh(Color.MD_BLUE.toLinear())
+
+            onCheckPoint1 = { dashboard?.sec1Time = it }
+            onCheckPoint2 = { dashboard?.sec2Time = it }
         }
-        +trigger.toPrettyMesh(Color.MD_GREEN)
-
-        world.registerTriggerListener(trigger, object : TriggerListener {
-            override fun onActorEntered(trigger: RigidActor, actor: RigidActor) {
-                println("actor enter")
-            }
-
-            override fun onActorExited(trigger: RigidActor, actor: RigidActor) {
-                println("actor exit")
-            }
-
-            override fun onShapeEntered(trigger: RigidActor, actor: RigidActor, shape: Shape) {
-                println("shape enter")
-            }
-
-            override fun onShapeExited(trigger: RigidActor, actor: RigidActor, shape: Shape) {
-                println("shape exit")
-            }
-        })
-
-        world.addActor(trigger)
     }
 
     private fun makeStaticCollisionBody(mesh: IndexedVertexList, world: PhysicsWorld) {

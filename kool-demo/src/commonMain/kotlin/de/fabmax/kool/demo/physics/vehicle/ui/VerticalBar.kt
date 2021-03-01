@@ -41,7 +41,7 @@ class VerticalBar(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 }
 
-class VerticalBarUi(private val verticalBar: VerticalBar) : TrackUi(verticalBar) {
+class VerticalBarUi(private val verticalBar: VerticalBar) : BarUi(verticalBar) {
 
     init {
         // compute track positions

@@ -54,7 +54,7 @@ class RpmScale(root: UiRoot) : UiComponent("rpm", root) {
     }
 }
 
-class RpmScaleUi(private val rpmScale: RpmScale) : TrackUi(rpmScale) {
+class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
     private val trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_LIGHT_BLUE)
 
     private val largeFontMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) { }

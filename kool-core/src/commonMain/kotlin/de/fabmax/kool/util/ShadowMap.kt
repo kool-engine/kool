@@ -29,10 +29,10 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
 
     val lightViewProjMat = Mat4d()
 
-    //var optimizeForDirectionalLight = false
     var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
+    var directionalCamNearOffset = -20f
     var shaderDepthOffset = -0.005f
     var shadowBounds: BoundingBox? = null
 
@@ -140,7 +140,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
         cam.right = shadowCamBounds.max.x
         cam.bottom = shadowCamBounds.min.y
         cam.top = shadowCamBounds.max.y
-        cam.near = -shadowCamBounds.max.z - 20
+        cam.near = -shadowCamBounds.max.z + directionalCamNearOffset
         cam.far = -shadowCamBounds.min.z
     }
 

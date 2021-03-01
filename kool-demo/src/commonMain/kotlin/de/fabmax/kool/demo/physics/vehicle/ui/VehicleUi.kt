@@ -6,6 +6,7 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.round
@@ -86,18 +87,40 @@ class VehicleUi(ctx: KoolContext) {
     private lateinit var steeringBar: HorizontalBar
     private lateinit var gMeter: GMeter
 
+    var trackTime = 0f
+        set(value) {
+            field = value
+            trackTimeLbl.text = formatTime(value)
+        }
+    var sec1Time = 0f
+        set(value) {
+            field = value
+            sec1Lbl.text = formatTime(value)
+        }
+    var sec2Time = 0f
+        set(value) {
+            field = value
+            sec2Lbl.text = formatTime(value)
+        }
+
+    private lateinit var trackTimeLbl: Label
+    private lateinit var sec1Lbl: Label
+    private lateinit var sec2Lbl: Label
+
     val uiScene = uiScene(dpi = ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi { BlankComponentUi() }
         }
 
+        val largeFont = uiFont(fontFamily, 89 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890.:")
+        val midFont = uiFont(fontFamily, 64 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890.:")
+        val smallFont = uiFont(fontFamily, 19 * scale, uiDpi, ctx, style = Font.ITALIC)
+
         +container("dashboard") {
             layoutSpec.setOrigin(zero(), zero(), zero())
             layoutSpec.setSize(dps(720f * scale), dps(170f * scale), full())
             content.ui.setCustom(DashboardComponentUi(this))
-
-            val smallFont = uiFont(fontFamily, 19 * scale, uiDpi, ctx, style = Font.ITALIC)
 
             +RpmScale(this@uiScene).apply {
                 rpmBar = this
@@ -110,7 +133,7 @@ class VehicleUi(ctx: KoolContext) {
                 speedValue = this
                 layoutSpec.setOrigin(dps(75f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(170f * scale), dps(90f * scale), full())
-                font.setCustom(uiFont(fontFamily, 89 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890"))
+                font.setCustom(largeFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "0"
             }
@@ -196,6 +219,67 @@ class VehicleUi(ctx: KoolContext) {
                 layoutSpec.setSize(dps(110f * scale), dps(110f * scale), full())
             }
         }
+
+        +container("timer") {
+            layoutSpec.setSize(dps(400f * scale), dps(90f * scale), full())
+            layoutSpec.setOrigin(pcs(50f) - dps(200f * scale), dps(-90f * scale), zero())
+
+            +label("trackTime") {
+                trackTimeLbl = this
+                layoutSpec.setOrigin(zero(), dps(10f * scale), zero())
+                layoutSpec.setSize(dps(200f * scale), dps(70f * scale), full())
+                font.setCustom(midFont)
+                textAlignment = Gravity(Alignment.END, Alignment.END)
+                text = "0:00.00"
+            }
+            +label("Total") {
+                layoutSpec.setOrigin(dps(175f * scale), dps(10f * scale), zero())
+                layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
+                font.setCustom(smallFont)
+                textAlignment = Gravity(Alignment.START, Alignment.END)
+                textColor.setCustom(Color.MD_GREY_400)
+            }
+
+            +label("sectorTime1") {
+                sec1Lbl = this
+                layoutSpec.setOrigin(dps(220f * scale), dps(40f * scale), zero())
+                layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
+                font.setCustom(smallFont)
+                textAlignment = Gravity(Alignment.END, Alignment.END)
+                text = "-:--.--"
+            }
+            +label("Sec 1") {
+                layoutSpec.setOrigin(dps(320f * scale), dps(40f * scale), zero())
+                layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
+                font.setCustom(smallFont)
+                textAlignment = Gravity(Alignment.START, Alignment.END)
+                textColor.setCustom(Color.MD_GREY_400)
+            }
+
+            +label("sectorTime2") {
+                sec2Lbl = this
+                layoutSpec.setOrigin(dps(220f * scale), dps(10f * scale), zero())
+                layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
+                font.setCustom(smallFont)
+                textAlignment = Gravity(Alignment.END, Alignment.END)
+                text = "-:--.--"
+            }
+            +label("Sec 2") {
+                layoutSpec.setOrigin(dps(320f * scale), dps(10f * scale), zero())
+                layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
+                font.setCustom(smallFont)
+                textAlignment = Gravity(Alignment.START, Alignment.END)
+                textColor.setCustom(Color.MD_GREY_400)
+            }
+        }
+    }
+
+    private fun formatTime(time: Float): String {
+        var secs = (time % 60f).toString(2)
+        if (secs.length == 4) {
+            secs = "0$secs"
+        }
+        return "${time.toInt() / 60}:$secs"
     }
 
     private class DashboardComponentUi(val component: UiComponent) : ComponentUi {

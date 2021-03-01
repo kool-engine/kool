@@ -9,11 +9,19 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.multiShape
 import de.fabmax.kool.util.simpleShape
+import de.fabmax.kool.util.spatial.KdTree
+import de.fabmax.kool.util.spatial.NearestTraverser
+import de.fabmax.kool.util.spatial.pointKdTree
+import kotlin.math.sqrt
 
 class Track : Group() {
 
     private val spline = SimpleSpline3f()
     private val numSamples = mutableListOf<Int>()
+
+    private val trackPoints = mutableListOf<Vec3f>()
+    private var trackPointTree: KdTree<Vec3f>? = null
+    private val nearestTrav = NearestTraverser<Vec3f>()
 
     var subdivs = 1
     val trackMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {  }
@@ -29,14 +37,21 @@ class Track : Group() {
         spline.ctrlPoints += ctrlPt
     }
 
+    fun distanceToTrack(point: Vec3f): Float {
+        val tree = trackPointTree ?: return -1f
+        nearestTrav.setup(point).traverse(tree)
+        return sqrt(nearestTrav.sqrDist)
+    }
+
     private fun build() {
-        val points = mutableListOf<Vec3f>()
+        trackPoints.clear()
         for (i in 0 .. (spline.ctrlPoints.size - 2)) {
             val samples = numSamples[i] * subdivs
             for (j in 0 until samples) {
-                points += spline.evaluate(i + j / samples.toFloat(), MutableVec3f())
+                trackPoints += spline.evaluate(i + j / samples.toFloat(), MutableVec3f())
             }
         }
+        trackPointTree = pointKdTree(trackPoints)
 
         trackMesh.generate {
             vertexModFun = {
@@ -67,10 +82,10 @@ class Track : Group() {
                 }
 
                 withTransform {
-                    for (i in 0 .. points.size) {
-                        val prev = if (i == 0) points.last() else points[i-1]
-                        val pt = points[i % points.size]
-                        val next = points[(i + 1) % points.size]
+                    for (i in 0 .. trackPoints.size) {
+                        val prev = if (i == 0) trackPoints.last() else trackPoints[i-1]
+                        val pt = trackPoints[i % trackPoints.size]
+                        val next = trackPoints[(i + 1) % trackPoints.size]
 
                         val z = MutableVec3f(next).subtract(pt).norm().add(MutableVec3f(pt).subtract(prev).norm()).norm()
                         val x = MutableVec3f(z).apply { y = 0f }

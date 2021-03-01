@@ -27,6 +27,19 @@ external interface PxTopLevelFunctions {
     fun DefaultWheelSceneQueryPostFilterBlocking(): PxBatchQueryPostFilterShader
 
     /**
+     * @param scene WebIDL type: [PxScene] (Ref)
+     * @return WebIDL type: [PxControllerManager]
+     */
+    fun CreateControllerManager(scene: PxScene): PxControllerManager
+
+    /**
+     * @param scene          WebIDL type: [PxScene] (Ref)
+     * @param lockingEnabled WebIDL type: boolean
+     * @return WebIDL type: [PxControllerManager]
+     */
+    fun CreateControllerManager(scene: PxScene, lockingEnabled: Boolean): PxControllerManager
+
+    /**
      * @param version    WebIDL type: unsigned long
      * @param foundation WebIDL type: [PxFoundation] (Ref)
      * @param scale      WebIDL type: [PxCookingParams] (Const, Ref)
