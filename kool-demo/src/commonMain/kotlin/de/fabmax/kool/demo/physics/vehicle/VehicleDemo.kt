@@ -234,8 +234,9 @@ class VehicleDemo : DemoScene("Vehicle") {
                 simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData)
         )
 
-        val pose = Mat4f().translate(0f, 3f, 0f)
+        val pose = Mat4f().translate(0f, 1.5f, -40f)
         vehicle = Vehicle(vehicleProps, world, pose)
+        vehicle.setRotation(Mat3f().rotate(-90f, Vec3f.Y_AXIS))
         world.addActor(vehicle)
 
         vehicleGroup.apply {
