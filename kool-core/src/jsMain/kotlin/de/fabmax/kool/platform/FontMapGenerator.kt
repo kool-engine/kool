@@ -8,7 +8,9 @@ import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.math.max
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -72,6 +74,13 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         canvasCtx.lineTo(0.5, 1.0)
         canvasCtx.stroke()
 
+        // enforce constant width for numeric char (0..9)
+        val numericChars = setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+        val numericWidth = numericChars.maxOf { c ->
+            val metrics = canvasCtx.measureText("$c")
+            round(metrics.width + metrics.actualBoundingBoxLeft)
+        }
+
         var x = 1.0
         var y = hab
         for (c in fontProps.chars) {
@@ -81,7 +90,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             }
 
             val txt = "$c"
-            val charW = round(canvasCtx.measureText(txt).width)
+            val txtMetrics = canvasCtx.measureText(txt)
+            val charW = if (c in numericChars) numericWidth else round(txtMetrics.width + max(0.0, txtMetrics.actualBoundingBoxLeft))
             val paddedWidth = round(charW + padding * 2)
             if (x + paddedWidth > maxWidth) {
                 x = 0.0
@@ -104,7 +114,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             metrics.uvMax.set((x + padding + widthPx).toFloat(), (y - hab).toFloat() + heightPx)
             map[c] = metrics
 
-            canvasCtx.fillText(txt, x + padding, y)
+            val xStartOff = max(0.0, txtMetrics.actualBoundingBoxLeft).roundToInt()
+            canvasCtx.fillText(txt, x + padding + xStartOff, y)
             x += paddedWidth
         }
 
