@@ -107,6 +107,8 @@ class VehicleUi(ctx: KoolContext) {
     private lateinit var sec1Lbl: Label
     private lateinit var sec2Lbl: Label
 
+    var onToggleSound: () -> Unit = { }
+
     val uiScene = uiScene(dpi = ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
@@ -221,7 +223,7 @@ class VehicleUi(ctx: KoolContext) {
         }
 
         +container("timer") {
-            layoutSpec.setSize(dps(400f * scale), dps(90f * scale), full())
+            layoutSpec.setSize(dps(600f * scale), dps(90f * scale), full())
             layoutSpec.setOrigin(pcs(50f) - dps(200f * scale), dps(-90f * scale), zero())
 
             +label("trackTime") {
@@ -270,6 +272,14 @@ class VehicleUi(ctx: KoolContext) {
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
                 textColor.setCustom(Color.MD_GREY_400)
+            }
+
+            +button("Toggle Sound") {
+                layoutSpec.setOrigin(dps(450f * scale), dps(48f * scale), zero())
+                layoutSpec.setSize(dps(150f * scale), dps(35f * scale), full())
+                onClick += { _, _, _ ->
+                    onToggleSound()
+                }
             }
         }
     }

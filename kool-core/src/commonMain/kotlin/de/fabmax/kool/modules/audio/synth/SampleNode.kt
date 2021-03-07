@@ -1,4 +1,4 @@
-package de.fabmax.kool.modules.audio
+package de.fabmax.kool.modules.audio.synth
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.randomF

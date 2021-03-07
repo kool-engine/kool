@@ -158,6 +158,9 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         val modelBasePath: String
             get() = getProperty("pbrDemo.models", "$awsBaseUrl/models")
 
+        val soundsBasePath: String
+            get() = getProperty("pbrDemo.models", "$awsBaseUrl/sounds")
+
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value
         }

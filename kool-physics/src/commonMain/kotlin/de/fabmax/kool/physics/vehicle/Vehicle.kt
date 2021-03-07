@@ -7,7 +7,7 @@ import kotlin.math.PI
 
 expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f = Mat4f()) : CommonVehicle {
 
-    val wheelTransforms: List<Mat4f>
+    val wheelInfos: List<WheelInfo>
 
     val forwardSpeed: Float
     val sidewaysSpeed: Float

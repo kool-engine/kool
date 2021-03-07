@@ -22,8 +22,6 @@ object DepsCommon {
 }
 
 object DepsJvm {
-    val jTransforms = "com.github.wendykierp:JTransforms:3.1"
-
     fun lwjgl(subLib: String? = null): String {
         return if (subLib != null) {
             "org.lwjgl:lwjgl-$subLib:${Versions.lwjglVersion}"

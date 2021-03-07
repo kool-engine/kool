@@ -49,7 +49,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("reflect"))
 
-                implementation(DepsJvm.jTransforms)
                 implementation(DepsJvm.lwjgl())
                 implementation(DepsJvm.lwjgl("glfw"))
                 implementation(DepsJvm.lwjgl("jemalloc"))

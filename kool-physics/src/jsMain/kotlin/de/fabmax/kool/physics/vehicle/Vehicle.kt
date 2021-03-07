@@ -20,7 +20,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     private val query: PxBatchQuery
     private val frictionPairs: FrictionPairs
 
-    actual val wheelTransforms = List(4) { Mat4f() }
+    actual val wheelInfos = List(4) { WheelInfo() }
 
     override var steerInput = 0f
         set(value) {
@@ -125,10 +125,12 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // update vehicle simulation state
         Physics.PxVehicle.PxVehicleSuspensionRaycasts(query, vehicleAsVector, queryData.numQueriesPerBatch, queryData.raycastResults.data())
         Physics.PxVehicle.PxVehicleUpdates(timeStep, world.scene.gravity, frictionPairs.frictionPairs, vehicleAsVector, vehicleWheelQueryResult)
-
         for (i in 0 until 4) {
+            val wheelInfo = wheelInfos[i]
             wheelQueryResults.at(i).apply {
-                localPose.toMat4f(wheelTransforms[i])
+                localPose.toMat4f(wheelInfo.transform)
+                wheelInfo.lateralSlip = lateralSlip
+                wheelInfo.longitudinalSlip = longitudinalSlip
             }
         }
 

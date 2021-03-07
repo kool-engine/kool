@@ -34,7 +34,7 @@ class VehicleProperties {
     var peakEngineTorque = 1000f
     var peakEngineRpm = 6000f
     var gearSwitchTime = 0.35f
-    var clutchStrength = 10f
+    var clutchStrength = 50f
 
     var frontAntiRollBarStiffness = 10000f
     var rearAntiRollBarStiffness = 10000f

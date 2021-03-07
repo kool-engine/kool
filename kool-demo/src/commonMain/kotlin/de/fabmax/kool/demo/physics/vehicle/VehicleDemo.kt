@@ -27,6 +27,7 @@ import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.max
 import kotlin.math.sign
 
 class VehicleDemo : DemoScene("Vehicle") {
@@ -51,16 +52,21 @@ class VehicleDemo : DemoScene("Vehicle") {
     private var track: Track? = null
     private var timer: TrackTimer? = null
 
+    private lateinit var vehicleAudio: VehicleAudio
+
     override fun setupMainScene(ctx: KoolContext) = scene {
         var inited = false
+
+        vehicleAudio = VehicleAudio(ctx)
         ctx.assetMgr.launch {
             lighting.singleLight {
-//                setDirectional(Vec3f(0.5f, -1f, -0.5f))
-                setDirectional(Vec3f(-1f, -0.6f, -1f))
+                setDirectional(Vec3f(0.5f, -1f, -0.5f))
                 setColor(Color.WHITE, 0.75f)
+//                setDirectional(Vec3f(-1f, -0.6f, -1f))
+//                setColor(Color.WHITE, 1f)
             }
-//            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
-            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+//            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
             aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
             shadows += CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
                 mapRanges[0].set(0f, 0.05f)
@@ -116,9 +122,6 @@ class VehicleDemo : DemoScene("Vehicle") {
                     physicsWorld.onFixedUpdate += {
                         updateTracking()
                     }
-                    onUpdate += {
-                        println(camera.globalLookDir)
-                    }
                 }
 
                 (camera as PerspectiveCamera).apply {
@@ -126,6 +129,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                     clipFar = 1000f
                 }
 
+                var prevGear = 0
                 onUpdate += {
                     throttleBrakeHandler.update(vehicle.forwardSpeed, it.deltaT)
                     vehicle.isReverse = throttleBrakeHandler.isReverse
@@ -133,6 +137,26 @@ class VehicleDemo : DemoScene("Vehicle") {
                     vehicle.throttleInput = throttleBrakeHandler.throttle.value
                     vehicle.brakeInput = throttleBrakeHandler.brake.value
                     updateDashboard()
+
+                    vehicleAudio.rpm = vehicle.engineSpeedRpm
+                    vehicleAudio.throttle = throttleBrakeHandler.throttle.value
+                    vehicleAudio.brake = throttleBrakeHandler.brake.value
+                    vehicleAudio.speed = vehicle.linearVelocity.length()
+
+                    vehicleAudio.slip = 0f
+                    for (i in 0..3) {
+                        val slip = max(abs(vehicle.wheelInfos[i].lateralSlip), (abs(vehicle.wheelInfos[i].longitudinalSlip) - 0.3f) / 0.7f)
+                        if (slip > vehicleAudio.slip) {
+                            vehicleAudio.slip = slip
+                        }
+                    }
+
+                    val gear = vehicle.currentGear
+                    if (gear != prevGear) {
+                        vehicleAudio.gearOut = gear == 0
+                        vehicleAudio.gearIn = gear != 0
+                    }
+                    prevGear = gear
                 }
 
                 val steerLeft: (InputManager.KeyEvent) -> Unit = {
@@ -183,12 +207,21 @@ class VehicleDemo : DemoScene("Vehicle") {
         physicsWorld.clear()
         physicsWorld.release()
         groundMaterial.release()
+        vehicleAudio.stop()
 
         keyListeners.forEach { ctx.inputMgr.removeKeyListener(it) }
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
-        dashboard = VehicleUi(ctx)
+        dashboard = VehicleUi(ctx).apply {
+            onToggleSound = {
+                if (vehicleAudio.isStarted) {
+                    vehicleAudio.stop()
+                } else {
+                    vehicleAudio.start()
+                }
+            }
+        }
         return dashboard!!.uiScene
     }
 
@@ -288,7 +321,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                 transform.set(vehicle.transform)
                 setDirty()
                 for (i in 0..3) {
-                    wheelMeshes[i].transform.set(vehicle.wheelTransforms[i])
+                    wheelMeshes[i].transform.set(vehicle.wheelInfos[i].transform)
                     wheelMeshes[i].setDirty()
                 }
 
