@@ -197,14 +197,14 @@ class VehicleUi(ctx: KoolContext) {
                 throttleBar = this
                 layoutSpec.setOrigin(dps(382f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(50f * scale), dps(140f * scale), full())
-                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_LIGHT_BLUE)
+                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_ORANGE)
             }
 
             +VerticalBar("brakeBar", this@uiScene).apply {
                 brakeBar = this
                 layoutSpec.setOrigin(dps(447f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(50f * scale), dps(140f * scale), full())
-                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_PINK)
+                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_DEEP_ORANGE)
             }
 
             +HorizontalBar("steering", this@uiScene).apply {

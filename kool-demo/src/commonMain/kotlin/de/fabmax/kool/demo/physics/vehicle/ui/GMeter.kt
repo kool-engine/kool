@@ -24,7 +24,7 @@ class GMeter(name: String, root: UiRoot) : UiComponent(name, root) {
             isValueUpdate = true
         }
 
-    var color = ColorGradient(Color.MD_LIGHT_BLUE, Color.MD_PINK)
+    var color = ColorGradient(Color.MD_ORANGE_100, Color.MD_ORANGE)
 
     private var isValueUpdate = false
 

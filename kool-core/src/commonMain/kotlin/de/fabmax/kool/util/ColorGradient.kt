@@ -65,9 +65,13 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
         const val DEFAULT_N = 256
 
         val JET = ColorGradient(Color.BLUE, Color.CYAN, Color.GREEN, Color.YELLOW, Color.RED, Color.MAGENTA)
+
         val JET_MD = ColorGradient(Color.MD_BLUE, Color.MD_CYAN, Color.MD_GREEN, Color.MD_YELLOW, Color.MD_RED, Color.MD_PURPLE)
+
         val RED_YELLOW_GREEN = ColorGradient(Color.RED, Color.YELLOW, Color.GREEN)
+
         val RED_YELLOW_GREEN_MD = ColorGradient(Color.MD_RED, Color.MD_YELLOW, Color.MD_GREEN)
+
         val RED_WHITE_BLUE = ColorGradient(
                 0f to Color(0.35f, 0f, 0f, 1f),
                 0.35f to Color(0.81f, 0.39f, 0f, 1f),
@@ -75,6 +79,7 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
                 0.75f to Color(0f, 0.5f, 1f, 1f),
                 1f to Color(0f, 0.18f, 0.47f, 1f)
         )
+
         val PLASMA = ColorGradient(
                 Color(0.0504f, 0.0298f, 0.5280f, 1f),
                 Color(0.1324f, 0.0223f, 0.5633f, 1f),
@@ -109,6 +114,7 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
                 Color(0.9593f, 0.9214f, 0.1516f, 1f),
                 Color(0.9400f, 0.9752f, 0.1313f, 1f)
         )
+
         val VIRIDIS = ColorGradient(
                 Color(0.2670f, 0.0049f, 0.3294f, 1f),
                 Color(0.2770f, 0.0503f, 0.3757f, 1f),
@@ -142,6 +148,272 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
                 Color(0.8353f, 0.8860f, 0.1026f, 1f),
                 Color(0.9162f, 0.8961f, 0.1007f, 1f),
                 Color(0.9932f, 0.9062f, 0.1439f, 1f)
+        )
+
+        val MD_RED = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_RED_50,
+            100f to Color.MD_RED_100,
+            200f to Color.MD_RED_200,
+            300f to Color.MD_RED_300,
+            400f to Color.MD_RED_400,
+            500f to Color.MD_RED_500,
+            600f to Color.MD_RED_600,
+            700f to Color.MD_RED_700,
+            800f to Color.MD_RED_800,
+            900f to Color.MD_RED_900
+        )
+
+        val MD_PINK = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_PINK_50,
+            100f to Color.MD_PINK_100,
+            200f to Color.MD_PINK_200,
+            300f to Color.MD_PINK_300,
+            400f to Color.MD_PINK_400,
+            500f to Color.MD_PINK_500,
+            600f to Color.MD_PINK_600,
+            700f to Color.MD_PINK_700,
+            800f to Color.MD_PINK_800,
+            900f to Color.MD_PINK_900
+        )
+
+        val MD_PURPLE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_PURPLE_50,
+            100f to Color.MD_PURPLE_100,
+            200f to Color.MD_PURPLE_200,
+            300f to Color.MD_PURPLE_300,
+            400f to Color.MD_PURPLE_400,
+            500f to Color.MD_PURPLE_500,
+            600f to Color.MD_PURPLE_600,
+            700f to Color.MD_PURPLE_700,
+            800f to Color.MD_PURPLE_800,
+            900f to Color.MD_PURPLE_900
+        )
+
+        val MD_DEEP_PURPLE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_DEEP_PURPLE_50,
+            100f to Color.MD_DEEP_PURPLE_100,
+            200f to Color.MD_DEEP_PURPLE_200,
+            300f to Color.MD_DEEP_PURPLE_300,
+            400f to Color.MD_DEEP_PURPLE_400,
+            500f to Color.MD_DEEP_PURPLE_500,
+            600f to Color.MD_DEEP_PURPLE_600,
+            700f to Color.MD_DEEP_PURPLE_700,
+            800f to Color.MD_DEEP_PURPLE_800,
+            900f to Color.MD_DEEP_PURPLE_900
+        )
+
+        val MD_INDIGO = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_INDIGO_50,
+            100f to Color.MD_INDIGO_100,
+            200f to Color.MD_INDIGO_200,
+            300f to Color.MD_INDIGO_300,
+            400f to Color.MD_INDIGO_400,
+            500f to Color.MD_INDIGO_500,
+            600f to Color.MD_INDIGO_600,
+            700f to Color.MD_INDIGO_700,
+            800f to Color.MD_INDIGO_800,
+            900f to Color.MD_INDIGO_900
+        )
+
+        val MD_BLUE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_BLUE_50,
+            100f to Color.MD_BLUE_100,
+            200f to Color.MD_BLUE_200,
+            300f to Color.MD_BLUE_300,
+            400f to Color.MD_BLUE_400,
+            500f to Color.MD_BLUE_500,
+            600f to Color.MD_BLUE_600,
+            700f to Color.MD_BLUE_700,
+            800f to Color.MD_BLUE_800,
+            900f to Color.MD_BLUE_900
+        )
+
+        val MD_LIGHT_BLUE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_LIGHT_BLUE_50,
+            100f to Color.MD_LIGHT_BLUE_100,
+            200f to Color.MD_LIGHT_BLUE_200,
+            300f to Color.MD_LIGHT_BLUE_300,
+            400f to Color.MD_LIGHT_BLUE_400,
+            500f to Color.MD_LIGHT_BLUE_500,
+            600f to Color.MD_LIGHT_BLUE_600,
+            700f to Color.MD_LIGHT_BLUE_700,
+            800f to Color.MD_LIGHT_BLUE_800,
+            900f to Color.MD_LIGHT_BLUE_900
+        )
+
+        val MD_CYAN = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_CYAN_50,
+            100f to Color.MD_CYAN_100,
+            200f to Color.MD_CYAN_200,
+            300f to Color.MD_CYAN_300,
+            400f to Color.MD_CYAN_400,
+            500f to Color.MD_CYAN_500,
+            600f to Color.MD_CYAN_600,
+            700f to Color.MD_CYAN_700,
+            800f to Color.MD_CYAN_800,
+            900f to Color.MD_CYAN_900
+        )
+
+        val MD_TEAL = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_TEAL_50,
+            100f to Color.MD_TEAL_100,
+            200f to Color.MD_TEAL_200,
+            300f to Color.MD_TEAL_300,
+            400f to Color.MD_TEAL_400,
+            500f to Color.MD_TEAL_500,
+            600f to Color.MD_TEAL_600,
+            700f to Color.MD_TEAL_700,
+            800f to Color.MD_TEAL_800,
+            900f to Color.MD_TEAL_900
+        )
+
+        val MD_GREEN = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_GREEN_50,
+            100f to Color.MD_GREEN_100,
+            200f to Color.MD_GREEN_200,
+            300f to Color.MD_GREEN_300,
+            400f to Color.MD_GREEN_400,
+            500f to Color.MD_GREEN_500,
+            600f to Color.MD_GREEN_600,
+            700f to Color.MD_GREEN_700,
+            800f to Color.MD_GREEN_800,
+            900f to Color.MD_GREEN_900
+        )
+
+        val MD_LIGHT_GREEN = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_LIGHT_GREEN_50,
+            100f to Color.MD_LIGHT_GREEN_100,
+            200f to Color.MD_LIGHT_GREEN_200,
+            300f to Color.MD_LIGHT_GREEN_300,
+            400f to Color.MD_LIGHT_GREEN_400,
+            500f to Color.MD_LIGHT_GREEN_500,
+            600f to Color.MD_LIGHT_GREEN_600,
+            700f to Color.MD_LIGHT_GREEN_700,
+            800f to Color.MD_LIGHT_GREEN_800,
+            900f to Color.MD_LIGHT_GREEN_900
+        )
+
+        val MD_LIME = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_LIME_50,
+            100f to Color.MD_LIME_100,
+            200f to Color.MD_LIME_200,
+            300f to Color.MD_LIME_300,
+            400f to Color.MD_LIME_400,
+            500f to Color.MD_LIME_500,
+            600f to Color.MD_LIME_600,
+            700f to Color.MD_LIME_700,
+            800f to Color.MD_LIME_800,
+            900f to Color.MD_LIME_900
+        )
+
+        val MD_YELLOW = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_YELLOW_50,
+            100f to Color.MD_YELLOW_100,
+            200f to Color.MD_YELLOW_200,
+            300f to Color.MD_YELLOW_300,
+            400f to Color.MD_YELLOW_400,
+            500f to Color.MD_YELLOW_500,
+            600f to Color.MD_YELLOW_600,
+            700f to Color.MD_YELLOW_700,
+            800f to Color.MD_YELLOW_800,
+            900f to Color.MD_YELLOW_900
+        )
+
+        val MD_AMBER = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_AMBER_50,
+            100f to Color.MD_AMBER_100,
+            200f to Color.MD_AMBER_200,
+            300f to Color.MD_AMBER_300,
+            400f to Color.MD_AMBER_400,
+            500f to Color.MD_AMBER_500,
+            600f to Color.MD_AMBER_600,
+            700f to Color.MD_AMBER_700,
+            800f to Color.MD_AMBER_800,
+            900f to Color.MD_AMBER_900
+        )
+
+        val MD_ORANGE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_ORANGE_50,
+            100f to Color.MD_ORANGE_100,
+            200f to Color.MD_ORANGE_200,
+            300f to Color.MD_ORANGE_300,
+            400f to Color.MD_ORANGE_400,
+            500f to Color.MD_ORANGE_500,
+            600f to Color.MD_ORANGE_600,
+            700f to Color.MD_ORANGE_700,
+            800f to Color.MD_ORANGE_800,
+            900f to Color.MD_ORANGE_900
+        )
+
+        val MD_DEEP_ORANGE = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_DEEP_ORANGE_50,
+            100f to Color.MD_DEEP_ORANGE_100,
+            200f to Color.MD_DEEP_ORANGE_200,
+            300f to Color.MD_DEEP_ORANGE_300,
+            400f to Color.MD_DEEP_ORANGE_400,
+            500f to Color.MD_DEEP_ORANGE_500,
+            600f to Color.MD_DEEP_ORANGE_600,
+            700f to Color.MD_DEEP_ORANGE_700,
+            800f to Color.MD_DEEP_ORANGE_800,
+            900f to Color.MD_DEEP_ORANGE_900
+        )
+
+        val MD_BROWN = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_BROWN_50,
+            100f to Color.MD_BROWN_100,
+            200f to Color.MD_BROWN_200,
+            300f to Color.MD_BROWN_300,
+            400f to Color.MD_BROWN_400,
+            500f to Color.MD_BROWN_500,
+            600f to Color.MD_BROWN_600,
+            700f to Color.MD_BROWN_700,
+            800f to Color.MD_BROWN_800,
+            900f to Color.MD_BROWN_900
+        )
+
+        val MD_GREY = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_GREY_50,
+            100f to Color.MD_GREY_100,
+            200f to Color.MD_GREY_200,
+            300f to Color.MD_GREY_300,
+            400f to Color.MD_GREY_400,
+            500f to Color.MD_GREY_500,
+            600f to Color.MD_GREY_600,
+            700f to Color.MD_GREY_700,
+            800f to Color.MD_GREY_800,
+            900f to Color.MD_GREY_900
+        )
+
+        val MD_BLUE_GREY = ColorGradient(
+            0f to Color.WHITE,
+            50f to Color.MD_BLUE_GREY_50,
+            100f to Color.MD_BLUE_GREY_100,
+            200f to Color.MD_BLUE_GREY_200,
+            300f to Color.MD_BLUE_GREY_300,
+            400f to Color.MD_BLUE_GREY_400,
+            500f to Color.MD_BLUE_GREY_500,
+            600f to Color.MD_BLUE_GREY_600,
+            700f to Color.MD_BLUE_GREY_700,
+            800f to Color.MD_BLUE_GREY_800,
+            900f to Color.MD_BLUE_GREY_900
         )
     }
 }

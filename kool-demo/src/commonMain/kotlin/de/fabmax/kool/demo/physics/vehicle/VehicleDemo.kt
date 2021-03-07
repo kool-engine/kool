@@ -55,16 +55,18 @@ class VehicleDemo : DemoScene("Vehicle") {
         var inited = false
         ctx.assetMgr.launch {
             lighting.singleLight {
-                setDirectional(Vec3f(1f, -1.2f, -0.8f))
-                setColor(Color.WHITE, 1f)
+//                setDirectional(Vec3f(0.5f, -1f, -0.5f))
+                setDirectional(Vec3f(-1f, -0.6f, -1f))
+                setColor(Color.WHITE, 0.75f)
             }
-            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+//            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
             aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
             shadows += CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
                 mapRanges[0].set(0f, 0.05f)
                 mapRanges[1].set(0.05f, 0.2f)
                 mapRanges[2].set(0.2f, 1f)
-                cascades.forEach { it.directionalCamNearOffset = -40f }
+                cascades.forEach { it.directionalCamNearOffset = -80f }
             }
             +Skybox.cube(ibl.reflectionMap, 1f)
 
@@ -113,6 +115,9 @@ class VehicleDemo : DemoScene("Vehicle") {
                     }
                     physicsWorld.onFixedUpdate += {
                         updateTracking()
+                    }
+                    onUpdate += {
+                        println(camera.globalLookDir)
                     }
                 }
 
@@ -265,7 +270,7 @@ class VehicleDemo : DemoScene("Vehicle") {
 
             vehicleMesh = colorMesh {
                 generate {
-                    color = Color.MD_ORANGE.toLinear()
+                    color = color(600f)
                     cube {
                         size.set(vehicleProps.chassisDims)
                         centered()
@@ -318,8 +323,8 @@ class VehicleDemo : DemoScene("Vehicle") {
                 body.position = pos
                 world.addActor(body)
 
-                val color = if (i % 2 == 0) Color.MD_ORANGE_300 else  Color.MD_ORANGE_100
-                +body.toPrettyMesh(color.toLinear())
+                val color = if (i % 2 == 0) color(400f) else color(200f)
+                +body.toPrettyMesh(color)
             }
         }
     }
@@ -339,14 +344,14 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         world.addActor(anchor)
         world.addActor(rocker)
-        +anchor.toPrettyMesh(Color.MD_ORANGE.toLinear())
-        +rocker.toPrettyMesh(Color.MD_ORANGE_100.toLinear())
+        +anchor.toPrettyMesh(color(400f))
+        +rocker.toPrettyMesh(color(200f))
 
         RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }
 
     private fun MeshBuilder.makeRamp(frame: Mat4f) {
-        color = Color.MD_ORANGE_100.toLinear()
+        color = color(200f)
         withTransform {
             transform.mul(frame)
             rotate(-11f, 0f, 0f)
@@ -359,14 +364,14 @@ class VehicleDemo : DemoScene("Vehicle") {
 
     private fun MeshBuilder.makeBumps(frame: Mat4f) {
         for (i in 0 until 30) {
-            val c = if (i % 2 == 0) Color.MD_ORANGE_300 else Color.MD_ORANGE_100
+            val c = if (i % 2 == 0) color(400f) else color(200f)
             for (s in -1 .. 1 step 2) {
                 withTransform {
                     transform.mul(frame)
                     translate(2f * s, -0.3f, i * 3.1f + s * 0.4f)
                     rotate(90f, Vec3f.Z_AXIS)
                     translate(0f, -2f, 0f)
-                    color = c.toLinear()
+                    color = c
                     cylinder {
                         radius = 0.5f
                         height = 4f
@@ -395,7 +400,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                     }
                 }
 
-                color = Color.MD_ORANGE_100.toLinear()
+                color = color(200f)
                 sample()
                 val inds = mutableListOf<Int>()
                 inds += multiShape.shapes[0].sampledVertIndices
@@ -431,10 +436,10 @@ class VehicleDemo : DemoScene("Vehicle") {
     private fun Scene.makeTrack(world: PhysicsWorld) {
         track = Track().generate {
             subdivs = 2
-            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
-            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-10f, 0.05f, -40f), Vec3f(-10f, 0f, 0f)))
-            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-70f, 10f, -40f), Vec3f(-10f, 1f, 0f)))
-            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-200f, 15f, 50f), Vec3f(0f, 0f, 80f)), 40)
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-3f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-10f, 0.05f, -40f), Vec3f(-8f, 0f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-70f, 10f, -40f), Vec3f(-10f, 2f, 0f)))
+            addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-200f, 25f, 50f), Vec3f(0f, 0f, 80f)), 40)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 15f, 200f), Vec3f(100f, 0f, 0f)), 40)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(100f, 15f, 100f), Vec3f(0f, 0f, -40f)), 30)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(50f, 20f, 0f), Vec3f(0f, 0f, -40f)))
@@ -449,11 +454,9 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +track!!
 
-        makeStaticCollisionBody(track!!.trackMesh.geometry, world)
-
         val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
         val rand = Random(1337)
-        val gradient = ColorGradient(Color.MD_ORANGE_50, Color.MD_ORANGE_300)
+        val gradient = ColorGradient(color(50f, false), color(300f, false))
         val sz = 128
         val colorData = createUint8Buffer(sz * sz * 4)
         val roughnessData = createUint8Buffer(sz * sz)
@@ -472,25 +475,41 @@ class VehicleDemo : DemoScene("Vehicle") {
             roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toByte()
         }
 
-        val albedo = Texture2d(texProps) {
+        val albedoMap = Texture2d(texProps) {
             TextureData2d(colorData, sz, sz, TexFormat.RGBA)
         }
-        val roughness = Texture2d(texProps) {
+        val roughnessMap = Texture2d(texProps) {
             TextureData2d(roughnessData, sz, sz, TexFormat.R)
         }
 
         onDispose += {
-            albedo.dispose()
-            roughness.dispose()
+            albedoMap.dispose()
+            roughnessMap.dispose()
         }
 
-        track!!.trackMesh.shader = pbrShader {
-            albedoSource = Albedo.TEXTURE_ALBEDO
-            shadowMaps += shadows
-            useImageBasedLighting(ibl)
-            useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-            useAlbedoMap(albedo)
-            useRoughnessMap(roughness)
+        track!!.apply {
+            val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
+            collisionMesh.addGeometry(trackMesh.geometry)
+            collisionMesh.addGeometry(trackSupportMesh.geometry)
+            makeStaticCollisionBody(collisionMesh, world)
+
+            trackMesh.shader = pbrShader {
+                albedoSource = Albedo.TEXTURE_ALBEDO
+                shadowMaps += shadows
+                useImageBasedLighting(ibl)
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useAlbedoMap(albedoMap)
+                useRoughnessMap(roughnessMap)
+            }
+
+            trackSupportMesh.shader = makeSupportMeshShader(shadows, ibl, aoPipeline.aoMap)
+//            trackSupportMesh.shader = pbrShader {
+//                albedoSource = Albedo.VERTEX_ALBEDO
+//                shadowMaps += shadows
+//                useImageBasedLighting(ibl)
+//                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+//                roughness = 0.3f
+//            }
         }
 
         timer = TrackTimer(vehicle, world, groundMaterial).apply {
@@ -552,7 +571,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                 useNormalMap(groundNormal)
                 useImageBasedLighting(ibl)
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                albedo = Color.MD_ORANGE_100.mix(Color.WHITE, 0.5f).toLinear()
+                albedo = color(100f)
                 shadowMaps += shadows
             }
         }
@@ -629,6 +648,14 @@ class VehicleDemo : DemoScene("Vehicle") {
             }
             throttle.tick(deltaT)
             brake.tick(deltaT)
+        }
+    }
+
+    companion object {
+        fun color(c: Float, linear: Boolean = true): Color {
+            val color = ColorGradient.MD_ORANGE.getColor(c, 0f, 900f)
+                .mix(ColorGradient.MD_GREY.getColor(c, 0f, 900f), 0.25f)
+            return if (linear) color.toLinear() else color
         }
     }
 }

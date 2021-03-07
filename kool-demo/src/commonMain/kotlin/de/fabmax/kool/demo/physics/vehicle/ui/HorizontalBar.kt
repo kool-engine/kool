@@ -15,7 +15,7 @@ class HorizontalBar(name: String, root: UiRoot) : UiComponent(name, root) {
             isTrackUpdate = true
         }
 
-    var trackColor = ColorGradient(Color.MD_PINK, Color.MD_LIGHT_BLUE, Color.MD_PINK)
+    var trackColor = ColorGradient(Color.MD_ORANGE, Color.MD_ORANGE_100, Color.MD_ORANGE)
         set(value) {
             field = value
             isTrackUpdate = true

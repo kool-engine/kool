@@ -15,7 +15,7 @@ class VerticalBar(name: String, root: UiRoot) : UiComponent(name, root) {
             isTrackUpdate = true
         }
 
-    var trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_LIGHT_BLUE)
+    var trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_ORANGE)
         set(value) {
             field = value
             isTrackUpdate = true
@@ -49,6 +49,10 @@ class VerticalBarUi(private val verticalBar: VerticalBar) : BarUi(verticalBar) {
         centerTrack += Vec2f(w/2f, 0f)
         centerTrack += Vec2f(w/2f + tilt, 1f)
 
+        centerTrack.forEach {
+            centerTrackLefts += Vec2f(-w/2f, 0f)
+        }
+
         // compute track length
         var len = 0f
         for (i in 0 until centerTrack.lastIndex) {
@@ -60,10 +64,6 @@ class VerticalBarUi(private val verticalBar: VerticalBar) : BarUi(verticalBar) {
             pos += centerTrack[i].distance(centerTrack[i+1])
         }
         centerTrackRelPos += 1f
-
-        // compute left directions
-        centerTrackLefts += Vec2f(-w/2, 0f)
-        centerTrackLefts += Vec2f(-w/2, 0f)
     }
 
     override fun updateUi(ctx: KoolContext) {
