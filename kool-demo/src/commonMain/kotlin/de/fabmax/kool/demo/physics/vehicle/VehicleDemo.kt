@@ -9,7 +9,6 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -24,7 +23,6 @@ class VehicleDemo : DemoScene("Vehicle") {
     private var dashboard: VehicleUi? = null
     private var track: Track? = null
     private var timer: TrackTimer? = null
-
 
     override fun setupMainScene(ctx: KoolContext) = scene {
         var createObjects = false
@@ -131,7 +129,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                     vehicle?.vehicle?.let { veh ->
                         val distToTrack = track?.distanceToTrack(veh.position) ?: 0f
                         if (distToTrack > 15f) {
-                            t.reset()
+                            t.reset(t.isReverse)
                         }
                     }
                 }
@@ -140,7 +138,7 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Scene.makeTrack(world: VehicleWorld) {
-        track = Track().generate {
+        track = Track(world).generate {
             subdivs = 2
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-3f, 0f, 0f)))
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(-10f, 0.05f, -40f), Vec3f(-8f, 0f, 0f)))
@@ -157,61 +155,29 @@ class VehicleDemo : DemoScene("Vehicle") {
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(120f, 15f, -60f), Vec3f(0f, -2f, 20f)), 15)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(80f, 10f, -20f), Vec3f(-20f, -2f, 0f)), 15)
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-20f, 0f, 0f)), 15)
+
+            addGuardRailSection(170f, 240f, false)
+            addGuardRailSection(620f, 670f, false)
+            addGuardRailSection(735f, 785f, false)
+            addGuardRailSection(800f, 850f, true)
+            addGuardRailSection(1020f, 1070f, false)
+            addGuardRailSection(1130f, 1180f, false)
+            addGuardRailSection(1210f, 1260f, false)
+            addGuardRailSection(1395f, 1445f, true)
+            addGuardRailSection(1460f, 1510f, true)
         }
         +track!!
 
-        val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
-        val rand = Random(1337)
-        val gradient = ColorGradient(color(50f, false), color(300f, false))
-        val sz = 128
-        val colorData = createUint8Buffer(sz * sz * 4)
-        val roughnessData = createUint8Buffer(sz * sz)
-
-        var c = gradient.getColor(rand.randomF())
-        var len = rand.randomI(2, 5)
-        for (i in 0 until sz * sz) {
-            if (--len == 0) {
-                c = gradient.getColor(rand.randomF())
-                len = rand.randomI(2, 5)
-            }
-            colorData[i * 4 + 0] = (c.r * 255f).toInt().toByte()
-            colorData[i * 4 + 1] = (c.g * 255f).toInt().toByte()
-            colorData[i * 4 + 2] = (c.b * 255f).toInt().toByte()
-            colorData[i * 4 + 3] = (c.a * 255f).toInt().toByte()
-            roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toByte()
-        }
-
-        val albedoMap = Texture2d(texProps) {
-            TextureData2d(colorData, sz, sz, TexFormat.RGBA)
-        }
-        val roughnessMap = Texture2d(texProps) {
-            TextureData2d(roughnessData, sz, sz, TexFormat.R)
-        }
-
-        onDispose += {
-            albedoMap.dispose()
-            roughnessMap.dispose()
-        }
+        println(track!!.guardRail.signs.size)
 
         track!!.apply {
             val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
             collisionMesh.addGeometry(trackMesh.geometry)
             collisionMesh.addGeometry(trackSupportMesh.geometry)
             world.addStaticCollisionBody(collisionMesh)
-
-            trackMesh.shader = pbrShader {
-                albedoSource = Albedo.TEXTURE_ALBEDO
-                shadowMaps += world.shadows
-                useImageBasedLighting(world.envMaps)
-                useScreenSpaceAmbientOcclusion(world.aoMap)
-                useAlbedoMap(albedoMap)
-                useRoughnessMap(roughnessMap)
-            }
-
-            trackSupportMesh.shader = makeSupportMeshShader(world.shadows, world.envMaps, world.aoMap)
         }
 
-        timer = TrackTimer(vehicle!!.vehicle, world.physics, world.defaultMaterial).apply {
+        timer = TrackTimer(vehicle!!.vehicle, track!!, world).apply {
             enterPos = Vec3f(-15f, 2.5f, -40f)
             enterSize = Vec3f(5f, 5f, 15f)
 

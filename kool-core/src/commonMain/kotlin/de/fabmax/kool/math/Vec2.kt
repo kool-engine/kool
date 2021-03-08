@@ -366,7 +366,7 @@ open class Vec2i(x: Int, y: Int) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Vec4i) return false
+        if (other !is Vec2i) return false
 
         if (x != other.x) return false
         if (y != other.y) return false

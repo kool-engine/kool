@@ -42,6 +42,18 @@ class MultiplyNode(graph: ShaderGraph) : MathOpNode("multiply_${graph.nextNodeId
     }
 }
 
+class MinNode(graph: ShaderGraph) : MathOpNode("min_${graph.nextNodeId}", graph) {
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = min($left, $right);")
+    }
+}
+
+class MaxNode(graph: ShaderGraph) : MathOpNode("max_${graph.nextNodeId}", graph) {
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = max($left, $right);")
+    }
+}
+
 class MixNode(graph: ShaderGraph) : MathOpNode("mix_${graph.nextNodeId}", graph) {
     var mixFac = ShaderNodeIoVar(ModelVar1fConst(0.5f))
 

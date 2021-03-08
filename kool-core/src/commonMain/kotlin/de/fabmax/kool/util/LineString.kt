@@ -64,6 +64,33 @@ class LineString<T: Vec3f>(private val points: MutableList<T> = mutableListOf())
         return result.set(last())
     }
 
+    fun getPointAtDistance(distance: Float, result: MutableVec3f): MutableVec3f {
+        var pos = 0f
+        var step = 0f
+        var iLower = -1
+        for (i in 0 until lastIndex) {
+            step = get(i).distance(get(i+1))
+            if (pos + step > distance) {
+                iLower = i
+                break
+            }
+            pos += step
+        }
+        if (iLower >= 0) {
+            val upper = pos + step
+            val wUpper = (distance - pos) / (upper - pos)
+            result.set(get(iLower)).scale(1f - wUpper)
+            val upperPos = get(iLower + 1)
+            result.x += upperPos.x * wUpper
+            result.y += upperPos.x * wUpper
+            result.z += upperPos.x * wUpper
+
+        } else {
+            result.set(last())
+        }
+        return result
+    }
+
     fun getLowerIndex(forPoint: Vec3f, startIndex: Int = 0): Int {
         var minDist = Float.MAX_VALUE
         var bestI = startIndex

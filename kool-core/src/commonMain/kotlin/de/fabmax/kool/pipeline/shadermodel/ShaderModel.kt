@@ -176,6 +176,20 @@ class ShaderModel(val modelInfo: String = "") {
             return mulNode
         }
 
+        fun minNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): MinNode {
+            val minNode = addNode(MinNode(stage))
+            left?.let { minNode.left = it }
+            right?.let { minNode.right = it }
+            return minNode
+        }
+
+        fun maxNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): MaxNode {
+            val maxNode = addNode(MaxNode(stage))
+            left?.let { maxNode.left = it }
+            right?.let { maxNode.right = it }
+            return maxNode
+        }
+
         fun mixNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null, fac: ShaderNodeIoVar? = null): MixNode {
             val mixNode = addNode(MixNode(stage))
             left?.let { mixNode.left = it }

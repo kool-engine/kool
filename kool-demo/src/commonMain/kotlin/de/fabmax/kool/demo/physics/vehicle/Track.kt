@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -12,23 +9,26 @@ import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 import de.fabmax.kool.util.spatial.KdTree
 import de.fabmax.kool.util.spatial.NearestTraverser
 import de.fabmax.kool.util.spatial.pointKdTree
 import kotlin.math.*
 
-class Track : Group() {
+class Track(val world: VehicleWorld) : Group() {
 
     private val spline = SimpleSpline3f()
     private val numSamples = mutableListOf<Int>()
 
-    private val trackPoints = mutableListOf<Vec3f>()
+    private val trackPoints = mutableListOf<TrackPoint>()
+    private val trackPointsMap = TreeMap<Float, TrackPoint>()
     private var trackPointTree: KdTree<Vec3f>? = null
     private val nearestTrav = NearestTraverser<Vec3f>()
+
+    private val guardRails = mutableListOf<GuardRailSection>()
 
     var subdivs = 1
     var columnDist = 64.5f
@@ -36,9 +36,12 @@ class Track : Group() {
     val trackMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {  }
     val trackSupportMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)) {  }
 
+    val guardRail = GuardRail(world)
+
     init {
         +trackMesh
         +trackSupportMesh
+        +guardRail.guardRailMesh
     }
 
     fun addControlPoint(ctrlPt: SimpleSpline3f.CtrlPoint, numSamples: Int = 20) {
@@ -48,33 +51,64 @@ class Track : Group() {
         spline.ctrlPoints += ctrlPt
     }
 
+    fun addGuardRailSection(from: Float, to: Float, isLeft: Boolean) {
+        guardRails += GuardRailSection(from, to, isLeft)
+    }
+
     fun distanceToTrack(point: Vec3f): Float {
         val tree = trackPointTree ?: return -1f
         nearestTrav.setup(point).traverse(tree)
         return sqrt(nearestTrav.sqrDist)
     }
 
-    private fun MeshBuilder.applyTransform(prev: Vec3f, pt: Vec3f, next: Vec3f) {
-        val z = MutableVec3f(next).subtract(pt).norm().add(MutableVec3f(pt).subtract(prev).norm()).norm()
+    private fun computeFrameAt(pos: Float, result: Mat4f) {
+        val prevKey = trackPointsMap.lowerKey(pos) ?: trackPointsMap.firstKey()
+        val nextKey = trackPointsMap.higherKey(pos) ?: trackPointsMap.lastKey()
+        val prev = trackPointsMap[prevKey]!!
+        val next = trackPointsMap[nextKey]!!
+
+        val wPrev = if (nextKey == prevKey) { 1f } else { (nextKey - pos) / (nextKey - prevKey) }
+        val wNext = 1f - wPrev
+
+        val vec = MutableVec3f(prev).scale(wPrev).add(MutableVec3f(next).scale(wNext))
+        val up = MutableVec3f(prev.up).scale(wPrev).add(MutableVec3f(next.up).scale(wNext))
+        val z = MutableVec3f(prev.dir).scale(wPrev).add(MutableVec3f(next.dir).scale(wNext))
         val x = MutableVec3f(z).apply { y = 0f }
-        x.rotate(90f, Vec3f.Y_AXIS).norm()
+        x.rotate(90f, up).norm()
         val y = z.cross(x, MutableVec3f()).norm()
 
-        transform.setCol(0, x, 0f)
-        transform.setCol(1, y, 0f)
-        transform.setCol(2, z, 0f)
-        transform.setCol(3, pt, 1f)
+        result.setCol(0, x, 0f)
+        result.setCol(1, y, 0f)
+        result.setCol(2, z, 0f)
+        result.setCol(3, vec, 1f)
     }
 
-    private fun build() {
+    private fun sampleTrack() {
         trackPoints.clear()
+        var pos = 0f
         for (i in 0 .. (spline.ctrlPoints.size - 2)) {
             val samples = numSamples[i] * subdivs
             for (j in 0 until samples) {
-                trackPoints += spline.evaluate(i + j / samples.toFloat(), MutableVec3f())
+                val pt = spline.evaluate(i + j / samples.toFloat(), MutableVec3f())
+                if (trackPoints.isNotEmpty()) {
+                    pos += pt.distance(trackPoints.last())
+                }
+                val trackPt = TrackPoint(pt, pos, trackPoints.size)
+                trackPoints += trackPt
+                trackPointsMap[trackPt.pos] = trackPt
             }
         }
+        for (i in trackPoints.indices) {
+            val prev = if (i == 0) trackPoints.last() else trackPoints[i-1]
+            val pt = trackPoints[i % trackPoints.size]
+            val next = trackPoints[(i + 1) % trackPoints.size]
+            next.subtract(prev, pt.dir).norm()
+        }
         trackPointTree = pointKdTree(trackPoints)
+    }
+
+    private fun build() {
+        sampleTrack()
 
         val columnPts = mutableListOf<Vec4f>()
         var columnL = columnDist
@@ -120,8 +154,7 @@ class Track : Group() {
                     for (i in 0 .. trackPoints.size) {
                         val prev = if (i == 0) trackPoints.last() else trackPoints[i-1]
                         val pt = trackPoints[i % trackPoints.size]
-                        val next = trackPoints[(i + 1) % trackPoints.size]
-                        applyTransform(prev, pt, next)
+                        pt.computeFrame(transform)
 
                         val adv = pt.distance(prev)
                         texU += adv
@@ -129,8 +162,7 @@ class Track : Group() {
 
                         columnL -= adv
                         if (columnL < 0 && pt.y > 5f) {
-                            val head = MutableVec3f(next).subtract(pt).norm()
-                            val ang = atan2(head.x, head.z).toDeg()
+                            val ang = atan2(pt.dir.x, pt.dir.z).toDeg()
                             columnPts += Vec4f(pt, ang)
                             columnL = columnDist
                         }
@@ -156,13 +188,35 @@ class Track : Group() {
             }
             geometry.generateNormals()
         }
+
+        buildGuardRails()
+    }
+
+    private fun buildGuardRails() {
+        guardRails.forEach { guardRail ->
+            sampleGuardRailTrack(guardRail)
+        }
+    }
+
+    private fun sampleGuardRailTrack(guardRailSec: GuardRailSection) {
+        val steps = ((guardRailSec.to - guardRailSec.from) / 3f).roundToInt()
+        val step = (guardRailSec.to - guardRailSec.from) / steps
+        val frame = Mat4f()
+        for (i in 0 .. steps) {
+            computeFrameAt(guardRailSec.from + step * i, frame)
+            val leftRightSign = if (guardRailSec.isLeft) { -1f } else { 1f }
+            frame.translate(-7.65f * leftRightSign, 0f, 0f)
+                .translate(0f, 1.5f, 0f)
+                .rotate(90f * leftRightSign, Vec3f.Y_AXIS)
+
+            guardRail.signs += GuardRail.SignInstance(guardRail.signs.size, guardRailSec.isLeft, frame, world)
+        }
     }
 
     private fun MeshBuilder.generateCurbs() {
         val curbColors = listOf(VehicleDemo.color(150f), VehicleDemo.color(600f))
-        var iCurb = 0
+        color = curbColors[0]
 
-        color = curbColors[iCurb]
         withTransform {
             profile {
                 multiShape {
@@ -188,34 +242,20 @@ class Track : Group() {
                     }
                 }
 
-                var p = curbLen
-                var prev = trackPoints.last()
-                var i = 0
-                while (i <= trackPoints.size) {
-                    var pt = trackPoints[i % trackPoints.size]
-                    var next = trackPoints[(i + 1) % trackPoints.size]
+                var pos = 0f
+                var iColor = 0
+                while (pos < trackPoints.last().pos) {
+                    iColor = (iColor + 1) % curbColors.size
+                    color = curbColors[iColor]
 
-                    val adv = prev.distance(pt)
-                    if (adv >= p) {
-                        val samplePt = MutableVec3f(pt).subtract(prev).norm().scale(p).add(prev)
-                        next = pt
-                        pt = samplePt
-                        applyTransform(prev, pt, next)
-                        sample()
-
-                        p = curbLen
-                        iCurb = (iCurb + 1) % curbColors.size
-                        color = curbColors[iCurb]
-                        sample(connect = false)
-
-                    } else {
-                        p -= adv
-                        i++
-                        applyTransform(prev, pt, next)
-                        sample()
-                    }
-                    prev = pt
+                    computeFrameAt(pos, transform)
+                    sample(connect = false)
+                    pos += curbLen
+                    computeFrameAt(pos, transform)
+                    sample()
                 }
+                computeFrameAt(0f, transform)
+                sample()
             }
         }
     }
@@ -253,15 +293,62 @@ class Track : Group() {
     fun generate(block: Track.() -> Unit): Track {
         apply(block)
         build()
+
+        makeTrackShader()
+        makeSupportMeshShader()
+
         return this
     }
 
-    fun makeSupportMeshShader(shadows: List<ShadowMap>, ibl: EnvironmentMaps, aoMap: Texture2d): Shader {
+    private fun makeTrackShader() {
+        val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
+        val rand = Random(1337)
+        val gradient = ColorGradient(VehicleDemo.color(50f, false), VehicleDemo.color(300f, false))
+        val sz = 128
+        val colorData = createUint8Buffer(sz * sz * 4)
+        val roughnessData = createUint8Buffer(sz * sz)
+
+        var c = gradient.getColor(rand.randomF())
+        var len = rand.randomI(2, 5)
+        for (i in 0 until sz * sz) {
+            if (--len == 0) {
+                c = gradient.getColor(rand.randomF())
+                len = rand.randomI(2, 5)
+            }
+            colorData[i * 4 + 0] = (c.r * 255f).toInt().toByte()
+            colorData[i * 4 + 1] = (c.g * 255f).toInt().toByte()
+            colorData[i * 4 + 2] = (c.b * 255f).toInt().toByte()
+            colorData[i * 4 + 3] = (c.a * 255f).toInt().toByte()
+            roughnessData[i] = ((1f - c.brightness + 0.2f).clamp(0f, 1f) * 255f).toInt().toByte()
+        }
+
+        val albedoMap = Texture2d(texProps) {
+            TextureData2d(colorData, sz, sz, TexFormat.RGBA)
+        }
+        val roughnessMap = Texture2d(texProps) {
+            TextureData2d(roughnessData, sz, sz, TexFormat.R)
+        }
+        trackMesh.onDispose += {
+            albedoMap.dispose()
+            roughnessMap.dispose()
+        }
+
+        trackMesh.shader = pbrShader {
+            albedoSource = Albedo.TEXTURE_ALBEDO
+            shadowMaps += world.shadows
+            useImageBasedLighting(world.envMaps)
+            useScreenSpaceAmbientOcclusion(world.aoMap)
+            useAlbedoMap(albedoMap)
+            useRoughnessMap(roughnessMap)
+        }
+    }
+
+    private fun makeSupportMeshShader() {
         val cfg = PbrMaterialConfig().apply {
             albedoSource = Albedo.VERTEX_ALBEDO
-            shadowMaps += shadows
-            useImageBasedLighting(ibl)
-            useScreenSpaceAmbientOcclusion(aoMap)
+            shadowMaps += world.shadows
+            useImageBasedLighting(world.envMaps)
+            useScreenSpaceAmbientOcclusion(world.aoMap)
             roughness = 0.3f
         }
         val model = PbrShader.defaultPbrModel(cfg).apply {
@@ -273,7 +360,26 @@ class Track : Group() {
                 findNodeByType<PbrMaterialNode>()!!.inRoughness = ifRoughness.output
             }
         }
-        return PbrShader(cfg, model)
+        trackSupportMesh.shader = PbrShader(cfg, model)
+    }
+
+    private class GuardRailSection(val from: Float, val to: Float, val isLeft: Boolean)
+
+    private class TrackPoint(pt: Vec3f, val pos: Float, val index: Int) : Vec3f(pt) {
+        val dir = MutableVec3f()
+        val up = MutableVec3f(0f, 1f, 0f)
+
+        fun computeFrame(result: Mat4f) {
+            val z = dir
+            val x = MutableVec3f(z).apply { y = 0f }
+            x.rotate(90f, up).norm()
+            val y = z.cross(x, MutableVec3f()).norm()
+
+            result.setCol(0, x, 0f)
+            result.setCol(1, y, 0f)
+            result.setCol(2, z, 0f)
+            result.setCol(3, this, 1f)
+        }
     }
 
     companion object {

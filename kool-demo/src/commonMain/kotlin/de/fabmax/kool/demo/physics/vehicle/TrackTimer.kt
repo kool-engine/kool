@@ -1,11 +1,14 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.RigidStatic
+import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.TriggerListener
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 
-class TrackTimer(val vehicle: Vehicle, val world: PhysicsWorld, val material: Material) {
+class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld) {
 
     var enterPos = Vec3f.ZERO
     var enterSize = Vec3f.ZERO
@@ -27,6 +30,8 @@ class TrackTimer(val vehicle: Vehicle, val world: PhysicsWorld, val material: Ma
         private set
     var checkPoint = 0
     var timerState = TimerState.STOPPED
+        private set
+    var isReverse = false
         private set
 
     var onCheckPoint1: (Float) -> Unit = { }
@@ -51,7 +56,7 @@ class TrackTimer(val vehicle: Vehicle, val world: PhysicsWorld, val material: Ma
                 return
             }
             if (!wasRunningOnEnter || checkPoint < 2) {
-                reset()
+                reset(trigger == exitTrigger)
                 timerState = TimerState.STARTED
             }
         }
@@ -60,7 +65,18 @@ class TrackTimer(val vehicle: Vehicle, val world: PhysicsWorld, val material: Ma
     private val checkPointListener = CheckPointListener()
     private inner class CheckPointListener : TriggerListener {
         override fun onActorEntered(trigger: RigidActor, actor: RigidActor) {
-            val cpIndex = if (trigger == checkTrigger1) 1 else 2
+            if (actor !== vehicle) {
+                return
+            }
+
+            val cpIndex = when {
+                !isReverse && trigger == checkTrigger1 -> 1
+                !isReverse && trigger == checkTrigger2 -> 2
+                isReverse && trigger == checkTrigger1 -> 2
+                isReverse && trigger == checkTrigger2 -> 1
+                else -> 0
+            }
+
             if (cpIndex > checkPoint) {
                 checkPoint = cpIndex
                 if (cpIndex == 1) {
@@ -73,52 +89,55 @@ class TrackTimer(val vehicle: Vehicle, val world: PhysicsWorld, val material: Ma
     }
 
     init {
-        world.onFixedUpdate += { deltaT ->
+        world.physics.onFixedUpdate += { deltaT ->
             if (timerState == TimerState.STARTED) {
                 trackTime += deltaT
             }
         }
     }
 
-    fun reset() {
+    fun reset(isReverse: Boolean) {
         timerState = TimerState.STOPPED
         trackTime = 0f
         checkPoint = 0
+        track.guardRail.isReverse = isReverse
+        this.isReverse = isReverse
     }
 
     fun buildTriggers() {
+        val material = world.defaultMaterial
         enterTrigger = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(enterSize), material))
             position = enterPos
         }
-        world.addActor(enterTrigger)
+        world.physics.addActor(enterTrigger)
 
         exitTrigger = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(exitSize), material))
             position = exitPos
         }
-        world.addActor(exitTrigger)
+        world.physics.addActor(exitTrigger)
 
         checkTrigger1 = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(checkSize1), material))
             position = checkPos1
         }
-        world.addActor(checkTrigger1)
+        world.physics.addActor(checkTrigger1)
 
         checkTrigger2 = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(checkSize2), material))
             position = checkPos2
         }
-        world.addActor(checkTrigger2)
+        world.physics.addActor(checkTrigger2)
 
-        world.registerTriggerListener(enterTrigger, enterExitListener)
-        world.registerTriggerListener(exitTrigger, enterExitListener)
-        world.registerTriggerListener(checkTrigger1, checkPointListener)
-        world.registerTriggerListener(checkTrigger2, checkPointListener)
+        world.physics.registerTriggerListener(enterTrigger, enterExitListener)
+        world.physics.registerTriggerListener(exitTrigger, enterExitListener)
+        world.physics.registerTriggerListener(checkTrigger1, checkPointListener)
+        world.physics.registerTriggerListener(checkTrigger2, checkPointListener)
     }
 
     enum class TimerState {
