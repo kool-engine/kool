@@ -2,17 +2,17 @@ package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.spatial.KdTree
 import de.fabmax.kool.util.spatial.NearestTraverser
 import de.fabmax.kool.util.spatial.pointKdTree
@@ -36,7 +36,7 @@ class Track(val world: VehicleWorld) : Group() {
     val trackMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {  }
     val trackSupportMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)) {  }
 
-    val guardRail = GuardRail(world)
+    val guardRail = GuardRail()
 
     init {
         +trackMesh
@@ -333,11 +333,8 @@ class Track(val world: VehicleWorld) : Group() {
             roughnessMap.dispose()
         }
 
-        trackMesh.shader = pbrShader {
+        trackMesh.shader = deferredPbrShader {
             albedoSource = Albedo.TEXTURE_ALBEDO
-            shadowMaps += world.shadows
-            useImageBasedLighting(world.envMaps)
-            useScreenSpaceAmbientOcclusion(world.aoMap)
             useAlbedoMap(albedoMap)
             useRoughnessMap(roughnessMap)
         }
@@ -346,18 +343,15 @@ class Track(val world: VehicleWorld) : Group() {
     private fun makeSupportMeshShader() {
         val cfg = PbrMaterialConfig().apply {
             albedoSource = Albedo.VERTEX_ALBEDO
-            shadowMaps += world.shadows
-            useImageBasedLighting(world.envMaps)
-            useScreenSpaceAmbientOcclusion(world.aoMap)
             roughness = 0.3f
         }
-        val model = PbrShader.defaultPbrModel(cfg).apply {
+        val model = DeferredPbrShader.defaultMrtPbrModel(cfg).apply {
             val ifRoughness: StageInterfaceNode
             vertexStage {
                 ifRoughness = stageInterfaceNode("ifRoughness", attributeNode(ATTRIBUTE_ROUGHNESS).output)
             }
             fragmentStage {
-                findNodeByType<PbrMaterialNode>()!!.inRoughness = ifRoughness.output
+                findNodeByType<DeferredPbrShader.MrtMultiplexNode>()!!.inRoughness = ifRoughness.output
             }
         }
         trackSupportMesh.shader = PbrShader(cfg, model)

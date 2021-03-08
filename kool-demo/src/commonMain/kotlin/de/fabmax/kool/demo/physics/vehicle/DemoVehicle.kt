@@ -9,11 +9,11 @@ import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -119,11 +119,7 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
                                 origin.set(0f, -height * 0.5f, 0f)
                             }
                         }
-                        shader = pbrShader {
-                            useImageBasedLighting(world.envMaps)
-                            useScreenSpaceAmbientOcclusion(world.aoMap)
-                            shadowMaps += world.shadows
-                        }
+                        shader = deferredPbrShader { }
                     }
                 }.also { +it }
             }
@@ -136,15 +132,11 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
                         centered()
                     }
                 }
-                shader = pbrShader {
-                    useImageBasedLighting(world.envMaps)
-                    useScreenSpaceAmbientOcclusion(world.aoMap)
-                    shadowMaps += world.shadows
-                }
+                shader = deferredPbrShader { }
             }
             +vehicleMesh
 
-            onUpdate += {
+            world.scene.onRenderScene += {
                 transform.set(vehicle.transform)
                 setDirty()
                 for (i in 0..3) {

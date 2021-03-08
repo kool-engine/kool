@@ -42,6 +42,13 @@ class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
 
         scene.addOffscreenPass(this)
 
+        // update content group from scene.onUpdate, so it is updated before any offscreen passes are updated
+        // otherwise shadow maps are rendered before content group is updated and shadows have a latency of one frame
+        isUpdateDrawNode = false
+        scene.onUpdate += { ev ->
+            content.update(ev)
+        }
+
         // encoded position is in view space -> z value of valid positions is always negative, use a positive z value
         // in clear color to encode clear areas
         clearColors[0] = Color(0f, 0f, 1f, 0f)
@@ -79,7 +86,7 @@ class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
         val FMT_POSITION_AO = TexFormat.RGBA_F16
         val FMT_NORMAL_ROUGH = TexFormat.RGBA_F16
         val FMT_ALBEDO_METAL = TexFormat.RGBA
-        val FMT_EMISSIVE = TexFormat.RGBA
+        val FMT_EMISSIVE = TexFormat.RGBA_F16
 
         val FORMATS_DEFERRED = listOf(FMT_POSITION_AO, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL)
         val FORMATS_DEFERRED_EMISSIVE = listOf(FMT_POSITION_AO, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL, FMT_EMISSIVE)

@@ -36,6 +36,7 @@ class PbrMaterialConfig {
     var maxLights = 4
     val shadowMaps = mutableListOf<ShadowMap>()
     var lightBacksides = false
+    var ambientShadowFactor = 0f
 
     var cullMethod = CullMethod.CULL_BACK_FACES
     var alphaMode: AlphaMode = AlphaModeOpaque()

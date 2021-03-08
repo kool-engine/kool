@@ -25,6 +25,7 @@ class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderN
     val outLightCount = ShaderNodeIoVar(ModelVar1i(uLightCnt.name), this)
     val outFragToLightDirection = ShaderNodeIoVar(ModelVar3fv("${name}_outLightDirs"), this)
     val outRadiance = ShaderNodeIoVar(ModelVar3fv("${name}_outRadiance"), this)
+    val outAvgShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_outAvgShadowFac"), this)
 
     var isReducedSoi = false
 
@@ -112,10 +113,14 @@ class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderN
             float[] ${name}_shadowFacs = float[] ($facs);
             ${outFragToLightDirection.declare()} = vec3[$maxLights]($arrayInit);
             ${outRadiance.declare()} = vec3[$maxLights]($arrayInit);
+            ${outAvgShadowFac.declare()} = 0.0;
             for (int i = 0; i < $uLightCnt; i++) {
                 ${outFragToLightDirection.ref3f("i")} = light_getFragToLight(i, ${inFragPos.ref3f()});
-                ${outRadiance.ref3f("i")} = light_getRadiance(i, ${outFragToLightDirection.ref3f("i")}, ${inSpotInnerAngle.ref1f("i")}) * ${name}_shadowFacs[i];
+                float ${name}_sf = ${name}_shadowFacs[i];
+                $outAvgShadowFac += ${name}_sf;
+                ${outRadiance.ref3f("i")} = light_getRadiance(i, ${outFragToLightDirection.ref3f("i")}, ${inSpotInnerAngle.ref1f("i")}) * ${name}_sf;
             }
+            $outAvgShadowFac /= float($uLightCnt);
             """)
     }
 }

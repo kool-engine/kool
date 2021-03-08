@@ -10,9 +10,9 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.multiShape
 import de.fabmax.kool.util.simpleShape
 
@@ -22,17 +22,14 @@ object Playground {
         makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
         makeRocker(Mat4f().translate(-20f, 0f, 90f), vehicleWorld)
 
-        vehicleWorld.scene += colorMesh {
+        vehicleWorld.deferredPipeline.contentGroup += colorMesh {
             generate {
                 makeRamp(Mat4f().translate(0f, 0f, 30f))
                 makeBumps(Mat4f().translate(20f, 0f, 0f))
                 makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
             }
-            shader = pbrShader {
+            shader = deferredPbrShader {
                 albedoSource = Albedo.VERTEX_ALBEDO
-                shadowMaps += vehicleWorld.shadows
-                useImageBasedLighting(vehicleWorld.envMaps)
-                useScreenSpaceAmbientOcclusion(vehicleWorld.aoMap)
             }
 
             vehicleWorld.addStaticCollisionBody(geometry)
@@ -59,7 +56,7 @@ object Playground {
                 world.physics.addActor(body)
 
                 val color = if (i % 2 == 0) VehicleDemo.color(400f) else VehicleDemo.color(200f)
-                world.scene += world.toPrettyMesh(body, color)
+                world.deferredPipeline.contentGroup += world.toPrettyMesh(body, color)
             }
         }
     }
@@ -79,8 +76,8 @@ object Playground {
         }
         world.physics.addActor(anchor)
         world.physics.addActor(rocker)
-        world.scene += world.toPrettyMesh(anchor, VehicleDemo.color(400f))
-        world.scene += world.toPrettyMesh(rocker, VehicleDemo.color(200f))
+        world.deferredPipeline.contentGroup += world.toPrettyMesh(anchor, VehicleDemo.color(400f))
+        world.deferredPipeline.contentGroup += world.toPrettyMesh(rocker, VehicleDemo.color(200f))
 
         RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }

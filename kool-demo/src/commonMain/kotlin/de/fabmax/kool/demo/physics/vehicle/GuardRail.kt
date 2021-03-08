@@ -11,15 +11,17 @@ import de.fabmax.kool.pipeline.UniformColor
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.DeferredPointLights
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.sin
 
-class GuardRail(world: VehicleWorld) {
+class GuardRail() {
 
     val guardRailMesh: Mesh
     val signs = mutableListOf<SignInstance>()
@@ -29,10 +31,10 @@ class GuardRail(world: VehicleWorld) {
     private val signInstances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, INSTANCE_EMISSION))
 
     init {
-        guardRailMesh = makeMesh(world)
+        guardRailMesh = makeMesh()
     }
 
-    private fun makeMesh(world: VehicleWorld) = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
+    private fun makeMesh() = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
         isFrustumChecked = false
         instances = signInstances
 
@@ -114,7 +116,7 @@ class GuardRail(world: VehicleWorld) {
             geometry.generateNormals()
         }
 
-        shader = GuardRailShader.createShader(world)
+        shader = GuardRailShader.createShader()
 
         onUpdate += { ev ->
             signInstances.clear()
@@ -128,7 +130,7 @@ class GuardRail(world: VehicleWorld) {
                     val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
                     if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
                 }
-                sign.addInstance(signInstances)
+                sign.updateInstance(signInstances)
             }
         }
     }
@@ -168,6 +170,7 @@ class GuardRail(world: VehicleWorld) {
     class SignInstance(val iSign: Int, val isLeft: Boolean, initPose: Mat4f, world: VehicleWorld) {
         val emission = MutableVec2f()
         val actor: RigidActor
+        val pointLight: DeferredPointLights.PointLight
 
         init {
             val signBox = BoxGeometry(Vec3f(2f, 2f, 0.3f))
@@ -178,9 +181,15 @@ class GuardRail(world: VehicleWorld) {
             actor.attachShape(Shape(signBox, world.defaultMaterial, simFilterData = world.obstacleSimFilterData, queryFilterData = world.obstacleQryFilterData))
             actor.attachShape(Shape(poleBox, world.defaultMaterial, Mat4f().translate(0f, -1f, 0f), world.obstacleSimFilterData, world.obstacleQryFilterData))
             world.physics.addActor(actor)
+
+            pointLight = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
+                color.set(Color.MD_ORANGE_300.toLinear())
+            }
         }
 
-        fun addInstance(instanceList: MeshInstanceList) {
+        fun updateInstance(instanceList: MeshInstanceList) {
+            pointLight.intensity = max(emission.x, emission.y) * 100f
+            actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
             instanceList.addInstance {
                 put(actor.transform.matrix)
                 put(emission.array)
@@ -188,27 +197,24 @@ class GuardRail(world: VehicleWorld) {
         }
     }
 
-    private class GuardRailShader private constructor(cfg: PbrMaterialConfig, model: ShaderModel) : PbrShader(cfg, model) {
+    private class GuardRailShader private constructor(cfg: PbrMaterialConfig, model: ShaderModel) : DeferredPbrShader(cfg, model) {
         private var uEmissionColor: UniformColor?  = null
 
         init {
             onPipelineCreated += { _, _, _ ->
                 uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
-                uEmissionColor?.value?.set(VehicleDemo.color(500f))
+                uEmissionColor?.value?.set(VehicleDemo.color(500f, false).scale(5f, MutableVec4f()))
             }
         }
 
         companion object {
-            fun createShader(world: VehicleWorld): GuardRailShader {
+            fun createShader(): GuardRailShader {
                 val cfg = PbrMaterialConfig().apply {
                     isInstanced = true
                     albedoSource = Albedo.VERTEX_ALBEDO
-                    shadowMaps += world.shadows
-                    useImageBasedLighting(world.envMaps)
-                    useScreenSpaceAmbientOcclusion(world.aoMap)
                     roughness = 0.8f
                 }
-                val model = defaultPbrModel(cfg).apply {
+                val model = defaultMrtPbrModel(cfg).apply {
                     val ifEmissionMesh: StageInterfaceNode
                     val ifEmissionInst: StageInterfaceNode
                     vertexStage {
@@ -216,7 +222,7 @@ class GuardRail(world: VehicleWorld) {
                         ifEmissionInst = stageInterfaceNode("ifEmissionInst", instanceAttributeNode(INSTANCE_EMISSION).output)
                     }
                     fragmentStage {
-                        findNodeByType<PbrMaterialNode>()!!.apply {
+                        findNodeByType<MrtMultiplexNode>()!!.apply {
                             val emissionColor = pushConstantNodeColor("uEmissiveColor").output
                             val emissionPowLt = splitNode(ifEmissionInst.output, "x").output
                             val emissionPowRt = splitNode(ifEmissionInst.output, "y").output

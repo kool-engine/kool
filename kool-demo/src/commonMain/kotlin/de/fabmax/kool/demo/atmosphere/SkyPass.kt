@@ -44,8 +44,8 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
         scene.addOffscreenPass(this)
 
         scene.onRenderScene += { ctx ->
-            val vpW = mainRenderPass.viewport.width
-            val vpH = mainRenderPass.viewport.height
+            val vpW = scene.mainRenderPass.viewport.width
+            val vpH = scene.mainRenderPass.viewport.height
             if (vpW > 0 && vpH > 0 && (vpW != width || vpH != height)) {
                 resize(vpW, vpH, ctx)
             }

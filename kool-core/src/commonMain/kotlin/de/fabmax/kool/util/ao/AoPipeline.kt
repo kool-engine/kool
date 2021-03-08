@@ -84,8 +84,8 @@ abstract class AoPipeline {
             scene.addOffscreenPass(denoisePass)
 
             scene.onRenderScene += { ctx ->
-                val mapW = (mainRenderPass.viewport.width * mapSize).toInt()
-                val mapH = (mainRenderPass.viewport.height * mapSize).toInt()
+                val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
+                val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
 
                 if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
                     depthPass.resize(mapW, mapH, ctx)

@@ -37,7 +37,7 @@ abstract class CommonPhysicsWorld : Releasable {
     protected val triggerListeners = mutableMapOf<RigidActor, TriggerListenerContext>()
 
     private var registeredAtScene: Scene? = null
-    private val onRenderSceneHook: Scene.(KoolContext) -> Unit = { ctx ->
+    private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
         if (isStepInProgress) {
             fetchStepResults()
         }

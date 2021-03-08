@@ -85,8 +85,8 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         renderOutput = pbrPass.createOutputQuad()
 
         scene.onRenderScene += { ctx ->
-            val vpW = mainRenderPass.viewport.width
-            val vpH = mainRenderPass.viewport.height
+            val vpW = scene.mainRenderPass.viewport.width
+            val vpH = scene.mainRenderPass.viewport.height
 
             if (vpW > 0 && vpH > 0 && (vpW != mrtPass.width || vpH != mrtPass.height)) {
                 mrtPass.resize(vpW, vpH, ctx)

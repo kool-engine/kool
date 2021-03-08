@@ -106,6 +106,13 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
+    private var uAmbientShadowFactor: Uniform1f? = null
+    var ambientShadowFactor = cfg.ambientShadowFactor
+        set(value) {
+            field = value
+            uAmbientShadowFactor?.value = value
+        }
+
     fun setMrtMaps(mrtPass: DeferredMrtPass) {
         sceneCamera = mrtPass.camera
         depth = mrtPass.depthTexture
@@ -157,6 +164,8 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 depthSamplers[i] = sampler
                 shadowMaps[i].setupSampler(sampler)
             }
+            uAmbientShadowFactor = model.findNode<PushConstantNode1f>("uAmbientShadowFactor")?.uniform
+            uAmbientShadowFactor?.value = ambientShadowFactor
         }
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
@@ -220,12 +229,22 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inNormal = worldNrm
                     inViewDir = viewDirNode(defCam.outCamPos, worldPos).output
 
+                    val avgShadow: ShaderNodeIoVar
                     if (lightNode != null) {
                         inLightCount = lightNode.outLightCount
                         inFragToLight = lightNode.outFragToLightDirection
                         inRadiance = lightNode.outRadiance
+                        avgShadow = lightNode.outAvgShadowFac
+                    } else {
+                        avgShadow = constFloat(1f)
                     }
-                    inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
+
+                    val irr = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
+                    val ambientShadowFac = pushConstantNode1f("uAmbientShadowFactor").output
+                    val shadowStr = multiplyNode(subtractNode(constFloat(1f), avgShadow).output, ambientShadowFac)
+                    val ambientStr = subtractNode(constFloat(1f), shadowStr.output).output
+                    inIrradiance = multiplyNode(irr, ambientStr).output
+                    inReflectionStrength = ambientStr
 
                     inAlbedo = mrtDeMultiplex.outAlbedo
                     inEmissive = mrtDeMultiplex.outEmissive
@@ -265,6 +284,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         val shadowMaps = mutableListOf<ShadowMap>()
         var lightBacksides = false
         var environmentMaps: EnvironmentMaps? = null
+        var ambientShadowFactor = 0f
 
         fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
             this.environmentMaps = environmentMaps

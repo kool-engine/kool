@@ -26,7 +26,6 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
     private var uMetallic: PushConstantNode1f? = null
     private var uAlbedo: PushConstantNodeColor? = null
     private var uEmissive: PushConstantNodeColor? = null
-    private var uReflectionStrength: PushConstantNode1f? = null
 
     var metallic = cfg.metallic
         set(value) {
@@ -47,11 +46,6 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
         set(value) {
             field = value
             uEmissive?.uniform?.value?.set(value)
-        }
-    var reflectionStrength = cfg.reflectionStrength
-        set(value) {
-            field = value
-            uReflectionStrength?.uniform?.value = value
         }
 
     // Material maps
@@ -117,6 +111,13 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
         set(value) {
             field = value
             uAmbient?.uniform?.value?.set(value)
+        }
+
+    private var uAmbientShadowFactor: Uniform1f? = null
+    var ambientShadowFactor = cfg.ambientShadowFactor
+        set(value) {
+            field = value
+            uAmbientShadowFactor?.value = value
         }
 
     // Image based lighting maps
@@ -185,8 +186,6 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
         uAlbedo?.uniform?.value?.set(albedo)
         uEmissive = model.findNode("uEmissive")
         uEmissive?.uniform?.value?.set(emissive)
-        uReflectionStrength = model.findNode("uReflectionStrength")
-        uReflectionStrength?.uniform?.value = reflectionStrength
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
@@ -197,6 +196,8 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 depthSamplers[i] = sampler
                 shadowMaps[i].setupSampler(sampler)
             }
+            uAmbientShadowFactor = model.findNode<PushConstantNode1f>("uAmbientShadowFactor")?.uniform
+            uAmbientShadowFactor?.value = ambientShadowFactor
         }
 
         irradianceMapSampler = model.findNode<TextureCubeNode>("irradianceMap")?.sampler
@@ -370,6 +371,7 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 shadowMapNodes.forEach {
                     lightNode.inShadowFacs[it.lightIndex] = it.outShadowFac
                 }
+                val avgShadow = lightNode.outAvgShadowFac
                 var normal = if (cfg.isNormalMapped && ifTangents != null) {
                     val bumpNormal = normalMapNode(texture2dNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                     bumpNormal.inStrength = constFloat(cfg.normalStrength)
@@ -401,12 +403,17 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     lightBacksides = cfg.lightBacksides
                     inFragPos = ifFragPos.output
                     inViewDir = viewDir
-                    inReflectionStrength = pushConstantNode1f("uReflectionStrength").output
 
                     inLightCount = lightNode.outLightCount
                     inFragToLight = lightNode.outFragToLightDirection
                     inRadiance = lightNode.outRadiance
-                    inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
+
+                    val irr = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
+                    val ambientShadowFac = pushConstantNode1f("uAmbientShadowFactor").output
+                    val shadowStr = multiplyNode(subtractNode(constFloat(1f), avgShadow).output, ambientShadowFac)
+                    val ambientStr = subtractNode(constFloat(1f), shadowStr.output).output
+                    inIrradiance = multiplyNode(irr, ambientStr).output
+                    inReflectionStrength = ambientStr
 
                     if (cfg.isEmissiveMapped) {
                         val emissive = texture2dSamplerNode(texture2dNode("tEmissive"), ifTexCoords!!.output).outColor

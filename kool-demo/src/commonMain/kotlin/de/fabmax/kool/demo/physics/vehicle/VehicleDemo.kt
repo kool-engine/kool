@@ -9,10 +9,11 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.deferred.DeferredPipeline
+import de.fabmax.kool.util.deferred.DeferredPipelineConfig
+import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 
 class VehicleDemo : DemoScene("Vehicle") {
@@ -28,16 +29,15 @@ class VehicleDemo : DemoScene("Vehicle") {
         var createObjects = false
 
         lighting.singleLight {
-            setDirectional(Vec3f(0.5f, -1f, -0.5f))
-            setColor(Color.WHITE, 0.75f)
-//                setDirectional(Vec3f(-1f, -0.6f, -1f))
-//                setColor(Color.WHITE, 1f)
+//            setDirectional(Vec3f(0.5f, -1f, -0.5f))
+//            setColor(Color.WHITE, 0.75f)
+                setDirectional(Vec3f(-1f, -0.6f, -1f))
+                setColor(Color.WHITE, 0.75f)
         }
 
         ctx.assetMgr.launch {
-            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
-//            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-            val aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
+//            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
             val shadows = CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
                 mapRanges[0].set(0f, 0.05f)
                 mapRanges[1].set(0.05f, 0.2f)
@@ -47,7 +47,25 @@ class VehicleDemo : DemoScene("Vehicle") {
             +Skybox.cube(ibl.reflectionMap, 1f)
             Physics.awaitLoaded()
 
-            vehicleWorld = VehicleWorld(this@scene, PhysicsWorld(), ibl, listOf(shadows), aoPipeline.aoMap)
+
+            val defCfg = DeferredPipelineConfig().apply {
+                maxGlobalLights = 1
+                isWithEmissive = true
+                isWithAmbientOcclusion = true
+                isWithScreenSpaceReflections = false
+
+                useImageBasedLighting(ibl)
+                useShadowMaps(emptyList())
+                useShadowMaps(listOf(shadows))
+            }
+            val deferredPipeline = DeferredPipeline(this@scene, defCfg)
+            deferredPipeline.aoPipeline?.mapSize = 0.75f
+            deferredPipeline.pbrPass.sceneShader.ambientShadowFactor = 0.3f
+            +deferredPipeline.renderOutput
+
+            shadows.drawNode = deferredPipeline.contentGroup
+
+            vehicleWorld = VehicleWorld(this@scene, PhysicsWorld(), deferredPipeline)
             vehicleWorld.physics.registerHandlers(this@scene)
 
             createObjects = true
@@ -56,7 +74,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         onRenderScene += {
             if (createObjects) {
                 createObjects = false
-                createWorldObjects(ctx)
+                vehicleWorld.deferredPipeline.contentGroup.createWorldObjects(ctx)
             }
         }
 
@@ -65,7 +83,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun Scene.createWorldObjects(ctx: KoolContext) {
+    private fun Group.createWorldObjects(ctx: KoolContext) {
         val demoVehicle = DemoVehicle(vehicleWorld, ctx)
         +demoVehicle.vehicleGroup
         vehicle = demoVehicle
@@ -74,16 +92,17 @@ class VehicleDemo : DemoScene("Vehicle") {
         makeTrack(vehicleWorld)
         Playground.makePlayground(vehicleWorld)
 
-        +CamRig().apply {
-            (camera as PerspectiveCamera).apply {
+        vehicleWorld.scene += CamRig().apply {
+            val cam = vehicleWorld.scene.camera as PerspectiveCamera
+            cam.apply {
                 clipNear = 1f
                 clipFar = 1000f
             }
             trackedNode = demoVehicle.vehicleMesh
-            +orbitInputTransform {
+            +OrbitInputTransform(vehicleWorld.scene).apply {
                 setMouseRotation(0f, -10f)
                 setMouseTranslation(0f, 1.5f, 0f)
-                +camera
+                +cam
                 maxZoom = 500.0
             }
             vehicleWorld.physics.onFixedUpdate += {
@@ -137,7 +156,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun Scene.makeTrack(world: VehicleWorld) {
+    private fun Group.makeTrack(world: VehicleWorld) {
         track = Track(world).generate {
             subdivs = 2
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-3f, 0f, 0f)))
@@ -168,8 +187,6 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +track!!
 
-        println(track!!.guardRail.signs.size)
-
         track!!.apply {
             val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
             collisionMesh.addGeometry(trackMesh.geometry)
@@ -197,7 +214,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun Scene.makeGround() {
+    private fun Group.makeGround() {
         val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
@@ -205,7 +222,7 @@ class VehicleDemo : DemoScene("Vehicle") {
             groundNormal.dispose()
         }
 
-        val gndMesh = textureMesh(isNormalMapped = true) {
+        val gndMesh = textureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
                 vertexModFun = {
@@ -218,13 +235,10 @@ class VehicleDemo : DemoScene("Vehicle") {
                     stepsY = sizeY.toInt() / 10
                 }
             }
-            shader = pbrShader {
+            shader = deferredPbrShader {
                 useAlbedoMap(groundAlbedo, true)
                 useNormalMap(groundNormal)
-                useImageBasedLighting(vehicleWorld.envMaps)
-                useScreenSpaceAmbientOcclusion(vehicleWorld.aoMap)
                 albedo = color(100f)
-                shadowMaps += vehicleWorld.shadows
             }
         }
         +gndMesh

@@ -22,7 +22,7 @@ open class Scene(name: String? = null) : Group(name) {
     val lighting = Lighting()
     var camera: Camera = PerspectiveCamera()
 
-    val onRenderScene: MutableList<Scene.(KoolContext) -> Unit> = mutableListOf()
+    val onRenderScene: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
     val mainRenderPass = ScreenRenderPass(this)
 
