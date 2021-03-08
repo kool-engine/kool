@@ -107,7 +107,7 @@ class VehicleUi(ctx: KoolContext) {
     private lateinit var sec1Lbl: Label
     private lateinit var sec2Lbl: Label
 
-    var onToggleSound: () -> Unit = { }
+    var onToggleSound: (Boolean) -> Unit = { }
 
     val uiScene = uiScene(dpi = ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
@@ -223,19 +223,19 @@ class VehicleUi(ctx: KoolContext) {
         }
 
         +container("timer") {
-            layoutSpec.setSize(dps(600f * scale), dps(90f * scale), full())
-            layoutSpec.setOrigin(pcs(50f) - dps(200f * scale), dps(-90f * scale), zero())
+            layoutSpec.setSize(dps(400f * scale), dps(110f * scale), full())
+            layoutSpec.setOrigin(pcs(50f) - dps(200f * scale), dps(-110f * scale), zero())
 
             +label("trackTime") {
                 trackTimeLbl = this
-                layoutSpec.setOrigin(zero(), dps(10f * scale), zero())
+                layoutSpec.setOrigin(zero(), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(200f * scale), dps(70f * scale), full())
                 font.setCustom(midFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "0:00.00"
             }
             +label("Total") {
-                layoutSpec.setOrigin(dps(175f * scale), dps(10f * scale), zero())
+                layoutSpec.setOrigin(dps(175f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -244,14 +244,14 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime1") {
                 sec1Lbl = this
-                layoutSpec.setOrigin(dps(220f * scale), dps(40f * scale), zero())
+                layoutSpec.setOrigin(dps(220f * scale), dps(60f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 1") {
-                layoutSpec.setOrigin(dps(320f * scale), dps(40f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(60f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -260,25 +260,29 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime2") {
                 sec2Lbl = this
-                layoutSpec.setOrigin(dps(220f * scale), dps(10f * scale), zero())
+                layoutSpec.setOrigin(dps(220f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 2") {
-                layoutSpec.setOrigin(dps(320f * scale), dps(10f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
                 textColor.setCustom(Color.MD_GREY_400)
             }
 
-            +button("Toggle Sound") {
-                layoutSpec.setOrigin(dps(450f * scale), dps(48f * scale), zero())
+            +toggleButton("Sound") {
+                layoutSpec.setOrigin(dps(125f * scale), dps(0f * scale), zero())
                 layoutSpec.setSize(dps(150f * scale), dps(35f * scale), full())
+                knobColorOn.setCustom(Color.MD_ORANGE)
+                trackColorOn.setCustom(Color.MD_ORANGE_200)
+                textColor.setCustom(Color.MD_GREY_400)
+                textColorHovered.setCustom(Color.MD_ORANGE)
                 onClick += { _, _, _ ->
-                    onToggleSound()
+                    onToggleSound(isEnabled)
                 }
             }
         }

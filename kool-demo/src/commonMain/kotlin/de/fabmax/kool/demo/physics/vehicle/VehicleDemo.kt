@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
@@ -9,14 +8,6 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.physics.joints.RevoluteJoint
-import de.fabmax.kool.physics.vehicle.Vehicle
-import de.fabmax.kool.physics.vehicle.VehicleProperties
-import de.fabmax.kool.physics.vehicle.VehicleUtils
-import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE
-import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST
-import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND
-import de.fabmax.kool.physics.vehicle.VehicleUtils.COLLISION_FLAG_GROUND_AGAINST
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -24,177 +15,50 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.max
-import kotlin.math.sign
 
 class VehicleDemo : DemoScene("Vehicle") {
 
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var aoPipeline: AoPipeline
-    private val shadows = mutableListOf<ShadowMap>()
-    private val keyListeners = mutableListOf<InputManager.KeyEventListener>()
+    private lateinit var vehicleWorld: VehicleWorld
 
-    private lateinit var physicsWorld: PhysicsWorld
-    private lateinit var vehicle: Vehicle
-
-    private val groundMaterial = Material(0.5f)
-    private val groundSimFilterData = FilterData(COLLISION_FLAG_GROUND, COLLISION_FLAG_GROUND_AGAINST)
-    private val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
-    private val obstacleSimFilterData = FilterData(COLLISION_FLAG_DRIVABLE_OBSTACLE, COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
-    private val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
-
-    private val vehicleGroup = Group()
-    private lateinit var vehicleMesh: Mesh
+    private var vehicle: DemoVehicle? = null
     private var dashboard: VehicleUi? = null
     private var track: Track? = null
     private var timer: TrackTimer? = null
 
-    private lateinit var vehicleAudio: VehicleAudio
 
     override fun setupMainScene(ctx: KoolContext) = scene {
-        var inited = false
+        var createObjects = false
 
-        vehicleAudio = VehicleAudio(ctx)
-        ctx.assetMgr.launch {
-            lighting.singleLight {
-                setDirectional(Vec3f(0.5f, -1f, -0.5f))
-                setColor(Color.WHITE, 0.75f)
+        lighting.singleLight {
+            setDirectional(Vec3f(0.5f, -1f, -0.5f))
+            setColor(Color.WHITE, 0.75f)
 //                setDirectional(Vec3f(-1f, -0.6f, -1f))
 //                setColor(Color.WHITE, 1f)
-            }
-            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
-//            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-            aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
-            shadows += CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
+        }
+
+        ctx.assetMgr.launch {
+            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+//            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+            val aoPipeline = AoPipeline.createForward(this@scene).apply { mapSize = 0.75f }
+            val shadows = CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
                 mapRanges[0].set(0f, 0.05f)
                 mapRanges[1].set(0.05f, 0.2f)
                 mapRanges[2].set(0.2f, 1f)
                 cascades.forEach { it.directionalCamNearOffset = -80f }
             }
             +Skybox.cube(ibl.reflectionMap, 1f)
-
             Physics.awaitLoaded()
-            inited = true
+
+            vehicleWorld = VehicleWorld(this@scene, PhysicsWorld(), ibl, listOf(shadows), aoPipeline.aoMap)
+            vehicleWorld.physics.registerHandlers(this@scene)
+
+            createObjects = true
         }
 
         onRenderScene += {
-            if (inited) {
-                inited = false
-
-                physicsWorld = PhysicsWorld()
-                val steerAnimator = ValueAnimator()
-                val throttleBrakeHandler = ThrottleBrakeHandler()
-
-                makeGround(physicsWorld)
-                makeBoxes(Mat4f().translate(-20f, 0f, 30f), physicsWorld)
-                makeRocker(Mat4f().translate(-20f, 0f, 90f), physicsWorld)
-
-                +colorMesh {
-                    generate {
-                        makeRamp(Mat4f().translate(0f, 0f, 30f))
-                        makeBumps(Mat4f().translate(20f, 0f, 0f))
-                        makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
-                    }
-                    shader = pbrShader {
-                        albedoSource = Albedo.VERTEX_ALBEDO
-                        shadowMaps += shadows
-                        useImageBasedLighting(ibl)
-                        useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    }
-
-                    makeStaticCollisionBody(geometry, physicsWorld)
-                }
-
-                makeRaycastVehicle(physicsWorld)
-                +vehicleGroup
-
-                +CamRig().apply {
-                    trackedNode = vehicleMesh
-                    +orbitInputTransform {
-                        setMouseRotation(0f, -10f)
-                        setMouseTranslation(0f, 1.5f, 0f)
-                        +camera
-                        maxZoom = 500.0
-                    }
-                    physicsWorld.onFixedUpdate += {
-                        updateTracking()
-                    }
-                }
-
-                (camera as PerspectiveCamera).apply {
-                    clipNear = 1f
-                    clipFar = 1000f
-                }
-
-                var prevGear = 0
-                onUpdate += {
-                    throttleBrakeHandler.update(vehicle.forwardSpeed, it.deltaT)
-                    vehicle.isReverse = throttleBrakeHandler.isReverse
-                    vehicle.steerInput = steerAnimator.tick(it.deltaT)
-                    vehicle.throttleInput = throttleBrakeHandler.throttle.value
-                    vehicle.brakeInput = throttleBrakeHandler.brake.value
-                    updateDashboard()
-
-                    vehicleAudio.rpm = vehicle.engineSpeedRpm
-                    vehicleAudio.throttle = throttleBrakeHandler.throttle.value
-                    vehicleAudio.brake = throttleBrakeHandler.brake.value
-                    vehicleAudio.speed = vehicle.linearVelocity.length()
-
-                    vehicleAudio.slip = 0f
-                    for (i in 0..3) {
-                        val slip = max(abs(vehicle.wheelInfos[i].lateralSlip), (abs(vehicle.wheelInfos[i].longitudinalSlip) - 0.3f) / 0.7f)
-                        if (slip > vehicleAudio.slip) {
-                            vehicleAudio.slip = slip
-                        }
-                    }
-
-                    val gear = vehicle.currentGear
-                    if (gear != prevGear) {
-                        vehicleAudio.gearOut = gear == 0
-                        vehicleAudio.gearIn = gear != 0
-                    }
-                    prevGear = gear
-                }
-
-                val steerLeft: (InputManager.KeyEvent) -> Unit = {
-                    if (it.isPressed) { steerAnimator.target = 1f } else { steerAnimator.target = 0f }
-                }
-                val steerRight: (InputManager.KeyEvent) -> Unit = {
-                    if (it.isPressed) { steerAnimator.target = -1f } else { steerAnimator.target = 0f }
-                }
-                val accelerate: (InputManager.KeyEvent) -> Unit = {
-                    throttleBrakeHandler.upKeyPressed = it.isPressed
-                }
-                val brake: (InputManager.KeyEvent) -> Unit = {
-                    throttleBrakeHandler.downKeyPressed = it.isPressed
-                }
-
-                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
-                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
-                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
-                keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
-                keyListeners += ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
-                keyListeners += ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
-                keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
-                keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
-                keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
-                    val pos = vehicle.position
-                    vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
-
-                    val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
-                    val headDeg = atan2(head.x, head.z).toDeg()
-                    val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
-                    vehicle.setRotation(ori)
-                    vehicle.linearVelocity = Vec3f.ZERO
-                    vehicle.angularVelocity = Vec3f.ZERO
-                }
-
-                physicsWorld.registerHandlers(this@scene)
-
-                makeTrack(physicsWorld)
+            if (createObjects) {
+                createObjects = false
+                createWorldObjects(ctx)
             }
         }
 
@@ -203,131 +67,69 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun cleanUp(ctx: KoolContext) {
-        physicsWorld.clear()
-        physicsWorld.release()
-        groundMaterial.release()
-        vehicleAudio.stop()
+    private fun Scene.createWorldObjects(ctx: KoolContext) {
+        val demoVehicle = DemoVehicle(vehicleWorld, ctx)
+        +demoVehicle.vehicleGroup
+        vehicle = demoVehicle
 
-        keyListeners.forEach { ctx.inputMgr.removeKeyListener(it) }
+        makeGround()
+        makeTrack(vehicleWorld)
+        Playground.makePlayground(vehicleWorld)
+
+        +CamRig().apply {
+            (camera as PerspectiveCamera).apply {
+                clipNear = 1f
+                clipFar = 1000f
+            }
+            trackedNode = demoVehicle.vehicleMesh
+            +orbitInputTransform {
+                setMouseRotation(0f, -10f)
+                setMouseTranslation(0f, 1.5f, 0f)
+                +camera
+                maxZoom = 500.0
+            }
+            vehicleWorld.physics.onFixedUpdate += {
+                updateTracking()
+            }
+        }
+
+        onUpdate += {
+            updateDashboard()
+        }
+    }
+
+    private fun cleanUp(ctx: KoolContext) {
+        vehicleWorld.release()
+        vehicle?.cleanUp(ctx)
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
         dashboard = VehicleUi(ctx).apply {
-            onToggleSound = {
-                if (vehicleAudio.isStarted) {
-                    vehicleAudio.stop()
-                } else {
-                    vehicleAudio.start()
-                }
-            }
+            onToggleSound = { en -> vehicle?.toggleSound(en) }
         }
         return dashboard!!.uiScene
     }
 
     private fun updateDashboard() {
         dashboard?.apply {
-            speedKph = vehicle.forwardSpeed * 3.6f
-            rpm = vehicle.engineSpeedRpm
-            torqueNm = vehicle.engineTorqueNm
-            powerKW = vehicle.enginePowerW / 1000f
-            gear = vehicle.currentGear
-            steering = -vehicle.steerInput
-            throttle = vehicle.throttleInput
-            brake = vehicle.brakeInput
-            longitudinalAcceleration = vehicle.longitudinalAcceleration
-            lateralAcceleration = vehicle.lateralAcceleration
-
-            val time = timer
-            if (time != null) {
-                trackTime = time.trackTime
-            }
-        }
-    }
-
-    private fun makeRaycastVehicle(world: PhysicsWorld) {
-        val vehicleProps = VehicleProperties().apply {
-            groundMaterialFrictions = mapOf(groundMaterial to 1.5f)
-            chassisDims = Vec3f(2f, 1f, 5f)
-            wheelFrontZ = 1.6f
-            wheelRearZ = -1.5f
-            trackWidth = 2.45f
-            maxBrakeTorqueFront = 2400f
-            maxBrakeTorqueRear = 1200f
-
-            updateChassisMoiFromDimensionsAndMass()
-        }
-
-        val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
-
-        val chassisBox = VehicleUtils.defaultChassisShape(vehicleProps.chassisDims)
-        vehicleProps.chassisShapes = listOf(
-            chassisBox,
-            // add additional shapes which act as collision dummys for wheel vs. drivable object collisions
-            Shape(BoxGeometry(wheelBumperDims), chassisBox.material,
-                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
-                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData),
-            Shape(BoxGeometry(wheelBumperDims), chassisBox.material,
-                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ),
-                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData)
-        )
-
-        val pose = Mat4f().translate(0f, 1.5f, -40f)
-        vehicle = Vehicle(vehicleProps, world, pose)
-        vehicle.setRotation(Mat3f().rotate(-90f, Vec3f.Y_AXIS))
-        world.addActor(vehicle)
-
-        vehicleGroup.apply {
-            val wheelMeshes = mutableListOf<Group>()
-            for (i in 0..3) {
-                wheelMeshes += group {
-                    +colorMesh {
-                        generate {
-                            color = Color.DARK_GRAY.toLinear()
-                            rotate(90f, Vec3f.Z_AXIS)
-                            cylinder {
-                                steps = 32
-                                radius = vehicleProps.wheelRadius
-                                height = vehicleProps.wheelWidth
-                                origin.set(0f, -height * 0.5f, 0f)
-                            }
-                        }
-                        shader = pbrShader {
-                            useImageBasedLighting(ibl)
-                            useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                            shadowMaps += shadows
-                        }
-                    }
-                }.also { +it }
+            vehicle?.vehicle?.let { vehicle ->
+                speedKph = vehicle.forwardSpeed * 3.6f
+                rpm = vehicle.engineSpeedRpm
+                torqueNm = vehicle.engineTorqueNm
+                powerKW = vehicle.enginePowerW / 1000f
+                gear = vehicle.currentGear
+                steering = -vehicle.steerInput
+                throttle = vehicle.throttleInput
+                brake = vehicle.brakeInput
+                longitudinalAcceleration = vehicle.longitudinalAcceleration
+                lateralAcceleration = vehicle.lateralAcceleration
             }
 
-            vehicleMesh = colorMesh {
-                generate {
-                    color = color(600f)
-                    cube {
-                        size.set(vehicleProps.chassisDims)
-                        centered()
-                    }
-                }
-                shader = pbrShader {
-                    useImageBasedLighting(ibl)
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    shadowMaps += shadows
-                }
-            }
-            +vehicleMesh
-
-            onUpdate += {
-                transform.set(vehicle.transform)
-                setDirty()
-                for (i in 0..3) {
-                    wheelMeshes[i].transform.set(vehicle.wheelInfos[i].transform)
-                    wheelMeshes[i].setDirty()
-                }
-
-                timer?.let { t ->
-                    if (t.timerState != TrackTimer.TimerState.STOPPED) {
-                        val distToTrack = track?.distanceToTrack(vehicle.position) ?: 0f
+            timer?.let { t ->
+                trackTime = t.trackTime
+                if (t.timerState != TrackTimer.TimerState.STOPPED) {
+                    vehicle?.vehicle?.let { veh ->
+                        val distToTrack = track?.distanceToTrack(veh.position) ?: 0f
                         if (distToTrack > 15f) {
                             t.reset()
                         }
@@ -337,136 +139,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun Scene.makeBoxes(frame: Mat4f, world: PhysicsWorld) {
-        val n = 6
-        val size = 2f
-        val stepX = size * 1.2f
-        for (r in 0 until n) {
-            val c = n - r
-            val x = (c - 1) * stepX * -0.5f
-
-            for (i in 0 until c) {
-                val boxShape = BoxGeometry(Vec3f(size))
-                val body = RigidDynamic(250f)
-                body.attachShape(Shape(boxShape, groundMaterial))
-                body.setSimulationFilterData(obstacleSimFilterData)
-                body.setQueryFilterData(obstacleQryFilterData)
-                val pos = MutableVec3f(x + i * stepX, size * 0.5f + r * size, 0f)
-                frame.transform(pos)
-                body.position = pos
-                world.addActor(body)
-
-                val color = if (i % 2 == 0) color(400f) else color(200f)
-                +body.toPrettyMesh(color)
-            }
-        }
-    }
-
-    private fun Scene.makeRocker(frame: Mat4f, world: PhysicsWorld) {
-        val anchor = RigidStatic().apply {
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
-            attachShape(Shape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), groundMaterial))
-            position = frame.transform(MutableVec3f(0f, 0.75f, 0f))
-        }
-        val rocker = RigidDynamic(500f).apply {
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
-            attachShape(Shape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), groundMaterial))
-            position = frame.transform(MutableVec3f(0f, 1.7f, 0f))
-        }
-        world.addActor(anchor)
-        world.addActor(rocker)
-        +anchor.toPrettyMesh(color(400f))
-        +rocker.toPrettyMesh(color(200f))
-
-        RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
-    }
-
-    private fun MeshBuilder.makeRamp(frame: Mat4f) {
-        color = color(200f)
-        withTransform {
-            transform.mul(frame)
-            rotate(-11f, 0f, 0f)
-            cube {
-                size.set(10f, 2f, 10f)
-                centered()
-            }
-        }
-    }
-
-    private fun MeshBuilder.makeBumps(frame: Mat4f) {
-        for (i in 0 until 30) {
-            val c = if (i % 2 == 0) color(400f) else color(200f)
-            for (s in -1 .. 1 step 2) {
-                withTransform {
-                    transform.mul(frame)
-                    translate(2f * s, -0.3f, i * 3.1f + s * 0.4f)
-                    rotate(90f, Vec3f.Z_AXIS)
-                    translate(0f, -2f, 0f)
-                    color = c
-                    cylinder {
-                        radius = 0.5f
-                        height = 4f
-                        steps = 32
-                    }
-                }
-            }
-        }
-    }
-
-    private fun MeshBuilder.makeHalfPipe(frame: Mat4f) {
-        withTransform {
-            transform.mul(frame)
-            profile {
-                val multiShape = multiShape {
-                    simpleShape(false) {
-                        xy(24f, 0f)
-                        xy(24f, 10f)
-                    }
-                    simpleShape(false) {
-                        xy(24f, 10f)
-                        xy(20f, 10f)
-                    }
-                    simpleShape(false) {
-                        xyArc(Vec2f(20f, 10f), Vec2f(10f, 10f), -90f, 20)
-                    }
-                }
-
-                color = color(200f)
-                sample()
-                val inds = mutableListOf<Int>()
-                inds += multiShape.shapes[0].sampledVertIndices
-                inds += multiShape.shapes[1].sampledVertIndices
-                inds += multiShape.shapes[2].sampledVertIndices
-                fillPolygon(inds.reversed())
-
-                sample(false)
-                for (i in 0 until 5) {
-                    translate(0f, 0f, 5f)
-                    sample()
-                }
-                for (i in 0 until 50) {
-                    rotate(180f / 50f, 0f, -1f, 0f)
-                    sample()
-                }
-                for (i in 0 until 5) {
-                    translate(0f, 0f, 5f)
-                    sample()
-                }
-                sample(false)
-                inds.clear()
-                inds += multiShape.shapes[0].sampledVertIndices
-                inds += multiShape.shapes[1].sampledVertIndices
-                inds += multiShape.shapes[2].sampledVertIndices
-                fillPolygon(inds)
-
-                geometry.generateNormals()
-            }
-        }
-    }
-
-    private fun Scene.makeTrack(world: PhysicsWorld) {
+    private fun Scene.makeTrack(world: VehicleWorld) {
         track = Track().generate {
             subdivs = 2
             addControlPoint(SimpleSpline3f.CtrlPoint(Vec3f(0f, 0.05f, -40f), Vec3f(-3f, 0f, 0f)))
@@ -524,28 +197,21 @@ class VehicleDemo : DemoScene("Vehicle") {
             val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
             collisionMesh.addGeometry(trackMesh.geometry)
             collisionMesh.addGeometry(trackSupportMesh.geometry)
-            makeStaticCollisionBody(collisionMesh, world)
+            world.addStaticCollisionBody(collisionMesh)
 
             trackMesh.shader = pbrShader {
                 albedoSource = Albedo.TEXTURE_ALBEDO
-                shadowMaps += shadows
-                useImageBasedLighting(ibl)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                shadowMaps += world.shadows
+                useImageBasedLighting(world.envMaps)
+                useScreenSpaceAmbientOcclusion(world.aoMap)
                 useAlbedoMap(albedoMap)
                 useRoughnessMap(roughnessMap)
             }
 
-            trackSupportMesh.shader = makeSupportMeshShader(shadows, ibl, aoPipeline.aoMap)
-//            trackSupportMesh.shader = pbrShader {
-//                albedoSource = Albedo.VERTEX_ALBEDO
-//                shadowMaps += shadows
-//                useImageBasedLighting(ibl)
-//                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-//                roughness = 0.3f
-//            }
+            trackSupportMesh.shader = makeSupportMeshShader(world.shadows, world.envMaps, world.aoMap)
         }
 
-        timer = TrackTimer(vehicle, world, groundMaterial).apply {
+        timer = TrackTimer(vehicle!!.vehicle, world.physics, world.defaultMaterial).apply {
             enterPos = Vec3f(-15f, 2.5f, -40f)
             enterSize = Vec3f(5f, 5f, 15f)
 
@@ -559,26 +225,13 @@ class VehicleDemo : DemoScene("Vehicle") {
             checkSize2 = Vec3f(15f, 5f, 5f)
 
             buildTriggers()
-//            +enterTrigger.toPrettyMesh(Color.MD_GREEN.toLinear())
-//            +exitTrigger.toPrettyMesh(Color.MD_RED.toLinear())
-//            +checkTrigger1.toPrettyMesh(Color.MD_BLUE.toLinear())
-//            +checkTrigger2.toPrettyMesh(Color.MD_BLUE.toLinear())
 
             onCheckPoint1 = { dashboard?.sec1Time = it }
             onCheckPoint2 = { dashboard?.sec2Time = it }
         }
     }
 
-    private fun makeStaticCollisionBody(mesh: IndexedVertexList, world: PhysicsWorld) {
-        val body = RigidStatic().apply {
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
-            attachShape(Shape(TriangleMeshGeometry(mesh), groundMaterial))
-        }
-        world.addActor(body)
-    }
-
-    private fun Scene.makeGround(world: PhysicsWorld) {
+    private fun Scene.makeGround() {
         val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
         val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
@@ -602,86 +255,21 @@ class VehicleDemo : DemoScene("Vehicle") {
             shader = pbrShader {
                 useAlbedoMap(groundAlbedo, true)
                 useNormalMap(groundNormal)
-                useImageBasedLighting(ibl)
-                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useImageBasedLighting(vehicleWorld.envMaps)
+                useScreenSpaceAmbientOcclusion(vehicleWorld.aoMap)
                 albedo = color(100f)
-                shadowMaps += shadows
+                shadowMaps += vehicleWorld.shadows
             }
         }
         +gndMesh
 
         val ground = RigidStatic().apply {
-            setSimulationFilterData(groundSimFilterData)
-            setQueryFilterData(groundQryFilterData)
-            attachShape(Shape(PlaneGeometry(), groundMaterial))
+            setSimulationFilterData(vehicleWorld.groundSimFilterData)
+            setQueryFilterData(vehicleWorld.groundQryFilterData)
+            attachShape(Shape(PlaneGeometry(), vehicleWorld.defaultMaterial))
             setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         }
-        world.addActor(ground)
-    }
-
-    private fun RigidActor.toPrettyMesh(color: Color, rough: Float = 0.8f, metal: Float = 0f) = toMesh(color) {
-        roughness = rough
-        metallic = metal
-        useImageBasedLighting(ibl)
-        useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-        shadowMaps += shadows
-    }
-
-    class ValueAnimator {
-        var target = 0f
-        var value = 0f
-        var speed = 2f
-
-        fun tick(deltaT: Float): Float {
-            var dv = target - value
-            if (abs(dv) > speed * deltaT) {
-                dv = sign(dv) * speed * deltaT
-            }
-            value += dv
-            return value
-        }
-    }
-
-    class ThrottleBrakeHandler {
-        var upKeyPressed = false
-        var downKeyPressed = false
-
-        var reverseTriggerTime = 0f
-        var isReverse = false
-
-        val throttle = ValueAnimator()
-        val brake = ValueAnimator()
-
-        init {
-            throttle.speed = 5f
-            brake.speed = 5f
-        }
-
-        fun update(forwardSpeed: Float, deltaT: Float) {
-            if (abs(forwardSpeed) < 0.1f && downKeyPressed) {
-                reverseTriggerTime += deltaT
-                if (reverseTriggerTime > 0.2f) {
-                    isReverse = true
-                }
-            } else {
-                reverseTriggerTime = 0f
-            }
-
-            if (isReverse && !downKeyPressed && forwardSpeed > -0.1f) {
-                isReverse = false
-            }
-
-            if (!isReverse) {
-                throttle.target = if (upKeyPressed) 1f else 0f
-                brake.target = if (downKeyPressed) 1f else 0f
-            } else {
-                // invert throttle / brake buttons while reverse is engaged
-                brake.target = if (upKeyPressed) 1f else 0f
-                throttle.target = if (downKeyPressed) 1f else 0f
-            }
-            throttle.tick(deltaT)
-            brake.tick(deltaT)
-        }
+        vehicleWorld.physics.addActor(ground)
     }
 
     companion object {
