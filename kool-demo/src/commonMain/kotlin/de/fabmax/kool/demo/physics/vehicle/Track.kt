@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -36,6 +37,8 @@ class Track(val world: VehicleWorld) : Group() {
     val trackMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {  }
     val trackSupportMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)) {  }
 
+    lateinit var trackActor: RigidStatic
+        private set
     val guardRail = GuardRail()
 
     init {
@@ -59,6 +62,10 @@ class Track(val world: VehicleWorld) : Group() {
         val tree = trackPointTree ?: return -1f
         nearestTrav.setup(point).traverse(tree)
         return sqrt(nearestTrav.sqrDist)
+    }
+
+    fun cleanUp() {
+        guardRail.cleanUp()
     }
 
     private fun computeFrameAt(pos: Float, result: Mat4f) {
@@ -126,8 +133,12 @@ class Track(val world: VehicleWorld) : Group() {
                 multiShape {
                     simpleShape(false) {
                         xy(7.5f, 0f)
+                        xy(2.5f, 0f)
+                        xy(-2.5f, 0f)
                         xy(-7.5f, 0f)
                         uv(0f, 7.5f)
+                        uv(0f, 2.5f)
+                        uv(0f, -2.5f)
                         uv(0f, -7.5f)
                     }
                     simpleShape(false) {
@@ -189,6 +200,11 @@ class Track(val world: VehicleWorld) : Group() {
             geometry.generateNormals()
         }
 
+        val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
+        collisionMesh.addGeometry(trackMesh.geometry)
+        collisionMesh.addGeometry(trackSupportMesh.geometry)
+        trackActor = world.addStaticCollisionBody(collisionMesh)
+
         buildGuardRails()
     }
 
@@ -209,7 +225,7 @@ class Track(val world: VehicleWorld) : Group() {
                 .translate(0f, 1.5f, 0f)
                 .rotate(90f * leftRightSign, Vec3f.Y_AXIS)
 
-            guardRail.signs += GuardRail.SignInstance(guardRail.signs.size, guardRailSec.isLeft, frame, world)
+            guardRail.signs += GuardRail.SignInstance(guardRail.signs.size, guardRailSec.isLeft, frame, this, world)
         }
     }
 

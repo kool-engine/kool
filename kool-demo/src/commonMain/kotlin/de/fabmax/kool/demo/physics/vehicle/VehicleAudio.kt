@@ -35,15 +35,22 @@ class VehicleAudio(ctx: KoolContext) {
 
             val mid1 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_mid1.wav")!!))
             val mid2 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_mid2.wav")!!))
-            val midMix = ModulateNode(mid1, mid2)
+            val midMix = ModulateNode(mid1, mid2).apply {
+                gainAmpliMod1 = 0.2f
+                gainAmpliMod2 = 0.2f
+                gainAmpliBase1 = 0.8f
+                gainAmpliBase2 = 0.4f
+                speedAmpliMod1 = 0.015f
+                speedAmpliMod2 = 0.015f
+            }
 
             val high1 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_high1.wav")!!))
             val high2 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_high2.wav")!!)).apply { speed = 1.05f }
             val highMix = ModulateNode(high1, high2).apply {
                 gainAmpliMod1 = 0.2f
-                gainAmpliMod2 = 0.4f
+                gainAmpliMod2 = 0.2f
                 gainAmpliBase1 = 0.8f
-                gainAmpliBase2 = 0.6f
+                gainAmpliBase2 = 0.4f
                 speedAmpliMod1 = 0.01f
                 speedAmpliMod2 = 0.01f
             }

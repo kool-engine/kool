@@ -6,10 +6,7 @@ import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.toPxTransform
-import physx.PxRevoluteJoint
-import physx.PxRevoluteJointFlagEnum
-import physx.driveForceLimit
-import physx.driveVelocity
+import physx.*
 
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint(), Joint {
@@ -25,6 +22,9 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
 
     override val pxJoint: PxRevoluteJoint
 
+    override val isBroken: Boolean
+        get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
+
     init {
         Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
@@ -33,6 +33,8 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
             pxJoint = Physics.Px.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
+
+    override fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
 
     actual fun disableAngularMotor() {
         pxJoint.driveVelocity = 0f

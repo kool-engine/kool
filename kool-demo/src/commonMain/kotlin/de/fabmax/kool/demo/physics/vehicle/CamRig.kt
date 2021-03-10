@@ -3,12 +3,12 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.Node
 import kotlin.math.atan2
 
 class CamRig : Group() {
-    var trackedNode: Node? = null
+    var trackedActor: RigidDynamic? = null
     var localFrontDir = Vec3f.NEG_Z_AXIS
 
     var positionSmoothing = 0.75f
@@ -21,11 +21,11 @@ class CamRig : Group() {
     private val trackDirCurrent = MutableVec3f(localFrontDir)
 
     fun updateTracking() {
-        trackedNode?.let {
+        trackedActor?.let {
             trackPosDesired.set(Vec3f.ZERO)
-            it.toGlobalCoords(trackPosDesired)
+            it.transform.transform(trackPosDesired)
             trackDirDesired.set(localFrontDir)
-            it.toGlobalCoords(trackDirDesired, 0f)
+            it.transform.transform(trackDirDesired, 0f)
         }
 
         trackPosCurrent.scale(positionSmoothing).add(trackPosDesired.scale(1f - positionSmoothing))

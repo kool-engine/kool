@@ -1,10 +1,10 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.RigidStatic
+import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.physics.joints.FixedJoint
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.UniformColor
@@ -21,7 +21,7 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
 
-class GuardRail() {
+class GuardRail {
 
     val guardRailMesh: Mesh
     val signs = mutableListOf<SignInstance>()
@@ -32,6 +32,10 @@ class GuardRail() {
 
     init {
         guardRailMesh = makeMesh()
+    }
+
+    fun cleanUp() {
+        signs.forEach { it.joint.release() }
     }
 
     private fun makeMesh() = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
@@ -167,20 +171,24 @@ class GuardRail() {
         return PolyUtil.fillPolygon(pts, listOf(hole))
     }
 
-    class SignInstance(val iSign: Int, val isLeft: Boolean, initPose: Mat4f, world: VehicleWorld) {
+    class SignInstance(val iSign: Int, val isLeft: Boolean, initPose: Mat4f, track: Track, world: VehicleWorld) {
         val emission = MutableVec2f()
-        val actor: RigidActor
+        val actor: RigidDynamic
+        val joint: FixedJoint
         val pointLight: DeferredPointLights.PointLight
 
         init {
             val signBox = BoxGeometry(Vec3f(2f, 2f, 0.3f))
             val poleBox = BoxGeometry(Vec3f(0.1f, 2f, 0.1f))
 
-            //actor = RigidDynamic(100f, initPose)
-            actor = RigidStatic(initPose)
+            actor = RigidDynamic(250f, initPose)
             actor.attachShape(Shape(signBox, world.defaultMaterial, simFilterData = world.obstacleSimFilterData, queryFilterData = world.obstacleQryFilterData))
             actor.attachShape(Shape(poleBox, world.defaultMaterial, Mat4f().translate(0f, -1f, 0f), world.obstacleSimFilterData, world.obstacleQryFilterData))
+            actor.updateInertiaFromShapesAndMass()
             world.physics.addActor(actor)
+
+            joint = FixedJoint(track.trackActor, actor, initPose, Mat4f())
+            joint.setBreakForce(2e5f, 2e5f)
 
             pointLight = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
                 color.set(Color.MD_ORANGE_300.toLinear())

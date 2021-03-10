@@ -43,13 +43,14 @@ class VehicleWorld(
         }
     }
 
-    fun addStaticCollisionBody(mesh: IndexedVertexList) {
+    fun addStaticCollisionBody(mesh: IndexedVertexList): RigidStatic {
         val body = RigidStatic().apply {
             setSimulationFilterData(obstacleSimFilterData)
             setQueryFilterData(obstacleQryFilterData)
             attachShape(Shape(TriangleMeshGeometry(mesh), defaultMaterial))
         }
         physics.addActor(body)
+        return body
     }
 
     fun release() {

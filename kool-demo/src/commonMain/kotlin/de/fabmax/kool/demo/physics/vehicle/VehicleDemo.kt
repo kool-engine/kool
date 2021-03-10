@@ -98,7 +98,7 @@ class VehicleDemo : DemoScene("Vehicle") {
                 clipNear = 1f
                 clipFar = 1000f
             }
-            trackedNode = demoVehicle.vehicleMesh
+            trackedActor = demoVehicle.vehicle
             +OrbitInputTransform(vehicleWorld.scene).apply {
                 setMouseRotation(0f, -10f)
                 setMouseTranslation(0f, 1.5f, 0f)
@@ -118,6 +118,7 @@ class VehicleDemo : DemoScene("Vehicle") {
     private fun cleanUp(ctx: KoolContext) {
         vehicleWorld.release()
         vehicle?.cleanUp(ctx)
+        track?.cleanUp()
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
@@ -186,13 +187,6 @@ class VehicleDemo : DemoScene("Vehicle") {
             addGuardRailSection(1460f, 1510f, true)
         }
         +track!!
-
-        track!!.apply {
-            val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
-            collisionMesh.addGeometry(trackMesh.geometry)
-            collisionMesh.addGeometry(trackSupportMesh.geometry)
-            world.addStaticCollisionBody(collisionMesh)
-        }
 
         timer = TrackTimer(vehicle!!.vehicle, track!!, world).apply {
             enterPos = Vec3f(-15f, 2.5f, -40f)
