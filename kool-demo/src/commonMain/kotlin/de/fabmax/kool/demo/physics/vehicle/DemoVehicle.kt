@@ -3,27 +3,30 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.Shape
-import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.physics.geometry.ConvexMesh
+import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.group
+import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.DeferredPointLights
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.sign
 
-class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
+class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: KoolContext) {
 
     val vehicle: Vehicle
-    val vehicleMesh = colorMesh {  }
     val vehicleGroup = Group()
+
+    private val brakeLightShader: DeferredPbrShader
 
     val vehicleAudio = VehicleAudio(ctx)
 
@@ -33,11 +36,47 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
 
     private var previousGear = 0
 
+//    private val headLightLt: DeferredSpotLights.SpotLight
+//    private val headLightRt: DeferredSpotLights.SpotLight
+    private val brakeLightLt: DeferredPointLights.PointLight
+    private val brakeLightRt: DeferredPointLights.PointLight
+
     init {
+        vehicleGroup += vehicleModel
         vehicle = makeRaycastVehicle(world)
         registerKeyHandlers(ctx)
 
-        vehicleGroup.onUpdate += { ev ->
+        vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredPbrShader {
+            albedoSource = Albedo.STATIC_ALBEDO
+            albedo = Color.WHITE
+            emissive = Color(5f, 5f, 5f)
+        }
+        brakeLightShader = deferredPbrShader {
+            albedoSource = Albedo.STATIC_ALBEDO
+            albedo = Color(0.5f, 0.0f, 0.0f)
+        }
+        vehicleModel.meshes["mesh_brake_lights_0"]?.shader = brakeLightShader
+
+//        headLightLt = DeferredSpotLights.SpotLight().apply {
+//            spotAngle = 30f
+//            intensity = 10000f
+//        }
+//        headLightRt = DeferredSpotLights.SpotLight().apply {
+//            spotAngle = 30f
+//            intensity = 10000f
+//        }
+//        val headLights = world.deferredPipeline.pbrPass.addSpotLights(30f)
+//        headLights.addSpotLight(headLightLt)
+//        headLights.addSpotLight(headLightRt)
+
+        brakeLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
+            color.set(Color(1f, 0.01f, 0.01f))
+        }
+        brakeLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
+            color.set(Color(1f, 0.01f, 0.01f))
+        }
+
+        vehicleModel.onUpdate += { ev ->
             updateVehicle(ev)
         }
     }
@@ -54,6 +93,16 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
         vehicleAudio.brake = throttleBrakeHandler.brake.value
         vehicleAudio.speed = vehicle.linearVelocity.length()
 
+        if (vehicle.brakeInput > 0f) {
+            brakeLightLt.intensity = 10f
+            brakeLightRt.intensity = 10f
+            brakeLightShader.emissive = Color(5f, 0.1f, 0.05f)
+        } else {
+            brakeLightLt.intensity = 0f
+            brakeLightRt.intensity = 0f
+            brakeLightShader.emissive = Color.BLACK
+        }
+
         vehicleAudio.slip = 0f
         for (i in 0..3) {
             val slip = max(abs(vehicle.wheelInfos[i].lateralSlip), (abs(vehicle.wheelInfos[i].longitudinalSlip) - 0.3f) / 0.7f)
@@ -68,36 +117,59 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
             vehicleAudio.gearIn = gear != 0
         }
         previousGear = gear
+
+        brakeLightLt.position.set(0.4f, -0.1f, -2.5f)
+        vehicle.transform.transform(brakeLightLt.position)
+        brakeLightRt.position.set(-0.4f, -0.1f, -2.5f)
+        vehicle.transform.transform(brakeLightRt.position)
+
+//        vehicle.transform.getRotation(headLightLt.orientation).rotate(-90f, Vec3f.Y_AXIS)
+//        headLightRt.orientation.set(headLightLt.orientation)
+//        headLightLt.position.set(0.65f, -0.55f, 2.7f)
+//        vehicle.transform.transform(headLightLt.position)
+//        headLightRt.position.set(-0.65f, -0.55f, 2.7f)
+//        vehicle.transform.transform(headLightRt.position)
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
         val vehicleProps = VehicleProperties().apply {
             groundMaterialFrictions = mapOf(world.defaultMaterial to 1.5f)
-            chassisDims = Vec3f(2f, 1f, 5f)
-            wheelFrontZ = 1.6f
-            wheelRearZ = -1.5f
-            trackWidth = 2.45f
+            chassisDims = Vec3f(2.1f, 0.98f, 5.4f)
+            trackWidth = 1.6f
             maxBrakeTorqueFront = 2400f
             maxBrakeTorqueRear = 1200f
+            gearFinalRatio = 3.5f
+            maxCompression = 0.15f
+            maxDroop = 0.05f
+            springStrength = 50000f
+            springDamperRate = 6000f
+
+            wheelRadiusFront = 0.36f
+            wheelWidthFront = 0.3f
+            wheelMassFront = 25f
+            wheelPosFront = 1.7f
+
+            wheelRadiusRear = 0.4f
+            wheelWidthRear = 0.333f
+            wheelMassRear = 30f
+            wheelPosRear = -1.7f
 
             updateChassisMoiFromDimensionsAndMass()
+            updateWheelMoiFromRadiusAndMass()
         }
 
-        val wheelBumperDims = Vec3f(vehicleProps.trackWidth + vehicleProps.wheelWidth, 0.2f, vehicleProps.wheelRadius * 2f)
+        val chassisMesh = ConvexMesh(listOf(
+            Vec3f(-1f, -0.65f,  2.5f), Vec3f(-1f, -0.4f,  2.75f),
+            Vec3f( 1f, -0.65f,  2.5f), Vec3f( 1f, -0.4f,  2.75f),
+            Vec3f(-0.9f, -0.65f, -2.5f), Vec3f(-0.9f, 0.25f, -2.6f),
+            Vec3f( 0.9f, -0.65f, -2.5f), Vec3f( 0.9f, 0.25f, -2.6f),
 
-        val chassisBox = VehicleUtils.defaultChassisShape(vehicleProps.chassisDims)
-        vehicleProps.chassisShapes = listOf(
-            chassisBox,
-            // add additional shapes which act as collision dummys for wheel vs. drivable object collisions
-            Shape(
-                BoxGeometry(wheelBumperDims), chassisBox.material,
-                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ),
-                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData),
-            Shape(
-                BoxGeometry(wheelBumperDims), chassisBox.material,
-                Mat4f().translate(0f, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ),
-                simFilterData = chassisBox.simFilterData, queryFilterData = chassisBox.queryFilterData)
-        )
+            Vec3f(-1f, -0.55f,  2.75f), Vec3f(1f, -0.55f,  2.75f),
+            Vec3f( -0.9f, 0.2f, 0f), Vec3f( 0.9f, 0.2f, 0f)
+        ))
+
+        val chassisBox = VehicleUtils.defaultChassisShape(ConvexMeshGeometry(chassisMesh))
+        vehicleProps.chassisShapes = listOf(chassisBox)
 
         val pose = Mat4f().translate(0f, 1.5f, -40f)
         val vehicle = Vehicle(vehicleProps, world.physics, pose)
@@ -105,46 +177,33 @@ class DemoVehicle(world: VehicleWorld, ctx: KoolContext) {
         world.physics.addActor(vehicle)
 
         vehicleGroup.apply {
-            val wheelMeshes = mutableListOf<Group>()
-            for (i in 0..3) {
-                wheelMeshes += group {
-                    +colorMesh {
-                        generate {
-                            color = Color.DARK_GRAY.toLinear()
-                            rotate(90f, Vec3f.Z_AXIS)
-                            cylinder {
-                                steps = 32
-                                radius = vehicleProps.wheelRadius
-                                height = vehicleProps.wheelWidth
-                                origin.set(0f, -height * 0.5f, 0f)
-                            }
-                        }
-                        shader = deferredPbrShader { }
-                    }
-                }.also { +it }
+            val wheelTransforms = mutableListOf<Group>()
+            wheelTransforms += vehicleModel.findNode("Wheel_fl")!! as Group
+            wheelTransforms += vehicleModel.findNode("Wheel_fr")!! as Group
+            wheelTransforms += vehicleModel.findNode("Wheel_rl")!! as Group
+            wheelTransforms += vehicleModel.findNode("Wheel_rr")!! as Group
+
+            wheelTransforms.forEach {
+                vehicleModel -= it
+                vehicleGroup += it
             }
 
-            vehicleMesh.apply {
-                generate {
-                    color = VehicleDemo.color(600f)
-                    cube {
-                        size.set(vehicleProps.chassisDims)
-                        centered()
-                    }
-                }
-                shader = deferredPbrShader { }
-            }
-            +vehicleMesh
+//            +colorMesh {
+//                generate { geometry.addGeometry(chassisMesh.convexHull) }
+//                shader = deferredPbrShader {  }
+//            }
 
             world.scene.onRenderScene += {
                 transform.set(vehicle.transform)
                 setDirty()
                 for (i in 0..3) {
-                    wheelMeshes[i].transform.set(vehicle.wheelInfos[i].transform)
-                    wheelMeshes[i].setDirty()
+                    wheelTransforms[i].transform.set(vehicle.wheelInfos[i].transform)
+                    wheelTransforms[i].setDirty()
                 }
             }
         }
+
+        vehicleModel.translate(0f, -0.86f, 0f)
 
         return vehicle
     }

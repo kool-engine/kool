@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.gl
 
+import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.*
@@ -46,7 +47,8 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
 
         // create window
-        glfwWindowHandle = glfwCreateWindow(props.width, props.height, props.title, props.monitor, props.share)
+        val monHndl = if (props.monitor == 0) 0L else DesktopImpl.monitors[props.monitor].monitor
+        glfwWindowHandle = glfwCreateWindow(props.width, props.height, props.title, monHndl, props.share)
         if (glfwWindowHandle == MemoryUtil.NULL) {
             throw KoolException("Failed to create the GLFW window")
         }

@@ -152,10 +152,10 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
         val tw = vehicleProps.trackWidth * 0.5f
         val offsets = List(4) { MutableVec3f() }
-        offsets[FRONT_LEFT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)
-        offsets[FRONT_RIGHT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelFrontZ)
-        offsets[REAR_LEFT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
-        offsets[REAR_RIGHT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelRearZ)
+        offsets[FRONT_LEFT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelPosFront)
+        offsets[FRONT_RIGHT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelPosFront)
+        offsets[REAR_LEFT].set(tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelPosRear)
+        offsets[REAR_RIGHT].set(-tw, vehicleProps.wheelCenterHeightOffset, vehicleProps.wheelPosRear)
         return offsets
     }
 
@@ -169,7 +169,12 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             }
 
             val wheelShapes = if (vehicleProps.wheelShapes.size != 4) {
-                List(4) { VehicleUtils.defaultWheelShape(vehicleProps.wheelRadius, vehicleProps.wheelWidth) }
+                listOf(
+                    VehicleUtils.defaultWheelShape(vehicleProps.wheelRadiusFront, vehicleProps.wheelWidthFront),
+                    VehicleUtils.defaultWheelShape(vehicleProps.wheelRadiusFront, vehicleProps.wheelWidthFront),
+                    VehicleUtils.defaultWheelShape(vehicleProps.wheelRadiusRear, vehicleProps.wheelWidthRear),
+                    VehicleUtils.defaultWheelShape(vehicleProps.wheelRadiusRear, vehicleProps.wheelWidthRear)
+                )
             } else {
                 vehicleProps.wheelShapes
             }
@@ -211,6 +216,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         // Gears
         driveSimData.gearsData.apply {
             mSwitchTime = vehicleProps.gearSwitchTime
+            mFinalRatio = vehicleProps.gearFinalRatio
         }
         // Clutch
         driveSimData.clutchData.apply {
@@ -243,11 +249,12 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
             // Set up the wheels.
             val wheels = List(numWheels) { i ->
+                val isFront = i < 2
                 val wheel = mem.createPxVehicleWheelData()
-                wheel.mMass = vehicleProps.wheelMass
-                wheel.mMOI = vehicleProps.wheelMOI
-                wheel.mRadius = vehicleProps.wheelRadius
-                wheel.mWidth = vehicleProps.wheelWidth
+                wheel.mMass = if (isFront) vehicleProps.wheelMassFront else vehicleProps.wheelMassRear
+                wheel.mMOI = if (isFront) vehicleProps.wheelMoiFront else vehicleProps.wheelMoiRear
+                wheel.mRadius = if (isFront) vehicleProps.wheelRadiusFront else vehicleProps.wheelRadiusRear
+                wheel.mWidth = if (isFront) vehicleProps.wheelWidthFront else vehicleProps.wheelWidthRear
                 wheel.mMaxBrakeTorque = if (i == FRONT_LEFT || i == FRONT_RIGHT) vehicleProps.maxBrakeTorqueFront else vehicleProps.maxBrakeTorqueRear
                 wheel
             }

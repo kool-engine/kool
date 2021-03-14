@@ -298,7 +298,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inShadowFac, inLightPos, inLightDir, inLightColor)
+        dependsOn(inShadowFac, inLightPos, inLightDir, inLightColor, inFragPos)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -328,8 +328,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
 
         generator.appendMain("""
             ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
-            ${outRadiance.declare()} = spotLight_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
-                        ${inLightColor.ref4f()}, $inSpotInnerAngle) * ${inShadowFac.ref1f()};
+            ${outRadiance.declare()} = ${name}_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $inSpotInnerAngle) * ${inShadowFac.ref1f()};
         """)
     }
 }

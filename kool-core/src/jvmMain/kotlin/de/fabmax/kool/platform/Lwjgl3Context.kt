@@ -76,7 +76,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         setupInput(renderBackend.glfwWindowHandle)
 
-        screenDpi = DesktopImpl.primaryMonitor.dpi
+        screenDpi = DesktopImpl.monitors[props.monitor].dpi
     }
 
     override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
@@ -237,7 +237,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var width = 1600
         var height = 900
         var title = "Kool"
-        var monitor = 0L
+        var monitor = 0
         var share = 0L
 
         var renderBackend = Backend.VULKAN

@@ -14,11 +14,14 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.deferredPbrShader
+import de.fabmax.kool.util.gltf.GltfFile
+import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 
 class VehicleDemo : DemoScene("Vehicle") {
 
     private lateinit var vehicleWorld: VehicleWorld
+    private lateinit var vehicleModel: Model
 
     private var vehicle: DemoVehicle? = null
     private var dashboard: VehicleUi? = null
@@ -47,7 +50,6 @@ class VehicleDemo : DemoScene("Vehicle") {
             +Skybox.cube(ibl.reflectionMap, 1f)
             Physics.awaitLoaded()
 
-
             val defCfg = DeferredPipelineConfig().apply {
                 maxGlobalLights = 1
                 isWithEmissive = true
@@ -68,6 +70,9 @@ class VehicleDemo : DemoScene("Vehicle") {
             vehicleWorld = VehicleWorld(this@scene, PhysicsWorld(), deferredPipeline)
             vehicleWorld.physics.registerHandlers(this@scene)
 
+            val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
+            vehicleModel = loadGltfModel("${Demo.modelBasePath}/kool-car.glb", modelCfg)!!
+
             createObjects = true
         }
 
@@ -84,7 +89,7 @@ class VehicleDemo : DemoScene("Vehicle") {
     }
 
     private fun Group.createWorldObjects(ctx: KoolContext) {
-        val demoVehicle = DemoVehicle(vehicleWorld, ctx)
+        val demoVehicle = DemoVehicle(vehicleWorld, vehicleModel, ctx)
         +demoVehicle.vehicleGroup
         vehicle = demoVehicle
 
@@ -101,8 +106,9 @@ class VehicleDemo : DemoScene("Vehicle") {
             trackedActor = demoVehicle.vehicle
             +OrbitInputTransform(vehicleWorld.scene).apply {
                 setMouseRotation(0f, -10f)
-                setMouseTranslation(0f, 1.5f, 0f)
+                setMouseTranslation(0f, 1f, 0f)
                 +cam
+                zoom = 6.0
                 maxZoom = 500.0
             }
             vehicleWorld.physics.onFixedUpdate += {

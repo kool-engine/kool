@@ -10,12 +10,18 @@ class VehicleProperties {
     var chassisCMOffset = Vec3f(0.0f, -chassisDims.y * 0.5f + 0.15f, 0.25f)
 
     var numWheels = 4       // for now this is kind of fixed
-    var wheelMass = 20f
-    var wheelWidth = 0.4f
-    var wheelRadius = 0.5f
-    var maxSteerAngle = 40f
-    var wheelFrontZ = 1.75f
-    var wheelRearZ = -1.75f
+
+    var wheelMassFront = 20f
+    var wheelWidthFront = 0.4f
+    var wheelRadiusFront = 0.4f
+    var wheelPosFront = 1.75f
+
+    var wheelMassRear = 20f
+    var wheelWidthRear = 0.4f
+    var wheelRadiusRear = 0.4f
+    var wheelPosRear = -1.75f
+
+    var maxSteerAngle = 30f
     var trackWidth = 1.8f
     var wheelCenterHeightOffset = -0.5f     // relative to center of chassis dims
 
@@ -28,19 +34,21 @@ class VehicleProperties {
     var springStrength = 35000f
     var springDamperRate = 4500f
     var camberAngleAtRest = 0.0f
-    var camberAngleAtMaxDroop = 0.05f
+    var camberAngleAtMaxDroop = 0.025f
     var camberAngleAtMaxCompression = -0.05f
 
     var peakEngineTorque = 1000f
     var peakEngineRpm = 6000f
     var gearSwitchTime = 0.35f
+    var gearFinalRatio = 4f
     var clutchStrength = 50f
 
     var frontAntiRollBarStiffness = 10000f
     var rearAntiRollBarStiffness = 10000f
 
     var chassisMOI = Vec3f(0f)
-    var wheelMOI = 0f
+    var wheelMoiFront = 0f
+    var wheelMoiRear = 0f
 
     var groundMaterialFrictions = mapOf<Material, Float>()
 
@@ -53,8 +61,8 @@ class VehicleProperties {
     }
 
     fun setSymmetricWheelBase(wheelBase: Float) {
-        wheelFrontZ = wheelBase * 0.5f
-        wheelRearZ = wheelBase * -0.5f
+        wheelPosFront = wheelBase * 0.5f
+        wheelPosRear = wheelBase * -0.5f
     }
 
     fun updateChassisMoiFromDimensionsAndMass() {
@@ -65,6 +73,7 @@ class VehicleProperties {
     }
 
     fun updateWheelMoiFromRadiusAndMass() {
-        wheelMOI = 0.5f * wheelMass * wheelRadius * wheelRadius
+        wheelMoiFront = 0.5f * wheelMassFront * wheelRadiusFront * wheelRadiusFront
+        wheelMoiRear = 0.5f * wheelMassRear * wheelRadiusRear * wheelRadiusRear
     }
 }

@@ -127,12 +127,14 @@ class GuardRail {
             for (i in signs.indices) {
                 val sign = signs[i]
                 sign.emission.set(Vec2f.ZERO)
-                if (isReverse) {
-                    val em = (sin((ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
-                    if (sign.isLeft) { sign.emission.x = em } else { sign.emission.y = em }
-                } else {
-                    val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
-                    if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
+                if (!sign.joint.isBroken) {
+                    if (isReverse) {
+                        val em = (sin((ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                        if (sign.isLeft) { sign.emission.x = em } else { sign.emission.y = em }
+                    } else {
+                        val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                        if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
+                    }
                 }
                 sign.updateInstance(signInstances)
             }

@@ -19,12 +19,13 @@ import de.fabmax.kool.util.simpleShape
 object Playground {
 
     fun makePlayground(vehicleWorld: VehicleWorld) {
+
         makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
-        makeRocker(Mat4f().translate(-20f, 0f, 90f), vehicleWorld)
+        makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
 
         vehicleWorld.deferredPipeline.contentGroup += colorMesh {
             generate {
-                makeRamp(Mat4f().translate(0f, 0f, 30f))
+                makeRamp(Mat4f().translate(-20f, 0f, 80f).rotate(180f, Vec3f.Y_AXIS))
                 makeBumps(Mat4f().translate(20f, 0f, 0f))
                 makeHalfPipe(Mat4f().translate(-40f, 0f, 30f).rotate(90f, 0f, -1f, 0f))
             }
@@ -100,7 +101,7 @@ object Playground {
             for (s in -1 .. 1 step 2) {
                 withTransform {
                     transform.mul(frame)
-                    translate(2f * s, -0.3f, i * 3.1f + s * 0.4f)
+                    translate(2f * s, -0.375f, i * 3.1f + s * 0.4f)
                     rotate(90f, Vec3f.Z_AXIS)
                     translate(0f, -2f, 0f)
                     color = c

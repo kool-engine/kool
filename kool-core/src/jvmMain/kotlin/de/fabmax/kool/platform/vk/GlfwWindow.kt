@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -22,7 +23,8 @@ class GlfwWindow(val sys: VkSystem, var width: Int = 800, var height: Int = 600)
 
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
 
-        glfwWindow = GLFW.glfwCreateWindow(width, height, sys.props.title, sys.props.monitor, sys.props.share)
+        val monHndl = if (sys.props.monitor == 0) 0L else DesktopImpl.monitors[sys.props.monitor].monitor
+        glfwWindow = GLFW.glfwCreateWindow(width, height, sys.props.title, monHndl, sys.props.share)
         GLFW.glfwSetFramebufferSizeCallback(glfwWindow) { _, width, height ->
             this.width = width
             this.height = height

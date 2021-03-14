@@ -42,6 +42,7 @@ class Track(val world: VehicleWorld) : Group() {
     val guardRail = GuardRail()
 
     init {
+        isFrustumChecked = false
         +trackMesh
         +trackSupportMesh
         +guardRail.guardRailMesh

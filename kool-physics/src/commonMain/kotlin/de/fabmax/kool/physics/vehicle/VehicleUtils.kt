@@ -4,10 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.FilterData
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
-import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.physics.geometry.CommonCylinderGeometry
-import de.fabmax.kool.physics.geometry.ConvexMesh
-import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
+import de.fabmax.kool.physics.geometry.*
 
 object VehicleUtils {
 
@@ -21,11 +18,12 @@ object VehicleUtils {
         return queryFilterData
     }
 
-    fun defaultChassisShape(boxSize: Vec3f): Shape {
-        val geom = BoxGeometry(boxSize)
+    fun defaultChassisShape(boxSize: Vec3f) = defaultChassisShape(BoxGeometry(boxSize))
+
+    fun defaultChassisShape(geometry: CollisionGeometry): Shape {
         val simFilterData = FilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST)
         val qryFilterData = setupNonDrivableSurface(FilterData())
-        return Shape(geom, defaultChassisMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
+        return Shape(geometry, defaultChassisMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
     }
 
     fun defaultWheelShape(radius: Float, width: Float): Shape {

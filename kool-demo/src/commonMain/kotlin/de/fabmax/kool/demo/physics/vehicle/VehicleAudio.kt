@@ -63,7 +63,7 @@ class VehicleAudio(ctx: KoolContext) {
 
             gearShiftNode = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/gear_shift.wav")!!)).apply { loop = false }
 
-            rpmMix.gain = 1f
+            rpmMix.gain = 0.7f
             squealMix.gain = 0.5f
             gearShiftNode.gain = 0f
         }
