@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
@@ -17,6 +18,7 @@ import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.*
 
 class AoDemo : DemoScene("Ambient Occlusion") {
@@ -27,11 +29,24 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
+    private lateinit var ibl: EnvironmentMaps
+    private lateinit var teapotMesh: Mesh
+
     override fun lateInit(ctx: KoolContext) {
         updateLighting()
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        showLoadText("Loading IBL Maps")
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
+
+        showLoadText("Loading IBL Maps")
+        val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
+        val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
+        teapotMesh = model.meshes.values.first()
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -20f)
@@ -49,136 +64,128 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         shadows.add(SimpleShadowMap(this, 0, 2048))
         aoPipeline = AoPipeline.createForward(this)
 
-        ctx.assetMgr.launch {
-            val envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
+        +colorMesh("teapots") {
+            generate {
+                for (x in -3..3) {
+                    for (y in -3..3) {
+                        val h = atan2(y.toFloat(), x.toFloat()).toDeg()
+                        val s = max(abs(x), abs(y)) / 5f
+                        color = Color.fromHsv(h, s, 0.75f, 1f).toLinear()
 
-            val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-            val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
-            val teapotMesh = model.meshes.values.first()
-
-            +colorMesh("teapots") {
-                generate {
-                    for (x in -3..3) {
-                        for (y in -3..3) {
-                            val h = atan2(y.toFloat(), x.toFloat()).toDeg()
-                            val s = max(abs(x), abs(y)) / 5f
-                            color = Color.fromHsv(h, s, 0.75f, 1f).toLinear()
-
-                            withTransform {
-                                translate(x.toFloat(), 0f, y.toFloat())
-                                scale(0.25f, 0.25f, 0.25f)
-                                rotate(-37.5f, Vec3f.Y_AXIS)
-                                geometry(teapotMesh.geometry)
-                            }
+                        withTransform {
+                            translate(x.toFloat(), 0f, y.toFloat())
+                            scale(0.25f, 0.25f, 0.25f)
+                            rotate(-37.5f, Vec3f.Y_AXIS)
+                            geometry(teapotMesh.geometry)
                         }
                     }
                 }
-                val shader = pbrShader {
-                    albedoSource = Albedo.VERTEX_ALBEDO
-                    shadowMaps += shadows
-                    roughness = 0.1f
-
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(envMaps)
-                }
-                this.shader = shader
             }
+            val shader = pbrShader {
+                albedoSource = Albedo.VERTEX_ALBEDO
+                shadowMaps += shadows
+                roughness = 0.1f
 
-            +textureMesh("ground", isNormalMapped = true) {
-                isCastingShadow = false
-                generate {
-                    // generate a cube (as set of rects for better control over tex coords)
-                    val texScale = 0.1955f
-
-                    // top
-                    withTransform {
-                        rotate(90f, Vec3f.NEG_X_AXIS)
-                        rect {
-                            size.set(12f, 12f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
-                        }
-                    }
-
-                    // bottom
-                    withTransform {
-                        translate(0f, -0.25f, 0f)
-                        rotate(90f, Vec3f.X_AXIS)
-                        rect {
-                            size.set(12f, 12f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
-                        }
-                    }
-
-                    // left
-                    withTransform {
-                        translate(-6f, -0.125f, 0f)
-                        rotate(90f, Vec3f.NEG_Y_AXIS)
-                        rotate(90f, Vec3f.Z_AXIS)
-                        rect {
-                            size.set(0.25f, 12f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
-                        }
-                    }
-
-                    // right
-                    withTransform {
-                        translate(6f, -0.125f, 0f)
-                        rotate(90f, Vec3f.Y_AXIS)
-                        rotate(-90f, Vec3f.Z_AXIS)
-                        rect {
-                            size.set(0.25f, 12f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
-                        }
-                    }
-
-                    // front
-                    withTransform {
-                        translate(0f, -0.125f, 6f)
-                        rect {
-                            size.set(12f, 0.25f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f, 12f * texScale, size.x * texScale, size.y * texScale)
-                        }
-                    }
-
-                    // back
-                    withTransform {
-                        translate(0f, -0.125f, -6f)
-                        rotate(180f, Vec3f.X_AXIS)
-                        rect {
-                            size.set(12f, 0.25f)
-                            origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.06f, -0.25f * texScale, size.x * texScale, size.y * texScale)
-                        }
-                    }
-                }
-
-                val shader = pbrShader {
-                    useAlbedoMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-                    useOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
-                    useNormalMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
-                    useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
-
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(envMaps)
-                    shadowMaps += shadows
-
-                    onDispose += {
-                        albedoMap?.dispose()
-                        occlusionMap?.dispose()
-                        normalMap?.dispose()
-                        roughnessMap?.dispose()
-                    }
-                }
-                this.shader = shader
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useImageBasedLighting(ibl)
             }
-
-            this@scene += Skybox.cube(envMaps.reflectionMap, 1f)
+            this.shader = shader
         }
+
+        +textureMesh("ground", isNormalMapped = true) {
+            isCastingShadow = false
+            generate {
+                // generate a cube (as set of rects for better control over tex coords)
+                val texScale = 0.1955f
+
+                // top
+                withTransform {
+                    rotate(90f, Vec3f.NEG_X_AXIS)
+                    rect {
+                        size.set(12f, 12f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
+                    }
+                }
+
+                // bottom
+                withTransform {
+                    translate(0f, -0.25f, 0f)
+                    rotate(90f, Vec3f.X_AXIS)
+                    rect {
+                        size.set(12f, 12f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
+                    }
+                }
+
+                // left
+                withTransform {
+                    translate(-6f, -0.125f, 0f)
+                    rotate(90f, Vec3f.NEG_Y_AXIS)
+                    rotate(90f, Vec3f.Z_AXIS)
+                    rect {
+                        size.set(0.25f, 12f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
+                    }
+                }
+
+                // right
+                withTransform {
+                    translate(6f, -0.125f, 0f)
+                    rotate(90f, Vec3f.Y_AXIS)
+                    rotate(-90f, Vec3f.Z_AXIS)
+                    rect {
+                        size.set(0.25f, 12f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
+                    }
+                }
+
+                // front
+                withTransform {
+                    translate(0f, -0.125f, 6f)
+                    rect {
+                        size.set(12f, 0.25f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f, 12f * texScale, size.x * texScale, size.y * texScale)
+                    }
+                }
+
+                // back
+                withTransform {
+                    translate(0f, -0.125f, -6f)
+                    rotate(180f, Vec3f.X_AXIS)
+                    rect {
+                        size.set(12f, 0.25f)
+                        origin.set(size.x, size.y, 0f).scale(-0.5f)
+                        setUvs(0.06f, -0.25f * texScale, size.x * texScale, size.y * texScale)
+                    }
+                }
+            }
+
+            val shader = pbrShader {
+                useAlbedoMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+                useOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+                useNormalMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+                useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useImageBasedLighting(ibl)
+                shadowMaps += shadows
+
+                onDispose += {
+                    albedoMap?.dispose()
+                    occlusionMap?.dispose()
+                    normalMap?.dispose()
+                    roughnessMap?.dispose()
+                }
+            }
+            this.shader = shader
+        }
+
+        this@setupMainScene += Skybox.cube(ibl.reflectionMap, 1f)
     }
 
     private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {

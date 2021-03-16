@@ -1,16 +1,23 @@
 package de.fabmax.kool.demo.physics.vehicle
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
-import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.SimpleSpline3f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
-import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.deferredPbrShader
@@ -18,19 +25,73 @@ import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 
-class VehicleDemo : DemoScene("Vehicle") {
+class VehicleDemo : DemoScene("Vehicle Demo") {
 
     private lateinit var vehicleWorld: VehicleWorld
     private lateinit var vehicleModel: Model
+    private lateinit var vehicle: DemoVehicle
 
-    private var vehicle: DemoVehicle? = null
     private var dashboard: VehicleUi? = null
     private var track: Track? = null
     private var timer: TrackTimer? = null
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
-        var createObjects = false
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        showLoadText("Loading IBL maps")
+        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        val shadows = CascadedShadowMap(mainScene, 0, maxRange = 400f).apply {
+            mapRanges[0].set(0f, 0.05f)
+            mapRanges[1].set(0.05f, 0.2f)
+            mapRanges[2].set(0.2f, 1f)
+            cascades.forEach { it.directionalCamNearOffset = -80f }
+        }
+        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
+        showLoadText("Loading Vehicle Model")
+        val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
+        vehicleModel = loadGltfModel("${Demo.modelBasePath}/kool-car.glb", modelCfg)!!
+
+        showLoadText("Loading Physics")
+        Physics.awaitLoaded()
+
+        showLoadText("Creating Deferred Render Pipeline")
+        val defCfg = DeferredPipelineConfig().apply {
+            maxGlobalLights = 1
+            isWithEmissive = true
+            isWithAmbientOcclusion = true
+            isWithScreenSpaceReflections = false
+
+            useImageBasedLighting(ibl)
+            useShadowMaps(emptyList())
+            useShadowMaps(listOf(shadows))
+        }
+        val deferredPipeline = DeferredPipeline(mainScene, defCfg)
+        deferredPipeline.aoPipeline?.mapSize = 0.75f
+        deferredPipeline.pbrPass.sceneShader.ambientShadowFactor = 0.3f
+        mainScene += deferredPipeline.renderOutput
+
+        shadows.drawNode = deferredPipeline.contentGroup
+
+        showLoadText("Creating Physics World")
+        vehicleWorld = VehicleWorld(mainScene, PhysicsWorld(), deferredPipeline)
+        vehicleWorld.physics.registerHandlers(mainScene)
+
+        vehicle = DemoVehicle(vehicleWorld, vehicleModel, ctx)
+        showLoadText("Loading Vehicle Audio")
+        vehicle.vehicleAudio.loadAudio(this)
+
+        showLoadText("Creating Physics World")
+        deferredPipeline.contentGroup.apply {
+            +vehicle.vehicleGroup
+
+            makeGround()
+            showLoadText("Creating Playground")
+            Playground.makePlayground(vehicleWorld)
+            showLoadText("Creating Track")
+            makeTrack(vehicleWorld)
+        }
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         lighting.singleLight {
 //            setDirectional(Vec3f(0.5f, -1f, -0.5f))
 //            setColor(Color.WHITE, 0.75f)
@@ -38,72 +99,13 @@ class VehicleDemo : DemoScene("Vehicle") {
                 setColor(Color.WHITE, 0.75f)
         }
 
-        ctx.assetMgr.launch {
-//            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
-            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-            val shadows = CascadedShadowMap(this@scene, 0, maxRange = 400f).apply {
-                mapRanges[0].set(0f, 0.05f)
-                mapRanges[1].set(0.05f, 0.2f)
-                mapRanges[2].set(0.2f, 1f)
-                cascades.forEach { it.directionalCamNearOffset = -80f }
-            }
-            +Skybox.cube(ibl.reflectionMap, 1f)
-            Physics.awaitLoaded()
-
-            val defCfg = DeferredPipelineConfig().apply {
-                maxGlobalLights = 1
-                isWithEmissive = true
-                isWithAmbientOcclusion = true
-                isWithScreenSpaceReflections = false
-
-                useImageBasedLighting(ibl)
-                useShadowMaps(emptyList())
-                useShadowMaps(listOf(shadows))
-            }
-            val deferredPipeline = DeferredPipeline(this@scene, defCfg)
-            deferredPipeline.aoPipeline?.mapSize = 0.75f
-            deferredPipeline.pbrPass.sceneShader.ambientShadowFactor = 0.3f
-            +deferredPipeline.renderOutput
-
-            shadows.drawNode = deferredPipeline.contentGroup
-
-            vehicleWorld = VehicleWorld(this@scene, PhysicsWorld(), deferredPipeline)
-            vehicleWorld.physics.registerHandlers(this@scene)
-
-            val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
-            vehicleModel = loadGltfModel("${Demo.modelBasePath}/kool-car.glb", modelCfg)!!
-
-            createObjects = true
-        }
-
-        onRenderScene += {
-            if (createObjects) {
-                createObjects = false
-                vehicleWorld.deferredPipeline.contentGroup.createWorldObjects(ctx)
-            }
-        }
-
-        onDispose += {
-            cleanUp(it)
-        }
-    }
-
-    private fun Group.createWorldObjects(ctx: KoolContext) {
-        val demoVehicle = DemoVehicle(vehicleWorld, vehicleModel, ctx)
-        +demoVehicle.vehicleGroup
-        vehicle = demoVehicle
-
-        makeGround()
-        makeTrack(vehicleWorld)
-        Playground.makePlayground(vehicleWorld)
-
-        vehicleWorld.scene += CamRig().apply {
+        +CamRig().apply {
             val cam = vehicleWorld.scene.camera as PerspectiveCamera
             cam.apply {
                 clipNear = 1f
                 clipFar = 1000f
             }
-            trackedActor = demoVehicle.vehicle
+            trackedActor = vehicle.vehicle
             +OrbitInputTransform(vehicleWorld.scene).apply {
                 setMouseRotation(0f, -10f)
                 setMouseTranslation(0f, 1f, 0f)
@@ -121,22 +123,23 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
     }
 
-    private fun cleanUp(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
         vehicleWorld.release()
-        vehicle?.cleanUp(ctx)
+        vehicle.cleanUp(ctx)
         track?.cleanUp()
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
         dashboard = VehicleUi(ctx).apply {
-            onToggleSound = { en -> vehicle?.toggleSound(en) }
+            onToggleSound = { en -> vehicle.toggleSound(en) }
         }
         return dashboard!!.uiScene
     }
 
     private fun updateDashboard() {
         dashboard?.apply {
-            vehicle?.vehicle?.let { vehicle ->
+            vehicle.vehicle.let { vehicle ->
                 speedKph = vehicle.forwardSpeed * 3.6f
                 rpm = vehicle.engineSpeedRpm
                 torqueNm = vehicle.engineTorqueNm
@@ -152,7 +155,7 @@ class VehicleDemo : DemoScene("Vehicle") {
             timer?.let { t ->
                 trackTime = t.trackTime
                 if (t.timerState != TrackTimer.TimerState.STOPPED) {
-                    vehicle?.vehicle?.let { veh ->
+                    vehicle.vehicle.let { veh ->
                         val distToTrack = track?.distanceToTrack(veh.position) ?: 0f
                         if (distToTrack > 15f) {
                             t.reset(t.isReverse)
@@ -194,7 +197,7 @@ class VehicleDemo : DemoScene("Vehicle") {
         }
         +track!!
 
-        timer = TrackTimer(vehicle!!.vehicle, track!!, world).apply {
+        timer = TrackTimer(vehicle.vehicle, track!!, world).apply {
             enterPos = Vec3f(-15f, 2.5f, -40f)
             enterSize = Vec3f(5f, 5f, 15f)
 

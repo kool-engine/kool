@@ -7,7 +7,6 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultCamTransform
-import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.ao.AoPipeline
@@ -15,14 +14,14 @@ import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
 
 class HelloWorldDemo : DemoScene("Hello World") {
-    override fun setupMainScene(ctx: KoolContext) = helloWorldScene()
+    override fun Scene.setupMainScene(ctx: KoolContext) = helloWorldScene()
 }
 
 class HelloGltfDemo : DemoScene("Hello glTF") {
-    override fun setupMainScene(ctx: KoolContext) = helloGltfScene(ctx)
+    override fun Scene.setupMainScene(ctx: KoolContext) = helloGltfScene(ctx)
 }
 
-fun helloWorldScene(): Scene = scene {
+fun Scene.helloWorldScene() {
     defaultCamTransform()
 
     +colorMesh {
@@ -45,7 +44,7 @@ fun helloWorldScene(): Scene = scene {
     }
 }
 
-fun helloGltfScene(ctx: KoolContext): Scene = scene {
+fun Scene.helloGltfScene(ctx: KoolContext) {
     defaultCamTransform()
 
     lighting.singleLight {

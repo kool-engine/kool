@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
@@ -37,10 +38,15 @@ fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), 
 class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoEntry>?) {
 
     private val dbgOverlay = DebugOverlay(ctx, DebugOverlay.Position.LOWER_RIGHT)
-    private val newScenes = mutableListOf<Scene>()
-    private val currentScenes = mutableListOf<Scene>()
+    private val loadingScreen = LoadingScreen(ctx)
+    private var currentDemo: DemoScene? = null
+    private var switchDemo: DemoScene? = null
+        set(value) {
+            field = value
+            value?.loadingScreen = loadingScreen
+        }
 
-    private val defaultScene = DemoEntry("glTF Models") { GltfDemo() }
+    private val defaultScene = DemoEntry("Physics - Vehicle") { VehicleDemo() }
 
     private val demos = mutableMapOf(
         "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() },
@@ -77,33 +83,44 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
-        val initScene = (demos[startScene] ?: defaultScene).sceneLoader(ctx)
-        newScenes += initScene.setupScenes(ctx)
+        switchDemo = (demos[startScene] ?: defaultScene).newInstance(ctx)
 
         ctx.run()
     }
 
     private fun onRender(ctx: KoolContext) {
-        if (newScenes.isNotEmpty()) {
-            currentScenes.forEach { s ->
-                ctx.scenes -= s
-                s.dispose(ctx)
+        switchDemo?.let { newDemo ->
+            // release old demo
+            currentDemo?.let { demo ->
+                demo.scenes.forEach {
+                    ctx.scenes -= it
+                    it.dispose(ctx)
+                }
+                demo.dispose(ctx)
             }
-            currentScenes.clear()
+            ctx.scenes += loadingScreen
 
-            // new scenes have to be inserted in front, so that demo menu is rendered after it
-            newScenes.forEachIndexed { i, s ->
-                ctx.scenes.add(i, s)
-                currentScenes.add(s)
+            // set new demo
+            currentDemo = newDemo
+            switchDemo = null
+        }
+
+        currentDemo?.let {
+            if (it.demoState != DemoScene.State.RUNNING) {
+                it.checkDemoState(ctx)
+                if (it.demoState == DemoScene.State.RUNNING) {
+                    // demo setup complete -> add scenes
+                    ctx.scenes -= loadingScreen
+                    it.scenes.forEachIndexed { i, s -> ctx.scenes.add(i, s) }
+                }
             }
-            newScenes.clear()
         }
     }
 
     private fun demoOverlay(ctx: KoolContext): Scene = uiScene(ctx.screenDpi, "demo-overlay") {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
-            containerUi(::BlurredComponentUi)
+            containerUi(::SimpleComponentUi)
         }
         content.ui.setCustom(BlankComponentUi())
 
@@ -124,8 +141,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
                         y -= 35f
 
                         onClick += { _,_,_ ->
-                            val demoScene = demo.sceneLoader(ctx)
-                            newScenes += demoScene.setupScenes(ctx)
+                            switchDemo = demo.newInstance(ctx)
                             isOpen = false
                         }
                     }
@@ -171,7 +187,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     }
 }
 
-class DemoEntry(val label: String, val isHidden: Boolean = false, val sceneLoader: (KoolContext) -> DemoScene)
+class DemoEntry(val label: String, val isHidden: Boolean = false, val newInstance: (KoolContext) -> DemoScene)
 
 class Cycler<T>(elements: List<T>) : List<T> by elements {
 
@@ -194,25 +210,65 @@ class Cycler<T>(elements: List<T>) : List<T> by elements {
 }
 
 abstract class DemoScene(val name: String) {
-    val scenes = mutableListOf<Scene>()
+    var demoState = State.NEW
+    var isLoading = false
+    var isLoaded = false
 
-    lateinit var mainScene: Scene
+    val mainScene = Scene(name)
     var menuScene: Scene? = null
+    val scenes = mutableListOf(mainScene)
 
-    open fun setupScenes(ctx: KoolContext): List<Scene> {
-        mainScene = setupMainScene(ctx)
-        scenes += mainScene
+    var loadingScreen: LoadingScreen? = null
+        set(value) {
+            field = value
+            value?.loadingText1?.text = "Loading $name"
+            value?.loadingText2?.text = ""
+        }
+
+    protected fun showLoadText(text: String) {
+        loadingScreen?.loadingText2?.text = text
+    }
+
+    fun checkDemoState(ctx: KoolContext) {
+        if (demoState == State.NEW) {
+            // load resources (async from AssetManager CoroutineScope)
+            demoState = State.LOADING
+            ctx.assetMgr.launch {
+                loadResources(ctx)
+                demoState = State.SETUP
+            }
+        }
+
+        if (demoState == State.SETUP) {
+            // setup scene after required resources are loaded, blocking in main thread
+            setupScenes(ctx)
+            demoState = State.RUNNING
+        }
+    }
+
+    private fun setupScenes(ctx: KoolContext) {
+        mainScene.setupMainScene(ctx)
         menuScene = setupMenu(ctx)
         menuScene?.let { scenes += it }
         lateInit(ctx)
-        return scenes
     }
 
-    abstract fun setupMainScene(ctx: KoolContext): Scene
+    open suspend fun AssetManager.loadResources(ctx: KoolContext) { }
+
+    abstract fun Scene.setupMainScene(ctx: KoolContext)
 
     open fun setupMenu(ctx: KoolContext): Scene? {
         return null
     }
 
     open fun lateInit(ctx: KoolContext) { }
+
+    open fun dispose(ctx: KoolContext) { }
+
+    enum class State {
+        NEW,
+        LOADING,
+        SETUP,
+        RUNNING
+    }
 }

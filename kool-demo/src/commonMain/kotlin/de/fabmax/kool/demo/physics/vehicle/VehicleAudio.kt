@@ -1,13 +1,13 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.audio.*
 import kotlin.math.pow
 import kotlin.math.sin
 
-class VehicleAudio(ctx: KoolContext) {
+class VehicleAudio() {
 
     var rpm = 0f
     var throttle = 0f
@@ -27,8 +27,8 @@ class VehicleAudio(ctx: KoolContext) {
     private lateinit var squealMix: SquealModulateNode
     private lateinit var gearShiftNode: WavNode
 
-    init {
-        ctx.assetMgr.launch {
+    suspend fun loadAudio(assetMgr: AssetManager) {
+        assetMgr.apply {
             val idle1 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_idle1.wav")!!))
             val idle2 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_idle2.wav")!!))
             val idleMix = ModulateNode(idle1, idle2).apply { gain = 1.5f }

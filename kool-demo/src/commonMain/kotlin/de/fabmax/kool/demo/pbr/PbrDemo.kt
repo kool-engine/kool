@@ -61,7 +61,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         lightCycler.current.setup(this)
 
         +orbitInputTransform {

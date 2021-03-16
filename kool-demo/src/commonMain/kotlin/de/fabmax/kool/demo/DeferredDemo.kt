@@ -46,7 +46,7 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
         updateLights()
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(0f, -40f)

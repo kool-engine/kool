@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
@@ -73,20 +74,51 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = models.current.trackModel
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene("gltfDemo") {
-        setupLighting()
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        showLoadText("Loading IBL Maps")
+        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
+
+        mainScene.setupLighting()
+
+        // create deferred pipeline
+        val defCfg = DeferredPipelineConfig().apply {
+            isWithAmbientOcclusion = true
+            isWithScreenSpaceReflections = true
+            isWithEmissive = true
+            baseReflectionStep = 0.02f
+            maxGlobalLights = 2
+            useImageBasedLighting(envMaps)
+        }
+        deferredPipeline = DeferredPipeline(mainScene, defCfg)
+        deferredPipeline.aoPipeline?.apply {
+            radius = 0.2f
+        }
+
+        // create forward pipeline
+        aoPipelineForward = AoPipeline.createForward(mainScene).apply {
+            radius = 0.2f
+        }
+        shadowsForward += listOf(
+            SimpleShadowMap(mainScene, 0, 2048, contentGroupForward),
+            SimpleShadowMap(mainScene, 1, 2048, contentGroupForward))
+
+        // load models
+        models.forEach {
+            showLoadText("Loading ${it.name}")
+            it.load(false, ctx)
+            it.load(true, ctx)
+        }
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         setupCamera()
 
-        ctx.assetMgr.launch {
-            envMaps = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
+        +Skybox.cube(envMaps.reflectionMap, 1f)
 
-            +Skybox.cube(envMaps.reflectionMap, 1f)
+        makeDeferredContent(ctx)
+        makeForwardContent(ctx)
 
-            makeDeferredContent(ctx)
-            makeForwardContent(ctx)
-
-            setupPipelines()
-        }
+        setupPipelines()
 
         onUpdate += {
             animationTime += ctx.deltaT * animationSpeed
@@ -107,31 +139,12 @@ class GltfDemo : DemoScene("glTF Models") {
         deferredPipeline.isAoEnabled = isAo
     }
 
-    private suspend fun Scene.makeForwardContent(ctx: KoolContext) {
-        aoPipelineForward = AoPipeline.createForward(this).apply {
-            radius = 0.2f
-        }
-        shadowsForward += listOf(
-                SimpleShadowMap(this, 0, 2048, contentGroupForward),
-                SimpleShadowMap(this, 1, 2048, contentGroupForward))
-
+    private fun Scene.makeForwardContent(ctx: KoolContext) {
         contentGroupForward.setupContentGroup(false, ctx)
         +contentGroupForward
     }
 
-    private suspend fun Scene.makeDeferredContent(ctx: KoolContext) {
-        val defCfg = DeferredPipelineConfig().apply {
-            isWithAmbientOcclusion = true
-            isWithScreenSpaceReflections = true
-            isWithEmissive = true
-            baseReflectionStep = 0.02f
-            maxGlobalLights = 2
-            useImageBasedLighting(envMaps)
-        }
-        deferredPipeline = DeferredPipeline(this, defCfg)
-        deferredPipeline.aoPipeline?.apply {
-            radius = 0.2f
-        }
+    private fun Scene.makeDeferredContent(ctx: KoolContext) {
         deferredPipeline.contentGroup.setupContentGroup(true, ctx)
 
         // main scene only contains a quad used to draw the deferred shading output
@@ -148,7 +161,7 @@ class GltfDemo : DemoScene("glTF Models") {
             zoom = models.current.zoom
             translation.set(models.current.lookAt)
 
-            onUpdate += {
+            onUpdate += { ev ->
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
                     val model = models.current.forwardModel
@@ -157,7 +170,7 @@ class GltfDemo : DemoScene("glTF Models") {
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
                     }
                 } else if (autoRotate) {
-                    verticalRotation -= it.deltaT * 3f
+                    verticalRotation -= ev.deltaT * 3f
                 }
 
                 translationTarget?.let {
@@ -188,7 +201,7 @@ class GltfDemo : DemoScene("glTF Models") {
         })
     }
 
-    private suspend fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
+    private fun Group.setupContentGroup(isDeferredShading: Boolean, ctx: KoolContext) {
         rotate(-60.0, Vec3d.Y_AXIS)
         onUpdate += {
             if (autoRotate) {
@@ -229,7 +242,11 @@ class GltfDemo : DemoScene("glTF Models") {
         }
 
         models.forEach { model ->
-            model.load(isDeferredShading, ctx)?.let { +it }
+            if (isDeferredShading) {
+                model.deferredModel?.let { +it }
+            } else {
+                model.forwardModel?.let { +it }
+            }
         }
     }
 

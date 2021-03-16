@@ -3,10 +3,10 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.scene.orbitInputTransform
-import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.ui.*
 
 /**
@@ -14,7 +14,7 @@ import de.fabmax.kool.scene.ui.*
  */
 
 class FloatingUiDemo : DemoScene("Floating UI") {
-    override fun setupMainScene(ctx: KoolContext) = scene("UI Demo") {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform { +camera }
 
         +group {

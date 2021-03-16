@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
@@ -33,6 +34,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     private var modelRadius = 1f
     private val lodController = InstancedLodController<BunnyInstance>()
 
+    private lateinit var model: GltfFile
+
     private val lods = mutableListOf(
             Lod(8, 10f, MutableColor(Color.MD_PURPLE.toLinear())),
             Lod(32, 20f, MutableColor(Color.MD_RED.toLinear())),
@@ -42,7 +45,11 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             Lod(10000, 1000f, MutableColor(Color.MD_BLUE.toLinear()))
     )
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        model = loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")!!
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
             +camera.apply {
                 this as PerspectiveCamera
@@ -69,10 +76,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
 
         +lodController
-
-        ctx.assetMgr.launch {
-            loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")?.let { addLods(it) }
-        }
+        addLods(model)
     }
 
     private fun addLods(model: GltfFile) {

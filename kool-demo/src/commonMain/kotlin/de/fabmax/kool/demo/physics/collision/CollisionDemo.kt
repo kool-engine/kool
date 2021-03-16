@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.physics.collision
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.math.*
@@ -22,6 +23,9 @@ import kotlin.math.*
 class CollisionDemo : DemoScene("Physics - Collision") {
 
     private lateinit var aoPipeline: AoPipeline
+    private lateinit var ibl: EnvironmentMaps
+    private lateinit var groundAlbedo: Texture2d
+    private lateinit var groundNormal: Texture2d
     private val shadows = mutableListOf<ShadowMap>()
 
     private val shapeType = Cycler(*ShapeType.values()).apply { index = 6 }
@@ -29,12 +33,25 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private var numSpawnBodies = 450
     private var friction = 0.5f
     private var restitution = 0.2f
-    private var physicsWorld: PhysicsWorld? = null
+    private lateinit var physicsWorld: PhysicsWorld
     private val bodies = mutableListOf<ColoredBody>()
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+
+        groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+
+        Physics.awaitLoaded()
+        val physicsWorld = PhysicsWorld()
+        this@CollisionDemo.physicsWorld = physicsWorld
+        // disable async physics to get accurate physics cpu time measurements
+        physicsWorld.isStepAsync = false
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform().apply {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_TRANSLATE
             panMethod = yPlanePan()
@@ -58,77 +75,64 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             setDirectional(Vec3f(0.8f, -1.2f, 1f))
         }
 
-        ctx.assetMgr.launch {
-            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
 
-            Physics.awaitLoaded()
-            val physicsWorld = PhysicsWorld()
-            this@CollisionDemo.physicsWorld = physicsWorld
-            // disable async physics to get accurate physics cpu time measurements
-            physicsWorld.isStepAsync = false
-            makeGround(ibl, physicsWorld)
+        makeGround(ibl, physicsWorld)
+        shapeGenCtx.material = Material(friction, friction, restitution)
+        resetPhysics()
 
-            shapeGenCtx.material = Material(friction, friction, restitution)
+        shapeType.forEach {
+            if (it != ShapeType.MIXED) {
+                it.mesh.shader = instancedBodyShader(ibl)
+                +it.mesh
+            }
+        }
 
-            resetPhysics()
+        val matBuf = Mat4f()
+        val removeBodies = mutableListOf<ColoredBody>()
+        onUpdate += {
+            for (i in shapeType.indices) {
+                shapeType[i].instances.clear()
+            }
 
-            shapeType.forEach {
-                if (it != ShapeType.MIXED) {
-                    it.mesh.shader = instancedBodyShader(ibl)
-                    +it.mesh
+            bodies.forEach { body ->
+                if (body.rigidActor.position.length() > 500f) {
+                    removeBodies += body
+                } else {
+                    matBuf.set(body.rigidActor.transform).scale(body.scale)
+                    body.shapeType.instances.addInstance {
+                        put(matBuf.matrix)
+                        put(body.color.array)
+                    }
                 }
             }
 
-            val matBuf = Mat4f()
-            val removeBodies = mutableListOf<ColoredBody>()
-            onUpdate += {
-                for (i in shapeType.indices) {
-                    shapeType[i].instances.clear()
+            if (removeBodies.isNotEmpty()) {
+                removeBodies.forEach { body ->
+                    logI { "Removing out-of-range body" }
+                    bodies.remove(body)
+                    physicsWorld.removeActor(body.rigidActor)
+                    body.rigidActor.release()
                 }
-
-                bodies.forEach { body ->
-                    if (body.rigidActor.position.length() > 500f) {
-                        removeBodies += body
-                    } else {
-                        matBuf.set(body.rigidActor.transform).scale(body.scale)
-                        body.shapeType.instances.addInstance {
-                            put(matBuf.matrix)
-                            put(body.color.array)
-                        }
-                    }
-                }
-
-                if (removeBodies.isNotEmpty()) {
-                    removeBodies.forEach { body ->
-                        logI { "Removing out-of-range body" }
-                        bodies.remove(body)
-                        physicsWorld.removeActor(body.rigidActor)
-                        body.rigidActor.release()
-                    }
-                    removeBodies.clear()
-                }
+                removeBodies.clear()
             }
-
-            +Skybox.cube(ibl.reflectionMap, 1f)
-            physicsWorld.registerHandlers(this@scene)
         }
 
-        onDispose += {
-            cleanUp()
-        }
+        +Skybox.cube(ibl.reflectionMap, 1f)
+        physicsWorld.registerHandlers(this@setupMainScene)
     }
 
-    private fun cleanUp() {
-        physicsWorld?.apply {
-            clear()
-            release()
-        }
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        physicsWorld.clear()
+        physicsWorld.release()
         shapeGenCtx.material.release()
+        groundAlbedo.dispose()
+        groundNormal.dispose()
     }
 
     private fun resetPhysics() {
         bodies.forEach {
-            physicsWorld?.removeActor(it.rigidActor)
+            physicsWorld.removeActor(it.rigidActor)
             it.rigidActor.release()
         }
         bodies.clear()
@@ -167,7 +171,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             body.updateInertiaFromShapesAndMass()
             body.position = Vec3f(x, y, z)
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
-            physicsWorld?.addActor(body)
+            physicsWorld.addActor(body)
 
             val coloredBody = ColoredBody(body, color, type, shapes)
             bodies += coloredBody
@@ -247,14 +251,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
         physicsWorld.addActor(frameBk)
         frame += frameBk
-
-
-        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
-        onDispose += {
-            groundAlbedo.dispose()
-            groundNormal.dispose()
-        }
 
         // render textured ground box
         +textureMesh(isNormalMapped = true) {
@@ -366,12 +362,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         section("Performance") {
             textWithValue("Physics:", "0.00 ms").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.cpuTime?.toString(2)} ms"
+                    text = "${physicsWorld.cpuTime.toString(2)} ms"
                 }
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.timeFactor?.toString(2)} x"
+                    text = "${physicsWorld.timeFactor.toString(2)} x"
                 }
             }
         }

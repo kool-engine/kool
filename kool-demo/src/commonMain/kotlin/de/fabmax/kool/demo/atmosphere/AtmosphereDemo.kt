@@ -14,7 +14,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.scene.ui.Slider
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -23,7 +23,6 @@ import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.PbrSceneShader
-import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -52,10 +51,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     private val shadows = mutableListOf<SimpleShadowMap>()
     private val camTransform = EarthCamTransform(earthRadius)
 
-    private lateinit var menuContainer: UiContainer
-    private lateinit var loadingLabel: Label
-
-    private var loadingComplete = false
     private var sceneSetupComplete = false
 
     val cameraHeight: Float
@@ -63,38 +58,33 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             return mainScene.camera.globalPos.distance(Vec3f.ZERO) - earthRadius
         }
 
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/stars_bg.jpg")
+        loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
+        loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
+        loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
+
+        loadTex(EarthShader.texEarthDay, "${Demo.awsBaseUrl}/solarsystem/earth_day.jpg")
+        loadTex(EarthShader.texEarthNight, "${Demo.awsBaseUrl}/solarsystem/earth_night.jpg")
+        loadTex(EarthShader.texEarthNrm, "${Demo.awsBaseUrl}/solarsystem/earth_nrm.jpg")
+        loadTex(EarthShader.texOceanNrm, "${Demo.awsBaseUrl}/solarsystem/oceanNrm.jpg")
+        val heightMapProps = TextureProps(TexFormat.R, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE)
+        loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height_8k.png", heightMapProps)
+    }
+
     override fun lateInit(ctx: KoolContext) {
         camTransform.apply {
             mainScene.registerDragHandler(this)
             +mainScene.camera
         }
-
-        ctx.assetMgr.launch {
-            delay(500)
-            loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/stars_bg.jpg")
-            loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
-            loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
-            loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
-
-            loadTex(EarthShader.texEarthDay, "${Demo.awsBaseUrl}/solarsystem/earth_day.jpg")
-            loadTex(EarthShader.texEarthNight, "${Demo.awsBaseUrl}/solarsystem/earth_night.jpg")
-            loadTex(EarthShader.texEarthNrm, "${Demo.awsBaseUrl}/solarsystem/earth_nrm.jpg")
-            loadTex(EarthShader.texOceanNrm, "${Demo.awsBaseUrl}/solarsystem/oceanNrm.jpg")
-            val heightMapProps = TextureProps(TexFormat.R, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE)
-            loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height_8k.png", heightMapProps)
-
-            loadingLabel.text = "Initializing Scene..."
-            delay(100)
-            loadingComplete = true
-        }
     }
 
     private suspend fun AssetManager.loadTex(key: String, path: String, props: TextureProps = TextureProps()) {
-        loadingLabel.text = "Loading texture \"$key\"..."
+        showLoadText("Loading texture \"$key\"...")
         textures[key] = loadAndPrepareTexture(path, props)
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         opticalDepthLutPass = OpticalDepthLutPass()
         addOffscreenPass(opticalDepthLutPass)
 
@@ -150,28 +140,26 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
         onUpdate += { ev ->
-            if (loadingComplete) {
-                if (!sceneSetupComplete) {
-                    sceneSetupComplete = true
-                    finalizeSceneSetup(deferredPipeline)
+            if (!sceneSetupComplete) {
+                sceneSetupComplete = true
+                finalizeSceneSetup(deferredPipeline)
 
-                    earthGroup -= shadowScene
-                }
+                earthGroup -= shadowScene
+            }
 
-                (mainScene.camera as PerspectiveCamera).apply {
-                    val h = globalPos.length() - earthRadius
-                    position.set(Vec3f.ZERO)
-                    lookAt.set(Vec3f.NEG_Z_AXIS)
-                    clipNear = (h * 0.5f).clamp(0.003f, 5f)
-                    clipFar = clipNear * 1000f
-                }
+            (mainScene.camera as PerspectiveCamera).apply {
+                val h = globalPos.length() - earthRadius
+                position.set(Vec3f.ZERO)
+                lookAt.set(Vec3f.NEG_Z_AXIS)
+                clipNear = (h * 0.5f).clamp(0.003f, 5f)
+                clipFar = clipNear * 1000f
+            }
 
-                if (animateTime) {
-                    val dt = ev.deltaT / 120
-                    // setting time slider value results in timer slider's onChange function being called which also sets time
-                    timeSlider?.value = (time + dt) % 1f
-                    moonTime = (moonTime + dt / moonT)
-                }
+            if (animateTime) {
+                val dt = ev.deltaT / 120
+                // setting time slider value results in timer slider's onChange function being called which also sets time
+                timeSlider?.value = (time + dt) % 1f
+                moonTime = (moonTime + dt / moonT)
             }
         }
 
@@ -242,9 +230,6 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     private fun finalizeSceneSetup(deferredPipeline: DeferredPipeline) {
-        menuContainer.isVisible = true
-        loadingLabel.isVisible = false
-
         val skyPass = SkyPass(this)
         atmoShader.skyColor = skyPass.colorTexture
 
@@ -304,22 +289,11 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
-        uiRoot.apply {
-            loadingLabel = label("Loading...") {
-                layoutSpec.setOrigin(zero(), zero(), zero())
-                layoutSpec.setSize(pcs(100f), pcs(100f), full())
-                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            +loadingLabel
-        }
-
 //        image(opticalDepthLutPass.colorTexture).apply {
 //            aspectRatio = 1f
 //            relativeWidth = 0.25f
 //        }
 
-        this@AtmosphereDemo.menuContainer = menuContainer
-        menuContainer.isVisible = false
         menuWidth = 380f
         section("Scattering") {
             colorSlider("R:", Color.RED, atmoShader.scatteringCoeffs.x, 0f, 2f) { updateScatteringCoeffs(x = value) }

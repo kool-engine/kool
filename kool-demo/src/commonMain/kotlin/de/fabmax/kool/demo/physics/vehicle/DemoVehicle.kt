@@ -26,9 +26,9 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     val vehicle: Vehicle
     val vehicleGroup = Group()
 
-    private val brakeLightShader: DeferredPbrShader
+    val vehicleAudio = VehicleAudio()
 
-    val vehicleAudio = VehicleAudio(ctx)
+    private lateinit var vehicleGeometry: ConvexMeshGeometry
 
     private val steerAnimator = ValueAnimator()
     private val throttleBrakeHandler = ThrottleBrakeHandler()
@@ -36,6 +36,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
     private var previousGear = 0
 
+    private val brakeLightShader: DeferredPbrShader
 //    private val headLightLt: DeferredSpotLights.SpotLight
 //    private val headLightRt: DeferredSpotLights.SpotLight
     private val brakeLightLt: DeferredPointLights.PointLight
@@ -138,11 +139,11 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             trackWidth = 1.6f
             maxBrakeTorqueFront = 2400f
             maxBrakeTorqueRear = 1200f
-            gearFinalRatio = 3.5f
-            maxCompression = 0.15f
-            maxDroop = 0.05f
-            springStrength = 50000f
-            springDamperRate = 6000f
+            gearFinalRatio = 3f
+            maxCompression = 0.1f
+            maxDroop = 0.1f
+            springStrength = 75000f
+            springDamperRate = 9000f
 
             wheelRadiusFront = 0.36f
             wheelWidthFront = 0.3f
@@ -158,7 +159,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             updateWheelMoiFromRadiusAndMass()
         }
 
-        val chassisMesh = ConvexMesh(listOf(
+        val vehicleMesh = ConvexMesh(listOf(
             Vec3f(-1f, -0.65f,  2.5f), Vec3f(-1f, -0.4f,  2.75f),
             Vec3f( 1f, -0.65f,  2.5f), Vec3f( 1f, -0.4f,  2.75f),
             Vec3f(-0.9f, -0.65f, -2.5f), Vec3f(-0.9f, 0.25f, -2.6f),
@@ -168,7 +169,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             Vec3f( -0.9f, 0.2f, 0f), Vec3f( 0.9f, 0.2f, 0f)
         ))
 
-        val chassisBox = VehicleUtils.defaultChassisShape(ConvexMeshGeometry(chassisMesh))
+        vehicleGeometry = ConvexMeshGeometry(vehicleMesh)
+        val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry)
         vehicleProps.chassisShapes = listOf(chassisBox)
 
         val pose = Mat4f().translate(0f, 1.5f, -40f)
@@ -246,6 +248,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     fun cleanUp(ctx: KoolContext) {
         keyListeners.forEach { ctx.inputMgr.removeKeyListener(it) }
         vehicleAudio.stop()
+        vehicleGeometry.release()
     }
 
     fun toggleSound(enabled: Boolean) {

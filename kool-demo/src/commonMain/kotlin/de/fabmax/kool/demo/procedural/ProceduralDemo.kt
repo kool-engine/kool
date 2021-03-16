@@ -6,9 +6,9 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitInputTransform
-import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.ui.Label
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
@@ -21,7 +21,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
     var autoRotate = true
     lateinit var roses: Roses
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
             setMouseRotation(-20f, -10f)
             setMouseTranslation(0f, 16f, 0f)
@@ -41,10 +41,10 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
         }
 
         ctx.assetMgr.launch {
-            val ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+            val ibl = EnvironmentHelper.hdriEnvironment(this@setupMainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
             +Skybox.cube(ibl.reflectionMap, 1f)
 
-            val shadowMap = SimpleShadowMap(this@scene, 0).apply {
+            val shadowMap = SimpleShadowMap(this@setupMainScene, 0).apply {
                 setDefaultDepthOffset(true)
                 shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
             }
@@ -56,7 +56,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 useImageBasedLighting(ibl)
                 useShadowMaps(listOf(shadowMap))
             }
-            val deferredPipeline = DeferredPipeline(this@scene, deferredCfg).apply {
+            val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
                 aoPipeline?.radius = 0.6f
 
                 contentGroup.apply {

@@ -29,13 +29,13 @@ class VehicleProperties {
     var maxBrakeTorqueRear = 2500f
     var maxHandBrakeTorque = 5000f
 
-    var maxCompression = 0.3f
-    var maxDroop = 0.1f
+    var maxCompression = 0.2f
+    var maxDroop = 0.2f
     var springStrength = 35000f
     var springDamperRate = 4500f
     var camberAngleAtRest = 0.0f
-    var camberAngleAtMaxDroop = 0.025f
-    var camberAngleAtMaxCompression = -0.05f
+    var camberAngleAtMaxCompression = 0.03f
+    var camberAngleAtMaxDroop = -0.03f
 
     var peakEngineTorque = 1000f
     var peakEngineRpm = 6000f

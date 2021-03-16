@@ -58,7 +58,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         simplify()
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform()
 
         lighting.lights.apply {

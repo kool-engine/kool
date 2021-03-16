@@ -28,7 +28,7 @@ open class UiTheme {
         protected set
 
     fun newComponentUi(c: UiComponent): ComponentUi = componentUi(c)
-    var componentUi: ((UiComponent) -> ComponentUi) = ::BlurredComponentUi
+    var componentUi: ((UiComponent) -> ComponentUi) = ::SimpleComponentUi
         protected set
     fun newContainerUi(c: UiContainer): ComponentUi = containerUi(c)
     var containerUi: ((UiContainer) -> ComponentUi) = { BlankComponentUi() }

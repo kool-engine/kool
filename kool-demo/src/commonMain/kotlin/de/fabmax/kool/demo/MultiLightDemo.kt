@@ -51,30 +51,32 @@ class MultiLightDemo : DemoScene("Reflections") {
         updateLighting()
     }
 
-    override fun setupMainScene(ctx: KoolContext): Scene {
-        val scene = scene {
-            +orbitInputTransform {
-                +camera
-                zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-                zoom = 17.0
-                maxZoom = 50.0
-                translation.set(0.0, 2.0, 0.0)
-                setMouseRotation(0f, -5f)
-                // let the camera slowly rotate around vertical axis
-                onUpdate += {
-                    if (autoRotate) {
-                        verticalRotation += it.deltaT * 3f
-                    }
+    override fun Scene.setupMainScene(ctx: KoolContext) {
+        +orbitInputTransform {
+            +camera
+            zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
+            zoom = 17.0
+            maxZoom = 50.0
+            translation.set(0.0, 2.0, 0.0)
+            setMouseRotation(0f, -5f)
+            // let the camera slowly rotate around vertical axis
+            onUpdate += {
+                if (autoRotate) {
+                    verticalRotation += it.deltaT * 3f
                 }
-            }
-
-            lighting.lights.clear()
-            lights.forEach {
-                lighting.lights.add(it.light)
-                +it
             }
         }
 
+        lighting.lights.clear()
+        lights.forEach {
+            lighting.lights.add(it.light)
+            +it
+        }
+
+        setupDeferred(this, ctx)
+    }
+
+    private fun setupDeferred(scene: Scene, ctx: KoolContext) {
         val envMaps = EnvironmentHelper.singleColorEnvironment(scene, Color(0.15f, 0.15f, 0.15f))
         val defCfg = DeferredPipelineConfig().apply {
             isWithEmissive = false
@@ -137,7 +139,6 @@ class MultiLightDemo : DemoScene("Reflections") {
                 }
             }
         }
-        return scene
     }
 
     private fun updateLighting() {

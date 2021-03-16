@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.physics.joints
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
@@ -10,6 +11,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
@@ -41,6 +43,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val shadows = mutableListOf<SimpleShadowMap>()
     private lateinit var aoPipeline: AoPipeline
     private lateinit var ibl: EnvironmentMaps
+    private lateinit var groundAlbedo: Texture2d
+    private lateinit var groundNormal: Texture2d
 
     private val staticCollGroup = 1
     private val staticSimFilterData = FilterData().apply {
@@ -49,7 +53,25 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
     private val material = Material(0.5f)
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+
+        Physics.awaitLoaded()
+        val world = PhysicsWorld()
+        // disable async physics to get accurate physics cpu time measurements
+        world.isStepAsync = false
+        physicsWorld = world
+        resetPhysics = true
+        constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
+        mainScene += constraintInfo
+
+        groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+
+        world.registerHandlers(mainScene)
+    }
+
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform().apply {
             setMouseRotation(-20f, -20f)
             zoom = 50.0
@@ -67,58 +89,33 @@ class JointsDemo : DemoScene("Physics - Joints") {
         +physMeshes
         +niceMeshes
 
-        ctx.assetMgr.launch {
-            ibl = EnvironmentHelper.hdriEnvironment(this@scene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
-
-            Physics.awaitLoaded()
-            val world = PhysicsWorld()
-            // disable async physics to get accurate physics cpu time measurements
-            world.isStepAsync = false
-            physicsWorld = world
-            resetPhysics = true
-            constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
-            +constraintInfo
-
-            val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-            val groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
-            onDispose += {
-                groundAlbedo.dispose()
-                groundNormal.dispose()
-            }
-
-            // ground plane
-            +textureMesh(isNormalMapped = true) {
-                isCastingShadow = false
-                generate {
-                    rotate(-90f, Vec3f.X_AXIS)
-                    rect {
-                        size.set(250f, 250f)
-                        origin.set(-size.x * 0.5f, -size.y * 0.5f, -20f)
-                        generateTexCoords(15f)
-                    }
-                }
-                shader = pbrShader {
-                    useAlbedoMap(groundAlbedo)
-                    useNormalMap(groundNormal)
-                    useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                    useImageBasedLighting(ibl)
-                    shadowMaps += shadows
+        // ground plane
+        mainScene += textureMesh(isNormalMapped = true) {
+            isCastingShadow = false
+            generate {
+                rotate(-90f, Vec3f.X_AXIS)
+                rect {
+                    size.set(250f, 250f)
+                    origin.set(-size.x * 0.5f, -size.y * 0.5f, -20f)
+                    generateTexCoords(15f)
                 }
             }
-
-            +Skybox.cube(ibl.reflectionMap, 1f)
-            world.registerHandlers(this@scene)
+            shader = pbrShader {
+                useAlbedoMap(groundAlbedo)
+                useNormalMap(groundNormal)
+                useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
+                useImageBasedLighting(ibl)
+                shadowMaps += shadows
+            }
         }
+
+        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
         onUpdate += {
             if (resetPhysics) {
                 resetPhysics = false
                 makePhysicsScene()
             }
-        }
-
-        onDispose += {
-            cleanUp()
         }
     }
 
@@ -173,13 +170,16 @@ class JointsDemo : DemoScene("Physics - Joints") {
         updateMotor()
     }
 
-    private fun cleanUp() {
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
         joints.forEach { it.release() }
         physicsWorld?.apply {
             clear()
             release()
         }
         material.release()
+        groundAlbedo.dispose()
+        groundNormal.dispose()
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {

@@ -47,7 +47,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         treeGen.generate()
     }
 
-    override fun setupMainScene(ctx: KoolContext) = scene {
+    override fun Scene.setupMainScene(ctx: KoolContext) {
         val sceneContent = Group()
         +sceneContent
 
