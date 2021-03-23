@@ -2,7 +2,10 @@ package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -37,15 +40,22 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     private var previousGear = 0
 
     private val brakeLightShader: DeferredPbrShader
+    private val reverseLightShader: DeferredPbrShader
 //    private val headLightLt: DeferredSpotLights.SpotLight
 //    private val headLightRt: DeferredSpotLights.SpotLight
-    private val brakeLightLt: DeferredPointLights.PointLight
-    private val brakeLightRt: DeferredPointLights.PointLight
+    private val rearLightLt: DeferredPointLights.PointLight
+    private val rearLightRt: DeferredPointLights.PointLight
+
+    private val rearLightColorBrake = Color(1f, 0.01f, 0.01f)
+    private val rearLightColorReverse = Color(1f, 1f, 1f)
+    private val rearLightColorBrakeReverse = Color(2f, 1f, 1f)
 
     init {
         vehicleGroup += vehicleModel
         vehicle = makeRaycastVehicle(world)
         registerKeyHandlers(ctx)
+
+        resetVehiclePos()
 
         vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredPbrShader {
             albedoSource = Albedo.STATIC_ALBEDO
@@ -57,6 +67,11 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             albedo = Color(0.5f, 0.0f, 0.0f)
         }
         vehicleModel.meshes["mesh_brake_lights_0"]?.shader = brakeLightShader
+        reverseLightShader = deferredPbrShader {
+            albedoSource = Albedo.STATIC_ALBEDO
+            albedo = Color(0.6f, 0.6f, 0.6f)
+        }
+        vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
 
 //        headLightLt = DeferredSpotLights.SpotLight().apply {
 //            spotAngle = 30f
@@ -70,12 +85,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 //        headLights.addSpotLight(headLightLt)
 //        headLights.addSpotLight(headLightRt)
 
-        brakeLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
-            color.set(Color(1f, 0.01f, 0.01f))
-        }
-        brakeLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
-            color.set(Color(1f, 0.01f, 0.01f))
-        }
+        rearLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
+        rearLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
 
         vehicleModel.onUpdate += { ev ->
             updateVehicle(ev)
@@ -94,14 +105,40 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         vehicleAudio.brake = throttleBrakeHandler.brake.value
         vehicleAudio.speed = vehicle.linearVelocity.length()
 
+        val lightIntensity: Float
+        val lightColor: Color
+        when {
+            vehicle.isReverse && vehicle.brakeInput > 0f -> {
+                lightIntensity = 5f
+                lightColor = rearLightColorBrakeReverse
+            }
+            vehicle.isReverse && vehicle.brakeInput == 0f -> {
+                lightIntensity = 5f
+                lightColor = rearLightColorReverse
+            }
+            !vehicle.isReverse && vehicle.brakeInput > 0f -> {
+                lightIntensity = 5f
+                lightColor = rearLightColorBrake
+            }
+            else -> {
+                lightIntensity = 0f
+                lightColor = Color.BLACK
+            }
+        }
+        rearLightLt.intensity = lightIntensity
+        rearLightRt.intensity = lightIntensity
+        rearLightLt.color.set(lightColor)
+        rearLightRt.color.set(lightColor)
+
         if (vehicle.brakeInput > 0f) {
-            brakeLightLt.intensity = 10f
-            brakeLightRt.intensity = 10f
             brakeLightShader.emissive = Color(5f, 0.1f, 0.05f)
         } else {
-            brakeLightLt.intensity = 0f
-            brakeLightRt.intensity = 0f
             brakeLightShader.emissive = Color.BLACK
+        }
+        if (vehicle.isReverse) {
+            reverseLightShader.emissive = Color(5f, 5f, 5f)
+        } else {
+            reverseLightShader.emissive = Color.BLACK
         }
 
         vehicleAudio.slip = 0f
@@ -119,10 +156,10 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
         previousGear = gear
 
-        brakeLightLt.position.set(0.4f, -0.1f, -2.5f)
-        vehicle.transform.transform(brakeLightLt.position)
-        brakeLightRt.position.set(-0.4f, -0.1f, -2.5f)
-        vehicle.transform.transform(brakeLightRt.position)
+        rearLightLt.position.set(0.4f, -0.1f, -2.5f)
+        vehicle.transform.transform(rearLightLt.position)
+        rearLightRt.position.set(-0.4f, -0.1f, -2.5f)
+        vehicle.transform.transform(rearLightRt.position)
 
 //        vehicle.transform.getRotation(headLightLt.orientation).rotate(-90f, Vec3f.Y_AXIS)
 //        headLightRt.orientation.set(headLightLt.orientation)
@@ -130,6 +167,11 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 //        vehicle.transform.transform(headLightLt.position)
 //        headLightRt.position.set(-0.65f, -0.55f, 2.7f)
 //        vehicle.transform.transform(headLightRt.position)
+    }
+
+    fun resetVehiclePos() {
+        vehicle.position = START_POS
+        vehicle.setRotation(Mat3f().rotate(START_HEAD, Vec3f.Y_AXIS))
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
@@ -160,22 +202,20 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
 
         val vehicleMesh = ConvexMesh(listOf(
-            Vec3f(-1f, -0.65f,  2.5f), Vec3f(-1f, -0.4f,  2.75f),
-            Vec3f( 1f, -0.65f,  2.5f), Vec3f( 1f, -0.4f,  2.75f),
-            Vec3f(-0.9f, -0.65f, -2.5f), Vec3f(-0.9f, 0.25f, -2.6f),
-            Vec3f( 0.9f, -0.65f, -2.5f), Vec3f( 0.9f, 0.25f, -2.6f),
+            Vec3f(-1.05f, -0.65f,  2.5f), Vec3f(-1.05f, -0.4f,  2.75f),
+            Vec3f( 1.05f, -0.65f,  2.5f), Vec3f( 1.05f, -0.4f,  2.75f),
+            Vec3f(-0.95f, -0.65f, -2.5f), Vec3f(-0.95f, 0.25f, -2.6f),
+            Vec3f( 0.95f, -0.65f, -2.5f), Vec3f( 0.95f, 0.25f, -2.6f),
 
-            Vec3f(-1f, -0.55f,  2.75f), Vec3f(1f, -0.55f,  2.75f),
-            Vec3f( -0.9f, 0.2f, 0f), Vec3f( 0.9f, 0.2f, 0f)
+            Vec3f(-1.05f, -0.55f,  2.75f), Vec3f(1.05f, -0.55f,  2.75f),
+            Vec3f( -0.95f, 0.2f, 0f), Vec3f( 0.95f, 0.2f, 0f)
         ))
 
         vehicleGeometry = ConvexMeshGeometry(vehicleMesh)
         val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry)
         vehicleProps.chassisShapes = listOf(chassisBox)
 
-        val pose = Mat4f().translate(0f, 1.5f, -40f)
-        val vehicle = Vehicle(vehicleProps, world.physics, pose)
-        vehicle.setRotation(Mat3f().rotate(-90f, Vec3f.Y_AXIS))
+        val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)
 
         vehicleGroup.apply {
@@ -191,7 +231,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             }
 
 //            +colorMesh {
-//                generate { geometry.addGeometry(chassisMesh.convexHull) }
+//                generate { geometry.addGeometry(vehicleMesh.convexHull) }
 //                shader = deferredPbrShader {  }
 //            }
 
@@ -224,6 +264,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             throttleBrakeHandler.downKeyPressed = it.isPressed
         }
 
+        var prevRecoverTime = 0.0
+
         keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
         keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
         keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
@@ -233,13 +275,23 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
         keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
         keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
-            val pos = vehicle.position
-            vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
+            val time = ctx.time
+            val recoverHard = time - prevRecoverTime < 0.3
+            prevRecoverTime = time
 
-            val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
-            val headDeg = atan2(head.x, head.z).toDeg()
-            val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
-            vehicle.setRotation(ori)
+            if (recoverHard) {
+                // reset vehicle position to spawn point on double tap
+                resetVehiclePos()
+            } else {
+                // move vehicle up and reset rotation to recover from a flipped orientation
+                val pos = vehicle.position
+                vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
+
+                val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
+                val headDeg = atan2(head.x, head.z).toDeg()
+                val ori = Mat3f().rotate(headDeg, Vec3f.Y_AXIS)
+                vehicle.setRotation(ori)
+            }
             vehicle.linearVelocity = Vec3f.ZERO
             vehicle.angularVelocity = Vec3f.ZERO
         }
@@ -316,4 +368,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
     }
 
+    companion object {
+        private val START_POS = Vec3f(0f, 1.5f, -40f)
+        private val START_HEAD = 270f
+    }
 }

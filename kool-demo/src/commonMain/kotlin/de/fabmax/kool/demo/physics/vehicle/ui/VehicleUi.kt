@@ -122,7 +122,7 @@ class VehicleUi(ctx: KoolContext) {
         +container("dashboard") {
             layoutSpec.setOrigin(zero(), zero(), zero())
             layoutSpec.setSize(dps(720f * scale), dps(170f * scale), full())
-            content.ui.setCustom(DashboardComponentUi(this))
+            ui.setCustom(DashboardComponentUi(this))
 
             +RpmScale(this@uiScene).apply {
                 rpmBar = this
@@ -223,19 +223,20 @@ class VehicleUi(ctx: KoolContext) {
         }
 
         +container("timer") {
-            layoutSpec.setSize(dps(400f * scale), dps(110f * scale), full())
-            layoutSpec.setOrigin(pcs(50f) - dps(200f * scale), dps(-110f * scale), zero())
+            layoutSpec.setSize(dps(600f * scale), dps(110f * scale), full())
+            layoutSpec.setOrigin(pcs(50f) - dps(300f * scale), dps(-110f * scale), zero())
+            ui.setCustom(TimerComponentUi(this))
 
             +label("trackTime") {
                 trackTimeLbl = this
-                layoutSpec.setOrigin(zero(), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(100f), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(200f * scale), dps(70f * scale), full())
                 font.setCustom(midFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "0:00.00"
             }
             +label("Total") {
-                layoutSpec.setOrigin(dps(175f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(275f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -244,14 +245,14 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime1") {
                 sec1Lbl = this
-                layoutSpec.setOrigin(dps(220f * scale), dps(60f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(60f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 1") {
-                layoutSpec.setOrigin(dps(320f * scale), dps(60f * scale), zero())
+                layoutSpec.setOrigin(dps(420f * scale), dps(60f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -260,14 +261,14 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime2") {
                 sec2Lbl = this
-                layoutSpec.setOrigin(dps(220f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 2") {
-                layoutSpec.setOrigin(dps(320f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(420f * scale), dps(30f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -275,7 +276,7 @@ class VehicleUi(ctx: KoolContext) {
             }
 
             +toggleButton("Sound") {
-                layoutSpec.setOrigin(dps(125f * scale), dps(0f * scale), zero())
+                layoutSpec.setOrigin(dps(225f * scale), dps(0f * scale), zero())
                 layoutSpec.setSize(dps(150f * scale), dps(35f * scale), full())
                 knobColorOn.setCustom(Color.MD_ORANGE)
                 trackColorOn.setCustom(Color.MD_ORANGE_200)
@@ -300,14 +301,11 @@ class VehicleUi(ctx: KoolContext) {
         val meshBuilder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS))
         val mesh = Mesh(meshBuilder.geometry)
 
-        val color: ThemeOrCustomProp<Color> = ThemeOrCustomProp(Color.BLACK.withAlpha(0.5f))
-
         override fun updateComponentAlpha() {
             (mesh.shader as UiShader).apply { alpha = component.alpha }
         }
 
         override fun createUi(ctx: KoolContext) {
-            color.setTheme(component.root.theme.backgroundColor).apply()
             mesh.shader = UiShader()
             component.addNode(mesh, 0)
         }
@@ -320,17 +318,16 @@ class VehicleUi(ctx: KoolContext) {
         override fun updateUi(ctx: KoolContext) {
             val tilt = cos((90f - 15).toRad())
 
-            color.setTheme(component.root.theme.backgroundColor).apply()
             component.setupBuilder(meshBuilder)
 
-            meshBuilder.color = color.prop
+            meshBuilder.color = Color.BLACK.withAlpha(0.4f)
             meshBuilder.vertex(Vec3f(0f, component.height, 0f), Vec3f.Z_AXIS)
             meshBuilder.vertex(Vec3f(0f, 0f, 0f), Vec3f.Z_AXIS)
 
             meshBuilder.vertex(Vec3f(0.5f * component.width, component.height, 0f), Vec3f.Z_AXIS)
             meshBuilder.vertex(Vec3f(0.5f * component.width - tilt * component.height, 0f, 0f), Vec3f.Z_AXIS)
 
-            meshBuilder.color = color.prop.withAlpha(0f)
+            meshBuilder.color = Color.BLACK.withAlpha(0f)
             meshBuilder.vertex(Vec3f(1f * component.width, component.height, 0f), Vec3f.Z_AXIS)
             meshBuilder.vertex(Vec3f(1f * component.width - tilt * component.height, 0f, 0f), Vec3f.Z_AXIS)
 
@@ -339,6 +336,52 @@ class VehicleUi(ctx: KoolContext) {
 
             meshBuilder.geometry.addTriIndices(2, 3, 4)
             meshBuilder.geometry.addTriIndices(3, 4, 5)
+        }
+    }
+
+    private class TimerComponentUi(val component: UiComponent) : ComponentUi {
+        val meshBuilder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS))
+        val mesh = Mesh(meshBuilder.geometry)
+
+        override fun updateComponentAlpha() {
+            (mesh.shader as UiShader).apply { alpha = component.alpha }
+        }
+
+        override fun createUi(ctx: KoolContext) {
+            mesh.shader = UiShader()
+            component.addNode(mesh, 0)
+        }
+
+        override fun dispose(ctx: KoolContext) {
+            component -= mesh
+            mesh.dispose(ctx)
+        }
+
+        override fun updateUi(ctx: KoolContext) {
+            component.setupBuilder(meshBuilder)
+
+            meshBuilder.color = Color.BLACK.withAlpha(0f)
+            meshBuilder.vertex(Vec3f(0f, component.height, 0f), Vec3f.Z_AXIS)
+            meshBuilder.vertex(Vec3f(0f, 0f, 0f), Vec3f.Z_AXIS)
+
+            meshBuilder.color = Color.BLACK.withAlpha(0.4f)
+            meshBuilder.vertex(Vec3f(0.25f * component.width, component.height, 0f), Vec3f.Z_AXIS)
+            meshBuilder.vertex(Vec3f(0.25f * component.width, 0f, 0f), Vec3f.Z_AXIS)
+            meshBuilder.vertex(Vec3f(0.75f * component.width, component.height, 0f), Vec3f.Z_AXIS)
+            meshBuilder.vertex(Vec3f(0.75f * component.width, 0f, 0f), Vec3f.Z_AXIS)
+
+            meshBuilder.color = Color.BLACK.withAlpha(0f)
+            meshBuilder.vertex(Vec3f(component.width, component.height, 0f), Vec3f.Z_AXIS)
+            meshBuilder.vertex(Vec3f(component.width, 0f, 0f), Vec3f.Z_AXIS)
+
+            meshBuilder.geometry.addTriIndices(0, 1, 2)
+            meshBuilder.geometry.addTriIndices(1, 2, 3)
+
+            meshBuilder.geometry.addTriIndices(2, 3, 4)
+            meshBuilder.geometry.addTriIndices(3, 4, 5)
+
+            meshBuilder.geometry.addTriIndices(4, 5, 6)
+            meshBuilder.geometry.addTriIndices(5, 6, 7)
         }
     }
 

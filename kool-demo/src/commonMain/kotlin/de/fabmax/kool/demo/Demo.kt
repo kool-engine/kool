@@ -98,7 +98,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
                 }
                 demo.dispose(ctx)
             }
-            ctx.scenes += loadingScreen
+            ctx.scenes.add(0, loadingScreen)
 
             // set new demo
             currentDemo = newDemo
