@@ -30,6 +30,8 @@ actual object Physics : CoroutineScope {
 
     actual val isLoaded = true
 
+    actual val defaultMaterial = Material(0.5f)
+
     // default PhysX facilities
     val foundation: PxFoundation
     val physics: PxPhysics

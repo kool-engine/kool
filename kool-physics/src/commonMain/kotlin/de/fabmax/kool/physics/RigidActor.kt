@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.LazyMat4f
 
 expect open class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
@@ -23,6 +24,9 @@ abstract class CommonRigidActor : Releasable {
     abstract var isTrigger: Boolean
 
     val transform = Mat4f()
+    protected val invTransformLazy = LazyMat4f { transform.invert(it) }
+    val invTransform: Mat4f
+        get() = invTransformLazy.get()
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
@@ -57,9 +61,18 @@ abstract class CommonRigidActor : Releasable {
     }
 
     internal open fun fixedUpdate(timeStep: Float) {
+        invTransformLazy.isDirty = true
         for (i in onFixedUpdate.indices) {
             onFixedUpdate[i](timeStep)
         }
+    }
+
+    fun toGlobal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+        return transform.transform(vec, w)
+    }
+
+    fun toLocal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+        return invTransform.transform(vec, w)
     }
 
     fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit = { }) = group {

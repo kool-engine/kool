@@ -21,6 +21,8 @@ actual object Physics : CoroutineScope {
     actual val isLoaded: Boolean
         get() = loadingDeferred.isCompleted
 
+    actual val defaultMaterial = Material(0.5f)
+
     // static top-level PhysX functions
     val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype

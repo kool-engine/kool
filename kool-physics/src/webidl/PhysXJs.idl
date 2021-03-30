@@ -2982,6 +2982,9 @@ interface TypeHelpers {
     [Value] static PxU16ConstPtr voidToU16ConstPtr(VoidPtr voidPtr);
     [Value] static PxU32ConstPtr voidToU32ConstPtr(VoidPtr voidPtr);
     [Value] static PxRealPtr voidToRealPtr(VoidPtr voidPtr);
+
+    static PxArticulationJoint articulationBaseJointToJoint(PxArticulationJointBase baseJoint);
+
     static any voidToAny(VoidPtr voidPtr);
 };
 

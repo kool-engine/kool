@@ -15,7 +15,7 @@ abstract class CommonPlaneGeometry {
         // plane is infinitely large, generate a mesh with a reasonable size
         target.apply {
             withTransform {
-                rotate(90f, Vec3f.Z_AXIS)
+                rotate(90f, Vec3f.Y_AXIS)
                 rect {
                     size.set(1000f, 1000f)
                     origin.set(size.x * -0.5f, size.y * -0.5f, 0f)

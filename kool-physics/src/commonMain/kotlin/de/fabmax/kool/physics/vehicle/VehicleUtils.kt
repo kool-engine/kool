@@ -34,12 +34,8 @@ object VehicleUtils {
         return Shape(geom, defaultWheelMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
     }
 
-    val defaultChassisMaterial by lazy {
-        Material(0.5f, 0.5f, 0.5f)
-    }
-    val defaultWheelMaterial by lazy {
-        Material(0.5f, 0.5f, 0.5f)
-    }
+    val defaultChassisMaterial = Material(0.5f, 0.5f, 0.5f)
+    val defaultWheelMaterial = Material(0.5f, 0.5f, 0.5f)
     val defaultWheelMesh by lazy {
         ConvexMesh(CommonCylinderGeometry.convexMeshPoints(1f, 1f)).apply {
             releaseWithGeometry = false

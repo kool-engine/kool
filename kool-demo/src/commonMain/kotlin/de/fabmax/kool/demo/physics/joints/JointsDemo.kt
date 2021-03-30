@@ -238,7 +238,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.timeFactor?.toString(2)} x"
+                    text = "${physicsWorld?.currentTimeFactor?.toString(2)} x"
                 }
             }
             textWithValue("Number of Bodies:", "").apply {

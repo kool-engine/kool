@@ -27,6 +27,8 @@ open class PhysxJsGenerator : DefaultTask() {
 
             nullableAttributes += "PxBatchQueryDesc.preFilterShader"
             nullableAttributes += "PxBatchQueryDesc.postFilterShader"
+            nullableParameters += "PxArticulationBase.createLink" to "parent"
+            nullableReturnValues += "PxArticulationLink.getInboundJoint"
         }.generate(model)
     }
 }

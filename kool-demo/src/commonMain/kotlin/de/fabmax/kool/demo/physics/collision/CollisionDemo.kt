@@ -118,7 +118,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
 
         +Skybox.cube(ibl.reflectionMap, 1f)
-        physicsWorld.registerHandlers(this@setupMainScene)
+        physicsWorld.registerHandlers(this)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -367,7 +367,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld.timeFactor.toString(2)} x"
+                    text = "${physicsWorld.currentTimeFactor.toString(2)} x"
                 }
             }
         }

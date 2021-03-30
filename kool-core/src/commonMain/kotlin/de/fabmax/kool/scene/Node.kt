@@ -6,6 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Disposable
+import de.fabmax.kool.util.LazyMat4d
 
 /**
  * A scene node. This is the base class for all scene objects.
@@ -45,10 +46,10 @@ abstract class Node(val name: String? = null) : Disposable {
     protected val globalExtentMut = MutableVec3f()
 
     val modelMat = Mat4d()
+
+    private val modelMatInvLazy = LazyMat4d { modelMat.invert(it) }
     val modelMatInv: Mat4d
-        get() = checkModelMatInv()
-    protected var modelMatDirty = false
-    private val modelMatInvLazy = Mat4d()
+        get() = modelMatInvLazy.get()
 
     /**
      * Parent node is set when this node is added to a [Group]
@@ -105,7 +106,7 @@ abstract class Node(val name: String? = null) : Disposable {
 
     open fun updateModelMat() {
         modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
-        modelMatDirty = true
+        modelMatInvLazy.isDirty = true
     }
 
     /**
@@ -197,14 +198,6 @@ abstract class Node(val name: String? = null) : Disposable {
             p = p.parent
         }
         return p as T
-    }
-
-    private fun checkModelMatInv(): Mat4d {
-        if (modelMatDirty) {
-            modelMat.invert(modelMatInvLazy)
-            modelMatDirty = false
-        }
-        return modelMatInvLazy
     }
 
     companion object {

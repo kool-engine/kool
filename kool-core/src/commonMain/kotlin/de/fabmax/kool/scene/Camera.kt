@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.Viewport
 import kotlin.math.atan
 import kotlin.math.cos
@@ -37,16 +38,16 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val proj = Mat4d()
     val view = Mat4d()
 
-    private val lazyInvProj = LazyMatrix { proj.invert(it) }
+    private val lazyInvProj = LazyMat4d { proj.invert(it) }
     val invProj: Mat4d get() = lazyInvProj.get()
 
-    private val lazyInvView = LazyMatrix { view.invert(it) }
+    private val lazyInvView = LazyMat4d { view.invert(it) }
     val invView: Mat4d get() = lazyInvView.get()
 
-    private val lazyViewProj = LazyMatrix { proj.mul(view, it) }
+    private val lazyViewProj = LazyMat4d { proj.mul(view, it) }
     val viewProj: Mat4d get() = lazyViewProj.get()
 
-    private val lazyInvViewProj = LazyMatrix { viewProj.invert(it) }
+    private val lazyInvViewProj = LazyMat4d { viewProj.invert(it) }
     val invViewProj: Mat4d get() = lazyInvViewProj.get()
 
     var projCorrectionMode = ProjCorrectionMode.ONSCREEN
@@ -165,20 +166,6 @@ abstract class Camera(name: String = "camera") : Node(name) {
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
         return true
-    }
-
-    private class LazyMatrix(val update: (Mat4d) -> Unit) {
-        var isDirty = true
-
-        private val mat = Mat4d()
-
-        fun get(): Mat4d {
-            if (isDirty) {
-                update(mat)
-                isDirty = false
-            }
-            return mat
-        }
     }
 
     enum class ProjCorrectionMode {

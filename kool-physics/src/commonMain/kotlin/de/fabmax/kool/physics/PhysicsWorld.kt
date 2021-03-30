@@ -1,7 +1,9 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
@@ -10,6 +12,8 @@ import kotlin.math.min
 
 expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
     var gravity: Vec3f
+
+    fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean
 }
 
 abstract class CommonPhysicsWorld : Releasable {
@@ -17,6 +21,7 @@ abstract class CommonPhysicsWorld : Releasable {
     var physicsTimeDesired = 0.0
 
     var singleStepTime = 1f / 60f
+    var simTimeFactor = 1f
     var isStepAsync = true
     var isStepInProgress = false
     var smartSubSteps = true
@@ -25,7 +30,7 @@ abstract class CommonPhysicsWorld : Releasable {
     private val perfTimer = PerfTimer()
     var cpuTime = 0f
         private set
-    var timeFactor = 1f
+    var currentTimeFactor = 1f
         private set
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
@@ -33,6 +38,10 @@ abstract class CommonPhysicsWorld : Releasable {
     private val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
         get() = mutActors
+
+    private val mutArticulations = mutableListOf<Articulation>()
+    val articulations: List<Articulation>
+        get() = mutArticulations
 
     protected val triggerListeners = mutableMapOf<RigidActor, TriggerListenerContext>()
 
@@ -44,9 +53,9 @@ abstract class CommonPhysicsWorld : Releasable {
 
         stepPhysics(ctx.deltaT)
 
-        if (isStepAsync && isContinueStep(physicsTime, physicsTimeDesired + singleStepTime, singleStepTime)) {
+        if (isStepAsync && isContinueStep(physicsTime, physicsTimeDesired + singleStepTime * simTimeFactor, singleStepTime * simTimeFactor)) {
             singleStepPhysics()
-            physicsTime += singleStepTime
+            physicsTime += singleStepTime * simTimeFactor
         }
     }
 
@@ -88,12 +97,38 @@ abstract class CommonPhysicsWorld : Releasable {
         mutActors -= actor
     }
 
+    open fun addArticulation(articulation: Articulation) {
+        mutArticulations += articulation
+    }
+
+    open fun removeArticulation(articulation: Articulation) {
+        mutArticulations -= articulation
+    }
+
+    fun wakeUpAll() {
+        actors.forEach {
+            if (it is RigidDynamic) {
+                it.wakeUp()
+            }
+        }
+        articulations.forEach {
+            it.wakeUp()
+        }
+    }
+
     fun clear(releaseActors: Boolean = true) {
         val removeActors = mutableListOf<RigidActor>().apply { this += actors }
         for (i in removeActors.lastIndex downTo 0) {
             removeActor(removeActors[i])
             if (releaseActors) {
                 removeActors[i].release()
+            }
+        }
+        val removeArticulations = mutableListOf<Articulation>().apply { this += articulations }
+        for (i in removeArticulations.lastIndex downTo 0) {
+            removeArticulation(removeArticulations[i])
+            if (releaseActors) {
+                removeArticulations[i].release()
             }
         }
         triggerListeners.clear()
@@ -103,8 +138,8 @@ abstract class CommonPhysicsWorld : Releasable {
         var steps = 0
         var stepLimit = if (smartSubSteps) min(smartSubStepLimit, maxSubSteps) else maxSubSteps
 
-        physicsTimeDesired += timeStep
-        while (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime) && stepLimit > 0) {
+        physicsTimeDesired += timeStep * simTimeFactor
+        while (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime * simTimeFactor) && stepLimit > 0) {
             perfTimer.reset()
 
             singleStepPhysics()
@@ -114,7 +149,7 @@ abstract class CommonPhysicsWorld : Releasable {
             val ms = perfTimer.takeMs().toFloat()
             cpuTime = cpuTime * 0.8f + ms * 0.2f
 
-            physicsTime += singleStepTime
+            physicsTime += singleStepTime * simTimeFactor
             if (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime)) {
                 stepLimit--
             }
@@ -130,7 +165,7 @@ abstract class CommonPhysicsWorld : Releasable {
         }
 
         val timeInc = singleStepTime * steps
-        timeFactor = timeFactor * 0.9f + timeInc / timeStep * 0.1f
+        currentTimeFactor = currentTimeFactor * 0.9f + timeInc / timeStep * 0.1f
 
         return timeInc
     }
@@ -146,10 +181,13 @@ abstract class CommonPhysicsWorld : Releasable {
     protected open fun fetchStepResults() {
         isStepInProgress = false
         for (i in mutActors.indices) {
-            mutActors[i].fixedUpdate(singleStepTime)
+            mutActors[i].fixedUpdate(singleStepTime * simTimeFactor)
+        }
+        for (i in mutArticulations.indices) {
+            mutArticulations[i].fixedUpdate(singleStepTime * simTimeFactor)
         }
         for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](singleStepTime)
+            onFixedUpdate[i](singleStepTime * simTimeFactor)
         }
     }
 

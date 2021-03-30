@@ -378,7 +378,7 @@ external interface PxArticulationBase : PxBase {
      * @param pose   WebIDL type: [PxTransform] (Const, Ref)
      * @return WebIDL type: [PxArticulationLink]
      */
-    fun createLink(parent: PxArticulationLink, pose: PxTransform): PxArticulationLink
+    fun createLink(parent: PxArticulationLink?, pose: PxTransform): PxArticulationLink
 
     /**
      * @return WebIDL type: unsigned long
@@ -836,7 +836,7 @@ external interface PxArticulationLink : PxRigidBody {
     /**
      * @return WebIDL type: [PxArticulationJointBase]
      */
-    fun getInboundJoint(): PxArticulationJointBase
+    fun getInboundJoint(): PxArticulationJointBase?
 
     /**
      * @return WebIDL type: unsigned long

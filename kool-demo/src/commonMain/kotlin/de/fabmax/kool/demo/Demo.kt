@@ -7,6 +7,7 @@ import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
+import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.physics.Physics
@@ -49,6 +50,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = DemoEntry("Physics - Vehicle") { VehicleDemo() }
 
     private val demos = mutableMapOf(
+        "phys-ragdoll" to DemoEntry("Physics - Ragdoll") { RagdollDemo() },
         "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() },
         "phys-joints" to DemoEntry("Physics - Joints") { JointsDemo() },
         "physics" to DemoEntry("Physics - Collision") { CollisionDemo() },

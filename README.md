@@ -10,10 +10,11 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
+- [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
   cursor keys, R to reset) based on the nVidia PhysX vehicles SDK (using 
   [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) / [physx-jni](https://github.com/fabmax/physx-jni).
-  Still work in progress. A few more notes on physics [further below](#physics-simulation)
+  A few more notes on physics [further below](#physics-simulation)
 - [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with

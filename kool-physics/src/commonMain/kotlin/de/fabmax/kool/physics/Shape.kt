@@ -5,7 +5,7 @@ import de.fabmax.kool.physics.geometry.CollisionGeometry
 
 expect class Shape(
     geometry: CollisionGeometry,
-    material: Material,
+    material: Material = Physics.defaultMaterial,
     localPose: Mat4f = Mat4f(),
     simFilterData: FilterData? = null,
     queryFilterData: FilterData? = null

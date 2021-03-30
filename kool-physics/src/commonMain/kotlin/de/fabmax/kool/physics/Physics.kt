@@ -6,6 +6,8 @@ expect object Physics : CoroutineScope {
 
     val isLoaded: Boolean
 
+    val defaultMaterial: Material
+
     fun loadPhysics()
 
     suspend fun awaitLoaded()

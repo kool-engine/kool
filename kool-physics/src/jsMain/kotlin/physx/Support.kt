@@ -146,6 +146,12 @@ external interface TypeHelpers {
     fun voidToRealPtr(voidPtr: Any): PxRealPtr
 
     /**
+     * @param baseJoint WebIDL type: [PxArticulationJointBase]
+     * @return WebIDL type: [PxArticulationJoint]
+     */
+    fun articulationBaseJointToJoint(baseJoint: PxArticulationJointBase): PxArticulationJoint
+
+    /**
      * @param voidPtr WebIDL type: VoidPtr
      * @return WebIDL type: any
      */
