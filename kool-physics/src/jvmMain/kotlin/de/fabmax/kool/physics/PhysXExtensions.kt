@@ -9,6 +9,7 @@ import physx.common.*
 import physx.cooking.PxConvexFlags
 import physx.cooking.PxConvexMeshDesc
 import physx.cooking.PxTriangleMeshDesc
+import physx.extensions.BatchVehicleUpdateDesc
 import physx.extensions.PxRevoluteJointFlags
 import physx.geomutils.PxConvexMeshGeometryFlags
 import physx.geomutils.PxHullPolygon
@@ -117,3 +118,5 @@ fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFl
 fun MemoryStack.createPxSceneFlags(flags: Int) = PxSceneFlags.createAt(this, MemoryStack::nmalloc, flags)
 fun MemoryStack.createPxShapeFlags(flags: Int) = PxShapeFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxVehicleWheelsSimFlags(flags: Int) = PxVehicleWheelsSimFlags.createAt(this, MemoryStack::nmalloc, flags)
+
+fun MemoryStack.createBatchVehicleUpdateDesc() = BatchVehicleUpdateDesc.createAt(this, MemoryStack::nmalloc)

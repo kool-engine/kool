@@ -238,7 +238,178 @@ fun PxCpuDispatcher.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxCudaContextManager
+external interface PxCudaContextManager {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun contextIsValid(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM10(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM11(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM12(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM13(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM20(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM30(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM35(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM50(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun supportsArchSM52(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isIntegrated(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun canMapHostMemory(): Boolean
+
+    /**
+     * @return WebIDL type: long
+     */
+    fun getDriverVersion(): Int
+
+    /**
+     * @return WebIDL type: unsigned long long
+     */
+    fun getDeviceTotalMemBytes(): Long
+
+    /**
+     * @return WebIDL type: long
+     */
+    fun getMultiprocessorCount(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getClockRate(): Int
+
+    /**
+     * @return WebIDL type: long
+     */
+    fun getSharedMemPerBlock(): Int
+
+    /**
+     * @return WebIDL type: long
+     */
+    fun getMaxThreadsPerBlock(): Int
+
+    /**
+     * @return WebIDL type: DOMString
+     */
+    fun getDeviceName(): String
+
+    /**
+     * @return WebIDL type: [PxCudaInteropModeEnum] (enum)
+     */
+    fun getInteropMode(): Int
+
+    /**
+     * @param flag WebIDL type: boolean
+     */
+    fun setUsingConcurrentStreams(flag: Boolean)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun getUsingConcurrentStreams(): Boolean
+
+    /**
+     * @return WebIDL type: long
+     */
+    fun usingDedicatedGPU(): Int
+
+    fun release()
+
+}
+
+val PxCudaContextManager.driverVersion
+    get() = getDriverVersion()
+val PxCudaContextManager.deviceTotalMemBytes
+    get() = getDeviceTotalMemBytes()
+val PxCudaContextManager.multiprocessorCount
+    get() = getMultiprocessorCount()
+val PxCudaContextManager.clockRate
+    get() = getClockRate()
+val PxCudaContextManager.sharedMemPerBlock
+    get() = getSharedMemPerBlock()
+val PxCudaContextManager.maxThreadsPerBlock
+    get() = getMaxThreadsPerBlock()
+val PxCudaContextManager.deviceName
+    get() = getDeviceName()
+val PxCudaContextManager.interopMode
+    get() = getInteropMode()
+
+var PxCudaContextManager.usingConcurrentStreams
+    get() = getUsingConcurrentStreams()
+    set(value) { setUsingConcurrentStreams(value) }
+
+external interface PxCudaContextManagerDesc {
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var graphicsDevice: Any
+    /**
+     * WebIDL type: [PxCudaInteropModeEnum] (enum)
+     */
+    var interopMode: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxMemorySize: Array<Int>
+    /**
+     * WebIDL type: unsigned long
+     */
+    var memoryBaseSize: Array<Int>
+    /**
+     * WebIDL type: unsigned long
+     */
+    var memoryPageSize: Array<Int>
+}
+
+fun PxCudaContextManagerDesc(): PxCudaContextManagerDesc {
+    fun _PxCudaContextManagerDesc(_module: dynamic) = js("new _module.PxCudaContextManagerDesc()")
+    return _PxCudaContextManagerDesc(PhysXJsLoader.physXJs)
+}
+
+fun PxCudaContextManagerDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxDefaultErrorCallback : PxErrorCallback
 
@@ -438,6 +609,20 @@ fun PxVec3.destroy() {
 object PxBaseFlagEnum {
     val eOWNS_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
     val eIS_RELEASABLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE()
+}
+
+object PxCudaBufferMemorySpaceEnum {
+    val T_GPU: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaBufferMemorySpaceEnum_T_GPU()
+    val T_PINNED_HOST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaBufferMemorySpaceEnum_T_PINNED_HOST()
+    val T_WRITE_COMBINED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaBufferMemorySpaceEnum_T_WRITE_COMBINED()
+    val T_HOST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaBufferMemorySpaceEnum_T_HOST()
+}
+
+object PxCudaInteropModeEnum {
+    val NO_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_NO_INTEROP()
+    val D3D10_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_D3D10_INTEROP()
+    val D3D11_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_D3D11_INTEROP()
+    val OGL_INTEROP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCudaInteropModeEnum_OGL_INTEROP()
 }
 
 object PxErrorCodeEnum {

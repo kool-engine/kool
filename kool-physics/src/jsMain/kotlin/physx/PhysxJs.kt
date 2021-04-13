@@ -76,6 +76,13 @@ external interface PxTopLevelFunctions {
     fun InitExtensions(physics: PxPhysics): Boolean
 
     /**
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @param desc       WebIDL type: [PxCudaContextManagerDesc] (Const, Ref)
+     * @return WebIDL type: [PxCudaContextManager]
+     */
+    fun CreateCudaContextManager(foundation: PxFoundation, desc: PxCudaContextManagerDesc): PxCudaContextManager
+
+    /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
      * @param actor0      WebIDL type: [PxRigidActor]
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)

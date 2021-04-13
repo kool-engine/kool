@@ -16,6 +16,7 @@ interface PxTopLevelFunctions {
     static PxPhysics CreatePhysics(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxTolerancesScale params);
     static PxDefaultCpuDispatcher DefaultCpuDispatcherCreate(unsigned long numThreads);
     static boolean InitExtensions([Ref] PxPhysics physics);
+    static PxCudaContextManager CreateCudaContextManager([Ref] PxFoundation foundation, [Const, Ref] PxCudaContextManagerDesc desc);
 
     static PxD6Joint D6JointCreate([Ref] PxPhysics physics, PxRigidActor actor0, [Ref] PxTransform localFrame0, PxRigidActor actor1, [Ref] PxTransform localFrame1);
     static PxDistanceJoint DistanceJointCreate([Ref] PxPhysics physics, PxRigidActor actor0, [Ref] PxTransform localFrame0, PxRigidActor actor1, [Ref] PxTransform localFrame1);
@@ -42,6 +43,8 @@ interface PxActor {
     octet getDominanceGroup();
     void setOwnerClient(octet inClient);
     octet getOwnerClient();
+
+    attribute VoidPtr userData;
 };
 PxActor implements PxBase;
 
@@ -617,7 +620,9 @@ interface PxOverlapQueryResult {
 };
 
 [Prefix="physx::", NoDelete]
-interface PxMaterial { };
+interface PxMaterial {
+    attribute VoidPtr userData;
+};
 PxMaterial implements PxBase;
 
 enum PxPairFilteringModeEnum {
@@ -1381,6 +1386,15 @@ enum PxVehicleDifferential4WDataEnum {
     "PxVehicleDifferential4WDataEnum::eMAX_NB_DIFF_TYPES"
 };
 
+[Prefix="physx::"]
+interface PxVehicleDifferentialNWData {
+    void PxVehicleDifferentialNWData();
+    void setDrivenWheel(unsigned long wheelId, boolean drivenState);
+    boolean getIsDrivenWheel(unsigned long wheelId);
+    unsigned long getDrivenWheelStatus();
+    void setDrivenWheelStatus(unsigned long status);
+};
+
 [Prefix="physx::", NoDelete]
 interface PxVehicleDrivableSurfaceToTireFrictionPairs {
     static PxVehicleDrivableSurfaceToTireFrictionPairs allocate(unsigned long maxNbTireTypes, unsigned long maxNbSurfaceTypes);
@@ -1411,7 +1425,6 @@ interface PxVehicleDrive4W {
     void free();
     void setup(PxPhysics physics, PxRigidDynamic vehActor, [Const, Ref] PxVehicleWheelsSimData wheelsData, [Const, Ref] PxVehicleDriveSimData4W driveData, unsigned long nbNonDrivenWheels);
     void setToRestState();
-
     [Value] attribute PxVehicleDriveSimData4W mDriveSimData;
 };
 PxVehicleDrive4W implements PxVehicleDrive;
@@ -1464,6 +1477,16 @@ interface PxVehicleDriveDynData {
     attribute float mAutoBoxSwitchTime;
 };
 
+[Prefix="physx::", NoDelete]
+interface PxVehicleDriveNW {
+    static PxVehicleDriveNW allocate(unsigned long nbWheels);
+    void free();
+    void setup(PxPhysics physics, PxRigidDynamic vehActor, [Const, Ref] PxVehicleWheelsSimData wheelsData, [Const, Ref] PxVehicleDriveSimDataNW driveData, unsigned long nbWheels);
+    void setToRestState();
+    [Value] attribute PxVehicleDriveSimDataNW mDriveSimData;
+};
+PxVehicleDriveNW implements PxVehicleDrive;
+
 [Prefix="physx::"]
 interface PxVehicleDriveSimData {
     void PxVehicleDriveSimData();
@@ -1486,6 +1509,31 @@ interface PxVehicleDriveSimData4W {
     void setAckermannGeometryData([Const, Ref] PxVehicleAckermannGeometryData ackermannData);
 };
 PxVehicleDriveSimData4W implements PxVehicleDriveSimData;
+
+[Prefix="physx::"]
+interface PxVehicleDriveSimDataNW {
+    void PxVehicleDriveSimDataNW();
+    [Const, Ref] PxVehicleDifferentialNWData getDiffData();
+    void setDiffData([Const, Ref] PxVehicleDifferentialNWData diff);
+};
+PxVehicleDriveSimDataNW implements PxVehicleDriveSimData;
+
+[Prefix="physx::", NoDelete]
+interface PxVehicleDriveTank {
+    static PxVehicleDriveTank allocate(unsigned long nbWheels);
+    void free();
+    void setup(PxPhysics physics, PxRigidDynamic vehActor, [Const, Ref] PxVehicleWheelsSimData wheelsData, [Const, Ref] PxVehicleDriveSimData driveData, unsigned long nbDrivenWheels);
+    void setDriveModel(PxVehicleDriveTankControlModelEnum driveModel);
+    PxVehicleDriveTankControlModelEnum getDriveModel();
+    void setToRestState();
+    [Value] attribute PxVehicleDriveSimData mDriveSimData;
+};
+PxVehicleDriveTank implements PxVehicleDrive;
+
+enum PxVehicleDriveTankControlModelEnum {
+    "PxVehicleDriveTankControlModelEnum::eSTANDARD",
+    "PxVehicleDriveTankControlModelEnum::eSPECIAL"
+};
 
 [Prefix="physx::"]
 interface PxVehicleEngineData {
@@ -1560,6 +1608,24 @@ enum PxVehicleGearEnum {
     "PxVehicleGearEnum::eTHIRTIETH",
     "PxVehicleGearEnum::eGEARSRATIO_COUNT"
 };
+
+[Prefix="physx::", NoDelete]
+interface PxVehicleNoDrive {
+    static PxVehicleNoDrive allocate(unsigned long nbWheels);
+    void free();
+    void setup(PxPhysics physics, PxRigidDynamic vehActor, [Const, Ref] PxVehicleWheelsSimData wheelsData);
+    void setToRestState();
+    void setBrakeTorque(unsigned long id, float brakeTorque);
+    void setDriveTorque(unsigned long id, float driveTorque);
+    void setSteerAngle(unsigned long id, float steerAngle);
+    float getBrakeTorque(unsigned long id);
+    float getDriveTorque(unsigned long id);
+    float getSteerAngle(unsigned long id);
+    unsigned long getNbSteerAngle();
+    unsigned long getNbDriveTorque();
+    unsigned long getNbBrakeTorque();
+};
+PxVehicleNoDrive implements PxVehicleWheels;
 
 [Prefix="physx::"]
 interface PxVehicleSuspensionData {
@@ -2229,7 +2295,56 @@ interface PxBounds3 {
 interface PxCpuDispatcher { };
 
 [Prefix="physx::", NoDelete]
-interface PxCudaContextManager { };
+interface PxCudaContextManager {
+    boolean contextIsValid();
+    boolean supportsArchSM10();
+    boolean supportsArchSM11();
+    boolean supportsArchSM12();
+    boolean supportsArchSM13();
+    boolean supportsArchSM20();
+    boolean supportsArchSM30();
+    boolean supportsArchSM35();
+    boolean supportsArchSM50();
+    boolean supportsArchSM52();
+    boolean isIntegrated();
+    boolean canMapHostMemory();
+    long getDriverVersion();
+    unsigned long long getDeviceTotalMemBytes();
+    long getMultiprocessorCount();
+    unsigned long getClockRate();
+    long getSharedMemPerBlock();
+    long getMaxThreadsPerBlock();
+    [Const] DOMString getDeviceName();
+    PxCudaInteropModeEnum getInteropMode();
+    void setUsingConcurrentStreams(boolean flag);
+    boolean getUsingConcurrentStreams();
+    long usingDedicatedGPU();
+    void release();
+};
+
+[Prefix="physx::"]
+interface PxCudaContextManagerDesc {
+    void PxCudaContextManagerDesc();
+    attribute VoidPtr graphicsDevice;
+    attribute PxCudaInteropModeEnum interopMode;
+    attribute unsigned long[] maxMemorySize;
+    attribute unsigned long[] memoryBaseSize;
+    attribute unsigned long[] memoryPageSize;
+};
+
+enum PxCudaBufferMemorySpaceEnum {
+    "PxCudaBufferMemorySpaceEnum::T_GPU",
+    "PxCudaBufferMemorySpaceEnum::T_PINNED_HOST",
+    "PxCudaBufferMemorySpaceEnum::T_WRITE_COMBINED",
+    "PxCudaBufferMemorySpaceEnum::T_HOST",
+};
+
+enum PxCudaInteropModeEnum {
+    "PxCudaInteropModeEnum::NO_INTEROP",
+    "PxCudaInteropModeEnum::D3D10_INTEROP",
+    "PxCudaInteropModeEnum::D3D11_INTEROP",
+    "PxCudaInteropModeEnum::OGL_INTEROP"
+};
 
 [Prefix="physx::"]
 interface PxDefaultErrorCallback {
@@ -2674,6 +2789,30 @@ interface PxSpring {
     void PxSpring(float stiffness, float damping);
     attribute float stiffness;
     attribute float damping;
+};
+
+interface BatchVehicleUpdateDesc {
+    void BatchVehicleUpdateDesc();
+    attribute PxFoundation foundation;
+    attribute PxScene scene;
+    attribute PxVehicleDrivableSurfaceToTireFrictionPairs frictionPairs;
+    attribute unsigned long maxNbVehicles;
+    attribute unsigned long maxNbWheelsPerVehicle;
+    attribute unsigned long maxNbHitPointsPerWheel;
+    attribute unsigned long numWorkers;
+    attribute unsigned long batchSize;
+    [Value] attribute PxBatchQueryPreFilterShader preFilterShader;
+    [Value] attribute PxBatchQueryPostFilterShader postFilterShader;
+};
+
+interface BatchVehicleUpdate {
+    void BatchVehicleUpdate([Ref] BatchVehicleUpdateDesc desc);
+    void addVehicle(PxVehicleWheels vehicle);
+    void removeVehicle(PxVehicleWheels vehicle);
+    void removeAllVehicles();
+    long indexOf(PxVehicleWheels vehicle);
+    void batchUpdate(float timestep);
+    PxWheelQueryResult getWheelQueryResult(unsigned long vehicleId, unsigned long wheelId);
 };
 
 /****************************************

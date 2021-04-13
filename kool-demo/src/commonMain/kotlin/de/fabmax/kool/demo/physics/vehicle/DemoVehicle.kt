@@ -176,7 +176,6 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
         val vehicleProps = VehicleProperties().apply {
-            groundMaterialFrictions = mapOf(world.defaultMaterial to 1.5f)
             chassisDims = Vec3f(2.1f, 0.98f, 5.4f)
             trackWidth = 1.6f
             maxBrakeTorqueFront = 2400f

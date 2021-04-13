@@ -10,15 +10,9 @@ import kotlin.math.max
 
 actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private val world: PhysicsWorld, pose: Mat4f) : CommonVehicle(vehicleProps, pose) {
 
-    private val vehicle: PxVehicleDrive4W
+    val pxVehicle: PxVehicleDrive4W
 
     private val vehicleAsVector: Vector_PxVehicleWheels
-    private val wheelQueryResults: Vector_PxWheelQueryResult
-    private val vehicleWheelQueryResult: PxVehicleWheelQueryResult
-
-    private val queryData: VehicleSceneQueryData
-    private val query: PxBatchQuery
-    private val frictionPairs: FrictionPairs
 
     actual val wheelInfos = List(4) { WheelInfo() }
 
@@ -26,22 +20,22 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         set(value) {
             field = value
             if (value < 0) {
-                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
-                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, -value)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, -value)
             } else {
-                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, 0f)
-                vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, value)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, 0f)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, value)
             }
         }
     override var throttleInput = 0f
         set(value) {
             field = value
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_ACCEL, value)
+            pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_ACCEL, value)
         }
     override var brakeInput = 0f
         set(value) {
             field = value
-            vehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_BRAKE, value)
+            pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_BRAKE, value)
         }
 
     private val peakTorque = vehicleProps.peakEngineTorque
@@ -74,75 +68,38 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     actual var isReverse = false
 
     init {
-        queryData = VehicleSceneQueryData(1, 4, 1, 1)
-        query = queryData.setupBatchedSceneQuery(world.scene)
-
-        val gndMaterials = if (vehicleProps.groundMaterialFrictions.isEmpty()) {
-            listOf(Material(0.5f).pxMaterial)
-        } else {
-            vehicleProps.groundMaterialFrictions.keys.map { it.pxMaterial }.toList()
-        }
-        frictionPairs = FrictionPairs(1, gndMaterials)
-        vehicleProps.groundMaterialFrictions.forEach { (mat, friction) ->
-            frictionPairs.setTypePairFriction(mat.pxMaterial, 0, friction)
-        }
-
         setupVehicleActor(vehicleProps)
-        vehicle = createVehicle4w(vehicleProps)
+        pxVehicle = createVehicle4w(vehicleProps)
         vehicleAsVector = Vector_PxVehicleWheels()
-        vehicleAsVector.push_back(vehicle)
+        vehicleAsVector.push_back(pxVehicle)
 
-        wheelQueryResults = Vector_PxWheelQueryResult(vehicleProps.numWheels)
-        vehicleWheelQueryResult = PxVehicleWheelQueryResult()
-        vehicleWheelQueryResult.nbWheelQueryResults = wheelQueryResults.size()
-        vehicleWheelQueryResult.wheelQueryResults = wheelQueryResults.data()
-
-        vehicle.setToRestState()
-        vehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
-        vehicle.mDriveDynData.mUseAutoGears = true
+        pxVehicle.setToRestState()
+        pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
+        pxVehicle.mDriveDynData.mUseAutoGears = true
     }
 
     override fun release() {
-        vehicle.release()
+        pxVehicle.release()
         vehicleAsVector.destroy()
-        wheelQueryResults.destroy()
-        vehicleWheelQueryResult.destroy()
-
-        queryData.release()
-        query.release()
-        frictionPairs.release()
-
         super.release()
     }
 
     override fun fixedUpdate(timeStep: Float) {
-        if (isReverse && vehicle.mDriveDynData.mTargetGear != PxVehicleGearEnum.eREVERSE) {
-            vehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eREVERSE)
-        } else if (!isReverse && vehicle.mDriveDynData.mTargetGear == PxVehicleGearEnum.eREVERSE) {
-            vehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
+        if (isReverse && pxVehicle.mDriveDynData.mTargetGear != PxVehicleGearEnum.eREVERSE) {
+            pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eREVERSE)
+        } else if (!isReverse && pxVehicle.mDriveDynData.mTargetGear == PxVehicleGearEnum.eREVERSE) {
+            pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
         }
 
-        // update vehicle simulation state
-        Physics.PxVehicle.PxVehicleSuspensionRaycasts(query, vehicleAsVector, queryData.numQueriesPerBatch, queryData.raycastResults.data())
-        Physics.PxVehicle.PxVehicleUpdates(timeStep, world.scene.gravity, frictionPairs.frictionPairs, vehicleAsVector, vehicleWheelQueryResult)
-        for (i in 0 until 4) {
-            val wheelInfo = wheelInfos[i]
-            wheelQueryResults.at(i).apply {
-                localPose.toMat4f(wheelInfo.transform)
-                wheelInfo.lateralSlip = lateralSlip
-                wheelInfo.longitudinalSlip = longitudinalSlip
-            }
-        }
-
-        val engineSpdOmega = vehicle.mDriveDynData.engineRotationSpeed
+        val engineSpdOmega = pxVehicle.mDriveDynData.engineRotationSpeed
         engineSpd = max(750f, engineSpdOmega * OMEGA_TO_RPM)
-        engineTq = vehicle.mDriveSimData.engineData.mTorqueCurve.getYVal(engineSpdOmega) * peakTorque * throttleInput
+        engineTq = pxVehicle.mDriveSimData.engineData.mTorqueCurve.getYVal(engineSpdOmega) * peakTorque * throttleInput
         engineP = engineTq * engineSpdOmega
-        curGear = vehicle.mDriveDynData.currentGear - PxVehicleGearEnum.eNEUTRAL
+        curGear = pxVehicle.mDriveDynData.currentGear - PxVehicleGearEnum.eNEUTRAL
 
         prevLinearSpeed.set(linearSpeed)
-        linearSpeed.z = vehicle.computeForwardSpeed()
-        linearSpeed.x = vehicle.computeSidewaysSpeed()
+        linearSpeed.z = pxVehicle.computeForwardSpeed()
+        linearSpeed.x = pxVehicle.computeSidewaysSpeed()
         linearAccel.z = linearAccel.z * 0.5f + (linearSpeed.z - prevLinearSpeed.z) / timeStep * 0.5f
         linearAccel.x = linearAccel.x * 0.5f + (linearSpeed.x - prevLinearSpeed.x) / timeStep * 0.5f
 
@@ -186,7 +143,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
 
             // Add shapes to the actor. Wheel shapes must added first because first
             // four shapes are treated as wheels (based on shape index)
-            for(i in 0..3) {
+            for (i in 0..3) {
                 attachShape(wheelShapes[i])
             }
             chassisShapes.forEach { attachShape(it) }

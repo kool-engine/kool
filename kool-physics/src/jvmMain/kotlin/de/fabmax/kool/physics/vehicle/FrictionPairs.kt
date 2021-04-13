@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.vehicle
 
+import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.Releasable
 import physx.physics.PxMaterial
@@ -12,6 +13,19 @@ class FrictionPairs(val nbTireTypes: Int, val materials: List<PxMaterial>, val s
 
     constructor(nbTireTypes: Int, materials: List<PxMaterial>) :
             this(nbTireTypes, materials, materials.indices.toList())
+
+    constructor(frictions: Map<Material, Float>) :
+            this(1,
+                if (frictions.isEmpty()) {
+                    listOf(Physics.defaultMaterial.pxMaterial)
+                } else {
+                    frictions.keys.map { it.pxMaterial }.toList()
+                }
+            ) {
+        frictions.forEach { (mat, friction) ->
+            setTypePairFriction(mat.pxMaterial, 0, friction)
+        }
+    }
 
     val frictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs
 

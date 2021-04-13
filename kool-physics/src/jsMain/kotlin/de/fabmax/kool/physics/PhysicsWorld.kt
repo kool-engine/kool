@@ -29,7 +29,7 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
         sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
         sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
-        sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_CCD)
+        sceneDesc.flags.clear(PxSceneFlagEnum.eENABLE_PCM)
         sceneDesc.simulationEventCallback = simEventCallback()
         scene = Physics.physics.createScene(sceneDesc)
     }

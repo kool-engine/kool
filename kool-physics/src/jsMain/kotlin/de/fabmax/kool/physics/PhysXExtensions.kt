@@ -138,4 +138,6 @@ class MemoryStack private constructor() {
     fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags))
     fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()))
     fun createPxVehicleWheelsSimFlags(flags: Int) = autoDelete(PxVehicleWheelsSimFlags(flags))
+
+    fun createBatchVehicleUpdateDesc() = autoDelete(BatchVehicleUpdateDesc())
 }

@@ -75,7 +75,7 @@ abstract class CommonRigidActor : Releasable {
         return invTransform.transform(vec, w)
     }
 
-    fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit = { }) = group {
+    open fun toMesh(meshColor: Color, materialCfg: PbrMaterialConfig.() -> Unit = { }) = group {
         +colorMesh {
             generate {
                 color = meshColor

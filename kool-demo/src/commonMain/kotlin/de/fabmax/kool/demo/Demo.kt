@@ -7,6 +7,7 @@ import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
+import de.fabmax.kool.demo.physics.manyvehicles.ManyVehiclesDemo
 import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
@@ -67,6 +68,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
 
         "helloworld" to DemoEntry("Hello World", true) { HelloWorldDemo() },
         "hellogltf" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
+        "manyvehicles" to DemoEntry("Many Vehicles", true) { ManyVehiclesDemo() },
     )
 
     init {

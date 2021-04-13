@@ -1,7 +1,6 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 
 class VehicleProperties {
@@ -49,8 +48,6 @@ class VehicleProperties {
     var chassisMOI = Vec3f(0f)
     var wheelMoiFront = 0f
     var wheelMoiRear = 0f
-
-    var groundMaterialFrictions = mapOf<Material, Float>()
 
     var chassisShapes = emptyList<Shape>()
     var wheelShapes = emptyList<Shape>()

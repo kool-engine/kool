@@ -7,6 +7,11 @@ package physx
 
 external interface PxActor : PxBase {
     /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+
+    /**
      * @return WebIDL type: [PxActorTypeEnum] (enum)
      */
     fun getType(): Int
@@ -1781,7 +1786,12 @@ fun PxOverlapQueryResult.destroy() {
 val PxOverlapQueryResult.nbAnyHits
     get() = getNbAnyHits()
 
-external interface PxMaterial : PxBase
+external interface PxMaterial : PxBase {
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+}
 
 external interface PxPairFlags {
     /**

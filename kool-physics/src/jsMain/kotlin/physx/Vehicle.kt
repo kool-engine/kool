@@ -271,6 +271,44 @@ fun PxVehicleDifferential4WData.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxVehicleDifferentialNWData {
+    /**
+     * @param wheelId     WebIDL type: unsigned long
+     * @param drivenState WebIDL type: boolean
+     */
+    fun setDrivenWheel(wheelId: Int, drivenState: Boolean)
+
+    /**
+     * @param wheelId WebIDL type: unsigned long
+     * @return WebIDL type: boolean
+     */
+    fun getIsDrivenWheel(wheelId: Int): Boolean
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getDrivenWheelStatus(): Int
+
+    /**
+     * @param status WebIDL type: unsigned long
+     */
+    fun setDrivenWheelStatus(status: Int)
+
+}
+
+fun PxVehicleDifferentialNWData(): PxVehicleDifferentialNWData {
+    fun _PxVehicleDifferentialNWData(_module: dynamic) = js("new _module.PxVehicleDifferentialNWData()")
+    return _PxVehicleDifferentialNWData(PhysXJsLoader.physXJs)
+}
+
+fun PxVehicleDifferentialNWData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxVehicleDifferentialNWData.drivenWheelStatus
+    get() = getDrivenWheelStatus()
+    set(value) { setDrivenWheelStatus(value) }
+
 external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
     /**
      * @param maxNbTireTypes    WebIDL type: unsigned long
@@ -565,6 +603,33 @@ var PxVehicleDriveDynData.gearChange
     get() = getGearChange()
     set(value) { setGearChange(value) }
 
+external interface PxVehicleDriveNW : PxVehicleDrive {
+    /**
+     * WebIDL type: [PxVehicleDriveSimDataNW] (Value)
+     */
+    var mDriveSimData: PxVehicleDriveSimDataNW
+
+    /**
+     * @param nbWheels WebIDL type: unsigned long
+     * @return WebIDL type: [PxVehicleDriveNW]
+     */
+    fun allocate(nbWheels: Int): PxVehicleDriveNW
+
+    fun free()
+
+    /**
+     * @param physics    WebIDL type: [PxPhysics]
+     * @param vehActor   WebIDL type: [PxRigidDynamic]
+     * @param wheelsData WebIDL type: [PxVehicleWheelsSimData] (Const, Ref)
+     * @param driveData  WebIDL type: [PxVehicleDriveSimDataNW] (Const, Ref)
+     * @param nbWheels   WebIDL type: unsigned long
+     */
+    fun setup(physics: PxPhysics, vehActor: PxRigidDynamic, wheelsData: PxVehicleWheelsSimData, driveData: PxVehicleDriveSimDataNW, nbWheels: Int)
+
+    fun setToRestState()
+
+}
+
 external interface PxVehicleDriveSimData {
     /**
      * @return WebIDL type: [PxVehicleEngineData] (Const, Ref)
@@ -668,6 +733,73 @@ var PxVehicleDriveSimData4W.diffData
 var PxVehicleDriveSimData4W.ackermannGeometryData
     get() = getAckermannGeometryData()
     set(value) { setAckermannGeometryData(value) }
+
+external interface PxVehicleDriveSimDataNW : PxVehicleDriveSimData {
+    /**
+     * @return WebIDL type: [PxVehicleDifferentialNWData] (Const, Ref)
+     */
+    fun getDiffData(): PxVehicleDifferentialNWData
+
+    /**
+     * @param diff WebIDL type: [PxVehicleDifferentialNWData] (Const, Ref)
+     */
+    fun setDiffData(diff: PxVehicleDifferentialNWData)
+
+}
+
+fun PxVehicleDriveSimDataNW(): PxVehicleDriveSimDataNW {
+    fun _PxVehicleDriveSimDataNW(_module: dynamic) = js("new _module.PxVehicleDriveSimDataNW()")
+    return _PxVehicleDriveSimDataNW(PhysXJsLoader.physXJs)
+}
+
+fun PxVehicleDriveSimDataNW.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxVehicleDriveSimDataNW.diffData
+    get() = getDiffData()
+    set(value) { setDiffData(value) }
+
+external interface PxVehicleDriveTank : PxVehicleDrive {
+    /**
+     * WebIDL type: [PxVehicleDriveSimData] (Value)
+     */
+    var mDriveSimData: PxVehicleDriveSimData
+
+    /**
+     * @param nbWheels WebIDL type: unsigned long
+     * @return WebIDL type: [PxVehicleDriveTank]
+     */
+    fun allocate(nbWheels: Int): PxVehicleDriveTank
+
+    fun free()
+
+    /**
+     * @param physics        WebIDL type: [PxPhysics]
+     * @param vehActor       WebIDL type: [PxRigidDynamic]
+     * @param wheelsData     WebIDL type: [PxVehicleWheelsSimData] (Const, Ref)
+     * @param driveData      WebIDL type: [PxVehicleDriveSimData] (Const, Ref)
+     * @param nbDrivenWheels WebIDL type: unsigned long
+     */
+    fun setup(physics: PxPhysics, vehActor: PxRigidDynamic, wheelsData: PxVehicleWheelsSimData, driveData: PxVehicleDriveSimData, nbDrivenWheels: Int)
+
+    /**
+     * @param driveModel WebIDL type: [PxVehicleDriveTankControlModelEnum] (enum)
+     */
+    fun setDriveModel(driveModel: Int)
+
+    /**
+     * @return WebIDL type: [PxVehicleDriveTankControlModelEnum] (enum)
+     */
+    fun getDriveModel(): Int
+
+    fun setToRestState()
+
+}
+
+var PxVehicleDriveTank.driveModel
+    get() = getDriveModel()
+    set(value) { setDriveModel(value) }
 
 external interface PxVehicleEngineData {
     /**
@@ -804,6 +936,84 @@ fun PxVehicleGearsData(): PxVehicleGearsData {
 fun PxVehicleGearsData.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+external interface PxVehicleNoDrive : PxVehicleWheels {
+    /**
+     * @param nbWheels WebIDL type: unsigned long
+     * @return WebIDL type: [PxVehicleDrive]
+     */
+    fun allocate(nbWheels: Int): PxVehicleDrive
+
+    fun free()
+
+    /**
+     * @param physics    WebIDL type: [PxPhysics]
+     * @param vehActor   WebIDL type: [PxRigidDynamic]
+     * @param wheelsData WebIDL type: [PxVehicleWheelsSimData] (Const, Ref)
+     */
+    fun setup(physics: PxPhysics, vehActor: PxRigidDynamic, wheelsData: PxVehicleWheelsSimData)
+
+    fun setToRestState()
+
+    /**
+     * @param id          WebIDL type: unsigned long
+     * @param brakeTorque WebIDL type: float
+     */
+    fun setBrakeTorque(id: Int, brakeTorque: Float)
+
+    /**
+     * @param id          WebIDL type: unsigned long
+     * @param driveTorque WebIDL type: float
+     */
+    fun setDriveTorque(id: Int, driveTorque: Float)
+
+    /**
+     * @param id         WebIDL type: unsigned long
+     * @param steerAngle WebIDL type: float
+     */
+    fun setSteerAngle(id: Int, steerAngle: Float)
+
+    /**
+     * @param id WebIDL type: unsigned long
+     * @return WebIDL type: float
+     */
+    fun getBrakeTorque(id: Int): Float
+
+    /**
+     * @param id WebIDL type: unsigned long
+     * @return WebIDL type: float
+     */
+    fun getDriveTorque(id: Int): Float
+
+    /**
+     * @param id WebIDL type: unsigned long
+     * @return WebIDL type: float
+     */
+    fun getSteerAngle(id: Int): Float
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbSteerAngle(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbDriveTorque(): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbBrakeTorque(): Int
+
+}
+
+val PxVehicleNoDrive.nbSteerAngle
+    get() = getNbSteerAngle()
+val PxVehicleNoDrive.nbDriveTorque
+    get() = getNbDriveTorque()
+val PxVehicleNoDrive.nbBrakeTorque
+    get() = getNbBrakeTorque()
 
 external interface PxVehicleSuspensionData {
     /**
@@ -1605,6 +1815,11 @@ object PxVehicleDrive4WControlEnum {
     val eANALOG_INPUT_STEER_LEFT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_LEFT()
     val eANALOG_INPUT_STEER_RIGHT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eANALOG_INPUT_STEER_RIGHT()
     val eMAX_NB_DRIVE4W_ANALOG_INPUTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDrive4WControlEnum_eMAX_NB_DRIVE4W_ANALOG_INPUTS()
+}
+
+object PxVehicleDriveTankControlModelEnum {
+    val eSTANDARD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDriveTankControlModelEnum_eSTANDARD()
+    val eSPECIAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDriveTankControlModelEnum_eSPECIAL()
 }
 
 object PxVehicleGearEnum {

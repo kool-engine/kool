@@ -5,8 +5,11 @@ import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.physics.vehicle.Vehicle
+import de.fabmax.kool.physics.vehicle.VehicleManager
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import kotlin.math.min
 
@@ -35,13 +38,13 @@ abstract class CommonPhysicsWorld : Releasable {
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
-    private val mutActors = mutableListOf<RigidActor>()
+    protected val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
         get() = mutActors
-
-    private val mutArticulations = mutableListOf<Articulation>()
+    protected val mutArticulations = mutableListOf<Articulation>()
     val articulations: List<Articulation>
         get() = mutArticulations
+    protected var vehicleManager: VehicleManager? = null
 
     protected val triggerListeners = mutableMapOf<RigidActor, TriggerListenerContext>()
 
@@ -87,14 +90,21 @@ abstract class CommonPhysicsWorld : Releasable {
         }
         unregisterHandlers()
         clear(true)
+        vehicleManager?.release()
     }
 
     open fun addActor(actor: RigidActor) {
         mutActors += actor
+        if (actor is Vehicle) {
+            getOrDefaultVehicleManager().addVehicle(actor)
+        }
     }
 
     open fun removeActor(actor: RigidActor) {
         mutActors -= actor
+        if (actor is Vehicle) {
+            vehicleManager?.addVehicle(actor)
+        }
     }
 
     open fun addArticulation(articulation: Articulation) {
@@ -103,6 +113,23 @@ abstract class CommonPhysicsWorld : Releasable {
 
     open fun removeArticulation(articulation: Articulation) {
         mutArticulations -= articulation
+    }
+
+    open fun createVehicleManager(maxVehicles: Int, surfaceFrictions: Map<Material, Float> = emptyMap()): VehicleManager {
+        if (vehicleManager != null) {
+            throw IllegalStateException("VehicleManager was already created (only one instance per VehicleWorld allowed)")
+        }
+        vehicleManager = VehicleManager(maxVehicles, this, surfaceFrictions)
+        return vehicleManager!!
+    }
+
+    private fun getOrDefaultVehicleManager(): VehicleManager {
+        if (vehicleManager == null) {
+            logI { "Creating default VehicleManager instance with maxVehicles = $DEFAULT_MAX_NUM_VEHICLES. Consider " +
+                    "calling PhysicsWorld.createVehicleManager() for more or less vehicles" }
+            createVehicleManager(DEFAULT_MAX_NUM_VEHICLES)
+        }
+        return vehicleManager!!
     }
 
     fun wakeUpAll() {
@@ -180,14 +207,19 @@ abstract class CommonPhysicsWorld : Releasable {
 
     protected open fun fetchStepResults() {
         isStepInProgress = false
+        onFixedUpdate(singleStepTime * simTimeFactor)
+    }
+
+    protected open fun onFixedUpdate(timeStep: Float) {
+        vehicleManager?.onFixedUpdate(timeStep)
         for (i in mutActors.indices) {
-            mutActors[i].fixedUpdate(singleStepTime * simTimeFactor)
+            mutActors[i].fixedUpdate(timeStep)
         }
         for (i in mutArticulations.indices) {
-            mutArticulations[i].fixedUpdate(singleStepTime * simTimeFactor)
+            mutArticulations[i].fixedUpdate(timeStep)
         }
         for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](singleStepTime * simTimeFactor)
+            onFixedUpdate[i](timeStep)
         }
     }
 
@@ -206,5 +238,9 @@ abstract class CommonPhysicsWorld : Releasable {
     protected class TriggerListenerContext {
         val listeners = mutableListOf<TriggerListener>()
         val actorEnterCounts = mutableMapOf<RigidActor, Int>()
+    }
+
+    companion object {
+        private const val DEFAULT_MAX_NUM_VEHICLES = 64
     }
 }

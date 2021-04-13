@@ -1281,6 +1281,103 @@ fun PxSpring.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface BatchVehicleUpdateDesc {
+    /**
+     * WebIDL type: [PxFoundation]
+     */
+    var foundation: PxFoundation
+    /**
+     * WebIDL type: [PxScene]
+     */
+    var scene: PxScene
+    /**
+     * WebIDL type: [PxVehicleDrivableSurfaceToTireFrictionPairs]
+     */
+    var frictionPairs: PxVehicleDrivableSurfaceToTireFrictionPairs
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbVehicles: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbWheelsPerVehicle: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var maxNbHitPointsPerWheel: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var numWorkers: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var batchSize: Int
+    /**
+     * WebIDL type: [PxBatchQueryPreFilterShader] (Value)
+     */
+    var preFilterShader: PxBatchQueryPreFilterShader
+    /**
+     * WebIDL type: [PxBatchQueryPostFilterShader] (Value)
+     */
+    var postFilterShader: PxBatchQueryPostFilterShader
+}
+
+fun BatchVehicleUpdateDesc(): BatchVehicleUpdateDesc {
+    fun _BatchVehicleUpdateDesc(_module: dynamic) = js("new _module.BatchVehicleUpdateDesc()")
+    return _BatchVehicleUpdateDesc(PhysXJsLoader.physXJs)
+}
+
+fun BatchVehicleUpdateDesc.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface BatchVehicleUpdate {
+    /**
+     * @param vehicle WebIDL type: [PxVehicleWheels]
+     */
+    fun addVehicle(vehicle: PxVehicleWheels)
+
+    /**
+     * @param vehicle WebIDL type: [PxVehicleWheels]
+     */
+    fun removeVehicle(vehicle: PxVehicleWheels)
+
+    fun removeAllVehicles()
+
+    /**
+     * @param vehicle WebIDL type: [PxVehicleWheels]
+     * @return WebIDL type: long
+     */
+    fun indexOf(vehicle: PxVehicleWheels): Int
+
+    /**
+     * @param timestep WebIDL type: float
+     */
+    fun batchUpdate(timestep: Float)
+
+    /**
+     * @param vehicleId WebIDL type: unsigned long
+     * @param wheelId   WebIDL type: unsigned long
+     * @return WebIDL type: [PxWheelQueryResult]
+     */
+    fun getWheelQueryResult(vehicleId: Int, wheelId: Int): PxWheelQueryResult
+
+}
+
+/**
+ * @param desc WebIDL type: [BatchVehicleUpdateDesc] (Ref)
+ */
+fun BatchVehicleUpdate(desc: BatchVehicleUpdateDesc): BatchVehicleUpdate {
+    fun _BatchVehicleUpdate(_module: dynamic, desc: BatchVehicleUpdateDesc) = js("new _module.BatchVehicleUpdate(desc)")
+    return _BatchVehicleUpdate(PhysXJsLoader.physXJs, desc)
+}
+
+fun BatchVehicleUpdate.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 object PxD6AxisEnum {
     val eX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eX()
     val eY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eY()

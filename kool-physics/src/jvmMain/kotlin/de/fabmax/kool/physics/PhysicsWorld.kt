@@ -10,8 +10,9 @@ import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.physics.*
 import physx.support.TypeHelpers
+import kotlin.collections.set
 
-actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+actual class PhysicsWorld actual constructor(gravity: Vec3f, val numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val scene: PxScene
 
     private val raycastResult = PxRaycastBuffer10()
@@ -28,13 +29,16 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
     init {
         Physics.checkIsLoaded()
 
-        val sceneDesc = PxSceneDesc(Physics.physics.tolerancesScale)
-        sceneDesc.gravity = bufPxGravity
-        sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(8)
-        sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
-        sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_CCD)
-        sceneDesc.simulationEventCallback = SimEventCallback()
-        scene = Physics.physics.createScene(sceneDesc)
+        MemoryStack.stackPush().use { mem ->
+            val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
+            sceneDesc.gravity = bufPxGravity
+            sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
+            sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
+            // fixme: not clearing PCM results in an immediate crash, physx-jni tests work with enabled PCM though...
+            sceneDesc.flags.clear(PxSceneFlagEnum.eENABLE_PCM)
+            sceneDesc.simulationEventCallback = SimEventCallback()
+            scene = Physics.physics.createScene(sceneDesc)
+        }
     }
 
     override fun singleStepPhysics() {

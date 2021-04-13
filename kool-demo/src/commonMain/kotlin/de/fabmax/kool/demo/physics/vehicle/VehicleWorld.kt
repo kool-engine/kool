@@ -3,7 +3,10 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.physics.vehicle.VehicleUtils
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.deferred.DeferredPipeline
@@ -20,6 +23,10 @@ class VehicleWorld(
     val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
     val obstacleSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+
+    init {
+        physics.createVehicleManager(1, mapOf(defaultMaterial to 1.5f))
+    }
 
     fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = group {
         +colorMesh {
