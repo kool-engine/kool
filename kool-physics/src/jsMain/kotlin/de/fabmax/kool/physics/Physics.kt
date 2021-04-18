@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CompletableDeferred
@@ -22,6 +23,8 @@ actual object Physics : CoroutineScope {
         get() = loadingDeferred.isCompleted
 
     actual val defaultMaterial = Material(0.5f)
+    lateinit var defaultSurfaceFrictions: FrictionPairs
+        private set
 
     // static top-level PhysX functions
     val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
@@ -73,6 +76,7 @@ actual object Physics : CoroutineScope {
                     PxVehicle.VehicleSetBasisVectors(up, front)
                     PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
                 }
+                defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)

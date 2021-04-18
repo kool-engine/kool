@@ -5,12 +5,11 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.Releasable
 import physx.*
 
-class VehicleSceneQueryData(maxNumVehicles: Int, numWheelsPerVehicle: Int,
-                            maxNumHitPointsPerWheel: Int, numVehiclesInBatch: Int = 1,
+class VehicleQueryData(numWheels: Int, maxNumHitPointsPerWheel: Int = 1,
                             val preFilterShader: PxBatchQueryPreFilterShader? = Physics.Px.DefaultWheelSceneQueryPreFilterBlocking(),
                             val postFilterShader: PxBatchQueryPostFilterShader? = null) : Releasable {
 
-    val numQueriesPerBatch = numVehiclesInBatch * numWheelsPerVehicle
+    val numQueriesPerBatch = numWheels
     val numHitResultsPerQuery = maxNumHitPointsPerWheel
 
     val raycastResults: Vector_PxRaycastQueryResult
@@ -22,16 +21,13 @@ class VehicleSceneQueryData(maxNumVehicles: Int, numWheelsPerVehicle: Int,
     init {
         Physics.checkIsLoaded()
 
-        val maxNumWheels = maxNumVehicles * numWheelsPerVehicle
-        val maxNumHitPoints = maxNumWheels * maxNumHitPointsPerWheel
-
-        raycastResults = Vector_PxRaycastQueryResult(maxNumWheels)
-        raycastHitBuffer = Vector_PxRaycastHit(maxNumHitPoints)
-        sweepResults = Vector_PxSweepQueryResult(maxNumWheels)
-        sweepHitBuffer = Vector_PxSweepHit(maxNumHitPoints)
+        raycastResults = Vector_PxRaycastQueryResult(numWheels)
+        raycastHitBuffer = Vector_PxRaycastHit(maxNumHitPointsPerWheel)
+        sweepResults = Vector_PxSweepQueryResult(numWheels)
+        sweepHitBuffer = Vector_PxSweepHit(maxNumHitPointsPerWheel)
     }
 
-    fun setupBatchedSceneQuery(scene: PxScene): PxBatchQuery {
+    fun setupSceneQuery(scene: PxScene): PxBatchQuery {
         return MemoryStack.stackPush().use { mem ->
             val maxNumHitResultsInBatch = numQueriesPerBatch * numHitResultsPerQuery
             val sqDesc = mem.createPxBatchQueryDesc(numQueriesPerBatch, numHitResultsPerQuery, 0)

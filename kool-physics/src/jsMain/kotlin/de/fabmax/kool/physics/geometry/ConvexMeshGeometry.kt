@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.toPxVec3
 import physx.PxConvexMeshGeometry
 import physx.PxGeometry
 
-actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh), CollisionGeometry {
+actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh, scale), CollisionGeometry {
 
     override val pxGeometry: PxGeometry
 

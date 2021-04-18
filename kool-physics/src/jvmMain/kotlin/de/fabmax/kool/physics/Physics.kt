@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.vehicle.FrictionPairs
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,7 @@ actual object Physics : CoroutineScope {
     actual val isLoaded = true
 
     actual val defaultMaterial = Material(0.5f)
+    val defaultSurfaceFrictions: FrictionPairs
 
     // default PhysX facilities
     val foundation: PxFoundation
@@ -71,6 +73,7 @@ actual object Physics : CoroutineScope {
             PxVehicleTopLevelFunctions.VehicleSetBasisVectors(up, front)
             PxVehicleTopLevelFunctions.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
         }
+        defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
 
         logI { "PhysX loaded, version: ${pxVersionToString(version)}" }
     }

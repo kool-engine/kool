@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.Shape
 
 class VehicleProperties {
@@ -51,6 +52,8 @@ class VehicleProperties {
 
     var chassisShapes = emptyList<Shape>()
     var wheelShapes = emptyList<Shape>()
+
+    var updater: (Vehicle, PhysicsWorld) -> VehicleUpdater = { v, w -> SingleVehicleUpdater(v, w) }
 
     init {
         updateChassisMoiFromDimensionsAndMass()

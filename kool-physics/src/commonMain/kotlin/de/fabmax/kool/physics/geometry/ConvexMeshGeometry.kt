@@ -9,19 +9,22 @@ expect class ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONE
     constructor(points: List<Vec3f>)
 }
 
-abstract class CommonConvexMeshGeometry(val convexMesh: ConvexMesh) {
+abstract class CommonConvexMeshGeometry(val convexMesh: ConvexMesh, val scale: Vec3f) {
     open fun generateMesh(target: MeshBuilder) {
         target.apply {
-            val hull = convexMesh.convexHull
-            val inds = mutableListOf<Int>()
-            hull.forEach {
-                inds += vertex(it, it.normal)
-            }
-            for (i in 0 until hull.numIndices step 3) {
-                val i0 = inds[hull.indices[i]]
-                val i1 = inds[hull.indices[i + 1]]
-                val i2 = inds[hull.indices[i + 2]]
-                geometry.addTriIndices(i0, i1, i2)
+            withTransform {
+                scale(scale.x, scale.y, scale.z)
+                val hull = convexMesh.convexHull
+                val inds = mutableListOf<Int>()
+                hull.forEach {
+                    inds += vertex(it, it.normal)
+                }
+                for (i in 0 until hull.numIndices step 3) {
+                    val i0 = inds[hull.indices[i]]
+                    val i1 = inds[hull.indices[i + 1]]
+                    val i2 = inds[hull.indices[i + 2]]
+                    geometry.addTriIndices(i0, i1, i2)
+                }
             }
         }
     }

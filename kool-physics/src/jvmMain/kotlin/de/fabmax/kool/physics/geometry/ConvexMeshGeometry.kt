@@ -7,7 +7,7 @@ import org.lwjgl.system.MemoryStack
 import physx.geomutils.PxConvexMeshGeometry
 import physx.geomutils.PxGeometry
 
-actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh), CollisionGeometry {
+actual class ConvexMeshGeometry actual constructor(convexMesh: ConvexMesh, scale: Vec3f) : CommonConvexMeshGeometry(convexMesh, scale), CollisionGeometry {
 
     override val pxGeometry: PxGeometry
 

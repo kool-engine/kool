@@ -12,13 +12,12 @@ import physx.support.Vector_PxVehicleWheels
 import physx.vehicle.*
 import kotlin.math.max
 
-actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private val world: PhysicsWorld, pose: Mat4f) : CommonVehicle(vehicleProps, pose) {
+actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f)
+    : CommonVehicle(vehicleProps, pose) {
 
     val pxVehicle: PxVehicleDrive4W
 
     private val vehicleAsVector: Vector_PxVehicleWheels
-
-    actual val wheelInfos = List(4) { WheelInfo() }
 
     override var steerInput = 0f
         set(value) {
@@ -41,6 +40,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
             field = value
             pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_BRAKE, value)
         }
+
+    actual val updater: VehicleUpdater
 
     private val peakTorque = vehicleProps.peakEngineTorque
 
@@ -72,6 +73,10 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
     actual var isReverse = false
 
     init {
+        for (i in 0..3) {
+            mutWheelInfos += WheelInfo()
+        }
+
         setupVehicleActor(vehicleProps)
         pxVehicle = createVehicle4w(vehicleProps)
         vehicleAsVector = Vector_PxVehicleWheels()
@@ -80,6 +85,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         pxVehicle.setToRestState()
         pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
         pxVehicle.mDriveDynData.mUseAutoGears = true
+
+        updater = vehicleProps.updater(this, world)
     }
 
     override fun release() {
@@ -94,6 +101,8 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, private
         } else if (!isReverse && pxVehicle.mDriveDynData.mTargetGear == PxVehicleGearEnum.eREVERSE) {
             pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eFIRST)
         }
+
+        updater.updateVehicle(this, timeStep)
 
         val engineSpdOmega = pxVehicle.mDriveDynData.engineRotationSpeed
         engineSpd = max(750f, engineSpdOmega * OMEGA_TO_RPM)
