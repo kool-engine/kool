@@ -482,9 +482,17 @@ class ShaderModel(val modelInfo: String = "") {
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
 
+        fun blurNode(inputTex: Texture2dNode? = null, texCoord: ShaderNodeIoVar? = null, direction: ShaderNodeIoVar?): BlurNode {
+            val nd = addNode(BlurNode(stage))
+            inputTex?.let { nd.inTexture = it }
+            texCoord?.let { nd.inTexCoord = it }
+            direction?.let { nd.inDirection = it }
+            return nd
+        }
+
         fun flipBacksideNormalNode(inNormal: ShaderNodeIoVar? = null): FlipBacksideNormalNode {
             val nd = addNode(FlipBacksideNormalNode(stage))
-            inNormal?.let { nd.inNormal = inNormal }
+            inNormal?.let { nd.inNormal = it }
             return nd
         }
 

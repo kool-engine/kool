@@ -35,6 +35,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private var track: Track? = null
     private var timer: TrackTimer? = null
 
+    private lateinit var deferredPipeline: DeferredPipeline
+
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
         val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
@@ -59,14 +61,19 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             isWithEmissive = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
+            isWithBloom = true
 
             useImageBasedLighting(ibl)
             useShadowMaps(emptyList())
             useShadowMaps(listOf(shadows))
         }
-        val deferredPipeline = DeferredPipeline(mainScene, defCfg)
-        deferredPipeline.aoPipeline?.mapSize = 0.75f
-        deferredPipeline.pbrPass.sceneShader.ambientShadowFactor = 0.3f
+        deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
+            aoPipeline?.mapSize = 0.75f
+            pbrPass.sceneShader.ambientShadowFactor = 0.3f
+            bloomStrength = 0.1f
+            bloomRadius = 1f
+            bloomMinBrightness = 4f
+        }
         mainScene += deferredPipeline.renderOutput
 
         shadows.drawNode = deferredPipeline.contentGroup

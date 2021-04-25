@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.platform.Lwjgl3Context
 
@@ -24,6 +25,9 @@ class RenderPassGraph {
         remainingPasses.clear()
         addedPasses.clear()
 
+        // we require at least one cmd buffer for on screen content
+        requiredCommandBuffers = 1
+
         // collect all offscreen render passes of all scenes (onscreen passes are handled separately)
         for (j in ctx.backgroundPasses.indices) {
             val offscreen = ctx.backgroundPasses[j]
@@ -38,13 +42,12 @@ class RenderPassGraph {
                     val offscreen = scene.offscreenPasses[j]
                     if (offscreen.isEnabled) {
                         remainingPasses.add(offscreen)
+                        // add additional cmd buffers for each offscreen pass (ping-pong passes can resolve to multiple passes)
+                        requiredCommandBuffers += if (offscreen is OffscreenRenderPass2dPingPong) offscreen.pingPongPasses else 1
                     }
                 }
             }
         }
-
-        // we require one command buffer per offscreen pass plus an additional one for all onscreen passes
-        requiredCommandBuffers = remainingPasses.size + 1
 
         // grouped render passes together while considering that their dependency render passes are in groups
         // rendered before
@@ -120,11 +123,13 @@ class RenderPassGraph {
 
         val renderPasses = mutableListOf<RenderPass>()
         val renderPassDependencies = mutableListOf<RenderPass>()
+        var numRequiredCmdBuffers = 0
 
         var isOnScreen = false
         var signalSemaphore = 0L
 
         fun clear() {
+            numRequiredCmdBuffers = 0
             renderPassDependencies.clear()
             renderPasses.clear()
             dependencies.clear()
@@ -133,6 +138,7 @@ class RenderPassGraph {
         operator fun plusAssign(renderPass: RenderPass) {
             renderPasses.add(renderPass)
             renderPassDependencies.addAll(renderPass.dependencies)
+            numRequiredCmdBuffers += if (renderPass is OffscreenRenderPass2dPingPong) renderPass.pingPongPasses else 1
         }
 
         fun containsNone(passes: List<RenderPass>): Boolean {

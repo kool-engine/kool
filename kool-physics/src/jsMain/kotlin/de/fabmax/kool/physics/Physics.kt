@@ -76,10 +76,13 @@ actual object Physics : CoroutineScope {
                     PxVehicle.VehicleSetBasisVectors(up, front)
                     PxVehicle.VehicleSetUpdateMode(PxVehicleUpdateModeEnum.eVELOCITY_CHANGE)
                 }
-                defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
 
                 logI { "PhysX loaded, version: ${pxVersionToString(Px.PHYSICS_VERSION)}" }
                 loadingDeferred.complete(Unit)
+
+                // create defaultSurfaceFrictions after loadingDeferred is complete, otherwise creation fails because
+                // physics isn't loaded...
+                defaultSurfaceFrictions = FrictionPairs(mapOf(defaultMaterial to 1.5f))
             }
             PhysXJsLoader.loadModule()
         }

@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.Color
 
 class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, val sceneShader: PbrSceneShader) :
@@ -76,15 +75,5 @@ class PbrLightingPass(scene: Scene, val mrtPass: DeferredMrtPass, val sceneShade
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
         super.dispose(ctx)
-    }
-
-    fun createOutputQuad() = textureMesh {
-        isFrustumChecked = false
-        generate {
-            rect {
-                mirrorTexCoordsY()
-            }
-        }
-        shader = DeferredOutputShader(colorTexture!!, mrtPass.depthTexture!!)
     }
 }

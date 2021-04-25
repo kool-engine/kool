@@ -6,6 +6,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
@@ -265,7 +266,18 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         when (offscreenPass) {
             is OffscreenRenderPass2d -> offscreenPass.impl.draw(this)
             is OffscreenRenderPassCube -> offscreenPass.impl.draw(this)
+            is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+        }
+    }
+
+    private fun drawOffscreenPingPong(offscreenPass: OffscreenRenderPass2dPingPong) {
+        for (i in 0 until offscreenPass.pingPongPasses) {
+            offscreenPass.onDrawPing?.invoke(i)
+            offscreenPass.ping.impl.draw(this)
+
+            offscreenPass.onDrawPong?.invoke(i)
+            offscreenPass.pong.impl.draw(this)
         }
     }
 

@@ -252,17 +252,27 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         private fun MemoryStack.makeCommandBuffers(cmdBuffers: CommandBuffers, group: RenderPassGraph.RenderPassGroup, swapChain: SwapChain, imageIndex: Int): PointerBuffer {
-            val nCmdBufs = if (group.isOnScreen) { 1 } else { group.renderPasses.size }
+            val nCmdBufs = if (group.isOnScreen) { 1 } else { group.numRequiredCmdBuffers }
             val submitCmdBufs = mallocPointer(nCmdBufs)
 
-            for (iPass in 0 until nCmdBufs) {
+            if (group.isOnScreen) {
                 val commandBuffer = cmdBuffers.nextCommandBuffer()
-                submitCmdBufs.put(iPass, commandBuffer)
+                submitCmdBufs.put(0, commandBuffer)
+                makeCommandBufferOnScreen(commandBuffer, group, swapChain, imageIndex)
 
-                if (group.isOnScreen) {
-                    makeCommandBufferOnScreen(commandBuffer, group, swapChain, imageIndex)
-                } else {
-                    makeCommandBufferOffScreen(commandBuffer, group.renderPasses[iPass] as OffscreenRenderPass)
+            } else {
+                var iCmdBuffer = 0
+                for (iPass in 0 until group.renderPasses.size) {
+                    val offscreenPass = group.renderPasses[iPass] as OffscreenRenderPass
+                    if (offscreenPass is OffscreenRenderPass2dPingPong) {
+                        makeCommandBuffersOffScreenPingPong(cmdBuffers, submitCmdBufs, iCmdBuffer, offscreenPass)
+                        iCmdBuffer += offscreenPass.pingPongPasses
+
+                    } else {
+                        val commandBuffer = cmdBuffers.nextCommandBuffer()
+                        submitCmdBufs.put(iCmdBuffer++, commandBuffer)
+                        makeCommandBufferOffScreen(commandBuffer, offscreenPass)
+                    }
                 }
             }
             return submitCmdBufs
@@ -292,11 +302,30 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             check(vkEndCommandBuffer(cmdBuffer) == VK_SUCCESS)
         }
 
-        private fun MemoryStack.makeCommandBufferOffScreen(cmdBuffer: VkCommandBuffer, pass: OffscreenRenderPass) {
+        private fun MemoryStack.makeCommandBufferOffScreen(cmdBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass) {
             val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
             check(vkBeginCommandBuffer(cmdBuffer, beginInfo) == VK_SUCCESS)
-            renderOffscreen(cmdBuffer, pass)
+            when (offscreenPass) {
+                is OffscreenRenderPass2d -> renderOffscreen2d(cmdBuffer, offscreenPass)
+                is OffscreenRenderPassCube -> renderOffscreenCube(cmdBuffer, offscreenPass)
+                else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
+            }
             check(vkEndCommandBuffer(cmdBuffer) == VK_SUCCESS)
+        }
+
+        private fun MemoryStack.makeCommandBuffersOffScreenPingPong(cmdBuffers: CommandBuffers, submitCmdBufs: PointerBuffer, iCmdBuffer: Int, offscreenPass: OffscreenRenderPass2dPingPong) {
+            for (i in 0 until offscreenPass.pingPongPasses) {
+                val commandBuffer = cmdBuffers.nextCommandBuffer()
+                submitCmdBufs.put(iCmdBuffer + i, commandBuffer)
+
+                val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
+                check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
+                offscreenPass.onDrawPing?.invoke(i)
+                renderOffscreen2d(commandBuffer, offscreenPass.ping)
+                offscreenPass.onDrawPong?.invoke(i)
+                renderOffscreen2d(commandBuffer, offscreenPass.pong)
+                check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
+            }
         }
 
         private fun disposePipelines() {
@@ -427,14 +456,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 extent { it.width(viewport.width); it.height(viewport.height) }
             }
             vkCmdSetScissor(commandBuffer, 0, scissor)
-        }
-
-        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass) {
-            when (offscreenPass) {
-                is OffscreenRenderPass2d -> renderOffscreen2d(commandBuffer, offscreenPass)
-                is OffscreenRenderPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
-                else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
-            }
         }
 
         private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2d) {

@@ -323,7 +323,7 @@ class PbrLightNode(graph: ShaderGraph) :
                 radiance = ${inRadiance.ref3f()};
             }
             
-            ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 1.0);
+            ${outColor.declare()} = vec4(0.0, 0.0, 0.0, 0.0);
             if (normalOk && dot(radiance, radiance) > 0.0) {
                 vec3 albedo = ${inAlbedo.ref3f()};
                 vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
@@ -354,7 +354,7 @@ class PbrLightNode(graph: ShaderGraph) :
                     
                 // add to outgoing radiance Lo
                 float NdotL = max(dot(N, L), 0.0);
-                ${outColor.name} = vec4((kD * albedo / $PI + specular) * radiance * NdotL, 1.0);
+                ${outColor.name} = vec4((kD * albedo / $PI + specular) * radiance * NdotL, 0.0);
             }
             """)
     }

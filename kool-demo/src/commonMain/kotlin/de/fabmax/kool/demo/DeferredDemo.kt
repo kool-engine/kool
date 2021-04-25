@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
@@ -17,7 +18,7 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.*
 import kotlin.math.sqrt
 
-class DeferredDemo() : DemoScene("Deferred Shading") {
+class DeferredDemo : DemoScene("Deferred Shading") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
@@ -68,14 +69,18 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
 
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 0
-            isWithEmissive = false
+            isWithEmissive = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithImageBasedLighting = false
+            isWithBloom = true
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
+        deferredPipeline.apply {
+            bloomRadius = 0.35f
+            bloomStrength = 0.75f
+        }
         deferredPipeline.contentGroup.makeContent()
-
         +deferredPipeline.renderOutput
         makeLightOverlays()
 
@@ -86,25 +91,10 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
 
     private fun Scene.makeLightOverlays() {
         apply {
-            lightPositionMesh = colorMesh {
-                isFrustumChecked = false
-                isVisible = true
-                generate {
-                    color = Color.RED
-                    icoSphere {
-                        steps = 1
-                        radius = 0.05f
-                        center.set(Vec3f.ZERO)
-                    }
-                }
-                shader = ModeledShader(instancedLightIndicatorModel())
-            }
-            +lightPositionMesh
-
             lightVolumeMesh = wireframeMesh(deferredPipeline.pbrPass.dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
-                shader = ModeledShader(instancedLightIndicatorModel())
+                shader = ModeledShader(instancedLightVolumeModel())
             }
             +lightVolumeMesh
 
@@ -123,15 +113,15 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
 
-                        light.color.toSrgb(srgbColor)
 
                         if (lightPositionMesh.isVisible) {
                             lightPosInsts.addInstance {
                                 put(lightModelMat.matrix)
-                                put(srgbColor.array)
+                                put(light.color.array)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
+                            light.color.toSrgb(srgbColor)
                             val s = sqrt(light.intensity)
                             lightModelMat.scale(s, s, s)
                             lightVolInsts.addInstance {
@@ -185,6 +175,20 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
             shader = objectShader
         }
         +objects
+
+        lightPositionMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+            isFrustumChecked = false
+            isVisible = true
+            generate {
+                icoSphere {
+                    steps = 1
+                    radius = 0.05f
+                    center.set(Vec3f.ZERO)
+                }
+            }
+            shader = lightPosShader()
+        }
+        +lightPositionMesh
 
         +textureMesh(isNormalMapped = true) {
             generate {
@@ -283,19 +287,28 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
         images += image(imageShader = MetalRoughAoTex(deferredPipeline.mrtPass)).apply {
             setupImage(0.35f, 0.675f)
         }
+        images += image(imageShader = ModeledShader.HdrTextureColor(deferredPipeline.bloomPass?.bloomMap)).apply {
+            setupImage(0.35f, 0.025f)
+        }
 
         section("Dynamic Lights") {
             sliderWithValue("Light Count:", lightCount.toFloat(), 1f, MAX_LIGHTS.toFloat(), 0) {
                 lightCount = value.toInt()
                 updateLights()
             }
-            toggleButton("Light Positions", lightPositionMesh.isVisible) { lightPositionMesh.isVisible = isEnabled }
+            toggleButton("Light Bodies", lightPositionMesh.isVisible) { lightPositionMesh.isVisible = isEnabled }
             toggleButton("Light Volumes", lightVolumeMesh.isVisible) { lightVolumeMesh.isVisible = isEnabled }
             cycler("Color Map:", colorMap) { _, _ -> updateLightColors() }
         }
         section("Deferred Shading") {
             toggleButton("Show Maps", images.first().isVisible) { images.forEach { it.isVisible = isEnabled } }
             toggleButton("Ambient Occlusion", deferredPipeline.isAoEnabled) { deferredPipeline.isAoEnabled = isEnabled }
+            toggleButton("Bloom", deferredPipeline.isBloomEnabled) { deferredPipeline.isBloomEnabled = isEnabled }
+        }
+        section("Bloom") {
+            sliderWithValue("Strength", deferredPipeline.bloomStrength, 0f, 2f) { deferredPipeline.bloomStrength = value }
+            sliderWithValue("Radius", deferredPipeline.bloomRadius, 0f, 2f) { deferredPipeline.bloomRadius = value }
+            sliderWithValue("Min Brightness", deferredPipeline.bloomPass?.minBrightness ?: 0f, 0f, 1f) { deferredPipeline.bloomPass?.minBrightness = value }
         }
         section("Scene") {
             toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled}
@@ -360,7 +373,7 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
         override fun toString() = name
     }
 
-    private fun instancedLightIndicatorModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
+    private fun instancedLightVolumeModel(): ShaderModel = ShaderModel("instancedLightIndicators").apply {
         val ifColors: StageInterfaceNode
         vertexStage {
             ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
@@ -371,6 +384,24 @@ class DeferredDemo() : DemoScene("Deferred Shading") {
         fragmentStage {
             colorOutput(unlitMaterialNode(ifColors.output).outColor)
         }
+    }
+
+    private fun lightPosShader(): DeferredPbrShader {
+        val cfg = PbrMaterialConfig().apply {
+            albedoSource = Albedo.STATIC_ALBEDO
+            albedo = Color.WHITE
+            isInstanced = true
+        }
+        val model = DeferredPbrShader.defaultMrtPbrModel(cfg).apply {
+            val ifColors: StageInterfaceNode
+            vertexStage {
+                ifColors = stageInterfaceNode("ifColors", instanceAttributeNode(Attribute.COLORS).output)
+            }
+            fragmentStage {
+                findNodeByType<DeferredPbrShader.MrtMultiplexNode>()!!.inEmissive = multiplyNode(ifColors.output, 2f).output
+            }
+        }
+        return DeferredPbrShader(cfg, model)
     }
 
     private fun gBufferShader(map: Texture2d, offset: Float, scale: Float): ModeledShader {

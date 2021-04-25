@@ -34,7 +34,23 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
 
     class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
 
-    class TextureColor(texture: Texture2d? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
+    class TextureColor(texture: Texture2d? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName, false)) : ModeledShader(model) {
+        private var textureSampler: TextureSampler2d? = null
+
+        var texture: Texture2d? = texture
+            set(value) {
+                field = value
+                textureSampler?.texture = value
+            }
+
+        override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
+            textureSampler = model.findNode<Texture2dNode>(texName)?.sampler
+            textureSampler?.let { it.texture = texture }
+            super.onPipelineCreated(pipeline, mesh, ctx)
+        }
+    }
+
+    class HdrTextureColor(texture: Texture2d? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName, true)) : ModeledShader(model) {
         private var textureSampler: TextureSampler2d? = null
 
         var texture: Texture2d? = texture
@@ -88,7 +104,7 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
             }
         }
 
-        private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.textureColor()").apply {
+        private fun textureColorModel(texName: String, isHdr: Boolean = false) = ShaderModel("ModeledShader.textureColor()").apply {
             val ifTexCoords: StageInterfaceNode
 
             vertexStage {
@@ -97,7 +113,11 @@ open class ModeledShader(val model: ShaderModel) : Shader() {
             }
             fragmentStage {
                 val sampler = texture2dSamplerNode(texture2dNode(texName), ifTexCoords.output)
-                colorOutput(unlitMaterialNode(sampler.outColor).outColor)
+                if (isHdr) {
+                    colorOutput(unlitMaterialNode(hdrToLdrNode(sampler.outColor).outColor).outColor)
+                } else {
+                    colorOutput(unlitMaterialNode(sampler.outColor).outColor)
+                }
             }
         }
 

@@ -131,7 +131,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emissive = Color(5f, 0.1f, 0.05f)
+            brakeLightShader.emissive = Color(7.5f, 0.2f, 0.1f)
         } else {
             brakeLightShader.emissive = Color.BLACK
         }

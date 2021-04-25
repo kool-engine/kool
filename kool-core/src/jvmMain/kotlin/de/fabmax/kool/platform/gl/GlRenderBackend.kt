@@ -140,7 +140,18 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         when (offscreenPass) {
             is OffscreenRenderPass2d -> offscreenPass.impl.draw(ctx)
             is OffscreenRenderPassCube -> offscreenPass.impl.draw(ctx)
+            is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+        }
+    }
+
+    private fun drawOffscreenPingPong(offscreenPass: OffscreenRenderPass2dPingPong) {
+        for (i in 0 until offscreenPass.pingPongPasses) {
+            offscreenPass.onDrawPing?.invoke(i)
+            offscreenPass.ping.impl.draw(ctx)
+
+            offscreenPass.onDrawPong?.invoke(i)
+            offscreenPass.pong.impl.draw(ctx)
         }
     }
 
