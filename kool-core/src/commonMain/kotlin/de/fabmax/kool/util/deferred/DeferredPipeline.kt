@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.deferred
 
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -107,7 +108,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
             bloomPass = null
         }
 
-        renderOutput = createOutputQuad()
+        renderOutput = createOutputQuad(cfg.outputDepthTest)
         outputShader = renderOutput.shader as DeferredOutputShader
 
         scene.onRenderScene += { ctx ->
@@ -143,14 +144,14 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         }
     }
 
-    private fun createOutputQuad() = textureMesh {
+    private fun createOutputQuad(depthTestMode: DepthCompareOp) = textureMesh {
         isFrustumChecked = false
         generate {
             rect {
                 mirrorTexCoordsY()
             }
         }
-        shader = DeferredOutputShader(pbrPass.colorTexture!!, mrtPass.depthTexture!!, bloomPass?.bloomMap)
+        shader = DeferredOutputShader(pbrPass.colorTexture!!, mrtPass.depthTexture!!, bloomPass?.bloomMap, depthTestMode)
     }
 
     private fun updateEnabled() {
@@ -197,6 +198,8 @@ class DeferredPipelineConfig {
     var shadowMaps: List<ShadowMap>? = null
 
     var pbrSceneShader: PbrSceneShader? = null
+
+    var outputDepthTest = DepthCompareOp.LESS
 
     fun useShadowMaps(shadowMaps: List<ShadowMap>?) {
         this.shadowMaps = shadowMaps

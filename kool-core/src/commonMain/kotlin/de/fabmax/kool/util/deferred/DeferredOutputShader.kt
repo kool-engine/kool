@@ -1,15 +1,13 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureSampler2d
-import de.fabmax.kool.pipeline.Uniform1f
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 
-class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: Texture2d, bloom: Texture2d?) : ModeledShader(outputModel(bloom != null)) {
+class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: Texture2d, bloom: Texture2d?, private val depthMode: DepthCompareOp) :
+    ModeledShader(outputModel(bloom != null)) {
 
     private var uBloomStrength: Uniform1f? = null
     var bloomStrength = 0.5f
@@ -24,6 +22,11 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
             field = value
             bloomSampler?.texture = value
         }
+
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        builder.depthTest = depthMode
+        super.onPipelineSetup(builder, mesh, ctx)
+    }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         val textureSampler = model.findNode<Texture2dNode>("deferredPbrOutput")?.sampler

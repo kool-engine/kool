@@ -31,8 +31,8 @@ hamburger button in the upper left corner):
   - Coffee Cart from [3D Model Haven]((https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01))
   - Camera Model also from [3D Model Haven](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01)
   - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
-- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferred): Handles thousands of dynamic
-  light sources - also includes PBR shading and ambient occlusion.
+- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferred): Thousands of dynamic
+  light sources, bloom and ambient occlusion.
 - [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=ao): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
@@ -50,14 +50,7 @@ hamburger button in the upper left corner):
 
 Code for all demos is available in kool-demo sub-project.
 
-Support for Vulkan based rendering is quite recent. Together with Vulkan support I implemented a new, much more
-flexible shader generator. Shaders are composed of nodes quite similar to Unity's Shader Graph (however it's completely 
-code-based, no fancy editor). Shader code is generated and compiled from the node-based model on-the-fly for each backend.
-
-In order to add support for Vulkan, I had to drastically change some parts of the engine and this is an
-ongoing process. Hence, stuff is a still a bit messy but things are getting better.
-
-## Features / Noticeable Stuff:
+## Engine Features / Noticeable Stuff:
 
 - Physics simulation (based on Nvidia PhysX)
 - Node based dynamic shader generation
@@ -66,10 +59,11 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)
 - Deferred shading
+  - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
+  - Optional Screen-space reflections
+  - Optional Bloom
 - Screen-space ambient occlusion
-- Screen-space reflections (with deferred shading only)
 - Normal, roughness, metallic, ambient occlusion and displacement mapping
-- HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - A small GUI framework for simple in-game menus / controls
@@ -107,10 +101,10 @@ fun main() {
     ctx.run()
 }
 ```
-The above example creates a new scene and sets up a mouse-controlled camera (with ```defaultCamTransform()```).
-As you might have guessed the ```+colorMesh { ... }``` block creates a colored cube and adds it to the scene.
+The above example creates a new scene and sets up a mouse-controlled camera (with `defaultCamTransform()`).
+As you might have guessed the `+colorMesh { ... }` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
-```shader = pbrShader { ... }```. This creates a simple PBR shader for a dielectric material
+`shader = pbrShader { ... }`. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
 in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorld).
@@ -175,27 +169,27 @@ requires a position, direction and opening angle. Other than directional lights,
 (point-) position and objects are affected less by them, the farther they are away. This usually results in a much
 higher required light intensity: Here we use an intensity of 300.
 
-Next we create a ```SimpleShadowMap``` which computes the shadows casted by the light source we defined before.
-Moreover, the created ```AoPipeline``` computes an ambient occlusion map, which is later used by the shaders to
+Next we create a `SimpleShadowMap` which computes the shadows casted by the light source we defined before.
+Moreover, the created `AoPipeline` computes an ambient occlusion map, which is later used by the shaders to
 further improve the visual appearance of the scene.
 
 After light setup we can add objects to our scene. First we generate a grid mesh as ground plane. Default size and
-position of the generated grid are fine, therefore ```grid { }``` does not need any more configuration. Similar to the
+position of the generated grid are fine, therefore `grid { }` does not need any more configuration. Similar to the
 color cube from the previous example, the ground plane uses a PBR shader. However, this time we tell the shader to
 use the ambient occlusion and shadow maps we created before. Moreover, the shader should not use the vertex color
 attribute, but a simple pre-defined color (white in this case).
 
 Finally, we want to load a glTF 2.0 model. Resources are loaded via the asset manager. Since resource loading is a
 potentially long-running operation we do that from within a coroutine launched with the asset manager:
-```ctx.assetMgr.launch { ... }```. By default, the built-in glTF parser creates shaders for all models it loads. The
+`ctx.assetMgr.launch { ... }`. By default, the built-in glTF parser creates shaders for all models it loads. The
 created shaders can be customized via a provided material configuration, which we use to pass the shadow and
 ambient occlusion maps we created during light setup. After we created the custom model / material configuration
-we can load the model with ```loadGltfModel("path/to/model.glb", modelCfg)```. This (suspending) function returns the
-model or null in case of an error. If the model was successfully loaded the ```let { ... }``` block is executed and the
-model is added to the scene (```+model```). The ```Model``` class derives from ```TransformGroup```, hence it is
+we can load the model with `loadGltfModel("path/to/model.glb", modelCfg)`. This (suspending) function returns the
+model or null in case of an error. If the model was successfully loaded the `let { ... }` block is executed and the
+model is added to the scene (`+model`). The `Model` class derives from `TransformGroup`, hence it is
 easy to manipulate the model. Here we move the model 0.5 units along the y-axis (up). If the model contains any
 animations, these can be easily activated. This example checks whether there are any animations and if so activates
-the first one. The ```model.onUpdate { }``` block is executed on every frame and updates the enabled animation.
+the first one. The `model.onUpdate { }` block is executed on every frame and updates the enabled animation.
 
 The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
@@ -204,9 +198,11 @@ respository is loaded.
 
 ## A Simple Custom Shader
 
-As mentioned above shaders can be composed of a set of predefined nodes (and even additional custom nodes).
-Shader nodes are combined to a ```ShaderModel``` which is then used to generate the shader code for the
-selected rendering backend (currently Vulkan, OpenGL or WebGL2). A very simple shader model could look like this:
+Shaders are composed of nodes quite similar to Unity's Shader Graph (however it's completely
+code-based, no fancy editor). Shader code is then generated and compiled from the node-based model
+on-the-fly for each backend (OpenGL / WebGL / Vulkan).
+
+A very simple shader model could look like this:
 ```kotlin
 val superSimpleModel = ShaderModel().apply {
     val ifColors: StageInterfaceNode
@@ -227,23 +223,26 @@ mesh.shader = ModeledShader(superSimpleModel)
 ```
 The shader model includes the definitions for the vertex and fragment shaders.
 
-The vertex shader uses a MVP matrix (provided by the ```mvpNode()```) and the position and color
-attributes of the input vertices (provided by ```attrPositions()``` and ```attrColors()```). The
-vertex color is forwarded to the fragment shader via a ```StageInterfaceNode``` named ifColors.
+The vertex shader uses a MVP matrix (provided by the `mvpNode()`) and the position and color
+attributes of the input vertices (provided by `attrPositions()` and `attrColors()`). The
+vertex color is forwarded to the fragment shader via a `StageInterfaceNode` named ifColors.
 Then the vertex position and MVP matrix are used to compute the output position of the vertex shader.
 
-The fragment shader simply takes the forwarded vertex color and plugs it into an ```unlitMaterialNode()```
+The fragment shader simply takes the forwarded vertex color and plugs it into an `unlitMaterialNode()`
 which more or less directly feeds that color into the fragment shader output.
 
-Finally, the shader model can be used to create a ```ModeledShader``` which is then assigned to a mesh.
+Finally, the shader model can be used to create a `ModeledShader` which is then assigned to a mesh.
 
 This example is obviously very simple, but it shows the working principle: Nodes contain basic building blocks
 which can be composed to complete shaders. Nodes have inputs and outputs which are used to connect them.
 The shader generator uses the connectivity information to build a dependency graph and call the code generator
 functions of the individual nodes in the correct order.
 
-More complex shaders can be defined in exactly the same fashion. E.g. ```PhongShader``` and
-```PbrShader``` use exactly the same mechanism.
+More complex shaders can be defined in the same fashion. E.g. `PhongShader` and
+`PbrShader` use exactly the same mechanism. Moreover, it's possible to take a predefined `ShaderModel`, as, e.g.,
+`PbrShader.defaultPbrModel()` and add additional nodes to it or even change existing nodes. For instance, the
+[InstanceDemo](https://fabmax.github.io/kool/kool-js/?demo=instance) takes the default PBR shader model and adds
+an instance color attribute to draw individual mesh instances in different colors.
 
 ## Physics Simulation
 

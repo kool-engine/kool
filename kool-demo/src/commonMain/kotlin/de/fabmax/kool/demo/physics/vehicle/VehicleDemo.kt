@@ -13,6 +13,7 @@ import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
@@ -46,7 +47,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             mapRanges[2].set(0.2f, 1f)
             cascades.forEach { it.directionalCamNearOffset = -80f }
         }
-        mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
         showLoadText("Loading Vehicle Model")
         val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
@@ -66,6 +66,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             useImageBasedLighting(ibl)
             useShadowMaps(emptyList())
             useShadowMaps(listOf(shadows))
+
+            // set output depth compare op to ALWAYS, so that the skybox with maximum depth value is drawn
+            outputDepthTest = DepthCompareOp.ALWAYS
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
             aoPipeline?.mapSize = 0.75f
@@ -73,6 +76,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             bloomStrength = 0.1f
             bloomRadius = 1f
             bloomMinBrightness = 4f
+
+            pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
         mainScene += deferredPipeline.renderOutput
 
