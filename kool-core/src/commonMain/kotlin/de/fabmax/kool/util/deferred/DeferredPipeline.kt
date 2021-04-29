@@ -68,7 +68,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         set(value) { bloomPass?.minBrightness = value }
 
     init {
-        mrtPass = DeferredMrtPass(scene, cfg.isWithEmissive)
+        mrtPass = DeferredMrtPass(scene, cfg.isWithExtendedMaterials)
 
         aoPipeline = if (cfg.isWithAmbientOcclusion) AoPipeline.createDeferred(scene, mrtPass) else null
         shadowMaps = cfg.shadowMaps ?: createShadowMapsFromSceneLights()
@@ -76,7 +76,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         var sceneShader = cfg.pbrSceneShader
         if (sceneShader == null) {
             val lightingCfg = PbrSceneShader.DeferredPbrConfig().apply {
-                isWithEmissive = cfg.isWithEmissive
+                isWithEmissive = cfg.isWithExtendedMaterials
                 isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
                 isScrSpcReflections = cfg.isWithScreenSpaceReflections
                 maxLights = cfg.maxGlobalLights
@@ -185,7 +185,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
 }
 
 class DeferredPipelineConfig {
-    var isWithEmissive = false
+    var isWithExtendedMaterials = false
     var isWithAmbientOcclusion = true
     var isWithScreenSpaceReflections = true
     var isWithImageBasedLighting = false

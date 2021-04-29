@@ -93,7 +93,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         shadows += SimpleShadowMap(this, 0)
 
         val defCfg = DeferredPipelineConfig().apply {
-            isWithEmissive = true
+            isWithExtendedMaterials = true
             isWithAmbientOcclusion = false
             isWithScreenSpaceReflections = false
             maxGlobalLights = 1
@@ -171,7 +171,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
     private fun makeDeferredPbrShader(cfg: DeferredPipelineConfig): PbrSceneShader {
         val shaderCfg = PbrSceneShader.DeferredPbrConfig().apply {
-            isWithEmissive = cfg.isWithEmissive
+            isWithEmissive = cfg.isWithExtendedMaterials
             isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
             isScrSpcReflections = cfg.isWithScreenSpaceReflections
             maxLights = cfg.maxGlobalLights

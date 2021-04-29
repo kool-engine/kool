@@ -66,7 +66,7 @@ data class GltfMaterial(
                 cfg.albedoSource = Albedo.TEXTURE_ALBEDO
                 cfg.albedoMap = albedoTexture
                 if (cfg.albedo != Color.WHITE) {
-                    cfg.isMultiplyAlbedoMap = true
+                    cfg.albedoMapMode = AlbedoMapMode.MULTIPLY_BY_UNIFORM
                 }
             }
             else -> {

@@ -177,7 +177,8 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                 } else {
                     null
                 }
-                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
+                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO
+                    || (cfg.albedoSource == Albedo.TEXTURE_ALBEDO && cfg.albedoMapMode == AlbedoMapMode.MULTIPLY_BY_VERTEX)) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
@@ -249,11 +250,15 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     Albedo.TEXTURE_ALBEDO -> {
                         val albedoSampler = texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output)
                         val albedoLin = gammaNode(albedoSampler.outColor)
-                        if (cfg.isMultiplyAlbedoMap) {
-                            val fac = pushConstantNodeColor("uAlbedo").output
-                            multiplyNode(albedoLin.outColor, fac).output
-                        } else {
-                            albedoLin.outColor
+                        when (cfg.albedoMapMode) {
+                            AlbedoMapMode.UNMODIFIED -> albedoLin.outColor
+                            AlbedoMapMode.MULTIPLY_BY_UNIFORM -> {
+                                val fac = pushConstantNodeColor("uAlbedo").output
+                                multiplyNode(albedoLin.outColor, fac).output
+                            }
+                            AlbedoMapMode.MULTIPLY_BY_VERTEX -> {
+                                multiplyNode(albedoLin.outColor, ifColors!!.output).output
+                            }
                         }
                     }
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
@@ -291,6 +296,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                 val roughness: ShaderNodeIoVar
                 val metallic: ShaderNodeIoVar
                 var aoFactor = constFloat(1f)
+                var materialBits = 0
 
                 val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                 if (cfg.isRoughnessMapped) {
@@ -330,6 +336,9 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                         rawAo
                     }
                 }
+                if (cfg.lightBacksides) {
+                    materialBits = materialBits or 1
+                }
 
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
                     inViewPos = viewPos
@@ -339,6 +348,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     inRoughness = roughness
                     inMetallic = metallic
                     inAo = aoFactor
+                    inMaterialBits = constFloat(materialBits.toFloat())
                 }
 
                 colorOutput(channels = 4).apply {
@@ -348,7 +358,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     // fixme: depending on mrt pass setup emissive color attachment might not exist, in this case
                     //  writing to it isn't particularly good style (and produces a Vulkan Validation Layer warning)
                     //  however written values are simply discarded and shouldn't do much harm
-                    inColors[3] = mrtMultiplexNode.outEmissive
+                    inColors[3] = mrtMultiplexNode.outEmissiveMat
                 }
             }
         }
@@ -362,11 +372,12 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.5f))
         var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0f))
         var inAo = ShaderNodeIoVar(ModelVar1fConst(1f))
+        var inMaterialBits = ShaderNodeIoVar(ModelVar1fConst(0f))
 
         val outPositionAo = ShaderNodeIoVar(ModelVar4f("outPositionAo"), this)
         val outNormalRough = ShaderNodeIoVar(ModelVar4f("outNormalRough"), this)
         val outAlbedoMetallic = ShaderNodeIoVar(ModelVar4f("outAlbedoMetallic"), this)
-        val outEmissive = ShaderNodeIoVar(ModelVar4f("outEmissive"), this)
+        val outEmissiveMat = ShaderNodeIoVar(ModelVar4f("outEmissive"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -378,7 +389,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                 ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
                 ${outNormalRough.declare()} = vec4(${inViewNormal.ref3f()}, ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
-                ${outEmissive.declare()} = vec4(${inEmissive.ref3f()}, 1.0);
+                ${outEmissiveMat.declare()} = vec4(${inEmissive.ref3f()}, ${inMaterialBits.ref1f()});
             """)
         }
     }
@@ -387,7 +398,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         var inPositionAo = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inNormalRough = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inAlbedoMetallic = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
-        var inEmissive = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+        var inEmissiveMat = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
         val outViewPos = ShaderNodeIoVar(ModelVar4f("outViewPos"), this)
         val outAlbedo = ShaderNodeIoVar(ModelVar4f("outAlbedo"), this)
@@ -396,6 +407,8 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         val outRoughness = ShaderNodeIoVar(ModelVar1f("outRoughness"), this)
         val outMetallic = ShaderNodeIoVar(ModelVar1f("outMetallic"), this)
         val outAo = ShaderNodeIoVar(ModelVar1f("outAo"), this)
+        val outMaterialBits = ShaderNodeIoVar(ModelVar1i("outMaterialBits"), this)
+        val outLightBacksides = ShaderNodeIoVar(ModelVar1i("outLightBacksides"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -406,11 +419,13 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
             generator.appendMain("""
                 ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
                 ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
-                ${outEmissive.declare()} = ${inEmissive.ref3f()};
+                ${outEmissive.declare()} = ${inEmissiveMat.ref3f()};
                 ${outViewNormal.declare()} = normalize(${inNormalRough.ref3f()});
                 ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
                 ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;
                 ${outAo.declare()} = ${inPositionAo.ref4f()}.a;
+                ${outMaterialBits.declare()} = int(${inEmissiveMat.ref4f()}.a);
+                ${outLightBacksides.declare()} = $outMaterialBits & 1;
             """)
         }
     }

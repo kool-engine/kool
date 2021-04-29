@@ -69,7 +69,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 0
-            isWithEmissive = true
+            isWithExtendedMaterials = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithImageBasedLighting = false

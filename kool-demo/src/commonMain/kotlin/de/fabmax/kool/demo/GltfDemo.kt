@@ -84,7 +84,7 @@ class GltfDemo : DemoScene("glTF Models") {
         val defCfg = DeferredPipelineConfig().apply {
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = true
-            isWithEmissive = true
+            isWithExtendedMaterials = true
             baseReflectionStep = 0.02f
             maxGlobalLights = 2
             useImageBasedLighting(envMaps)

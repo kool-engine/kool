@@ -51,7 +51,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             val deferredCfg = DeferredPipelineConfig().apply {
                 isWithScreenSpaceReflections = true
                 isWithAmbientOcclusion = true
-                isWithEmissive = true
+                isWithExtendedMaterials = true
                 maxGlobalLights = 1
                 useImageBasedLighting(ibl)
                 useShadowMaps(listOf(shadowMap))

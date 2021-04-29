@@ -94,10 +94,9 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
     var inReflectionStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inReflectionColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inReflectionWeight = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inLightBacksides = ShaderNodeIoVar(ModelVar1iConst(0))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
-
-    var lightBacksides = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -178,11 +177,14 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
                 vec3 H = normalize(V + L);
                 vec3 radiance = ${inRadiance.ref3f("i")};
         
-                ${if (lightBacksides) "N *= sign(dot(N, L));" else ""}
+                vec3 lightN = N;
+                if (${inLightBacksides.ref1i()} != 0) {
+                    lightN *= sign(dot(lightN, L));
+                }
         
                 // cook-torrance BRDF
-                float NDF = DistributionGGX(N, H, rough); 
-                float G = GeometrySmith(N, V, L, rough);
+                float NDF = DistributionGGX(lightN, H, rough); 
+                float G = GeometrySmith(lightN, V, L, rough);
                 vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
                 
                 vec3 kS = F;
@@ -190,11 +192,11 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
                 kD *= 1.0 - metal;
                 
                 vec3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                float denominator = 4.0 * max(dot(lightN, V), 0.0) * max(dot(lightN, L), 0.0);
                 vec3 specular = numerator / max(denominator, 0.001);
                     
                 // add to outgoing radiance Lo
-                float NdotL = max(dot(N, L), 0.0);
+                float NdotL = max(dot(lightN, L), 0.0);
                 Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
             }
             """)

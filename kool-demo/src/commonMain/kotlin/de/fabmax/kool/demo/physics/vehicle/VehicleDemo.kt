@@ -15,6 +15,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.shading.AlbedoMapMode
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
@@ -58,7 +59,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         showLoadText("Creating Deferred Render Pipeline")
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1
-            isWithEmissive = true
+            isWithExtendedMaterials = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithBloom = true
@@ -251,7 +252,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 }
             }
             shader = deferredPbrShader {
-                useAlbedoMap(groundAlbedo, true)
+                useAlbedoMap(groundAlbedo, AlbedoMapMode.MULTIPLY_BY_UNIFORM)
                 useNormalMap(groundNormal)
                 albedo = color(100f)
             }

@@ -23,7 +23,7 @@ class PbrMaterialConfig {
 
     val morphAttributes = mutableListOf<Attribute>()
 
-    var isMultiplyAlbedoMap = false
+    var albedoMapMode = AlbedoMapMode.UNMODIFIED
     var isMultiplyEmissiveMap = false
     var isMultiplyRoughnessMap = false
     var isMultiplyMetallicMap = false
@@ -81,12 +81,12 @@ class PbrMaterialConfig {
         this.albedo = albedo
     }
 
-    fun useAlbedoMap(albedoMap: String, isMultiplyAlbedoMap: Boolean = false) =
-            useAlbedoMap(Texture2d(albedoMap), isMultiplyAlbedoMap)
+    fun useAlbedoMap(albedoMap: String, albedoMapMode: AlbedoMapMode = AlbedoMapMode.UNMODIFIED) =
+            useAlbedoMap(Texture2d(albedoMap), albedoMapMode)
 
-    fun useAlbedoMap(albedoMap: Texture2d?, isMultiplyAlbedoMap: Boolean = false) {
+    fun useAlbedoMap(albedoMap: Texture2d?, albedoMapMode: AlbedoMapMode = AlbedoMapMode.UNMODIFIED) {
         this.albedoMap = albedoMap
-        this.isMultiplyAlbedoMap = isMultiplyAlbedoMap
+        this.albedoMapMode = albedoMapMode
         albedoSource = Albedo.TEXTURE_ALBEDO
     }
 

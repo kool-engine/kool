@@ -5,10 +5,7 @@ import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.AlphaModeBlend
-import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.pipeline.shading.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
@@ -596,6 +593,16 @@ data class GltfFile(
                         } else {
                             pbrConfig.isHdrOutput = false
                             mesh.shader = PbrShader(pbrConfig)
+                        }
+                        if (pbrConfig.alphaMode is AlphaModeMask) {
+                            val depthShaderCfg = DepthShaderConfig().apply {
+                                isInstanced = pbrConfig.isInstanced
+                                isSkinned = pbrConfig.isSkinned
+                                cullMethod = pbrConfig.cullMethod
+                                alphaMode = pbrConfig.alphaMode
+                                alphaMask = pbrConfig.albedoMap
+                            }
+                            mesh.depthShader = DepthShader(depthShaderCfg)
                         }
                     }
                     model.meshes[name] = mesh

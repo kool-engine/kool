@@ -60,7 +60,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredPbrShader {
             albedoSource = Albedo.STATIC_ALBEDO
             albedo = Color.WHITE
-            emissive = Color(5f, 5f, 5f)
+            emissive = Color(25f, 25f, 25f)
         }
         brakeLightShader = deferredPbrShader {
             albedoSource = Albedo.STATIC_ALBEDO
@@ -131,12 +131,13 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emissive = Color(7.5f, 0.2f, 0.1f)
+            brakeLightShader.emissive = Color(75f, 0.25f, 0.125f)
+            println("brake light: ${brakeLightShader.emissive}")
         } else {
             brakeLightShader.emissive = Color.BLACK
         }
         if (vehicle.isReverse) {
-            reverseLightShader.emissive = Color(5f, 5f, 5f)
+            reverseLightShader.emissive = Color(75f, 75f, 75f)
         } else {
             reverseLightShader.emissive = Color.BLACK
         }

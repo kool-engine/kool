@@ -55,6 +55,12 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             pipeline = null
         }
 
+    /**
+     * Optional shader used by DepthMapPass (mainly used for rendering shadow maps). If null DepthMapPass uses a
+     * geometry based default shader.
+     */
+    var depthShader: Shader? = null
+
     private var pipeline: Pipeline? = null
     private val discardedPipelines = mutableListOf<Pipeline>()
 

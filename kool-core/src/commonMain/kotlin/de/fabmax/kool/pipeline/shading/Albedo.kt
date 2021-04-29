@@ -6,3 +6,9 @@ enum class Albedo {
     TEXTURE_ALBEDO,
     VERTEX_ALBEDO
 }
+
+enum class AlbedoMapMode {
+    UNMODIFIED,
+    MULTIPLY_BY_UNIFORM,
+    MULTIPLY_BY_VERTEX
+}

@@ -187,7 +187,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
                     if (cfg.isWithEmissive) {
-                        inEmissive = gammaNode(texture2dSamplerNode(texture2dNode("emissive"), coord).outColor).outColor
+                        inEmissiveMat = texture2dSamplerNode(texture2dNode("emissive"), coord).outColor
                     }
                 }
 
@@ -224,7 +224,6 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                 }
 
                 val mat = pbrMaterialNode(reflMap, brdfLut).apply {
-                    lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
                     inViewDir = viewDirNode(defCam.outCamPos, worldPos).output
@@ -250,6 +249,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inEmissive = mrtDeMultiplex.outEmissive
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
+                    inLightBacksides = mrtDeMultiplex.outLightBacksides
 
                     var aoFactor = mrtDeMultiplex.outAo
                     if (cfg.isScrSpcAmbientOcclusion) {

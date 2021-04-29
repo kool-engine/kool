@@ -271,7 +271,8 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 } else {
                     null
                 }
-                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
+                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO
+                            || (cfg.albedoSource == Albedo.TEXTURE_ALBEDO && cfg.albedoMapMode == AlbedoMapMode.MULTIPLY_BY_VERTEX)) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
@@ -349,11 +350,15 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     Albedo.TEXTURE_ALBEDO -> {
                         val albedoSampler = texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output)
                         val albedoLin = gammaNode(albedoSampler.outColor)
-                        if (cfg.isMultiplyAlbedoMap) {
-                            val fac = pushConstantNodeColor("uAlbedo").output
-                            multiplyNode(albedoLin.outColor, fac).output
-                        } else {
-                            albedoLin.outColor
+                        when (cfg.albedoMapMode) {
+                            AlbedoMapMode.UNMODIFIED -> albedoLin.outColor
+                            AlbedoMapMode.MULTIPLY_BY_UNIFORM -> {
+                                val fac = pushConstantNodeColor("uAlbedo").output
+                                multiplyNode(albedoLin.outColor, fac).output
+                            }
+                            AlbedoMapMode.MULTIPLY_BY_VERTEX -> {
+                                multiplyNode(albedoLin.outColor, ifColors!!.output).output
+                            }
                         }
                     }
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
@@ -400,7 +405,7 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 val mat = pbrMaterialNode(reflMap, brdfLut).apply {
                     inAlbedo = albedo
                     inNormal = normal
-                    lightBacksides = cfg.lightBacksides
+                    inLightBacksides = if (cfg.lightBacksides) constInt(1) else constInt(0)
                     inFragPos = ifFragPos.output
                     inViewDir = viewDir
 
