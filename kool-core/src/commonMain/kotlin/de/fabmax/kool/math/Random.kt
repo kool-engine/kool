@@ -2,6 +2,8 @@ package de.fabmax.kool.math
 
 import de.fabmax.kool.now
 import kotlin.math.abs
+import kotlin.math.ln
+import kotlin.math.sqrt
 
 val defaultRandomInstance = Random(now().toInt())
 
@@ -31,6 +33,9 @@ open class Random(seed: Int) {
     private var y = 362436000
     private var z = 521288629
     private var c = 7654321
+
+    private var hasNextGaussian = false
+    private var nextGaussian = 0f
 
     /**
      * Implements 32-bit KISS RNG
@@ -64,4 +69,25 @@ open class Random(seed: Int) {
     }
     fun randomD(min: Double, max: Double): Double = randomD() * (max - min) + min
 
+    fun randomGaussianF(mu: Float, sigma: Float) = mu + randomGaussianF() * sigma
+
+    fun randomGaussianF(): Float {
+        if (hasNextGaussian) {
+            hasNextGaussian = false
+            return nextGaussian
+        }
+
+        var x1: Float
+        var x2: Float
+        var w: Float
+        do {
+            x1 = randomF(-1f, 1f)
+            x2 = randomF(-1f, 1f)
+            w = x1 * x1 + x2 * x2
+        } while (w >= 1f || w == 0f)
+        w = sqrt(-2 * ln(w) / w)
+
+        nextGaussian = x2 * w
+        return x1 * w
+    }
 }

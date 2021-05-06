@@ -198,10 +198,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 
     private fun translateKeyCode(code: String): Int {
-        if (code.length == 4 && code.startsWith("Key")) {
-            return code[3].toInt()
+        return if (code.length == 4 && code.startsWith("Key")) {
+            code[3].code
         } else {
-            return KEY_CODE_MAP[code] ?: 0
+            KEY_CODE_MAP[code] ?: 0
         }
     }
 
@@ -350,7 +350,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
                 "F10" to InputManager.KEY_F10,
                 "F11" to InputManager.KEY_F11,
                 "F12" to InputManager.KEY_F12,
-                "Space" to ' '.toInt()
+                "Space" to ' '.code
         )
     }
 }

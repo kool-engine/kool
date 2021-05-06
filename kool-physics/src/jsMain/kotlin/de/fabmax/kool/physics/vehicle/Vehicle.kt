@@ -8,8 +8,7 @@ import de.fabmax.kool.physics.*
 import physx.*
 import kotlin.math.max
 
-actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f/*,
-                                        updater: (Vehicle, PhysicsWorld) -> VehicleUpdater*/)
+actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f)
     : CommonVehicle(vehicleProps, pose) {
 
     val pxVehicle: PxVehicleDrive4W

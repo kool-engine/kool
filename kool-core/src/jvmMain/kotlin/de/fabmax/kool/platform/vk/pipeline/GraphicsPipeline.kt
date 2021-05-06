@@ -58,8 +58,8 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
 
-            val nAttributes = pipeline.layout.vertices.bindings.sumBy { binding ->
-                binding.vertexAttributes.sumBy { it.attribute.props.nSlots }
+            val nAttributes = pipeline.layout.vertices.bindings.sumOf { binding ->
+                binding.vertexAttributes.sumOf { it.attribute.props.nSlots }
             }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0

@@ -336,7 +336,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                         rawAo
                     }
                 }
-                if (cfg.lightBacksides) {
+                if (cfg.isAlwaysLit) {
                     materialBits = materialBits or 1
                 }
 

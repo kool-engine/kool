@@ -20,7 +20,7 @@ class InputManager internal constructor() {
     val pointerState = PointerState()
 
     fun registerKeyListener(char: Char, name: String, filter: (KeyEvent) -> Boolean = { it.isCharTyped }, callback: (KeyEvent) -> Unit): KeyEventListener {
-        return registerKeyListener(char.toInt(), name, filter, callback)
+        return registerKeyListener(char.code, name, filter, callback)
     }
 
     fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
@@ -79,7 +79,7 @@ class InputManager internal constructor() {
         val ev = KeyEvent()
         ev.event = KEY_EV_CHAR_TYPED
         ev.typedChar = typedChar
-        ev.keyCode = typedChar.toInt()
+        ev.keyCode = typedChar.code
 
         lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)

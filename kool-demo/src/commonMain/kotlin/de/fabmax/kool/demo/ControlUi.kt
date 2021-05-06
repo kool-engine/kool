@@ -243,7 +243,7 @@ class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext)
     fun title(text: String): Label {
         val label: Label
         uiRoot.apply {
-            label = label(text.toUpperCase()) {
+            label = label(text.uppercase()) {
                 layoutSpec.setOrigin(pcs(0f), dps(menuY), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)

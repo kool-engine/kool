@@ -345,7 +345,7 @@ data class GltfFile(
             modelAnim.channels += weightChannel
 
             val morphTargets = gltfMesh.primitives[0].targets
-            val nAttribs = gltfMesh.primitives[0].targets.sumBy { it.size }
+            val nAttribs = gltfMesh.primitives[0].targets.sumOf { it.size }
             val inTimes = FloatAccessor(inputAcc)
             val outWeight = FloatAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
@@ -543,7 +543,7 @@ data class GltfFile(
                         mesh.isFrustumChecked = false
                     }
                     if (cfg.loadAnimations && cfg.applyMorphTargets && p.targets.isNotEmpty()) {
-                        mesh.morphWeights = FloatArray(p.targets.sumBy { it.size })
+                        mesh.morphWeights = FloatArray(p.targets.sumOf { it.size })
                         mesh.isFrustumChecked = false
                     }
 

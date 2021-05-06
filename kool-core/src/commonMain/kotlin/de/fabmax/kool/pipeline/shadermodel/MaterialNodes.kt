@@ -94,7 +94,7 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
     var inReflectionStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inReflectionColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inReflectionWeight = ShaderNodeIoVar(ModelVar1fConst(0f))
-    var inLightBacksides = ShaderNodeIoVar(ModelVar1iConst(0))
+    var inAlwaysLit = ShaderNodeIoVar(ModelVar1iConst(0))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
 
@@ -178,8 +178,12 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
                 vec3 radiance = ${inRadiance.ref3f("i")};
         
                 vec3 lightN = N;
-                if (${inLightBacksides.ref1i()} != 0) {
-                    lightN *= sign(dot(lightN, L));
+                float normalDotLight = dot(lightN, L);
+                if (${inAlwaysLit.ref1i()} != 0 && normalDotLight < 0.3) {
+                    float lightModW = normalDotLight;
+                    lightModW = (-lightModW + 0.3) / 1.3;
+                    lightN = normalize(mix(lightN, L, lightModW));
+                    normalDotLight = dot(lightN, L);
                 }
         
                 // cook-torrance BRDF
@@ -192,11 +196,11 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
                 kD *= 1.0 - metal;
                 
                 vec3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(lightN, V), 0.0) * max(dot(lightN, L), 0.0);
+                float denominator = 4.0 * max(dot(lightN, V), 0.0) * max(normalDotLight, 0.0);
                 vec3 specular = numerator / max(denominator, 0.001);
                     
                 // add to outgoing radiance Lo
-                float NdotL = max(dot(lightN, L), 0.0);
+                float NdotL = max(normalDotLight, 0.0);
                 Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
             }
             """)

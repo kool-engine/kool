@@ -19,7 +19,7 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
             val binding: Int,
             val inputRate: InputRate,
             val vertexAttributes: List<VertexAttribute>,
-            val strideBytes: Int = vertexAttributes.sumBy { it.attribute.type.byteSize })
+            val strideBytes: Int = vertexAttributes.sumOf { it.attribute.type.byteSize })
     {
         val longHash: ULong
 

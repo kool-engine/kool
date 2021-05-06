@@ -127,7 +127,7 @@ class WavFile(fileData: Uint8Buffer) {
     private fun ByteArray.toCharArray(): CharArray {
         val arr = CharArray(size)
         for (i in indices) {
-            arr[i] = this[i].toChar()
+            arr[i] = this[i].toInt().toChar()
         }
         return arr
     }

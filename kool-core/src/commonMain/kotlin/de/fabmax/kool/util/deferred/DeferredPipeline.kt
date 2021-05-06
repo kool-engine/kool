@@ -186,8 +186,8 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
 
 class DeferredPipelineConfig {
     var isWithExtendedMaterials = false
-    var isWithAmbientOcclusion = true
-    var isWithScreenSpaceReflections = true
+    var isWithAmbientOcclusion = false
+    var isWithScreenSpaceReflections = false
     var isWithImageBasedLighting = false
     var isWithBloom = false
 

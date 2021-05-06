@@ -127,7 +127,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 roughness = 1f
                 alphaMode = AlphaModeMask(0.5f)
                 cullMethod = CullMethod.NO_CULLING
-                lightBacksides = true
+                isAlwaysLit = true
                 this.shadowMaps.addAll(shadowMaps)
             }
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind

@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.logD
 import kotlin.math.max
 
-class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d) :
+class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             val w = hdriTexture.loadedTexture?.width ?: 1024
             val h = hdriTexture.loadedTexture?.height ?: 512
@@ -46,7 +46,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d) :
                         val decoded = addNode(RgbeDecoderNode(stage)).apply {
                             inRgbe = texture2dSamplerNode(texture2dNode(texName), ifTexCoords.output).outColor
                         }
-                        colorOutput(decoded.outColor)
+                        colorOutput(multiplyNode(decoded.outColor, brightness).output)
                     }
                 }
                 shader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {

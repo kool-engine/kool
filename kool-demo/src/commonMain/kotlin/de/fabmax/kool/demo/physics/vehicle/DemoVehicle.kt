@@ -132,7 +132,6 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
         if (vehicle.brakeInput > 0f) {
             brakeLightShader.emissive = Color(75f, 0.25f, 0.125f)
-            println("brake light: ${brakeLightShader.emissive}")
         } else {
             brakeLightShader.emissive = Color.BLACK
         }

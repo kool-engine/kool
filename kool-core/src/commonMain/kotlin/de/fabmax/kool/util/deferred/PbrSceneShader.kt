@@ -249,7 +249,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                     inEmissive = mrtDeMultiplex.outEmissive
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
-                    inLightBacksides = mrtDeMultiplex.outLightBacksides
+                    inAlwaysLit = mrtDeMultiplex.outLightBacksides
 
                     var aoFactor = mrtDeMultiplex.outAo
                     if (cfg.isScrSpcAmbientOcclusion) {

@@ -405,7 +405,7 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 val mat = pbrMaterialNode(reflMap, brdfLut).apply {
                     inAlbedo = albedo
                     inNormal = normal
-                    inLightBacksides = if (cfg.lightBacksides) constInt(1) else constInt(0)
+                    inAlwaysLit = if (cfg.isAlwaysLit) constInt(1) else constInt(0)
                     inFragPos = ifFragPos.output
                     inViewDir = viewDir
 

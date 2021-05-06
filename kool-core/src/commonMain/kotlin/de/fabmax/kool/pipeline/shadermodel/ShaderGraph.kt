@@ -28,7 +28,7 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
     }
 
     fun addStageOutput(output: ModelVar, isFlat: Boolean, locationInc: Int = 1): ShaderInterfaceIoVar {
-        val location = mutOutputs.sumBy { it.locationInc }
+        val location = mutOutputs.sumOf { it.locationInc }
         val ifVar = ShaderInterfaceIoVar(location, output, isFlat, locationInc)
         mutOutputs += ifVar
         return ifVar

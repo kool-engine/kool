@@ -7,12 +7,10 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
-                useIR = true
             }
         }
     }
-    //js(IR) { // produces weird errors when trying to invoke physx bindings (1.4.31)
-    js {
+    js(IR) {
         browser {
             @Suppress("EXPERIMENTAL_API_USAGE")
             distribution {

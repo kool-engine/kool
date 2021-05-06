@@ -29,7 +29,7 @@ fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), 
     // launch demo
     var demo = startScene
     if (demo != null) {
-        demo = demo.toLowerCase()
+        demo = demo.lowercase()
         if (demo.endsWith("demo")) {
             demo = demo.substring(0, demo.length - 4)
         }
@@ -74,7 +74,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     init {
         extraScenes?.let {
             it.forEach { demo ->
-                demos[demo.label.toLowerCase()] = demo
+                demos[demo.label.lowercase()] = demo
             }
         }
 

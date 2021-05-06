@@ -60,14 +60,14 @@ object EnvironmentHelper {
         return maps
     }
 
-    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: AssetManager, autoDispose: Boolean = true): EnvironmentMaps {
+    suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: AssetManager, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val hdriTexProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = false, maxAnisotropy = 1)
         val hdri = assetManager.loadAndPrepareTexture(hdriPath, hdriTexProps)
-        return hdriEnvironment(scene, hdri, autoDispose)
+        return hdriEnvironment(scene, hdri, autoDispose, brightness)
     }
 
-    fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true): EnvironmentMaps {
-        val rgbeDecoder = RgbeDecoder(scene, hdri)
+    fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
+        val rgbeDecoder = RgbeDecoder(scene, hdri, brightness)
         val irrMapPass = IrradianceMapPass.irradianceMapFromHdri(scene, rgbeDecoder.colorTexture!!)
         val reflMapPass = ReflectionMapPass.reflectionMapFromHdri(scene, rgbeDecoder.colorTexture!!)
         val brdfLutPass = BrdfLutPass(scene)

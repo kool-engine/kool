@@ -235,7 +235,7 @@ class TreeGenerator(val distribution: PointDistribution,
                 branchDepth = 0
 
             } else {
-                radius = children.sumByDouble { it.radius.toDouble().pow(p) }.pow(1.0 / p).toFloat()
+                radius = children.sumOf { it.radius.toDouble().pow(p) }.pow(1.0 / p).toFloat()
                 branchDepth = if (children.size == 1) {
                     children[0].branchDepth
                 } else {
