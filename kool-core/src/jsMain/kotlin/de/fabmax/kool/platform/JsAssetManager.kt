@@ -78,24 +78,24 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return Uint8BufferImpl(pako.inflate(uint8Data) as Uint8Array)
     }
 
-    @Suppress("UNUSED_VARIABLE")
     override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
-        // super cumbersome / ugly method to convert Uint8Array into a base64 string
-        // todo: is there really no better way in JS?
-        val uint8Data = (texData as Uint8BufferImpl).buffer
-        var binary = ""
-        js("""
-            var chunkSize = 0x8000;
-            var c = [];
-            for (var i = 0; i < uint8Data.length; i += chunkSize) {
-                c.push(String.fromCharCode.apply(null, uint8Data.subarray(i, i+chunkSize)));
-            }
-            binary = c.join("");
-        """)
-        val base64 = js("window.btoa(binary);") as String
+        val base64 = binToBase64((texData as Uint8BufferImpl).buffer)
         val ref = TextureAssetRef("data:$mimeType;base64,$base64", true, null, false)
         return loadImage(ref)
     }
+
+    /**
+     * Cumbersome / ugly method to convert Uint8Array into a base64 string in javascript
+     */
+    @Suppress("UNUSED_PARAMETER")
+    private fun binToBase64(uint8Data: Uint8Array): String = js("""
+        var chunkSize = 0x8000;
+        var c = [];
+        for (var i = 0; i < uint8Data.length; i += chunkSize) {
+            c.push(String.fromCharCode.apply(null, uint8Data.subarray(i, i+chunkSize)));
+        }
+        return window.btoa(c.join(""));
+    """) as String
 
     override suspend fun loadAndPrepareTexture(assetPath: String, props: TextureProps): Texture2d {
         val tex = Texture2d(props, assetPathToName(assetPath)) { it.loadTextureData(assetPath) }
