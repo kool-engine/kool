@@ -235,7 +235,7 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
                         inRadiance = lightNode.outRadiance
                         avgShadow = lightNode.outAvgShadowFac
                     } else {
-                        avgShadow = constFloat(1f)
+                        avgShadow = constFloat(0f)
                     }
 
                     val irr = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output

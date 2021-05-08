@@ -76,7 +76,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             pbrPass.sceneShader.ambientShadowFactor = 0.3f
             bloomStrength = 0.1f
             bloomRadius = 1f
-            bloomMinBrightness = 4f
+            setBloomBrightnessThresholds(3.5f, 4.5f)
 
             pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }

@@ -308,7 +308,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         section("Bloom") {
             sliderWithValue("Strength", deferredPipeline.bloomStrength, 0f, 2f) { deferredPipeline.bloomStrength = value }
             sliderWithValue("Radius", deferredPipeline.bloomRadius, 0f, 2f) { deferredPipeline.bloomRadius = value }
-            sliderWithValue("Min Brightness", deferredPipeline.bloomPass?.minBrightness ?: 0f, 0f, 1f) { deferredPipeline.bloomPass?.minBrightness = value }
+            sliderWithValue("Min Brightness", deferredPipeline.bloomPass?.minBrightnessLower ?: 0f, 0f, 1f) {
+                deferredPipeline.bloomPass?.minBrightnessLower = value
+                deferredPipeline.bloomPass?.minBrightnessUpper = value + 0.2f
+            }
         }
         section("Scene") {
             toggleButton("Auto Rotate", autoRotate) { autoRotate = isEnabled}

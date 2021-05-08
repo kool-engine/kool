@@ -63,9 +63,6 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
     var bloomRadius: Float
         get() = bloomPass?.bloomRadius ?: 0f
         set(value) { bloomPass?.bloomRadius = value }
-    var bloomMinBrightness: Float
-        get() = bloomPass?.minBrightness ?: 0f
-        set(value) { bloomPass?.minBrightness = value }
 
     init {
         mrtPass = DeferredMrtPass(scene, cfg.isWithExtendedMaterials)
@@ -142,6 +139,10 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
             noSsrMap.dispose()
             noBloomMap.dispose()
         }
+    }
+
+    fun setBloomBrightnessThresholds(lower: Float, upper: Float) {
+        bloomPass?.setMinBrightnessThresholds(lower, upper)
     }
 
     private fun createOutputQuad(depthTestMode: DepthCompareOp) = textureMesh {

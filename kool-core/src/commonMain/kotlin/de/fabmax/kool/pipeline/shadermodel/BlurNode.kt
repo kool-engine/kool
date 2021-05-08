@@ -25,11 +25,14 @@ class BlurNode(shaderGraph: ShaderGraph) : ShaderNode("blurNd_${shaderGraph.next
     override fun generateCode(generator: CodeGenerator) {
         if (minBrightness != null) {
             generator.appendFunction("sampleBlurInTex", """
-                vec4 sampleBlurInTex(vec2 texCoord, float minBrightness) {
+                vec4 sampleBlurInTex(vec2 texCoord, vec2 minBrightness) {
                     vec4 color = ${generator.sampleTexture2d(inTexture.name, "texCoord")};
                     float b = dot(color.rgb, vec3(1.0, 1.0, 1.0));
-                    if (b > minBrightness) {
+                    if (b > minBrightness.y) {
                         return color;
+                    } else if (b > minBrightness.x) {
+                        float w = smoothstep(minBrightness.x, minBrightness.y, b);
+                        return color * w;
                     } else {
                         return vec4(0.0);
                     }
@@ -46,7 +49,7 @@ class BlurNode(shaderGraph: ShaderGraph) : ShaderNode("blurNd_${shaderGraph.next
 
         fun sampleFunc(coord: String): String {
             return if (minBrightness != null) {
-                "sampleBlurInTex($coord, ${minBrightness!!.ref1f()})"
+                "sampleBlurInTex($coord, ${minBrightness!!.ref2f()})"
             } else {
                 generator.sampleTexture2d(inTexture.name, coord)
             }

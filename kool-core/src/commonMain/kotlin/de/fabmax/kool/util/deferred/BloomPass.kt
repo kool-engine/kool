@@ -22,9 +22,12 @@ class BloomPass(val pbrPass: PbrLightingPass) :
 
     val bloomMap: Texture2d
         get() = pong.colorTexture!!
-    var minBrightness: Float
-        get() = pingShader.minBrightness
-        set(value) { pingShader.minBrightness = value }
+    var minBrightnessLower: Float
+        get() = pingShader.minBrightnessLower
+        set(value) { pingShader.minBrightnessLower = value }
+    var minBrightnessUpper: Float
+        get() = pingShader.minBrightnessUpper
+        set(value) { pingShader.minBrightnessUpper = value }
     var bloomRadius = 1f
         set(value) {
             field = value
@@ -53,6 +56,11 @@ class BloomPass(val pbrPass: PbrLightingPass) :
         pong.clearColor = Color(0f, 0f, 0f, 0f)
 
         dependsOn(pbrPass)
+    }
+
+    fun setMinBrightnessThresholds(lower: Float, upper: Float) {
+        minBrightnessLower = lower
+        minBrightnessUpper = upper
     }
 
     override fun resize(width: Int, height: Int, ctx: KoolContext) {

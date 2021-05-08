@@ -120,7 +120,7 @@ class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderN
                 $outAvgShadowFac += ${name}_sf;
                 ${outRadiance.ref3f("i")} = light_getRadiance(i, ${outFragToLightDirection.ref3f("i")}, ${inSpotInnerAngle.ref1f("i")}) * ${name}_sf;
             }
-            $outAvgShadowFac /= float($uLightCnt);
+            $outAvgShadowFac /= max(1.0, float($uLightCnt));
             """)
     }
 }
