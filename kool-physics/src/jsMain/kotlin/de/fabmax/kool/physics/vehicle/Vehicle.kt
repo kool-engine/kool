@@ -91,7 +91,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
         super.release()
     }
 
-    override fun fixedUpdate(timeStep: Float) {
+    override fun physicsUpdate(timeStep: Float) {
         if (isReverse && pxVehicle.mDriveDynData.mTargetGear != PxVehicleGearEnum.eREVERSE) {
             pxVehicle.mDriveDynData.forceGearChange(PxVehicleGearEnum.eREVERSE)
         } else if (!isReverse && pxVehicle.mDriveDynData.mTargetGear == PxVehicleGearEnum.eREVERSE) {
@@ -112,7 +112,7 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
         linearAccel.z = linearAccel.z * 0.5f + (linearSpeed.z - prevLinearSpeed.z) / timeStep * 0.5f
         linearAccel.x = linearAccel.x * 0.5f + (linearSpeed.x - prevLinearSpeed.x) / timeStep * 0.5f
 
-        super.fixedUpdate(timeStep)
+        super.physicsUpdate(timeStep)
     }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {

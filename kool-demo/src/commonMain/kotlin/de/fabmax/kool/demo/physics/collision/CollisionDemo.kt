@@ -2,13 +2,20 @@ package de.fabmax.kool.demo.physics.collision
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -18,7 +25,7 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
-import kotlin.math.*
+import kotlin.math.max
 
 class CollisionDemo : DemoScene("Physics - Collision") {
 
@@ -34,6 +41,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private var friction = 0.5f
     private var restitution = 0.2f
     private lateinit var physicsWorld: PhysicsWorld
+    private val physicsStepper = SimplePhysicsStepper()
     private val bodies = mutableListOf<ColoredBody>()
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
@@ -47,8 +55,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         Physics.awaitLoaded()
         val physicsWorld = PhysicsWorld()
         this@CollisionDemo.physicsWorld = physicsWorld
-        // disable async physics to get accurate physics cpu time measurements
-        physicsWorld.isStepAsync = false
+        physicsWorld.simStepper = physicsStepper
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -362,12 +369,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         section("Performance") {
             textWithValue("Physics:", "0.00 ms").apply {
                 onUpdate += {
-                    text = "${physicsWorld.cpuTime.toString(2)} ms"
+                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
                 }
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld.currentTimeFactor.toString(2)} x"
+                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
                 }
             }
         }

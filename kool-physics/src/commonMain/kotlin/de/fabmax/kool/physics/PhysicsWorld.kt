@@ -6,9 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logW
-import kotlin.math.min
 
 expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
     var gravity: Vec3f
@@ -18,22 +16,12 @@ expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: In
 
 abstract class CommonPhysicsWorld : Releasable {
     var physicsTime = 0.0
-    var physicsTimeDesired = 0.0
 
-    var singleStepTime = 1f / 60f
-    var simTimeFactor = 1f
-    var isStepAsync = true
+    var simStepper: PhysicsStepper = SimplePhysicsStepper()
     var isStepInProgress = false
-    var smartSubSteps = true
-    private var smartSubStepLimit = 5
+    var prevStepTime = 0f
 
-    private val perfTimer = PerfTimer()
-    var cpuTime = 0f
-        private set
-    var currentTimeFactor = 1f
-        private set
-
-    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
+    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
     protected val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
@@ -46,16 +34,7 @@ abstract class CommonPhysicsWorld : Releasable {
 
     private var registeredAtScene: Scene? = null
     private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
-        if (isStepInProgress) {
-            fetchStepResults()
-        }
-
-        stepPhysics(ctx.deltaT)
-
-        if (isStepAsync && isContinueStep(physicsTime, physicsTimeDesired + singleStepTime * simTimeFactor, singleStepTime * simTimeFactor)) {
-            singleStepPhysics()
-            physicsTime += singleStepTime * simTimeFactor
-        }
+        physicsTime += simStepper.stepSimulation(this, ctx)
     }
 
     open fun registerHandlers(scene: Scene) {
@@ -82,7 +61,7 @@ abstract class CommonPhysicsWorld : Releasable {
 
     override fun release() {
         if (isStepInProgress) {
-            fetchStepResults()
+            fetchAsyncStepResults()
         }
         unregisterHandlers()
         clear(true)
@@ -133,64 +112,37 @@ abstract class CommonPhysicsWorld : Releasable {
         triggerListeners.clear()
     }
 
-    fun stepPhysics(timeStep: Float, maxSubSteps: Int = 5): Float {
-        var steps = 0
-        var stepLimit = if (smartSubSteps) min(smartSubStepLimit, maxSubSteps) else maxSubSteps
-
-        physicsTimeDesired += timeStep * simTimeFactor
-        while (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime * simTimeFactor) && stepLimit > 0) {
-            perfTimer.reset()
-
-            singleStepPhysics()
-            fetchStepResults()
-            steps++
-
-            val ms = perfTimer.takeMs().toFloat()
-            cpuTime = cpuTime * 0.8f + ms * 0.2f
-
-            physicsTime += singleStepTime * simTimeFactor
-            if (isContinueStep(physicsTime, physicsTimeDesired, singleStepTime)) {
-                stepLimit--
-            }
-        }
-
-        if (stepLimit == 0) {
-            physicsTime = physicsTimeDesired
-            if (smartSubStepLimit > 1) {
-                smartSubStepLimit--
-            }
-        } else if (smartSubStepLimit < maxSubSteps) {
-            smartSubStepLimit++
-        }
-
-        val timeInc = singleStepTime * steps
-        currentTimeFactor = currentTimeFactor * 0.9f + timeInc / timeStep * 0.1f
-
-        return timeInc
-    }
-
     private fun isContinueStep(physicsTime: Double, physicsTimeDesired: Double, step: Float): Boolean {
         return physicsTimeDesired - physicsTime > step * 0.5
     }
 
-    protected open fun singleStepPhysics() {
+    fun singleStepSync(timeStep: Float) {
+        singleStepAsync(timeStep)
+        fetchAsyncStepResults()
+    }
+
+    open fun singleStepAsync(timeStep: Float) {
+        if (isStepInProgress) {
+            throw IllegalStateException("Previous simulation step not yet finished")
+        }
         isStepInProgress = true
+        prevStepTime = timeStep
     }
 
-    protected open fun fetchStepResults() {
+    open fun fetchAsyncStepResults() {
         isStepInProgress = false
-        onFixedUpdate(singleStepTime * simTimeFactor)
+        onPhysicsUpdate(prevStepTime)
     }
 
-    protected open fun onFixedUpdate(timeStep: Float) {
+    protected open fun onPhysicsUpdate(timeStep: Float) {
         for (i in mutActors.indices) {
-            mutActors[i].fixedUpdate(timeStep)
+            mutActors[i].physicsUpdate(timeStep)
         }
         for (i in mutArticulations.indices) {
-            mutArticulations[i].fixedUpdate(timeStep)
+            mutArticulations[i].physicsUpdate(timeStep)
         }
-        for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](timeStep)
+        for (i in onPhysicsUpdate.indices) {
+            onPhysicsUpdate[i](timeStep)
         }
     }
 
@@ -209,9 +161,5 @@ abstract class CommonPhysicsWorld : Releasable {
     protected class TriggerListenerContext {
         val listeners = mutableListOf<TriggerListener>()
         val actorEnterCounts = mutableMapOf<RigidActor, Int>()
-    }
-
-    companion object {
-        private const val DEFAULT_MAX_NUM_VEHICLES = 64
     }
 }

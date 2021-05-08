@@ -8,7 +8,10 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.Shape
-import de.fabmax.kool.physics.geometry.*
+import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
+import de.fabmax.kool.physics.geometry.CylinderGeometry
+import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
@@ -27,6 +30,7 @@ import kotlin.math.max
 class JointsDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
+    private val physicsStepper = SimplePhysicsStepper()
 
     private var motorGearConstraint: RevoluteJoint? = null
     private var motorStrength = 50f
@@ -58,8 +62,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         Physics.awaitLoaded()
         val world = PhysicsWorld()
-        // disable async physics to get accurate physics cpu time measurements
-        world.isStepAsync = false
+        world.simStepper = physicsStepper
         physicsWorld = world
         resetPhysics = true
         constraintInfo = ConstraintsInfoMesh().apply { isVisible = false }
@@ -233,12 +236,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
         section("Performance") {
             textWithValue("Physics:", "0.00 ms").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.cpuTime?.toString(2)} ms"
+                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
                 }
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld?.currentTimeFactor?.toString(2)} x"
+                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
                 }
             }
             textWithValue("Number of Bodies:", "").apply {

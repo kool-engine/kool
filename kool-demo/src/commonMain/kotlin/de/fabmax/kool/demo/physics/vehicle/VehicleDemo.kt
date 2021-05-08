@@ -85,7 +85,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         shadows.drawNode = deferredPipeline.contentGroup
 
         showLoadText("Creating Physics World")
-        vehicleWorld = VehicleWorld(mainScene, PhysicsWorld(), deferredPipeline)
+        val physics = PhysicsWorld()
+        //physics.simStepper = ConstantPhysicsStepper()
+        vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
         vehicleWorld.physics.registerHandlers(mainScene)
 
         vehicle = DemoVehicle(vehicleWorld, vehicleModel, ctx)
@@ -126,8 +128,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 zoom = 6.0
                 maxZoom = 500.0
             }
-            vehicleWorld.physics.onFixedUpdate += {
-                updateTracking()
+            vehicleWorld.physics.onPhysicsUpdate += { timeStep ->
+                updateTracking(timeStep)
             }
         }
 

@@ -103,9 +103,9 @@ actual open class RigidActor : CommonRigidActor() {
         super.release()
     }
 
-    override fun fixedUpdate(timeStep: Float) {
+    override fun physicsUpdate(timeStep: Float) {
         updateTransform()
-        super.fixedUpdate(timeStep)
+        super.physicsUpdate(timeStep)
     }
 
     protected fun updateTransform() {

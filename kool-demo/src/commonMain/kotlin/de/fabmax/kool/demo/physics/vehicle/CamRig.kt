@@ -11,16 +11,17 @@ class CamRig : Group() {
     var trackedActor: RigidDynamic? = null
     var localFrontDir = Vec3f.NEG_Z_AXIS
 
-    var positionSmoothing = 0.75f
-    var rotationSmoothing = 0.75f
+    var positionStiffness = 20f
+    var rotationStiffness = 10f
 
     private val trackPosDesired = MutableVec3f()
     private val trackDirDesired = MutableVec3f(localFrontDir)
 
     private val trackPosCurrent = MutableVec3f()
     private val trackDirCurrent = MutableVec3f(localFrontDir)
+    private val trackDelta = MutableVec3f()
 
-    fun updateTracking() {
+    fun updateTracking(timeStep: Float) {
         trackedActor?.let {
             trackPosDesired.set(Vec3f.ZERO)
             it.transform.transform(trackPosDesired)
@@ -28,8 +29,10 @@ class CamRig : Group() {
             it.transform.transform(trackDirDesired, 0f)
         }
 
-        trackPosCurrent.scale(positionSmoothing).add(trackPosDesired.scale(1f - positionSmoothing))
-        trackDirCurrent.scale(rotationSmoothing).add(trackDirDesired.scale(1f - rotationSmoothing))
+        trackDelta.set(trackPosDesired).subtract(trackPosCurrent).scale(positionStiffness * timeStep)
+        trackPosCurrent.add(trackDelta)
+        trackDelta.set(trackDirDesired).subtract(trackDirCurrent).scale(rotationStiffness * timeStep)
+        trackDirCurrent.add(trackDelta)
 
         setIdentity()
         translate(trackPosCurrent)

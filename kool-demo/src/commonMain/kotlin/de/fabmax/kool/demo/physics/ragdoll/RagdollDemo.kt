@@ -35,6 +35,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private val rand = Random(1337)
     private lateinit var physicsWorld: PhysicsWorld
+    private val physicsStepper = SimplePhysicsStepper()
 
     private lateinit var ibl: EnvironmentMaps
     private lateinit var ao: AoPipeline
@@ -68,8 +69,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         Physics.awaitLoaded()
 
         physicsWorld = PhysicsWorld()
-        physicsWorld.simTimeFactor = 1f
-        physicsWorld.isStepAsync = false
+        physicsWorld.simStepper = physicsStepper
         physicsWorld.registerHandlers(mainScene)
 
         val gravKeyListener = ctx.inputMgr.registerKeyListener(' ', "Change Gravity",  { true }) {
@@ -179,12 +179,12 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         section("Performance") {
             textWithValue("Physics:", "0.00 ms").apply {
                 onUpdate += {
-                    text = "${physicsWorld.cpuTime.toString(2)} ms"
+                    text = "${physicsStepper.perfCpuTime.toString(2)} ms"
                 }
             }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
-                    text = "${physicsWorld.currentTimeFactor.toString(2)} x"
+                    text = "${physicsStepper.perfTimeFactor.toString(2)} x"
                 }
             }
         }

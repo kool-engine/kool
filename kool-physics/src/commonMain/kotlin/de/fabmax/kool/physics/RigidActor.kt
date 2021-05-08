@@ -28,7 +28,7 @@ abstract class CommonRigidActor : Releasable {
     val invTransform: Mat4f
         get() = invTransformLazy.get()
 
-    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
+    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
     protected val mutShapes = mutableListOf<Shape>()
     val shapes: List<Shape>
@@ -60,10 +60,10 @@ abstract class CommonRigidActor : Releasable {
         mutShapes.clear()
     }
 
-    internal open fun fixedUpdate(timeStep: Float) {
+    internal open fun physicsUpdate(timeStep: Float) {
         invTransformLazy.isDirty = true
-        for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](timeStep)
+        for (i in onPhysicsUpdate.indices) {
+            onPhysicsUpdate[i](timeStep)
         }
     }
 

@@ -89,7 +89,7 @@ class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld
     }
 
     init {
-        world.physics.onFixedUpdate += { deltaT ->
+        world.physics.onPhysicsUpdate += { deltaT ->
             if (timerState == TimerState.STARTED) {
                 trackTime += deltaT
             }

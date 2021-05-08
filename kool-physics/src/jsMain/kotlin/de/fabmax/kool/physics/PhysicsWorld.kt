@@ -34,14 +34,14 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         scene = Physics.physics.createScene(sceneDesc)
     }
 
-    override fun singleStepPhysics() {
-        super.singleStepPhysics()
-        scene.simulate(singleStepTime * simTimeFactor)
+    override fun singleStepAsync(timeStep: Float) {
+        super.singleStepAsync(timeStep)
+        scene.simulate(timeStep)
     }
 
-    override fun fetchStepResults() {
+    override fun fetchAsyncStepResults() {
         scene.fetchResults(true)
-        super.fetchStepResults()
+        super.fetchAsyncStepResults()
     }
 
     override fun addActor(actor: RigidActor) {

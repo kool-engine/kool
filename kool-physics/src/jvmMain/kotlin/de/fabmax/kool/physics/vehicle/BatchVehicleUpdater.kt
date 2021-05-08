@@ -17,7 +17,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
     private var frictionPairs = Physics.defaultSurfaceFrictions
     private val vehicles = mutableListOf<Vehicle>()
 
-    private val onFixedUpdate: (Float) -> Unit
+    private val onPhysicsUpdate: (Float) -> Unit
 
     init {
         desc.foundation = Physics.foundation
@@ -29,7 +29,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
         desc.preFilterShader = PxTopLevelFunctions.DefaultWheelSceneQueryPreFilterBlocking()
         batchVehicleUpdater = BatchVehicleUpdate(desc)
 
-        onFixedUpdate = { timeStep ->
+        onPhysicsUpdate = { timeStep ->
             batchVehicleUpdater.batchUpdate(timeStep)
             for (vi in vehicles.indices) {
                 for (wi in 0 until 4) {
@@ -42,7 +42,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
                 }
             }
         }
-        physicsWorld.onFixedUpdate += onFixedUpdate
+        physicsWorld.onPhysicsUpdate += onPhysicsUpdate
     }
 
     actual fun addVehicle(vehicle: Vehicle): BatchVehicleUpdater {
@@ -67,7 +67,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
     }
 
     override fun release() {
-        physicsWorld.onFixedUpdate -= onFixedUpdate
+        physicsWorld.onPhysicsUpdate -= onPhysicsUpdate
 
         batchVehicleUpdater.destroy()
         desc.destroy()

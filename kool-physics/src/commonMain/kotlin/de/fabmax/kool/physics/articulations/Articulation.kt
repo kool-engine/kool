@@ -20,9 +20,9 @@ abstract class CommonArticulation : Releasable {
 
     val onFixedUpdate = mutableListOf<(Float) -> Unit>()
 
-    internal open fun fixedUpdate(timeStep: Float) {
+    internal open fun physicsUpdate(timeStep: Float) {
         for (i in mutLinks.indices) {
-            mutLinks[i].fixedUpdate(timeStep)
+            mutLinks[i].physicsUpdate(timeStep)
         }
         for (i in onFixedUpdate.indices) {
             onFixedUpdate[i](timeStep)
