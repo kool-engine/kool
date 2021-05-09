@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture
  */
 class Lwjgl3Context(props: InitProps) : KoolContext() {
     override val assetMgr = JvmAssetManager(props, this)
+    override val inputMgr: JvmInputManager
 
     internal val renderBackend: RenderBackend
 
@@ -74,8 +75,12 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
-        setupInput(renderBackend.glfwWindowHandle)
+        inputMgr = JvmInputManager(renderBackend.glfwWindowHandle)
 
+        // install window callbacks
+        glfwSetWindowPosCallback(renderBackend.glfwWindowHandle) { _, x, y ->
+            screenDpi = getResolutionAt(x, y)
+        }
         screenDpi = DesktopImpl.monitors[props.monitor].dpi
     }
 
@@ -122,65 +127,11 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         renderBackend.getWindowViewport(result)
     }
 
-    // fixme: use Coroutine stuff instead
     fun runOnMainThread(action: () -> Unit): CompletableFuture<Void> {
         synchronized(mainThreadRunnables) {
             val r = GpuThreadRunnable(action)
             mainThreadRunnables += r
             return r.future
-        }
-    }
-
-    private fun setupInput(window: Long) {
-        // install window callbacks
-        glfwSetWindowPosCallback(window) { _, x, y ->
-            screenDpi = getResolutionAt(x, y)
-        }
-
-        // install mouse callbacks
-        glfwSetMouseButtonCallback(window) { _, btn, act, _ ->
-            inputMgr.handleMouseButtonState(btn, act == GLFW_PRESS)
-        }
-        glfwSetCursorPosCallback(window) { _, x, y ->
-            inputMgr.handleMouseMove(x.toFloat(), y.toFloat())
-        }
-        glfwSetCursorEnterCallback(window) { _, entered ->
-            if (!entered) {
-                inputMgr.handleMouseExit()
-            }
-        }
-        glfwSetScrollCallback(window) { _, _, yOff ->
-            inputMgr.handleMouseScroll(yOff.toFloat())
-        }
-
-        // install keyboard callbacks
-        glfwSetKeyCallback(window) { _, key, _, action, mods ->
-            val event = when (action) {
-                GLFW_PRESS -> InputManager.KEY_EV_DOWN
-                GLFW_REPEAT -> InputManager.KEY_EV_DOWN or InputManager.KEY_EV_REPEATED
-                GLFW_RELEASE -> InputManager.KEY_EV_UP
-                else -> -1
-            }
-            if (event != -1) {
-                val keyCode = KEY_CODE_MAP[key] ?: key
-                var keyMod = 0
-                if (mods and GLFW_MOD_ALT != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_ALT
-                }
-                if (mods and GLFW_MOD_CONTROL != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_CTRL
-                }
-                if (mods and GLFW_MOD_SHIFT != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_SHIFT
-                }
-                if (mods and GLFW_MOD_SUPER != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_SUPER
-                }
-                inputMgr.keyEvent(keyCode, keyMod, event)
-            }
-        }
-        glfwSetCharCallback(window) { _, codepoint ->
-            inputMgr.charTyped(codepoint.toChar())
         }
     }
 

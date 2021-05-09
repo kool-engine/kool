@@ -68,10 +68,10 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
     private var dragStart = false
-    private val deltaPos = MutableVec2f()
-    private var deltaScroll = 0f
+    private val deltaPos = MutableVec2d()
+    private var deltaScroll = 0.0
 
-    private val ptrPos = MutableVec2f()
+    private val ptrPos = MutableVec2d()
     private val panPlane = Plane()
     private val pointerHitStart = MutableVec3f()
     private val pointerHit = MutableVec3f()
@@ -146,7 +146,6 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
         } else {
             set(mouseTransform)
         }
-
     }
 
     private fun doCamTransform(renderPass: RenderPass, ctx: KoolContext) {
@@ -177,14 +176,14 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
 
         if (!deltaScroll.isFuzzyZero()) {
             zoom *= 1f - deltaScroll / 10f
-            deltaScroll = 0f
+            deltaScroll = 0.0
         }
 
         if (dragMethod == DragMethod.ROTATE) {
             verticalRotation -= deltaPos.x / 3 * if (invertRotX) { -1f } else { 1f }
             horizontalRotation -= deltaPos.y / 3 * if (invertRotY) { -1f } else { 1f }
             horizontalRotation = horizontalRotation.clamp(minHorizontalRot, maxHorizontalRot)
-            deltaPos.set(Vec2f.ZERO)
+            deltaPos.set(Vec2d.ZERO)
         }
 
         vertRotAnimator.desired = verticalRotation
@@ -231,7 +230,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.mainRenderPass.viewport, ctx)) {
+        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed()) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 dragMethod = when {
                     dragPtrs[0].isLeftButtonDown -> leftDragMethod
@@ -249,8 +248,8 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
             dragPtrs[0].consume()
 
         } else {
-            deltaPos.set(Vec2f.ZERO)
-            deltaScroll = 0f
+            deltaPos.set(Vec2d.ZERO)
+            deltaScroll = 0.0
         }
     }
 
@@ -273,17 +272,17 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
 }
 
 abstract class PanBase {
-    abstract fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2f, ctx: KoolContext): Boolean
+    abstract fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
     val panPlane = Plane()
     private val pointerRay = Ray()
 
-    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2f, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(renderPass.camera.globalLookAt)
         panPlane.n.set(renderPass.camera.globalLookDir)
-        return renderPass.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) &&
+        return renderPass.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), renderPass.viewport, ctx) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }
@@ -296,9 +295,9 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
         panPlane.n.set(planeNormal)
     }
 
-    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2f, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3f, renderPass: RenderPass, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(renderPass.camera.globalLookAt)
-        return renderPass.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) &&
+        return renderPass.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), renderPass.viewport, ctx) &&
                 panPlane.intersectionPoint(pointerRay, result)
     }
 }

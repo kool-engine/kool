@@ -2,8 +2,8 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.MutableVec2d
+import de.fabmax.kool.math.Vec2d
 
 /**
  * Evaluates standard touch gestures (pinch-to-zoom, two-finger drag)
@@ -15,10 +15,10 @@ open class TouchGestureEvaluator {
         protected set
 
     private val activePointers = mutableListOf<InputManager.Pointer>()
-    private val tmpVec1 = MutableVec2f()
-    private val tmpVec2 = MutableVec2f()
+    private val tmpVec1 = MutableVec2d()
+    private val tmpVec2 = MutableVec2d()
 
-    protected val startPositions = mutableMapOf<Int, Vec2f>()
+    protected val startPositions = mutableMapOf<Int, Vec2d>()
     protected var screenDpi = 96f
 
     fun evaluate(pointerState: InputManager.PointerState, ctx: KoolContext) {
@@ -41,7 +41,7 @@ open class TouchGestureEvaluator {
     }
 
     protected open fun onGestureInit(pointers: MutableList<InputManager.Pointer>) {
-        pointers.forEach { startPositions[it.id] = Vec2f(it.x, it.y) }
+        pointers.forEach { startPositions[it.id] = Vec2d(it.x, it.y) }
         currentGesture.type = INDETERMINATE
     }
 
@@ -51,7 +51,7 @@ open class TouchGestureEvaluator {
 
         // add any new pointer
         pointers.filter { !startPositions.containsKey(it.id) }
-                .forEach { startPositions[it.id] = Vec2f(it.x, it.y) }
+                .forEach { startPositions[it.id] = Vec2d(it.x, it.y) }
 
         // try to match gesture
         when {
@@ -66,10 +66,10 @@ open class TouchGestureEvaluator {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
             tmpVec2.set(pointers[1].x, pointers[1].y).subtract(startPositions[pointers[1].id]!!)
 
-            tmpVec1.scale(96f / screenDpi)
-            tmpVec2.scale(96f / screenDpi)
+            tmpVec1.scale(96.0 / screenDpi)
+            tmpVec2.scale(96.0 / screenDpi)
 
-            if (tmpVec1.length() > 5f && tmpVec2.length() > 5f && tmpVec1 * tmpVec2 < 0) {
+            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1 * tmpVec2 < 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
                 tmpVec2.set(startPositions[pointers[1].id]!!)
 
@@ -87,10 +87,10 @@ open class TouchGestureEvaluator {
             tmpVec1.set(pointers[0].x, pointers[0].y).subtract(startPositions[pointers[0].id]!!)
             tmpVec2.set(pointers[1].x, pointers[1].y).subtract(startPositions[pointers[1].id]!!)
 
-            tmpVec1.scale(96f / screenDpi)
-            tmpVec2.scale(96f / screenDpi)
+            tmpVec1.scale(96.0 / screenDpi)
+            tmpVec2.scale(96.0 / screenDpi)
 
-            if (tmpVec1.length() > 5f && tmpVec2.length() > 5f && tmpVec1 * tmpVec2 > 0) {
+            if (tmpVec1.length() > 5.0 && tmpVec2.length() > 5.0 && tmpVec1 * tmpVec2 > 0.0) {
                 tmpVec1.set(startPositions[pointers[0].id]!!)
                 tmpVec2.set(startPositions[pointers[1].id]!!)
 
@@ -123,42 +123,42 @@ open class TouchGestureEvaluator {
     }
 
     open class Gesture {
-        val centerStart = MutableVec2f()
-        val centerCurrent = MutableVec2f()
-        val centerShift = MutableVec2f()
-        val dCenter = MutableVec2f()
+        val centerStart = MutableVec2d()
+        val centerCurrent = MutableVec2d()
+        val centerShift = MutableVec2d()
+        val dCenter = MutableVec2d()
 
-        var pinchAmountStart = 0f
-        var pinchAmountCurrent = 0f
-        var dPinchAmount = 0f
-        val pinchAmountRel: Float
+        var pinchAmountStart = 0.0
+        var pinchAmountCurrent = 0.0
+        var dPinchAmount = 0.0
+        val pinchAmountRel: Double
             get() = (pinchAmountCurrent - pinchAmountStart) / pinchAmountStart + 1f
 
         var type = INVALID
 
         var numUpdates = 0
 
-        internal fun init(type: Int, ptr1: Vec2f, ptr2: Vec2f, dpi: Float) {
+        internal fun init(type: Int, ptr1: Vec2d, ptr2: Vec2d, dpi: Float) {
             this.type = type
-            centerStart.set(ptr1).add(ptr2).scale(0.5f)
+            centerStart.set(ptr1).add(ptr2).scale(0.5)
             centerCurrent.set(centerStart)
-            centerShift.set(Vec2f.ZERO)
-            dCenter.set(Vec2f.ZERO)
+            centerShift.set(Vec2d.ZERO)
+            dCenter.set(Vec2d.ZERO)
 
-            pinchAmountStart = ptr1.distance(ptr2) * 96f / dpi
+            pinchAmountStart = ptr1.distance(ptr2) * 96.0 / dpi
             pinchAmountCurrent = pinchAmountStart
-            dPinchAmount = 0f
+            dPinchAmount = 0.0
 
             numUpdates = 0
         }
 
-        internal fun update(ptr1: Vec2f, ptr2: Vec2f, dpi: Float) {
-            dCenter.set(ptr1).add(ptr2).scale(0.5f).subtract(centerCurrent)
-            centerCurrent.set(ptr1).add(ptr2).scale(0.5f)
+        internal fun update(ptr1: Vec2d, ptr2: Vec2d, dpi: Float) {
+            dCenter.set(ptr1).add(ptr2).scale(0.5).subtract(centerCurrent)
+            centerCurrent.set(ptr1).add(ptr2).scale(0.5)
 
             centerShift.set(centerCurrent).subtract(centerStart)
 
-            val pinch = ptr1.distance(ptr2) * 96f / dpi
+            val pinch = ptr1.distance(ptr2) * 96.0 / dpi
             dPinchAmount = pinch - pinchAmountCurrent
             pinchAmountCurrent = pinch
 

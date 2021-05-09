@@ -12,7 +12,7 @@ class Viewport(var x: Int, var ySigned: Int, var width: Int, var heightSigned: I
 
     val aspectRatio get() = width.toFloat() / height.toFloat()
 
-    fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width && y >= y && y < y + height
+    fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
 
     fun set(x: Int, ySigned: Int, width: Int, heightSigned: Int) {
         this.x = x

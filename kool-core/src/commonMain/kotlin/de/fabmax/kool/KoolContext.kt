@@ -21,7 +21,8 @@ abstract class KoolContext {
 
     abstract val shaderGenerator: ShaderGenerator
 
-    val inputMgr = InputManager()
+    abstract val inputMgr: InputManager
+
     val engineStats = EngineStats()
 
     val projCorrectionMatrixScreen = Mat4d()

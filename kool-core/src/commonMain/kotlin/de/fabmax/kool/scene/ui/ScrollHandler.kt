@@ -65,7 +65,7 @@ open class ScrollHandler(scene: Scene, val scrollTarget: UiContainer, name: Stri
         if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() &&
                 computeLocalPickRay(dragPtrs[0], ctx, pickRay) &&
                 bounds.hitDistanceSqr(pickRay) < Float.MAX_VALUE) {
-            scrollPosY.desired += dragPtrs[0].deltaScroll * 50
+            scrollPosY.desired += dragPtrs[0].deltaScroll.toFloat() * 50
             dragPtrs[0].consume()
         }
 

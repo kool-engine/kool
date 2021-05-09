@@ -6,16 +6,14 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlin.math.abs
 
-/**
- * @author fabmax
- */
-
-class InputManager internal constructor() {
+abstract class InputManager internal constructor() {
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 
     private val keyHandlers = mutableMapOf<Int, MutableList<KeyEventListener>>()
+
+    abstract var cursorMode: CursorMode
 
     val pointerState = PointerState()
 
@@ -90,21 +88,21 @@ class InputManager internal constructor() {
     // mouse and touch handler functions to be called by platform code
     //
 
-    fun handleTouchStart(pointerId: Int, x: Float, y: Float) = pointerState.handleTouchStart(pointerId, x, y)
+    fun handleTouchStart(pointerId: Int, x: Double, y: Double) = pointerState.handleTouchStart(pointerId, x, y)
 
     fun handleTouchEnd(pointerId: Int) = pointerState.handleTouchEnd(pointerId)
 
     fun handleTouchCancel(pointerId: Int) = pointerState.handleTouchCancel(pointerId)
 
-    fun handleTouchMove(pointerId: Int, x: Float, y: Float) = pointerState.handleTouchMove(pointerId, x, y)
+    fun handleTouchMove(pointerId: Int, x: Double, y: Double) = pointerState.handleTouchMove(pointerId, x, y)
 
-    fun handleMouseMove(x: Float, y: Float) = pointerState.handleMouseMove(x, y)
+    fun handleMouseMove(x: Double, y: Double) = pointerState.handleMouseMove(x, y)
 
     fun handleMouseButtonState(button: Int, down: Boolean) = pointerState.handleMouseButtonState(button, down)
 
     fun handleMouseButtonStates(mask: Int) = pointerState.handleMouseButtonStates(mask)
 
-    fun handleMouseScroll(ticks: Float) = pointerState.handleMouseScroll(ticks)
+    fun handleMouseScroll(ticks: Double) = pointerState.handleMouseScroll(ticks)
 
     fun handleMouseExit() = pointerState.handleMouseExit()
 
@@ -112,20 +110,20 @@ class InputManager internal constructor() {
         var id = 0
             internal set
 
-        var x = 0f
+        var x = 0.0
             internal set
-        var y = 0f
+        var y = 0.0
             internal set
 
-        var deltaX = 0f
+        var deltaX = 0.0
             internal set
-        var deltaY = 0f
+        var deltaY = 0.0
             internal set
-        var dragDeltaX = 0f
+        var dragDeltaX = 0.0
             internal set
-        var dragDeltaY = 0f
+        var dragDeltaY = 0.0
             internal set
-        var deltaScroll = 0f
+        var deltaScroll = 0.0
             internal set
 
         var buttonMask = 0
@@ -184,7 +182,7 @@ class InputManager internal constructor() {
         fun isInViewport(viewport: Viewport, ctx: KoolContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
-            return (isValid) && viewport.isInViewport(x, ptrY)
+            return (isValid) && viewport.isInViewport(x.toFloat(), ptrY.toFloat())
         }
     }
 
@@ -197,24 +195,24 @@ class InputManager internal constructor() {
         fun setButtonMask(mask: Int) {
             buttonMask = mask
             if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
-                dragDeltaX = 0f
-                dragDeltaY = 0f
+                dragDeltaX = 0.0
+                dragDeltaY = 0.0
             }
         }
 
-        fun startPointer(pointerId: Int, x: Float, y: Float) {
+        fun startPointer(pointerId: Int, x: Double, y: Double) {
             movePointer(x, y)
             id = pointerId
-            deltaX = 0f
-            deltaY = 0f
-            dragDeltaX = 0f
-            dragDeltaY = 0f
-            deltaScroll = 0f
+            deltaX = 0.0
+            deltaY = 0.0
+            dragDeltaX = 0.0
+            dragDeltaY = 0.0
+            deltaScroll = 0.0
             updateState = UpdateState.STARTED
             isValid = true
         }
 
-        fun movePointer(x: Float, y: Float) {
+        fun movePointer(x: Double, y: Double) {
             if (buttonMask != 0) {
                 dragDeltaX += x - this.x
                 dragDeltaY += y - this.y
@@ -238,11 +236,11 @@ class InputManager internal constructor() {
         fun cancelPointer() {
             buttonMask = 0
             buttonEventMask = 0
-            deltaX = 0f
-            deltaY = 0f
-            deltaScroll = 0f
-            dragDeltaX = 0f
-            dragDeltaY = 0f
+            deltaX = 0.0
+            deltaY = 0.0
+            deltaScroll = 0.0
+            dragDeltaX = 0.0
+            dragDeltaY = 0.0
             updateState = UpdateState.INVALID
             isValid = false
         }
@@ -277,9 +275,9 @@ class InputManager internal constructor() {
                 }
             }
 
-            deltaX = 0f
-            deltaY = 0f
-            deltaScroll = 0f
+            deltaX = 0.0
+            deltaY = 0.0
+            deltaScroll = 0.0
             buttonEventMask = 0
 
             processedState = updateState
@@ -378,7 +376,7 @@ class InputManager internal constructor() {
                     TouchGestureEvaluator.PINCH -> {
                         // set primary pointer deltaScroll for compatibility with mouse input
                         primaryPointer.consumptionMask = 0
-                        primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20
+                        primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
                         primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
                         primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
                         primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
@@ -422,7 +420,7 @@ class InputManager internal constructor() {
             return null
         }
 
-        internal fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
+        internal fun handleTouchStart(pointerId: Int, x: Double, y: Double) {
             lock(inputPointers) {
                 lastPtrInput = now()
                 val inPtr = getFreeInputPointer() ?: return
@@ -443,7 +441,7 @@ class InputManager internal constructor() {
             }
         }
 
-        internal fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
+        internal fun handleTouchMove(pointerId: Int, x: Double, y: Double) {
             lock(inputPointers) {
                 lastPtrInput = now()
                 findInputPointer(pointerId)?.movePointer(x, y)
@@ -454,7 +452,7 @@ class InputManager internal constructor() {
         // mouse handler functions to be called by platform code
         //
 
-        internal fun handleMouseMove(x: Float, y: Float) {
+        internal fun handleMouseMove(x: Double, y: Double) {
             lock(inputPointers) {
                 lastPtrInput = now()
                 val mousePtr = findInputPointer(MOUSE_POINTER_ID)
@@ -489,7 +487,7 @@ class InputManager internal constructor() {
             }
         }
 
-        internal fun handleMouseScroll(ticks: Float) {
+        internal fun handleMouseScroll(ticks: Double) {
             lock(inputPointers) {
                 val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
                 ptr.deltaScroll += ticks
@@ -501,6 +499,11 @@ class InputManager internal constructor() {
                 findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
             }
         }
+    }
+
+    enum class CursorMode {
+        NORMAL,
+        LOCKED
     }
 
     companion object {

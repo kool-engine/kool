@@ -108,10 +108,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         lighting.singleLight {
-//            setDirectional(Vec3f(0.5f, -1f, -0.5f))
-//            setColor(Color.WHITE, 0.75f)
-                setDirectional(Vec3f(-1f, -0.6f, -1f))
-                setColor(Color.WHITE, 0.75f)
+            setDirectional(Vec3f(-1f, -0.6f, -1f))
+            setColor(Color.WHITE, 0.75f)
         }
 
         +CamRig().apply {

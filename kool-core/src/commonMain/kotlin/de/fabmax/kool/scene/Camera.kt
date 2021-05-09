@@ -98,7 +98,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     protected abstract fun updateProjectionMatrix()
 
     fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
-        return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, viewport, ctx)
+        return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
     }
 
     fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {
@@ -114,7 +114,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
-        return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, viewport, ctx)
+        return ptr.isValid && initRayTes(rayTest, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
     }
 
     fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: Viewport, ctx: KoolContext): Boolean {

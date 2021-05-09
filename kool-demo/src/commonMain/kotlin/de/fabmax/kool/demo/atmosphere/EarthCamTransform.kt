@@ -81,7 +81,7 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
                     lookRotY -= dragPtr.deltaX / 10.0
                 }
             }
-            zoom = (zoom * (1f - dragPtr.deltaScroll / 10f)).clamp(minZoom, maxZoom)
+            zoom = (zoom * (1f - dragPtr.deltaScroll.toFloat() / 10f)).clamp(minZoom, maxZoom)
 
             dragPtr.consume()
         }

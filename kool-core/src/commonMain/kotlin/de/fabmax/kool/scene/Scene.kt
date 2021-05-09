@@ -179,8 +179,7 @@ open class Scene(name: String? = null) : Group(name) {
         dragPtrs.clear()
         for (i in ctx.inputMgr.pointerState.pointers.indices) {
             val ptr = ctx.inputMgr.pointerState.pointers[i]
-            if (ptr.isValid && ptr.isInViewport(mainRenderPass.viewport, ctx) &&
-                    (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
+            if (ptr.isValid && (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0.0)) {
                 dragPtrs.add(ptr)
             }
         }

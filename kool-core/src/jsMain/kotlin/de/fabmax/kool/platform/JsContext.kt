@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
@@ -23,7 +22,6 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLImageElement
 import org.w3c.dom.ImageData
 import org.w3c.dom.events.Event
-import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.UIEvent
 
 /**
@@ -32,6 +30,7 @@ import org.w3c.dom.events.UIEvent
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
     override val assetMgr = JsAssetManager(props.assetsBaseDir, this)
+    override val inputMgr: JsInputManager
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
     internal val queueRenderer = QueueRendererWebGl(this)
@@ -85,124 +84,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
 
-        // install mouse handlers
-        canvas.onmousemove = { ev ->
-            val bounds = canvas.getBoundingClientRect()
-            val x = (ev.clientX - bounds.left).toFloat()
-            val y = (ev.clientY - bounds.top).toFloat()
-            inputMgr.handleMouseMove(x, y)
-        }
-        canvas.onmousedown = { ev ->
-            inputMgr.handleMouseButtonStates(ev.buttons.toInt())
-        }
-        canvas.onmouseup = { ev ->
-            inputMgr.handleMouseButtonStates(ev.buttons.toInt())
-        }
-        canvas.onmouseleave = { inputMgr.handleMouseExit() }
-        canvas.onwheel = { ev ->
-            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse
-            // scroll wheel tick
-            var ticks = -ev.deltaY.toFloat() / 3f
-            if (ev.deltaMode == 0) {
-                // scroll delta is specified in pixels...
-                ticks /= 30f
-            }
-            inputMgr.handleMouseScroll(ticks)
-            ev.preventDefault()
-        }
-
-        // install touch handlers
-        canvas.addEventListener("touchstart", { ev ->
-            ev.preventDefault()
-            val changedTouches = (ev as TouchEvent).changedTouches
-            for (i in 0 until changedTouches.length) {
-                val touch = changedTouches.item(i)
-                inputMgr.handleTouchStart(touch.identifier, touch.elementX, touch.elementY)
-            }
-        }, false)
-        canvas.addEventListener("touchend", { ev ->
-            ev.preventDefault()
-            val changedTouches = (ev as TouchEvent).changedTouches
-            for (i in 0 until changedTouches.length) {
-                val touch = changedTouches.item(i)
-                inputMgr.handleTouchEnd(touch.identifier)
-            }
-        }, false)
-        canvas.addEventListener("touchcancel", { ev ->
-            ev.preventDefault()
-            val changedTouches = (ev as TouchEvent).changedTouches
-            for (i in 0 until changedTouches.length) {
-                val touch = changedTouches.item(i)
-                inputMgr.handleTouchCancel(touch.identifier)
-            }
-        }, false)
-        canvas.addEventListener("touchmove", { ev ->
-            ev.preventDefault()
-            val changedTouches = (ev as TouchEvent).changedTouches
-            for (i in 0 until changedTouches.length) {
-                val touch = changedTouches.item(i)
-                inputMgr.handleTouchMove(touch.identifier, touch.elementX, touch.elementY)
-            }
-        }, false)
-
-        document.onkeydown = { ev -> handleKeyDown(ev) }
-        document.onkeyup = { ev -> handleKeyUp(ev) }
-
-//        if (canvas.tabIndex <= 0) {
-//            println("No canvas tabIndex set! Falling back to document key events, this doesn't work with multi context")
-//        } else {
-//            canvas.onkeydown = { ev -> handleKeyDown(ev as KeyboardEvent) }
-//            canvas.onkeyup = { ev -> handleKeyUp(ev as KeyboardEvent) }
-//        }
-    }
-
-    private fun handleKeyDown(ev: KeyboardEvent) {
-        val code = translateKeyCode(ev.code)
-        if (code != 0) {
-            var mods = 0
-            if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
-            if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
-            if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
-            if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
-
-            var event = InputManager.KEY_EV_DOWN
-            if (ev.repeat) {
-                event = event or InputManager.KEY_EV_REPEATED
-            }
-            inputMgr.keyEvent(code, mods, event)
-        }
-        if (ev.key.length == 1) {
-            inputMgr.charTyped(ev.key[0])
-        }
-
-        if (!props.excludedKeyCodes.contains(ev.code)) {
-            ev.preventDefault()
-        }
-    }
-
-    private fun handleKeyUp(ev: KeyboardEvent) {
-        val code = translateKeyCode(ev.code)
-        if (code != 0) {
-            var mods = 0
-            if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
-            if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
-            if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
-            if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
-
-            inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
-        }
-
-        if (!props.excludedKeyCodes.contains(ev.code)) {
-            ev.preventDefault()
-        }
-    }
-
-    private fun translateKeyCode(code: String): Int {
-        return if (code.length == 4 && code.startsWith("Key")) {
-            code[3].code
-        } else {
-            KEY_CODE_MAP[code] ?: 0
-        }
+        inputMgr = JsInputManager(canvas, props)
     }
 
     private fun renderFrame(time: Double) {
@@ -303,55 +185,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     class InitProps {
         var canvasName = "glCanvas"
-        val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5")
+        val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5", "F11")
 
         var assetsBaseDir = "./assets"
-    }
-
-    companion object {
-        val KEY_CODE_MAP: Map<String, Int> = mutableMapOf(
-                "ControlLeft" to InputManager.KEY_CTRL_LEFT,
-                "ControlRight" to InputManager.KEY_CTRL_RIGHT,
-                "ShiftLeft" to InputManager.KEY_SHIFT_LEFT,
-                "ShiftRight" to InputManager.KEY_SHIFT_RIGHT,
-                "AltLeft" to InputManager.KEY_ALT_LEFT,
-                "AltRight" to InputManager.KEY_ALT_RIGHT,
-                "MetaLeft" to InputManager.KEY_SUPER_LEFT,
-                "MetaRight" to InputManager.KEY_SUPER_RIGHT,
-                "Escape" to InputManager.KEY_ESC,
-                "ContextMenu" to InputManager.KEY_MENU,
-                "Enter" to InputManager.KEY_ENTER,
-                "NumpadEnter" to InputManager.KEY_NP_ENTER,
-                "NumpadDivide" to InputManager.KEY_NP_DIV,
-                "NumpadMultiply" to InputManager.KEY_NP_MUL,
-                "NumpadAdd" to InputManager.KEY_NP_PLUS,
-                "NumpadSubtract" to InputManager.KEY_NP_MINUS,
-                "Backspace" to InputManager.KEY_BACKSPACE,
-                "Tab" to InputManager.KEY_TAB,
-                "Delete" to InputManager.KEY_DEL,
-                "Insert" to InputManager.KEY_INSERT,
-                "Home" to InputManager.KEY_HOME,
-                "End" to InputManager.KEY_END,
-                "PageUp" to InputManager.KEY_PAGE_UP,
-                "PageDown" to InputManager.KEY_PAGE_DOWN,
-                "ArrowLeft" to InputManager.KEY_CURSOR_LEFT,
-                "ArrowRight" to InputManager.KEY_CURSOR_RIGHT,
-                "ArrowUp" to InputManager.KEY_CURSOR_UP,
-                "ArrowDown" to InputManager.KEY_CURSOR_DOWN,
-                "F1" to InputManager.KEY_F1,
-                "F2" to InputManager.KEY_F2,
-                "F3" to InputManager.KEY_F3,
-                "F4" to InputManager.KEY_F4,
-                "F5" to InputManager.KEY_F5,
-                "F6" to InputManager.KEY_F6,
-                "F7" to InputManager.KEY_F7,
-                "F8" to InputManager.KEY_F8,
-                "F9" to InputManager.KEY_F9,
-                "F10" to InputManager.KEY_F10,
-                "F11" to InputManager.KEY_F11,
-                "F12" to InputManager.KEY_F12,
-                "Space" to ' '.code
-        )
     }
 }
 
@@ -383,17 +219,17 @@ external class TouchList {
 
 external class Touch {
     val identifier: Int
-    val screenX: Float
-    val screenY: Float
-    val clientX: Float
-    val clientY: Float
-    val pageX: Float
-    val pageY: Float
+    val screenX: Double
+    val screenY: Double
+    val clientX: Double
+    val clientY: Double
+    val pageX: Double
+    val pageY: Double
     val target: Element
-    val radiusX: Float
-    val radiusY: Float
-    val rotationAngle: Float
-    val force: Float
+    val radiusX: Double
+    val radiusY: Double
+    val rotationAngle: Double
+    val force: Double
 }
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
@@ -444,8 +280,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     }
 }
 
-val Touch.elementX: Float
-    get() = clientX - ((target as? HTMLCanvasElement)?.clientLeft?.toFloat() ?: 0f)
+val Touch.elementX: Double
+    get() = clientX - ((target as? HTMLCanvasElement)?.clientLeft?.toDouble() ?: 0.0)
 
-val Touch.elementY: Float
-    get() = clientY - ((target as? HTMLCanvasElement)?.clientTop?.toFloat() ?: 0f)
+val Touch.elementY: Double
+    get() = clientY - ((target as? HTMLCanvasElement)?.clientTop?.toDouble() ?: 0.0)
