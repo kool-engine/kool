@@ -4,9 +4,9 @@ import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.toMat4f
-import physx.PxTopLevelFunctions
 import physx.extensions.BatchVehicleUpdate
 import physx.extensions.BatchVehicleUpdateDesc
+import physx.vehicle.PxVehicleTopLevelFunctions
 import kotlin.math.min
 
 actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private val physicsWorld: PhysicsWorld) : VehicleUpdater {
@@ -21,12 +21,12 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
 
     init {
         desc.foundation = Physics.foundation
-        desc.scene = physicsWorld.scene
+        desc.scene = physicsWorld.pxScene
         desc.numWorkers = min(maxVehicles, physicsWorld.numWorkers)
         desc.batchSize = min(maxVehicles / desc.numWorkers, 64)
         desc.frictionPairs = frictionPairs.frictionPairs
         desc.maxNbVehicles = maxVehicles
-        desc.preFilterShader = PxTopLevelFunctions.DefaultWheelSceneQueryPreFilterBlocking()
+        desc.preFilterShader = PxVehicleTopLevelFunctions.DefaultWheelSceneQueryPreFilterBlocking()
         batchVehicleUpdater = BatchVehicleUpdate(desc)
 
         onPhysicsUpdate = { timeStep ->

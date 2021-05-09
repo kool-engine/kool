@@ -58,6 +58,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
+    abstract fun setClipRange(near: Float, far: Float)
+
     open fun updateCamera(ctx: KoolContext, viewport: Viewport) {
         if (useViewportAspectRatio) {
             aspectRatio = viewport.aspectRatio
@@ -188,6 +190,11 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
     private val tmpNodeCenter = MutableVec3f()
 
+    override fun setClipRange(near: Float, far: Float) {
+        this.near = near
+        this.far = far
+    }
+
     fun setCentered(height: Float, near: Float, far: Float) {
         top = height * 0.5f
         bottom = -top
@@ -270,6 +277,11 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private var tangY = 1f
 
     private val tmpNodeCenter = MutableVec3f()
+
+    override fun setClipRange(near: Float, far: Float) {
+        this.clipNear = near
+        this.clipFar = far
+    }
 
     override fun updateProjectionMatrix() {
         proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)

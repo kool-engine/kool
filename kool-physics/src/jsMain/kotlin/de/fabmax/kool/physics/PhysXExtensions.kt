@@ -51,6 +51,10 @@ fun PxVec3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x, y, z)
 fun PxVec3.set(v: Vec3f): PxVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3f.toPxVec3(result: PxVec3) = result.set(this)
 
+fun PxExtendedVec3.toVec3d(result: MutableVec3d = MutableVec3d()) = result.set(x, y, z)
+fun PxExtendedVec3.set(v: Vec3d): PxExtendedVec3 { x = v.x; y = v.y; z = v.z; return this }
+fun Vec3d.toPxExtendedVec3(result: PxExtendedVec3) = result.set(this)
+
 @Suppress("FunctionName")
 fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
     val vector = Vector_PxVec3(size)

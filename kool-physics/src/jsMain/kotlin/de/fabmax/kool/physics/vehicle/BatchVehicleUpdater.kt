@@ -21,7 +21,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
 
     init {
         desc.foundation = Physics.foundation
-        desc.scene = physicsWorld.scene
+        desc.scene = physicsWorld.pxScene
         desc.numWorkers = 1
         desc.batchSize = min(maxVehicles, 64)
         desc.frictionPairs = frictionPairs.frictionPairs

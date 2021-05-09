@@ -33,9 +33,9 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation("de.fabmax:physx-jni:0.4.5")
-                runtimeOnly("de.fabmax:physx-jni:0.4.5:native-win64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.5:native-linux64")
+                implementation("de.fabmax:physx-jni:0.4.6-SNAPSHOT")
+                runtimeOnly("de.fabmax:physx-jni:0.4.6-SNAPSHOT:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.6-SNAPSHOT:native-linux64")
             }
         }
 

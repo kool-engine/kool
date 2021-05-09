@@ -4,19 +4,20 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 import physx.*
 
-actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
-    val scene: PxScene
+actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+    val pxScene: PxScene
 
     private val raycastResult = PxRaycastBuffer10()
     private val bufPxGravity = gravity.toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
-        get() = scene.gravity.toVec3f(bufGravity)
+        get() = pxScene.gravity.toVec3f(bufGravity)
         set(value) {
-            scene.gravity = value.toPxVec3(bufPxGravity)
+            pxScene.gravity = value.toPxVec3(bufPxGravity)
         }
 
     private val pxActors = mutableMapOf<Int, RigidActor>()
@@ -31,46 +32,48 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
         sceneDesc.flags.clear(PxSceneFlagEnum.eENABLE_PCM)
         sceneDesc.simulationEventCallback = simEventCallback()
-        scene = Physics.physics.createScene(sceneDesc)
+        pxScene = Physics.physics.createScene(sceneDesc)
+
+        scene?.let { registerHandlers(it) }
     }
 
     override fun singleStepAsync(timeStep: Float) {
         super.singleStepAsync(timeStep)
-        scene.simulate(timeStep)
+        pxScene.simulate(timeStep)
     }
 
     override fun fetchAsyncStepResults() {
-        scene.fetchResults(true)
+        pxScene.fetchResults(true)
         super.fetchAsyncStepResults()
     }
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        scene.addActor(actor.pxRigidActor)
+        pxScene.addActor(actor.pxRigidActor)
         pxActors[actor.pxRigidActor.address] = actor
     }
 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
-        scene.removeActor(actor.pxRigidActor)
+        pxScene.removeActor(actor.pxRigidActor)
         pxActors -= actor.pxRigidActor.address
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
         articulation.links.forEach { pxActors[it.pxLink.address] = it }
-        scene.addArticulation(articulation.pxArticulation)
+        pxScene.addArticulation(articulation.pxArticulation)
     }
 
     override fun removeArticulation(articulation: Articulation) {
         super.removeArticulation(articulation)
         articulation.links.forEach { pxActors -= it.pxLink.address }
-        scene.removeArticulation(articulation.pxArticulation)
+        pxScene.removeArticulation(articulation.pxArticulation)
     }
 
     override fun release() {
         super.release()
-        scene.release()
+        pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
     }
@@ -79,7 +82,7 @@ actual class PhysicsWorld actual constructor(gravity: Vec3f, numWorkers: Int) : 
         MemoryStack.stackPush().use { mem ->
             val ori = ray.origin.toPxVec3(mem.createPxVec3())
             val dir = ray.direction.toPxVec3(mem.createPxVec3())
-            if (scene.raycast(ori, dir, maxDistance, raycastResult)) {
+            if (pxScene.raycast(ori, dir, maxDistance, raycastResult)) {
                 var minDist = maxDistance
                 var nearestHit: PxRaycastHit? = null
 

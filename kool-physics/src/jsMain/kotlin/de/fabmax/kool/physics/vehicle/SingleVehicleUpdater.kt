@@ -21,7 +21,7 @@ actual class SingleVehicleUpdater actual constructor(vehicle: Vehicle, private v
         Physics.checkIsLoaded()
 
         queryData = VehicleQueryData(4)
-        query = queryData.setupSceneQuery(world.scene)
+        query = queryData.setupSceneQuery(world.pxScene)
 
         vehicleAsVector = Vector_PxVehicleWheels()
         vehicleAsVector.push_back(vehicle.pxVehicle)
@@ -33,7 +33,7 @@ actual class SingleVehicleUpdater actual constructor(vehicle: Vehicle, private v
     }
 
     override fun updateVehicle(vehicle: Vehicle, timeStep: Float) {
-        val grav = vehicleGravity?.toPxVec3(pxGravity) ?: world.scene.gravity
+        val grav = vehicleGravity?.toPxVec3(pxGravity) ?: world.pxScene.gravity
         Physics.PxVehicle.PxVehicleSuspensionRaycasts(query, vehicleAsVector, queryData.numQueriesPerBatch, queryData.raycastResults.data())
         Physics.PxVehicle.PxVehicleUpdates(timeStep, grav, frictionPairs.frictionPairs, vehicleAsVector, vehicleWheelQueryResult)
         for (i in 0 until 4) {

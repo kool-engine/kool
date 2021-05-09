@@ -4,7 +4,6 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.physics.createPxBatchQueryDesc
 import org.lwjgl.system.MemoryStack
-import physx.PxTopLevelFunctions
 import physx.physics.PxBatchQuery
 import physx.physics.PxBatchQueryPostFilterShader
 import physx.physics.PxBatchQueryPreFilterShader
@@ -13,10 +12,11 @@ import physx.support.Vector_PxRaycastHit
 import physx.support.Vector_PxRaycastQueryResult
 import physx.support.Vector_PxSweepHit
 import physx.support.Vector_PxSweepQueryResult
+import physx.vehicle.PxVehicleTopLevelFunctions
 
 class VehicleQueryData(numWheels: Int, maxNumHitPointsPerWheel: Int = 1,
-                        val preFilterShader: PxBatchQueryPreFilterShader? = PxTopLevelFunctions.DefaultWheelSceneQueryPreFilterBlocking(),
-                        val postFilterShader: PxBatchQueryPostFilterShader? = null) : Releasable {
+                       val preFilterShader: PxBatchQueryPreFilterShader? = PxVehicleTopLevelFunctions.DefaultWheelSceneQueryPreFilterBlocking(),
+                       val postFilterShader: PxBatchQueryPostFilterShader? = PxVehicleTopLevelFunctions.DefaultWheelSceneQueryPostFilterBlocking()) : Releasable {
 
     val numQueriesPerBatch = numWheels
     val numHitResultsPerQuery = maxNumHitPointsPerWheel

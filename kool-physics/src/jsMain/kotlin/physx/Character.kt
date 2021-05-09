@@ -484,8 +484,8 @@ external interface PxControllerFilters {
 /**
  * @param filterData WebIDL type: [PxFilterData] (Const)
  */
-fun PxControllerFilters(filterData: PxFilterData): PxControllerFilters {
-    fun _PxControllerFilters(_module: dynamic, filterData: PxFilterData) = js("new _module.PxControllerFilters(filterData)")
+fun PxControllerFilters(filterData: PxFilterData?): PxControllerFilters {
+    fun _PxControllerFilters(_module: dynamic, filterData: PxFilterData?) = js("new _module.PxControllerFilters(filterData)")
     return _PxControllerFilters(PhysXJsLoader.physXJs, filterData)
 }
 

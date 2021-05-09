@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
 
-expect class PhysicsWorld(gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
+expect class PhysicsWorld(scene: Scene? = null, gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
     var gravity: Vec3f
 
     fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean
@@ -21,6 +21,7 @@ abstract class CommonPhysicsWorld : Releasable {
     var isStepInProgress = false
     var prevStepTime = 0f
 
+    val onAdvancePhysics = mutableListOf<(Float) -> Unit>()
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
     protected val mutActors = mutableListOf<RigidActor>()
@@ -125,6 +126,7 @@ abstract class CommonPhysicsWorld : Releasable {
         if (isStepInProgress) {
             throw IllegalStateException("Previous simulation step not yet finished")
         }
+        onAdvancePhysics(timeStep)
         isStepInProgress = true
         prevStepTime = timeStep
     }
@@ -132,6 +134,12 @@ abstract class CommonPhysicsWorld : Releasable {
     open fun fetchAsyncStepResults() {
         isStepInProgress = false
         onPhysicsUpdate(prevStepTime)
+    }
+
+    protected open fun onAdvancePhysics(timeStep: Float) {
+        for (i in onAdvancePhysics.indices) {
+            onAdvancePhysics[i](timeStep)
+        }
     }
 
     protected open fun onPhysicsUpdate(timeStep: Float) {
