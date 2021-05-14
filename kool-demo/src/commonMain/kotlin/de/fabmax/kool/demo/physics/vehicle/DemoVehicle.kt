@@ -16,13 +16,13 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.DriveAxes
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPointLights
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
-import kotlin.math.sign
 
 class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: KoolContext) {
 
@@ -33,16 +33,14 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
     private lateinit var vehicleGeometry: ConvexMeshGeometry
 
-    private val steerAnimator = ValueAnimator()
+    private lateinit var recoverListener: InputManager.KeyEventListener
+    private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
-    private val keyListeners = mutableListOf<InputManager.KeyEventListener>()
 
     private var previousGear = 0
 
     private val brakeLightShader: DeferredPbrShader
     private val reverseLightShader: DeferredPbrShader
-//    private val headLightLt: DeferredSpotLights.SpotLight
-//    private val headLightRt: DeferredSpotLights.SpotLight
     private val rearLightLt: DeferredPointLights.PointLight
     private val rearLightRt: DeferredPointLights.PointLight
 
@@ -73,18 +71,6 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
         vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
 
-//        headLightLt = DeferredSpotLights.SpotLight().apply {
-//            spotAngle = 30f
-//            intensity = 10000f
-//        }
-//        headLightRt = DeferredSpotLights.SpotLight().apply {
-//            spotAngle = 30f
-//            intensity = 10000f
-//        }
-//        val headLights = world.deferredPipeline.pbrPass.addSpotLights(30f)
-//        headLights.addSpotLight(headLightLt)
-//        headLights.addSpotLight(headLightRt)
-
         rearLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
         rearLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
 
@@ -94,15 +80,15 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     }
 
     private fun updateVehicle(ev: RenderPass.UpdateEvent) {
-        throttleBrakeHandler.update(vehicle.forwardSpeed, ev.deltaT)
+        throttleBrakeHandler.update(inputAxes.throttle, inputAxes.brake, vehicle.forwardSpeed, ev.deltaT)
         vehicle.isReverse = throttleBrakeHandler.isReverse
-        vehicle.steerInput = steerAnimator.tick(ev.deltaT)
-        vehicle.throttleInput = throttleBrakeHandler.throttle.value
-        vehicle.brakeInput = throttleBrakeHandler.brake.value
+        vehicle.throttleInput = throttleBrakeHandler.throttle
+        vehicle.brakeInput = throttleBrakeHandler.brake
+        vehicle.steerInput = inputAxes.leftRight
 
         vehicleAudio.rpm = vehicle.engineSpeedRpm
-        vehicleAudio.throttle = throttleBrakeHandler.throttle.value
-        vehicleAudio.brake = throttleBrakeHandler.brake.value
+        vehicleAudio.throttle = throttleBrakeHandler.throttle
+        vehicleAudio.brake = throttleBrakeHandler.brake
         vehicleAudio.speed = vehicle.linearVelocity.length()
 
         val lightIntensity: Float
@@ -160,13 +146,6 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         vehicle.transform.transform(rearLightLt.position)
         rearLightRt.position.set(-0.4f, -0.1f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
-
-//        vehicle.transform.getRotation(headLightLt.orientation).rotate(-90f, Vec3f.Y_AXIS)
-//        headLightRt.orientation.set(headLightLt.orientation)
-//        headLightLt.position.set(0.65f, -0.55f, 2.7f)
-//        vehicle.transform.transform(headLightLt.position)
-//        headLightRt.position.set(-0.65f, -0.55f, 2.7f)
-//        vehicle.transform.transform(headLightRt.position)
     }
 
     fun resetVehiclePos() {
@@ -229,11 +208,6 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
                 vehicleGroup += it
             }
 
-//            +colorMesh {
-//                generate { geometry.addGeometry(vehicleMesh.convexHull) }
-//                shader = deferredPbrShader {  }
-//            }
-
             world.scene.onRenderScene += {
                 transform.set(vehicle.transform)
                 setDirty()
@@ -250,30 +224,10 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     }
 
     private fun registerKeyHandlers(ctx: KoolContext) {
-        val steerLeft: (InputManager.KeyEvent) -> Unit = {
-            if (it.isPressed) { steerAnimator.target = 1f } else { steerAnimator.target = 0f }
-        }
-        val steerRight: (InputManager.KeyEvent) -> Unit = {
-            if (it.isPressed) { steerAnimator.target = -1f } else { steerAnimator.target = 0f }
-        }
-        val accelerate: (InputManager.KeyEvent) -> Unit = {
-            throttleBrakeHandler.upKeyPressed = it.isPressed
-        }
-        val brake: (InputManager.KeyEvent) -> Unit = {
-            throttleBrakeHandler.downKeyPressed = it.isPressed
-        }
+        // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-
-        keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "steer left", callback = steerLeft)
-        keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "steer right", callback = steerRight)
-        keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "accelerate", callback = accelerate)
-        keyListeners += ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "brake", callback = brake)
-        keyListeners += ctx.inputMgr.registerKeyListener('A', "steer left", filter = { true }, callback = steerLeft)
-        keyListeners += ctx.inputMgr.registerKeyListener('D', "steer right", filter = { true }, callback = steerRight)
-        keyListeners += ctx.inputMgr.registerKeyListener('W', "accelerate", filter = { true }, callback = accelerate)
-        keyListeners += ctx.inputMgr.registerKeyListener('S', "brake", filter = { true }, callback = brake)
-        keyListeners += ctx.inputMgr.registerKeyListener('R', "recover", filter = { it.isPressed }) {
+        recoverListener = ctx.inputMgr.registerKeyListener(InputManager.keyCodeForChar('r'), "recover", filter = { it.isPressed }) {
             val time = ctx.time
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time
@@ -293,13 +247,15 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             }
             vehicle.linearVelocity = Vec3f.ZERO
             vehicle.angularVelocity = Vec3f.ZERO
+            vehicle.setToRestState()
         }
     }
 
     fun cleanUp(ctx: KoolContext) {
-        keyListeners.forEach { ctx.inputMgr.removeKeyListener(it) }
+        inputAxes.dispose(ctx)
         vehicleAudio.stop()
         vehicleGeometry.release()
+        ctx.inputMgr.removeKeyListener(recoverListener)
     }
 
     fun toggleSound(enabled: Boolean) {
@@ -310,38 +266,15 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
     }
 
-    class ValueAnimator {
-        var target = 0f
-        var value = 0f
-        var speed = 2f
-
-        fun tick(deltaT: Float): Float {
-            var dv = target - value
-            if (abs(dv) > speed * deltaT) {
-                dv = sign(dv) * speed * deltaT
-            }
-            value += dv
-            return value
-        }
-    }
-
     class ThrottleBrakeHandler {
-        var upKeyPressed = false
-        var downKeyPressed = false
-
         var reverseTriggerTime = 0f
         var isReverse = false
 
-        val throttle = ValueAnimator()
-        val brake = ValueAnimator()
+        var throttle = 0f
+        var brake = 0f
 
-        init {
-            throttle.speed = 5f
-            brake.speed = 5f
-        }
-
-        fun update(forwardSpeed: Float, deltaT: Float) {
-            if (abs(forwardSpeed) < 0.1f && downKeyPressed) {
+        fun update(throttleIn: Float, brakeIn: Float, forwardSpeed: Float, deltaT: Float) {
+            if (abs(forwardSpeed) < 0.1f && brakeIn > 0f) {
                 reverseTriggerTime += deltaT
                 if (reverseTriggerTime > 0.2f) {
                     isReverse = true
@@ -350,20 +283,18 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
                 reverseTriggerTime = 0f
             }
 
-            if (isReverse && !downKeyPressed && forwardSpeed > -0.1f) {
+            if (isReverse && brakeIn == 0f && forwardSpeed > -0.1f) {
                 isReverse = false
             }
 
             if (!isReverse) {
-                throttle.target = if (upKeyPressed) 1f else 0f
-                brake.target = if (downKeyPressed) 1f else 0f
+                throttle = throttleIn
+                brake = brakeIn
             } else {
                 // invert throttle / brake buttons while reverse is engaged
-                brake.target = if (upKeyPressed) 1f else 0f
-                throttle.target = if (downKeyPressed) 1f else 0f
+                brake = throttleIn
+                throttle = brakeIn
             }
-            throttle.tick(deltaT)
-            brake.tick(deltaT)
         }
     }
 

@@ -22,7 +22,11 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     val gravity = MutableVec3f(world.gravity)
     var maxFallSpeed = 30f
+    var jumpSpeed = 4f
     val moveVelocity = MutableVec3f()
+
+    var jump = false
+    private var wasJump = false
 
     open fun onAdvancePhysics(timeStep: Float) {
         displacement.set(Vec3f.ZERO)
@@ -35,8 +39,11 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         moveDisp.set(moveVelocity).scale(timeStep)
         displacement.add(moveDisp)
 
-        //println("v: $totalVelocity, disp: $displacement")
-        //displacement.set(0f, -2f * timeStep, 0f)
+        if (jump && !wasJump) {
+            // todo: check if character has contact to ground / is able to jump
+            displacement.y += jumpSpeed * timeStep
+        }
+        wasJump = jump
 
         move(displacement, timeStep)
     }

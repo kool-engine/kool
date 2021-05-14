@@ -18,6 +18,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.WalkAxes
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.PI
@@ -34,7 +35,11 @@ class CharacterDemo : DemoScene("Character Demo") {
     private lateinit var charManager: CharacterControllerManager
     private lateinit var egoCharacter: CharacterController
 
+    private lateinit var walkAxes: WalkAxes
+
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        walkAxes = WalkAxes(ctx)
+
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
         groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
         groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
@@ -50,6 +55,8 @@ class CharacterDemo : DemoScene("Character Demo") {
 
         charManager.release()
         physicsWorld.release()
+
+        walkAxes.dispose(ctx)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -66,6 +73,17 @@ class CharacterDemo : DemoScene("Character Demo") {
         egoCharacter.position = Vec3d(0.0, 4.0, 4.0)
 
         mainScene += makeCharModel(charProps)
+
+        mainScene.onUpdate += {
+            val speedMod = when {
+                walkAxes.run -> 5f
+                walkAxes.crouch -> 0.75f
+                else -> 2f
+            }
+            egoCharacter.moveVelocity.x = walkAxes.leftRight * speedMod
+            egoCharacter.moveVelocity.z = walkAxes.forwardBackward * -speedMod
+            egoCharacter.jump = walkAxes.jump
+        }
     }
 
     private fun makeGround() {

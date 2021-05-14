@@ -17,10 +17,6 @@ abstract class InputManager internal constructor() {
 
     val pointerState = PointerState()
 
-    fun registerKeyListener(char: Char, name: String, filter: (KeyEvent) -> Boolean = { it.isCharTyped }, callback: (KeyEvent) -> Unit): KeyEventListener {
-        return registerKeyListener(char.code, name, filter, callback)
-    }
-
     fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
         val keyStr = if (keyCode in 32..126) "'${keyCode.toChar()}'" else "$keyCode"
 
@@ -507,6 +503,8 @@ abstract class InputManager internal constructor() {
     }
 
     companion object {
+        fun keyCodeForChar(char: Char) = char.uppercaseChar().code
+
         const val LEFT_BUTTON = 0
         const val LEFT_BUTTON_MASK = 1
         const val RIGHT_BUTTON = 1

@@ -19,11 +19,11 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
         set(value) {
             field = value
             if (value < 0) {
-                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
-                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, -value)
-            } else {
                 pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, 0f)
-                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, value)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, -value)
+            } else {
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_RIGHT, 0f)
+                pxVehicle.mDriveDynData.setAnalogInput(PxVehicleDrive4WControlEnum.eANALOG_INPUT_STEER_LEFT, value)
             }
         }
     override var throttleInput = 0f
@@ -83,6 +83,10 @@ actual class Vehicle actual constructor(vehicleProps: VehicleProperties, world: 
         pxVehicle.mDriveDynData.mUseAutoGears = true
 
         updater = vehicleProps.updater(this, world)
+    }
+
+    actual fun setToRestState() {
+        pxVehicle.setToRestState()
     }
 
     override fun release() {

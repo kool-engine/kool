@@ -23,6 +23,8 @@ expect class Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose:
     val currentGear: Int
 
     var isReverse: Boolean
+
+    fun setToRestState()
 }
 
 abstract class CommonVehicle(val vehicleProps: VehicleProperties, pose: Mat4f) : RigidDynamic(vehicleProps.chassisMass, pose) {

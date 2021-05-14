@@ -66,7 +66,7 @@ class VehicleUi(ctx: KoolContext) {
 
     var steering: Float
         get() = steeringBar.value
-        set(value) { steeringBar.value = value }
+        set(value) { steeringBar.value = -value }
 
     var lateralAcceleration: Float
         get() = gMeter.latAccel
