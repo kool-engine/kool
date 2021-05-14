@@ -17,16 +17,6 @@ external interface PxTopLevelFunctions {
     fun DefaultFilterShader(): PxSimulationFilterShader
 
     /**
-     * @return WebIDL type: [PxBatchQueryPreFilterShader] (Value)
-     */
-    fun DefaultWheelSceneQueryPreFilterBlocking(): PxBatchQueryPreFilterShader
-
-    /**
-     * @return WebIDL type: [PxBatchQueryPostFilterShader] (Value)
-     */
-    fun DefaultWheelSceneQueryPostFilterBlocking(): PxBatchQueryPostFilterShader
-
-    /**
      * @param scene WebIDL type: [PxScene] (Ref)
      * @return WebIDL type: [PxControllerManager]
      */

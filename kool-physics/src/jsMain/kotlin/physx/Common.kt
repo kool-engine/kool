@@ -330,7 +330,7 @@ external interface PxCudaContextManager {
     fun getMaxThreadsPerBlock(): Int
 
     /**
-     * @return WebIDL type: DOMString
+     * @return WebIDL type: DOMString (Const)
      */
     fun getDeviceName(): String
 

@@ -66,6 +66,16 @@ external interface PxVehicleTopLevelFunctions {
      */
     fun PxVehicleTireData_setFrictionVsSlipGraph(tireData: PxVehicleTireData, m: Int, n: Int, value: Float)
 
+    /**
+     * @return WebIDL type: [PxBatchQueryPreFilterShader] (Value)
+     */
+    fun DefaultWheelSceneQueryPreFilterBlocking(): PxBatchQueryPreFilterShader
+
+    /**
+     * @return WebIDL type: [PxBatchQueryPostFilterShader] (Value)
+     */
+    fun DefaultWheelSceneQueryPostFilterBlocking(): PxBatchQueryPostFilterShader
+
 }
 
 fun PxVehicleTopLevelFunctions.destroy() {
@@ -940,9 +950,9 @@ fun PxVehicleGearsData.destroy() {
 external interface PxVehicleNoDrive : PxVehicleWheels {
     /**
      * @param nbWheels WebIDL type: unsigned long
-     * @return WebIDL type: [PxVehicleDrive]
+     * @return WebIDL type: [PxVehicleNoDrive]
      */
-    fun allocate(nbWheels: Int): PxVehicleDrive
+    fun allocate(nbWheels: Int): PxVehicleNoDrive
 
     fun free()
 

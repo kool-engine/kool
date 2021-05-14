@@ -60,7 +60,7 @@ abstract class CommonRigidActor : Releasable {
         mutShapes.clear()
     }
 
-    internal open fun physicsUpdate(timeStep: Float) {
+    internal open fun onPhysicsUpdate(timeStep: Float) {
         invTransformLazy.isDirty = true
         for (i in onPhysicsUpdate.indices) {
             onPhysicsUpdate[i](timeStep)

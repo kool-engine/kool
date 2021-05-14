@@ -6,10 +6,12 @@ import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.Releasable
+import de.fabmax.kool.physics.RigidDynamic
 import kotlin.math.min
 
 abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : Releasable {
 
+    abstract val actor: RigidDynamic
     abstract var position: Vec3d
     protected val prevPosition = MutableVec3d()
 
@@ -27,6 +29,8 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     var jump = false
     private var wasJump = false
+
+    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
 
     open fun onAdvancePhysics(timeStep: Float) {
         displacement.set(Vec3f.ZERO)
@@ -56,6 +60,13 @@ abstract class CharacterController(private val manager: CharacterControllerManag
             (posBuffer.z - prevPosition.z).toFloat()
         ).scale(1f / timeStep)
         prevPosition.set(posBuffer)
+
+        // the controller's actor is not registered in PhysicsWorld, call it's update routine from here
+        actor.onPhysicsUpdate(timeStep)
+
+        for (i in onPhysicsUpdate.indices) {
+            onPhysicsUpdate[i](timeStep)
+        }
     }
 
     protected abstract fun move(displacement: Vec3f, timeStep: Float)

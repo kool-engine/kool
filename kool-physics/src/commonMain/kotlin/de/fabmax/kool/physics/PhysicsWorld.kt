@@ -144,10 +144,10 @@ abstract class CommonPhysicsWorld : Releasable {
 
     protected open fun onPhysicsUpdate(timeStep: Float) {
         for (i in mutActors.indices) {
-            mutActors[i].physicsUpdate(timeStep)
+            mutActors[i].onPhysicsUpdate(timeStep)
         }
         for (i in mutArticulations.indices) {
-            mutArticulations[i].physicsUpdate(timeStep)
+            mutArticulations[i].onPhysicsUpdate(timeStep)
         }
         for (i in onPhysicsUpdate.indices) {
             onPhysicsUpdate[i](timeStep)

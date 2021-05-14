@@ -5,6 +5,20 @@
 
 package physx
 
+external interface SupportFunctions {
+    /**
+     * @param actor WebIDL type: [PxRigidActor] (Ref)
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxShape]
+     */
+    fun PxActor_getShape(actor: PxRigidActor, index: Int): PxShape
+
+}
+
+fun SupportFunctions.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxActorPtr
 
 fun PxActorPtr.destroy() {

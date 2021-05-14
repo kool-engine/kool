@@ -26,7 +26,7 @@ actual class BatchVehicleUpdater actual constructor(maxVehicles: Int, private va
         desc.batchSize = min(maxVehicles, 64)
         desc.frictionPairs = frictionPairs.frictionPairs
         desc.maxNbVehicles = maxVehicles
-        desc.preFilterShader = Physics.Px.DefaultWheelSceneQueryPreFilterBlocking()
+        desc.preFilterShader = Physics.PxVehicle.DefaultWheelSceneQueryPreFilterBlocking()
         batchVehicleUpdater = BatchVehicleUpdate(desc)
 
         onPhysicsUpdate = { timeStep ->

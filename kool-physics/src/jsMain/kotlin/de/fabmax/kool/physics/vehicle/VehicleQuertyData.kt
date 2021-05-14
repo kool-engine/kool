@@ -6,8 +6,8 @@ import de.fabmax.kool.physics.Releasable
 import physx.*
 
 class VehicleQueryData(numWheels: Int, maxNumHitPointsPerWheel: Int = 1,
-                            val preFilterShader: PxBatchQueryPreFilterShader? = Physics.Px.DefaultWheelSceneQueryPreFilterBlocking(),
-                            val postFilterShader: PxBatchQueryPostFilterShader? = null) : Releasable {
+                            val preFilterShader: PxBatchQueryPreFilterShader? = Physics.PxVehicle.DefaultWheelSceneQueryPreFilterBlocking(),
+                            val postFilterShader: PxBatchQueryPostFilterShader? = Physics.PxVehicle.DefaultWheelSceneQueryPostFilterBlocking()) : Releasable {
 
     val numQueriesPerBatch = numWheels
     val numHitResultsPerQuery = maxNumHitPointsPerWheel

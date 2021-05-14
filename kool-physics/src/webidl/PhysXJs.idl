@@ -7,8 +7,6 @@ interface PxTopLevelFunctions {
     static readonly attribute unsigned long PHYSICS_VERSION;
     
     [Value] static PxSimulationFilterShader DefaultFilterShader();
-    [Value] static PxBatchQueryPreFilterShader DefaultWheelSceneQueryPreFilterBlocking();
-    [Value] static PxBatchQueryPostFilterShader DefaultWheelSceneQueryPostFilterBlocking();
 
     static PxControllerManager CreateControllerManager([Ref] PxScene scene, optional boolean lockingEnabled);
     static PxCooking CreateCooking(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxCookingParams scale);
@@ -1310,6 +1308,9 @@ interface PxVehicleTopLevelFunctions {
 
     static float PxVehicleTireData_getFrictionVsSlipGraph(PxVehicleTireData tireData, unsigned long m, unsigned long n);
     static void PxVehicleTireData_setFrictionVsSlipGraph(PxVehicleTireData tireData, unsigned long m, unsigned long n, float value);
+
+    [Value] static PxBatchQueryPreFilterShader DefaultWheelSceneQueryPreFilterBlocking();
+    [Value] static PxBatchQueryPostFilterShader DefaultWheelSceneQueryPostFilterBlocking();
 };
 
 [Prefix="physx::"]
@@ -2950,7 +2951,7 @@ interface PxControllerDesc {
 
 [Prefix="physx::"]
 interface PxControllerFilters {
-    void PxControllerFilters([Const] PxFilterData filterData);
+    void PxControllerFilters([Const] optional PxFilterData filterData);
     [Const] attribute PxFilterData mFilterData;
     // PxQueryFilterCallback mFilterCallback;
     [Value] attribute PxQueryFlags mFilterFlags;
@@ -3085,6 +3086,10 @@ interface JavaUserControllerHitReport {
 /****************************************
  * [package=support]
  ****************************************/
+
+interface SupportFunctions {
+    static PxShape PxActor_getShape([Ref] PxRigidActor actor, long index);
+};
 
 interface PxActorPtr { };
 
