@@ -13,6 +13,7 @@ import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.physics.util.ActorTrackingCamRig
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlbedoMapMode
@@ -112,23 +113,12 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
-        +CamRig().apply {
-            val cam = vehicleWorld.scene.camera as PerspectiveCamera
-            cam.apply {
-                clipNear = 1f
-                clipFar = 1000f
-            }
+        +ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
-            +OrbitInputTransform(vehicleWorld.scene).apply {
-                setMouseRotation(0f, -10f)
-                setMouseTranslation(0f, 1f, 0f)
-                +cam
-                zoom = 6.0
-                maxZoom = 500.0
-            }
-            vehicleWorld.physics.onPhysicsUpdate += { timeStep ->
-                updateTracking(timeStep)
-            }
+            camera.setClipRange(1f, 1000f)
+            camera.position.set(0f, 2f, 6f)
+            camera.lookAt.set(0f, 1f, 0f)
+            +camera
         }
 
         onUpdate += {

@@ -39,6 +39,7 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
 
         onHover += { ptr, rt, ctx ->
             if (ptr.isLeftButtonEvent) {
+                ptr.consume(InputManager.LEFT_BUTTON_MASK)
                 if (ptr.isLeftButtonDown) {
                     // button is pressed, issue click event when it is released again
                     ptrDownPos.set(rt.hitPositionLocal.x - componentBounds.min.x, rt.hitPositionLocal.y - componentBounds.min.y)

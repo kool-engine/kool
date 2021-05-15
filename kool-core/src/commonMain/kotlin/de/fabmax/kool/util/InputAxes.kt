@@ -174,11 +174,11 @@ class WalkAxes(ctx: KoolContext) : InputAxes(ctx) {
         forwardBackwardAx = registerAxis("forward / backward",
             setOf(InputManager.KEY_CURSOR_UP, InputManager.keyCodeForChar('w')),
             setOf(InputManager.KEY_CURSOR_DOWN, InputManager.keyCodeForChar('s')),
-        ).apply { setRiseFallTime(0.3f) }
+        ).apply { setRiseFallTime(0.15f) }
         leftRightAx = registerAxis("left / right",
             setOf(InputManager.KEY_CURSOR_RIGHT, InputManager.keyCodeForChar('d')),
             setOf(InputManager.KEY_CURSOR_LEFT, InputManager.keyCodeForChar('a')),
-        ).apply { setRiseFallTime(0.3f) }
+        ).apply { setRiseFallTime(0.15f) }
 
         jumpAx = registerAxis("jump", InputManager.keyCodeForChar(' ')).apply { setRiseFallTime(0.01f) }
         runAx = registerAxis("run", InputManager.KEY_SHIFT_LEFT, InputManager.KEY_SHIFT_RIGHT).apply { setRiseFallTime(0.01f) }

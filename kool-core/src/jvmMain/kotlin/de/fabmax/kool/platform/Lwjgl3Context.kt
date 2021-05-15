@@ -28,6 +28,13 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.windowWidth
     override val windowHeight: Int
         get() = renderBackend.windowHeight
+    var isWindowFocued: Boolean = false
+        private set(value) {
+            field = value
+            onFocusChanged.forEach { it(value) }
+        }
+
+    val onFocusChanged = mutableListOf<(Boolean) -> Unit>()
 
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
@@ -75,12 +82,16 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
-        inputMgr = JvmInputManager(renderBackend.glfwWindowHandle)
+        inputMgr = JvmInputManager(renderBackend.glfwWindowHandle, this)
 
         // install window callbacks
         glfwSetWindowPosCallback(renderBackend.glfwWindowHandle) { _, x, y ->
             screenDpi = getResolutionAt(x, y)
         }
+        glfwSetWindowFocusCallback(renderBackend.glfwWindowHandle) { _, isFocused ->
+            isWindowFocued = isFocused
+        }
+        isWindowFocued = glfwGetWindowAttrib(renderBackend.glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
         screenDpi = DesktopImpl.monitors[props.monitor].dpi
     }
 

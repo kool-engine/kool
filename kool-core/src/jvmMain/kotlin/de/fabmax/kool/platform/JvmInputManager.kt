@@ -1,18 +1,32 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.*
 
-class JvmInputManager(private val windowHandle: Long) : InputManager() {
+class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Context) : InputManager() {
 
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
             field = value
-            glfwSetInputMode(windowHandle, GLFW_CURSOR, value.glfwMode)
+            if (value == CursorMode.NORMAL || ctx.isWindowFocued) {
+                glfwSetInputMode(windowHandle, GLFW_CURSOR, value.glfwMode)
+            }
         }
 
     init {
         installInputHandlers()
+        ctx.onFocusChanged += { isFocused ->
+            if (cursorMode == CursorMode.LOCKED) {
+                if (!isFocused) {
+                    logD { "Switching to normal cursor mode because of focus loss" }
+                    glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
+                } else {
+                    logD { "Re-engaging cursor-lock because of focus gain" }
+                    glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+                }
+            }
+        }
     }
 
     private fun installInputHandlers() {

@@ -1,27 +1,34 @@
 package de.fabmax.kool.demo.physics.character
 
 import de.fabmax.kool.AssetManager
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.CharacterControllerManager
 import de.fabmax.kool.physics.character.CharacterProperties
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.geometry.SphereGeometry
+import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.group
+import de.fabmax.kool.scene.lineMesh
+import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.WalkAxes
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -35,6 +42,8 @@ class CharacterDemo : DemoScene("Character Demo") {
     private lateinit var charManager: CharacterControllerManager
     private lateinit var egoCharacter: CharacterController
 
+    private lateinit var escKeyListener: InputManager.KeyEventListener
+    private lateinit var characterCam: CharacterTrackingCamRig
     private lateinit var walkAxes: WalkAxes
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
@@ -47,6 +56,10 @@ class CharacterDemo : DemoScene("Character Demo") {
         Physics.awaitLoaded()
         physicsWorld = PhysicsWorld(mainScene)
         charManager = CharacterControllerManager(physicsWorld)
+
+        escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
+            ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
+        }
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -57,14 +70,39 @@ class CharacterDemo : DemoScene("Character Demo") {
         physicsWorld.release()
 
         walkAxes.dispose(ctx)
+        ctx.inputMgr.removeKeyListener(escKeyListener)
+        ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform()
-        camera.setClipRange(0.5f, 500f)
-
         makeGround()
         spawnCharacter()
+
+        onUpdate += {
+            val primPtr = ctx.inputMgr.pointerState.primaryPointer
+            if (ctx.inputMgr.cursorMode == InputManager.CursorMode.NORMAL
+                    && primPtr.isLeftButtonClicked
+                    && !primPtr.isConsumed(InputManager.LEFT_BUTTON_MASK)) {
+                ctx.inputMgr.cursorMode = InputManager.CursorMode.LOCKED
+            }
+        }
+
+        characterCam = CharacterTrackingCamRig(ctx.inputMgr).apply {
+            +camera
+            camera.setClipRange(0.5f, 500f)
+            pivotPoint.set(0.8f, 0f, 0f)
+            trackedPose = egoCharacter.actor.transform
+
+            // 1st person
+            camera.lookAt.set(Vec3f.NEG_Z_AXIS)
+            camera.position.set(Vec3f.ZERO)
+
+            // 3rd person
+            //camera.lookAt.set(0.2f, 0.5f, 0f)
+            //camera.position.set(0.2f, 1f, 3f)
+
+        }
+        +characterCam
     }
 
     private fun spawnCharacter() {
@@ -76,12 +114,14 @@ class CharacterDemo : DemoScene("Character Demo") {
 
         mainScene.onUpdate += {
             val speedMod = when {
-                walkAxes.run -> 5f
-                walkAxes.crouch -> 0.75f
-                else -> 2f
+                walkAxes.run -> 10f
+                walkAxes.crouch -> 1.5f
+                else -> 4f
             }
-            egoCharacter.moveVelocity.x = walkAxes.leftRight * speedMod
-            egoCharacter.moveVelocity.z = walkAxes.forwardBackward * -speedMod
+
+            val heading = atan2(characterCam.lookDirection.x, -characterCam.lookDirection.z).toDeg()
+            egoCharacter.moveVelocity.set(walkAxes.leftRight * speedMod, 0f, walkAxes.forwardBackward * -speedMod)
+            egoCharacter.moveVelocity.rotate(heading, Vec3f.Y_AXIS)
             egoCharacter.jump = walkAxes.jump
         }
     }

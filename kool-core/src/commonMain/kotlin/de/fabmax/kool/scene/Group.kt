@@ -233,6 +233,15 @@ open class Group(name: String? = null) : Node(name) {
         return this
     }
 
+    fun rotate(eulerX: Float, eulerY: Float, eulerZ: Float): Group =
+        rotate(eulerX.toDouble(), eulerY.toDouble(), eulerZ.toDouble())
+
+    fun rotate(eulerX: Double, eulerY: Double, eulerZ: Double): Group {
+        transform.rotate(eulerX, eulerY, eulerZ)
+        setDirty()
+        return this
+    }
+
     fun scale(s: Float) = scale(s.toDouble(), s.toDouble(), s.toDouble())
 
     fun scale(sx: Float, sy: Float, sz: Float) = scale(sx.toDouble(), sy.toDouble(), sz.toDouble())

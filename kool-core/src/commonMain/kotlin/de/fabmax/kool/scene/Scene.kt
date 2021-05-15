@@ -94,7 +94,9 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     fun processInput(ctx: KoolContext) {
-        handleInput(ctx)
+        if (ctx.inputMgr.cursorMode != InputManager.CursorMode.LOCKED) {
+            handleInput(ctx)
+        }
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
