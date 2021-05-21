@@ -98,8 +98,10 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         fun updateInstances(iLod: Int, ctx: KoolContext) {
             mesh.instances?.apply {
                 clear()
-                instances.forEach {
-                    it.addInstanceData(iLod, this, ctx)
+                addInstances(instances.size) { buf ->
+                    for (i in instances.indices) {
+                        instances[i].addInstanceData(iLod, buf, ctx)
+                    }
                 }
             }
         }
@@ -138,10 +140,8 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
             camDistance = cam.globalPos.distance(globalCenterMut)
         }
 
-        open fun addInstanceData(lod: Int, instanceList: MeshInstanceList, ctx: KoolContext) {
-            instanceList.addInstance {
-                put(instanceModelMat.matrix)
-            }
+        open fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
+            buffer.put(instanceModelMat.matrix)
         }
     }
 }

@@ -55,7 +55,7 @@ class RpmScale(root: UiRoot) : UiComponent("rpm", root) {
 }
 
 class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
-    private val trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_ORANGE)
+    private val trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), MdColor.ORANGE)
 
     private val largeFontMesh = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) { }
     private val largeFontMeshBuilder = MeshBuilder(largeFontMesh.geometry)
@@ -126,7 +126,7 @@ class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
         trackScale = rpmScale.height
         super.updateUi(ctx)
 
-        meshBuilder.fillTrack(rpmScale.criticlaRpm / rpmScale.maxRpm, 1f) { Color.MD_DEEP_ORANGE.withAlpha(0.3f) }
+        meshBuilder.fillTrack(rpmScale.criticlaRpm / rpmScale.maxRpm, 1f) { MdColor.DEEP_ORANGE.withAlpha(0.3f) }
 
         rpmScale.setupBuilder(largeFontMeshBuilder)
         rpmScale.setupBuilder(smallFontMeshBuilder)
@@ -141,7 +141,7 @@ class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
         val p = min(rpmScale.value, rpmScale.criticlaRpm) / rpmScale.maxRpm
         trackBuilder.fillTrack(0f, p) { trackColor.getColor(it, 0.0f, rpmScale.criticlaRpm / rpmScale.maxRpm) }
         if (p < 1) {
-            trackBuilder.color = Color.MD_DEEP_ORANGE
+            trackBuilder.color = MdColor.DEEP_ORANGE
             trackBuilder.fillTrack(p, rpmScale.value / rpmScale.maxRpm) { trackBuilder.color }
         }
     }

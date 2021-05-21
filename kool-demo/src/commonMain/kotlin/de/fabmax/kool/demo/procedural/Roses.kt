@@ -36,8 +36,8 @@ class Roses : Group() {
     }
 
     private class GeneratedRose(seed: Int) {
-        val shaftGrad = ColorGradient(0f to Color.MD_BROWN_900.toLinear(), 0.4f to Color.MD_BROWN.toLinear(), 1f to Color.MD_LIGHT_GREEN_600.toLinear())
-        val blossomLeafGrad = ColorGradient(Color.MD_LIGHT_GREEN_600.toLinear(), Color.MD_LIGHT_GREEN.mix(Color.MD_YELLOW_200, 0.5f).toLinear())
+        val shaftGrad = ColorGradient(0f to (MdColor.BROWN toneLin 900), 0.4f to MdColor.BROWN.toLinear(), 1f to (MdColor.LIGHT_GREEN tone 600))
+        val blossomLeafGrad = ColorGradient(MdColor.LIGHT_GREEN toneLin 600, MdColor.LIGHT_GREEN.mix(MdColor.YELLOW tone 200, 0.5f).toLinear())
 
         val shaftMesh: Mesh
         val leafMesh: Mesh
@@ -202,7 +202,7 @@ class Roses : Group() {
             transform.mul(shaftLeafTransform)
             rotate(rand.randomF(0f, 360f), Vec3f.Z_AXIS)
 
-            val grad = ColorGradient(shaftGrad.getColor(0.7f), Color.MD_LIGHT_GREEN_900.toLinear())
+            val grad = ColorGradient(shaftGrad.getColor(0.7f), MdColor.LIGHT_GREEN toneLin 900)
 
             for (i in 0..1) {
                 withTransform {
@@ -241,7 +241,7 @@ class Roses : Group() {
                     }
 
                     profile {
-                        color = Color.MD_LIGHT_GREEN_900.mix(Color.MD_BROWN_900, 0.4f).toLinear()
+                        color = (MdColor.LIGHT_GREEN toneLin 900).mix(MdColor.BROWN toneLin 900, 0.4f)
 
                         val ref = mutableListOf<Vec3f>()
                         for (j in -6..6) {

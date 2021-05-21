@@ -43,10 +43,10 @@ class GuardRail {
         instances = signInstances
 
         generate {
-            val caseColor = VehicleDemo.color(250f)
-            val panelColor = Color.MD_GREY_800.toLinear()
-            val bgColor = Color.MD_GREY_900.toLinear()
-            val poleColor = VehicleDemo.color(400f)
+            val caseColor = VehicleDemo.color(250)
+            val panelColor = MdColor.GREY toneLin 800
+            val bgColor = MdColor.GREY toneLin 900
+            val poleColor = VehicleDemo.color(400)
 
             val emmision = MutableVec2f(0f, 0f)
             vertexModFun = {
@@ -124,19 +124,21 @@ class GuardRail {
 
         onUpdate += { ev ->
             signInstances.clear()
-            for (i in signs.indices) {
-                val sign = signs[i]
-                sign.emission.set(Vec2f.ZERO)
-                if (!sign.joint.isBroken) {
-                    if (isReverse) {
-                        val em = (sin((ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
-                        if (sign.isLeft) { sign.emission.x = em } else { sign.emission.y = em }
-                    } else {
-                        val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
-                        if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
+            signInstances.addInstances(signs.size) { buf ->
+                for (i in signs.indices) {
+                    val sign = signs[i]
+                    sign.emission.set(Vec2f.ZERO)
+                    if (!sign.joint.isBroken) {
+                        if (isReverse) {
+                            val em = (sin((ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                            if (sign.isLeft) { sign.emission.x = em } else { sign.emission.y = em }
+                        } else {
+                            val em = (sin((-ev.time + sign.iSign * 0.1) * 6).toFloat() + 0.5f).clamp(0f, 1f)
+                            if (sign.isLeft) { sign.emission.y = em } else { sign.emission.x = em }
+                        }
                     }
+                    sign.updateInstance(buf)
                 }
-                sign.updateInstance(signInstances)
             }
         }
     }
@@ -193,17 +195,16 @@ class GuardRail {
             joint.setBreakForce(2e5f, 2e5f)
 
             pointLight = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
-                color.set(Color.MD_ORANGE_300.toLinear())
+                color.set(MdColor.ORANGE toneLin 300)
             }
         }
 
-        fun updateInstance(instanceList: MeshInstanceList) {
+        fun updateInstance(buf: Float32Buffer) {
             pointLight.intensity = max(emission.x, emission.y) * 100f
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
-            instanceList.addInstance {
-                put(actor.transform.matrix)
-                put(emission.array)
-            }
+
+            buf.put(actor.transform.matrix)
+            buf.put(emission.array)
         }
     }
 
@@ -213,7 +214,7 @@ class GuardRail {
         init {
             onPipelineCreated += { _, _, _ ->
                 uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
-                uEmissionColor?.value?.set(VehicleDemo.color(500f, false).scale(25f, MutableVec4f()))
+                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(25f, MutableVec4f()))
             }
         }
 

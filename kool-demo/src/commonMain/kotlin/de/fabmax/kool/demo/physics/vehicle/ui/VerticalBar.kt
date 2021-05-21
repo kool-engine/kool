@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.ui.UiComponent
 import de.fabmax.kool.scene.ui.UiRoot
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 
 class VerticalBar(name: String, root: UiRoot) : UiComponent(name, root) {
     var value = 0f
@@ -15,7 +16,7 @@ class VerticalBar(name: String, root: UiRoot) : UiComponent(name, root) {
             isTrackUpdate = true
         }
 
-    var trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_ORANGE)
+    var trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), MdColor.ORANGE)
         set(value) {
             field = value
             isTrackUpdate = true

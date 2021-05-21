@@ -5,8 +5,8 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.ui.ComponentUi
 import de.fabmax.kool.scene.ui.UiComponent
 import de.fabmax.kool.scene.ui.UiRoot
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 
 class HorizontalBar(name: String, root: UiRoot) : UiComponent(name, root) {
     var value = 0.0f
@@ -15,7 +15,7 @@ class HorizontalBar(name: String, root: UiRoot) : UiComponent(name, root) {
             isTrackUpdate = true
         }
 
-    var trackColor = ColorGradient(Color.MD_ORANGE, Color.MD_ORANGE_100, Color.MD_ORANGE)
+    var trackColor = ColorGradient(MdColor.ORANGE, MdColor.ORANGE tone 100, MdColor.ORANGE)
         set(value) {
             field = value
             isTrackUpdate = true

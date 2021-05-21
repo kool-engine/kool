@@ -6,10 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPipeline
@@ -191,13 +188,13 @@ class GltfDemo : DemoScene("glTF Models") {
             val pos = Vec3f(7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
             setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
-            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
+            setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         })
         lighting.lights.add(Light().apply {
             val pos = Vec3f(-7f, 8f, 8f)
             val lookAt = Vec3f.ZERO
             setSpot(pos, lookAt.subtract(pos, MutableVec3f()).norm(), 25f)
-            setColor(Color.WHITE.mix(Color.MD_AMBER, 0.3f).toLinear(), 500f)
+            setColor(Color.WHITE.mix(MdColor.AMBER, 0.3f).toLinear(), 500f)
         })
     }
 

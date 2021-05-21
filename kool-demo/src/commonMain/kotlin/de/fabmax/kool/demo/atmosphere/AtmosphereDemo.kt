@@ -18,6 +18,7 @@ import de.fabmax.kool.scene.ui.Slider
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.util.deferred.DeferredPipeline
@@ -195,8 +196,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
         val lightGradientTex = GradientTexture(ColorGradient(
-                cos(90f.toRad()) to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
-                cos(85f.toRad()) to Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(),
+                cos(90f.toRad()) to MdColor.ORANGE.mix(Color.WHITE, 0.6f).toLinear(),
+                cos(85f.toRad()) to MdColor.AMBER.mix(Color.WHITE, 0.6f).toLinear(),
                 cos(80f.toRad()) to Color.WHITE.toLinear(),
                 cos(0f.toRad()) to Color.WHITE.toLinear()
         ))

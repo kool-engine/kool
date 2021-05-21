@@ -23,7 +23,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.scene.lineMesh
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.WalkAxes
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import de.fabmax.kool.util.ibl.EnvironmentMaps
@@ -153,14 +153,14 @@ class CharacterDemo : DemoScene("Character Demo") {
         ball.position = Vec3f(4f, 4f, 4f)
         ball.attachShape(Shape(SphereGeometry(0.75f)))
         physicsWorld.addActor(ball)
-        mainScene += ball.toMesh(Color.MD_PINK)
+        mainScene += ball.toMesh(MdColor.PINK)
     }
 
     private fun makeCharModel(charProps: CharacterProperties) = group {
         +lineMesh {
-            val cr = Color.MD_RED
-            val cg = Color.MD_GREEN
-            val cb = Color.MD_BLUE
+            val cr = MdColor.RED
+            val cg = MdColor.GREEN
+            val cb = MdColor.BLUE
             val r = charProps.radius
             val h = charProps.height / 2
             for (i in 0 until 40) {

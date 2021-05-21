@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.atmosphere.AtmosphereNode
 import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
@@ -45,8 +46,8 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     private val lightGradient = ColorGradient(
             -90f to Color.BLACK,
             -2f to Color.BLACK,
-            0f to Color.MD_ORANGE.mix(Color.WHITE, 0.6f).toLinear().scale(0.7f),
-            5f to Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(),
+            0f to MdColor.ORANGE.mix(Color.WHITE, 0.6f).toLinear().scale(0.7f),
+            5f to MdColor.AMBER.mix(Color.WHITE, 0.6f).toLinear(),
             10f to Color.WHITE,
             90f to Color.WHITE,
     )
@@ -65,7 +66,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
         groundShader = pbrShader {
             isHdrOutput = true
-            useStaticAlbedo(Color.MD_BROWN_300.toLinear())
+            useStaticAlbedo(MdColor.BROWN toneLin 300)
             roughness = 0.8f
         }.apply {
             ambient = nightSkyColor

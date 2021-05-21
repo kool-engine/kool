@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.min
 
@@ -58,10 +58,10 @@ class LoadingScreen(ctx: KoolContext) : Scene("Loading Screen") {
     }
 
     private var colors = listOf(
-        Color.MD_ORANGE, Color.MD_CYAN, Color.MD_RED, Color.MD_GREEN, Color.MD_LIME,
-        Color.MD_BLUE, Color.MD_RED, Color.MD_DEEP_ORANGE, Color.MD_PINK, Color.MD_TEAL,
-        Color.MD_PURPLE, Color.MD_AMBER, Color.MD_INDIGO, Color.MD_DEEP_PURPLE, Color.MD_YELLOW,
-        Color.MD_LIGHT_BLUE, Color.MD_LIGHT_GREEN
+        MdColor.ORANGE, MdColor.CYAN, MdColor.RED, MdColor.GREEN, MdColor.LIME,
+        MdColor.BLUE, MdColor.RED, MdColor.DEEP_ORANGE, MdColor.PINK, MdColor.TEAL,
+        MdColor.PURPLE, MdColor.AMBER, MdColor.INDIGO, MdColor.DEEP_PURPLE, MdColor.YELLOW,
+        MdColor.LIGHT_BLUE, MdColor.LIGHT_GREEN
     )
     private var arcLengths = FloatArray(colors.size) { randomF(10f, 50f) }
     private var arcSpeeds = FloatArray(colors.size) { randomF(90f, 360f) }

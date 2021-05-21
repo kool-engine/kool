@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.max
@@ -172,25 +173,25 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
 
     companion object {
         private val matColors = listOf(
-                MatColor("Red", Color.MD_RED.toLinear()),
-                MatColor("Pink", Color.MD_PINK.toLinear()),
-                MatColor("Purple", Color.MD_PURPLE.toLinear()),
-                MatColor("Deep Purple", Color.MD_DEEP_PURPLE.toLinear()),
-                MatColor("Indigo", Color.MD_INDIGO.toLinear()),
-                MatColor("Blue", Color.MD_BLUE.toLinear()),
-                MatColor("Cyan", Color.MD_CYAN.toLinear()),
-                MatColor("Teal", Color.MD_TEAL.toLinear()),
-                MatColor("Green", Color.MD_GREEN.toLinear()),
-                MatColor("Light Green", Color.MD_LIGHT_GREEN.toLinear()),
-                MatColor("Lime", Color.MD_LIME.toLinear()),
-                MatColor("Yellow", Color.MD_YELLOW.toLinear()),
-                MatColor("Amber", Color.MD_AMBER.toLinear()),
-                MatColor("Orange", Color.MD_ORANGE.toLinear()),
-                MatColor("Deep Orange", Color.MD_DEEP_ORANGE.toLinear()),
-                MatColor("Brown", Color.MD_BROWN.toLinear()),
+                MatColor("Red", MdColor.RED.toLinear()),
+                MatColor("Pink", MdColor.PINK.toLinear()),
+                MatColor("Purple", MdColor.PURPLE.toLinear()),
+                MatColor("Deep Purple", MdColor.DEEP_PURPLE.toLinear()),
+                MatColor("Indigo", MdColor.INDIGO.toLinear()),
+                MatColor("Blue", MdColor.BLUE.toLinear()),
+                MatColor("Cyan", MdColor.CYAN.toLinear()),
+                MatColor("Teal", MdColor.TEAL.toLinear()),
+                MatColor("Green", MdColor.GREEN.toLinear()),
+                MatColor("Light Green", MdColor.LIGHT_GREEN.toLinear()),
+                MatColor("Lime", MdColor.LIME.toLinear()),
+                MatColor("Yellow", MdColor.YELLOW.toLinear()),
+                MatColor("Amber", MdColor.AMBER.toLinear()),
+                MatColor("Orange", MdColor.ORANGE.toLinear()),
+                MatColor("Deep Orange", MdColor.DEEP_ORANGE.toLinear()),
+                MatColor("Brown", MdColor.BROWN.toLinear()),
                 MatColor("White", Color.WHITE.toLinear()),
-                MatColor("Grey", Color.MD_GREY.toLinear()),
-                MatColor("Blue Grey", Color.MD_BLUE_GREY.toLinear()),
+                MatColor("Grey", MdColor.GREY.toLinear()),
+                MatColor("Blue Grey", MdColor.BLUE_GREY.toLinear()),
                 MatColor("Almost Black", Color(0.1f, 0.1f, 0.1f).toLinear())
         )
     }

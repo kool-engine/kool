@@ -60,15 +60,17 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
         }
     }
 
-    inline fun addInstance(block: Float32Buffer.() -> Unit) {
-        checkBufferSize()
+    inline fun addInstance(block: Float32Buffer.() -> Unit) = addInstances(1) { it.block() }
+
+    inline fun addInstances(n: Int, block: (Float32Buffer) -> Unit) {
+        checkBufferSize(n)
         val szBefore = dataF.position
-        dataF.block()
+        block(dataF)
         val growSz = dataF.position - szBefore
-        if (growSz != instanceSizeF) {
-            throw IllegalStateException("Expected data to grow by $instanceSizeF elements, instead it grew by $growSz")
+        if (growSz != instanceSizeF * n) {
+            throw IllegalStateException("Expected data to grow by ${instanceSizeF * n} elements, instead it grew by $growSz")
         }
-        numInstances++
+        numInstances += n
         hasChanged = true
     }
 

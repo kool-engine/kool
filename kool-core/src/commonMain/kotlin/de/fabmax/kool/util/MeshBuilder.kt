@@ -140,6 +140,17 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         circle(props)
     }
 
+    fun fillPolygon(points: List<Vec3f>, normal: Vec3f? = null) {
+        val indices = points.map { pt ->
+            vertex {
+                position.set(pt)
+                color.set(this@MeshBuilder.color)
+                normal?.let { this.normal.set(it) }
+            }
+        }
+        fillPolygon(indices)
+    }
+
     fun fillPolygon(indices: List<Int>) {
         val points = indices.map { Vec3f(geometry.vertexIt.apply { index = it }.position) }
         val poly = PolyUtil.fillPolygon(points)
@@ -945,19 +956,19 @@ class CubeProps {
 
     fun colored(linearSpace: Boolean = true) {
         if (linearSpace) {
-            frontColor = Color.MD_RED.toLinear()
-            rightColor = Color.MD_AMBER.toLinear()
-            backColor = Color.MD_INDIGO.toLinear()
-            leftColor = Color.MD_CYAN.toLinear()
-            topColor = Color.MD_PURPLE.toLinear()
-            bottomColor = Color.MD_GREEN.toLinear()
+            frontColor = MdColor.RED.toLinear()
+            rightColor = MdColor.AMBER.toLinear()
+            backColor = MdColor.INDIGO.toLinear()
+            leftColor = MdColor.CYAN.toLinear()
+            topColor = MdColor.PURPLE.toLinear()
+            bottomColor = MdColor.GREEN.toLinear()
         } else {
-            frontColor = Color.MD_RED
-            rightColor = Color.MD_AMBER
-            backColor = Color.MD_INDIGO
-            leftColor = Color.MD_CYAN
-            topColor = Color.MD_PURPLE
-            bottomColor = Color.MD_GREEN
+            frontColor = MdColor.RED
+            rightColor = MdColor.AMBER
+            backColor = MdColor.INDIGO
+            leftColor = MdColor.CYAN
+            topColor = MdColor.PURPLE
+            bottomColor = MdColor.GREEN
         }
     }
 }

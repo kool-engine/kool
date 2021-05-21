@@ -20,7 +20,7 @@ import de.fabmax.kool.pipeline.shading.AlbedoMapMode
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.deferred.deferredPbrShader
@@ -244,7 +244,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             shader = deferredPbrShader {
                 useAlbedoMap(groundAlbedo, AlbedoMapMode.MULTIPLY_BY_UNIFORM)
                 useNormalMap(groundNormal)
-                albedo = color(100f)
+                albedo = color(100)
             }
         }
         +gndMesh
@@ -259,9 +259,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     companion object {
-        fun color(c: Float, linear: Boolean = true): Color {
-            val color = ColorGradient.MD_ORANGE.getColor(c, 0f, 900f)
-                .mix(ColorGradient.MD_GREY.getColor(c, 0f, 900f), 0.25f)
+        fun color(c: Int, linear: Boolean = true): Color {
+            val color = (MdColor.ORANGE tone c).mix(MdColor.GREY tone c, 0.25f)
             return if (linear) color.toLinear() else color
         }
     }

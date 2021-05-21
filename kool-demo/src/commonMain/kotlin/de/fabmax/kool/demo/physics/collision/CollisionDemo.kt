@@ -42,7 +42,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private var restitution = 0.2f
     private lateinit var physicsWorld: PhysicsWorld
     private val physicsStepper = SimplePhysicsStepper()
-    private val bodies = mutableListOf<ColoredBody>()
+    private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
 
@@ -82,7 +82,6 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             setDirectional(Vec3f(0.8f, -1.2f, 1f))
         }
 
-
         makeGround(ibl, physicsWorld)
         shapeGenCtx.material = Material(friction, friction, restitution)
         resetPhysics()
@@ -101,26 +100,29 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 shapeType[i].instances.clear()
             }
 
-            bodies.forEach { body ->
-                if (body.rigidActor.position.length() > 500f) {
-                    removeBodies += body
-                } else {
-                    matBuf.set(body.rigidActor.transform).scale(body.scale)
-                    body.shapeType.instances.addInstance {
-                        put(matBuf.matrix)
-                        put(body.color.array)
+            bodies.forEach { (type, typeBodies) ->
+                type.instances.addInstances(typeBodies.size) { buf ->
+                    for (i in typeBodies.indices) {
+                        val body = typeBodies[i]
+                        matBuf.set(body.rigidActor.transform).scale(body.scale)
+
+                        buf.put(matBuf.matrix)
+                        buf.put(body.color.array)
+
+                        if (body.rigidActor.position.length() > 500f) {
+                            removeBodies += body
+                        }
                     }
                 }
-            }
-
-            if (removeBodies.isNotEmpty()) {
-                removeBodies.forEach { body ->
-                    logI { "Removing out-of-range body" }
-                    bodies.remove(body)
-                    physicsWorld.removeActor(body.rigidActor)
-                    body.rigidActor.release()
+                if (removeBodies.isNotEmpty()) {
+                    removeBodies.forEach { body ->
+                        logI { "Removing out-of-range body" }
+                        typeBodies.remove(body)
+                        physicsWorld.removeActor(body.rigidActor)
+                        body.rigidActor.release()
+                    }
+                    removeBodies.clear()
                 }
-                removeBodies.clear()
             }
         }
 
@@ -138,9 +140,11 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     }
 
     private fun resetPhysics() {
-        bodies.forEach {
-            physicsWorld.removeActor(it.rigidActor)
-            it.rigidActor.release()
+        bodies.values.forEach { typedBodies ->
+            typedBodies.forEach {
+                physicsWorld.removeActor(it.rigidActor)
+                it.rigidActor.release()
+            }
         }
         bodies.clear()
 
@@ -160,7 +164,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         for (i in 0 until numSpawnBodies) {
             val layer = i / stacks
             val stack = i % stacks
-            val color = Color.MD_COLORS[layer % Color.MD_COLORS.size].toLinear()
+            val color = MdColor.PALETTE[layer % MdColor.PALETTE.size].toLinear()
 
             val x = centers[stack].x * 10f + rand.randomF(-1f, 1f)
             val z = centers[stack].y * 10f + rand.randomF(-1f, 1f)
@@ -181,7 +185,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             physicsWorld.addActor(body)
 
             val coloredBody = ColoredBody(body, color, type, shapes)
-            bodies += coloredBody
+            bodies.getOrPut(type) { mutableListOf() } += coloredBody
         }
     }
 
@@ -296,7 +300,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 shadowMaps += shadows
                 useImageBasedLighting(ibl)
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
-                useStaticAlbedo(Color.MD_BLUE_GREY_700.toLinear())
+                useStaticAlbedo(MdColor.BLUE_GREY toneLin 700)
             }
         }
     }

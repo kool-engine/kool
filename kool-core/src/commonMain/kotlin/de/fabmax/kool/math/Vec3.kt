@@ -562,4 +562,18 @@ open class MutableVec3i(x: Int, y: Int, z: Int) : Vec3i(x, y, z) {
     }
 
     open operator fun set(i: Int, v: Int) { fields[i] = v }
+
+    fun add(other: Vec3i): MutableVec3i {
+        x += other.x
+        y += other.y
+        z += other.z
+        return this
+    }
+
+    fun subtract(other: Vec3i): MutableVec3i {
+        x -= other.x
+        y -= other.y
+        z -= other.z
+        return this
+    }
 }

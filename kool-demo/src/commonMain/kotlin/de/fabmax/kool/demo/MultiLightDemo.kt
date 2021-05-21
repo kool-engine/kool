@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPipeline
@@ -24,10 +25,10 @@ class MultiLightDemo : DemoScene("Reflections") {
     private lateinit var deferredPipeline: DeferredPipeline
 
     private val lights = listOf(
-            LightMesh(Color.MD_CYAN),
-            LightMesh(Color.MD_RED),
-            LightMesh(Color.MD_AMBER),
-            LightMesh(Color.MD_GREEN))
+            LightMesh(MdColor.CYAN),
+            LightMesh(MdColor.RED),
+            LightMesh(MdColor.AMBER),
+            LightMesh(MdColor.GREEN))
     private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private var lightCount = 4
@@ -324,24 +325,24 @@ class MultiLightDemo : DemoScene("Reflections") {
     companion object {
         private val matColors = listOf(
                 MatColor("White", Color.WHITE.toLinear()),
-                MatColor("Red", Color.MD_RED.toLinear()),
-                MatColor("Pink", Color.MD_PINK.toLinear()),
-                MatColor("Purple", Color.MD_PURPLE.toLinear()),
-                MatColor("Deep Purple", Color.MD_DEEP_PURPLE.toLinear()),
-                MatColor("Indigo", Color.MD_INDIGO.toLinear()),
-                MatColor("Blue", Color.MD_BLUE.toLinear()),
-                MatColor("Cyan", Color.MD_CYAN.toLinear()),
-                MatColor("Teal", Color.MD_TEAL.toLinear()),
-                MatColor("Green", Color.MD_GREEN.toLinear()),
-                MatColor("Light Green", Color.MD_LIGHT_GREEN.toLinear()),
-                MatColor("Lime", Color.MD_LIME.toLinear()),
-                MatColor("Yellow", Color.MD_YELLOW.toLinear()),
-                MatColor("Amber", Color.MD_AMBER.toLinear()),
-                MatColor("Orange", Color.MD_ORANGE.toLinear()),
-                MatColor("Deep Orange", Color.MD_DEEP_ORANGE.toLinear()),
-                MatColor("Brown", Color.MD_BROWN.toLinear()),
-                MatColor("Grey", Color.MD_GREY.toLinear()),
-                MatColor("Blue Grey", Color.MD_BLUE_GREY.toLinear()),
+                MatColor("Red", MdColor.RED.toLinear()),
+                MatColor("Pink", MdColor.PINK.toLinear()),
+                MatColor("Purple", MdColor.PURPLE.toLinear()),
+                MatColor("Deep Purple", MdColor.DEEP_PURPLE.toLinear()),
+                MatColor("Indigo", MdColor.INDIGO.toLinear()),
+                MatColor("Blue", MdColor.BLUE.toLinear()),
+                MatColor("Cyan", MdColor.CYAN.toLinear()),
+                MatColor("Teal", MdColor.TEAL.toLinear()),
+                MatColor("Green", MdColor.GREEN.toLinear()),
+                MatColor("Light Green", MdColor.LIGHT_GREEN.toLinear()),
+                MatColor("Lime", MdColor.LIME.toLinear()),
+                MatColor("Yellow", MdColor.YELLOW.toLinear()),
+                MatColor("Amber", MdColor.AMBER.toLinear()),
+                MatColor("Orange", MdColor.ORANGE.toLinear()),
+                MatColor("Deep Orange", MdColor.DEEP_ORANGE.toLinear()),
+                MatColor("Brown", MdColor.BROWN.toLinear()),
+                MatColor("Grey", MdColor.GREY.toLinear()),
+                MatColor("Blue Grey", MdColor.BLUE_GREY.toLinear()),
                 MatColor("Almost Black", Color(0.1f, 0.1f, 0.1f).toLinear())
         )
     }

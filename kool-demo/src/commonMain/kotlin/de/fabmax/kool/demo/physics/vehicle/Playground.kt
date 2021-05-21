@@ -56,7 +56,7 @@ object Playground {
                 body.position = pos
                 world.physics.addActor(body)
 
-                val color = if (i % 2 == 0) VehicleDemo.color(400f) else VehicleDemo.color(200f)
+                val color = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
                 world.deferredPipeline.contentGroup += world.toPrettyMesh(body, color)
             }
         }
@@ -77,14 +77,14 @@ object Playground {
         }
         world.physics.addActor(anchor)
         world.physics.addActor(rocker)
-        world.deferredPipeline.contentGroup += world.toPrettyMesh(anchor, VehicleDemo.color(400f))
-        world.deferredPipeline.contentGroup += world.toPrettyMesh(rocker, VehicleDemo.color(200f))
+        world.deferredPipeline.contentGroup += world.toPrettyMesh(anchor, VehicleDemo.color(400))
+        world.deferredPipeline.contentGroup += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
         RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }
 
     private fun MeshBuilder.makeRamp(frame: Mat4f) {
-        color = VehicleDemo.color(200f)
+        color = VehicleDemo.color(200)
         withTransform {
             transform.mul(frame)
             rotate(-11f, 0f, 0f)
@@ -97,7 +97,7 @@ object Playground {
 
     private fun MeshBuilder.makeBumps(frame: Mat4f) {
         for (i in 0 until 30) {
-            val c = if (i % 2 == 0) VehicleDemo.color(400f) else VehicleDemo.color(200f)
+            val c = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
             for (s in -1 .. 1 step 2) {
                 withTransform {
                     transform.mul(frame)
@@ -133,7 +133,7 @@ object Playground {
                     }
                 }
 
-                color = VehicleDemo.color(200f)
+                color = VehicleDemo.color(200)
                 sample()
                 val inds = mutableListOf<Int>()
                 inds += multiShape.shapes[0].sampledVertIndices

@@ -204,7 +204,9 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
     }
 
-    fun addGeometry(geometry: IndexedVertexList) {
+    fun addGeometry(geometry: IndexedVertexList) = addGeometry(geometry) { }
+
+    inline fun addGeometry(geometry: IndexedVertexList, vertexMod: (VertexView.() -> Unit)) {
         val baseIdx = numVertices
 
         checkBufferSizes(geometry.numVertices)
@@ -212,6 +214,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
             addVertex {
                 geometry.vertexIt.index = i
                 set(geometry.vertexIt)
+                vertexMod.invoke(this)
             }
         }
 

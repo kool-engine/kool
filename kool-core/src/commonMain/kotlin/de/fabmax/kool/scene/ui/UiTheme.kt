@@ -1,10 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.uiFont
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -66,8 +63,8 @@ open class UiTheme {
 
         val LIGHT = theme {
             backgroundColor(Color.WHITE.withAlpha(0.6f))
-            foregroundColor(Color.MD_BLUE_GREY_900)
-            accentColor(Color.MD_PINK)
+            foregroundColor(MdColor.BLUE_GREY tone 900)
+            accentColor(MdColor.PINK)
         }
 
         val LIGHT_SIMPLE = theme(LIGHT) {

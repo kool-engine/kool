@@ -417,4 +417,16 @@ open class MutableVec2i(x: Int, y: Int) : Vec2i(x, y) {
     }
 
     open operator fun set(i: Int, v: Int) { fields[i] = v }
+
+    fun add(other: Vec2i): MutableVec2i {
+        x += other.x
+        y += other.y
+        return this
+    }
+
+    fun subtract(other: Vec2i): MutableVec2i {
+        x -= other.x
+        y -= other.y
+        return this
+    }
 }

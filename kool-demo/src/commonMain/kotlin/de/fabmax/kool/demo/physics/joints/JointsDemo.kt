@@ -130,11 +130,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val l2 = Vec3f(-30f, 100f, 100f)
             lights += Light().apply {
                 setSpot(l1, MutableVec3f(l1).scale(-1f).norm(), 45f)
-                setColor(Color.WHITE.mix(Color.MD_AMBER, 0.1f), 50000f)
+                setColor(Color.WHITE.mix(MdColor.AMBER, 0.1f), 50000f)
             }
             lights += Light().apply {
                 setSpot(l2, MutableVec3f(l2).scale(-1f).norm(), 45f)
-                setColor(Color.WHITE.mix(Color.MD_LIGHT_BLUE, 0.1f), 25000f)
+                setColor(Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.1f), 25000f)
             }
         }
         shadows.add(SimpleShadowMap(this, 0).apply {
@@ -512,9 +512,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
             if (bodies.isNotEmpty()) {
                 getOrCreate(bodies[0]).instances!!.apply {
                     clear()
-                    for (i in bodies.indices) {
-                        addInstance {
-                            put(bodies[i].transform.matrix)
+                    addInstances(bodies.size) { buf ->
+                        for (i in bodies.indices) {
+                            buf.put(bodies[i].transform.matrix)
                         }
                     }
                 }
@@ -523,10 +523,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private inner class BodyMeshes(isNice: Boolean): Group() {
-        var linkMeshO = BodyMesh(Color.MD_BLUE_GREY.toLinear()) { addNode(it) }
-        var linkMeshI = BodyMesh((Color.MD_BLUE_GREY_300.mix(Color.MD_BLUE_GREY_400, 0.5f)).toLinear()) { addNode(it) }
-        var gearMesh = BodyMesh(Color.MD_BLUE_GREY_200.toLinear()) { addNode(it) }
-        var axleMesh = BodyMesh(Color.MD_BLUE_GREY_700.toLinear()) { addNode(it) }
+        var linkMeshO = BodyMesh(MdColor.BLUE_GREY.toLinear()) { addNode(it) }
+        var linkMeshI = BodyMesh(MdColor.BLUE_GREY toneLin 350) { addNode(it) }
+        var gearMesh = BodyMesh(MdColor.BLUE_GREY toneLin 200) { addNode(it) }
+        var axleMesh = BodyMesh(MdColor.BLUE_GREY toneLin 700) { addNode(it) }
 
         val linksO = mutableListOf<RigidDynamic>()
         val linksI = mutableListOf<RigidDynamic>()

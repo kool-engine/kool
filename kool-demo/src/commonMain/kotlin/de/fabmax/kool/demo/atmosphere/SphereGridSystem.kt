@@ -14,21 +14,21 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
     private val tiles: MeshInstanceList
 
     private val zoomColors = listOf(
-            MutableColor(Color.MD_PURPLE).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_RED).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_AMBER).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_LIGHT_GREEN).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_BLUE).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_DEEP_PURPLE).mix(Color.WHITE, 0.6f).toLinear(),
-            MutableColor(Color.MD_PINK).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.PURPLE).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.RED).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.AMBER).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.LIGHT_GREEN).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.BLUE).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.DEEP_PURPLE).mix(Color.WHITE, 0.6f).toLinear(),
+            MutableColor(MdColor.PINK).mix(Color.WHITE, 0.6f).toLinear(),
     )
 
-    private val front = Face(MutableColor(Color.MD_RED))
-    private val back = Face(MutableColor(Color.MD_GREEN))
-    private val right = Face(MutableColor(Color.MD_BLUE))
-    private val left = Face(MutableColor(Color.MD_YELLOW))
-    private val top = Face(MutableColor(Color.MD_CYAN))
-    private val bottom = Face(MutableColor(Color.MD_PURPLE))
+    private val front = Face(MutableColor(MdColor.RED))
+    private val back = Face(MutableColor(MdColor.GREEN))
+    private val right = Face(MutableColor(MdColor.BLUE))
+    private val left = Face(MutableColor(MdColor.YELLOW))
+    private val top = Face(MutableColor(MdColor.CYAN))
+    private val bottom = Face(MutableColor(MdColor.PURPLE))
 
     private val faces = listOf(front, back, left, right, top, bottom)
     private var centerFace: Face? = null

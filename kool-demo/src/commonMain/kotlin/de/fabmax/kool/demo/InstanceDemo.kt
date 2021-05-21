@@ -16,10 +16,7 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.InstancedLodController
-import de.fabmax.kool.util.MeshInstanceList
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import kotlin.math.roundToInt
@@ -37,12 +34,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     private lateinit var model: GltfFile
 
     private val lods = mutableListOf(
-            Lod(8, 10f, MutableColor(Color.MD_PURPLE.toLinear())),
-            Lod(32, 20f, MutableColor(Color.MD_RED.toLinear())),
-            Lod(128, 30f, MutableColor(Color.MD_AMBER.toLinear())),
-            Lod(500, 40f, MutableColor(Color.MD_LIME.toLinear())),
-            Lod(2000, 50f, MutableColor(Color.MD_GREEN.toLinear())),
-            Lod(10000, 1000f, MutableColor(Color.MD_BLUE.toLinear()))
+            Lod(8, 10f, MutableColor(MdColor.PURPLE.toLinear())),
+            Lod(32, 20f, MutableColor(MdColor.RED.toLinear())),
+            Lod(128, 30f, MutableColor(MdColor.AMBER.toLinear())),
+            Lod(500, 40f, MutableColor(MdColor.LIME.toLinear())),
+            Lod(2000, 50f, MutableColor(MdColor.GREEN.toLinear())),
+            Lod(10000, 1000f, MutableColor(MdColor.BLUE.toLinear()))
     )
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
@@ -106,12 +103,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     }
 
     private fun InstancedLodController<BunnyInstance>.setupInstances() {
-        val colors = listOf(Color.WHITE.toLinear(), Color.MD_RED.toLinear(), Color.MD_PINK.toLinear(),
-                Color.MD_PURPLE.toLinear(), Color.MD_DEEP_PURPLE.toLinear(), Color.MD_INDIGO.toLinear(),
-                Color.MD_BLUE.toLinear(), Color.MD_CYAN.toLinear(), Color.MD_TEAL.toLinear(), Color.MD_GREEN.toLinear(),
-                Color.MD_LIGHT_GREEN.toLinear(), Color.MD_LIME.toLinear(), Color.MD_YELLOW.toLinear(),
-                Color.MD_AMBER.toLinear(), Color.MD_ORANGE.toLinear(), Color.MD_DEEP_ORANGE.toLinear(),
-                Color.MD_BROWN.toLinear(), Color.MD_GREY.toLinear(), Color.MD_BLUE_GREY.toLinear()
+        val colors = listOf(Color.WHITE.toLinear(), MdColor.RED.toLinear(), MdColor.PINK.toLinear(),
+                MdColor.PURPLE.toLinear(), MdColor.DEEP_PURPLE.toLinear(), MdColor.INDIGO.toLinear(),
+                MdColor.BLUE.toLinear(), MdColor.CYAN.toLinear(), MdColor.TEAL.toLinear(), MdColor.GREEN.toLinear(),
+                MdColor.LIGHT_GREEN.toLinear(), MdColor.LIME.toLinear(), MdColor.YELLOW.toLinear(),
+                MdColor.AMBER.toLinear(), MdColor.ORANGE.toLinear(), MdColor.DEEP_ORANGE.toLinear(),
+                MdColor.BROWN.toLinear(), MdColor.GREY.toLinear(), MdColor.BLUE_GREY.toLinear()
         )
 
         instances.clear()
@@ -168,14 +165,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             super.update(lodCtrl, cam, ctx)
         }
 
-        override fun addInstanceData(lod: Int, instanceList: MeshInstanceList, ctx: KoolContext) {
-            instanceList.addInstance {
-                put(instanceModelMat.matrix)
-                if (isLodColors) {
-                    put(lods[lod].color.array)
-                } else {
-                    put(color.array)
-                }
+        override fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
+            buffer.put(instanceModelMat.matrix)
+            if (isLodColors) {
+                buffer.put(lods[lod].color.array)
+            } else {
+                buffer.put(color.array)
             }
         }
     }

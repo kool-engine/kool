@@ -104,6 +104,22 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
+    fun yz(y: Float, z: Float) {
+        positions += MutableVec3f(0f, y, z)
+    }
+
+    fun yzArc(y: Float, z: Float, center: Vec2f, angle: Float, steps: Int, generateNormals: Boolean = false) {
+        val angStep = angle / steps
+        val v = MutableVec2f(y - center.x, z - center.y)
+        for (i in 0 .. steps) {
+            yz(center.x + v.x, center.y + v.y)
+            if (generateNormals) {
+                normals += MutableVec3f(0f, v.x, v.y).norm()
+            }
+            v.rotate(angStep)
+        }
+    }
+
     fun uv(x: Float, y: Float) {
         texCoords += MutableVec2f(x, y)
     }

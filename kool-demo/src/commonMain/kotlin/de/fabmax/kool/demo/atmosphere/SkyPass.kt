@@ -12,6 +12,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -80,7 +81,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
             isFrustumChecked = false
             generate {
                 val rand = Random(56498561)
-                val gradient = ColorGradient(Color.WHITE, Color.MD_BLUE.mix(Color.WHITE, 0.5f), Color.MD_PINK.mix(Color.WHITE, 0.5f), Color.MD_YELLOW.mix(Color.WHITE, 0.5f))
+                val gradient = ColorGradient(Color.WHITE, MdColor.BLUE.mix(Color.WHITE, 0.5f), MdColor.PINK.mix(Color.WHITE, 0.5f), MdColor.YELLOW.mix(Color.WHITE, 0.5f))
                 for (i in 0..30000) {
                     vertex {
                         var x = 1f

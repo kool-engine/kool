@@ -546,4 +546,20 @@ open class MutableVec4i(x: Int, y: Int, z: Int, w: Int) : Vec4i(x, y, z, w) {
     }
 
     open operator fun set(i: Int, v: Int) { fields[i] = v }
+
+    fun add(other: Vec4i): MutableVec4i {
+        x += other.x
+        y += other.y
+        z += other.z
+        w += other.w
+        return this
+    }
+
+    fun subtract(other: Vec4i): MutableVec4i {
+        x -= other.x
+        y -= other.y
+        z -= other.z
+        w -= other.w
+        return this
+    }
 }

@@ -77,7 +77,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
         }
     }
 
-    fun generateWireframe(lineMesh: LineMesh, lineColor: Color = Color.MD_PINK) {
+    fun generateWireframe(lineMesh: LineMesh, lineColor: Color = MdColor.PINK) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
         edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->

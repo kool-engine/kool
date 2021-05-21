@@ -50,11 +50,12 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
 
     fun updateLightData() {
         lightInstanceData.clear()
-        for (i in 0 until min(lightInstances.size, lightInstanceData.maxInstances)) {
-            lightInstanceData.addInstance {
+        val nInstances = min(lightInstances.size, lightInstanceData.maxInstances)
+        lightInstanceData.addInstances(nInstances) { buf ->
+            for (i in 0 until nInstances) {
                 encodeLight(lightInstances[i])
-                put(modelMat.matrix)
-                put(encodedLightData)
+                buf.put(modelMat.matrix)
+                buf.put(encodedLightData)
             }
         }
     }

@@ -129,7 +129,7 @@ class Track(val world: VehicleWorld) : Group() {
                 texCoord.scale(1f / texScale)
             }
 
-            color = Color.MD_ORANGE_100.toLinear()
+            color = MdColor.ORANGE toneLin 100
             profile {
                 multiShape {
                     simpleShape(false) {
@@ -193,7 +193,7 @@ class Track(val world: VehicleWorld) : Group() {
             generateCurbs()
 
             roughness = 0.8f
-            color = VehicleDemo.color(400f)
+            color = VehicleDemo.color(400)
             columnPts.forEach { pt ->
                 val base = MutableVec3f(pt.x, 0f, pt.z)
                 generateColumn(base, pt.y - 0.7f, pt.w)
@@ -231,7 +231,7 @@ class Track(val world: VehicleWorld) : Group() {
     }
 
     private fun MeshBuilder.generateCurbs() {
-        val curbColors = listOf(VehicleDemo.color(150f), VehicleDemo.color(600f))
+        val curbColors = listOf(VehicleDemo.color(150), VehicleDemo.color(600))
         color = curbColors[0]
 
         withTransform {
@@ -320,7 +320,7 @@ class Track(val world: VehicleWorld) : Group() {
     private fun makeTrackShader() {
         val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, maxAnisotropy = 1)
         val rand = Random(1337)
-        val gradient = ColorGradient(VehicleDemo.color(50f, false), VehicleDemo.color(300f, false))
+        val gradient = ColorGradient(VehicleDemo.color(50, false), VehicleDemo.color(300, false))
         val sz = 128
         val colorData = createUint8Buffer(sz * sz * 4)
         val roughnessData = createUint8Buffer(sz * sz)

@@ -12,6 +12,7 @@ import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.ui.Label
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
@@ -37,7 +38,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
         lighting.singleLight {
             setDirectional(Vec3f(-1f, -0.3f, -1f))
-            setColor(Color.MD_AMBER.mix(Color.WHITE, 0.5f).toLinear(), 3f)
+            setColor(MdColor.AMBER.mix(Color.WHITE, 0.5f).toLinear(), 3f)
         }
 
         ctx.assetMgr.launch {

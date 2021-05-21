@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
@@ -111,13 +112,13 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         val spacing = 4.5f
 
         val colors = mutableListOf<Color>()
-        colors += Color.MD_COLORS
-        colors.remove(Color.MD_LIGHT_BLUE)
-        colors.remove(Color.MD_GREY)
-        colors.remove(Color.MD_BLUE_GREY)
+        colors += MdColor.PALETTE
+        colors.remove(MdColor.LIGHT_BLUE)
+        colors.remove(MdColor.GREY)
+        colors.remove(MdColor.BLUE_GREY)
         colors += Color.WHITE
-        colors += Color.MD_GREY
-        colors += Color.MD_BLUE_GREY
+        colors += MdColor.GREY
+        colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
         return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {

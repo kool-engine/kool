@@ -25,6 +25,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -147,7 +148,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
                 val aDeg = (360f / n * i) + j * 17f
                 val a = aDeg.toRad()
                 val pos = Vec3f(sin(a) * r, 1f, cos(a) * r)
-                spawnVehicle(pos, aDeg - 180f, Color.MD_COLORS[i % Color.MD_COLORS.size].toLinear())
+                spawnVehicle(pos, aDeg - 180f, MdColor.PALETTE[i % MdColor.PALETTE.size].toLinear())
             }
         }
     }

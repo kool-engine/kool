@@ -148,9 +148,9 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 shader = instancedBodyShader()
                 onUpdate += {
                     bodyInstanceData.clear()
-                    for (i in bodyInstances.indices) {
-                        bodyInstanceData.addInstance {
-                            bodyInstances[i].putInstanceData(this)
+                    bodyInstanceData.addInstances(bodyInstances.size) { buf ->
+                        for (i in bodyInstances.indices) {
+                            bodyInstances[i].putInstanceData(buf)
                         }
                     }
                 }
@@ -162,7 +162,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 onUpdate += {
                     clear()
                     if (forceHelper.isActive) {
-                        addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, Color.MD_PINK)
+                        addLine(forceHelper.forceAppPosGlobal, forceHelper.forceDragPos, MdColor.PINK)
                     }
                 }
             }
@@ -435,25 +435,25 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             setTargetOrientation(0f, -30f, 0f)
         }
 
-        bodyInstances += BodyInstance(torso.transform, torsoSz, Color.MD_ORANGE.toLinear())
-        bodyInstances += BodyInstance(head.transform, headSz, Color.MD_DEEP_ORANGE.toLinear())
-        bodyInstances += BodyInstance(hip.transform, hipSz, Color.MD_AMBER.toLinear())
+        bodyInstances += BodyInstance(torso.transform, torsoSz, MdColor.ORANGE.toLinear())
+        bodyInstances += BodyInstance(head.transform, headSz, MdColor.DEEP_ORANGE.toLinear())
+        bodyInstances += BodyInstance(hip.transform, hipSz, MdColor.AMBER.toLinear())
 
-        bodyInstances += BodyInstance(upperArmLt.transform, upperArmSz, Color.MD_CYAN.toLinear())
-        bodyInstances += BodyInstance(lowerArmLt.transform, lowerArmSz, Color.MD_CYAN_300.toLinear())
-        bodyInstances += BodyInstance(handLt.transform, handSz, Color.MD_ORANGE_100.toLinear())
+        bodyInstances += BodyInstance(upperArmLt.transform, upperArmSz, MdColor.CYAN.toLinear())
+        bodyInstances += BodyInstance(lowerArmLt.transform, lowerArmSz, MdColor.CYAN toneLin 300)
+        bodyInstances += BodyInstance(handLt.transform, handSz, MdColor.ORANGE toneLin 100)
 
-        bodyInstances += BodyInstance(upperArmRt.transform, upperArmSz, Color.MD_BLUE.toLinear())
-        bodyInstances += BodyInstance(lowerArmRt.transform, lowerArmSz, Color.MD_BLUE_300.toLinear())
-        bodyInstances += BodyInstance(handRt.transform, handSz, Color.MD_ORANGE_100.toLinear())
+        bodyInstances += BodyInstance(upperArmRt.transform, upperArmSz, MdColor.BLUE.toLinear())
+        bodyInstances += BodyInstance(lowerArmRt.transform, lowerArmSz, MdColor.BLUE toneLin 300)
+        bodyInstances += BodyInstance(handRt.transform, handSz, MdColor.ORANGE toneLin 100)
 
-        bodyInstances += BodyInstance(upperLegLt.transform, upperLegSz, Color.MD_LIME.toLinear())
-        bodyInstances += BodyInstance(lowerLegLt.transform, lowerLegSz, Color.MD_LIME_300.toLinear())
-        bodyInstances += BodyInstance(footLt.transform, footSz, Color.MD_LIME_100.toLinear())
+        bodyInstances += BodyInstance(upperLegLt.transform, upperLegSz, MdColor.LIME.toLinear())
+        bodyInstances += BodyInstance(lowerLegLt.transform, lowerLegSz, MdColor.LIME toneLin 300)
+        bodyInstances += BodyInstance(footLt.transform, footSz, MdColor.LIME toneLin 100)
 
-        bodyInstances += BodyInstance(upperLegRt.transform, upperLegSz, Color.MD_GREEN.toLinear())
-        bodyInstances += BodyInstance(lowerLegRt.transform, lowerLegSz, Color.MD_GREEN_300.toLinear())
-        bodyInstances += BodyInstance(footRt.transform, footSz, Color.MD_GREEN_100.toLinear())
+        bodyInstances += BodyInstance(upperLegRt.transform, upperLegSz, MdColor.GREEN.toLinear())
+        bodyInstances += BodyInstance(lowerLegRt.transform, lowerLegSz, MdColor.GREEN toneLin 300)
+        bodyInstances += BodyInstance(footRt.transform, footSz, MdColor.GREEN toneLin 100)
 
         physicsWorld.addArticulation(ragdoll)
 

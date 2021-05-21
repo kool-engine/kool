@@ -45,7 +45,7 @@ object GearChainMeshGen {
                     for (i in 0..11) {
                         withTransform {
                             rotate(i * 30f, Vec3f.Z_AXIS)
-                            color = Color.MD_BLUE_GREY_400.toLinear()
+                            color = MdColor.BLUE_GREY toneLin 400
                             translate(0f, 8f, 0f)
                             scale(0.7f)
                             sampleAndFillTop()
@@ -59,7 +59,7 @@ object GearChainMeshGen {
                             sample(inverseOrientation = true)
                             translate(0f, -0.15f, 0f)
                             scale(1.3f)
-                            color = Color.MD_BLUE_GREY_200.toLinear()
+                            color = MdColor.BLUE_GREY toneLin 200
                             sample(inverseOrientation = true)
                         }
                     }
@@ -70,7 +70,7 @@ object GearChainMeshGen {
             geometry.generateNormals()
 
             // bearing
-            color = Color.MD_BLUE_GREY_200.toLinear()
+            color = MdColor.BLUE_GREY toneLin 200
             withTransform {
                 profile {
                     simpleShape(true) {
@@ -87,7 +87,7 @@ object GearChainMeshGen {
             }
 
             // outer ring
-            color = Color.MD_BLUE_GREY_200.toLinear()
+            color = MdColor.BLUE_GREY toneLin 200
             profile {
                 simpleShape(true) {
                     roundRectXz(6.65f, 0f, 0.6f, 2.4f, 0.2f, 3)
@@ -106,7 +106,7 @@ object GearChainMeshGen {
             roughness = 0f
 
             // center
-            color = Color.MD_RED.toLinear()
+            color = MdColor.RED.toLinear()
             withTransform {
                 profile {
                     simpleShape(true) {
@@ -123,7 +123,7 @@ object GearChainMeshGen {
             }
 
             // spokes
-            color = Color.MD_RED.toLinear()
+            color = MdColor.RED.toLinear()
             profile {
                 simpleShape(true) {
                     xzArc(0.18f, 0f, Vec2f(0f, 0f), -315f, 8, true)
@@ -146,7 +146,7 @@ object GearChainMeshGen {
             }
 
             // outer support ring
-            color = Color.MD_RED.toLinear()
+            color = MdColor.RED.toLinear()
             profile {
                 simpleShape(false) {
                     xz(0f, 0.85f)
@@ -187,7 +187,7 @@ object GearChainMeshGen {
             rotate(-90f, Vec3f.Z_AXIS)
             rotate(90f, Vec3f.Y_AXIS)
 
-            color = Color.MD_RED.toLinear()
+            color = MdColor.RED.toLinear()
             profile {
                 simpleShape(true) {
                     xy(-2f, 0f)
@@ -239,7 +239,7 @@ object GearChainMeshGen {
             metal = 1f
             roughness = 0.3f
 
-            color = Color.MD_BLUE_GREY.toLinear()
+            color = MdColor.BLUE_GREY.toLinear()
             cylinder {
                 radius = 0.6f
                 height = 7f
@@ -259,7 +259,7 @@ object GearChainMeshGen {
                         origin.set(it.x, 0.4f, it.y)
                     }
                 }
-                color = Color.MD_BLUE_GREY_200.toLinear()
+                color = MdColor.BLUE_GREY toneLin 200
                 cylinder {
                     radius = 1f
                     height = 18.7f
@@ -338,7 +338,7 @@ object GearChainMeshGen {
                 roughMetal.y = metal
             }
 
-            color = Color.MD_BLUE_GREY_400.toLinear()
+            color = MdColor.BLUE_GREY toneLin 400
             roughness = 0.4f
             metal = 1f
             profile {
@@ -384,7 +384,7 @@ object GearChainMeshGen {
             }
             rotate(90f, Vec3f.X_AXIS)
 
-            color = Color.MD_BLUE_GREY_700.toLinear()
+            color = MdColor.BLUE_GREY toneLin 700
             roughness = 0.3f
             metal = 1f
             for (s in -1..1 step 2) {

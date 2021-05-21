@@ -10,10 +10,7 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.RectProps
-import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfModel
@@ -200,7 +197,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             mainScene.lighting.singleLight {
                 val p = Vec3f(6f, 10f, -6f)
                 setSpot(p, scale(p, -1f).norm(), 40f)
-                setColor(Color.WHITE.mix(Color.MD_AMBER, 0.2f).toLinear(), 500f)
+                setColor(Color.WHITE.mix(MdColor.AMBER, 0.2f).toLinear(), 500f)
             }
         } else {
             mainScene.lighting.lights.clear()

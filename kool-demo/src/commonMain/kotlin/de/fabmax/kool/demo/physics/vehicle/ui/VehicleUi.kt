@@ -199,14 +199,14 @@ class VehicleUi(ctx: KoolContext) {
                 throttleBar = this
                 layoutSpec.setOrigin(dps(382f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(50f * scale), dps(140f * scale), full())
-                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_ORANGE)
+                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), MdColor.ORANGE)
             }
 
             +VerticalBar("brakeBar", this@uiScene).apply {
                 brakeBar = this
                 layoutSpec.setOrigin(dps(447f  * scale), dps(15f * scale), zero())
                 layoutSpec.setSize(dps(50f * scale), dps(140f * scale), full())
-                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), Color.MD_DEEP_ORANGE)
+                trackColor = ColorGradient(Color.WHITE.withAlpha(0.5f), MdColor.DEEP_ORANGE)
             }
 
             +HorizontalBar("steering", this@uiScene).apply {
@@ -240,7 +240,7 @@ class VehicleUi(ctx: KoolContext) {
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
-                textColor.setCustom(Color.MD_GREY_400)
+                textColor.setCustom(MdColor.GREY tone 400)
             }
 
             +label("sectorTime1") {
@@ -256,7 +256,7 @@ class VehicleUi(ctx: KoolContext) {
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
-                textColor.setCustom(Color.MD_GREY_400)
+                textColor.setCustom(MdColor.GREY tone 400)
             }
 
             +label("sectorTime2") {
@@ -272,16 +272,16 @@ class VehicleUi(ctx: KoolContext) {
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
-                textColor.setCustom(Color.MD_GREY_400)
+                textColor.setCustom(MdColor.GREY tone 400)
             }
 
             +toggleButton("Sound") {
                 layoutSpec.setOrigin(dps(225f * scale), dps(0f * scale), zero())
                 layoutSpec.setSize(dps(150f * scale), dps(35f * scale), full())
-                knobColorOn.setCustom(Color.MD_ORANGE)
-                trackColorOn.setCustom(Color.MD_ORANGE_200)
-                textColor.setCustom(Color.MD_GREY_400)
-                textColorHovered.setCustom(Color.MD_ORANGE)
+                knobColorOn.setCustom(MdColor.ORANGE)
+                trackColorOn.setCustom(MdColor.ORANGE tone 200)
+                textColor.setCustom(MdColor.GREY tone 400)
+                textColorHovered.setCustom(MdColor.ORANGE)
                 onClick += { _, _, _ ->
                     onToggleSound(isEnabled)
                 }

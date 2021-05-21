@@ -63,8 +63,8 @@ class SimplificationDemo : DemoScene("Simplification") {
 
         lighting.lights.apply {
             clear()
-            add(Light().setDirectional(Vec3f(-1f, -1f, 1f)).setColor(Color.MD_RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
-            add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(Color.MD_CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            add(Light().setDirectional(Vec3f(-1f, -1f, 1f)).setColor(MdColor.RED.mix(Color.WHITE, 0.25f).toLinear(), 2f))
+            add(Light().setDirectional(Vec3f(1f, -1f, -1f)).setColor(MdColor.CYAN.mix(Color.WHITE, 0.25f).toLinear(), 2f))
         }
 
         +group {
@@ -92,7 +92,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
             modelWireframe.geometry.batchUpdate {
                 modelWireframe.clear()
-                heMesh.generateWireframe(modelWireframe, Color.MD_LIME)
+                heMesh.generateWireframe(modelWireframe, MdColor.LIME)
             }
 
             val time = pt.takeSecs()
@@ -122,7 +122,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     private fun makeCosGrid(): IndexedVertexList {
         val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
-        builder.color = Color.MD_RED
+        builder.color = MdColor.RED
         builder.grid {
             sizeX = 10f
             sizeY = 10f

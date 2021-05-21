@@ -29,7 +29,7 @@ class Vase : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attr
         scale(1.8f, 1.8f, 1.8f)
         translate(0f, 0f, 0.15f)
 
-        val gridGrad = ColorGradient(Color.MD_BROWN, Color.MD_BLUE_300)
+        val gridGrad = ColorGradient(MdColor.BROWN, MdColor.BLUE tone 300)
 
         val tubeColors = Array(10) { i -> gridGrad.getColor(i / 9f).mix(Color.BLACK, 0.3f) }
         val tubeGrad = ColorGradient(*tubeColors)

@@ -35,12 +35,12 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val lights = mutableListOf<AnimatedLight>()
 
     private val colorMap = Cycler(listOf(
-            ColorMap("Colorful", listOf(Color.MD_RED, Color.MD_PINK, Color.MD_PURPLE, Color.MD_DEEP_PURPLE,
-                    Color.MD_INDIGO, Color.MD_BLUE, Color.MD_LIGHT_BLUE, Color.MD_CYAN, Color.MD_TEAL, Color.MD_GREEN,
-                    Color.MD_LIGHT_GREEN, Color.MD_LIME, Color.MD_YELLOW, Color.MD_AMBER, Color.MD_ORANGE, Color.MD_DEEP_ORANGE)),
-            ColorMap("Hot-Cold", listOf(Color.MD_PINK, Color.MD_CYAN)),
-            ColorMap("Summer", listOf(Color.MD_ORANGE, Color.MD_BLUE, Color.MD_GREEN)),
-            ColorMap("White", listOf(Color.WHITE))
+            ColorMap("Colorful", listOf(MdColor.RED, MdColor.PINK, MdColor.PURPLE, MdColor.DEEP_PURPLE,
+                    MdColor.INDIGO, MdColor.BLUE, MdColor.LIGHT_BLUE, MdColor.CYAN, MdColor.TEAL, MdColor.GREEN,
+                    MdColor.LIGHT_GREEN, MdColor.LIME, MdColor.YELLOW, MdColor.AMBER, MdColor.ORANGE, MdColor.DEEP_ORANGE)),
+            ColorMap("Hot-Cold", listOf(MdColor.PINK, MdColor.CYAN)),
+            ColorMap("Summer", listOf(MdColor.ORANGE, MdColor.BLUE, MdColor.GREEN)),
+            ColorMap("Sepia", listOf(MdColor.ORANGE tone 100))
     )).apply { index = 1 }
 
     override fun lateInit(ctx: KoolContext) {
@@ -109,6 +109,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
                     val srgbColor = MutableColor()
+
                     deferredPipeline.pbrPass.dynamicPointLights.lightInstances.forEach { light ->
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
