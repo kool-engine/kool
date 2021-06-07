@@ -150,9 +150,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract suspend fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
                                        props: TextureProps = TextureProps()): TextureCube
 
-    abstract fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d
+    abstract suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d
 
-    abstract fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube
+    abstract suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube
 
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {

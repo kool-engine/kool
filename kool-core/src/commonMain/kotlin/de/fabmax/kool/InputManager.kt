@@ -4,12 +4,13 @@ import de.fabmax.kool.util.TouchGestureEvaluator
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
-import kotlin.math.abs
 
 abstract class InputManager internal constructor() {
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
+    private var currentKeyMods = 0
+    private var currentKeyRepeated = 0
 
     private val keyHandlers = mutableMapOf<Int, MutableList<KeyEventListener>>()
 
@@ -35,6 +36,8 @@ abstract class InputManager internal constructor() {
         val listeners = keyHandlers[listener.keyCode] ?: return
         listeners -= listener
     }
+
+    open fun getKeyCodeForChar(char: Char, useLocalKeyboardLayout: Boolean = false) = char.uppercaseChar().code
 
     internal fun onNewFrame(ctx: KoolContext) {
         pointerState.onNewFrame(ctx)
@@ -64,6 +67,9 @@ abstract class InputManager internal constructor() {
         ev.event = event
         ev.modifiers = modifiers
 
+        currentKeyMods = modifiers
+        currentKeyRepeated = event and KEY_EV_REPEATED
+
         lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
@@ -71,9 +77,10 @@ abstract class InputManager internal constructor() {
 
     fun charTyped(typedChar: Char) {
         val ev = KeyEvent()
-        ev.event = KEY_EV_CHAR_TYPED
+        ev.event = KEY_EV_CHAR_TYPED or currentKeyRepeated
         ev.typedChar = typedChar
         ev.keyCode = typedChar.code
+        ev.modifiers = currentKeyMods
 
         lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
@@ -126,11 +133,16 @@ abstract class InputManager internal constructor() {
             internal set(value) {
                 buttonEventMask = buttonEventMask or (field xor value)
                 field = value
+                if (buttonEventMask and value != 0) {
+                    updateButtonDownTimes()
+                }
             }
         var buttonEventMask = 0
             internal set
         var isValid = false
             internal set
+
+        protected val buttonDownTimes = DoubleArray(5)
 
         internal var consumptionMask = 0
 
@@ -158,11 +170,11 @@ abstract class InputManager internal constructor() {
         val isBackButtonReleased: Boolean get() = isBackButtonEvent && !isBackButtonDown
         val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
 
-        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
-        val isRightButtonClicked: Boolean get() = isRightButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
-        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
-        val isBackButtonClicked: Boolean get() = isBackButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
-        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased && now() - buttonDownTimes[0] < 300.0
+        val isRightButtonClicked: Boolean get() = isRightButtonReleased && now() - buttonDownTimes[1] < 300.0
+        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased && now() - buttonDownTimes[2] < 300.0
+        val isBackButtonClicked: Boolean get() = isBackButtonReleased && now() - buttonDownTimes[3] < 300.0
+        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased && now() - buttonDownTimes[4] < 300.0
 
         fun consume(mask: Int = CONSUMED_ALL) {
             consumptionMask = consumptionMask or mask
@@ -179,6 +191,15 @@ abstract class InputManager internal constructor() {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
             return (isValid) && viewport.isInViewport(x.toFloat(), ptrY.toFloat())
+        }
+
+        private fun updateButtonDownTimes() {
+            val downEvents = buttonEventMask and buttonMask
+            for (i in buttonDownTimes.indices) {
+                if (downEvents and (1 shl i) != 0) {
+                    buttonDownTimes[i] = now()
+                }
+            }
         }
     }
 
@@ -503,8 +524,6 @@ abstract class InputManager internal constructor() {
     }
 
     companion object {
-        fun keyCodeForChar(char: Char) = char.uppercaseChar().code
-
         const val LEFT_BUTTON = 0
         const val LEFT_BUTTON_MASK = 1
         const val RIGHT_BUTTON = 1
@@ -520,14 +539,14 @@ abstract class InputManager internal constructor() {
         const val MOUSE_POINTER_ID = -1000000
 
         const val CONSUMED_ALL = -1     // 0xffffffff
-        const val CONSUMED_X = 1
-        const val CONSUMED_Y = 2
-        const val CONSUMED_SCROLL = 4
-        const val CONSUMED_LEFT_BUTTON = 8
-        const val CONSUMED_RIGHT_BUTTON = 16
-        const val CONSUMED_MIDDLE_BUTTON = 32
-        const val CONSUMED_BACK_BUTTON = 64
-        const val CONSUMED_FORWARD_BUTTON = 128
+        const val CONSUMED_LEFT_BUTTON = LEFT_BUTTON_MASK
+        const val CONSUMED_RIGHT_BUTTON = RIGHT_BUTTON_MASK
+        const val CONSUMED_MIDDLE_BUTTON = MIDDLE_BUTTON_MASK
+        const val CONSUMED_BACK_BUTTON = BACK_BUTTON_MASK
+        const val CONSUMED_FORWARD_BUTTON = FORWARD_BUTTON_MASK
+        const val CONSUMED_SCROLL = 32
+        const val CONSUMED_X = 64
+        const val CONSUMED_Y = 128
 
         const val KEY_EV_UP = 1
         const val KEY_EV_DOWN = 2

@@ -98,11 +98,11 @@ class SimpleSpline3f {
 
     private fun checkSplinePieces() {
         if (splinePieces.size != ctrlPoints.size - 1) {
-            refresh()
+            update()
         }
     }
 
-    fun refresh() {
+    fun update() {
         splinePieces.clear()
         for (i in 1 until ctrlPoints.size) {
             val ctrl0 = ctrlPoints[i-1]

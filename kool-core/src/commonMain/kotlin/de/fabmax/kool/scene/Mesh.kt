@@ -44,6 +44,13 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     val id = instanceId++
 
     var instances: MeshInstanceList? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                // frustum checking does not play well with instancing -> disable it if instancing is used
+                isFrustumChecked = false
+            }
+        }
     var morphWeights: FloatArray? = null
     var skin: Skin? = null
     var isOpaque = true

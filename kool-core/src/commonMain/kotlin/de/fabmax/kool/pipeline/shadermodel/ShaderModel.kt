@@ -138,6 +138,13 @@ class ShaderModel(val modelInfo: String = "") {
             return combNode
         }
 
+        fun dotNode(a: ShaderNodeIoVar? = null, b: ShaderNodeIoVar? = null): DotNode {
+            val dotNode = addNode(DotNode(stage))
+            a?.let { dotNode.inA = it }
+            b?.let { dotNode.inB = it }
+            return dotNode
+        }
+
         fun splitNode(input: ShaderNodeIoVar, channels: String): SplitNode {
             val splitNode = addNode(SplitNode(channels, stage))
             splitNode.input = input

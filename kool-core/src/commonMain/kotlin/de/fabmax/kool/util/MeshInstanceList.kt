@@ -36,6 +36,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
 
     var hasChanged = true
 
+    constructor(maxInstances: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), maxInstances)
+
     init {
         var strideF = 0
         val offsets = mutableMapOf<Attribute, Int>()

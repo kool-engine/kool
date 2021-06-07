@@ -111,8 +111,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
                 lightColor = Color.BLACK
             }
         }
-        rearLightLt.intensity = lightIntensity
-        rearLightRt.intensity = lightIntensity
+        rearLightLt.power = lightIntensity
+        rearLightRt.power = lightIntensity
         rearLightLt.color.set(lightColor)
         rearLightRt.color.set(lightColor)
 
@@ -227,7 +227,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-        recoverListener = ctx.inputMgr.registerKeyListener(InputManager.keyCodeForChar('r'), "recover", filter = { it.isPressed }) {
+        recoverListener = ctx.inputMgr.registerKeyListener(ctx.inputMgr.getKeyCodeForChar('r'), "recover", filter = { it.isPressed }) {
             val time = ctx.time
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time

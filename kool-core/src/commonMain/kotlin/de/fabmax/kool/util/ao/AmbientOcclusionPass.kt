@@ -256,36 +256,41 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
-                if ($inOrigin.z > 0.0) {
+                float linDistance = -$inOrigin.z;
+                if (linDistance < 0.0) {
                     discard;
                 }
                 
-                // compute kernel rotation
-                vec2 noiseCoord = ${inScreenPos.ref2f()} * ${aoUniforms.uNoiseScale};
-                vec3 rotVec = ${generator.sampleTexture2d(noiseTex.name, "noiseCoord")}.xyz * 2.0 - 1.0;
-                vec3 tangent = normalize(rotVec - ${inNormal.ref3f()} * dot(rotVec, ${inNormal.ref3f()}));
-                vec3 bitangent = cross(${inNormal.ref3f()}, tangent);
-                mat3 tbn = mat3(tangent, bitangent, ${inNormal.ref3f()});
-                
-                float occlusion = 0.0;
-                float bias = ${aoUniforms.uBias} * ${aoUniforms.uRadius};
-                for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
-                    vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
-                    vec3 samplePos = $inOrigin + kernel * ${aoUniforms.uRadius};
+                float occlFac = 1.0;
+                if (linDistance < ${aoUniforms.uRadius} * 200.0) {
+                    // compute kernel rotation
+                    vec2 noiseCoord = ${inScreenPos.ref2f()} * ${aoUniforms.uNoiseScale};
+                    vec3 rotVec = ${generator.sampleTexture2d(noiseTex.name, "noiseCoord")}.xyz * 2.0 - 1.0;
+                    vec3 tangent = normalize(rotVec - ${inNormal.ref3f()} * dot(rotVec, ${inNormal.ref3f()}));
+                    vec3 bitangent = cross(${inNormal.ref3f()}, tangent);
+                    mat3 tbn = mat3(tangent, bitangent, ${inNormal.ref3f()});
                     
-                    vec4 sampleProj = ${aoUniforms.uProj} * vec4(samplePos, 1.0);
-                    sampleProj.xyz /= sampleProj.w;
-                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
-                    
-                    if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
-                        float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
-                        float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
-                        float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
-                        occlusion += occlusionInc * rangeCheck;
+                    float occlusion = 0.0;
+                    float bias = ${aoUniforms.uBias} * ${aoUniforms.uRadius};
+                    for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
+                        vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
+                        vec3 samplePos = $inOrigin + kernel * ${aoUniforms.uRadius};
+                        
+                        vec4 sampleProj = ${aoUniforms.uProj} * vec4(samplePos, 1.0);
+                        sampleProj.xyz /= sampleProj.w;
+                        sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
+                        
+                        if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
+                            float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
+                            float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
+                            float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
+                            occlusion += occlusionInc * rangeCheck;
+                        }
                     }
+                    occlusion /= float(${aoUniforms.uKernelN});
+                    float distFac = 1.0 - smoothstep(${aoUniforms.uRadius} * 150.0, ${aoUniforms.uRadius} * 200.0, linDistance);
+                    occlFac = pow(clamp(1.0 - occlusion * distFac * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
                 }
-                occlusion /= float(${aoUniforms.uKernelN});
-                float occlFac = pow(clamp(1.0 - occlusion * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
                 
                 ${outColor.declare()} = vec4(occlFac, 0.0, 0.0, 1.0);
             """)

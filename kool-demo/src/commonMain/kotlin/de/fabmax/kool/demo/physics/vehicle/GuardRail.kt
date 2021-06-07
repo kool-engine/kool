@@ -200,7 +200,7 @@ class GuardRail {
         }
 
         fun updateInstance(buf: Float32Buffer) {
-            pointLight.intensity = max(emission.x, emission.y) * 100f
+            pointLight.power = max(emission.x, emission.y) * 100f
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
             buf.put(actor.transform.matrix)

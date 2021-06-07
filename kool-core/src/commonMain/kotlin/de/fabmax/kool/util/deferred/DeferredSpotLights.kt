@@ -16,10 +16,10 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
     var isDynamic = true
 
     private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS,
-            DeferredLightShader.LIGHT_DIR, Attribute.COLORS), 10000)
+            DeferredLightShader.LIGHT_DIR, Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
 
     private val modelMat = Mat4f()
-    private val encodedLightData = FloatArray(12)
+    private val encodedLightData = FloatArray(16)
     private val tmpLightDir = MutableVec3f()
 
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
@@ -61,7 +61,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
     private fun encodeLight(light: SpotLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        val soi = sqrt(light.intensity)
+        val soi = sqrt(light.power)
         modelMat.scale(soi, soi, soi)
         modelMat.rotate(light.orientation)
 
@@ -81,7 +81,9 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         encodedLightData[8] = light.color.r
         encodedLightData[9] = light.color.g
         encodedLightData[10] = light.color.b
-        encodedLightData[11] = light.intensity
+        encodedLightData[11] = light.power
+
+        encodedLightData[12] = light.maxIntensity
     }
 
     fun addSpotLight(spotLight: SpotLight) {
@@ -104,7 +106,8 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         val orientation = Mat3f()
         var spotAngle = 60f
         val color = MutableColor(Color.WHITE)
-        var intensity = 1f
+        var power = 1f
+        var maxIntensity = 100f
 
         fun setDirection(direction: Vec3f) {
             val v = if (abs(direction.dot(Vec3f.Y_AXIS)) > 0.9f) {

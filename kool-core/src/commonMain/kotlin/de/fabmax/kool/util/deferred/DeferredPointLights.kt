@@ -16,10 +16,11 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
     val lightInstances = mutableListOf<PointLight>()
     var isDynamic = true
 
-    private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS, Attribute.COLORS), 10000)
+    private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS,
+        Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
 
     private val modelMat = Mat4f()
-    private val encodedLightData = FloatArray(8)
+    private val encodedLightData = FloatArray(12)
 
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
         isFrustumChecked = false
@@ -63,7 +64,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
     private fun encodeLight(light: PointLight) {
         modelMat.setIdentity()
         modelMat.translate(light.position)
-        val soi = sqrt(light.intensity)
+        val soi = sqrt(light.power)
         modelMat.scale(soi, soi, soi)
 
         encodedLightData[0] = light.position.x
@@ -74,7 +75,9 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
         encodedLightData[4] = light.color.r
         encodedLightData[5] = light.color.g
         encodedLightData[6] = light.color.b
-        encodedLightData[7] = light.intensity
+        encodedLightData[7] = light.power
+
+        encodedLightData[8] = light.maxIntensity
     }
 
     fun addPointLight(pointLight: PointLight) {
@@ -95,6 +98,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
     class PointLight {
         val position = MutableVec3f()
         val color = MutableColor(Color.WHITE)
-        var intensity = 1f
+        var power = 1f
+        var maxIntensity = 100f
     }
 }

@@ -59,15 +59,26 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
     abstract val root: Node
 
     open fun drawNodeBounds(lineMesh: LineMesh) {
-        root.drawNodeBounds(lineMesh)
+        fun Node.drawBounds(lineMesh: LineMesh, depth: Int) {
+            val color = ColorGradient.JET_MD.getColor((depth % 6.7f) / 6.7f)
+            lineMesh.addBoundingBox(bounds, color)
+            for (i in children.indices) {
+                children[i].drawBounds(lineMesh, depth + 1)
+            }
+        }
+        root.drawBounds(lineMesh, 0)
     }
 
-    abstract inner class Node(val depth: Int) {
+    abstract inner class Node {
         abstract val size: Int
         abstract val children: List<Node>
         val bounds = BoundingBox()
         val isLeaf
             get() = children.isEmpty()
+        val isEmpty
+            get() = children.isEmpty() && items.isEmpty()
+        val isNotEmpty
+            get() = !isEmpty
 
         /**
          * traversalOrder can be set to arbitrary values (e.g. temporarily computed distance values) during tree
@@ -87,13 +98,5 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
          * Range within [items] in which elements belong to this node.
          */
         abstract val nodeRange: IntRange
-
-        open fun drawNodeBounds(lineMesh: LineMesh) {
-            val color = ColorGradient.JET_MD.getColor((depth % 6.7f) / 6.7f)
-            lineMesh.addBoundingBox(bounds, color)
-            for (i in children.indices) {
-                children[i].drawNodeBounds(lineMesh)
-            }
-        }
     }
 }

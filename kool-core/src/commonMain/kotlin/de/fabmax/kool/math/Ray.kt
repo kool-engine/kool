@@ -1,6 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.scene.Node
+import kotlin.math.sqrt
 
 /**
  * @author fabmax
@@ -25,6 +26,34 @@ class Ray {
     fun sqrDistanceToPoint(point: Vec3f): Float = point.sqrDistanceToRay(origin, direction)
 
     fun sqrDistanceToPoint(x: Float, y: Float, z: Float) = sqrDistancePointToRay(x, y, z, origin, direction)
+
+    fun sphereIntersection(center: Vec3f, radius: Float, result: MutableVec3f): Boolean {
+        result.set(origin).subtract(center)
+        val a = direction * direction
+        val b = result * direction * 2f
+        val c = result * result - radius * radius
+        val discr = b * b - 4 * a * c
+
+        if (discr < 0f) {
+            return false
+        }
+
+        val numerator = -b - sqrt(discr)
+        if (numerator > 0f) {
+            val d = numerator / (2f * a)
+            result.set(direction).scale(d).add(origin)
+            return true
+        }
+
+        val numerator2 = -b + sqrt(discr)
+        if (numerator2 > 0f) {
+            val d = numerator2 / (2f * a)
+            result.set(direction).scale(d).add(origin)
+            return true
+        }
+
+        return false
+    }
 
     fun transformBy(matrix: Mat4f) {
         matrix.transform(origin)

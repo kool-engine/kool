@@ -2,6 +2,7 @@ package de.fabmax.kool.util.spatial
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.BoundingBox
 
 interface ItemAdapter<in T: Any> {
     fun getMinX(item: T): Float
@@ -80,4 +81,26 @@ object TriangleAdapter : ItemAdapter<Triangle> {
         result.set(item.minX, item.minY, item.minZ)
     override fun getMax(item: Triangle, result: MutableVec3f): MutableVec3f =
         result.set(item.maxX, item.maxY, item.maxZ)
+}
+
+object BoundingBoxAdapter : ItemAdapter<BoundingBox> {
+    override fun getMinX(item: BoundingBox): Float = item.min.x
+    override fun getMinY(item: BoundingBox): Float = item.min.y
+    override fun getMinZ(item: BoundingBox): Float = item.min.z
+
+    override fun getMaxX(item: BoundingBox): Float = item.max.x
+    override fun getMaxY(item: BoundingBox): Float = item.max.y
+    override fun getMaxZ(item: BoundingBox): Float = item.max.z
+
+    override fun getCenterX(item: BoundingBox): Float = item.center.x
+    override fun getCenterY(item: BoundingBox): Float = item.center.y
+    override fun getCenterZ(item: BoundingBox): Float = item.center.z
+
+    override fun getSzX(item: BoundingBox): Float = item.size.x
+    override fun getSzY(item: BoundingBox): Float = item.size.y
+    override fun getSzZ(item: BoundingBox): Float = item.size.z
+
+    override fun getMin(item: BoundingBox, result: MutableVec3f): MutableVec3f = result.set(item.min)
+    override fun getCenter(item: BoundingBox, result: MutableVec3f): MutableVec3f = result.set(item.center)
+    override fun getMax(item: BoundingBox, result: MutableVec3f): MutableVec3f = result.set(item.max)
 }

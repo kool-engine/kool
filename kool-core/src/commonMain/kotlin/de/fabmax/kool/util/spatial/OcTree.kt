@@ -9,14 +9,20 @@ import de.fabmax.kool.util.logW
 import kotlin.math.max
 
 open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
-                     bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
+                     bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 10) :
         SpatialTree<T>(itemAdapter), MutableCollection<T> {
 
     override val root: OcNode
+        get() = mutRoot
     override val size: Int
         get() = root.size
 
+    private var mutRoot: OcNode
+
+    var isAutoResize = true
+
     private val emptyItems = mutableListOf<T>()
+    private val emptyNode = OcNode(BoundingBox(), -1, 0)
 
     init {
         // determine bounds of items
@@ -38,25 +44,51 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         val edLen = max(bounds.size.x, max(bounds.size.y, bounds.size.z))
         val pad = edLen * padding
         bounds.set(bounds.min.x - pad, bounds.min.y - pad, bounds.min.z - pad,
-                bounds.min.x + edLen + pad*2, bounds.min.y + edLen + pad*2, bounds.min.z + edLen + pad*2)
+                bounds.min.x + edLen + pad, bounds.min.y + edLen + pad, bounds.min.z + edLen + pad)
 
-        root = OcNode(bounds, 0, bucketSz)
+        mutRoot = OcNode(bounds, 0, bucketSz)
         for (i in items.indices) {
-            root.add(items[i])
+            mutRoot.add(items[i])
         }
     }
 
     override fun add(element: T): Boolean {
-        if (!root.bounds.contains(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
-            logE { "Item not in tree bounds: (${itemAdapter.getMinX(element)}, ${itemAdapter.getMinY(element)}, ${itemAdapter.getMinZ(element)}), bounds: ${root.bounds}" }
-            return false
+        if (!mutRoot.nodeBounds.contains(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
+            if (!isAutoResize) {
+                logE { "Item not in tree bounds: (${itemAdapter.getCenterX(element)}, ${itemAdapter.getCenterY(element)}, ${itemAdapter.getCenterZ(element)}), bounds: ${root.nodeBounds}" }
+                return false
+            } else {
+                growTree(Vec3f(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element)))
+            }
         }
-        root.add(element)
+        mutRoot.add(element)
         return true
     }
 
+    private fun growTree(pt: Vec3f, maxIterations: Int = 10): Boolean {
+        var its = 0
+        while (!mutRoot.nodeBounds.contains(pt) && its++ < maxIterations) {
+            // create new root node, which contains old root as child and grows towards requested point
+            val aabb = mutRoot.nodeBounds
+            val dirX = if (pt.x < aabb.min.x) -1 else 1
+            val dirY = if (pt.y < aabb.min.y) -1 else 1
+            val dirZ = if (pt.z < aabb.min.z) -1 else 1
+
+            val growAabb = BoundingBox(aabb.min, aabb.max)
+            growAabb.signedExpand(Vec3f(aabb.size.x * dirX, aabb.size.y * dirY, aabb.size.z * dirZ))
+
+            val newRoot = OcNode(growAabb, 0, mutRoot.bucketSz)
+            newRoot.split()
+            newRoot.children[newRoot.childIndexForPoint(aabb.center.x, aabb.center.y, aabb.center.z)] = mutRoot
+            newRoot.bounds.set(mutRoot.bounds)
+            mutRoot = newRoot
+        }
+        mutRoot.updateDepth(0)
+        return mutRoot.nodeBounds.contains(pt)
+    }
+
     override fun remove(element: T): Boolean {
-        val success = root.remove(element, true)
+        val success = mutRoot.remove(element, true)
         if (!success) {
             logW { "Failed to remove: $element" }
             // try brute force removal
@@ -76,7 +108,7 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         var elemIt: MutableIterator<T>
 
         init {
-            collectElements(root)
+            collectElements(mutRoot)
             elemIt = if (elementIts.isNotEmpty()) {
                 elementIts.removeAt(elementIts.lastIndex)
             } else {
@@ -117,7 +149,7 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         }
     }
 
-    override fun contains(element: T) = root.contains(element)
+    override fun contains(element: T) = mutRoot.contains(element)
 
     override fun containsAll(elements: Collection<T>): Boolean {
         for (elem in elements) {
@@ -138,7 +170,7 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         return anyAdded
     }
 
-    override fun clear() = root.clear()
+    override fun clear() = mutRoot.clear()
 
     override fun removeAll(elements: Collection<T>): Boolean {
         var anyRemoved = false
@@ -162,7 +194,7 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         return anyRemoved
     }
 
-    inner class OcNode(val nodeBounds: BoundingBox, depth: Int, val bucketSz: Int) : Node(depth) {
+    inner class OcNode(val nodeBounds: BoundingBox, depth: Int, val bucketSz: Int) : Node() {
         override var size = 0
             private set
         override val children = mutableListOf<OcNode>()
@@ -175,17 +207,28 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         override val nodeRange: IntRange
             get() = items.indices
 
+        var depth = depth
+            private set
+
         init {
             if (depth > MAX_DEPTH) {
                 throw KoolException("Octree is too deep")
             }
         }
 
-        fun clear() {
-            if (depth != 0) {
-                throw KoolException("clear() is only allowed for root node")
+        fun updateDepth(newDepth: Int) {
+            if (this === emptyNode) {
+                return
             }
-            mutItems.clear()
+
+            depth = newDepth
+            for (i in children.indices) {
+                children[i].updateDepth(newDepth + 1)
+            }
+        }
+
+        fun clear() {
+            mutItems = mutableListOf()
             children.clear()
             size = 0
 
@@ -193,22 +236,26 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
         }
 
         fun add(item: T): OcNode {
+            if (this === emptyNode) {
+                throw IllegalStateException("Adding items to empty dummy node is not allowed!")
+            }
+
             bounds.add(itemAdapter.getMin(item, tmpVec))
             bounds.add(itemAdapter.getMax(item, tmpVec))
             size++
 
             return if (isLeaf) {
-                if (mutItems.size < bucketSz || depth == MAX_DEPTH) {
+                if (mutItems.size < bucketSz || depth >= MAX_DEPTH) {
                     mutItems.add(item)
                     itemAdapter.setNode(item, this)
                     this
 
                 } else {
                     split()
-                    children[childIndexForItem(item)].add(item)
+                    getChildOrCreateIfEmpty(childIndexForItem(item)).add(item)
                 }
             } else {
-                children[childIndexForItem(item)].add(item)
+                getChildOrCreateIfEmpty(childIndexForItem(item)).add(item)
             }
         }
 
@@ -222,9 +269,9 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
             if (success) {
                 size--
                 if (!isLeaf && size < bucketSz && canMerge) {
-                    merge()
+                    mutItems = mutableListOf()
+                    collectAndClear(mutItems)
                 }
-
                 if (isBorderItem(item)) {
                     recomputeBounds()
                 }
@@ -277,48 +324,48 @@ open class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyLis
                     z >= bounds.min.z && z < bounds.max.z
         }
 
-        private fun split() {
-            val x0 = nodeBounds.min.x
-            val x1 = nodeBounds.center.x
-            val x2 = nodeBounds.max.x
+        private fun getChildOrCreateIfEmpty(i: Int): OcNode {
+            var c = children[i]
+            if (c === emptyNode) {
+                val minX = if (i and 4 == 0) nodeBounds.min.x else nodeBounds.center.x
+                val minY = if (i and 2 == 0) nodeBounds.min.y else nodeBounds.center.y
+                val minZ = if (i and 1 == 0) nodeBounds.min.z else nodeBounds.center.z
 
-            val y0 = nodeBounds.min.y
-            val y1 = nodeBounds.center.y
-            val y2 = nodeBounds.max.y
+                val maxX = minX + nodeBounds.size.x * 0.5f
+                val maxY = minY + nodeBounds.size.y * 0.5f
+                val maxZ = minZ + nodeBounds.size.z * 0.5f
 
-            val z0 = nodeBounds.min.z
-            val z1 = nodeBounds.center.z
-            val z2 = nodeBounds.max.z
+                c = OcNode(BoundingBox(Vec3f(minX, minY, minZ), Vec3f(maxX, maxY, maxZ)), depth + 1, bucketSz)
+                children[i] = c
+            }
+            return c
+        }
 
+        internal fun split() {
             // create sub-nodes
-            children += OcNode(BoundingBox(Vec3f(x0, y0, z0), Vec3f(x1, y1, z1)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x0, y0, z1), Vec3f(x1, y1, z2)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x0, y1, z0), Vec3f(x1, y2, z1)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x0, y1, z1), Vec3f(x1, y2, z2)), depth + 1, bucketSz)
-
-            children += OcNode(BoundingBox(Vec3f(x1, y0, z0), Vec3f(x2, y1, z1)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x1, y0, z1), Vec3f(x2, y1, z2)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x1, y1, z0), Vec3f(x2, y2, z1)), depth + 1, bucketSz)
-            children += OcNode(BoundingBox(Vec3f(x1, y1, z1), Vec3f(x2, y2, z2)), depth + 1, bucketSz)
-
+            for (i in 1..8) {
+                children += emptyNode
+            }
             for (i in mutItems.indices) {
-                children[childIndexForItem(mutItems[i])].add(mutItems[i])
+                getChildOrCreateIfEmpty(childIndexForItem(mutItems[i])).add(mutItems[i])
             }
             mutItems = emptyItems
         }
 
-        private fun merge() {
-            mutItems = mutableListOf()
+        private fun collectAndClear(result: MutableList<T>) {
+            result.addAll(mutItems)
             for (i in children.indices) {
-                mutItems.addAll(children[i].mutItems)
+                children[i].collectAndClear(result)
             }
             children.clear()
         }
 
-        private fun childIndexForItem(item: T): Int {
-            return if (itemAdapter.getCenterX(item) < nodeBounds.center.x) { 0 } else { 4 } or
-                    if (itemAdapter.getCenterY(item) < nodeBounds.center.y) { 0 } else { 2 } or
-                    if (itemAdapter.getCenterZ(item) < nodeBounds.center.z) { 0 } else { 1 }
+        fun childIndexForItem(item: T) = childIndexForPoint(itemAdapter.getCenterX(item), itemAdapter.getCenterY(item), itemAdapter.getCenterZ(item))
+
+        fun childIndexForPoint(x: Float, y: Float, z: Float): Int {
+            return if (x < nodeBounds.center.x) { 0 } else { 4 } or
+                    if (y < nodeBounds.center.y) { 0 } else { 2 } or
+                    if (z < nodeBounds.center.z) { 0 } else { 1 }
         }
     }
 

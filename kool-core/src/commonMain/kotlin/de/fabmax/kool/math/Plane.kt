@@ -3,7 +3,7 @@ package de.fabmax.kool.math
 /**
  * @author fabmax
  */
-class Plane {
+class Plane() {
 
     /**
      * Some point in the plane.
@@ -14,6 +14,11 @@ class Plane {
      * Normal vector of the plane.
      */
     val n = MutableVec3f(Vec3f.Y_AXIS)
+
+    constructor(p: Vec3f, n: Vec3f) : this() {
+        this.p.set(p)
+        this.n.set(n)
+    }
 
     /**
      * Computes the intersection point of this plane and the specified ray. Returns false if there is no intersection

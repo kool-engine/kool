@@ -398,7 +398,7 @@ open class Mat4d {
         matrix[15] = 1.0
         val s = sin(a)
         val c = cos(a)
-        if (1.0 == x && 0.0 == y && 0.0 == z) {
+        if (x > 0.0 && y == 0.0 && z == 0.0) {
             matrix[5] = c
             matrix[10] = c
             matrix[6] = s
@@ -408,7 +408,7 @@ open class Mat4d {
             matrix[4] = 0.0
             matrix[8] = 0.0
             matrix[0] = 1.0
-        } else if (0.0 == x && 1.0 == y && 0.0 == z) {
+        } else if (x == 0.0 && y > 0.0 &&z == 0.0) {
             matrix[0] = c
             matrix[10] = c
             matrix[8] = s
@@ -418,7 +418,7 @@ open class Mat4d {
             matrix[6] = 0.0
             matrix[9] = 0.0
             matrix[5] = 1.0
-        } else if (0.0 == x && 0.0 == y && 1.0 == z) {
+        } else if (x == 0.0 && y == 0.0 && z > 0.0) {
             matrix[0] = c
             matrix[5] = c
             matrix[1] = s
@@ -429,13 +429,11 @@ open class Mat4d {
             matrix[9] = 0.0
             matrix[10] = 1.0
         } else {
-            val len = sqrt(x*x + y*y + z*z)
-            if (!isFuzzyEqual(len, 1.0)) {
-                val recipLen = 1.0f / len
-                x *= recipLen
-                y *= recipLen
-                z *= recipLen
-            }
+            val recipLen = 1.0f / sqrt(x*x + y*y + z*z)
+            x *= recipLen
+            y *= recipLen
+            z *= recipLen
+
             val nc = 1.0 - c
             val xy = x * y
             val yz = y * z

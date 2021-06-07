@@ -20,7 +20,8 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
     private val cmpZ: (T, T) -> Int = { a, b -> itemAdapter.getMinZ(a).compareTo(itemAdapter.getMinZ(b)) }
 
     init {
-        root = KdNode(items.indices, 0, bucketSz)
+        @Suppress("LeakingThis")
+        root = KdNode(items.indices, bucketSz)
     }
 
     override fun contains(element: T) = root.contains(element)
@@ -38,7 +39,7 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
 
     override fun iterator() = items.iterator()
 
-    inner class KdNode(override val nodeRange: IntRange, depth: Int, bucketSz: Int) : Node(depth) {
+    inner class KdNode(override val nodeRange: IntRange, bucketSz: Int) : Node() {
         override val children = mutableListOf<KdNode>()
         override val size: Int
         override val items: List<T>
@@ -65,8 +66,8 @@ open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz:
                 val k = nodeRange.first + (nodeRange.last - nodeRange.first) / 2
                 this@KdTree.items.partition(nodeRange, k, cmp)
 
-                children.add(KdNode(nodeRange.first..k, depth + 1, bucketSz))
-                children.add(KdNode((k+1)..nodeRange.last, depth + 1, bucketSz))
+                children.add(KdNode(nodeRange.first..k, bucketSz))
+                children.add(KdNode((k+1)..nodeRange.last, bucketSz))
 
             } else {
                 // this is a leaf node

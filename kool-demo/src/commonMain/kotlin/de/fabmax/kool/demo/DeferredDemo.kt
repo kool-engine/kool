@@ -123,7 +123,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         }
                         if (lightVolumeMesh.isVisible) {
                             light.color.toSrgb(srgbColor)
-                            val s = sqrt(light.intensity)
+                            val s = sqrt(light.power)
                             lightModelMat.scale(s, s, s)
                             lightVolInsts.addInstance {
                                 put(lightModelMat.matrix)
@@ -250,7 +250,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             val grp = lightGroups[rand.randomI(lightGroups.indices)]
             val x = rand.randomI(0 until grp.rows)
             val light = deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
-                intensity = 1.0f
+                power = 1.0f
             }
             val animLight = AnimatedLight(light).apply {
                 startColor = colorMap.current.getColor(lights.size).toLinear()

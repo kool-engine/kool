@@ -51,6 +51,9 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
                 try {
                     val f = HttpCache.loadHttpResource(httpRawRef.url)
                             ?: throw IOException("Failed downloading ${httpRawRef.url}")
+
+                    // what is the IO dispatcher for if not for this?
+                    @Suppress("BlockingMethodInNonBlockingContext")
                     FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
                 } catch (e: Exception) {
                     logE { "Failed loading asset ${httpRawRef.url}: $e" }
@@ -125,6 +128,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         var img: BufferedImage?
         withContext(Dispatchers.IO) {
             img = synchronized(imageIoLock) {
+                // what is the IO dispatcher for if not for this?
+                @Suppress("BlockingMethodInNonBlockingContext")
                 ImageIO.read(ByteArrayInputStream(texData.toArray()))
             }
         }
@@ -155,16 +160,24 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return deferred.await()
     }
 
-    override fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
-        val tex = Texture2d(props, name) { texData }
-        ctx.renderBackend.loadTex2d(tex, texData)
-        return tex
+    override suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps, name: String?): Texture2d {
+        val deferred = CompletableDeferred<Texture2d>(job)
+        ctx.runOnMainThread {
+            val tex = Texture2d(props, name) { texData }
+            ctx.renderBackend.loadTex2d(tex, texData)
+            deferred.complete(tex)
+        }
+        return deferred.await()
     }
 
-    override fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
-        val tex = TextureCube(props, name) { texData }
-        ctx.renderBackend.loadTexCube(tex, texData)
-        return tex
+    override suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps, name: String?): TextureCube {
+        val deferred = CompletableDeferred<TextureCube>(job)
+        ctx.runOnMainThread {
+            val tex = TextureCube(props, name) { texData }
+            ctx.renderBackend.loadTexCube(tex, texData)
+            deferred.complete(tex)
+        }
+        return deferred.await()
     }
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {

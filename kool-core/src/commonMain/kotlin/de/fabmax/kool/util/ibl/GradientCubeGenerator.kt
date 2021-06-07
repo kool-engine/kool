@@ -14,15 +14,13 @@ import de.fabmax.kool.util.createUint8Buffer
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolContext, size: Int = 128) :
+class GradientCubeGenerator(scene: Scene, val gradientTex: Texture2d, ctx: KoolContext, size: Int = 128) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "GradientEnvGenerator"
             setSize(size, size)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
-
-    private val gradientTex = makeGradientTex(gradient, size * 2, ctx)
 
     init {
         (drawNode as Group).apply {
@@ -55,24 +53,6 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
         gradientTex.dispose()
     }
 
-    private fun makeGradientTex(gradient: ColorGradient, size: Int, ctx: KoolContext): Texture2d {
-        val buf = createUint8Buffer(size * 4)
-
-        val color = MutableColor()
-        for (i in 0 until size) {
-            gradient.getColorInterpolated(1f - i.toFloat() / size, color)
-            buf[i * 4 + 0] = ((color.r * 255f).toInt().toByte())
-            buf[i * 4 + 1] = ((color.g * 255f).toInt().toByte())
-            buf[i * 4 + 2] = ((color.b * 255f).toInt().toByte())
-            buf[i * 4 + 3] = (255.toByte())
-        }
-
-        val data = TextureData2d(buf, size, 1, TexFormat.RGBA)
-        val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
-        return ctx.assetMgr.loadAndPrepareTexture(data, props, "gradientEnvTex")
-    }
-
-
     private fun gradientEnvModel() = ShaderModel("gradientEnvModel()").apply {
         val ifFragPos: StageInterfaceNode
 
@@ -103,6 +83,25 @@ class GradientCubeGenerator(scene: Scene, gradient: ColorGradient, ctx: KoolCont
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("${outUv.declare()} = vec2(acos(normalize(${inPos.ref3f()}).y) / $PI, 0.0);")
+        }
+    }
+
+    companion object {
+        suspend fun makeGradientTex(gradient: ColorGradient, ctx: KoolContext, size: Int = 256): Texture2d {
+            val buf = createUint8Buffer(size * 4)
+
+            val color = MutableColor()
+            for (i in 0 until size) {
+                gradient.getColorInterpolated(1f - i.toFloat() / size, color)
+                buf[i * 4 + 0] = ((color.r * 255f).toInt().toByte())
+                buf[i * 4 + 1] = ((color.g * 255f).toInt().toByte())
+                buf[i * 4 + 2] = ((color.b * 255f).toInt().toByte())
+                buf[i * 4 + 3] = (255.toByte())
+            }
+
+            val data = TextureData2d(buf, size, 1, TexFormat.RGBA)
+            val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
+            return ctx.assetMgr.loadAndPrepareTexture(data, props, "gradientEnvTex")
         }
     }
 }

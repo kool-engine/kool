@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.math.Vec3f
 
-abstract class MathOpNode(name: String, graph: ShaderGraph) : ShaderNode("multiply_${graph.nextNodeId}", graph) {
+abstract class MathOpNode(name: String, graph: ShaderGraph) : ShaderNode("math_${graph.nextNodeId}", graph) {
     var left = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         set(value) {
             output = ShaderNodeIoVar(ModelVar("${name}_out", value.variable.type), this)

@@ -36,7 +36,13 @@ interface BoundingSphereDistance<T: Any> : PointDistance<T> {
 
 interface RayDistance<T: Any> {
     fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: Ray): Float {
-        return node.bounds.hitDistanceSqr(ray)
+        return if (node.bounds.isEmpty) {
+            Float.MAX_VALUE
+        } else {
+            node.bounds.center
+            val d = max(0f, ray.distanceToPoint(node.bounds.center) - node.bounds.size.length() * 0.5f)
+            d * d
+        }
     }
 
     fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
@@ -68,8 +74,9 @@ abstract class CenterPointTraverser<T: Any> : SpatialTreeTraverser<T>() {
 
     var pointDistance = object : PointDistance<T> { }
 
-    protected fun setup(center: Vec3f) {
+    protected open fun setup(center: Vec3f): CenterPointTraverser<T> {
         this.center.set(center)
+        return this
     }
 }
 
@@ -133,6 +140,7 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
     open fun setup(center: Vec3f, maxRadius: Float = MAX_RADIUS): NearestTraverser<T> {
         super.setup(center)
         sqrDist = maxRadius * maxRadius
+        nearest = null
         return this
     }
 

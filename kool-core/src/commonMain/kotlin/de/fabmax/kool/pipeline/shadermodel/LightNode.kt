@@ -167,6 +167,7 @@ class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGr
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 0f, 0f, 60f)))
+    var inMaxIntensity = ShaderNodeIoVar(ModelVar1fConst(100f))
 
     var inShaodwFac = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -205,15 +206,16 @@ class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGr
         }
 
         generator.appendFunction("light_getRadiance", """
-            vec3 light_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {
+            vec3 light_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle, float maxIntensity) {
                 if (lightPos.w == float(${Light.Type.DIRECTIONAL.encoded})) {
                     return lightColor.rgb * lightColor.w;
                 }
                 float dist = length(fragToLight);
                 float power = lightColor.w;
                 $strength
+                float strClamped = clamp(strength, 0.0, maxIntensity);
                 if (lightPos.w == float(${Light.Type.POINT.encoded})) {
-                    return lightColor.rgb * strength;
+                    return lightColor.rgb * strClamped;
                 } else {
                     // spot light
                     vec3 negFtl = -normalize(fragToLight);
@@ -221,7 +223,7 @@ class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGr
                     float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);
                     float ang = dot(negFtl, lightDir.xyz);
                     float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
-                    return lightColor.rgb * strength * angVal;
+                    return lightColor.rgb * strClamped * angVal;
                 }
             }
             """)
@@ -230,7 +232,7 @@ class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGr
             ${outFragToLightDirection.declare()} = light_getFragToLight(${inFragPos.ref3f()}, ${inLightPos.ref3f()}, ${inLightDir.ref3f()});
             ${outRadiance.declare()} = light_getRadiance(${outFragToLightDirection.ref3f()},
                          ${inLightPos.ref3f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()},
-                         ${inSpotInnerAngle.ref1f()}) * ${inShaodwFac.ref1f()};
+                         ${inSpotInnerAngle.ref1f()}, ${inMaxIntensity.ref1f()}) * ${inShaodwFac.ref1f()};
         """)
     }
 }
@@ -238,6 +240,7 @@ class SingleLightNode(shaderGraph: ShaderGraph) : ShaderNode("lightNd_${shaderGr
 class SinglePointLightNode(shaderGraph: ShaderGraph) : ShaderNode("pointLightNd_${shaderGraph.nextNodeId}", shaderGraph) {
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    var inMaxIntensity = ShaderNodeIoVar(ModelVar1fConst(100f))
 
     var inShadowFac = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -265,18 +268,18 @@ class SinglePointLightNode(shaderGraph: ShaderGraph) : ShaderNode("pointLightNd_
         }
 
         generator.appendFunction("pointLight_getRadiance", """
-            vec3 pointLight_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor) {
+            vec3 pointLight_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, float maxIntensity) {
                 float dist = length(fragToLight);
                 float power = lightColor.w;
                 $strength
-                return lightColor.rgb * strength;
+                return lightColor.rgb * clamp(strength, 0.0, maxIntensity);
             }
             """)
 
         generator.appendMain("""
             ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
             ${outRadiance.declare()} = pointLight_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
-                        ${inLightColor.ref4f()}) * ${inShadowFac.ref1f()};
+                        ${inLightColor.ref4f()}, ${inMaxIntensity.ref1f()}) * ${inShadowFac.ref1f()};
         """)
     }
 }
@@ -285,6 +288,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
     var inLightPos = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightColor = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inLightDir = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 0f, 0f, 60f)))
+    var inMaxIntensity = ShaderNodeIoVar(ModelVar1fConst(100f))
 
     var inShadowFac = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -313,7 +317,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
         }
 
         generator.appendFunction("spotLight_getRadiance", """
-            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle) {
+            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle, float maxIntensity) {
                 float dist = length(fragToLight);
                 float power = lightColor.w;
                 $strength
@@ -322,13 +326,14 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
                 float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);
                 float ang = dot(negFtl, lightDir.xyz);
                 float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
-                return lightColor.rgb * strength * angVal;
+                return lightColor.rgb * clamp(strength, 0.0, maxIntensity) * angVal;
             }
             """)
 
         generator.appendMain("""
             ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
-            ${outRadiance.declare()} = ${name}_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()}, ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $inSpotInnerAngle) * ${inShadowFac.ref1f()};
+            ${outRadiance.declare()} = ${name}_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
+                        ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $inSpotInnerAngle, ${inMaxIntensity.ref1f()}) * ${inShadowFac.ref1f()};
         """)
     }
 }

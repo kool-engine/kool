@@ -65,11 +65,13 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
     companion object {
         val LIGHT_POS = Attribute("aLightPos", GlslType.VEC_4F)
         val LIGHT_DIR = Attribute("aLightDir", GlslType.VEC_4F)
+        val LIGHT_DATA = Attribute("aLightData", GlslType.VEC_4F)
 
         fun shaderModel(cfg: Config) = ShaderModel("point light shader model").apply {
             val ifFragCoords: StageInterfaceNode
             val ifLightColor: StageInterfaceNode
             val ifLightPos: StageInterfaceNode
+            val ifLightData: StageInterfaceNode
             val ifLightDir: StageInterfaceNode?
 
             vertexStage {
@@ -80,6 +82,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
                 ifLightColor = stageInterfaceNode("ifLightColor", instanceAttributeNode(Attribute.COLORS).output, true)
                 ifLightPos = stageInterfaceNode("ifLightPos", instanceAttributeNode(LIGHT_POS).output, true)
+                ifLightData = stageInterfaceNode("ifLightData", instanceAttributeNode(LIGHT_DATA).output, true)
                 ifLightDir = if (cfg.lightType == Light.Type.POINT) {
                     null
                 } else {
@@ -119,6 +122,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                             isReducedSoi = true
                             inLightPos = ifLightPos.output
                             inLightColor = ifLightColor.output
+                            inMaxIntensity = ifLightData.output
                             inLightDir = ifLightDir!!.output
                             inFragPos = worldPos
                         }
@@ -129,6 +133,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                             isReducedSoi = true
                             inLightPos = ifLightPos.output
                             inLightColor = ifLightColor.output
+                            inMaxIntensity = ifLightData.output
                             inFragPos = worldPos
                         }
                         inFragToLight = point.outFragToLightDirection

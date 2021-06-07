@@ -6,6 +6,8 @@ import org.lwjgl.glfw.GLFW.*
 
 class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Context) : InputManager() {
 
+    private val localCharKeyCodes = mutableMapOf<Char, Char>()
+
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
             field = value
@@ -27,6 +29,22 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 }
             }
         }
+
+        for (c in 'A'..'Z') {
+            val localName = glfwGetKeyName(c.code, 0) ?: ""
+            if (localName.isNotBlank()) {
+                val localChar = localName[0].uppercaseChar()
+                localCharKeyCodes[localChar] = c
+            }
+        }
+    }
+
+    override fun getKeyCodeForChar(char: Char, useLocalKeyboardLayout: Boolean): Int {
+        var lookUpChar = char
+        if (useLocalKeyboardLayout) {
+            lookUpChar = localCharKeyCodes[char.uppercaseChar()] ?: char
+        }
+        return super.getKeyCodeForChar(lookUpChar, false)
     }
 
     private fun installInputHandlers() {

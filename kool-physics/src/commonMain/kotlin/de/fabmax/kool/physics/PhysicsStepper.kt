@@ -64,7 +64,7 @@ class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f) : PhysicsSt
 
     override fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
-        desiredSimTime += ctx.deltaT * simTimeFactor
+        desiredSimTime += min(0.1f, ctx.deltaT * simTimeFactor)
 
         if (isStepInProgress) {
             world.fetchAsyncStepResults()

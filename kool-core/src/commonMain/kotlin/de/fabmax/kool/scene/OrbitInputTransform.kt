@@ -36,6 +36,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
     var zoomMethod = ZoomMethod.ZOOM_CENTER
+    var isConsumingPtr = true
 
     var verticalAxis = Vec3d.Y_AXIS
     var horizontalAxis = Vec3d.X_AXIS
@@ -245,7 +246,9 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : Group(name)
             ptrPos.set(dragPtrs[0].x, dragPtrs[0].y)
             deltaPos.set(dragPtrs[0].deltaX, dragPtrs[0].deltaY)
             deltaScroll = dragPtrs[0].deltaScroll
-            dragPtrs[0].consume()
+            if (isConsumingPtr) {
+                dragPtrs[0].consume()
+            }
 
         } else {
             deltaPos.set(Vec2d.ZERO)
