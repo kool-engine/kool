@@ -266,10 +266,9 @@ class PbrLightNode(graph: ShaderGraph) :
     var inFragToLight = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
     var inRadiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(1f)))
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+    var inAlwaysLit = ShaderNodeIoVar(ModelVar1iConst(0))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrLight_outColor"), this)
-
-    var lightBacksides = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -321,10 +320,9 @@ class PbrLightNode(graph: ShaderGraph) :
             }
         """)
 
-        val normalCheck = if (!lightBacksides) "dot($inFragToLight, ${inNormal.ref3f()}) > 0.0" else "true"
         generator.appendMain("""
             vec3 radiance = vec3(0.0);
-            bool normalOk = $normalCheck;
+            bool normalOk = bool(${inAlwaysLit.ref1i()}) || dot($inFragToLight, ${inNormal.ref3f()}) > 0.0;
             if (normalOk) {
                 radiance = ${inRadiance.ref3f()};
             }
@@ -343,11 +341,19 @@ class PbrLightNode(graph: ShaderGraph) :
         
                 vec3 L = normalize($inFragToLight);
                 vec3 H = normalize(V + L);
-                ${ if (lightBacksides) "N *= sign(dot(N, L));" else "" }
+                
+                vec3 lightN = N;
+                float normalDotLight = dot(lightN, L);
+                if (${inAlwaysLit.ref1i()} != 0 && normalDotLight < 0.3) {
+                    float lightModW = normalDotLight;
+                    lightModW = (-lightModW + 0.3) / 1.3;
+                    lightN = normalize(mix(lightN, L, lightModW));
+                    normalDotLight = dot(lightN, L);
+                }
         
                 // cook-torrance BRDF
-                float NDF = DistributionGGX(N, H, rough); 
-                float G = GeometrySmith(N, V, L, rough);
+                float NDF = DistributionGGX(lightN, H, rough); 
+                float G = GeometrySmith(lightN, V, L, rough);
                 vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
                 
                 vec3 kS = F;
@@ -355,11 +361,11 @@ class PbrLightNode(graph: ShaderGraph) :
                 kD *= 1.0 - metal;
                 
                 vec3 numerator = NDF * G * F;
-                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                float denominator = 4.0 * max(dot(lightN, V), 0.0) * max(normalDotLight, 0.0);
                 vec3 specular = numerator / max(denominator, 0.001);
                     
                 // add to outgoing radiance Lo
-                float NdotL = max(dot(N, L), 0.0);
+                float NdotL = max(normalDotLight, 0.0);
                 ${outColor.name} = vec4((kD * albedo / $PI + specular) * radiance * NdotL, 0.0);
             }
             """)

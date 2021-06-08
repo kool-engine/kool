@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 
 /**
@@ -26,6 +27,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
     private var positionAoSampler: TextureSampler2d? = null
     private var normalRoughnessSampler: TextureSampler2d? = null
     private var albedoMetalSampler: TextureSampler2d? = null
+    private var emissiveMatSampler: TextureSampler2d? = null
 
     var positionAo: Texture2d? = cfg.positionAo
         set(value) {
@@ -41,6 +43,11 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
         set(value) {
             field = value
             albedoMetalSampler?.texture = value
+        }
+    var emissiveMat: Texture2d? = cfg.emissiveMat ?: SingleColorTexture(Color.BLACK.withAlpha(0f))
+        set(value) {
+            field = value
+            emissiveMatSampler?.texture = value
         }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
@@ -59,6 +66,8 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
         normalRoughnessSampler?.let { it.texture = normalRoughness }
         albedoMetalSampler = model.findNode<Texture2dNode>("albedoMetal")?.sampler
         albedoMetalSampler?.let { it.texture = albedoMetal }
+        emissiveMatSampler = model.findNode<Texture2dNode>("emissiveMat")?.sampler
+        emissiveMatSampler?.let { it.texture = emissiveMat }
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -98,6 +107,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     inPositionAo = texture2dSamplerNode(texture2dNode("positionAo"), coord).outColor
                     inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
+                    inEmissiveMat = texture2dSamplerNode(texture2dNode("emissiveMat"), coord).outColor
                 }
 
                 // discard fragment if it contains background / clear color
@@ -108,7 +118,6 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 val worldNrm = vec3TransformNode(mrtDeMultiplex.outViewNormal, defCam.outInvViewMat, 0f).outVec3
 
                 val mat = pbrLightNode().apply {
-                    lightBacksides = cfg.lightBacksides
                     inFragPos = worldPos
                     inNormal = worldNrm
                     inCamPos = defCam.outCamPos
@@ -116,6 +125,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     inAlbedo = mrtDeMultiplex.outAlbedo
                     inMetallic = mrtDeMultiplex.outMetallic
                     inRoughness = mrtDeMultiplex.outRoughness
+                    inAlwaysLit = mrtDeMultiplex.outLightBacksides
 
                     if (cfg.lightType == Light.Type.SPOT) {
                         val spot = addNode(SingleSpotLightNode(stage)).apply {
@@ -159,10 +169,9 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
         var sceneCamera: Camera? = null
 
-        var lightBacksides = false
-
         var positionAo: Texture2d? = null
         var normalRoughness: Texture2d? = null
         var albedoMetal: Texture2d? = null
+        var emissiveMat: Texture2d? = null
     }
 }

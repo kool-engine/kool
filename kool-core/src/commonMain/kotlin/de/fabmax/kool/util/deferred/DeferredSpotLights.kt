@@ -36,6 +36,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
             positionAo = mrtPass.positionAo
             normalRoughness = mrtPass.normalRoughness
             albedoMetal = mrtPass.albedoMetal
+            emissiveMat = mrtPass.emissive
         }
         shader = DeferredLightShader(lightCfg)
 
