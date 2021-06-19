@@ -19,6 +19,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.DriveAxes
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPointLights
+import de.fabmax.kool.util.deferred.DeferredSpotLights
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -43,6 +44,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     private val reverseLightShader: DeferredPbrShader
     private val rearLightLt: DeferredPointLights.PointLight
     private val rearLightRt: DeferredPointLights.PointLight
+    private val headLightLt: DeferredSpotLights.SpotLight
+    private val headLightRt: DeferredSpotLights.SpotLight
 
     private val rearLightColorBrake = Color(1f, 0.01f, 0.01f)
     private val rearLightColorReverse = Color(1f, 1f, 1f)
@@ -70,6 +73,20 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             albedo = Color(0.6f, 0.6f, 0.6f)
         }
         vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
+
+        headLightLt = DeferredSpotLights.SpotLight().apply {
+            spotAngle = 30f
+            power = 5000f
+            maxIntensity = 40f
+        }
+        headLightRt = DeferredSpotLights.SpotLight().apply {
+            spotAngle = 30f
+            power = 5000f
+            maxIntensity = 40f
+        }
+        val headLights = world.deferredPipeline.pbrPass.addSpotLights(30f)
+        headLights.addSpotLight(headLightLt)
+        headLights.addSpotLight(headLightRt)
 
         rearLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
         rearLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
@@ -146,6 +163,13 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         vehicle.transform.transform(rearLightLt.position)
         rearLightRt.position.set(-0.4f, -0.1f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
+
+        vehicle.transform.getRotation(headLightLt.orientation).rotate(-90f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
+        headLightRt.orientation.set(headLightLt.orientation)
+        headLightLt.position.set(0.65f, -0.45f, 2.7f)
+        vehicle.transform.transform(headLightLt.position)
+        headLightRt.position.set(-0.65f, -0.45f, 2.7f)
+        vehicle.transform.transform(headLightRt.position)
     }
 
     fun resetVehiclePos() {
