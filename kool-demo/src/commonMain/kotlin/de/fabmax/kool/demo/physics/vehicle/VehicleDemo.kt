@@ -75,7 +75,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
             aoPipeline?.mapSize = 0.75f
             pbrPass.sceneShader.ambientShadowFactor = 0.3f
-            bloomStrength = 0.1f
+            bloomStrength = 0.25f
             bloomRadius = 1f
             setBloomBrightnessThresholds(3.5f, 4.5f)
 

@@ -85,6 +85,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         encodedLightData[11] = light.power
 
         encodedLightData[12] = light.maxIntensity
+        encodedLightData[13] = light.coreRatio
     }
 
     fun addSpotLight(spotLight: SpotLight) {
@@ -106,6 +107,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
         val position = MutableVec3f()
         val orientation = Mat3f()
         var spotAngle = 60f
+        var coreRatio = 0.8f
         val color = MutableColor(Color.WHITE)
         var power = 1f
         var maxIntensity = 100f

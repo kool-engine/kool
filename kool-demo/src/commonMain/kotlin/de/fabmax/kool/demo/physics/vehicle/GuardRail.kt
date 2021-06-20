@@ -214,7 +214,7 @@ class GuardRail {
         init {
             onPipelineCreated += { _, _, _ ->
                 uEmissionColor = model.findNode<PushConstantNodeColor>("uEmissiveColor")?.uniform
-                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(25f, MutableVec4f()))
+                uEmissionColor?.value?.set(VehicleDemo.color(500, false).scale(10f, MutableVec4f()))
             }
         }
 

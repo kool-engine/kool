@@ -292,7 +292,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
 
     var inShadowFac = ShaderNodeIoVar(ModelVar1fConst(1f))
     var inFragPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
+    var inSpotCoreRatio = ShaderNodeIoVar(ModelVar1fConst(0.8f))
 
     val outLightCount = ShaderNodeIoVar(ModelVar1iConst(1), this)
     val outFragToLightDirection = ShaderNodeIoVar(ModelVar3f("${name}_outLightDirs"), this)
@@ -317,15 +317,15 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
         }
 
         generator.appendFunction("spotLight_getRadiance", """
-            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float innerAngle, float maxIntensity) {
+            vec3 ${name}_getRadiance(vec3 fragToLight, vec4 lightPos, vec4 lightColor, vec4 lightDir, float coreRatio, float maxIntensity) {
                 float dist = length(fragToLight);
                 float power = lightColor.w;
                 $strength
                 vec3 negFtl = -normalize(fragToLight);
                 float spotAng = lightDir.w;
-                float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);
+                float innerAng = spotAng + (1.0 - spotAng) * (1.0 - coreRatio);
                 float ang = dot(negFtl, lightDir.xyz);
-                float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
+                float angVal = smoothstep(spotAng, innerAng, ang);
                 return lightColor.rgb * clamp(strength, 0.0, maxIntensity) * angVal;
             }
             """)
@@ -333,7 +333,7 @@ class SingleSpotLightNode(shaderGraph: ShaderGraph) : ShaderNode("spotLightNd_${
         generator.appendMain("""
             ${outFragToLightDirection.declare()} = ${inLightPos.ref3f()} - ${inFragPos.ref3f()};
             ${outRadiance.declare()} = ${name}_getRadiance($outFragToLightDirection, ${inLightPos.ref4f()},
-                        ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $inSpotInnerAngle, ${inMaxIntensity.ref1f()}) * ${inShadowFac.ref1f()};
+                        ${inLightColor.ref4f()}, ${inLightDir.ref4f()}, $inSpotCoreRatio, ${inMaxIntensity.ref1f()}) * ${inShadowFac.ref1f()};
         """)
     }
 }

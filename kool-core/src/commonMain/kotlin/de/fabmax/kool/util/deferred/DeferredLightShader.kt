@@ -132,7 +132,8 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                             isReducedSoi = true
                             inLightPos = ifLightPos.output
                             inLightColor = ifLightColor.output
-                            inMaxIntensity = ifLightData.output
+                            inMaxIntensity = splitNode(ifLightData.output, "x").output
+                            inSpotCoreRatio = splitNode(ifLightData.output, "y").output
                             inLightDir = ifLightDir!!.output
                             inFragPos = worldPos
                         }
