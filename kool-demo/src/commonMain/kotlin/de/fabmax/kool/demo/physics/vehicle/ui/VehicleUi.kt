@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle.ui
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.physics.vehicle.DemoVehicle
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Attribute
@@ -11,7 +12,7 @@ import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.round
 
-class VehicleUi(ctx: KoolContext) {
+class VehicleUi(val vehicle: DemoVehicle, ctx: KoolContext) {
 
     var speedKph: Float = 0f
         set(value) {
@@ -223,20 +224,20 @@ class VehicleUi(ctx: KoolContext) {
         }
 
         +container("timer") {
-            layoutSpec.setSize(dps(600f * scale), dps(110f * scale), full())
-            layoutSpec.setOrigin(pcs(50f) - dps(300f * scale), dps(-110f * scale), zero())
+            layoutSpec.setSize(dps(700f * scale), dps(85f * scale), full())
+            layoutSpec.setOrigin(pcs(50f) - dps(350f * scale), dps(-85f * scale), zero())
             ui.setCustom(TimerComponentUi(this))
 
             +label("trackTime") {
                 trackTimeLbl = this
-                layoutSpec.setOrigin(dps(100f), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(100f), dps(5f * scale), zero())
                 layoutSpec.setSize(dps(200f * scale), dps(70f * scale), full())
                 font.setCustom(midFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "0:00.00"
             }
             +label("Total") {
-                layoutSpec.setOrigin(dps(275f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(275f * scale), dps(5f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -245,14 +246,14 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime1") {
                 sec1Lbl = this
-                layoutSpec.setOrigin(dps(320f * scale), dps(60f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(35f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 1") {
-                layoutSpec.setOrigin(dps(420f * scale), dps(60f * scale), zero())
+                layoutSpec.setOrigin(dps(420f * scale), dps(35f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -261,14 +262,14 @@ class VehicleUi(ctx: KoolContext) {
 
             +label("sectorTime2") {
                 sec2Lbl = this
-                layoutSpec.setOrigin(dps(320f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(320f * scale), dps(5f * scale), zero())
                 layoutSpec.setSize(dps(120f * scale), dps(45f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.END, Alignment.END)
                 text = "-:--.--"
             }
             +label("Sec 2") {
-                layoutSpec.setOrigin(dps(420f * scale), dps(30f * scale), zero())
+                layoutSpec.setOrigin(dps(420f * scale), dps(5f * scale), zero())
                 layoutSpec.setSize(dps(60f * scale), dps(35f * scale), full())
                 font.setCustom(smallFont)
                 textAlignment = Gravity(Alignment.START, Alignment.END)
@@ -276,14 +277,26 @@ class VehicleUi(ctx: KoolContext) {
             }
 
             +toggleButton("Sound") {
-                layoutSpec.setOrigin(dps(225f * scale), dps(0f * scale), zero())
-                layoutSpec.setSize(dps(150f * scale), dps(35f * scale), full())
+                layoutSpec.setOrigin(dps(500f * scale), dps(40f * scale), zero())
+                layoutSpec.setSize(dps(180f * scale), dps(35f * scale), full())
                 knobColorOn.setCustom(MdColor.ORANGE)
                 trackColorOn.setCustom(MdColor.ORANGE tone 200)
                 textColor.setCustom(MdColor.GREY tone 400)
                 textColorHovered.setCustom(MdColor.ORANGE)
                 onClick += { _, _, _ ->
                     onToggleSound(isEnabled)
+                }
+            }
+            +toggleButton("Headlights") {
+                layoutSpec.setOrigin(dps(500f * scale), dps(10f * scale), zero())
+                layoutSpec.setSize(dps(180f * scale), dps(35f * scale), full())
+                knobColorOn.setCustom(MdColor.ORANGE)
+                trackColorOn.setCustom(MdColor.ORANGE tone 200)
+                textColor.setCustom(MdColor.GREY tone 400)
+                textColorHovered.setCustom(MdColor.ORANGE)
+                isEnabled = vehicle.isHeadlightsOn
+                onClick += { _, _, _ ->
+                    vehicle.isHeadlightsOn = isEnabled
                 }
             }
         }

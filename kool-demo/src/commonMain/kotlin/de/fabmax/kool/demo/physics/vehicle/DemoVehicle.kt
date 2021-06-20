@@ -51,6 +51,13 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     private val rearLightColorReverse = Color(1f, 1f, 1f)
     private val rearLightColorBrakeReverse = Color(2f, 1f, 1f)
 
+    private var desiredHeadLightPower = 5000f
+    var isHeadlightsOn: Boolean
+        get() = desiredHeadLightPower > 0f
+        set(value) {
+            desiredHeadLightPower = if (value) 5000f else 0f
+        }
+
     init {
         vehicleGroup += vehicleModel
         vehicle = makeRaycastVehicle(world)
@@ -76,12 +83,12 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
 
         headLightLt = DeferredSpotLights.SpotLight().apply {
             spotAngle = 30f
-            power = 5000f
+            power = 0f
             maxIntensity = 40f
         }
         headLightRt = DeferredSpotLights.SpotLight().apply {
             spotAngle = 30f
-            power = 5000f
+            power = 0f
             maxIntensity = 40f
         }
         val headLights = world.deferredPipeline.pbrPass.addSpotLights(30f)
@@ -164,12 +171,15 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         rearLightRt.position.set(-0.4f, -0.1f, -2.5f)
         vehicle.transform.transform(rearLightRt.position)
 
-        vehicle.transform.getRotation(headLightLt.orientation).rotate(-90f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
-        headLightRt.orientation.set(headLightLt.orientation)
+        vehicle.transform.getRotation(headLightLt.orientation).rotate(-85f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
+        vehicle.transform.getRotation(headLightRt.orientation).rotate(-95f, Vec3f.Y_AXIS).rotate(-7f, Vec3f.Z_AXIS)
         headLightLt.position.set(0.65f, -0.45f, 2.7f)
         vehicle.transform.transform(headLightLt.position)
         headLightRt.position.set(-0.65f, -0.45f, 2.7f)
         vehicle.transform.transform(headLightRt.position)
+
+        headLightLt.power = desiredHeadLightPower * 0.1f + headLightLt.power * 0.9f
+        headLightRt.power = headLightLt.power
     }
 
     fun resetVehiclePos() {
