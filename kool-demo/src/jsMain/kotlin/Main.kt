@@ -1,3 +1,4 @@
+import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.demo
 import kotlinx.browser.window
 import kotlin.collections.set
@@ -7,7 +8,7 @@ import kotlin.collections.set
  */
 fun main() {
     // optional local directory to load assets from (by default they are loaded from web)
-    //Demo.setProperty("assetsBaseDir", "../assets")
+    Demo.setProperty("assetsBaseDir", "../assets")
 
     // sub directories for individual asset classes within asset base dir
     //Demo.setProperty("pbrDemo.envMaps", "hdri")

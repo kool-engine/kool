@@ -43,13 +43,13 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val dbgOverlay = DebugOverlay(ctx, DebugOverlay.Position.LOWER_RIGHT)
     private val loadingScreen = LoadingScreen(ctx)
     private var currentDemo: DemoScene? = null
-    private var switchDemo: DemoScene? = null
+    private var switchDemo: Pair<String?, DemoScene>? = null
         set(value) {
             field = value
-            value?.loadingScreen = loadingScreen
+            value?.second?.loadingScreen = loadingScreen
         }
 
-    private val defaultScene = DemoEntry("Physics - Vehicle") { VehicleDemo() }
+    private val defaultScene = "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() }
 
     private val demos = mutableMapOf(
         "phys-ragdoll" to DemoEntry("Physics - Ragdoll") { RagdollDemo() },
@@ -89,13 +89,16 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
-        switchDemo = (demos[startScene] ?: defaultScene).newInstance(ctx)
+        val loadScene = startScene ?: ctx.assetMgr.loadString("selectedScene")
+        val loadDemo = loadScene?.let { demos[loadScene] } ?: defaultScene.second
+        switchDemo = loadScene to loadDemo.newInstance(ctx)
 
         ctx.run()
     }
 
     private fun onRender(ctx: KoolContext) {
         switchDemo?.let { newDemo ->
+            newDemo.first?.let { ctx.assetMgr.storeString("selectedScene", it) }
             // release old demo
             currentDemo?.let { demo ->
                 demo.scenes.forEach {
@@ -107,7 +110,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
             ctx.scenes.add(0, loadingScreen)
 
             // set new demo
-            currentDemo = newDemo
+            currentDemo = newDemo.second
             switchDemo = null
         }
 
@@ -136,10 +139,8 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
                 layoutSpec.setOrigin(zero(), dps(45f, true), zero())
                 layoutSpec.setSize(full(), pcs(100f, true) - dps(110f, true), full())
 
-                //+ScrollHandler(this)
-
                 var y = -30f
-                demos.values.filter { !it.isHidden }.forEach { demo ->
+                demos.entries.filter { !it.value.isHidden }.forEach { (key, demo) ->
                     +button(demo.label) {
                         layoutSpec.setOrigin(zero(), dps(y, true), zero())
                         layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
@@ -147,7 +148,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
                         y -= 35f
 
                         onClick += { _,_,_ ->
-                            switchDemo = demo.newInstance(ctx)
+                            switchDemo = key to demo.newInstance(ctx)
                             isOpen = false
                         }
                     }
@@ -181,7 +182,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
             get() = getProperty("pbrDemo.models", "$awsBaseUrl/models")
 
         val soundsBasePath: String
-            get() = getProperty("pbrDemo.models", "$awsBaseUrl/sounds")
+            get() = getProperty("sounds", "$awsBaseUrl/sounds")
 
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value

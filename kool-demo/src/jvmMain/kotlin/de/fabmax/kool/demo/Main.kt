@@ -21,5 +21,5 @@ fun main() {
     }
 
     // launch demo
-    demo("gltfDemo", ctx)
+    demo(null, ctx)
 }

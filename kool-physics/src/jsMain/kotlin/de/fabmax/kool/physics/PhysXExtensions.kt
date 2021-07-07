@@ -121,6 +121,7 @@ class MemoryStack private constructor() {
     fun createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity))
     fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q))
 
+    fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale))
     fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
         autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())

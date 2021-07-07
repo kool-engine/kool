@@ -207,6 +207,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var msaaSamples = 8
 
         var assetsBaseDir = "./assets"
+        var storageDir = "./.storage"
 
         val extraFonts = mutableListOf<String>()
 

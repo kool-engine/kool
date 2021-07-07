@@ -232,6 +232,77 @@ val PxBounds3.dimensions
 val PxBounds3.extents
     get() = getExtents()
 
+external interface PxCollection {
+    /**
+     * @param obj WebIDL type: [PxBase] (Ref)
+     */
+    fun add(obj: PxBase)
+
+    /**
+     * @param obj WebIDL type: [PxBase] (Ref)
+     * @param id  WebIDL type: unsigned long long
+     */
+    fun add(obj: PxBase, id: Long)
+
+    /**
+     * @param obj WebIDL type: [PxBase] (Ref)
+     */
+    fun remove(obj: PxBase)
+
+    /**
+     * @param obj WebIDL type: [PxBase] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun contains(obj: PxBase): Boolean
+
+    /**
+     * @param obj WebIDL type: [PxBase] (Ref)
+     * @param id  WebIDL type: unsigned long long
+     */
+    fun addId(obj: PxBase, id: Long)
+
+    /**
+     * @param id WebIDL type: unsigned long long
+     */
+    fun removeId(id: Long)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbObjects(): Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxBase] (Ref)
+     */
+    fun getObject(index: Int): PxBase
+
+    /**
+     * @param id WebIDL type: unsigned long long
+     * @return WebIDL type: [PxBase]
+     */
+    fun find(id: Long): PxBase
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbIds(): Int
+
+    /**
+     * @param obj WebIDL type: [PxBase] (Const, Ref)
+     * @return WebIDL type: unsigned long long
+     */
+    fun getId(obj: PxBase): Long
+
+    fun release()
+
+}
+
+val PxCollection.nbObjects
+    get() = getNbObjects()
+val PxCollection.nbIds
+    get() = getNbIds()
+
 external interface PxCpuDispatcher
 
 fun PxCpuDispatcher.destroy() {
@@ -456,6 +527,18 @@ fun JavaErrorCallback(): JavaErrorCallback {
 external interface PxFoundation {
     fun release()
 
+}
+
+external interface PxInputData
+
+fun PxInputData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxOutputStream
+
+fun PxOutputStream.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxPhysicsInsertionCallback

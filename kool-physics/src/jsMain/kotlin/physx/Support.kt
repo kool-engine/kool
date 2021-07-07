@@ -49,7 +49,7 @@ fun PxRealPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU8Ptr
+external interface PxU8Ptr : PxU8ConstPtr
 
 fun PxU8Ptr.destroy() {
     PhysXJsLoader.destroy(this)
@@ -61,7 +61,7 @@ fun PxU8ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU16Ptr
+external interface PxU16Ptr : PxU16ConstPtr
 
 fun PxU16Ptr.destroy() {
     PhysXJsLoader.destroy(this)
@@ -73,7 +73,7 @@ fun PxU16ConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU32Ptr
+external interface PxU32Ptr : PxU32ConstPtr
 
 fun PxU32Ptr.destroy() {
     PhysXJsLoader.destroy(this)
@@ -137,21 +137,21 @@ external interface TypeHelpers {
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU8ConstPtr] (Value)
+     * @return WebIDL type: [PxU8Ptr] (Value)
      */
-    fun voidToU8ConstPtr(voidPtr: Any): PxU8ConstPtr
+    fun voidToU8Ptr(voidPtr: Any): PxU8Ptr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU16ConstPtr] (Value)
+     * @return WebIDL type: [PxU16Ptr] (Value)
      */
-    fun voidToU16ConstPtr(voidPtr: Any): PxU16ConstPtr
+    fun voidToU16Ptr(voidPtr: Any): PxU16Ptr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
-     * @return WebIDL type: [PxU32ConstPtr] (Value)
+     * @return WebIDL type: [PxU32Ptr] (Value)
      */
-    fun voidToU32ConstPtr(voidPtr: Any): PxU32ConstPtr
+    fun voidToU32Ptr(voidPtr: Any): PxU32Ptr
 
     /**
      * @param voidPtr WebIDL type: VoidPtr
@@ -199,6 +199,8 @@ external interface Vector_PxMaterialConst {
      */
     fun push_back(value: PxMaterial)
 
+    fun clear()
+
 }
 
 fun Vector_PxMaterialConst(): Vector_PxMaterialConst {
@@ -239,6 +241,8 @@ external interface Vector_PxHeightFieldSample {
      * @param value WebIDL type: [PxHeightFieldSample] (Ref)
      */
     fun push_back(value: PxHeightFieldSample)
+
+    fun clear()
 
 }
 
@@ -281,6 +285,8 @@ external interface Vector_PxReal {
      */
     fun push_back(value: Float)
 
+    fun clear()
+
 }
 
 fun Vector_PxReal(): Vector_PxReal {
@@ -297,6 +303,49 @@ fun Vector_PxReal(size: Int): Vector_PxReal {
 }
 
 fun Vector_PxReal.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface Vector_PxU8 {
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: octet
+     */
+    fun at(index: Int): Byte
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun data(): Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: octet
+     */
+    fun push_back(value: Byte)
+
+    fun clear()
+
+}
+
+fun Vector_PxU8(): Vector_PxU8 {
+    fun _Vector_PxU8(_module: dynamic) = js("new _module.Vector_PxU8()")
+    return _Vector_PxU8(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun Vector_PxU8(size: Int): Vector_PxU8 {
+    fun _Vector_PxU8(_module: dynamic, size: Int) = js("new _module.Vector_PxU8(size)")
+    return _Vector_PxU8(PhysXJsLoader.physXJs, size)
+}
+
+fun Vector_PxU8.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -321,6 +370,8 @@ external interface Vector_PxU16 {
      * @param value WebIDL type: unsigned short
      */
     fun push_back(value: Short)
+
+    fun clear()
 
 }
 
@@ -363,6 +414,8 @@ external interface Vector_PxU32 {
      */
     fun push_back(value: Int)
 
+    fun clear()
+
 }
 
 fun Vector_PxU32(): Vector_PxU32 {
@@ -403,6 +456,8 @@ external interface Vector_PxVec3 {
      * @param value WebIDL type: [PxVec3] (Ref)
      */
     fun push_back(value: PxVec3)
+
+    fun clear()
 
 }
 
@@ -445,6 +500,8 @@ external interface Vector_PxRaycastQueryResult {
      */
     fun push_back(value: PxRaycastQueryResult)
 
+    fun clear()
+
 }
 
 fun Vector_PxRaycastQueryResult(): Vector_PxRaycastQueryResult {
@@ -485,6 +542,8 @@ external interface Vector_PxSweepQueryResult {
      * @param value WebIDL type: [PxSweepQueryResult] (Ref)
      */
     fun push_back(value: PxSweepQueryResult)
+
+    fun clear()
 
 }
 
@@ -527,6 +586,8 @@ external interface Vector_PxRaycastHit {
      */
     fun push_back(value: PxRaycastHit)
 
+    fun clear()
+
 }
 
 fun Vector_PxRaycastHit(): Vector_PxRaycastHit {
@@ -567,6 +628,8 @@ external interface Vector_PxSweepHit {
      * @param value WebIDL type: [PxSweepHit] (Ref)
      */
     fun push_back(value: PxSweepHit)
+
+    fun clear()
 
 }
 
@@ -609,6 +672,8 @@ external interface Vector_PxVehicleDrivableSurfaceType {
      */
     fun push_back(value: PxVehicleDrivableSurfaceType)
 
+    fun clear()
+
 }
 
 fun Vector_PxVehicleDrivableSurfaceType(): Vector_PxVehicleDrivableSurfaceType {
@@ -649,6 +714,8 @@ external interface Vector_PxWheelQueryResult {
      * @param value WebIDL type: [PxWheelQueryResult] (Ref)
      */
     fun push_back(value: PxWheelQueryResult)
+
+    fun clear()
 
 }
 
@@ -691,6 +758,8 @@ external interface Vector_PxVehicleWheels {
      */
     fun push_back(value: PxVehicleWheels)
 
+    fun clear()
+
 }
 
 fun Vector_PxVehicleWheels(): Vector_PxVehicleWheels {
@@ -708,5 +777,105 @@ fun Vector_PxVehicleWheels(size: Int): Vector_PxVehicleWheels {
 
 fun Vector_PxVehicleWheels.destroy() {
     PhysXJsLoader.destroy(this)
+}
+
+external interface PxPvdTransport {
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun connect(): Boolean
+
+    fun disconnect()
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isConnected(): Boolean
+
+}
+
+external interface SimplePvdTransport : PxPvdTransport {
+    /**
+     * @return WebIDL type: boolean
+     */
+    override fun connect(): Boolean
+
+    /**
+     * @param inBytes  WebIDL type: any
+     * @param inLength WebIDL type: unsigned long
+     */
+    fun send(inBytes: Int, inLength: Int)
+
+}
+
+fun SimplePvdTransport.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface JSPvdTransport : SimplePvdTransport {
+    /**
+     * return WebIDL type: boolean
+     */
+    var connect: () -> Boolean
+
+    /**
+     * param inBytes  WebIDL type: any
+     * param inLength WebIDL type: unsigned long
+     */
+    var send: (inBytes: Int, inLength: Int) -> Unit
+
+}
+
+fun JSPvdTransport(): JSPvdTransport {
+    fun _JSPvdTransport(_module: dynamic) = js("new _module.JSPvdTransport()")
+    return _JSPvdTransport(PhysXJsLoader.physXJs)
+}
+
+external interface PxPvdInstrumentationFlags {
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: octet
+ */
+fun PxPvdInstrumentationFlags(flags: Byte): PxPvdInstrumentationFlags {
+    fun _PxPvdInstrumentationFlags(_module: dynamic, flags: Byte) = js("new _module.PxPvdInstrumentationFlags(flags)")
+    return _PxPvdInstrumentationFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxPvdInstrumentationFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxPvd {
+    /**
+     * @param transport WebIDL type: [PxPvdTransport] (Ref)
+     * @param flags     WebIDL type: [PxPvdInstrumentationFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun connect(transport: PxPvdTransport, flags: PxPvdInstrumentationFlags): Boolean
+
+}
+
+object PxPvdInstrumentationFlagEnum {
+    val eDEBUG: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eDEBUG()
+    val ePROFILE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_ePROFILE()
+    val eMEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eMEMORY()
+    val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eALL()
 }
 

@@ -33,15 +33,15 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation("de.fabmax:physx-jni:0.4.9")
-                runtimeOnly("de.fabmax:physx-jni:0.4.9:native-win64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.9:native-linux64")
+                implementation("de.fabmax:physx-jni:0.4.12")
+                runtimeOnly("de.fabmax:physx-jni:0.4.12:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.12:native-linux64")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "0.4.9"))
+                implementation(npm("physx-js-webidl", "0.4.11"))
 //                implementation(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }

@@ -18,6 +18,11 @@ abstract class InputManager internal constructor() {
 
     val pointerState = PointerState()
 
+    val isShiftDown: Boolean get() = (currentKeyMods and KEY_MOD_SHIFT) != 0
+    val isCtrlDown: Boolean get() = (currentKeyMods and KEY_MOD_CTRL) != 0
+    val isAltDown: Boolean get() = (currentKeyMods and KEY_MOD_ALT) != 0
+    val isSuperDown: Boolean get() = (currentKeyMods and KEY_MOD_SUPER) != 0
+
     fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
         val keyStr = if (keyCode in 32..126) "'${keyCode.toChar()}'" else "$keyCode"
 

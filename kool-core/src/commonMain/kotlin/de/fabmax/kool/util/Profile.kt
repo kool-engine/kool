@@ -53,8 +53,8 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     override val positions = mutableListOf<MutableVec3f>()
     val normals = mutableListOf<MutableVec3f>()
     val texCoords = mutableListOf<MutableVec2f>()
-
-    var color: Color? = null
+    val colors = mutableListOf<Color>()
+    val customAttribs = mutableListOf<(VertexView) -> Unit>()
 
     private val prevIndices = mutableListOf<Int>()
     private val vertIndices = mutableListOf<Int>()
@@ -64,12 +64,22 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     val nVerts: Int
         get() = positions.size
 
-    fun getNormal(i: Int): Vec3f {
+    private fun getNormal(i: Int): Vec3f {
         return if (i < normals.size) normals[i] else Vec3f.ZERO
     }
 
-    fun getTexCoord(i: Int): Vec2f {
+    private fun getTexCoord(i: Int): Vec2f {
         return if (i < texCoords.size) texCoords[i] else Vec2f.ZERO
+    }
+
+    private fun getColor(i: Int): Color? {
+        return if (i < colors.size) colors[i] else null
+    }
+
+    private fun applyCustomAttribs(v: VertexView, i: Int) {
+        if (i < customAttribs.size) {
+            customAttribs[i].invoke(v)
+        }
     }
 
     fun xy(x: Float, y: Float) {
@@ -128,6 +138,10 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         normals += MutableVec3f(x, y, z)
     }
 
+    fun color(color: Color) {
+        colors += color
+    }
+
     fun setTexCoordsX(x: Float) {
         texCoords.forEach { it.x = x }
     }
@@ -141,10 +155,14 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         prevIndices.addAll(vertIndices)
         vertIndices.clear()
 
-        color?.let { meshBuilder.color = it }
-
         positions.forEachIndexed { i, pos ->
-            vertIndices += meshBuilder.vertex(pos, getNormal(i), getTexCoord(i))
+            vertIndices += meshBuilder.vertex {
+                set(pos)
+                normal.set(getNormal(i))
+                texCoord.set(getTexCoord(i))
+                getColor(i)?.let { color.set(it) }
+                applyCustomAttribs(this, i)
+            }
         }
 
         if (connect) {

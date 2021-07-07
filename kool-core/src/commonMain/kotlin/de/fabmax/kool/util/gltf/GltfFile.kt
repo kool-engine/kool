@@ -616,13 +616,15 @@ data class GltfFile(
         const val GLB_CHUNK_MAGIC_JSON = 0x4e4f534a
         const val GLB_CHUNK_MAGIC_BIN = 0x004e4942
 
+        private val jsonFmt = Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+            allowSpecialFloatingPointValues = true
+            useArrayPolymorphism = true
+        }
+
         fun fromJson(json: String): GltfFile {
-            return Json {
-                isLenient = true
-                ignoreUnknownKeys = true
-                allowSpecialFloatingPointValues = true
-                useArrayPolymorphism = true
-            }.decodeFromString(json)
+            return jsonFmt.decodeFromString(json)
         }
     }
 }

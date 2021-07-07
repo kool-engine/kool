@@ -76,6 +76,20 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer
 
+    abstract fun deflate(data: Uint8Buffer): Uint8Buffer
+
+    abstract fun store(key: String, data: Uint8Buffer): Boolean
+
+    abstract fun storeString(key: String, data: String): Boolean
+
+    abstract fun load(key: String): Uint8Buffer?
+
+    abstract fun loadString(key: String): String?
+
+    abstract suspend fun loadFileByUser(): Uint8Buffer?
+
+    abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream")
+
     protected open fun isHttpAsset(assetPath: String): Boolean =
             // maybe use something less naive here?
             assetPath.startsWith("http://", true) ||

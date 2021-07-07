@@ -2501,6 +2501,17 @@ fun PxRigidBodyFlags.destroy() {
 
 external interface PxRigidDynamic : PxRigidBody {
     /**
+     * @param destination WebIDL type: [PxTransform] (Const, Ref)
+     */
+    fun setKinematicTarget(destination: PxTransform)
+
+    /**
+     * @param target WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun getKinematicTarget(target: PxTransform): Boolean
+
+    /**
      * @return WebIDL type: boolean
      */
     fun isSleeping(): Boolean
@@ -2670,6 +2681,11 @@ external interface PxScene {
      * @param wakeOnLostTouch WebIDL type: boolean
      */
     fun removeAggregate(aggregate: PxAggregate, wakeOnLostTouch: Boolean)
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Const, Ref)
+     */
+    fun addCollection(collection: PxCollection)
 
     /**
      * @return WebIDL type: float

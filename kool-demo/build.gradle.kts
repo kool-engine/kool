@@ -31,6 +31,7 @@ kotlin {
             dependencies {
                 implementation(DepsCommon.kotlinCoroutines)
                 implementation(DepsCommon.kotlinSerialization)
+                implementation(DepsCommon.kotlinSerializationJson)
                 implementation(project(":kool-core"))
                 implementation(project(":kool-physics"))
             }
@@ -50,6 +51,7 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("opengl"))
                 runtimeOnly(DepsJvm.lwjglNatives("vma"))
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
+                runtimeOnly(DepsJvm.lwjglNatives("nfd"))
             }
         }
 

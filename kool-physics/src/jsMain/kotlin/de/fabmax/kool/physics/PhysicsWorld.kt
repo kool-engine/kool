@@ -25,14 +25,15 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
     init {
         Physics.checkIsLoaded()
 
-        val sceneDesc = PxSceneDesc(Physics.physics.tolerancesScale)
-        sceneDesc.gravity = bufPxGravity
-        // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
-        sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
-        sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
-        sceneDesc.flags.clear(PxSceneFlagEnum.eENABLE_PCM)
-        sceneDesc.simulationEventCallback = simEventCallback()
-        pxScene = Physics.physics.createScene(sceneDesc)
+        MemoryStack.stackPush().use { mem ->
+            val sceneDesc = mem.createPxSceneDesc(Physics.physics.tolerancesScale)
+            sceneDesc.gravity = bufPxGravity
+            // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
+            sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
+            sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
+            sceneDesc.simulationEventCallback = simEventCallback()
+            pxScene = Physics.physics.createScene(sceneDesc)
+        }
 
         scene?.let { registerHandlers(it) }
     }

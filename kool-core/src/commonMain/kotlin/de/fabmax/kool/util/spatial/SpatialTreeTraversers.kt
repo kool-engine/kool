@@ -36,7 +36,7 @@ interface BoundingSphereDistance<T: Any> : PointDistance<T> {
 
 interface RayDistance<T: Any> {
     fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: Ray): Float {
-        return if (node.bounds.isEmpty) {
+        return if (node.isEmpty) {
             Float.MAX_VALUE
         } else {
             node.bounds.center

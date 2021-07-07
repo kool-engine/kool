@@ -54,6 +54,7 @@ kotlin {
                 implementation(DepsJvm.lwjgl("vulkan"))
                 implementation(DepsJvm.lwjgl("vma"))
                 implementation(DepsJvm.lwjgl("shaderc"))
+                implementation(DepsJvm.lwjgl("nfd"))
             }
         }
         val jvmTest by getting {

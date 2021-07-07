@@ -5,6 +5,43 @@
 
 package physx
 
+external interface PxCollectionExt {
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     */
+    fun releaseObjects(collection: PxCollection)
+
+    /**
+     * @param collection             WebIDL type: [PxCollection] (Ref)
+     * @param releaseExclusiveShapes WebIDL type: boolean
+     */
+    fun releaseObjects(collection: PxCollection, releaseExclusiveShapes: Boolean)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param concreteType WebIDL type: unsigned short
+     */
+    fun remove(collection: PxCollection, concreteType: Short)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param concreteType WebIDL type: unsigned short
+     * @param to           WebIDL type: [PxCollection]
+     */
+    fun remove(collection: PxCollection, concreteType: Short, to: PxCollection)
+
+    /**
+     * @param scene WebIDL type: [PxScene] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollection(scene: PxScene): PxCollection
+
+}
+
+fun PxCollectionExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxD6Joint {
     /**
      * @param axis WebIDL type: [PxD6AxisEnum] (enum)
@@ -230,6 +267,80 @@ external interface PxDefaultCpuDispatcher : PxCpuDispatcher
 fun PxDefaultCpuDispatcher.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+external interface PxDefaultMemoryInputData : PxInputData {
+    /**
+     * @param dest  WebIDL type: VoidPtr
+     * @param count WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun read(dest: Any, count: Int): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getLength(): Int
+
+    /**
+     * @param pos WebIDL type: unsigned long
+     */
+    fun seek(pos: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun tell(): Int
+
+}
+
+/**
+ * @param data   WebIDL type: [PxU8Ptr] (Ref)
+ * @param length WebIDL type: unsigned long
+ */
+fun PxDefaultMemoryInputData(data: PxU8Ptr, length: Int): PxDefaultMemoryInputData {
+    fun _PxDefaultMemoryInputData(_module: dynamic, data: PxU8Ptr, length: Int) = js("new _module.PxDefaultMemoryInputData(data, length)")
+    return _PxDefaultMemoryInputData(PhysXJsLoader.physXJs, data, length)
+}
+
+fun PxDefaultMemoryInputData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxDefaultMemoryInputData.length
+    get() = getLength()
+
+external interface PxDefaultMemoryOutputStream : PxOutputStream {
+    /**
+     * @param src   WebIDL type: VoidPtr
+     * @param count WebIDL type: unsigned long
+     */
+    fun write(src: Any, count: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSize(): Int
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun getData(): Any
+
+}
+
+fun PxDefaultMemoryOutputStream(): PxDefaultMemoryOutputStream {
+    fun _PxDefaultMemoryOutputStream(_module: dynamic) = js("new _module.PxDefaultMemoryOutputStream()")
+    return _PxDefaultMemoryOutputStream(PhysXJsLoader.physXJs)
+}
+
+fun PxDefaultMemoryOutputStream.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxDefaultMemoryOutputStream.size
+    get() = getSize()
+val PxDefaultMemoryOutputStream.data
+    get() = getData()
 
 external interface PxDistanceJoint : PxJoint {
     /**
@@ -1164,6 +1275,152 @@ fun PxRevoluteJointFlags(flags: Short): PxRevoluteJointFlags {
 
 fun PxRevoluteJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
+}
+
+external interface PxSerialization {
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param collection         WebIDL type: [PxCollection] (Ref)
+     * @param sr                 WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalReferences WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry, externalReferences: PxCollection): Boolean
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry)
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param exceptFor  WebIDL type: [PxCollection] (Const)
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param exceptFor    WebIDL type: [PxCollection] (Const)
+     * @param followJoints WebIDL type: boolean
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection, followJoints: Boolean)
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param base       WebIDL type: unsigned long long
+     */
+    fun createSerialObjectIds(collection: PxCollection, base: Long)
+
+    /**
+     * @param inputData WebIDL type: [PxInputData] (Ref)
+     * @param cooking   WebIDL type: [PxCooking] (Ref)
+     * @param sr        WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromXml(inputData: PxInputData, cooking: PxCooking, sr: PxSerializationRegistry): PxCollection
+
+    /**
+     * @param inputData    WebIDL type: [PxInputData] (Ref)
+     * @param cooking      WebIDL type: [PxCooking] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromXml(inputData: PxInputData, cooking: PxCooking, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
+
+    /**
+     * @param memBlock WebIDL type: VoidPtr
+     * @param sr       WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry): PxCollection
+
+    /**
+     * @param memBlock     WebIDL type: VoidPtr
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param cooking      WebIDL type: [PxCooking]
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, cooking: PxCooking): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param cooking      WebIDL type: [PxCooking]
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, cooking: PxCooking, externalRefs: PxCollection): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @param exportNames  WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection, exportNames: Boolean): Boolean
+
+    /**
+     * @param physics WebIDL type: [PxPhysics] (Ref)
+     * @return WebIDL type: [PxSerializationRegistry]
+     */
+    fun createSerializationRegistry(physics: PxPhysics): PxSerializationRegistry
+
+}
+
+fun PxSerialization.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxSerializationRegistry {
+    fun release()
+
 }
 
 external interface PxSphericalJoint : PxJoint {

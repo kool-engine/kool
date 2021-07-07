@@ -4,21 +4,30 @@ import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
+import org.lwjgl.PointerBuffer
+import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
 import java.io.*
 import java.util.*
 import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
 
 class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager(props.assetsBaseDir) {
 
+    private val storageDir = File(props.storageDir)
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
-
     private val imageIoLock = Any()
+
+    private var fileChooserPath = System.getProperty("user.home")
 
     init {
         // inits http cache if not already happened
         HttpCache.initCache(File(".httpCache"))
+
+        if (!storageDir.exists() && !storageDir.mkdirs()) {
+            logE { "Failed to create storage directory" }
+        }
     }
 
     override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
@@ -123,6 +132,88 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
+
+    override fun deflate(data: Uint8Buffer): Uint8Buffer {
+        val bos = ByteArrayOutputStream()
+        GZIPOutputStream(bos).use { it.write(data.toArray()) }
+        return Uint8BufferImpl(bos.toByteArray())
+    }
+
+    override fun store(key: String, data: Uint8Buffer): Boolean {
+        return try {
+            FileOutputStream(File(storageDir, key)).use { it.write(data.toArray()) }
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    override fun storeString(key: String, data: String): Boolean {
+        return try {
+            FileWriter(File(storageDir, key)).use { it.write(data) }
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    override fun load(key: String): Uint8Buffer? {
+        val file = File(storageDir, key)
+        if (!file.canRead()) {
+            return null
+        }
+        return try {
+            Uint8BufferImpl(file.readBytes())
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override fun loadString(key: String): String? {
+        val file = File(storageDir, key)
+        if (!file.canRead()) {
+            return null
+        }
+        return try {
+            file.readText()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun loadFileByUser(): Uint8Buffer? {
+        val outPath = PointerBuffer.allocateDirect(1)
+        val result = NativeFileDialog.NFD_OpenDialog(null, fileChooserPath, outPath)
+        if (result == NativeFileDialog.NFD_OKAY) {
+            val file = File(outPath.stringUTF8)
+            fileChooserPath = file.parent
+            try {
+                return Uint8BufferImpl(file.readBytes())
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return null
+    }
+
+    override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String) {
+        val outPath = PointerBuffer.allocateDirect(1)
+        val result = NativeFileDialog.NFD_SaveDialog(null, File(fileChooserPath, fileName).absolutePath, outPath)
+        if (result == NativeFileDialog.NFD_OKAY) {
+            val file = File(outPath.stringUTF8)
+            file.parentFile.mkdirs()
+            fileChooserPath = file.parent
+            try {
+                FileOutputStream(file).use { it.write(data.toArray()) }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
         var img: BufferedImage?

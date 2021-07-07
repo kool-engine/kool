@@ -54,6 +54,15 @@ external interface PxTopLevelFunctions {
     fun CreatePhysics(version: Int, foundation: PxFoundation, params: PxTolerancesScale): PxPhysics
 
     /**
+     * @param version    WebIDL type: unsigned long
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @param params     WebIDL type: [PxTolerancesScale] (Const, Ref)
+     * @param pvd        WebIDL type: [PxPvd]
+     * @return WebIDL type: [PxPhysics]
+     */
+    fun CreatePhysics(version: Int, foundation: PxFoundation, params: PxTolerancesScale, pvd: PxPvd): PxPhysics
+
+    /**
      * @param numThreads WebIDL type: unsigned long
      * @return WebIDL type: [PxDefaultCpuDispatcher]
      */
@@ -71,6 +80,12 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: [PxCudaContextManager]
      */
     fun CreateCudaContextManager(foundation: PxFoundation, desc: PxCudaContextManagerDesc): PxCudaContextManager
+
+    /**
+     * @param foundation WebIDL type: [PxFoundation] (Ref)
+     * @return WebIDL type: [PxPvd]
+     */
+    fun CreatePvd(foundation: PxFoundation): PxPvd
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)

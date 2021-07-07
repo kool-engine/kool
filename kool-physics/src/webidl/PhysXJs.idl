@@ -11,10 +11,11 @@ interface PxTopLevelFunctions {
     static PxControllerManager CreateControllerManager([Ref] PxScene scene, optional boolean lockingEnabled);
     static PxCooking CreateCooking(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxCookingParams scale);
     static PxFoundation CreateFoundation(unsigned long version, [Ref] PxDefaultAllocator allocator, [Ref] PxErrorCallback errorCallback);
-    static PxPhysics CreatePhysics(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxTolerancesScale params);
+    static PxPhysics CreatePhysics(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxTolerancesScale params, optional PxPvd pvd);
     static PxDefaultCpuDispatcher DefaultCpuDispatcherCreate(unsigned long numThreads);
     static boolean InitExtensions([Ref] PxPhysics physics);
     static PxCudaContextManager CreateCudaContextManager([Ref] PxFoundation foundation, [Const, Ref] PxCudaContextManagerDesc desc);
+    static PxPvd CreatePvd([Ref] PxFoundation foundation);
 
     static PxD6Joint D6JointCreate([Ref] PxPhysics physics, PxRigidActor actor0, [Ref] PxTransform localFrame0, PxRigidActor actor1, [Ref] PxTransform localFrame1);
     static PxDistanceJoint DistanceJointCreate([Ref] PxPhysics physics, PxRigidActor actor0, [Ref] PxTransform localFrame0, PxRigidActor actor1, [Ref] PxTransform localFrame1);
@@ -842,6 +843,8 @@ interface PxRigidBodyFlags {
 
 [Prefix="physx::", NoDelete]
 interface PxRigidDynamic {
+    void setKinematicTarget([Const, Ref] PxTransform destination);
+    boolean getKinematicTarget([Ref] PxTransform target);
     boolean isSleeping();
     void setSleepThreshold(float threshold);
     float getSleepThreshold();
@@ -887,6 +890,7 @@ interface PxScene {
     void removeActor([Ref] PxActor actor, optional boolean wakeOnLostTouch);
     void addAggregate([Ref] PxAggregate aggregate);
     void removeAggregate([Ref] PxAggregate aggregate, optional boolean wakeOnLostTouch);
+    void addCollection([Const, Ref] PxCollection collection);
     float getWakeCounterResetValue();
     void shiftOrigin([Const, Ref] PxVec3 shift);
 
@@ -2292,6 +2296,23 @@ interface PxBounds3 {
     [Value] attribute PxVec3 maximum;
 };
 
+[Prefix="physx::", NoDelete]
+interface PxCollection {
+    void add([Ref] PxBase obj, optional unsigned long long id);
+    void remove([Ref] PxBase obj);
+    boolean contains([Ref] PxBase obj);
+    void addId([Ref] PxBase obj, unsigned long long id);
+    void removeId(unsigned long long id);
+    //void add([Ref] PxCollection collection);      clashes with void add([Ref] PxBase object)
+    //void remove([Ref] PxCollection collection);   clashes with void remove([Ref] PxBase object)
+    unsigned long getNbObjects();
+    [Ref] PxBase getObject(unsigned long index);
+    PxBase find(unsigned long long id);
+    unsigned long getNbIds();
+    unsigned long long getId([Const, Ref] PxBase obj);
+    void release();
+};
+
 [Prefix="physx::"]
 interface PxCpuDispatcher { };
 
@@ -2386,6 +2407,12 @@ enum PxIDENTITYEnum {
     "PxIDENTITYEnum::PxIdentity"
 };
 
+[Prefix="physx::"]
+interface PxInputData { };
+
+[Prefix="physx::"]
+interface PxOutputStream { };
+
 [Prefix="physx::", NoDelete]
 interface PxPhysicsInsertionCallback { };
 
@@ -2435,6 +2462,14 @@ interface PxVec3 {
 /****************************************
  * [package=extensions]
  ****************************************/
+
+[Prefix="physx::"]
+interface PxCollectionExt {
+    static void releaseObjects([Ref] PxCollection collection, optional boolean releaseExclusiveShapes);
+    static void remove([Ref] PxCollection collection, unsigned short concreteType, optional PxCollection to);
+    //static PxCollection createCollection([Ref] PxPhysics physics);    // clashes with createCollection(scene)
+    static PxCollection createCollection([Ref] PxScene scene);
+};
 
 enum PxD6AxisEnum {
     "PxD6AxisEnum::eX",
@@ -2521,6 +2556,25 @@ interface PxDefaultAllocator {
 [Prefix="physx::"]
 interface PxDefaultCpuDispatcher { };
 PxDefaultCpuDispatcher implements PxCpuDispatcher;
+
+[Prefix="physx::"]
+interface PxDefaultMemoryInputData {
+    void PxDefaultMemoryInputData([Ref] PxU8Ptr data, unsigned long length);
+    unsigned long read(VoidPtr dest, unsigned long count);
+    unsigned long getLength();
+    void seek(unsigned long pos);
+    unsigned long tell();
+};
+PxDefaultMemoryInputData implements PxInputData;
+
+[Prefix="physx::"]
+interface PxDefaultMemoryOutputStream {
+    void PxDefaultMemoryOutputStream();
+    void write(VoidPtr src, unsigned long count);
+    unsigned long getSize();
+    VoidPtr getData();
+};
+PxDefaultMemoryOutputStream implements PxOutputStream;
 
 [Prefix="physx::"]
 interface PxDistanceJoint {
@@ -2757,6 +2811,23 @@ interface PxRevoluteJointFlags {
     boolean isSet(PxRevoluteJointFlagEnum flag);
     void set(PxRevoluteJointFlagEnum flag);
     void clear(PxRevoluteJointFlagEnum flag);
+};
+
+[Prefix="physx::"]
+interface PxSerialization {
+    static boolean isSerializable([Ref] PxCollection collection, [Ref] PxSerializationRegistry sr, [Const] optional PxCollection externalReferences);
+    static void complete([Ref] PxCollection collection, [Ref] PxSerializationRegistry sr, [Const] optional PxCollection exceptFor, optional boolean followJoints);
+    static void createSerialObjectIds([Ref] PxCollection collection, unsigned long long base);
+    static PxCollection createCollectionFromXml([Ref] PxInputData inputData, [Ref] PxCooking cooking, [Ref] PxSerializationRegistry sr, [Const] optional PxCollection externalRefs);
+    static PxCollection createCollectionFromBinary(VoidPtr memBlock, [Ref] PxSerializationRegistry sr, [Const] optional PxCollection externalRefs);
+    static boolean serializeCollectionToXml([Ref] PxOutputStream outputStream, [Ref] PxCollection collection, [Ref] PxSerializationRegistry sr, optional PxCooking cooking, [Const] optional PxCollection externalRefs);
+    static boolean serializeCollectionToBinary([Ref] PxOutputStream outputStream, [Ref] PxCollection collection, [Ref] PxSerializationRegistry sr, [Const] optional PxCollection externalRefs, optional boolean exportNames);
+    static PxSerializationRegistry createSerializationRegistry([Ref] PxPhysics physics);
+};
+
+[Prefix="physx::", NoDelete]
+interface PxSerializationRegistry {
+    void release();
 };
 
 [Prefix="physx::"]
@@ -3102,14 +3173,17 @@ interface PxVehicleWheelsPtr { };
 interface PxRealPtr { };
 
 interface PxU8Ptr { };
+PxU8Ptr implements PxU8ConstPtr;
 
 interface PxU8ConstPtr { };
 
 interface PxU16Ptr { };
+PxU16Ptr implements PxU16ConstPtr;
 
 interface PxU16ConstPtr { };
 
 interface PxU32Ptr { };
+PxU32Ptr implements PxU32ConstPtr;
 
 interface PxU32ConstPtr { };
 
@@ -3122,9 +3196,9 @@ interface TypeHelpers {
     static PxTriggerPair getTriggerPairAt(PxTriggerPair base, long index);
     static PxVec3 getVec3At(PxVec3 base, long index);
 
-    [Value] static PxU8ConstPtr voidToU8ConstPtr(VoidPtr voidPtr);
-    [Value] static PxU16ConstPtr voidToU16ConstPtr(VoidPtr voidPtr);
-    [Value] static PxU32ConstPtr voidToU32ConstPtr(VoidPtr voidPtr);
+    [Value] static PxU8Ptr voidToU8Ptr(VoidPtr voidPtr);
+    [Value] static PxU16Ptr voidToU16Ptr(VoidPtr voidPtr);
+    [Value] static PxU32Ptr voidToU32Ptr(VoidPtr voidPtr);
     [Value] static PxRealPtr voidToRealPtr(VoidPtr voidPtr);
 
     static PxArticulationJoint articulationBaseJointToJoint(PxArticulationJointBase baseJoint);
@@ -3139,6 +3213,7 @@ interface Vector_PxMaterialConst {
     PxMaterialConstPtr data();
     unsigned long size();
     void push_back([Const] PxMaterial value);
+    void clear();
 };
 
 interface Vector_PxHeightFieldSample {
@@ -3148,6 +3223,7 @@ interface Vector_PxHeightFieldSample {
     PxHeightFieldSample data();
     unsigned long size();
     void push_back([Ref] PxHeightFieldSample value);
+    void clear();
 };
 
 interface Vector_PxReal {
@@ -3157,6 +3233,17 @@ interface Vector_PxReal {
     VoidPtr data();
     unsigned long size();
     void push_back(float value);
+    void clear();
+};
+
+interface Vector_PxU8 {
+    void Vector_PxU8();
+    void Vector_PxU8(unsigned long size);
+    octet at(unsigned long index);
+    VoidPtr data();
+    unsigned long size();
+    void push_back(octet value);
+    void clear();
 };
 
 interface Vector_PxU16 {
@@ -3166,6 +3253,7 @@ interface Vector_PxU16 {
     VoidPtr data();
     unsigned long size();
     void push_back(unsigned short value);
+    void clear();
 };
 
 interface Vector_PxU32 {
@@ -3175,6 +3263,7 @@ interface Vector_PxU32 {
     VoidPtr data();
     unsigned long size();
     void push_back(unsigned long value);
+    void clear();
 };
 
 interface Vector_PxVec3 {
@@ -3184,6 +3273,7 @@ interface Vector_PxVec3 {
     PxVec3 data();
     unsigned long size();
     void push_back([Ref] PxVec3 value);
+    void clear();
 };
 
 interface Vector_PxRaycastQueryResult {
@@ -3193,6 +3283,7 @@ interface Vector_PxRaycastQueryResult {
     PxRaycastQueryResult data();
     unsigned long size();
     void push_back([Ref] PxRaycastQueryResult value);
+    void clear();
 };
 
 interface Vector_PxSweepQueryResult {
@@ -3202,6 +3293,7 @@ interface Vector_PxSweepQueryResult {
     PxSweepQueryResult data();
     unsigned long size();
     void push_back([Ref] PxSweepQueryResult value);
+    void clear();
 };
 
 interface Vector_PxRaycastHit {
@@ -3211,6 +3303,7 @@ interface Vector_PxRaycastHit {
     PxRaycastHit data();
     unsigned long size();
     void push_back([Ref] PxRaycastHit value);
+    void clear();
 };
 
 interface Vector_PxSweepHit {
@@ -3220,6 +3313,7 @@ interface Vector_PxSweepHit {
     PxSweepHit data();
     unsigned long size();
     void push_back([Ref] PxSweepHit value);
+    void clear();
 };
 
 interface Vector_PxVehicleDrivableSurfaceType {
@@ -3229,6 +3323,7 @@ interface Vector_PxVehicleDrivableSurfaceType {
     PxVehicleDrivableSurfaceType data();
     unsigned long size();
     void push_back([Ref] PxVehicleDrivableSurfaceType value);
+    void clear();
 };
 
 interface Vector_PxWheelQueryResult {
@@ -3238,6 +3333,7 @@ interface Vector_PxWheelQueryResult {
     PxWheelQueryResult data();
     unsigned long size();
     void push_back([Ref] PxWheelQueryResult value);
+    void clear();
 };
 
 interface Vector_PxVehicleWheels {
@@ -3247,4 +3343,45 @@ interface Vector_PxVehicleWheels {
     PxVehicleWheelsPtr data();
     unsigned long size();
     void push_back(PxVehicleWheels value);
+    void clear();
+};
+
+[Prefix="physx::", NoDelete]
+interface PxPvdTransport {
+    boolean connect();
+    void disconnect();
+    boolean isConnected();
+};
+
+interface SimplePvdTransport {
+    boolean connect();
+    void send(any inBytes, unsigned long inLength);
+};
+SimplePvdTransport implements PxPvdTransport;
+
+[JSImplementation="SimplePvdTransport"]
+interface JSPvdTransport {
+    void JSPvdTransport();
+    boolean connect();
+    void send(any inBytes, unsigned long inLength);
+};
+
+enum PxPvdInstrumentationFlagEnum {
+    "PxPvdInstrumentationFlagEnum::eDEBUG",
+    "PxPvdInstrumentationFlagEnum::ePROFILE",
+    "PxPvdInstrumentationFlagEnum::eMEMORY",
+    "PxPvdInstrumentationFlagEnum::eALL"
+};
+
+[Prefix="physx::"]
+interface PxPvdInstrumentationFlags {
+    void PxPvdInstrumentationFlags(octet flags);
+    boolean isSet(PxPvdInstrumentationFlagEnum flag);
+    void set(PxPvdInstrumentationFlagEnum flag);
+    void clear(PxPvdInstrumentationFlagEnum flag);
+};
+
+[Prefix="physx::", NoDelete]
+interface PxPvd {
+    boolean connect([Ref] PxPvdTransport transport, [Ref] PxPvdInstrumentationFlags flags);
 };

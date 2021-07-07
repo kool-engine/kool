@@ -35,8 +35,6 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
-            // fixme: not clearing PCM results in an immediate crash, physx-jni tests work with enabled PCM though...
-            sceneDesc.flags.clear(PxSceneFlagEnum.eENABLE_PCM)
             sceneDesc.simulationEventCallback = SimEventCallback()
             pxScene = Physics.physics.createScene(sceneDesc)
         }
@@ -121,6 +119,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
                 val isEnter = pair.status == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
                 val trigger = pxActors[pair.triggerActor]
                 val actor = pxActors[pair.otherActor]
+
                 if (trigger != null && actor != null) {
                     triggerListeners[trigger]?.apply {
                         var cnt = actorEnterCounts.getOrPut(actor) { 0 }

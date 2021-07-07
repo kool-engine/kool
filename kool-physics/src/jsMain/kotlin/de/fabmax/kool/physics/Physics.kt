@@ -46,9 +46,7 @@ actual object Physics : CoroutineScope {
 
     actual fun loadPhysics() {
         if (!isLoading) {
-            logD { "Loading physx-js..." }
             isLoading = true
-
             PhysXJsLoader.addOnLoadListener {
                 val allocator = PxDefaultAllocator()
                 val errorCallback = JavaErrorCallback()

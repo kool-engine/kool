@@ -167,6 +167,7 @@ class PbrMaterialConfig {
                 isRoughnessMapped ||
                 isMetallicMapped ||
                 isOcclusionMapped ||
-                isDisplacementMapped
+                isDisplacementMapped ||
+                isEmissiveMapped
     }
 }
