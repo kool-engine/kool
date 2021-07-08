@@ -1,8 +1,6 @@
 package de.fabmax.kool.demo.physics.ragdoll
 
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.InputManager
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.*
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
@@ -25,7 +23,6 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -72,7 +69,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         physicsWorld.simStepper = physicsStepper
         physicsWorld.registerHandlers(mainScene)
 
-        val gravKeyListener = ctx.inputMgr.registerKeyListener(ctx.inputMgr.getKeyCodeForChar(' '), "Change Gravity",  { true }) {
+        val gravKeyListener = ctx.inputMgr.registerKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {
                 physicsWorld.gravity = Vec3f(0f, 0.5f, 0f)
                 physicsWorld.wakeUpAll()

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
@@ -263,7 +264,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         // throttle and brake are used in a digital fashion, set low r
 
         var prevRecoverTime = 0.0
-        recoverListener = ctx.inputMgr.registerKeyListener(ctx.inputMgr.getKeyCodeForChar('r'), "recover", filter = { it.isPressed }) {
+        recoverListener = ctx.inputMgr.registerKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
             val time = ctx.time
             val recoverHard = time - prevRecoverTime < 0.3
             prevRecoverTime = time

@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.gl.GlRenderBackend
 import de.fabmax.kool.platform.vk.VkRenderBackend
@@ -151,7 +152,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     companion object {
-        val KEY_CODE_MAP: Map<Int, Int> = mutableMapOf(
+        val KEY_CODE_MAP: Map<Int, KeyCode> = mutableMapOf(
                 GLFW_KEY_LEFT_CONTROL to InputManager.KEY_CTRL_LEFT,
                 GLFW_KEY_RIGHT_CONTROL to InputManager.KEY_CTRL_RIGHT,
                 GLFW_KEY_LEFT_SHIFT to InputManager.KEY_SHIFT_LEFT,

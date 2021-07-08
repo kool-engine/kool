@@ -12,7 +12,7 @@ abstract class InputManager internal constructor() {
     private var currentKeyMods = 0
     private var currentKeyRepeated = 0
 
-    private val keyHandlers = mutableMapOf<Int, MutableList<KeyEventListener>>()
+    private val keyHandlers = mutableMapOf<KeyCode, MutableList<KeyEventListener>>()
 
     abstract var cursorMode: CursorMode
 
@@ -23,8 +23,8 @@ abstract class InputManager internal constructor() {
     val isAltDown: Boolean get() = (currentKeyMods and KEY_MOD_ALT) != 0
     val isSuperDown: Boolean get() = (currentKeyMods and KEY_MOD_SUPER) != 0
 
-    fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
-        val keyStr = if (keyCode in 32..126) "'${keyCode.toChar()}'" else "$keyCode"
+    fun registerKeyListener(keyCode: KeyCode, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
+        val keyStr = keyCode.toString()
 
         val listeners = keyHandlers.getOrPut(keyCode) { mutableListOf() }
         if (listeners.isNotEmpty()) {
@@ -42,7 +42,7 @@ abstract class InputManager internal constructor() {
         listeners -= listener
     }
 
-    open fun getKeyCodeForChar(char: Char, useLocalKeyboardLayout: Boolean = false) = char.uppercaseChar().code
+    fun getKeyCodeForChar(char: Char) = char.uppercaseChar().code
 
     internal fun onNewFrame(ctx: KoolContext) {
         pointerState.onNewFrame(ctx)
@@ -55,25 +55,35 @@ abstract class InputManager internal constructor() {
 
         for (i in keyEvents.indices) {
             val evt = keyEvents[i]
-            val listeners = keyHandlers[evt.keyCode]
-            if (listeners != null) {
-                for (j in listeners.indices) {
-                    if (listeners[j].filter(evt)) {
-                        listeners[j](evt)
+            if (evt.keyCode.code != 0) {
+                keyHandlers[evt.keyCode]?.let { listeners ->
+                    for (j in listeners.indices) {
+                        if (listeners[j].filter(evt)) {
+                            listeners[j](evt)
+                        }
+                    }
+                }
+            }
+            if (evt.localKeyCode.code != 0) {
+                keyHandlers[evt.localKeyCode]?.let { listeners ->
+                    for (j in listeners.indices) {
+                        if (listeners[j].filter(evt)) {
+                            listeners[j](evt)
+                        }
                     }
                 }
             }
         }
     }
 
-    fun keyEvent(keyCode: Int, modifiers: Int, event: Int) {
-        val ev = KeyEvent()
-        ev.keyCode = keyCode
-        ev.event = event
-        ev.modifiers = modifiers
+    fun keyEvent(ev: KeyEvent) {
+//        val ev = KeyEvent()
+//        ev.keyCode = keyCode
+//        ev.event = event
+//        ev.modifiers = modifiers
 
-        currentKeyMods = modifiers
-        currentKeyRepeated = event and KEY_EV_REPEATED
+        currentKeyMods = ev.modifiers
+        currentKeyRepeated = ev.event and KEY_EV_REPEATED
 
         lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
@@ -81,12 +91,8 @@ abstract class InputManager internal constructor() {
     }
 
     fun charTyped(typedChar: Char) {
-        val ev = KeyEvent()
-        ev.event = KEY_EV_CHAR_TYPED or currentKeyRepeated
+        val ev = KeyEvent(LocalKeyCode(typedChar.code), KEY_EV_CHAR_TYPED or currentKeyRepeated, currentKeyMods)
         ev.typedChar = typedChar
-        ev.keyCode = typedChar.code
-        ev.modifiers = currentKeyMods
-
         lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
@@ -334,19 +340,31 @@ abstract class InputManager internal constructor() {
         }
     }
 
-    class KeyEventListener(val keyCode: Int, val name: String, val filter: (KeyEvent) -> Boolean = { true }, val callback: (KeyEvent) -> Unit) {
+    class KeyEventListener(val keyCode: KeyCode, val name: String, val filter: (KeyEvent) -> Boolean = { true }, val callback: (KeyEvent) -> Unit) {
         operator fun invoke(evt: KeyEvent) = callback.invoke(evt)
     }
 
-    class KeyEvent {
-        var keyCode = 0
+    class KeyEvent(keyCode: KeyCode, localKeyCode: KeyCode, event: Int, modifiers: Int) {
+        /**
+         * Key code for US keyboard layout
+         */
+        var keyCode = keyCode
             internal set
-        var modifiers = 0
+
+        /**
+         * Key code for local keyboard layout
+         */
+        var localKeyCode = localKeyCode
             internal set
-        var event = 0
+
+        var modifiers = modifiers
+            internal set
+        var event = event
             internal set
         var typedChar: Char = 0.toChar()
             internal set
+
+        constructor(keyCode: KeyCode, event: Int, modifiers: Int) : this(keyCode, keyCode, event, modifiers)
 
         val isPressed: Boolean get() = (event and KEY_EV_DOWN) != 0
         val isRepeated: Boolean get() = (event and KEY_EV_REPEATED) != 0
@@ -563,46 +581,67 @@ abstract class InputManager internal constructor() {
         const val KEY_MOD_ALT = 4
         const val KEY_MOD_SUPER = 8
 
-        const val KEY_CTRL_LEFT = -1
-        const val KEY_CTRL_RIGHT = -2
-        const val KEY_SHIFT_LEFT = -3
-        const val KEY_SHIFT_RIGHT = -4
-        const val KEY_ALT_LEFT = -5
-        const val KEY_ALT_RIGHT = -6
-        const val KEY_SUPER_LEFT = -7
-        const val KEY_SUPER_RIGHT = -8
-        const val KEY_ESC = -9
-        const val KEY_MENU = -10
-        const val KEY_ENTER = -11
-        const val KEY_NP_ENTER = -12
-        const val KEY_NP_DIV = -13
-        const val KEY_NP_MUL = -14
-        const val KEY_NP_PLUS = -15
-        const val KEY_NP_MINUS = -16
-        const val KEY_BACKSPACE = -17
-        const val KEY_TAB = -18
-        const val KEY_DEL = -19
-        const val KEY_INSERT = -20
-        const val KEY_HOME = -21
-        const val KEY_END = -22
-        const val KEY_PAGE_UP = -23
-        const val KEY_PAGE_DOWN = -24
-        const val KEY_CURSOR_LEFT = -25
-        const val KEY_CURSOR_RIGHT = -26
-        const val KEY_CURSOR_UP = -27
-        const val KEY_CURSOR_DOWN = -28
-        const val KEY_F1 = -29
-        const val KEY_F2 = -30
-        const val KEY_F3 = -31
-        const val KEY_F4 = -32
-        const val KEY_F5 = -33
-        const val KEY_F6 = -34
-        const val KEY_F7 = -35
-        const val KEY_F8 = -36
-        const val KEY_F9 = -37
-        const val KEY_F10 = -38
-        const val KEY_F11 = -39
-        const val KEY_F12 = -40
+        val KEY_CTRL_LEFT = UniversalKeyCode(-1, "CTRL_LEFT")
+        val KEY_CTRL_RIGHT = UniversalKeyCode(-2, "CTRL_RIGHT")
+        val KEY_SHIFT_LEFT = UniversalKeyCode(-3, "SHIFT_LEFT")
+        val KEY_SHIFT_RIGHT = UniversalKeyCode(-4, "SHIFT_RIGHT")
+        val KEY_ALT_LEFT = UniversalKeyCode(-5, "ALT_LEFT")
+        val KEY_ALT_RIGHT = UniversalKeyCode(-6, "ALT_RIGHT")
+        val KEY_SUPER_LEFT = UniversalKeyCode(-7, "SUPER_LEFT")
+        val KEY_SUPER_RIGHT = UniversalKeyCode(-8, "SUPER_RIGHT")
+        val KEY_ESC = UniversalKeyCode(-9, "ESC")
+        val KEY_MENU = UniversalKeyCode(-10, "MENU")
+        val KEY_ENTER = UniversalKeyCode(-11, "ENTER")
+        val KEY_NP_ENTER = UniversalKeyCode(-12, "NP_ENTER")
+        val KEY_NP_DIV = UniversalKeyCode(-13, "NP_DIV")
+        val KEY_NP_MUL = UniversalKeyCode(-14, "NP_MUL")
+        val KEY_NP_PLUS = UniversalKeyCode(-15, "NP_PLUS")
+        val KEY_NP_MINUS = UniversalKeyCode(-16, "NP_MINUS")
+        val KEY_BACKSPACE = UniversalKeyCode(-17, "BACKSPACE")
+        val KEY_TAB = UniversalKeyCode(-18, "TAB")
+        val KEY_DEL = UniversalKeyCode(-19, "DEL")
+        val KEY_INSERT = UniversalKeyCode(-20, "INSERT")
+        val KEY_HOME = UniversalKeyCode(-21, "HOME")
+        val KEY_END = UniversalKeyCode(-22, "END")
+        val KEY_PAGE_UP = UniversalKeyCode(-23, "PAGE_UP")
+        val KEY_PAGE_DOWN = UniversalKeyCode(-24, "PAGE_DOWN")
+        val KEY_CURSOR_LEFT = UniversalKeyCode(-25, "CURSOR_LEFT")
+        val KEY_CURSOR_RIGHT = UniversalKeyCode(-26, "CURSOR_RIGHT")
+        val KEY_CURSOR_UP = UniversalKeyCode(-27, "CURSOR_UP")
+        val KEY_CURSOR_DOWN = UniversalKeyCode(-28, "CURSOR_DOWN")
+        val KEY_F1 = UniversalKeyCode(-29, "F1")
+        val KEY_F2 = UniversalKeyCode(-30, "F2")
+        val KEY_F3 = UniversalKeyCode(-31, "F3")
+        val KEY_F4 = UniversalKeyCode(-32, "F4")
+        val KEY_F5 = UniversalKeyCode(-33, "F5")
+        val KEY_F6 = UniversalKeyCode(-34, "F6")
+        val KEY_F7 = UniversalKeyCode(-35, "F7")
+        val KEY_F8 = UniversalKeyCode(-36, "F8")
+        val KEY_F9 = UniversalKeyCode(-37, "F9")
+        val KEY_F10 = UniversalKeyCode(-38, "F10")
+        val KEY_F11 = UniversalKeyCode(-39, "F11")
+        val KEY_F12 = UniversalKeyCode(-40, "F12")
+    }
+}
+
+sealed class KeyCode(val code: Int, val isLocal: Boolean, name: String?) {
+    val name = name ?: if (code in 32..126) "${code.toChar()}" else "$code"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is KeyCode) return false
+        return code == other.code && isLocal == other.isLocal
     }
 
+    override fun hashCode(): Int = code * if (isLocal) -1 else 1
+}
+
+class UniversalKeyCode(code: Int, name: String? = null) : KeyCode(code, false, name) {
+    constructor(codeChar: Char) : this(codeChar.uppercaseChar().code)
+    override fun toString() = "{universal:$name}"
+}
+
+class LocalKeyCode(code: Int, name: String? = null) : KeyCode(code, true, name) {
+    constructor(codeChar: Char) : this(codeChar.uppercaseChar().code)
+    override fun toString() = "{local:$name}"
 }

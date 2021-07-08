@@ -1,6 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.KeyCode
+import de.fabmax.kool.LocalKeyCode
+import de.fabmax.kool.UniversalKeyCode
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.util.logI
 import kotlinx.browser.document
@@ -103,8 +106,9 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     }
 
     private fun handleKeyDown(ev: KeyboardEvent) {
-        val code = translateKeyCode(ev.code)
-        if (code != 0) {
+        val keyCode = ev.toKeyCode()
+        val localKeyCode = ev.toLocalKeyCode()
+        if (keyCode.code != 0 || localKeyCode.code != 0) {
             var mods = 0
             if (ev.altKey) { mods = mods or KEY_MOD_ALT }
             if (ev.ctrlKey) { mods = mods or KEY_MOD_CTRL }
@@ -115,7 +119,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             if (ev.repeat) {
                 event = event or KEY_EV_REPEATED
             }
-            keyEvent(code, mods, event)
+            keyEvent(KeyEvent(keyCode, localKeyCode, event, mods))
         }
         if (ev.key.length == 1) {
             charTyped(ev.key[0])
@@ -127,15 +131,15 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     }
 
     private fun handleKeyUp(ev: KeyboardEvent) {
-        val code = translateKeyCode(ev.code)
-        if (code != 0) {
+        val keyCode = ev.toKeyCode()
+        val localKeyCode = ev.toLocalKeyCode()
+        if (keyCode.code != 0 || localKeyCode.code != 0) {
             var mods = 0
             if (ev.altKey) { mods = mods or KEY_MOD_ALT }
             if (ev.ctrlKey) { mods = mods or KEY_MOD_CTRL }
             if (ev.shiftKey) { mods = mods or KEY_MOD_SHIFT }
             if (ev.metaKey) { mods = mods or KEY_MOD_SUPER }
-
-            keyEvent(code, mods, KEY_EV_UP)
+            keyEvent(KeyEvent(keyCode, localKeyCode, KEY_EV_UP, mods))
         }
 
         if (!props.excludedKeyCodes.contains(ev.code)) {
@@ -143,16 +147,22 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         }
     }
 
-    private fun translateKeyCode(code: String): Int {
-        return if (code.length == 4 && code.startsWith("Key")) {
-            code[3].code
-        } else {
-            KEY_CODE_MAP[code] ?: 0
+    private fun KeyboardEvent.toLocalKeyCode(): KeyCode {
+        return KEY_CODE_MAP[code] ?: when (key.length) {
+            1 -> LocalKeyCode(key[0].uppercaseChar().code)
+            else -> LocalKeyCode(0)
+        }
+    }
+
+    private fun KeyboardEvent.toKeyCode(): KeyCode {
+        return KEY_CODE_MAP[code] ?: when (key.length) {
+            1 -> UniversalKeyCode(key[0].uppercaseChar().code)
+            else -> UniversalKeyCode(0)
         }
     }
 
     companion object {
-        val KEY_CODE_MAP: Map<String, Int> = mutableMapOf(
+        val KEY_CODE_MAP: Map<String, KeyCode> = mutableMapOf(
             "ControlLeft" to KEY_CTRL_LEFT,
             "ControlRight" to KEY_CTRL_RIGHT,
             "ShiftLeft" to KEY_SHIFT_LEFT,
@@ -193,7 +203,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
             "F10" to KEY_F10,
             "F11" to KEY_F11,
             "F12" to KEY_F12,
-            "Space" to ' '.code
+            "Space" to UniversalKeyCode(' ')
         )
     }
 
@@ -232,8 +242,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
                 // we lost pointer lock without requesting it via api -> user requested it by hitting the esc key
                 // report an esc key-event, so the application can react on it
                 logI { "pointer lock exited by user" }
-                keyEvent(KEY_ESC, 0, KEY_EV_DOWN)
-                keyEvent(KEY_ESC, 0, KEY_EV_UP)
+                keyEvent(KeyEvent(KEY_ESC, KEY_EV_DOWN, 0))
+                keyEvent(KeyEvent(KEY_ESC, KEY_EV_UP, 0))
             }
             isApiExitRequest = false
         }

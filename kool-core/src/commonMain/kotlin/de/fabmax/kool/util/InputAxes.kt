@@ -1,7 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.UniversalKeyCode
 import de.fabmax.kool.math.clamp
 import kotlin.math.abs
 import kotlin.math.max
@@ -21,13 +23,13 @@ open class InputAxes(ctx: KoolContext) : Disposable {
         ctx.onRender += updateAxes
     }
 
-    fun registerAxis(name: String, vararg keyCodes: Int): Axis {
-        val posKeys = mutableSetOf<Int>()
+    fun registerAxis(name: String, vararg keyCodes: KeyCode): Axis {
+        val posKeys = mutableSetOf<KeyCode>()
         keyCodes.forEach { posKeys += it }
         return registerAxis(name, posKeys, emptySet())
     }
 
-    fun registerAxis(name: String, posKeyCodes: Set<Int>, negKeyCodes: Set<Int>): Axis {
+    fun registerAxis(name: String, posKeyCodes: Set<KeyCode>, negKeyCodes: Set<KeyCode>): Axis {
         val axis = Axis(name)
         for (key in posKeyCodes) {
             axis.keyListeners += inputManager.registerKeyListener(key, name, callback = axis::processPositiveKeyInputEvent)
@@ -130,14 +132,13 @@ class DriveAxes(ctx: KoolContext) : InputAxes(ctx) {
         get() = max(0f, steerAx.analog)
 
     init {
-        val im = ctx.inputMgr
-        throttleAx = registerAxis("throttle", InputManager.KEY_CURSOR_UP, im.getKeyCodeForChar('w'))
+        throttleAx = registerAxis("throttle", InputManager.KEY_CURSOR_UP, UniversalKeyCode('w'))
             .apply { setRiseFallTime(0.2f) }
-        brakeAx = registerAxis("brake", InputManager.KEY_CURSOR_DOWN, im.getKeyCodeForChar('s'))
+        brakeAx = registerAxis("brake", InputManager.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
             .apply { setRiseFallTime(0.2f) }
         steerAx = registerAxis("left / right",
-            setOf(InputManager.KEY_CURSOR_RIGHT, im.getKeyCodeForChar('d')),
-            setOf(InputManager.KEY_CURSOR_LEFT, im.getKeyCodeForChar('a')),
+            setOf(InputManager.KEY_CURSOR_RIGHT, UniversalKeyCode('d')),
+            setOf(InputManager.KEY_CURSOR_LEFT, UniversalKeyCode('a')),
         ).apply { setRiseFallTime(0.5f) }
     }
 }
@@ -172,17 +173,16 @@ class WalkAxes(ctx: KoolContext) : InputAxes(ctx) {
         get() = crouchAx.digital
 
     init {
-        val im = ctx.inputMgr
         forwardBackwardAx = registerAxis("forward / backward",
-            setOf(InputManager.KEY_CURSOR_UP, im.getKeyCodeForChar('w')),
-            setOf(InputManager.KEY_CURSOR_DOWN, im.getKeyCodeForChar('s')),
+            setOf(InputManager.KEY_CURSOR_UP, UniversalKeyCode('w')),
+            setOf(InputManager.KEY_CURSOR_DOWN, UniversalKeyCode('s')),
         ).apply { setRiseFallTime(0.15f) }
         leftRightAx = registerAxis("left / right",
-            setOf(InputManager.KEY_CURSOR_RIGHT, im.getKeyCodeForChar('d')),
-            setOf(InputManager.KEY_CURSOR_LEFT, im.getKeyCodeForChar('a')),
+            setOf(InputManager.KEY_CURSOR_RIGHT, UniversalKeyCode('d')),
+            setOf(InputManager.KEY_CURSOR_LEFT, UniversalKeyCode('a')),
         ).apply { setRiseFallTime(0.15f) }
 
-        jumpAx = registerAxis("jump", im.getKeyCodeForChar(' ')).apply { setRiseFallTime(0.01f) }
+        jumpAx = registerAxis("jump", UniversalKeyCode(' ')).apply { setRiseFallTime(0.01f) }
         runAx = registerAxis("run", InputManager.KEY_SHIFT_LEFT, InputManager.KEY_SHIFT_RIGHT).apply { setRiseFallTime(0.01f) }
         crouchAx = registerAxis("crouch", InputManager.KEY_CTRL_LEFT, InputManager.KEY_CTRL_RIGHT).apply { setRiseFallTime(0.01f) }
     }

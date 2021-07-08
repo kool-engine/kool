@@ -1,12 +1,14 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.LocalKeyCode
+import de.fabmax.kool.UniversalKeyCode
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.*
 
 class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Context) : InputManager() {
 
-    private val localCharKeyCodes = mutableMapOf<Char, Char>()
+    private val localCharKeyCodes = mutableMapOf<Int, Int>()
 
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
@@ -34,17 +36,9 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
             val localName = glfwGetKeyName(c.code, 0) ?: ""
             if (localName.isNotBlank()) {
                 val localChar = localName[0].uppercaseChar()
-                localCharKeyCodes[localChar] = c
+                localCharKeyCodes[c.code] = localChar.code
             }
         }
-    }
-
-    override fun getKeyCodeForChar(char: Char, useLocalKeyboardLayout: Boolean): Int {
-        var lookUpChar = char
-        if (useLocalKeyboardLayout) {
-            lookUpChar = localCharKeyCodes[char.uppercaseChar()] ?: char
-        }
-        return super.getKeyCodeForChar(lookUpChar, false)
     }
 
     private fun installInputHandlers() {
@@ -73,7 +67,8 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 else -> -1
             }
             if (event != -1) {
-                val keyCode = Lwjgl3Context.KEY_CODE_MAP[key] ?: key
+                val keyCode = Lwjgl3Context.KEY_CODE_MAP[key] ?: UniversalKeyCode(key)
+                val localKeyCode = LocalKeyCode(localCharKeyCodes[keyCode.code] ?: keyCode.code)
                 var keyMod = 0
                 if (mods and GLFW_MOD_ALT != 0) {
                     keyMod = keyMod or KEY_MOD_ALT
@@ -87,7 +82,7 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 if (mods and GLFW_MOD_SUPER != 0) {
                     keyMod = keyMod or KEY_MOD_SUPER
                 }
-                keyEvent(keyCode, keyMod, event)
+                keyEvent(KeyEvent(keyCode, localKeyCode, event, keyMod))
             }
         }
         glfwSetCharCallback(windowHandle) { _, codepoint ->

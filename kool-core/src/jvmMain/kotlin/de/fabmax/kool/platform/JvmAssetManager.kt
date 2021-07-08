@@ -202,7 +202,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     override fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String) {
         val outPath = PointerBuffer.allocateDirect(1)
-        val result = NativeFileDialog.NFD_SaveDialog(null, File(fileChooserPath, fileName).absolutePath, outPath)
+        val result = NativeFileDialog.NFD_SaveDialog(null, fileChooserPath, outPath)
         if (result == NativeFileDialog.NFD_OKAY) {
             val file = File(outPath.stringUTF8)
             file.parentFile.mkdirs()
