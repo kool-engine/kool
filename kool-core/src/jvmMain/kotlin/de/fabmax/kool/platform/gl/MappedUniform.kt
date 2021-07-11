@@ -27,6 +27,9 @@ interface MappedUniform {
                 is UniformMat4fv -> MappedUniformMat4fv(uniform, location)
 
                 is Uniform1i -> MappedUniform1i(uniform, location)
+                is Uniform2i -> MappedUniform2i(uniform, location)
+                is Uniform3i -> MappedUniform3i(uniform, location)
+                is Uniform4i -> MappedUniform4i(uniform, location)
                 else -> TODO("Uniform type mapping not implemented")
             }
         }
@@ -160,6 +163,27 @@ class MappedUniformMat4fv(val uniform: UniformMat4fv, val location: Int) : Mappe
 class MappedUniform1i(val uniform: Uniform1i, val location: Int) : MappedUniform {
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         glUniform1i(location, uniform.value)
+        return true
+    }
+}
+
+class MappedUniform2i(val uniform: Uniform2i, val location: Int) : MappedUniform {
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        glUniform2i(location, uniform.value.x, uniform.value.y)
+        return true
+    }
+}
+
+class MappedUniform3i(val uniform: Uniform3i, val location: Int) : MappedUniform {
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        glUniform3i(location, uniform.value.x, uniform.value.y, uniform.value.z)
+        return true
+    }
+}
+
+class MappedUniform4i(val uniform: Uniform4i, val location: Int) : MappedUniform {
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        glUniform4i(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
         return true
     }
 }
