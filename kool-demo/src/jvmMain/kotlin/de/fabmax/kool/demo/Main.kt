@@ -8,7 +8,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
  */
 fun main() {
     // optional local directory to load assets from (by default they are loaded from web)
-    //Demo.setProperty("assetsBaseDir", "./docs/assets")
+    //Demo.setProperty("assetsBaseDir", "./assets")
 
     // sub directories for individual asset classes within asset base dir
     //Demo.setProperty("pbrDemo.envMaps", "hdri")

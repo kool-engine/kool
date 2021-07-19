@@ -7,7 +7,7 @@ import de.fabmax.kool.math.partition
  * @author fabmax
  */
 
-open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 20) : SpatialTree<T>(itemAdapter) {
+open class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 10) : SpatialTree<T>(itemAdapter) {
 
     override val root: KdNode
     override val size: Int

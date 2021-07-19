@@ -130,6 +130,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     if (cfg.lightType == Light.Type.SPOT) {
                         val spot = addNode(SingleSpotLightNode(stage)).apply {
                             isReducedSoi = true
+                            inShadowFac = mrtDeMultiplex.outAo
                             inLightPos = ifLightPos.output
                             inLightColor = ifLightColor.output
                             inMaxIntensity = splitNode(ifLightData.output, "x").output
@@ -142,6 +143,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     } else {
                         val point = addNode(SinglePointLightNode(stage)).apply {
                             isReducedSoi = true
+                            inShadowFac = mrtDeMultiplex.outAo
                             inLightPos = ifLightPos.output
                             inLightColor = ifLightColor.output
                             inMaxIntensity = ifLightData.output

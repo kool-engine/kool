@@ -1,10 +1,10 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import kotlin.math.max
 
-class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances: Int = 1000) {
+class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) {
 
     /**
      * Vertex attribute offsets in bytes.
@@ -33,6 +33,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
     var numInstances = 0
 
     var dataF: Float32Buffer
+    private val strideFloats: Int
+
+    internal var maxInstances = initialSize
+        private set
 
     var hasChanged = true
 
@@ -49,16 +53,21 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances
                 strideF += attrib.type.byteSize
             }
         }
+        strideFloats = strideF
 
         attributeOffsets = offsets
-        instanceSizeF = strideF / 4
-        strideBytesF = strideF
-        dataF = createFloat32Buffer(strideF * maxInstances)
+        instanceSizeF = strideFloats / 4
+        strideBytesF = strideFloats
+        dataF = createFloat32Buffer(strideFloats * maxInstances)
     }
 
     fun checkBufferSize(reqSpace: Int = 1) {
         if (numInstances + reqSpace > maxInstances) {
-            throw KoolException("Maximum number of instances exceeded, create with increased maxInstances")
+            maxInstances = max(maxInstances * 2, numInstances + reqSpace)
+            val newBuf = createFloat32Buffer(strideFloats * maxInstances)
+            newBuf.put(dataF)
+            dataF = newBuf
+
         }
     }
 

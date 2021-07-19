@@ -3,10 +3,20 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
-import java.io.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.charset.StandardCharsets
 import java.util.*
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 class HttpCache private constructor(private val cacheDir: File) {
 
@@ -15,13 +25,15 @@ class HttpCache private constructor(private val cacheDir: File) {
 
     init {
         try {
-            ObjectInputStream(FileInputStream(File(cacheDir, ".cacheIndex"))).use { inStream ->
-                @Suppress("UNCHECKED_CAST")
-                val entries = inStream.readObject() as List<CacheEntry>
-                entries.filter { it.file.canRead() }.forEach { entry ->
-                    addCacheEntry(entry)
+            GZIPInputStream(FileInputStream(File(cacheDir, ".cacheIndex.json.gz"))).use { inStream ->
+                val txt = String(inStream.readAllBytes(), StandardCharsets.UTF_8)
+                val serCache = Json.decodeFromString<SerCache>(txt)
+                serCache.items.forEach {
+                    val f = File(it.file)
+                    if (f.canRead()) {
+                        addCacheEntry(CacheEntry(f, it.size, it.access))
+                    }
                 }
-                checkCacheSize()
             }
         } catch (e: Exception) {
             logD { "Rebuilding http cache index, $e" }
@@ -48,7 +60,7 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
 
         fun File.walk(recv: (File) -> Unit) {
-            listFiles().forEach {
+            listFiles()?.forEach {
                 if (it.isDirectory) {
                     it.walk(recv)
                 } else {
@@ -78,13 +90,14 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     private fun saveIndex() {
-        val entries = mutableListOf<CacheEntry>()
-        synchronized(cache) {
-            entries.addAll(cache.values)
+        val entries = synchronized(cache) {
+            val items = mutableListOf<SerCacheItem>()
+            cache.values.forEach { items += SerCacheItem(it.file.path, it.size, it.lastAccess) }
+            SerCache(items)
         }
         try {
-            ObjectOutputStream(FileOutputStream(File(cacheDir, ".cacheIndex"))).use {
-                it.writeObject(entries)
+            GZIPOutputStream(FileOutputStream(File(cacheDir, ".cacheIndex.json.gz"))).use {
+                it.write(Json.encodeToString(entries).toByteArray(StandardCharsets.UTF_8))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -193,7 +206,7 @@ class HttpCache private constructor(private val cacheDir: File) {
         val encoded = "Basic " + Base64.getEncoder().encodeToString("$user:$password".toByteArray())
     }
 
-    private class CacheEntry(val file: File, var size: Long, lastAccess: Long) : Serializable, Comparable<CacheEntry> {
+    private class CacheEntry(val file: File, var size: Long, lastAccess: Long) : Comparable<CacheEntry> {
         var lastAccess = lastAccess
             set(value) {
                 field = value
@@ -211,3 +224,9 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
     }
 }
+
+@Serializable
+data class SerCache(val items: List<SerCacheItem>)
+
+@Serializable
+data class SerCacheItem(val file: String, val size: Long, val access: Long)

@@ -26,8 +26,8 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         return 0
     }
 
-    fun addLod(lodMesh: Mesh, maxDistance: Float) {
-        lods += Lod(lodMesh, maxDistance)
+    fun addLod(lodMesh: Mesh, maxDistance: Float, maxInstances: Int = Int.MAX_VALUE) {
+        lods += Lod(lodMesh, maxDistance, maxInstances)
         lods.sortBy { it.maxDistance }
         lodMesh.parent = this
     }
@@ -90,10 +90,8 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         }
     }
 
-    private inner class Lod(val mesh: Mesh, val maxDistance: Float) {
+    private inner class Lod(val mesh: Mesh, val maxDistance: Float, val maxInstances: Int) {
         val instances = mutableListOf<T>()
-        val maxInstances: Int
-            get() = mesh.instances?.maxInstances ?: 0
 
         fun updateInstances(iLod: Int, ctx: KoolContext) {
             mesh.instances?.apply {

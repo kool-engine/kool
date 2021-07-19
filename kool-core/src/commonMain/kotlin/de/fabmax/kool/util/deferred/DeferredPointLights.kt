@@ -8,7 +8,6 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.MutableColor
-import kotlin.math.min
 import kotlin.math.sqrt
 
 
@@ -52,9 +51,8 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
 
     fun updateLightData() {
         lightInstanceData.clear()
-        val nInstances = min(lightInstances.size, lightInstanceData.maxInstances)
-        lightInstanceData.addInstances(nInstances) { buf ->
-            for (i in 0 until nInstances) {
+        lightInstanceData.addInstances(lightInstances.size) { buf ->
+            for (i in 0 until lightInstances.size) {
                 encodeLight(lightInstances[i])
                 buf.put(modelMat.matrix)
                 buf.put(encodedLightData)

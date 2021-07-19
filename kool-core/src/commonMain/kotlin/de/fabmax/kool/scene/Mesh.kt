@@ -112,6 +112,12 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             return
         }
 
+        val insts = instances
+        if (insts != null && insts.numInstances == 0) {
+            // instanced mesh has no instances
+            return
+        }
+
         // update bounds and ray test if geometry has changed
         if (geometry.hasChanged && !geometry.isBatchUpdate) {
             // don't clear the hasChanged flag yet, is done by rendering backend after vertex buffers are updated

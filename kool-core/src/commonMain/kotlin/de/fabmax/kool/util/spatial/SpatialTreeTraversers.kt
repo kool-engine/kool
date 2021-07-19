@@ -52,6 +52,8 @@ interface RayDistance<T: Any> {
 
 abstract class SpatialTreeTraverser<T: Any> {
 
+    var filter: ((T) -> Boolean) = { true }
+
     open fun traverse(tree: SpatialTree<T>) {
         traverseNode(tree, tree.root)
     }
@@ -111,7 +113,7 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            if (pointDistance.itemSqrDistanceToPoint(tree, it, center) < radiusSqr) {
+            if (filter(it) && pointDistance.itemSqrDistanceToPoint(tree, it, center) < radiusSqr) {
                 result += it
             }
         }
@@ -122,12 +124,14 @@ open class BoundingSphereInRadiusTraverser<T: Any> : InRadiusTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val rx = tree.itemAdapter.getSzX(it) / 2
-            val ry = tree.itemAdapter.getSzY(it) / 2
-            val rz = tree.itemAdapter.getSzZ(it) / 2
-            val itRadius = sqrt(rx*rx + ry*ry + rz*rz)
-            if (sqrt(pointDistance.itemSqrDistanceToPoint(tree, it, center)) - itRadius < radius) {
-                result += it
+            if (filter(it)) {
+                val rx = tree.itemAdapter.getSzX(it) / 2
+                val ry = tree.itemAdapter.getSzY(it) / 2
+                val rz = tree.itemAdapter.getSzZ(it) / 2
+                val itRadius = sqrt(rx * rx + ry * ry + rz * rz)
+                if (sqrt(pointDistance.itemSqrDistanceToPoint(tree, it, center)) - itRadius < radius) {
+                    result += it
+                }
             }
         }
     }
@@ -189,10 +193,12 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
-            if (dSqr < sqrDist) {
-                sqrDist = dSqr
-                nearest = it
+            if (filter(it)) {
+                val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
+                if (dSqr < sqrDist) {
+                    sqrDist = dSqr
+                    nearest = it
+                }
             }
         }
     }
@@ -261,9 +267,11 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
-            if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
-                insert(it, dSqr)
+            if (filter(it)) {
+                val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
+                if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
+                    insert(it, dSqr)
+                }
             }
         }
     }
@@ -339,10 +347,12 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = rayDistance.itemSqrDistanceToRay(tree, it, ray)
-            if (dSqr < distanceSqr) {
-                nearest = it
-                distanceSqr = dSqr
+            if (filter(it)) {
+                val dSqr = rayDistance.itemSqrDistanceToRay(tree, it, ray)
+                if (dSqr < distanceSqr) {
+                    nearest = it
+                    distanceSqr = dSqr
+                }
             }
         }
     }

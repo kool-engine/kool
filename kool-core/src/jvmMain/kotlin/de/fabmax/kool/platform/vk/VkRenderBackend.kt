@@ -407,10 +407,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         if (insts != null && instData != null) {
                             instanceCnt = insts.numInstances
                             if (intData != null) {
-                                pBuffers = longs(model.vertexBuffer.vkBuffer, intData, instData.vkBuffer)
+                                pBuffers = longs(model.vertexBuffer.vkBuffer, intData, instData.buffer.vkBuffer)
                                 pOffsets = longs(0L, 0L, 0L)
                             } else {
-                                pBuffers = longs(model.vertexBuffer.vkBuffer, instData.vkBuffer)
+                                pBuffers = longs(model.vertexBuffer.vkBuffer, instData.buffer.vkBuffer)
                                 pOffsets = longs(0L, 0L)
                             }
 

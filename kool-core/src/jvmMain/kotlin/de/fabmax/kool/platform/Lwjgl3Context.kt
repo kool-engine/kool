@@ -4,6 +4,7 @@ import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.gl.GlRenderBackend
 import de.fabmax.kool.platform.vk.VkRenderBackend
 import de.fabmax.kool.util.Viewport
@@ -59,11 +60,14 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             val totalMem = rt.totalMemory()
             val heapSz = (totalMem - freeMem) / 1024.0 / 1024.0
             val t = System.currentTimeMillis()
-            if (heapSz >= prevHeapSz) {
+            if (heapSz > prevHeapSz) {
                 val growth = (heapSz - prevHeapSz)
                 val dt = (t - prevHeapSzTime) / 1000.0
-                avgHeapGrowth = avgHeapGrowth * 0.98 + (growth / dt) * 0.02
-                prevHeapSzTime = t
+                if (dt > 0.0) {
+                    val w = dt.clamp(0.0, 0.5)
+                    avgHeapGrowth = avgHeapGrowth * (1.0 - w) + (growth / dt) * w
+                    prevHeapSzTime = t
+                }
             }
             prevHeapSz = heapSz
             set(3, String.format(Locale.ENGLISH, "Heap: %.1f MB (+%.1f MB/s)", heapSz, avgHeapGrowth))

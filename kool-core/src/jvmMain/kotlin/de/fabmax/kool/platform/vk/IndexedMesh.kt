@@ -16,7 +16,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
     val vertexBufferI = createVertexBufferI()
     val indexBuffer = createIndexBuffer()
 
-    var instanceBuffer: Buffer?
+    var instanceBuffer: InstanceBuffer? = null
         private set
 
     init {
@@ -24,19 +24,39 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
         addDependingResource(indexBuffer)
         vertexBufferI?.let { addDependingResource(it) }
 
-        instanceBuffer = mesh.instances?.let { createInstanceBuffer(it) }
-        instanceBuffer?.let { addDependingResource(it) }
+        mesh.instances?.let { recreateInstanceBuffer(it) }
     }
 
     fun updateInstanceBuffer() {
         mesh.instances?.let {
-            val buf = instanceBuffer ?: createInstanceBuffer(it)
-            instanceBuffer = buf
+            var buf = instanceBuffer
+            if (buf == null || buf.maxInsts < it.maxInstances) {
+                recreateInstanceBuffer(it)
+                buf = instanceBuffer!!
+            }
 
-            buf.mappedFloats {
+            buf.buffer.mappedFloats {
                 it.dataF.flip()
                 put((it.dataF as Float32BufferImpl).buffer)
             }
+        }
+    }
+
+    private fun recreateInstanceBuffer(instances: MeshInstanceList) {
+        instanceBuffer?.let {
+            removeDependingResource(it.buffer)
+            it.buffer.destroy()
+        }
+
+        memStack {
+            val bufferSize = instances.maxInstances * instances.strideBytesF.toLong()
+            val stagingAllocUsage = VMA_MEMORY_USAGE_CPU_TO_GPU
+            val buffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, stagingAllocUsage)
+            buffer.mappedFloats {
+                instances.dataF.flip()
+                put((instances.dataF as Float32BufferImpl).buffer)
+            }
+            instanceBuffer = InstanceBuffer(buffer, instances.maxInstances)
         }
     }
 
@@ -101,20 +121,9 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
         }
     }
 
-    private fun createInstanceBuffer(instances: MeshInstanceList): Buffer {
-        memStack {
-            val bufferSize = instances.maxInstances * instances.strideBytesF.toLong()
-            val stagingAllocUsage = VMA_MEMORY_USAGE_CPU_TO_GPU
-            val instanceBuffer = Buffer(sys, bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, stagingAllocUsage)
-            instanceBuffer.mappedFloats {
-                instances.dataF.flip()
-                put((instances.dataF as Float32BufferImpl).buffer)
-            }
-            return instanceBuffer
-        }
-    }
-
     override fun freeResources() {
         //logD { "Destroyed IndexedMesh" }
     }
+
+    class InstanceBuffer(val buffer: Buffer, val maxInsts: Int)
 }
