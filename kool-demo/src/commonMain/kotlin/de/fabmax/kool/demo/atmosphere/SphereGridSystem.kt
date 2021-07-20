@@ -85,8 +85,6 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
             for (x in 0..gridSz) {
                 val idx = vertex {
                     // most vertex attributes are derived from texture coordinate by the vertex shader
-                    // let x start slightly above 0.0 to avoid texture artifacts on longitude wrap edge (-180° -> +180°)
-                    // this results in tiny longitudinal gaps between tiles but they are usually to small to notice.
                     texCoord.set(x / gridSz.toFloat(), y / gridSz.toFloat())
 
                     getIntAttribute(ATTRIB_EDGE_FLAG)!!.i = when {

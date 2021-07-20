@@ -65,6 +65,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         if (numInstances + reqSpace > maxInstances) {
             maxInstances = max(maxInstances * 2, numInstances + reqSpace)
             val newBuf = createFloat32Buffer(strideFloats * maxInstances)
+            dataF.flip()
             newBuf.put(dataF)
             dataF = newBuf
 
