@@ -4,7 +4,10 @@ import de.fabmax.kool.JsImpl.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_3D
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
+import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.NONE
 import org.khronos.webgl.WebGLRenderingContext.Companion.RGBA
@@ -56,7 +59,7 @@ object TextureLoader {
 
         when (img) {
             is TextureData3d -> {
-                gl.texImage3D(TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, (img.data as Uint8BufferImpl).buffer)
+                gl.texImage3D(TEXTURE_3D, 0, img.format.glInternalFormat, img.width, img.height, img.depth, 0, img.format.glFormat, img.format.glType, img.arrayBufferView)
             }
             is ImageAtlasTextureData -> {
                 gl.texStorage3D(TEXTURE_3D, 1, img.format.glInternalFormat, img.width, img.height, img.depth)
@@ -89,20 +92,14 @@ object TextureLoader {
         return tex
     }
 
-    private fun TextureData.estimateTexSize(): Int {
-        val layers = if (this is TextureDataCube) 6 else 1
-        val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
-        return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
-    }
-
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {
         gl.pixelStorei(UNPACK_COLORSPACE_CONVERSION_WEBGL, NONE)
         when (data) {
             is TextureData1d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
+                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, 1, 0, data.format.glFormat, data.format.glType, data.arrayBufferView)
             }
             is TextureData2d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, (data.data as Uint8BufferImpl).buffer)
+                gl.texImage2D(target, 0, data.format.glInternalFormat, data.width, data.height, 0, data.format.glFormat, data.format.glType, data.arrayBufferView)
             }
             is ImageTextureData -> {
                 gl.texImage2D(target, 0, RGBA, RGBA, UNSIGNED_BYTE, data.data)
@@ -112,4 +109,18 @@ object TextureLoader {
             }
         }
     }
+
+    private fun TextureData.estimateTexSize(): Int {
+        val layers = if (this is TextureDataCube) 6 else 1
+        val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
+        return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize)
+    }
+
+    private val TextureData.arrayBufferView: ArrayBufferView
+        get() = when (val bufData = data) {
+            is Uint8BufferImpl -> bufData.buffer
+            is Uint16BufferImpl -> bufData.buffer
+            is Float32BufferImpl -> bufData.buffer
+            else -> throw IllegalArgumentException("Unsupported buffer type")
+        }
 }

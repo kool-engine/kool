@@ -20,6 +20,7 @@ class ImageAtlasTextureData(image: ImageTextureData, tilesX: Int, tilesY: Int) :
 
         val imgData = image.data as Uint8BufferImpl
         val lineBuf = ByteArray(width * format.channels)
+        val target = data as Uint8BufferImpl
 
         for (tileY in 0 until tilesY) {
             for (tileX in 0 until tilesX) {
@@ -29,7 +30,7 @@ class ImageAtlasTextureData(image: ImageTextureData, tilesX: Int, tilesY: Int) :
                 for (l in 0 until height) {
                     imgData.position = ((srcY + l) * image.width + srcX) * format.channels
                     imgData.buffer.get(lineBuf)
-                    data.put(lineBuf)
+                    target.put(lineBuf)
                 }
             }
         }

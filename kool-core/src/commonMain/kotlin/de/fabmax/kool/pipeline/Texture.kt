@@ -146,7 +146,7 @@ abstract class TextureData {
     abstract val data: Any
 }
 
-class TextureData1d(override val data: Uint8Buffer, width: Int, format: TexFormat) : TextureData() {
+class TextureData1d(override val data: Buffer, width: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = 1
@@ -171,7 +171,7 @@ class TextureData1d(override val data: Uint8Buffer, width: Int, format: TexForma
 }
 
 /**
- * Byte buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
+ * Buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
  * is specified by the format parameter. The buffer size must match the texture size and data format.
  *
  * @param data   texture data buffer, must have a size of width * height * bytes-per-pixel
@@ -179,7 +179,7 @@ class TextureData1d(override val data: Uint8Buffer, width: Int, format: TexForma
  * @param height height of texture in pixels
  * @param format texture data format
  */
-open class TextureData2d(override val data: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
+open class TextureData2d(override val data: Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = height
@@ -199,7 +199,7 @@ open class TextureData2d(override val data: Uint8Buffer, width: Int, height: Int
     }
 }
 
-open class TextureData3d(override val data: Uint8Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
+open class TextureData3d(override val data: Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = height
