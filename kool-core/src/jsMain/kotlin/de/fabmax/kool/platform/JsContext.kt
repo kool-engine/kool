@@ -254,6 +254,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val DEPTH_STENCIL: Int
 
         val DEPTH_COMPONENT24: Int
+        val DEPTH_COMPONENT32F: Int
         val TEXTURE_3D: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int

@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.ShaderStage
-import de.fabmax.kool.pipeline.Uniform1fv
 import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.pipeline.UniformMat4fv
 import de.fabmax.kool.util.CascadedShadowMap
@@ -20,6 +19,7 @@ abstract class ShadowMapNode {
 
 class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
     private val ifPosLightSpace = StageInterfaceNode("posLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
+    private val ifNrmZLightSpace = StageInterfaceNode("nrmZLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
 
     val vertexNode = SimpleShadowMapTransformNode(shadowMap, vertexGraph)
     val fragmentNode = SimpleShadowMapFragmentNode(shadowMap, fragmentGraph)
@@ -27,6 +27,10 @@ class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, 
     var inWorldPos: ShaderNodeIoVar
         get() = vertexNode.inWorldPos
         set(value) { vertexNode.inWorldPos = value }
+
+    var inWorldNrm: ShaderNodeIoVar
+        get() = vertexNode.inWorldNrm
+        set(value) { vertexNode.inWorldNrm = value }
 
     var inDepthOffset: ShaderNodeIoVar
         get() = fragmentNode.inDepthOffset
@@ -42,10 +46,14 @@ class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, 
     init {
         this.lightIndex = shadowMap.lightIndex
         vertexGraph.addNode(ifPosLightSpace.vertexNode)
+        vertexGraph.addNode(ifNrmZLightSpace.vertexNode)
         fragmentGraph.addNode(ifPosLightSpace.fragmentNode)
+        fragmentGraph.addNode(ifNrmZLightSpace.fragmentNode)
 
         ifPosLightSpace.input = vertexNode.outPosLightSpace
         fragmentNode.inPosLightSpace = ifPosLightSpace.output
+        ifNrmZLightSpace.input = vertexNode.outNrmZLightSpace
+        fragmentNode.inNrmZLightSpace = ifNrmZLightSpace.output
     }
 }
 
@@ -53,11 +61,13 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
     val uShadowMapVP = UniformMat4f("${name}_shadowMapVP")
 
     var inWorldPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inWorldNrm: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     val outPosLightSpace = ShaderNodeIoVar(ModelVar4f("${name}_posLightSpace"), this)
+    val outNrmZLightSpace = ShaderNodeIoVar(ModelVar1f("${name}_nrmZLightSpace"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inWorldPos)
+        dependsOn(inWorldPos, inWorldNrm)
 
         shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
@@ -70,7 +80,10 @@ class SimpleShadowMapTransformNode(val shadowMap: SimpleShadowMap, graph: Shader
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outPosLightSpace.declare()} = ${uShadowMapVP.name} * vec4(${inWorldPos.ref3f()}, 1.0);")
+        generator.appendMain("""
+            ${outPosLightSpace.declare()} = ${uShadowMapVP.name} * vec4(${inWorldPos.ref3f()}, 1.0);
+            ${outNrmZLightSpace.declare()} = (${uShadowMapVP.name} * vec4(${inWorldNrm.ref3f()}, 0.0)).z;
+        """)
     }
 }
 
@@ -78,6 +91,7 @@ class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph
     var depthMap: Texture2dNode? = null
     var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(shadowMap.shaderDepthOffset))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    var inNrmZLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
 
@@ -85,7 +99,7 @@ class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inDepthOffset, inPosLightSpace)
+        dependsOn(inDepthOffset, inPosLightSpace, inNrmZLightSpace)
         dependsOn(depthMap ?: throw KoolException("Depth map input not set"))
     }
 
@@ -133,12 +147,19 @@ class SimpleShadowMapFragmentNode(shadowMap: SimpleShadowMap, graph: ShaderGraph
                 && ${name}_posW.y > 0.0 && ${name}_posW.y < 1.0
                 && ${name}_posW.z > -1.0 && ${name}_posW.z < 1.0) {
             
-                float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
-                float ${name}_scale = 1.0 / float(${name}_size);
-                ${name}_pos.z += ${inDepthOffset.ref1f()};
-                ${outShadowFac.name} = 0.0;
-                $sampleBuilder
-                ${outShadowFac.name} *= ${1f / nSamples};
+                if (${inNrmZLightSpace.ref1f()} > 0.05) {
+                    ${outShadowFac.name} = 0.0;
+                } else {
+                    float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
+                    float ${name}_scale = 1.0 / float(${name}_size);
+                    ${name}_pos.z += ${inDepthOffset.ref1f()};
+                    ${outShadowFac.name} = 0.0;
+                    $sampleBuilder
+                    ${outShadowFac.name} *= ${1f / nSamples};
+                    if (${inNrmZLightSpace.ref1f()} > 0.0) {
+                        ${outShadowFac.name} *= 1.0 - smoothstep(0.0, 0.05, ${inNrmZLightSpace.ref1f()});
+                    }
+                }
             }
         """)
     }
@@ -150,6 +171,10 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
     var inWorldPos: ShaderNodeIoVar
         get() = vertexNode.inWorldPos
         set(value) { vertexNode.inWorldPos = value }
+
+    var inWorldNrm: ShaderNodeIoVar
+        get() = vertexNode.inWorldNrm
+        set(value) { vertexNode.inWorldNrm = value }
 
     var inDepthOffset: ShaderNodeIoVar
         get() = fragmentNode.inDepthOffset
@@ -167,6 +192,7 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
 
     private val helperNd = CascadedShadowHelperNd(vertexGraph)
     private val posLightSpace = ShaderNodeIoVar(ModelVar4f("ifPosLightSpace_${vertexGraph.nextNodeId}[${shadowMap.numCascades}]"))
+    private val nrmZLightSpace = ShaderNodeIoVar(ModelVar1f("ifNrmZLightSpace_${vertexGraph.nextNodeId}[${shadowMap.numCascades}]"))
     private val ifViewZ = ShaderNodeIoVar(ModelVar1f("outViewZ_${helperNd.nodeId}"))
 
     init {
@@ -174,6 +200,7 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
         vertexGraph.addNode(helperNd)
 
         fragmentNode.inPosLightSpace = posLightSpace
+        fragmentNode.inNrmZLightSpace = nrmZLightSpace
         fragmentNode.inViewZ = ifViewZ
     }
 
@@ -183,6 +210,7 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
             dependsOn(inViewPosition, vertexNode.outPosLightSpace)
 
             fragmentGraph.inputs += vertexGraph.addStageOutput(posLightSpace.variable, false, shadowMap.numCascades)
+            fragmentGraph.inputs += vertexGraph.addStageOutput(nrmZLightSpace.variable, false, shadowMap.numCascades)
             fragmentGraph.inputs += vertexGraph.addStageOutput(ifViewZ.variable, false)
         }
 
@@ -190,6 +218,7 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
             generator.appendMain("${ifViewZ.name} = $inViewPosition.z;")
             for (i in 0 until shadowMap.numCascades) {
                 generator.appendMain("${posLightSpace.name.substringBefore('[')}[$i] = ${vertexNode.outPosLightSpace.name.substringBefore('[')}[$i];")
+                generator.appendMain("${nrmZLightSpace.name.substringBefore('[')}[$i] = ${vertexNode.outNrmZLightSpace.name.substringBefore('[')}[$i];")
             }
         }
     }
@@ -199,7 +228,9 @@ class CascadedShadowMapTransformNode(val shadowMap: CascadedShadowMap, graph: Sh
     val uShadowMapVP = UniformMat4fv("${name}_shadowMapVPs", shadowMap.numCascades)
 
     var inWorldPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inWorldNrm: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     val outPosLightSpace = ShaderNodeIoVar(ModelVar4f("${name}_posLightSpace[${shadowMap.numCascades}]"), this)
+    val outNrmZLightSpace = ShaderNodeIoVar(ModelVar1f("${name}_nrmZLightSpace[${shadowMap.numCascades}]"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -218,19 +249,26 @@ class CascadedShadowMapTransformNode(val shadowMap: CascadedShadowMap, graph: Sh
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outPosLightSpace.declare()};")
+        generator.appendMain("""
+            ${outPosLightSpace.declare()};
+            ${outNrmZLightSpace.declare()};
+            vec3 ${name}_nrmLightSpace;
+        """)
         for (i in 0 until shadowMap.numCascades) {
-            generator.appendMain("${outPosLightSpace.name.substringBefore('[')}[$i] = ${uShadowMapVP.name}[$i] * vec4(${inWorldPos.ref3f()}, 1.0);")
+            generator.appendMain("""
+                ${outPosLightSpace.name.substringBefore('[')}[$i] = ${uShadowMapVP.name}[$i] * vec4(${inWorldPos.ref3f()}, 1.0);
+                ${name}_nrmLightSpace = normalize((${uShadowMapVP.name}[$i] * vec4(${inWorldNrm.ref3f()}, 0.0)).xyz);
+                ${outNrmZLightSpace.name.substringBefore('[')}[$i] = ${name}_nrmLightSpace.z;
+            """)
         }
     }
 }
 
 class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: ShaderGraph) : ShaderNode("cascadedShadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
-    private val uViewSpaceRanges = Uniform1fv("uClipSpaceRanges_${name}", shadowMap.numCascades)
-
     var depthMap: Texture2dNode? = null
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.0025f))
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(shadowMap.cascades[0].shaderDepthOffset))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+    var inNrmZLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))
     var inViewZ: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))
 
     val outShadowFac = ShaderNodeIoVar(ModelVar1f("${name}_shadowFac"), this)
@@ -240,18 +278,7 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(depthMap ?: throw KoolException("Depth map input not set"))
-        dependsOn(inDepthOffset, inPosLightSpace, inViewZ)
-
-        shaderGraph.descriptorSet.apply {
-            uniformBuffer(name, shaderGraph.stage) {
-                +{ uViewSpaceRanges }
-                onUpdate = { _, _ ->
-                    for (i in 0 until shadowMap.numCascades) {
-                        uViewSpaceRanges.value[i] = shadowMap.viewSpaceRanges[i]
-                    }
-                }
-            }
-        }
+        dependsOn(inDepthOffset, inPosLightSpace, inNrmZLightSpace, inViewZ)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -306,16 +333,28 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
 
         generator.appendMain("""
                 ${outShadowFac.declare()} = 1.0;
+                bool ${name}_hasSampled = false;
             """)
         for (i in 0 until shadowMap.numCascades) {
             generator.appendMain("""
-                    if (${inViewZ.ref1f()} >= ${uViewSpaceRanges.name}[$i]) {
-                        ${outShadowFac.name} = cascadedShadowFac(${depthTex.name}[$i], ${inPosLightSpace.name.substringBefore('[')}[$i], ${inDepthOffset.ref1f()});
+                if (!${name}_hasSampled) {
+                    vec3 ${name}_samplePos = ${inPosLightSpace.name.substringBefore('[')}[$i].xyz / ${inPosLightSpace.name.substringBefore('[')}[$i].w;
+                    if (${name}_samplePos.x > 0.0 && ${name}_samplePos.x < 1.0
+                        && ${name}_samplePos.y > 0.0 && ${name}_samplePos.y < 1.0
+                        && ${name}_samplePos.z > -1.0 && ${name}_samplePos.z < 1.0) {
+                        
+                        if (${inNrmZLightSpace.name.substringBefore('[')}[$i] > 0.05) {
+                            ${outShadowFac.name} = 0.0;
+                        } else {
+                            ${outShadowFac.name} = cascadedShadowFac(${depthTex.name}[$i], ${inPosLightSpace.name.substringBefore('[')}[$i], ${inDepthOffset.ref1f()});
+                            if (${inNrmZLightSpace.name.substringBefore('[')}[$i] > 0.0) {
+                                ${outShadowFac.name} *= 1.0 - smoothstep(0.0, 0.05, ${inNrmZLightSpace.name.substringBefore('[')}[$i]);
+                            }
+                        }
+                        ${name}_hasSampled = true;
                     }
-                """)
-            if (i < shadowMap.numCascades - 1) {
-                generator.appendMain(" else ")
-            }
+                }
+            """)
         }
     }
 }

@@ -445,7 +445,8 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 
-        fun simpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, inWorldPos: ShaderNodeIoVar? = null): SimpleShadowMapNode {
+        fun simpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String,
+                                inWorldPos: ShaderNodeIoVar? = null, inWorldNrm: ShaderNodeIoVar? = null): SimpleShadowMapNode {
             val shadowMapNode = SimpleShadowMapNode(shadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
@@ -454,13 +455,15 @@ class ShaderModel(val modelInfo: String = "") {
             fragmentStageGraph.addNode(depthMap)
 
             inWorldPos?.let { shadowMapNode.inWorldPos = it }
+            inWorldNrm?.let { shadowMapNode.inWorldNrm = it }
             shadowMapNode.depthMap = depthMap
 
             return shadowMapNode
         }
 
         fun cascadedShadowMapNode(cascadedShadowMap: CascadedShadowMap, depthMapName: String,
-                                  inViewPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null): CascadedShadowMapNode {
+                                  inViewPos: ShaderNodeIoVar? = null, inWorldPos: ShaderNodeIoVar? = null,
+                                  inWorldNrm: ShaderNodeIoVar? = null): CascadedShadowMapNode {
             val shadowMapNode = CascadedShadowMapNode(cascadedShadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
@@ -472,6 +475,7 @@ class ShaderModel(val modelInfo: String = "") {
             fragmentStageGraph.addNode(depthMap)
 
             inWorldPos?.let { shadowMapNode.inWorldPos = it }
+            inWorldNrm?.let { shadowMapNode.inWorldNrm = it }
             inViewPos?.let { shadowMapNode.inViewPosition = it }
             shadowMapNode.depthMap = depthMap
 
@@ -527,25 +531,34 @@ class ShaderModel(val modelInfo: String = "") {
             return coordNd
         }
 
-        fun deferredSimpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, worldPos: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
+        fun deferredSimpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String,
+                                        worldPos: ShaderNodeIoVar, worldNrm: ShaderNodeIoVar): SimpleShadowMapFragmentNode {
             val depthMapNd = addNode(Texture2dNode(stage, depthMapName)).apply { isDepthTexture = true }
-            val lightSpaceTf = addNode(SimpleShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
+            val lightSpaceTf = addNode(SimpleShadowMapTransformNode(shadowMap, stage)).apply {
+                inWorldPos = worldPos
+                inWorldNrm = worldNrm
+            }
             return addNode(SimpleShadowMapFragmentNode(shadowMap, stage)).apply {
                 inPosLightSpace = lightSpaceTf.outPosLightSpace
+                inNrmZLightSpace = lightSpaceTf.outNrmZLightSpace
                 depthMap = depthMapNd
             }
         }
 
         fun deferredCascadedShadowMapNode(shadowMap: CascadedShadowMap, depthMapName: String,
-                                          viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
+                                          viewPos: ShaderNodeIoVar, worldPos: ShaderNodeIoVar, worldNrm: ShaderNodeIoVar): CascadedShadowMapFragmentNode {
             val depthMapNd = addNode(Texture2dNode(stage, depthMapName)).apply {
                 isDepthTexture = true
                 arraySize = shadowMap.numCascades
             }
-            val lightSpaceTf = addNode(CascadedShadowMapTransformNode(shadowMap, stage)).apply { inWorldPos = worldPos }
+            val lightSpaceTf = addNode(CascadedShadowMapTransformNode(shadowMap, stage)).apply {
+                inWorldPos = worldPos
+                inWorldNrm = worldNrm
+            }
             return addNode(CascadedShadowMapFragmentNode(shadowMap, stage)).apply {
                 inViewZ = splitNode(viewPos, "z").output
                 inPosLightSpace = lightSpaceTf.outPosLightSpace
+                inNrmZLightSpace = lightSpaceTf.outNrmZLightSpace
                 depthMap = depthMapNd
             }
         }

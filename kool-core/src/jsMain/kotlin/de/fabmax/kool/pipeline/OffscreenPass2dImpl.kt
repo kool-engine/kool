@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT32F
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.glInternalFormat
@@ -190,7 +191,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             depthTex = (cfg.providedTexture.loadedTexture as LoadedTextureWebGl).texture
 
         } else {
-            val intFormat = DEPTH_COMPONENT24
+            val intFormat = DEPTH_COMPONENT32F
             val width = offscreenPass.width
             val height = offscreenPass.height
             val mipLevels = offscreenPass.config.mipLevels

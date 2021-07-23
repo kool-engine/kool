@@ -4,6 +4,10 @@ import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.lwjgl.PointerBuffer
 import org.lwjgl.util.nfd.NativeFileDialog
 import java.awt.image.BufferedImage
@@ -12,6 +16,7 @@ import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
+import kotlin.concurrent.thread
 
 class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager(props.assetsBaseDir) {
 
@@ -21,6 +26,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     private var fileChooserPath = System.getProperty("user.home")
 
+    private val keyValueStore = mutableMapOf<String, String>()
+
     init {
         // inits http cache if not already happened
         HttpCache.initCache(File(".httpCache"))
@@ -28,6 +35,22 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         if (!storageDir.exists() && !storageDir.mkdirs()) {
             logE { "Failed to create storage directory" }
         }
+
+        val persistentKvStorage = File(storageDir, KEY_VALUE_STORAGE_NAME)
+        if (persistentKvStorage.canRead()) {
+            try {
+                val kvStore = Json.decodeFromString<KeyValueStore>(persistentKvStorage.readText())
+                kvStore.keyValues.forEach { (k, v) -> keyValueStore[k] = v }
+            } catch (e: Exception) {
+                logE { "Failed loading key value store: $e" }
+                e.printStackTrace()
+            }
+        }
+
+        Runtime.getRuntime().addShutdownHook(thread(false) {
+            val kvStore = KeyValueStore(keyValueStore.map { (k, v) -> KeyValueEntry(k, v) })
+            File(storageDir, KEY_VALUE_STORAGE_NAME).writeText(Json.encodeToString(kvStore))
+        })
     }
 
     override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
@@ -99,11 +122,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     private fun loadLocalTexture(localTextureRef: TextureAssetRef): ImageTextureData {
         return openLocalStream(localTextureRef.url).use {
-            //data = ImageTextureData(ImageIO.read(it))
             // ImageIO.read is not thread safe!
-            val img = synchronized(imageIoLock) {
-                ImageIO.read(it)
-            }
+            val img = synchronized(imageIoLock) { ImageIO.read(it) }
             ImageTextureData(img, localTextureRef.fmt)
         }
     }
@@ -111,11 +131,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     private fun loadHttpTexture(httpTextureRef: TextureAssetRef): ImageTextureData {
         val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
         return FileInputStream(f).use {
-            //data = ImageTextureData(ImageIO.read(it))
             // ImageIO.read is not thread safe!
-            val img = synchronized(imageIoLock) {
-                ImageIO.read(it)
-            }
+            val img = synchronized(imageIoLock) { ImageIO.read(it) }
             ImageTextureData(img, httpTextureRef.fmt)
         }
     }
@@ -150,13 +167,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override fun storeString(key: String, data: String): Boolean {
-        return try {
-            FileWriter(File(storageDir, key)).use { it.write(data) }
-            true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        }
+        keyValueStore[key] = data
+        return true
     }
 
     override fun load(key: String): Uint8Buffer? {
@@ -173,16 +185,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     override fun loadString(key: String): String? {
-        val file = File(storageDir, key)
-        if (!file.canRead()) {
-            return null
-        }
-        return try {
-            file.readText()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
+        return keyValueStore[key]
     }
 
     override suspend fun loadFileByUser(): Uint8Buffer? {
@@ -278,5 +281,13 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048
         private const val MAX_GENERATED_TEX_HEIGHT = 2048
+
+        private const val KEY_VALUE_STORAGE_NAME = ".keyValueStorage.json"
     }
+
+    @Serializable
+    data class KeyValueEntry(val k: String, val v: String)
+
+    @Serializable
+    data class KeyValueStore(val keyValues: List<KeyValueEntry>)
 }

@@ -172,7 +172,7 @@ class OffscreenPass2dGl(val parentPass: OffscreenPass2dImpl) : OffscreenPass2dIm
             glDepthTex = (cfg.providedTexture.loadedTexture as LoadedTextureGl).texture
 
         } else {
-            val intFormat = GL_DEPTH_COMPONENT24
+            val intFormat = GL_DEPTH_COMPONENT32F
             val width = parentPass.offscreenPass.width
             val height = parentPass.offscreenPass.height
             val mipLevels = parentPass.offscreenPass.config.mipLevels

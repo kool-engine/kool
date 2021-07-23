@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.concurrent.thread
 
 class HttpCache private constructor(private val cacheDir: File) {
 
@@ -40,11 +41,7 @@ class HttpCache private constructor(private val cacheDir: File) {
             rebuildIndex()
         }
 
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                close()
-            }
-        })
+        Runtime.getRuntime().addShutdownHook(thread(false) { close() })
     }
 
     private fun close() {

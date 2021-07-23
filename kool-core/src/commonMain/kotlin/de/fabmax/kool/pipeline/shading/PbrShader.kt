@@ -330,14 +330,14 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 val worldPos = vec3TransformNode(localPosDisplaced.output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                val nrm = vec3TransformNode(localNormalMorphed.output, modelMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
+                val worldNrm = vec3TransformNode(localNormalMorphed.output, modelMat, 0f).outVec3
+                ifNormals = stageInterfaceNode("ifNormals", worldNrm)
 
                 val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
-                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos)
-                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", viewPos, worldPos, worldNrm)
+                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, worldNrm)
                     }
                 }
                 positionOutput = vec4TransformNode(localPosDisplaced.output, mvpMat).outVec4

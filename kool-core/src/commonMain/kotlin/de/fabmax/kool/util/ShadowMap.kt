@@ -64,7 +64,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
     }
 
     fun setDefaultDepthOffset(isDirectional: Boolean) {
-        shaderDepthOffset = if (isDirectional) -0.001f else -0.005f
+        val szMultiplier = 2048f / width
+        shaderDepthOffset = szMultiplier * if (isDirectional) -0.001f else -0.005f
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -164,15 +165,14 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
     }
 }
 
-class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float = 100f, val numCascades: Int = 3, mapSize: Int = 2048, drawNode: Node = scene) : ShadowMap {
+class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float = 100f, val numCascades: Int = 3, mapSizes: List<Int>? = null, drawNode: Node = scene) : ShadowMap {
     val mapRanges = Array(numCascades) { i ->
         val near = i.toFloat().pow(2) / numCascades.toFloat().pow(2)
         val far = (i + 1).toFloat().pow(2) / numCascades.toFloat().pow(2)
         MapRange(near, far)
     }
 
-    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize, drawNode).apply { setDefaultDepthOffset(true) } }
-    val viewSpaceRanges = FloatArray(numCascades)
+    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSizes?.get(it) ?: 2048, drawNode).apply { setDefaultDepthOffset(true) } }
 
     var drawNode: Node
         get() = cascades[0].drawNode
@@ -196,8 +196,6 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
                 val farOverlap = 2f * sqrt(far)
                 cascades[i].clipNear = near
                 cascades[i].clipFar = far + farOverlap
-                // view space z-axis points in negative direction -> depth values are negative
-                viewSpaceRanges[i] = -far
             }
         }
     }
