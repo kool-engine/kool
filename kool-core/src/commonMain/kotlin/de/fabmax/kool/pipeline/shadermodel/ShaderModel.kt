@@ -36,6 +36,16 @@ class ShaderModel(val modelInfo: String = "") {
         return null
     }
 
+    fun findNodeByName(name: String): ShaderNode? {
+        stages.values.forEach {
+            val node = it.findNodeByName(name)
+            if (node != null) {
+                return node
+            }
+        }
+        return null
+    }
+
     inline fun <reified T: ShaderNode> findNodeByType(stage: ShaderStage = ShaderStage.ALL): T? {
         stages.values.forEach {
             if (it.stage.mask and stage.mask != 0) {
@@ -246,10 +256,22 @@ class ShaderModel(val modelInfo: String = "") {
             return refractNd
         }
 
-        fun normalMapNode(texture: Texture2dNode, textureCoord: ShaderNodeIoVar? = null,
+        fun normalMapNode(normalMapColor: ShaderNodeIoVar? = null,
                           normal: ShaderNodeIoVar? = null, tangent: ShaderNodeIoVar? = null): NormalMapNode {
-            val nrmMappingNd = addNode(NormalMapNode(texture, stage))
-            textureCoord?.let { nrmMappingNd.inTexCoord = it }
+            val nrmMappingNd = addNode(NormalMapNode(stage))
+            normalMapColor?.let { nrmMappingNd.inNormalMapColor = it }
+            normal?.let { nrmMappingNd.inNormal = it }
+            tangent?.let { nrmMappingNd.inTangent = it }
+            return nrmMappingNd
+        }
+
+        fun normalMapNode(texture: Texture2dNode, textureCoord: ShaderNodeIoVar,
+                          normal: ShaderNodeIoVar? = null, tangent: ShaderNodeIoVar? = null): NormalMapNode {
+            val samplerNode = addNode(Texture2dSamplerNode(texture, stage))
+            samplerNode.inTexCoord = textureCoord
+
+            val nrmMappingNd = addNode(NormalMapNode(stage))
+            nrmMappingNd.inNormalMapColor = samplerNode.outColor
             normal?.let { nrmMappingNd.inNormal = it }
             tangent?.let { nrmMappingNd.inTangent = it }
             return nrmMappingNd

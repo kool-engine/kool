@@ -117,11 +117,11 @@ data class GltfMaterial(
         }
 
         if (occlusionTexture != null) {
-            cfg.isOcclusionMapped = true
-            cfg.occlusionMap = occlusionTexture
-            cfg.occlusionStrength = this.occlusionTexture?.strength ?: 1f
+            cfg.isAoMapped = true
+            cfg.aoMap = occlusionTexture
+            cfg.aoStrength = this.occlusionTexture?.strength ?: 1f
         } else {
-            cfg.isOcclusionMapped = false
+            cfg.isAoMapped = false
         }
 
         // roughness, metallic and occlusion can optionally use the same texture (using different color channels)
@@ -162,16 +162,16 @@ data class GltfMaterial(
             }
         }
 
-        if (cfg.isOcclusionMapped) {
+        if (cfg.isAoMapped) {
             if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
                 // standalone occlusion texture -> use occlusion data from red channel
                 cfg.occlusionChannel = "r"
-                cfg.occlusionTexName = "tOcclusion"
+                cfg.aoTexName = "tOcclusion"
             } else {
                 // occlusion texture is joined -> use occlusion data from red channel (consistent with glTF spec)
                 cfg.occlusionChannel = "r"
                 if (occlusionTexture === roughnessTexture && occlusionTexture === metallicTexture) {
-                    cfg.occlusionTexName = "tOcclRoughMetal"
+                    cfg.aoTexName = "tOcclRoughMetal"
                 } else if (occlusionTexture === roughnessTexture) {
                     cfg.roughnessTexName = "tOcclRough"
                 } else { // occlusionTexture === metallicTexture

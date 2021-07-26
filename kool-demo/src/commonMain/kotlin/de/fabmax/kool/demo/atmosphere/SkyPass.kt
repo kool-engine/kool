@@ -145,9 +145,9 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
 
                 val w = 1f - ((1f - skyHeightAlpha) * (1f - dayNightAlpha))
                 val mulColor = Color(w, w, w, 1f)
-                starShader!!.color = mulColor
-                milkyWayShader!!.color = mulColor
-                sunBgShader!!.color = mulColor.withAlpha(0.75f)
+                starShader!!.color(mulColor)
+                milkyWayShader!!.color(mulColor)
+                sunBgShader!!.color(mulColor.withAlpha(0.75f))
 
                 starShader?.uPtSizeMod?.value = max(0.6f, width / 1920f)
             }
@@ -244,7 +244,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
                 roughness = 0.7f
                 isHdrOutput = true
             }.apply {
-                ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
+                ambient(Color(0.05f, 0.05f, 0.05f).toLinear())
             }
         }
     }

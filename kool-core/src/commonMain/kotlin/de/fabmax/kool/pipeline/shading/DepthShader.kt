@@ -2,18 +2,16 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shadermodel.ShaderModel
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
 class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthShaderModel(cfg)) : ModeledShader(model) {
 
-    private var alphaMaskSampler: TextureSampler2d? = null
-    var alphaMask: Texture2d? = cfg.alphaMask
-        set(value) {
-            field = value
-            alphaMaskSampler?.texture = value
-        }
+    val alphaMask = Texture2dInput("tAlphaMask", cfg.alphaMask)
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.DISABLED
@@ -22,8 +20,7 @@ class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthS
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        alphaMaskSampler = model.findNode<Texture2dNode>("tAlphaMask")?.sampler
-        alphaMaskSampler?.let { it.texture = alphaMask }
+        alphaMask.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

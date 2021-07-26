@@ -22,39 +22,11 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
-    private var uShininess: PushConstantNode1f? = null
-    private var uSpecularIntensity: PushConstantNode1f? = null
-
-    private var albedoSampler: TextureSampler2d? = null
-    private var normalSampler: TextureSampler2d? = null
-    private var uAlbedo: PushConstantNodeColor? = null
-
-    var shininess = cfg.shininess
-        set(value) {
-            field = value
-            uShininess?.uniform?.value = value
-        }
-    var specularIntensity = cfg.specularIntensity
-        set(value) {
-            field = value
-            uSpecularIntensity?.uniform?.value = value
-        }
-
-    var albedo: Color = cfg.albedo
-        set(value) {
-            field = value
-            uAlbedo?.uniform?.value?.set(value)
-        }
-    var albedoMap: Texture2d? = cfg.albedoMap
-        set(value) {
-            field = value
-            albedoSampler?.texture = value
-        }
-    var normalMap: Texture2d? = cfg.normalMap
-        set(value) {
-            field = value
-            normalSampler?.texture = value
-        }
+    val shininess = FloatInput("uShininess", cfg.shininess)
+    val specularIntensity = FloatInput("uSpecularIntensity", cfg.specularIntensity)
+    val color = ColorInput("uColor", cfg.color)
+    val colorMap = Texture2dInput("tColor", cfg.colorMap)
+    val normalMap = Texture2dInput("tNormal", cfg.normalMap)
 
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
@@ -65,18 +37,11 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        uShininess = model.findNode("uShininess")
-        uShininess?.uniform?.value = shininess
-        uSpecularIntensity = model.findNode("uSpecularIntensity")
-        uSpecularIntensity?.uniform?.value = specularIntensity
-
-        uAlbedo = model.findNode("uAlbedo")
-        uAlbedo?.uniform?.value?.set(albedo)
-
-        albedoSampler = model.findNode<Texture2dNode>("tAlbedo")?.sampler
-        albedoSampler?.let { it.texture = albedoMap }
-        normalSampler = model.findNode<Texture2dNode>("tNormal")?.sampler
-        normalSampler?.let { it.texture = normalMap }
+        shininess.connect(model)
+        specularIntensity.connect(model)
+        color.connect(model)
+        colorMap.connect(model)
+        normalMap.connect(model)
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -155,9 +120,9 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
 
                 val albedo = when (cfg.albedoSource) {
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
-                    Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                    Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uColor").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        texture2dSamplerNode(texture2dNode("tAlbedo"), ifTexCoords!!.output, false).outColor
+                        texture2dSamplerNode(texture2dNode("tColor"), ifTexCoords!!.output, false).outColor
                     }
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
@@ -184,7 +149,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
         var isNormalMapped = false
 
         // initial shader values
-        var albedo = Color.GRAY
+        var color = Color.GRAY
         var shininess = 20f
         var specularIntensity = 1f
 
@@ -197,19 +162,17 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
 
         var isInstanced = false
 
-        var albedoMap: Texture2d? = null
+        var colorMap: Texture2d? = null
         var normalMap: Texture2d? = null
 
-        fun useAlbedoMap(albedoMap: String) =
-                useAlbedoMap(Texture2d(albedoMap))
+        fun useColorMap(albedoMap: String) = useColorMap(Texture2d(albedoMap))
 
-        fun useAlbedoMap(albedoMap: Texture2d?) {
-            this.albedoMap = albedoMap
+        fun useColorMap(albedoMap: Texture2d?) {
+            this.colorMap = albedoMap
             albedoSource = Albedo.TEXTURE_ALBEDO
         }
 
-        fun useNormalMap(normalMap: String) =
-                useNormalMap(Texture2d(normalMap))
+        fun useNormalMap(normalMap: String) = useNormalMap(Texture2d(normalMap))
 
         fun useNormalMap(normalMap: Texture2d?) {
             this.normalMap = normalMap

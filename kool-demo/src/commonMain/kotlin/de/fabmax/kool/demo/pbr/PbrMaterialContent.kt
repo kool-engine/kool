@@ -40,12 +40,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
 
     private fun updatePbrMaterial() {
         shaders.forEach {
-            it.albedoMap = currentMat.albedo
-            it.normalMap = currentMat.normal
-            it.roughnessMap = currentMat.roughness
-            it.metallicMap = currentMat.metallic ?: defaultMetallicTex
-            it.occlusionMap = currentMat.ao ?: defaultAoTex
-            it.displacementMap = currentMat.displacement ?: defaultDispTex
+            it.albedoMap(currentMat.albedo)
+            it.normalMap(currentMat.normal)
+            it.roughnessMap(currentMat.roughness)
+            it.metallicMap(currentMat.metallic ?: defaultMetallicTex)
+            it.aoMap(currentMat.ao ?: defaultAoTex)
+            it.displacementMap(currentMat.displacement ?: defaultDispTex)
         }
     }
 
@@ -131,9 +131,9 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         iblContent?.children?.forEach {
             it as Mesh
             val pbrShader = it.shader as PbrShader
-            pbrShader.irradianceMap = envMaps.irradianceMap
-            pbrShader.reflectionMap = envMaps.reflectionMap
-            pbrShader.brdfLut = envMaps.brdfLut
+            pbrShader.irradianceMap(envMaps.irradianceMap)
+            pbrShader.reflectionMap(envMaps.reflectionMap)
+            pbrShader.brdfLut(envMaps.brdfLut)
         }
     }
 
@@ -145,7 +145,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
                 isNormalMapped = true
                 isRoughnessMapped = true
                 isMetallicMapped = true
-                isOcclusionMapped = true
+                isAoMapped = true
                 isDisplacementMapped = true
                 displacementStrength = 0.25f
                 if (withIbl) {

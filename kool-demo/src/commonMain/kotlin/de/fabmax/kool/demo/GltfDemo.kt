@@ -220,14 +220,14 @@ class GltfDemo : DemoScene("glTF Models") {
 
                 useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
                 useNormalMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Normal.jpg")
-                useOcclusionMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
+                useAmbientOcclusionMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Roughness.jpg")
 
                 onDispose += {
                     albedoMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
-                    occlusionMap?.dispose()
+                    aoMap?.dispose()
                 }
             }
 

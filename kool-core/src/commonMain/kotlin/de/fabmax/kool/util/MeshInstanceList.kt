@@ -40,7 +40,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     var hasChanged = true
 
-    constructor(maxInstances: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), maxInstances)
+    constructor(initialSize: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), initialSize)
 
     init {
         var strideF = 0

@@ -3,10 +3,10 @@ package de.fabmax.kool.demo.atmosphere
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.atmosphere.AtmosphereNode
 import de.fabmax.kool.util.atmosphere.RaySphereIntersectionNode
@@ -14,32 +14,12 @@ import kotlin.math.pow
 
 class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
 
-    private var opticalDepthLutNode: Texture2dNode? = null
-    private var sceneColorNode: Texture2dNode? = null
-    private var scenePosNode: Texture2dNode? = null
-    private var skyColorNode: Texture2dNode? = null
     private var atmosphereNode: AtmosphereNode? = null
 
-    var opticalDepthLut: Texture2d? = null
-        set(value) {
-            field = value
-            opticalDepthLutNode?.sampler?.texture = value
-        }
-    var sceneColor: Texture2d? = null
-        set(value) {
-            field = value
-            sceneColorNode?.sampler?.texture = value
-        }
-    var scenePos: Texture2d? = null
-        set(value) {
-            field = value
-            scenePosNode?.sampler?.texture = value
-        }
-    var skyColor: Texture2d? = null
-        set(value) {
-            field = value
-            skyColorNode?.sampler?.texture = value
-        }
+    val opticalDepthLut = Texture2dInput("tOpticalDepthLut")
+    val sceneColor = Texture2dInput("tSceneColor")
+    val scenePos = Texture2dInput("tScenePos")
+    val skyColor = Texture2dInput("tSkyColor")
 
     var dirToSun = Vec3f(0f, 0f, 1f)
         set(value) {
@@ -106,14 +86,10 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
             builder.depthTest = DepthCompareOp.DISABLED
         }
         onPipelineCreated += { _, _, _ ->
-            opticalDepthLutNode = model.findNode("tOpticalDepthLut")
-            opticalDepthLutNode?.sampler?.texture = opticalDepthLut
-            sceneColorNode = model.findNode("tSceneColor")
-            sceneColorNode?.sampler?.texture = sceneColor
-            scenePosNode = model.findNode("tScenePos")
-            scenePosNode?.sampler?.texture = scenePos
-            skyColorNode = model.findNode("tSkyColor")
-            skyColorNode?.sampler?.texture = skyColor
+            opticalDepthLut.connect(model)
+            sceneColor.connect(model)
+            scenePos.connect(model)
+            skyColor.connect(model)
 
             atmosphereNode = model.findNodeByType()
             atmosphereNode?.apply {

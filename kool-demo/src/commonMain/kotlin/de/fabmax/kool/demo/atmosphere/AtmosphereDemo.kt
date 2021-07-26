@@ -105,9 +105,9 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
 
         atmoShader.apply {
-            opticalDepthLut = opticalDepthLutPass.colorTexture
-            sceneColor = deferredPipeline.pbrPass.colorTexture
-            scenePos = deferredPipeline.mrtPass.positionAo
+            opticalDepthLut(opticalDepthLutPass.colorTexture)
+            sceneColor(deferredPipeline.pbrPass.colorTexture)
+            scenePos(deferredPipeline.mrtPass.positionAo)
             surfaceRadius = earthRadius
             atmosphereRadius = 6500f / kmPerUnit
 
@@ -232,7 +232,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
 
     private fun finalizeSceneSetup(deferredPipeline: DeferredPipeline) {
         val skyPass = SkyPass(this)
-        atmoShader.skyColor = skyPass.colorTexture
+        atmoShader.skyColor(skyPass.colorTexture)
 
         deferredPipeline.contentGroup.setupContent()
 

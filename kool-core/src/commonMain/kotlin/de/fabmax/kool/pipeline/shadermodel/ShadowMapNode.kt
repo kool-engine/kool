@@ -176,10 +176,6 @@ class CascadedShadowMapNode(val shadowMap: CascadedShadowMap, val vertexGraph: S
         get() = vertexNode.inWorldNrm
         set(value) { vertexNode.inWorldNrm = value }
 
-    var inDepthOffset: ShaderNodeIoVar
-        get() = fragmentNode.inDepthOffset
-        set(value) { fragmentNode.inDepthOffset = value }
-
     override var depthMap: Texture2dNode?
         get() = fragmentNode.depthMap
         set(value) { fragmentNode.depthMap = value }
@@ -266,7 +262,6 @@ class CascadedShadowMapTransformNode(val shadowMap: CascadedShadowMap, graph: Sh
 
 class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: ShaderGraph) : ShaderNode("cascadedShadowMap_${graph.nextNodeId}", graph, ShaderStage.FRAGMENT_SHADER.mask) {
     var depthMap: Texture2dNode? = null
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(shadowMap.cascades[0].shaderDepthOffset))
     var inPosLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
     var inNrmZLightSpace: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))
     var inViewZ: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(0f))
@@ -278,7 +273,7 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(depthMap ?: throw KoolException("Depth map input not set"))
-        dependsOn(inDepthOffset, inPosLightSpace, inNrmZLightSpace, inViewZ)
+        dependsOn(inPosLightSpace, inNrmZLightSpace, inViewZ)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -346,7 +341,7 @@ class CascadedShadowMapFragmentNode(val shadowMap: CascadedShadowMap, graph: Sha
                         if (${inNrmZLightSpace.name.substringBefore('[')}[$i] > 0.05) {
                             ${outShadowFac.name} = 0.0;
                         } else {
-                            ${outShadowFac.name} = cascadedShadowFac(${depthTex.name}[$i], ${inPosLightSpace.name.substringBefore('[')}[$i], ${inDepthOffset.ref1f()});
+                            ${outShadowFac.name} = cascadedShadowFac(${depthTex.name}[$i], ${inPosLightSpace.name.substringBefore('[')}[$i], float(${shadowMap.cascades[i].shaderDepthOffset}));
                             if (${inNrmZLightSpace.name.substringBefore('[')}[$i] > 0.0) {
                                 ${outShadowFac.name} *= 1.0 - smoothstep(0.0, 0.05, ${inNrmZLightSpace.name.substringBefore('[')}[$i]);
                             }

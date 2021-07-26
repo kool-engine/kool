@@ -1,18 +1,15 @@
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
 class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthShaderModel(cfg)) : ModeledShader(model) {
 
-    private var alphaMaskSampler: TextureSampler2d? = null
-    var alphaMask: Texture2d? = cfg.alphaMask
-        set(value) {
-            field = value
-            alphaMaskSampler?.texture = value
-        }
+    val alphaMask = Texture2dInput("tAlphaMask", cfg.alphaMask)
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.DISABLED
@@ -21,8 +18,7 @@ class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = default
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        alphaMaskSampler = model.findNode<Texture2dNode>("tAlphaMask")?.sampler
-        alphaMaskSampler?.let { it.texture = alphaMask }
+        alphaMask.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

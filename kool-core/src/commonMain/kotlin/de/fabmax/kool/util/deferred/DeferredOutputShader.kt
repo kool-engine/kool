@@ -1,27 +1,20 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.FloatInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Mesh
 
 class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: Texture2d, bloom: Texture2d?, private val depthMode: DepthCompareOp) :
     ModeledShader(outputModel(bloom != null)) {
 
-    private var uBloomStrength: Uniform1f? = null
-    var bloomStrength = 0.5f
-        set(value) {
-            field = value
-            uBloomStrength?.value = value
-        }
-
-    private var bloomSampler: TextureSampler2d? = null
-    var bloomMap: Texture2d? = bloom
-        set(value) {
-            field = value
-            bloomSampler?.texture = value
-        }
+    val bloomStrength = FloatInput("uBloomStrength", 0.5f)
+    val bloomMap = Texture2dInput("bloom", bloom)
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.depthTest = depthMode
@@ -29,14 +22,10 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        val textureSampler = model.findNode<Texture2dNode>("deferredPbrOutput")?.sampler
-        textureSampler?.texture = pbrOutput
-        val depthSampler = model.findNode<Texture2dNode>("deferredDepthOutput")?.sampler
-        depthSampler?.texture = depth
-        bloomSampler = model.findNode<Texture2dNode>("bloom")?.sampler
-        bloomSampler?.texture = bloomMap
-        uBloomStrength = model.findNode<PushConstantNode1f>("uBloomStrength")?.uniform
-        uBloomStrength?.value = bloomStrength
+        model.findNode<Texture2dNode>("deferredPbrOutput")?.sampler?.texture = pbrOutput
+        model.findNode<Texture2dNode>("deferredDepthOutput")?.sampler?.texture = depth
+        bloomStrength.connect(model)
+        bloomMap.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

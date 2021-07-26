@@ -164,7 +164,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
             val shader = pbrShader {
                 useAlbedoMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-                useOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+                useAmbientOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
                 useNormalMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
@@ -174,7 +174,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
                 onDispose += {
                     albedoMap?.dispose()
-                    occlusionMap?.dispose()
+                    aoMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
                 }

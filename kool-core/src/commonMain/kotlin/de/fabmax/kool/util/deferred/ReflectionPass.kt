@@ -6,6 +6,8 @@ import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.FloatInput
+import de.fabmax.kool.pipeline.shading.IntInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
@@ -21,24 +23,10 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             clearDepthTexture()
         }) {
 
-    private var uRoughThreshLow: PushConstantNode1f? = null
-    var roughnessThresholdLow = 0.5f
-        set(value) {
-            field = value
-            uRoughThreshLow?.uniform?.value = value
-        }
-    private var uRoughThreshHigh: PushConstantNode1f? = null
-    var roughnessThresholdHigh = 0.6f
-        set(value) {
-            field = value
-            uRoughThreshHigh?.uniform?.value = value
-        }
-    private var uMaxIterations: PushConstantNode1i? = null
-    var scrSpcReflectionIterations = 24
-        set(value) {
-            field = value
-            uMaxIterations?.uniform?.value = value
-        }
+    val roughnessThresholdLow = FloatInput("uRoughThreshLow", 0.5f)
+    val roughnessThresholdHigh = FloatInput("uRoughThreshHigh", 0.6f)
+    val scrSpcReflectionIterations = IntInput("uMaxIterations", 24)
+
     private val noiseTex = generateScrSpcReflectionNoiseTex()
 
     init {
@@ -88,12 +76,9 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
             val ssrNoiseSampler = model.findNode<Texture2dNode>("ssrNoiseTex")?.sampler
             ssrNoiseSampler?.let { it.texture = noiseTex }
 
-            uRoughThreshLow = model.findNode("uRoughThreshLow")
-            uRoughThreshLow?.uniform?.value = roughnessThresholdLow
-            uRoughThreshHigh = model.findNode("uRoughThreshHigh")
-            uRoughThreshHigh?.uniform?.value = roughnessThresholdHigh
-            uMaxIterations = model.findNode("uMaxIterations")
-            uMaxIterations?.uniform?.value = scrSpcReflectionIterations
+            roughnessThresholdLow.connect(model)
+            roughnessThresholdHigh.connect(model)
+            scrSpcReflectionIterations.connect(model)
         }
     }
 

@@ -189,14 +189,14 @@ class MultiLightDemo : DemoScene("Reflections") {
             }
         }
         section("Material") {
-            cycler("Color:", colorCycler) { color, _ ->modelShader?.albedo = color.linColor }
+            cycler("Color:", colorCycler) { color, _ -> modelShader?.albedo?.invoke(color.linColor) }
             sliderWithValue("Roughness:", roughness, 0f, 1f) {
                 roughness = value
-                modelShader?.roughness = value
+                modelShader?.roughness?.invoke(value)
             }
             sliderWithValue("Metallic:", metallic, 0f, 1f) {
                 metallic = value
-                modelShader?.metallic = value
+                modelShader?.metallic?.invoke(value)
             }
         }
         section("Scene") {

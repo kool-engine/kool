@@ -18,26 +18,8 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     private val isBlending = cfg.alphaMode is AlphaModeBlend
     private val lineWidth = cfg.lineWidth
 
-    private var uColor: PushConstantNodeColor? = null
-    var color: Color = cfg.color
-        set(value) {
-            field = value
-            uColor?.uniform?.value?.set(value)
-        }
-
-    private var colorSampler: TextureSampler2d? = null
-    var colorMap: Texture2d? = cfg.colorMap
-        set(value) {
-            field = value
-            colorSampler?.texture = value
-        }
-
-    private var colorCubeSampler: TextureSamplerCube? = null
-    var colorCubeMap: TextureCube? = cfg.colorCubeMap
-        set(value) {
-            field = value
-            colorCubeSampler?.texture = value
-        }
+    val color = ColorInput("uColor", cfg.color)
+    val colorMap = Texture2dInput("tColor", cfg.colorMap)
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
@@ -47,10 +29,8 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        uColor = model.findNode("uColor")
-        uColor?.uniform?.value?.set(color)
-        colorSampler = model.findNode<Texture2dNode>("tColor")?.sampler
-        colorSampler?.let { it.texture = colorMap }
+        color.connect(model)
+        colorMap.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

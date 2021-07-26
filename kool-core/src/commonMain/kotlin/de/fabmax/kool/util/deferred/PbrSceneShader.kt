@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
@@ -19,44 +20,17 @@ import de.fabmax.kool.util.ibl.EnvironmentMaps
 class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferredPbrModel(cfg)) : ModeledShader(model) {
 
     private var deferredCameraNode: DeferredCameraNode? = null
-
     var sceneCamera: Camera? = null
         set(value) {
             field = value
             deferredCameraNode?.sceneCam = value
         }
 
-    private var depthSampler: TextureSampler2d? = null
-    private var positionAoSampler: TextureSampler2d? = null
-    private var normalRoughnessSampler: TextureSampler2d? = null
-    private var albedoMetalSampler: TextureSampler2d? = null
-    private var emissiveSampler: TextureSampler2d? = null
-
-    var depth: Texture2d? = null
-        set(value) {
-            field = value
-            depthSampler?.texture = value
-        }
-    var positionAo: Texture2d? = null
-        set(value) {
-            field = value
-            positionAoSampler?.texture = value
-        }
-    var normalRoughness: Texture2d? = null
-        set(value) {
-            field = value
-            normalRoughnessSampler?.texture = value
-        }
-    var albedoMetal: Texture2d? = null
-        set(value) {
-            field = value
-            albedoMetalSampler?.texture = value
-        }
-    var emissive: Texture2d? = null
-        set(value) {
-            field = value
-            emissiveSampler?.texture = value
-        }
+    val depth = Texture2dInput("depth")
+    val positionAo = Texture2dInput("positionAo")
+    val normalRoughness = Texture2dInput("normalRoughness")
+    val albedoMetal = Texture2dInput("albedoMetal")
+    val emissive = Texture2dInput("emissive")
 
     // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
@@ -115,11 +89,11 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
 
     fun setMrtMaps(mrtPass: DeferredMrtPass) {
         sceneCamera = mrtPass.camera
-        depth = mrtPass.depthTexture
-        positionAo = mrtPass.positionAo
-        normalRoughness = mrtPass.normalRoughness
-        albedoMetal = mrtPass.albedoMetal
-        emissive = mrtPass.emissive
+        depth(mrtPass.depthTexture)
+        positionAo(mrtPass.positionAo)
+        normalRoughness(mrtPass.normalRoughness)
+        albedoMetal(mrtPass.albedoMetal)
+        emissive(mrtPass.emissive)
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
@@ -132,16 +106,11 @@ class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferre
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
 
-        depthSampler = model.findNode<Texture2dNode>("depth")?.sampler
-        depthSampler?.let { it.texture = depth }
-        positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
-        positionAoSampler?.let { it.texture = positionAo }
-        normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
-        normalRoughnessSampler?.let { it.texture = normalRoughness }
-        albedoMetalSampler = model.findNode<Texture2dNode>("albedoMetal")?.sampler
-        albedoMetalSampler?.let { it.texture = albedoMetal }
-        emissiveSampler = model.findNode<Texture2dNode>("emissive")?.sampler
-        emissiveSampler?.let { it.texture = emissive }
+        depth.connect(model)
+        positionAo.connect(model)
+        normalRoughness.connect(model)
+        albedoMetal.connect(model)
+        emissive.connect(model)
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)

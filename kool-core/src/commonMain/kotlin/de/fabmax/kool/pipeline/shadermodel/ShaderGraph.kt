@@ -27,6 +27,10 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
         return nodes.find { it.name == name && it is T } as T?
     }
 
+    fun findNodeByName(name: String): ShaderNode? {
+        return nodes.find { it.name == name}
+    }
+
     fun addStageOutput(output: ModelVar, isFlat: Boolean, locationInc: Int = 1): ShaderInterfaceIoVar {
         val location = mutOutputs.sumOf { it.locationInc }
         val ifVar = ShaderInterfaceIoVar(location, output, isFlat, locationInc)

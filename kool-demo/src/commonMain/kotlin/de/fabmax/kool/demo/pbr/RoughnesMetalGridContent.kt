@@ -52,7 +52,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
 
                     onClick += { _, _, _ ->
                         text = colors.next().name
-                        shaders.forEach { it.albedo = colors.current.linColor }
+                        shaders.forEach { it.albedo(colors.current.linColor) }
                     }
                 }
                 +matLabel
@@ -63,7 +63,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
 
                     onClick += { _, _, _ ->
                         matLabel.text = colors.prev().name
-                        shaders.forEach { it.albedo = colors.current.linColor }
+                        shaders.forEach { it.albedo(colors.current.linColor) }
                     }
                 }
                 +button("color-right") {
@@ -73,7 +73,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
 
                     onClick += { _, _, _ ->
                         matLabel.text = colors.next().name
-                        shaders.forEach { it.albedo = colors.current.linColor }
+                        shaders.forEach { it.albedo(colors.current.linColor) }
                     }
                 }
             }
@@ -106,9 +106,9 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.let {
             val pbrShader = it.shader as PbrShader
-            pbrShader.irradianceMap = envMaps.irradianceMap
-            pbrShader.reflectionMap = envMaps.reflectionMap
-            pbrShader.brdfLut = envMaps.brdfLut
+            pbrShader.irradianceMap(envMaps.irradianceMap)
+            pbrShader.reflectionMap(envMaps.reflectionMap)
+            pbrShader.brdfLut(envMaps.brdfLut)
         }
     }
 

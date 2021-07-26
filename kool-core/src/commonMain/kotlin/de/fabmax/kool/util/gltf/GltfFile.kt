@@ -583,7 +583,7 @@ data class GltfFile(
                             normalMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             roughnessMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             metallicMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
-                            occlusionMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
+                            aoMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                             displacementMap?.let { model.textures[it.name ?: "tex_${model.textures.size}"] = it }
                         }
 

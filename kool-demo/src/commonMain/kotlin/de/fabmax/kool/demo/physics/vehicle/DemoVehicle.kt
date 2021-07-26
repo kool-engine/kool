@@ -144,14 +144,14 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emissive = Color(25f, 0.25f, 0.125f)
+            brakeLightShader.emissive(Color(25f, 0.25f, 0.125f))
         } else {
-            brakeLightShader.emissive = Color.BLACK
+            brakeLightShader.emissive(Color.BLACK)
         }
         if (vehicle.isReverse) {
-            reverseLightShader.emissive = Color(25f, 25f, 25f)
+            reverseLightShader.emissive(Color(25f, 25f, 25f))
         } else {
-            reverseLightShader.emissive = Color.BLACK
+            reverseLightShader.emissive(Color.BLACK)
         }
 
         vehicleAudio.slip = 0f

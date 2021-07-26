@@ -196,10 +196,8 @@ class AoMapSampleNode(val aoMap: Texture2dNode, graph: ShaderGraph) : ShaderNode
     }
 }
 
-class NormalMapNode(val texture: Texture2dNode, graph: ShaderGraph) :
-        ShaderNode("normalMapping_${graph.nextNodeId}", graph) {
-
-    var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
+class NormalMapNode(graph: ShaderGraph) : ShaderNode("normalMapping_${graph.nextNodeId}", graph) {
+    var inNormalMapColor = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
     var inTangent = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
     var inStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
@@ -207,7 +205,7 @@ class NormalMapNode(val texture: Texture2dNode, graph: ShaderGraph) :
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inTexCoord, inNormal, inTangent, inStrength)
+        dependsOn(inNormalMapColor, inNormal, inTangent, inStrength)
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -220,12 +218,12 @@ class NormalMapNode(val texture: Texture2dNode, graph: ShaderGraph) :
                 tangent = normalize(tangent - dot(tangent, normal) * normal);
                 vec3 bitangent = cross(normal, tangent) * t.w;
                 mat3 tbn = mat3(tangent, bitangent, normal);
-                return normalize(mix(normal, tbn * bumpN, strength));
+                return normalize(mix(normal, tbn * normalize(bumpN), strength));
             }
         """)
 
         generator.appendMain("""
-            vec3 ${name}_bumpN = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.xyz * 2.0 - 1.0;
+            vec3 ${name}_bumpN = ${inNormalMapColor.ref3f()} * 2.0 - 1.0;
             ${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref4f()}, ${name}_bumpN, ${inStrength.ref1f()});
         """)
     }

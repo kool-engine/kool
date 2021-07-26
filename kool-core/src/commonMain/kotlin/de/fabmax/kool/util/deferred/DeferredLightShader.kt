@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
@@ -17,38 +18,16 @@ import de.fabmax.kool.util.logE
 class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
 
     private var deferredCameraNode: DeferredCameraNode? = null
-
     var sceneCamera: Camera? = cfg.sceneCamera
         set(value) {
             field = value
             deferredCameraNode?.sceneCam = value
         }
 
-    private var positionAoSampler: TextureSampler2d? = null
-    private var normalRoughnessSampler: TextureSampler2d? = null
-    private var albedoMetalSampler: TextureSampler2d? = null
-    private var emissiveMatSampler: TextureSampler2d? = null
-
-    var positionAo: Texture2d? = cfg.positionAo
-        set(value) {
-            field = value
-            positionAoSampler?.texture = value
-        }
-    var normalRoughness: Texture2d? = cfg.normalRoughness
-        set(value) {
-            field = value
-            normalRoughnessSampler?.texture = value
-        }
-    var albedoMetal: Texture2d? = cfg.albedoMetal
-        set(value) {
-            field = value
-            albedoMetalSampler?.texture = value
-        }
-    var emissiveMat: Texture2d? = cfg.emissiveMat ?: SingleColorTexture(Color.BLACK.withAlpha(0f))
-        set(value) {
-            field = value
-            emissiveMatSampler?.texture = value
-        }
+    val positionAo = Texture2dInput("positionAo", cfg.positionAo)
+    val normalRoughness = Texture2dInput("normalRoughness", cfg.normalRoughness)
+    val albedoMetal = Texture2dInput("albedoMetal", cfg.albedoMetal)
+    val emissiveMat = Texture2dInput("emissiveMat", cfg.emissiveMat ?: SingleColorTexture(Color.BLACK.withAlpha(0f)))
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.BLEND_ADDITIVE
@@ -60,14 +39,10 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
-        positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
-        positionAoSampler?.let { it.texture = positionAo }
-        normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
-        normalRoughnessSampler?.let { it.texture = normalRoughness }
-        albedoMetalSampler = model.findNode<Texture2dNode>("albedoMetal")?.sampler
-        albedoMetalSampler?.let { it.texture = albedoMetal }
-        emissiveMatSampler = model.findNode<Texture2dNode>("emissiveMat")?.sampler
-        emissiveMatSampler?.let { it.texture = emissiveMat }
+        positionAo.connect(model)
+        normalRoughness.connect(model)
+        albedoMetal.connect(model)
+        emissiveMat.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

@@ -58,8 +58,8 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         }
     var bloomMapSize = 0.5f
     var bloomStrength: Float
-        get() = outputShader.bloomStrength
-        set(value) { outputShader.bloomStrength = value }
+        get() = outputShader.bloomStrength.value
+        set(value) { outputShader.bloomStrength(value) }
     var bloomRadius: Float
         get() = bloomPass?.bloomRadius ?: 0f
         set(value) { bloomPass?.bloomRadius = value }
@@ -164,7 +164,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         reflectionDenoisePass?.isEnabled = isEnabled && isSsrEnabled
         pbrPass.sceneShader.scrSpcReflectionMap = if (isSsrEnabled) reflectionDenoisePass?.colorTexture else noSsrMap
         bloomPass?.isEnabled = isEnabled && isBloomEnabled
-        outputShader.bloomMap = if (isBloomEnabled) bloomPass?.bloomMap else noBloomMap
+        outputShader.bloomMap(if (isBloomEnabled) bloomPass?.bloomMap else noBloomMap)
     }
 
     private fun createShadowMapsFromSceneLights(): List<ShadowMap> {

@@ -14,7 +14,7 @@ class PbrMaterialConfig {
     var isNormalMapped = false
     var isRoughnessMapped = false
     var isMetallicMapped = false
-    var isOcclusionMapped = false
+    var isAoMapped = false
     var isDisplacementMapped = false
 
     var isInstanced = false
@@ -47,7 +47,7 @@ class PbrMaterialConfig {
     var metallicChannel = "r"
     var metallicTexName = "tMetallic"
     var occlusionChannel = "r"
-    var occlusionTexName = "tOcclusion"
+    var aoTexName = "tOcclusion"
 
     // initial shader attribute values
     var albedo = Color.GRAY
@@ -59,7 +59,7 @@ class PbrMaterialConfig {
 
     var normalStrength = 1f
     var displacementStrength = 0.1f
-    var occlusionStrength = 1f
+    var aoStrength = 1f
     var reflectionStrength = 1f
 
     var albedoMap: Texture2d? = null
@@ -68,7 +68,7 @@ class PbrMaterialConfig {
     var displacementMap: Texture2d? = null
     var roughnessMap: Texture2d? = null
     var metallicMap: Texture2d? = null
-    var occlusionMap: Texture2d? = null
+    var aoMap: Texture2d? = null
 
     var environmentMaps: EnvironmentMaps? = null
 
@@ -99,13 +99,13 @@ class PbrMaterialConfig {
         isNormalMapped = true
     }
 
-    fun useOcclusionMap(occlusionMap: String, occlusionStrength: Float = this.occlusionStrength) =
-            useOcclusionMap(Texture2d(occlusionMap), occlusionStrength)
+    fun useAmbientOcclusionMap(aoMap: String, aoStrength: Float = this.aoStrength) =
+            useAmbientOcclusionMap(Texture2d(aoMap), aoStrength)
 
-    fun useOcclusionMap(occlusionMap: Texture2d?, occlusionStrength: Float = this.occlusionStrength) {
-        this.occlusionMap = occlusionMap
-        this.occlusionStrength = occlusionStrength
-        isOcclusionMapped = true
+    fun useAmbientOcclusionMap(aoMap: Texture2d?, aoStrength: Float = this.aoStrength) {
+        this.aoMap = aoMap
+        this.aoStrength = aoStrength
+        isAoMapped = true
     }
 
     fun useDisplacementMap(displacementMap: String, displacementStrength: Float = this.displacementStrength) =
@@ -166,7 +166,7 @@ class PbrMaterialConfig {
                 isNormalMapped ||
                 isRoughnessMapped ||
                 isMetallicMapped ||
-                isOcclusionMapped ||
+                isAoMapped ||
                 isDisplacementMapped ||
                 isEmissiveMapped
     }

@@ -52,7 +52,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
                     value = 10f
 
                     onValueChanged += {
-                        shaders.forEach { it.roughness = value / 100f }
+                        shaders.forEach { it.roughness(value / 100f) }
                     }
                 }
                 y -= 35f
@@ -67,7 +67,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
                     value = 0f
 
                     onValueChanged += {
-                        shaders.forEach { it.metallic = value / 100f }
+                        shaders.forEach { it.metallic(value / 100f) }
                     }
                 }
             }
@@ -100,9 +100,9 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
         iblContent?.let {
             val pbrShader = it.shader as PbrShader
-            pbrShader.irradianceMap = envMaps.irradianceMap
-            pbrShader.reflectionMap = envMaps.reflectionMap
-            pbrShader.brdfLut = envMaps.brdfLut
+            pbrShader.irradianceMap(envMaps.irradianceMap)
+            pbrShader.reflectionMap(envMaps.reflectionMap)
+            pbrShader.brdfLut(envMaps.brdfLut)
         }
     }
 

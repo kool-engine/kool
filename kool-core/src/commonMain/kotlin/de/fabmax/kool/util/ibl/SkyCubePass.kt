@@ -69,7 +69,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             useStaticAlbedo(MdColor.BROWN toneLin 300)
             roughness = 0.8f
         }.apply {
-            ambient = nightSkyColor
+            ambient(nightSkyColor)
         }
 
         (drawNode as Group).apply {

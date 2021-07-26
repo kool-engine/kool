@@ -206,18 +206,18 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 useNormalMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
                 useMetallicMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-                useOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
+                useAmbientOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
             }
             val groundShader = DeferredPbrShader(pbrCfg)
             shader = groundShader
 
             onDispose += {
-                groundShader.albedoMap?.dispose()
-                groundShader.occlusionMap?.dispose()
-                groundShader.normalMap?.dispose()
-                groundShader.metallicMap?.dispose()
-                groundShader.roughnessMap?.dispose()
-                groundShader.displacementMap?.dispose()
+                groundShader.albedoMap.dispose()
+                groundShader.aoMap.dispose()
+                groundShader.normalMap.dispose()
+                groundShader.metallicMap.dispose()
+                groundShader.roughnessMap.dispose()
+                groundShader.displacementMap.dispose()
             }
         }
     }
@@ -320,8 +320,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 objects.isVisible = isEnabled
                 updateLights(true)
             }
-            sliderWithValue("Object Roughness:", objectShader.roughness, 0f, 1f, 2) {
-                objectShader.roughness = value
+            sliderWithValue("Object Roughness:", objectShader.roughness.value, 0f, 1f, 2) {
+                objectShader.roughness(value)
             }
         }
     }

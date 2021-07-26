@@ -84,7 +84,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrMaterialConfig().apply {
                 useAlbedoMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg")
-                useOcclusionMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
+                useAmbientOcclusionMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
                 useNormalMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg")
                 useImageBasedLighting(envMaps)
@@ -94,10 +94,10 @@ class TreeDemo : DemoScene("Procedural Tree") {
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             shader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 onDispose += {
-                    albedoMap?.dispose()
-                    occlusionMap?.dispose()
-                    normalMap?.dispose()
-                    roughnessMap?.dispose()
+                    albedoMap.dispose()
+                    aoMap.dispose()
+                    normalMap.dispose()
+                    roughnessMap.dispose()
                 }
                 onPipelineCreated += { _, _, _ ->
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
@@ -133,7 +133,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
             // custom tree shader model applies a (pretty crappy) vertex shader animation emulating wind
             shader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 onDispose += {
-                    albedoMap!!.dispose()
+                    albedoMap.dispose()
                 }
                 onPipelineCreated += { _, _, _ ->
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
@@ -289,7 +289,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 useAlbedoMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
                 useNormalMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg")
                 useRoughnessMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")
-                useOcclusionMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
+                useAmbientOcclusionMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
                 useDisplacementMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
                 useImageBasedLighting(envMaps)
                 this.shadowMaps.addAll(shadowMaps)
@@ -298,7 +298,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                     albedoMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
-                    occlusionMap?.dispose()
+                    aoMap?.dispose()
                     displacementMap?.dispose()
                 }
             }
