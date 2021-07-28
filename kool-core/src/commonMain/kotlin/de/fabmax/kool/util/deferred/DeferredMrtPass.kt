@@ -1,11 +1,8 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -18,7 +15,14 @@ class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
             setDynamicSize()
             setDepthTexture(false)
             val formats = if (withEmissive) FORMATS_DEFERRED_EMISSIVE else FORMATS_DEFERRED
-            formats.forEach { addColorTexture(it) }
+            formats.forEach { fmt ->
+                addColorTexture {
+                    colorFormat = fmt
+                    // don't do any interpolation on output maps, or bad things will happen (especially for positions)
+                    minFilter = FilterMethod.NEAREST
+                    magFilter = FilterMethod.NEAREST
+                }
+            }
         }) {
 
     val content = drawNode as Group

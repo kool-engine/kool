@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.UniformMat4fv
 import kotlin.math.min
 
-class Vec3TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("vec3MatTransform", graph) {
+class Vec3TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("vec3MatTransform_${graph.nextNodeId}", graph) {
     var inMat: ShaderNodeIoVar? = null
     var inVec: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     val outVec3 = ShaderNodeIoVar(ModelVar3f("vec3MatTransform${nodeId}_out"), this)
@@ -20,13 +20,21 @@ class Vec3TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boo
 
     override fun generateCode(generator: CodeGenerator) {
         val mat = inMat ?: throw KoolException("Matrix input not set")
-        val input = if (inVec.variable.type == GlslType.VEC_4F) { inVec.ref4f() } else { "vec4(${inVec.ref3f()}, $w)" }
         val sign = if (invert) { "-" } else { "" }
-        generator.appendMain("${outVec3.declare()} = $sign(${mat.refAsType(GlslType.MAT_4F)} * $input).xyz;")
+        when (mat.variable.type) {
+            GlslType.MAT_4F -> {
+                val input = if (inVec.variable.type == GlslType.VEC_4F) { inVec.ref4f() } else { "vec4(${inVec.ref3f()}, $w)" }
+                generator.appendMain("${outVec3.declare()} = $sign(${mat.refAsType(GlslType.MAT_4F)} * $input).xyz;")
+            }
+            GlslType.MAT_3F -> {
+                generator.appendMain("${outVec3.declare()} = $sign(${mat.refAsType(GlslType.MAT_3F)} * ${inVec.ref3f()});")
+            }
+            else -> throw KoolException("Transform matrix must be either Mat3f or Mat4f")
+        }
     }
 }
 
-class Vec4TransformNode(graph: ShaderGraph, var w: Float = 1.0f) : ShaderNode("vec4MatTransform", graph) {
+class Vec4TransformNode(graph: ShaderGraph, var w: Float = 1.0f) : ShaderNode("vec4MatTransform_${graph.nextNodeId}", graph) {
     var inMat: ShaderNodeIoVar? = null
     var inVec: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     val outVec4 = ShaderNodeIoVar(ModelVar4f("vec4MatTransform${nodeId}_out"), this)

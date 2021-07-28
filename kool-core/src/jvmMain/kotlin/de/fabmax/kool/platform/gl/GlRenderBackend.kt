@@ -1,12 +1,15 @@
 package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.DesktopImpl
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logE
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic
 import org.lwjgl.opengl.GL.createCapabilities
@@ -38,6 +41,9 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
     internal val queueRenderer = QueueRendererGl(this, ctx)
     internal val afterRenderActions = mutableListOf<() -> Unit>()
+
+    private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
+    private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
         // configure GLFW
@@ -116,13 +122,8 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                for (j in scene.offscreenPasses.indices) {
-                    val pass = scene.offscreenPasses[j]
-                    if (pass.isEnabled) {
-                        drawOffscreen(pass)
-                        scene.offscreenPasses[j].afterDraw(ctx)
-                    }
-                }
+                doOffscreenPasses(scene, ctx)
+
                 queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
                 scene.mainRenderPass.afterDraw(ctx)
             }
@@ -134,6 +135,44 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
         // swap the color buffers
         glfwSwapBuffers(glfwWindowHandle)
+    }
+
+    private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
+        for (i in scene.offscreenPasses.indices) {
+            val rp = scene.offscreenPasses[i]
+            if (rp.isEnabled) {
+                openRenderPasses += rp
+            }
+        }
+        doneRenderPasses.clear()
+        while (openRenderPasses.isNotEmpty()) {
+            var anyDrawn = false
+            for (i in openRenderPasses.indices) {
+                val pass = openRenderPasses[i]
+                var skip = false
+                for (j in pass.dependencies.indices) {
+                    val dep = pass.dependencies[j]
+                    if (dep !in doneRenderPasses) {
+                        skip = true
+                        break
+                    }
+                }
+                if (!skip) {
+                    anyDrawn = true
+                    openRenderPasses -= pass
+                    doneRenderPasses += pass
+                    drawOffscreen(pass)
+                    pass.afterDraw(ctx)
+                    break
+                }
+            }
+            if (!anyDrawn) {
+                logE { "Failed to render all offscreen passes, remaining:" }
+                openRenderPasses.forEach { logE { "  ${it.name}" } }
+                openRenderPasses.clear()
+                break
+            }
+        }
     }
 
     private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {

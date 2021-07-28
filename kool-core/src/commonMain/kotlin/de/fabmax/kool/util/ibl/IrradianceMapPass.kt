@@ -123,7 +123,12 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     }
 
     companion object {
-        fun irradianceMapFromHdri(scene: Scene, hdri: Texture2d, size: Int = 16) = IrradianceMapPass(scene, hdri, null, size)
-        fun irradianceMapFromCube(scene: Scene, cube: TextureCube, size: Int = 16) = IrradianceMapPass(scene, null, cube, size)
+        fun irradianceMap(scene: Scene, envTex: Texture, size: Int = 16): IrradianceMapPass {
+            return when (envTex) {
+                is Texture2d -> IrradianceMapPass(scene, envTex, null, size)
+                is TextureCube -> IrradianceMapPass(scene, null, envTex, size)
+                else -> throw IllegalArgumentException("Supplied envTex must be either Texture2d (HDRI) or TextureCube")
+            }
+        }
     }
 }

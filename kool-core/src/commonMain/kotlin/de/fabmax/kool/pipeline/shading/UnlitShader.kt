@@ -21,6 +21,15 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     val color = ColorInput("uColor", cfg.color)
     val colorMap = Texture2dInput("tColor", cfg.colorMap)
 
+    init {
+        cfg.onPipelineSetup?.let {
+            onPipelineSetup += { pb, _, _ -> this.it(pb) }
+        }
+        cfg.onPipelineCreated?.let {
+            onPipelineCreated += { _, _, _ -> this.it() }
+        }
+    }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
@@ -144,6 +153,9 @@ class UnlitMaterialConfig {
     var color = Color.GRAY
     var colorMap: Texture2d? = null
     var colorCubeMap: TextureCube? = null
+
+    var onPipelineSetup: (UnlitShader.(Pipeline.Builder) -> Unit)? = null
+    var onPipelineCreated: (UnlitShader.() -> Unit)? = null
 
     fun useStaticColor(color: Color) {
         colorSource = Albedo.STATIC_ALBEDO

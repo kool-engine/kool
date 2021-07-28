@@ -168,7 +168,12 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
     }
 
     companion object {
-        fun reflectionMapFromHdri(scene: Scene, hdri: Texture2d, size: Int = 256) = ReflectionMapPass(scene, hdri, null, size)
-        fun reflectionMapFromCube(scene: Scene, cube: TextureCube, size: Int = 256) = ReflectionMapPass(scene, null, cube, size)
+        fun reflectionMap(scene: Scene, envTex: Texture, size: Int = 256): ReflectionMapPass {
+            return when (envTex) {
+                is Texture2d -> ReflectionMapPass(scene, envTex, null, size)
+                is TextureCube -> ReflectionMapPass(scene, null, envTex, size)
+                else -> throw IllegalArgumentException("Supplied envTex must be either Texture2d (HDRI) or TextureCube")
+            }
+        }
     }
 }

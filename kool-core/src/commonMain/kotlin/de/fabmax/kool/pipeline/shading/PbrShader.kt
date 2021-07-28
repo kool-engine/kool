@@ -59,6 +59,15 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
 
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
+    init{
+        cfg.onPipelineSetup?.let {
+            onPipelineSetup += { pb, _, _ -> this.it(pb) }
+        }
+        cfg.onPipelineCreated?.let {
+            onPipelineCreated += { _, _, _ -> this.it() }
+        }
+    }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED

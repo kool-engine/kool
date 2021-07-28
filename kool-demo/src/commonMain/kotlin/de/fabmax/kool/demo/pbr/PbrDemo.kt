@@ -119,7 +119,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         loadHdri(idx, ctx) { tex ->
             envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
-            (skybox.shader as Skybox.SkyboxCubeShader).environmentMap = envMaps.reflectionMap
+            (skybox.shader as Skybox.SkyboxCubeShader).environmentMapTex(envMaps.reflectionMap)
             pbrContentCycler.forEach { it.updateEnvironmentMap(envMaps) }
         }
     }

@@ -100,6 +100,36 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
     }
 }
 
+class UniformMat3fNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
+    val uniform = UniformMat3f(name)
+    val output = ShaderNodeIoVar(ModelVarMat3f(name), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        shaderGraph.descriptorSet.apply {
+            uniformBuffer(name, shaderGraph.stage) {
+                stages += graph.stage
+                +{ uniform }
+            }
+        }
+    }
+}
+
+class UniformMat4fNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
+    val uniform = UniformMat4f(name)
+    val output = ShaderNodeIoVar(ModelVarMat3f(name), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        shaderGraph.descriptorSet.apply {
+            uniformBuffer(name, shaderGraph.stage) {
+                stages += graph.stage
+                +{ uniform }
+            }
+        }
+    }
+}
+
 class Texture1dNode(graph: ShaderGraph, name: String) : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
     lateinit var sampler: TextureSampler1d

@@ -8,7 +8,7 @@ import kotlin.math.min
  * @author fabmax
  */
 
-class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
+class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N, toLinear: Boolean = false) {
 
     private val gradient = Array(n) { MutableColor() }
 
@@ -35,6 +35,9 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N) {
             }
             val w0 = 1f - (p - p0.first) / (p1.first - p0.first)
             gradient[i].set(p0.second).scale(w0).add(p1.second, 1f - w0)
+            if (toLinear) {
+                gradient[i] = gradient[i].toLinear()
+            }
         }
     }
 

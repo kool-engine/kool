@@ -30,6 +30,15 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
 
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
+    init{
+        cfg.onPipelineSetup?.let {
+            onPipelineSetup += { pb, _, _ -> this.it(pb) }
+        }
+        cfg.onPipelineCreated?.let {
+            onPipelineCreated += { _, _, _ -> this.it() }
+        }
+    }
+
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
@@ -164,6 +173,9 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
 
         var colorMap: Texture2d? = null
         var normalMap: Texture2d? = null
+
+        var onPipelineSetup: (PhongShader.(Pipeline.Builder) -> Unit)? = null
+        var onPipelineCreated: (PhongShader.() -> Unit)? = null
 
         fun useColorMap(albedoMap: String) = useColorMap(Texture2d(albedoMap))
 

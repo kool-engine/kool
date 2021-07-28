@@ -245,3 +245,33 @@ class Vec4iInput(uniformName: String, initial: Vec4i = Vec4i.ZERO) : ShaderInput
         node?.uniform?.value?.set(value)
     }
 }
+
+class Mat3fInput(uniformName: String, initial: Mat3f? = null) : ShaderInput<UniformMat3fNode>(uniformName) {
+    private val backupField = Mat3f().apply { initial?.let { set(it) } }
+
+    val value: Mat3f
+        get() = node?.uniform?.value ?: backupField
+
+    operator fun invoke(value: Mat3f) {
+        this.value.set(value)
+    }
+
+    override fun onConnect() {
+        node?.uniform?.value?.set(backupField)
+    }
+}
+
+class Mat4fInput(uniformName: String, initial: Mat4f? = null) : ShaderInput<UniformMat4fNode>(uniformName) {
+    private val backupField = Mat4f().apply { initial?.let { set(it) } }
+
+    val value: Mat4f
+        get() = node?.uniform?.value ?: backupField
+
+    operator fun invoke(value: Mat4f) {
+        this.value.set(value)
+    }
+
+    override fun onConnect() {
+        node?.uniform?.value?.set(backupField)
+    }
+}

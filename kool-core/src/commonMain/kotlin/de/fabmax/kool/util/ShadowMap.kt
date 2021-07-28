@@ -41,6 +41,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
     private val shadowCamBounds = BoundingBox()
     private val tmpVec = MutableVec3f()
 
+    var shadowBoundsMod: ((BoundingBox) -> Unit)? = null
+
     override var isShadowMapEnabled: Boolean
         get() = isEnabled
         set(value) { isEnabled = value }
@@ -136,6 +138,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
             cam.view.transform(farSceneCamPlane)
             shadowCamBounds.setPlanes(nearSceneCamPlane, farSceneCamPlane)
         }
+
+        shadowBoundsMod?.invoke(shadowCamBounds)
 
         cam.left = shadowCamBounds.min.x
         cam.right = shadowCamBounds.max.x

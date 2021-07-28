@@ -2,7 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.Mat3fInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
+import de.fabmax.kool.pipeline.shading.TextureCubeInput
 
 object Skybox {
 
@@ -38,12 +41,8 @@ object Skybox {
     class SkyboxCubeShader(environmentMap: TextureCube, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
             ModeledShader(skyboxCubeShaderModel(texLod, hdriInput, hdrOutput)) {
 
-        private var cubeMapSampler: TextureSamplerCube? = null
-        var environmentMap: TextureCube? = environmentMap
-            set(value) {
-                field = value
-                cubeMapSampler?.texture = value
-            }
+        val environmentMapTex = TextureCubeInput("skyboxCube", environmentMap)
+        val orientation = Mat3fInput("skyboxOri")
 
         init {
             onPipelineSetup += { builder, _, _ ->
@@ -51,8 +50,8 @@ object Skybox {
                 builder.depthTest = DepthCompareOp.LESS_EQUAL
             }
             onPipelineCreated += { _, _, _ ->
-                cubeMapSampler = model.findNode<TextureCubeNode>("skyboxCube")?.sampler
-                cubeMapSampler?.let { it.texture = environmentMap }
+                environmentMapTex.connect(model)
+                orientation.connect(model)
             }
         }
 
@@ -63,7 +62,9 @@ object Skybox {
                 vertexStage {
                     val mvp = mvpNode()
                     val worldPos = vec3TransformNode(attrPositions().output, mvp.outModelMat, 1f)
-                    ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.outVec3)
+                    val orientation = uniformMat3fNode("skyboxOri").output
+                    val oriented = vec3TransformNode(worldPos.outVec3, orientation).outVec3
+                    ifLocalPos = stageInterfaceNode("ifLocalPos", oriented)
                     positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
                 }
                 fragmentStage {
@@ -85,12 +86,7 @@ object Skybox {
     class SkyboxSphereShader(environmentMap: Texture2d, texLod: Float = 0f, hdriInput: Boolean, hdrOutput: Boolean) :
             ModeledShader(skyboxSphereShaderModel(texLod, hdriInput, hdrOutput)) {
 
-        private var textureSampler: TextureSampler2d? = null
-        var environmentMap: Texture2d? = environmentMap
-            set(value) {
-                field = value
-                textureSampler?.texture = value
-            }
+        val environmentMapTex = Texture2dInput("skyboxCube", environmentMap)
 
         init {
             onPipelineSetup += { builder, _, _ ->
@@ -98,8 +94,7 @@ object Skybox {
                 builder.depthTest = DepthCompareOp.LESS_EQUAL
             }
             onPipelineCreated += { _, _, _ ->
-                textureSampler = model.findNode<Texture2dNode>("skyboxSphere")?.sampler
-                textureSampler?.let { it.texture = environmentMap }
+                environmentMapTex.connect(model)
             }
         }
 

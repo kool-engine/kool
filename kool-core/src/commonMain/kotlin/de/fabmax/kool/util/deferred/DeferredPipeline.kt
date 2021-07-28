@@ -85,12 +85,12 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         sceneShader.setMrtMaps(mrtPass)
 
         pbrPass = PbrLightingPass(scene, mrtPass, sceneShader)
-        pbrPass.sceneShader.scrSpcAmbientOcclusionMap = aoPipeline?.aoMap
+        pbrPass.sceneShader.scrSpcAmbientOcclusionMap(aoPipeline?.aoMap)
 
         if (cfg.isWithScreenSpaceReflections) {
             reflectionPass = ReflectionPass(mrtPass, pbrPass, cfg.baseReflectionStep)
             reflectionDenoisePass = ReflectionDenoisePass(reflectionPass, mrtPass.positionAo)
-            pbrPass.sceneShader.scrSpcReflectionMap = reflectionDenoisePass.colorTexture
+            pbrPass.sceneShader.scrSpcReflectionMap(reflectionDenoisePass.colorTexture)
             scene.addOffscreenPass(reflectionPass)
             scene.addOffscreenPass(reflectionDenoisePass)
         } else {
@@ -162,7 +162,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         pbrPass.isEnabled = isEnabled
         reflectionPass?.isEnabled = isEnabled && isSsrEnabled
         reflectionDenoisePass?.isEnabled = isEnabled && isSsrEnabled
-        pbrPass.sceneShader.scrSpcReflectionMap = if (isSsrEnabled) reflectionDenoisePass?.colorTexture else noSsrMap
+        pbrPass.sceneShader.scrSpcReflectionMap(if (isSsrEnabled) reflectionDenoisePass?.colorTexture else noSsrMap)
         bloomPass?.isEnabled = isEnabled && isBloomEnabled
         outputShader.bloomMap(if (isBloomEnabled) bloomPass?.bloomMap else noBloomMap)
     }

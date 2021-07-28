@@ -10,7 +10,9 @@ import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.khronos.webgl.ArrayBufferView
@@ -48,6 +50,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     private var animationMillis = 0.0
 
     val glCapabilities = GlCapabilities()
+
+    private val openRenderPasses = mutableListOf<OffscreenRenderPass>()
+    private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
@@ -127,12 +132,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         for (i in scenes.indices) {
             val scene = scenes[i]
             if (scene.isVisible) {
-                for (j in scene.offscreenPasses.indices) {
-                    if (scene.offscreenPasses[j].isEnabled) {
-                        drawOffscreen(scene.offscreenPasses[j])
-                        scene.offscreenPasses[j].afterDraw(this)
-                    }
-                }
+                doOffscreenPasses(scene, this)
                 queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
                 scene.mainRenderPass.afterDraw(this)
             }
@@ -141,6 +141,44 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         if (afterRenderActions.isNotEmpty()) {
             afterRenderActions.forEach { it() }
             afterRenderActions.clear()
+        }
+    }
+
+    private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
+        for (i in scene.offscreenPasses.indices) {
+            val rp = scene.offscreenPasses[i]
+            if (rp.isEnabled) {
+                openRenderPasses += rp
+            }
+        }
+        doneRenderPasses.clear()
+        while (openRenderPasses.isNotEmpty()) {
+            var anyDrawn = false
+            for (i in openRenderPasses.indices) {
+                val pass = openRenderPasses[i]
+                var skip = false
+                for (j in pass.dependencies.indices) {
+                    val dep = pass.dependencies[j]
+                    if (dep !in doneRenderPasses) {
+                        skip = true
+                        break
+                    }
+                }
+                if (!skip) {
+                    anyDrawn = true
+                    openRenderPasses -= pass
+                    doneRenderPasses += pass
+                    drawOffscreen(pass)
+                    pass.afterDraw(ctx)
+                    break
+                }
+            }
+            if (!anyDrawn) {
+                logE { "Failed to render all offscreen passes, remaining:" }
+                openRenderPasses.forEach { logE { "  ${it.name}" } }
+                openRenderPasses.clear()
+                break
+            }
         }
     }
 

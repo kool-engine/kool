@@ -20,16 +20,16 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     val brightness: Float
         get() = 0.299f * r + 0.587f * g + 0.114f * b
 
-    fun mix(other: Color, weight: Float): MutableColor {
-        return mix(other, weight, MutableColor())
-    }
-
-    fun mix(other: Color, weight: Float, result: MutableColor): MutableColor {
+    fun mix(other: Color, weight: Float, result: MutableColor = MutableColor()): MutableColor {
         result.r = other.r * weight + r * (1f - weight)
         result.g = other.g * weight + g * (1f - weight)
         result.b = other.b * weight + b * (1f - weight)
         result.a = other.a * weight + a * (1f - weight)
         return result
+    }
+
+    fun scaleRgb(factor : Float, result: MutableColor = MutableColor()): MutableColor {
+        return result.set(this).scaleRgb(factor)
     }
 
     fun withAlpha(alpha: Float): MutableColor {
@@ -44,11 +44,7 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
     fun toSrgb(result: MutableColor): MutableColor = gamma(1f / 2.2f, result)
 
-    fun gamma(gamma: Float): MutableColor {
-        return gamma(gamma, MutableColor())
-    }
-
-    fun gamma(gamma: Float, result: MutableColor): MutableColor {
+    fun gamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 

@@ -44,11 +44,11 @@ class RaySphereIntersectionNode(graph: ShaderGraph) : ShaderNode("raySphereInter
 }
 
 class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : ShaderNode("atmosphereNode", graph) {
-    var inSceneColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inSceneColor = ShaderNodeIoVar(ModelVar4fConst(Color.BLACK))
+    var inSkyColor = ShaderNodeIoVar(ModelVar4fConst(Color.BLACK))
     var inSceneDepth = ShaderNodeIoVar(ModelVar1fConst(0f))
-    var inScenePos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inSkyColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     var inViewDepth = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inScenePos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inCamPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inLookDir = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
 
@@ -63,6 +63,8 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
     val uSunColor = UniformColor("uSunColor")
 
     val outColor = ShaderNodeIoVar(ModelVar4f("outColor"), this)
+
+    var numScatterSamples = 10
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -96,8 +98,6 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        val numScatterSamples = 10
-
         generator.appendFunction("phaseFunRayleigh", """
                 vec3 phaseFunRayleigh(float cosTheta) {
                     //vec3 phase = vec3(1.0 + clamp(cosTheta, 0.0, 1.0));
@@ -210,8 +210,6 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
                     vec3 atmoHitPt = camOri + nrmLookDir * dToAtmo;
                     vec3 light = scatterLight(atmoHitPt, nrmLookDir, dThroughAtmo, $uDirToSun);
                     $outColor.rgb += light;
-                    
-                    //$outColor = vec4(dThroughAtmo / 20.0, dToAtmo, 0.0, 1.0);
                 }
             """)
     }

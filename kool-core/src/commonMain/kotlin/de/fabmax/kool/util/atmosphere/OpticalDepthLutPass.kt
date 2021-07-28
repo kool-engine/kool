@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.mesh
 
-class OpticalDepthLutPass :
+class OpticalDepthLutPass(densityFun: String = DEFAULT_DENSITY_FUN) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "OpticalDepthLutPass"
             setSize(LUT_SIZE_X, LUT_SIZE_Y)
@@ -67,7 +67,7 @@ class OpticalDepthLutPass :
                         positionOutput = simpleVertexPositionNode().outVec4
                     }
                     fragmentStage {
-                        val lutNd = addNode(OpticalDepthLutNode(stage)).apply {
+                        val lutNd = addNode(OpticalDepthLutNode(densityFun, stage)).apply {
                             inTexCoords = ifTexCoords.output
                         }
                         colorOutput(lutNd.outColor)
@@ -104,9 +104,18 @@ class OpticalDepthLutPass :
     companion object {
         const val LUT_SIZE_X = 512
         const val LUT_SIZE_Y = 512
+
+        const val DEFAULT_DENSITY_FUN = """
+            float normalizedHeight = clamp(altitude / (atmosphereRadius - surfaceRadius), 0.0, 1.0);
+            float x = normalizedHeight * 10.0;
+            float f = 0.3 * (2.0 + 3.0 * x * exp(-x)) * (10.0 - x) / 10.0;
+            float h = 1.0 - f;
+            
+            return exp(-clamp(h, 0.0, 1.0) * densityFalloff) * (1.0 - smoothstep(0.0, 1.0, normalizedHeight));
+        """
     }
 
-    private class OpticalDepthLutNode(graph: ShaderGraph) : ShaderNode("opticalDepthLut", graph) {
+    private class OpticalDepthLutNode(val densityFun: String, graph: ShaderGraph) : ShaderNode("opticalDepthLut", graph) {
         var inTexCoords = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
         val outColor = ShaderNodeIoVar(ModelVar4f("brdfLut_outColor"), this)
 
@@ -152,21 +161,11 @@ class OpticalDepthLutPass :
 
             generator.appendFunction("densityAtAltitude", """
                 float densityAtAltitude(float altitude) {
-                    float nH = clamp(altitude / ($uAtmosphereRadius - $uSurfaceRadius), 0.0, 1.0);
-
-                    // exponential density
-                    //float h = nH;
-
-                    // exponential density with cut-off
-                    //float cutOff = 0.2;
-                    //float h = nH * (1.0 - cutOff) + cutOff;
+                    float atmosphereRadius = $uAtmosphereRadius;
+                    float surfaceRadius = $uSurfaceRadius;
+                    float densityFalloff = $uDensityFalloff;
                     
-                    // reduced density at low altitudes
-                    float x = nH * 10.0;
-                    float f = 0.3 * (2.0 + 3.0 * x * exp(-x)) * (10.0 - x) / 10.0;
-                    float h = 1.0 - f;
-                    
-                    return exp(-clamp(h, 0.0, 1.0) * $uDensityFalloff) * (1.0 - smoothstep(0.0, 1.0, nH));
+                    $densityFun
                 }
             """)
 

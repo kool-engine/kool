@@ -102,7 +102,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             pbrSceneShader = makeDeferredPbrShader(this)
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
-        deferredPipeline.pbrPass.sceneShader.ambient = Color(0.05f, 0.05f, 0.05f).toLinear()
+        deferredPipeline.pbrPass.sceneShader.ambient(Color(0.05f, 0.05f, 0.05f).toLinear())
 
         atmoShader.apply {
             opticalDepthLut(opticalDepthLutPass.colorTexture)

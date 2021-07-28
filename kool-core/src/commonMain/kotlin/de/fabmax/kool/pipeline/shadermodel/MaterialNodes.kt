@@ -96,6 +96,8 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
     var inReflectionWeight = ShaderNodeIoVar(ModelVar1fConst(0f))
     var inAlwaysLit = ShaderNodeIoVar(ModelVar1iConst(0))
 
+    var inReflectionMapOrientation: ShaderNodeIoVar? = null
+
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
@@ -105,6 +107,7 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
         dependsOn(inFragToLight, inRadiance, inIrradiance, inReflectionColor, inReflectionWeight)
         dependsOn(reflectionMap)
         dependsOn(brdfLut)
+        inReflectionMapOrientation?.let { dependsOn(it) }
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -225,6 +228,10 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
     }
 
     private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: TextureCubeNode, brdfLut: Texture2dNode) {
+        var orientedR = ""
+        inReflectionMapOrientation?.let {
+            orientedR = "R = $inReflectionMapOrientation * R;"
+        }
         generator.appendMain("""
             vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
             vec3 kS = F;
@@ -234,8 +241,9 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
 
             // sample reflection map
             vec3 R = reflect(-V, N);
+            $orientedR
             const float MAX_REFLECTION_LOD = 6.0;
-            vec3 prefilteredColor = ${generator.sampleTexture2d(reflectionMap.name, "R", "rough * MAX_REFLECTION_LOD")}.rgb;
+            vec3 prefilteredColor = ${generator.sampleTextureCube(reflectionMap.name, "R", "rough * MAX_REFLECTION_LOD")}.rgb;
             prefilteredColor = mix(prefilteredColor, clamp(${inReflectionColor.ref3f()}, 0.0, 5.0), ${inReflectionWeight.ref1f()});
 
             vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
@@ -244,7 +252,7 @@ class PbrMaterialNode(val reflectionMap: TextureCubeNode?, val brdfLut: Texture2
             vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
             vec3 reflection = specular * ${inAmbientOccl.ref1f()} * ${inReflectionStrength.ref1f()};
             vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a + reflection;
-            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
+            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);;
         """)
     }
 }

@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -75,6 +76,9 @@ class PbrMaterialConfig {
     var scrSpcAmbientOcclusionMap: Texture2d? = null
     var refractionColorMap: Texture2d? = null
     var refractionDepthMap: Texture2d? = null
+
+    var onPipelineSetup: (PbrShader.(Pipeline.Builder) -> Unit)? = null
+    var onPipelineCreated: (PbrShader.() -> Unit)? = null
 
     fun useStaticAlbedo(albedo: Color) {
         albedoSource = Albedo.STATIC_ALBEDO

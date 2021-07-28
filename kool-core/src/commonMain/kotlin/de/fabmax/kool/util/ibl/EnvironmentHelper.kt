@@ -39,26 +39,12 @@ object EnvironmentHelper {
     suspend fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, ctx: KoolContext, autoDispose: Boolean = true): EnvironmentMaps {
         val gradientTex = GradientCubeGenerator.makeGradientTex(gradient, ctx)
         val gradientPass = GradientCubeGenerator(scene, gradientTex, ctx)
-        val irrMapPass = IrradianceMapPass.irradianceMapFromCube(scene, gradientPass.colorTexture!!)
-        val reflMapPass = ReflectionMapPass.reflectionMapFromCube(scene, gradientPass.colorTexture!!)
-        val brdfLutPass = BrdfLutPass(scene)
-
-        irrMapPass.dependsOn(gradientPass)
-        reflMapPass.dependsOn(gradientPass)
-
-        val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor())
         if (autoDispose) {
             scene.onDispose += {
-                maps.dispose()
+                gradientTex.dispose()
             }
         }
-
-        scene.addOffscreenPass(gradientPass)
-        scene.addOffscreenPass(irrMapPass)
-        scene.addOffscreenPass(reflMapPass)
-        scene.addOffscreenPass(brdfLutPass)
-
-        return maps
+        return renderPassEnvironment(scene, gradientPass, autoDispose)
     }
 
     suspend fun hdriEnvironment(scene: Scene, hdriPath: String, assetManager: AssetManager, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
@@ -69,29 +55,40 @@ object EnvironmentHelper {
 
     fun hdriEnvironment(scene: Scene, hdri: Texture2d, autoDispose: Boolean = true, brightness: Float = 1f): EnvironmentMaps {
         val rgbeDecoder = RgbeDecoder(scene, hdri, brightness)
-        val irrMapPass = IrradianceMapPass.irradianceMapFromHdri(scene, rgbeDecoder.colorTexture!!)
-        val reflMapPass = ReflectionMapPass.reflectionMapFromHdri(scene, rgbeDecoder.colorTexture!!)
+        if (autoDispose) {
+            scene.onDispose += {
+                hdri.dispose()
+            }
+        }
+        return renderPassEnvironment(scene, rgbeDecoder, autoDispose)
+    }
+
+    fun renderPassEnvironment(scene: Scene, renderPass: OffscreenRenderPass, autoDispose: Boolean = true): EnvironmentMaps {
+        val tex = when (renderPass) {
+            is OffscreenRenderPassCube -> renderPass.colorTexture!!
+            is OffscreenRenderPass2d -> renderPass.colorTexture!!
+            else -> throw IllegalArgumentException("Supplied OffscreenRenderPass must be OffscreenRenderPassCube or OffscreenRenderPass2d")
+        }
+        val irrMapPass = IrradianceMapPass.irradianceMap(scene, tex)
+        val reflMapPass = ReflectionMapPass.reflectionMap(scene, tex)
         val brdfLutPass = BrdfLutPass(scene)
 
-        irrMapPass.dependsOn(rgbeDecoder)
-        reflMapPass.dependsOn(rgbeDecoder)
+        irrMapPass.dependsOn(renderPass)
+        reflMapPass.dependsOn(renderPass)
 
         val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor())
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
-                hdri.dispose()
             }
         }
 
-        scene.addOffscreenPass(rgbeDecoder)
+        scene.addOffscreenPass(renderPass)
         scene.addOffscreenPass(irrMapPass)
         scene.addOffscreenPass(reflMapPass)
         scene.addOffscreenPass(brdfLutPass)
-
         return maps
     }
-
 }
 
 class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube, val brdfLut: Texture2d) {

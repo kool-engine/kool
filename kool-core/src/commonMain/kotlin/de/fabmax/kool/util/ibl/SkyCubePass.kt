@@ -189,13 +189,12 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 }
 
 class SkyCubeIblSystem(val parentScene: Scene) {
-
     val opticalDepthLutPass = OpticalDepthLutPass()
     val skyPass = SkyCubePass(opticalDepthLutPass.colorTexture!!)
 
     val brdfLutPass = BrdfLutPass(parentScene)
-    val irradianceMapPass = IrradianceMapPass.irradianceMapFromCube(parentScene, skyPass.colorTexture!!, 8)
-    val reflectionMapPass = ReflectionMapPass.reflectionMapFromCube(parentScene, skyPass.colorTexture!!, 128)
+    val irradianceMapPass = IrradianceMapPass.irradianceMap(parentScene, skyPass.colorTexture!!, 8)
+    val reflectionMapPass = ReflectionMapPass.reflectionMap(parentScene, skyPass.colorTexture!!, 128)
 
     val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!, brdfLutPass.colorTexture!!)
 
@@ -226,5 +225,4 @@ class SkyCubeIblSystem(val parentScene: Scene) {
         parentScene.addOffscreenPass(irradianceMapPass)
         parentScene.addOffscreenPass(reflectionMapPass)
     }
-
 }
