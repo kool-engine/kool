@@ -282,11 +282,3 @@ dependencies {
     implementation "de.fabmax.kool:kool-core-js:0.7.0"
 }
 ```
-
-## What's Next?
-
-I have a few features on my wishlist, which I may (or may not) implement in the future (in no particular order):
-- Shadow mapping for point lights
-- Rendering backend for WebGPU
-
-Apart from that there are about one million things I could (and maybe will) optimize further (especially in the Vulkan code)

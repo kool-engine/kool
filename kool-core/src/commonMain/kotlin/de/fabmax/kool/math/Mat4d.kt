@@ -510,6 +510,22 @@ open class Mat4d {
         return this
     }
 
+    fun setTranslate(translation: Vec3d) = setTranslate(translation.x, translation.y, translation.z)
+
+    fun setTranslate(x: Double, y: Double, z: Double): Mat4d {
+        for (i in 1..15) {
+            matrix[i] = 0.0
+        }
+        matrix[12] = x
+        matrix[13] = y
+        matrix[14] = z
+        matrix[0] = 1.0
+        matrix[5] = 1.0
+        matrix[10] = 1.0
+        matrix[15] = 1.0
+        return this
+    }
+
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f) = setLookAt(
             position.x.toDouble(), position.y.toDouble(), position.z.toDouble(),
             lookAt.x.toDouble(), lookAt.y.toDouble(), lookAt.z.toDouble(),

@@ -4,6 +4,7 @@ import de.fabmax.kool.util.TouchGestureEvaluator
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import kotlin.math.abs
 
 abstract class InputManager internal constructor() {
 
@@ -153,9 +154,10 @@ abstract class InputManager internal constructor() {
         var isValid = false
             internal set
 
-        protected val buttonDownTimes = DoubleArray(5)
+        private val buttonDownTimes = DoubleArray(5)
 
         internal var consumptionMask = 0
+        internal var dragMovement = 0.0
 
         val isLeftButtonDown: Boolean get() = (buttonMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonDown: Boolean get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
@@ -181,11 +183,16 @@ abstract class InputManager internal constructor() {
         val isBackButtonReleased: Boolean get() = isBackButtonEvent && !isBackButtonDown
         val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
 
-        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased && now() - buttonDownTimes[0] < 300.0
-        val isRightButtonClicked: Boolean get() = isRightButtonReleased && now() - buttonDownTimes[1] < 300.0
-        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased && now() - buttonDownTimes[2] < 300.0
-        val isBackButtonClicked: Boolean get() = isBackButtonReleased && now() - buttonDownTimes[3] < 300.0
-        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased && now() - buttonDownTimes[4] < 300.0
+        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased
+                && now() - buttonDownTimes[0] < 200.0 && dragMovement < 10.0
+        val isRightButtonClicked: Boolean get() = isRightButtonReleased
+                && now() - buttonDownTimes[1] < 200.0 && dragMovement < 10.0
+        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased
+                && now() - buttonDownTimes[2] < 200.0 && dragMovement < 10.0
+        val isBackButtonClicked: Boolean get() = isBackButtonReleased
+                && now() - buttonDownTimes[3] < 200.0 && dragMovement < 10.0
+        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
+                && now() - buttonDownTimes[4] < 200.0 && dragMovement < 10.0
 
         fun consume(mask: Int = CONSUMED_ALL) {
             consumptionMask = consumptionMask or mask
@@ -225,6 +232,7 @@ abstract class InputManager internal constructor() {
             if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
                 dragDeltaX = 0.0
                 dragDeltaY = 0.0
+                dragMovement = 0.0
             }
         }
 
@@ -235,6 +243,7 @@ abstract class InputManager internal constructor() {
             deltaY = 0.0
             dragDeltaX = 0.0
             dragDeltaY = 0.0
+            dragMovement = 0.0
             deltaScroll = 0.0
             updateState = UpdateState.STARTED
             isValid = true
@@ -244,6 +253,7 @@ abstract class InputManager internal constructor() {
             if (buttonMask != 0) {
                 dragDeltaX += x - this.x
                 dragDeltaY += y - this.y
+                dragMovement += abs(x - this.x) + abs(y - this.y)
             }
 
             deltaX += x - this.x
@@ -269,6 +279,7 @@ abstract class InputManager internal constructor() {
             deltaScroll = 0.0
             dragDeltaX = 0.0
             dragDeltaY = 0.0
+            dragMovement = 0.0
             updateState = UpdateState.INVALID
             isValid = false
         }
@@ -284,6 +295,7 @@ abstract class InputManager internal constructor() {
             target.deltaY = deltaY
             target.dragDeltaX = dragDeltaX
             target.dragDeltaY = dragDeltaY
+            target.dragMovement = dragMovement
             target.deltaScroll = deltaScroll
             target.x = x
             target.y = y
@@ -440,8 +452,7 @@ abstract class InputManager internal constructor() {
             }
         }
 
-        internal fun getFreeInputPointer(): BufferedPointerInput? {
-            // return inputPointers.firstOrNull { !it.isValid }
+        private fun getFreeInputPointer(): BufferedPointerInput? {
             for (i in inputPointers.indices) {
                 if (!inputPointers[i].isValid) {
                     return inputPointers[i]
@@ -450,8 +461,7 @@ abstract class InputManager internal constructor() {
             return null
         }
 
-        internal fun findInputPointer(pointerId: Int): BufferedPointerInput? {
-            // return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
+        private fun findInputPointer(pointerId: Int): BufferedPointerInput? {
             for (i in inputPointers.indices) {
                 if (inputPointers[i].isValid && inputPointers[i].id == pointerId) {
                     return inputPointers[i]

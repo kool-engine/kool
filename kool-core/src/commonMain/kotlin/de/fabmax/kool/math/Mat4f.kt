@@ -492,6 +492,22 @@ open class Mat4f {
         return this
     }
 
+    fun setTranslate(translation: Vec3f) = setTranslate(translation.x, translation.y, translation.z)
+
+    fun setTranslate(x: Float, y: Float, z: Float): Mat4f {
+        for (i in 1..15) {
+            matrix[i] = 0f
+        }
+        matrix[12] = x
+        matrix[13] = y
+        matrix[14] = z
+        matrix[0] = 1f
+        matrix[5] = 1f
+        matrix[10] = 1f
+        matrix[15] = 1f
+        return this
+    }
+
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f): Mat4f {
         // See the OpenGL GLUT documentation for gluLookAt for a description
         // of the algorithm. We implement it in a straightforward way:
