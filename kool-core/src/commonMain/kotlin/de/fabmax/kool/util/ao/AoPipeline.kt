@@ -71,7 +71,7 @@ abstract class AoPipeline {
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
             depthPass.onBeforeCollectDrawCommands += { ctx ->
-                proxyCamera.sync(scene.mainRenderPass.viewport, ctx)
+                proxyCamera.sync(scene.mainRenderPass, ctx)
             }
 
             aoPass = AmbientOcclusionPass(proxyCamera, AoSetup.forward(depthPass), mapWidth, mapHeight)

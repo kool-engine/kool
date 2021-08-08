@@ -59,7 +59,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
             if (lightIndex < scene.lighting.lights.size) {
                 val light = scene.lighting.lights[lightIndex]
                 setupCamera(light)
-                camera.updateCamera(ctx, viewport)
+                camera.updateCamera(this, ctx)
                 ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
             }
         }

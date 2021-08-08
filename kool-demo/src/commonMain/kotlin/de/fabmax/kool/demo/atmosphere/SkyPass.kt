@@ -35,7 +35,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
         val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
         camera = proxyCamera
         onBeforeCollectDrawCommands += { ctx ->
-            proxyCamera.sync(scene.mainRenderPass.viewport, ctx)
+            proxyCamera.sync(scene.mainRenderPass, ctx)
             proxyCamera.clipNear = 5f
             proxyCamera.clipFar = 5000f
         }

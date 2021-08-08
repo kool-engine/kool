@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.Viewport
 import kotlin.math.atan
@@ -60,13 +61,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun setClipRange(near: Float, far: Float)
 
-    open fun updateCamera(ctx: KoolContext, viewport: Viewport) {
+    open fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
         if (useViewportAspectRatio) {
-            aspectRatio = viewport.aspectRatio
+            aspectRatio = renderPass.viewport.aspectRatio
         }
 
-        updateViewMatrix()
-        updateProjectionMatrix()
+        updateViewMatrix(renderPass, ctx)
+        updateProjectionMatrix(renderPass, ctx)
 
         if (projCorrectionMode == ProjCorrectionMode.ONSCREEN) {
             ctx.projCorrectionMatrixScreen.mul(proj, projCorrected)
@@ -81,7 +82,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         lazyInvViewProj.isDirty = true
     }
 
-    protected open fun updateViewMatrix() {
+    protected open fun updateViewMatrix(renderPass: RenderPass, ctx: KoolContext) {
         toGlobalCoords(globalPosMut.set(position))
         toGlobalCoords(globalLookAtMut.set(lookAt))
         toGlobalCoords(globalUpMut.set(up), 0f).norm()
@@ -97,7 +98,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         lazyInvView.isDirty = true
     }
 
-    protected abstract fun updateProjectionMatrix()
+    protected abstract fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext)
 
     fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x.toFloat(), ptr.y.toFloat(), viewport, ctx)
@@ -204,24 +205,24 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
-    override fun updateCamera(ctx: KoolContext, viewport: Viewport) {
+    override fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
         if (isClipToViewport) {
             left = 0f
-            right = viewport.width.toFloat()
+            right = renderPass.viewport.width.toFloat()
             bottom = 0f
-            top = viewport.height.toFloat()
+            top = renderPass.viewport.height.toFloat()
 
         } else if (isKeepAspectRatio) {
             val h = top - bottom
-            val w = viewport.aspectRatio * h
+            val w = renderPass.viewport.aspectRatio * h
             val xCenter = left + (right - left) * 0.5f
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
-        super.updateCamera(ctx, viewport)
+        super.updateCamera(renderPass, ctx)
     }
 
-    override fun updateProjectionMatrix() {
+    override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
         if (left != right && bottom != top && near != far) {
             proj.setOrthographic(left, right, bottom, top, near, far)
         }
@@ -283,7 +284,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         this.clipFar = far
     }
 
-    override fun updateProjectionMatrix() {
+    override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
         proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
@@ -346,8 +347,8 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
             projCorrectionMode = ProjCorrectionMode.OFFSCREEN
         }
 
-        fun sync(viewport: Viewport, ctx: KoolContext) {
-            master.updateCamera(ctx, viewport)
+        fun sync(renderPass: RenderPass, ctx: KoolContext) {
+            master.updateCamera(renderPass, ctx)
 
             position.set(master.globalPos)
             lookAt.set(master.globalLookAt)

@@ -62,7 +62,7 @@ abstract class RenderPass(var drawNode: Node) {
         for (i in onBeforeCollectDrawCommands.indices) {
             onBeforeCollectDrawCommands[i](ctx)
         }
-        camera.updateCamera(ctx, viewport)
+        camera.updateCamera(this, ctx)
     }
 
     protected open fun afterCollectDrawCommands(ctx: KoolContext) {

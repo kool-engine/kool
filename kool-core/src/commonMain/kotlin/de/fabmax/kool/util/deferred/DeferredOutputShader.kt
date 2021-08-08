@@ -39,18 +39,44 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
             }
             fragmentStage {
                 val linearColor = texture2dSamplerNode(texture2dNode("deferredPbrOutput"), ifTexCoords.output).outColor
-                if (isWithBloom) {
+                val color = if (isWithBloom) {
                     val bloom = texture2dSamplerNode(texture2dNode("bloom"), ifTexCoords.output).outColor
                     val bloomStrength = pushConstantNode1f("uBloomStrength").output
                     val bloomScaled = multiplyNode(bloom, bloomStrength).output
                     val composed = addNode(linearColor, bloomScaled).output
-                    colorOutput(hdrToLdrNode(composed).outColor)
+                    hdrToLdrNode(composed).outColor
                 } else {
-                    colorOutput(hdrToLdrNode(linearColor).outColor)
+                    hdrToLdrNode(linearColor).outColor
+                }
+                addNode(VignetteNode(stage)).apply {
+                    inColor = color
+                    inTexCoord = ifTexCoords.output
+                    colorOutput(outColor)
                 }
                 val depthSampler = texture2dSamplerNode(texture2dNode("deferredDepthOutput"), ifTexCoords.output)
                 depthOutput(depthSampler.outColor)
             }
+        }
+    }
+
+    private class VignetteNode(graph: ShaderGraph) : ShaderNode("vignette", graph) {
+        lateinit var inColor: ShaderNodeIoVar
+        lateinit var inTexCoord: ShaderNodeIoVar
+        val outColor = ShaderNodeIoVar(ModelVar4f("vignette_out"), this)
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inColor, inTexCoord)
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("""
+                float screenX = $inTexCoord.x - 0.5;
+                float screenY = $inTexCoord.y - 0.5;
+                float screenR = sqrt(screenX * screenX + screenY * screenY);
+                float vignetteW = smoothstep(0.4, 0.71, screenR) * 0.25;
+                ${outColor.declare()} = mix($inColor, vec4(0.0, 0.0, 0.0, 1.0), vignetteW);
+            """)
         }
     }
 }
