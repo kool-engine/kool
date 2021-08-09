@@ -79,6 +79,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         deferredPipeline.apply {
             bloomRadius = 0.35f
             bloomStrength = 0.75f
+            outputShader.setupVignette(strength = 0f)
         }
         deferredPipeline.contentGroup.makeContent()
         +deferredPipeline.renderOutput

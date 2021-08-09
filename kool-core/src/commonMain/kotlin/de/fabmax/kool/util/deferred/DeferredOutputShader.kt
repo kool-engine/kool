@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
@@ -8,6 +9,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.FloatInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
+import de.fabmax.kool.pipeline.shading.Vec3fInput
 import de.fabmax.kool.scene.Mesh
 
 class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: Texture2d, bloom: Texture2d?, private val depthMode: DepthCompareOp) :
@@ -15,6 +17,18 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
 
     val bloomStrength = FloatInput("uBloomStrength", 0.5f)
     val bloomMap = Texture2dInput("bloom", bloom)
+
+    private val vignetteCfg = Vec3fInput("uVignetteCfg", Vec3f(0.4f, 0.71f, 0.25f))
+    val vignetteStrength: Float
+        get() = vignetteCfg.value.z
+    val vignetteInnerRadius: Float
+        get() = vignetteCfg.value.x
+    val vignetteOuterRadius: Float
+        get() = vignetteCfg.value.y
+
+    fun setupVignette(strength: Float = vignetteStrength, innerRadius: Float = vignetteInnerRadius, outerRadius: Float = vignetteOuterRadius) {
+        vignetteCfg.value = Vec3f(innerRadius, outerRadius, strength)
+    }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.depthTest = depthMode
@@ -26,6 +40,7 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
         model.findNode<Texture2dNode>("deferredDepthOutput")?.sampler?.texture = depth
         bloomStrength.connect(model)
         bloomMap.connect(model)
+        vignetteCfg.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -51,6 +66,7 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
                 addNode(VignetteNode(stage)).apply {
                     inColor = color
                     inTexCoord = ifTexCoords.output
+                    inVignetteCfg = pushConstantNode3f("uVignetteCfg").output
                     colorOutput(outColor)
                 }
                 val depthSampler = texture2dSamplerNode(texture2dNode("deferredDepthOutput"), ifTexCoords.output)
@@ -62,20 +78,24 @@ class DeferredOutputShader(private val pbrOutput: Texture2d, private val depth: 
     private class VignetteNode(graph: ShaderGraph) : ShaderNode("vignette", graph) {
         lateinit var inColor: ShaderNodeIoVar
         lateinit var inTexCoord: ShaderNodeIoVar
+        lateinit var inVignetteCfg: ShaderNodeIoVar
         val outColor = ShaderNodeIoVar(ModelVar4f("vignette_out"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inColor, inTexCoord)
+            dependsOn(inColor, inTexCoord, inVignetteCfg)
         }
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
-                float screenX = $inTexCoord.x - 0.5;
-                float screenY = $inTexCoord.y - 0.5;
-                float screenR = sqrt(screenX * screenX + screenY * screenY);
-                float vignetteW = smoothstep(0.4, 0.71, screenR) * 0.25;
-                ${outColor.declare()} = mix($inColor, vec4(0.0, 0.0, 0.0, 1.0), vignetteW);
+                ${outColor.declare()} = $inColor;
+                if (${inVignetteCfg.ref3f()}.z > 0.0) {
+                    float screenX = $inTexCoord.x - 0.5;
+                    float screenY = $inTexCoord.y - 0.5;
+                    float screenR = sqrt(screenX * screenX + screenY * screenY);
+                    float vignetteW = smoothstep(${inVignetteCfg.ref3f()}.x, ${inVignetteCfg.ref3f()}.y, screenR) * ${inVignetteCfg.ref3f()}.z;
+                    $outColor = mix($inColor, vec4(0.0, 0.0, 0.0, 1.0), vignetteW);
+                }
             """)
         }
     }

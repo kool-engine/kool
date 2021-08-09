@@ -87,6 +87,7 @@ class GltfDemo : DemoScene("glTF Models") {
             useImageBasedLighting(envMaps)
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg)
+        deferredPipeline.outputShader.setupVignette(strength = 0f)
         deferredPipeline.aoPipeline?.apply {
             radius = 0.2f
         }

@@ -59,6 +59,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             }
             val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
                 aoPipeline?.radius = 0.6f
+                outputShader.setupVignette(strength = 0f)
 
                 contentGroup.apply {
                     +Glas(pbrPass.colorTexture!!, ibl)

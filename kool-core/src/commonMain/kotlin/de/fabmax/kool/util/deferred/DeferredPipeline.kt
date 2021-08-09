@@ -24,7 +24,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         get() = mrtPass.content
     val renderOutput: Mesh
 
-    private val outputShader: DeferredOutputShader
+    val outputShader: DeferredOutputShader
 
     private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
     private val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))

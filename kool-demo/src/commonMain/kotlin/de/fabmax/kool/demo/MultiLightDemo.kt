@@ -86,6 +86,7 @@ class MultiLightDemo : DemoScene("Reflections") {
             useImageBasedLighting(envMaps)
         }
         deferredPipeline = DeferredPipeline(scene, defCfg)
+        deferredPipeline.outputShader.setupVignette(strength = 0f)
 
         scene += deferredPipeline.renderOutput
         scene += Skybox.cube(envMaps.reflectionMap, 1f)
