@@ -271,6 +271,10 @@ class Mat4fInput(uniformName: String, initial: Mat4f? = null) : ShaderInput<Unif
         this.value.set(value)
     }
 
+    operator fun invoke(value: Mat4d) {
+        this.value.set(value)
+    }
+
     override fun onConnect() {
         node?.uniform?.value?.set(backupField)
     }

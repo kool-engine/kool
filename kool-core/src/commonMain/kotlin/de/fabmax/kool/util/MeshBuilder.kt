@@ -756,6 +756,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             }
             translate(props.origin)
 
+            val ct = props.charTransform
             var advanced = 0f
             for (c in props.text) {
                 if (c == '\n') {
@@ -765,14 +766,29 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
                 val metrics = props.font.charMap[c]
                 if (metrics != null) {
-                    rect {
-                        origin.set(advanced - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
-                        size.set(metrics.width, metrics.height)
+                    if (ct != null) {
+                        withTransform {
+                            ct(advanced)
+                            rect {
+                                origin.set(-metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
+                                size.set(metrics.width, metrics.height)
 
-                        texCoordUpperLeft.set(metrics.uvMin)
-                        texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
-                        texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
-                        texCoordLowerRight.set(metrics.uvMax)
+                                texCoordUpperLeft.set(metrics.uvMin)
+                                texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                                texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                                texCoordLowerRight.set(metrics.uvMax)
+                            }
+                        }
+                    } else {
+                        rect {
+                            origin.set(advanced - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
+                            size.set(metrics.width, metrics.height)
+
+                            texCoordUpperLeft.set(metrics.uvMin)
+                            texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                            texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                            texCoordLowerRight.set(metrics.uvMax)
+                        }
                     }
                     advanced += metrics.advance
                 }
@@ -1001,4 +1017,6 @@ class CylinderProps {
 class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
+
+    var charTransform: (MeshBuilder.(Float) -> Unit)? = null
 }

@@ -19,7 +19,7 @@ import de.fabmax.kool.util.ibl.EnvironmentMaps
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
  * metallic and texture-based AO and computes the final color output.
  */
-class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferredPbrModel(cfg)) : ModeledShader(model) {
+open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDeferredPbrModel(cfg)) : ModeledShader(model) {
 
     private var deferredCameraNode: DeferredCameraNode? = null
     var sceneCamera: Camera? = null

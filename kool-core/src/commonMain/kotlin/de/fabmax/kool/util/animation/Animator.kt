@@ -77,6 +77,18 @@ class LinearAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(
     }
 }
 
+class SquareAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(value) {
+    override fun interpolate(progress: Float): Float {
+        return progress * progress
+    }
+}
+
+class InverseSquareAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(value) {
+    override fun interpolate(progress: Float): Float {
+        return 1f - (1f - progress) * (1f - progress)
+    }
+}
+
 class CosAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(value) {
     override fun interpolate(progress: Float): Float {
         return 0.5f - cos(progress * PI).toFloat() * 0.5f
