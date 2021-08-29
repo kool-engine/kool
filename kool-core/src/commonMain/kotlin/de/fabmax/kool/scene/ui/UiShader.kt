@@ -2,27 +2,19 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shadermodel.ShaderModel
+import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
+import de.fabmax.kool.pipeline.shadermodel.fragmentStage
+import de.fabmax.kool.pipeline.shadermodel.vertexStage
+import de.fabmax.kool.pipeline.shading.FloatInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
 class UiShader(font: Texture2d? = SingleColorTexture(Color.WHITE)) : ModeledShader(uiShaderModel()) {
-
-    private var uAlpha: PushConstantNode1f? = null
-    private var uFontSampler: TextureSampler2d? = null
-
-    var alpha = 1f
-        set(value) {
-            field = value
-            uAlpha?.uniform?.value = value
-        }
-
-    var font = font
-        set(value) {
-            field = value
-            uFontSampler?.texture = value
-        }
+    val alpha = FloatInput(U_ALPHA, 1f)
+    val font = Texture2dInput(U_FONT_TEX, font)
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
@@ -32,11 +24,8 @@ class UiShader(font: Texture2d? = SingleColorTexture(Color.WHITE)) : ModeledShad
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        uAlpha = model.findNode(U_ALPHA)
-        uAlpha?.uniform?.value = alpha
-
-        uFontSampler = model.findNode<Texture2dNode>(U_FONT_TEX)?.sampler
-        uFontSampler?.texture = font
+        alpha.connect(model)
+        font.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 

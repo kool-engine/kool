@@ -315,7 +315,7 @@ class VehicleUi(val vehicle: DemoVehicle, ctx: KoolContext) {
         val mesh = Mesh(meshBuilder.geometry)
 
         override fun updateComponentAlpha() {
-            (mesh.shader as UiShader).apply { alpha = component.alpha }
+            (mesh.shader as UiShader).apply { alpha(component.alpha) }
         }
 
         override fun createUi(ctx: KoolContext) {
@@ -357,7 +357,7 @@ class VehicleUi(val vehicle: DemoVehicle, ctx: KoolContext) {
         val mesh = Mesh(meshBuilder.geometry)
 
         override fun updateComponentAlpha() {
-            (mesh.shader as UiShader).apply { alpha = component.alpha }
+            (mesh.shader as UiShader).apply { alpha(component.alpha) }
         }
 
         override fun createUi(ctx: KoolContext) {

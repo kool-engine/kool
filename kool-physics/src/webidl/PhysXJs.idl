@@ -14,6 +14,7 @@ interface PxTopLevelFunctions {
     static PxPhysics CreatePhysics(unsigned long version, [Ref] PxFoundation foundation, [Const, Ref] PxTolerancesScale params, optional PxPvd pvd);
     static PxDefaultCpuDispatcher DefaultCpuDispatcherCreate(unsigned long numThreads);
     static boolean InitExtensions([Ref] PxPhysics physics);
+    static void CloseExtensions();
     static PxCudaContextManager CreateCudaContextManager([Ref] PxFoundation foundation, [Const, Ref] PxCudaContextManagerDesc desc);
     static PxPvd CreatePvd([Ref] PxFoundation foundation);
 
@@ -153,6 +154,8 @@ interface PxArticulationBase {
     [Const] DOMString getName();
     [Value] PxBounds3 getWorldBounds();
     PxAggregate getAggregate();
+
+    attribute VoidPtr userData;
 };
 PxArticulationBase implements PxBase;
 
@@ -409,6 +412,13 @@ enum PxBroadPhaseTypeEnum {
     "PxBroadPhaseTypeEnum::eLAST"
 };
 
+enum PxCombineModeEnum {
+    "PxCombineModeEnum::eAVERAGE",
+    "PxCombineModeEnum::eMIN",
+    "PxCombineModeEnum::eMULTIPLY",
+    "PxCombineModeEnum::eMAX"
+};
+
 [Prefix="physx::", NoDelete]
 interface PxConstraint {
     void release();
@@ -620,9 +630,39 @@ interface PxOverlapQueryResult {
 
 [Prefix="physx::", NoDelete]
 interface PxMaterial {
+    unsigned long getReferenceCount();
+    void acquireReference();
+    void setDynamicFriction(float coef);
+    float getDynamicFriction();
+    void setStaticFriction(float coef);
+    float getStaticFriction();
+    void setRestitution(float coef);
+    float getRestitution();
+    void setFlag(PxMaterialFlagEnum flag, boolean b);
+    void setFlags([Ref] PxMaterialFlags flags);
+    [Value] PxMaterialFlags getFlags();
+    void setFrictionCombineMode(PxCombineModeEnum combMode);
+    PxCombineModeEnum getFrictionCombineMode();
+    void setRestitutionCombineMode(PxCombineModeEnum combMode);
+    PxCombineModeEnum getRestitutionCombineMode();
+
     attribute VoidPtr userData;
 };
 PxMaterial implements PxBase;
+
+enum PxMaterialFlagEnum {
+    "PxMaterialFlagEnum::eDISABLE_FRICTION",
+    "PxMaterialFlagEnum::eDISABLE_STRONG_FRICTION",
+    "PxMaterialFlagEnum::eIMPROVED_PATCH_FRICTION",
+};
+
+[Prefix="physx::"]
+interface PxMaterialFlags {
+    void PxMaterialFlags(unsigned short flags);
+    boolean isSet(PxMaterialFlagEnum flag);
+    void set(PxMaterialFlagEnum flag);
+    void clear(PxMaterialFlagEnum flag);
+};
 
 enum PxPairFilteringModeEnum {
     "PxPairFilteringModeEnum::eKEEP",
@@ -901,7 +941,7 @@ interface PxScene {
     // Contained Object Retrieval
     unsigned long getNbActors([Ref] PxActorTypeFlags types);
     // unsigned long getActors(...)
-    // PxActorPtr getActiveActors();
+    // PxActorPtr getActiveActors();    -> SupportFunctions.PxScene_getActiveActors();
     unsigned long getNbArticulations();
     // unsigned long getArticulations(...);
     unsigned long getNbConstraints();
@@ -2419,6 +2459,7 @@ interface PxPhysicsInsertionCallback { };
 [Prefix="physx::"]
 interface PxQuat {
     void PxQuat();
+    void PxQuat(PxIDENTITYEnum r);
     void PxQuat(float x, float y, float z, float w);
     attribute float x;
     attribute float y;
@@ -2433,6 +2474,7 @@ interface PxTolerancesScale {
 
 [Prefix="physx::"]
 interface PxTransform {
+    void PxTransform();
     void PxTransform(PxIDENTITYEnum r);
     void PxTransform([Const, Ref] PxVec3 p0, [Const, Ref] PxQuat q0);
     [Value] attribute PxQuat q;
@@ -2519,6 +2561,7 @@ interface PxD6Joint {
     void setProjectionAngularTolerance(float tolerance);
     float getProjectionAngularTolerance();
 };
+PxD6Joint implements PxJoint;
 
 [Prefix="physx::"]
 interface PxD6JointDrive {
@@ -2641,6 +2684,8 @@ interface PxJoint {
     [Const] DOMString getName();
     void release();
     PxScene getScene();
+
+    attribute VoidPtr userData;
 };
 PxJoint implements PxBase;
 
@@ -3160,6 +3205,7 @@ interface JavaUserControllerHitReport {
 
 interface SupportFunctions {
     static PxShape PxActor_getShape([Ref] PxRigidActor actor, long index);
+    [Ref] static Vector_PxActorPtr PxScene_getActiveActors(PxScene scene);
 };
 
 interface PxActorPtr { };
@@ -3273,6 +3319,16 @@ interface Vector_PxVec3 {
     PxVec3 data();
     unsigned long size();
     void push_back([Ref] PxVec3 value);
+    void clear();
+};
+
+interface Vector_PxActorPtr {
+    void Vector_PxActorPtr();
+    void Vector_PxActorPtr(unsigned long size);
+    PxActor at(unsigned long index);
+    PxActorPtr data();
+    unsigned long size();
+    void push_back(PxActor value);
     void clear();
 };
 

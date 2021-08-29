@@ -55,7 +55,6 @@ class BlurNode(shaderGraph: ShaderGraph) : ShaderNode("blurNd_${shaderGraph.next
             }
         }
 
-
         generator.appendMain("${outColor.declare()} = ${sampleFunc(inTexCoord.ref2f())} * ${kernel[0]};")
         generator.appendMain("if (${inDirection.ref1i()} == $DIRECTION_HORIZONTAL) {")
         for (i in 1 until kernel.size) {

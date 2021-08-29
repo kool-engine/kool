@@ -7,6 +7,11 @@ package physx
 
 external interface PxVehicleTopLevelFunctions {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param physics WebIDL type: [PxPhysics] (Ref)
      * @return WebIDL type: boolean
      */
@@ -84,6 +89,11 @@ fun PxVehicleTopLevelFunctions.destroy() {
 
 external interface PxVehicleAckermannGeometryData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var mAccuracy: Float
@@ -112,6 +122,11 @@ fun PxVehicleAckermannGeometryData.destroy() {
 
 external interface PxVehicleAntiRollBarData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var mWheel0: Int
@@ -135,6 +150,11 @@ fun PxVehicleAntiRollBarData.destroy() {
 }
 
 external interface PxVehicleAutoBoxData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -195,6 +215,11 @@ var PxVehicleAutoBoxData.latency
 
 external interface PxVehicleChassisData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxVec3] (Value)
      */
     var mMOI: PxVec3
@@ -219,6 +244,11 @@ fun PxVehicleChassisData.destroy() {
 
 external interface PxVehicleClutchData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var mStrength: Float
@@ -242,6 +272,11 @@ fun PxVehicleClutchData.destroy() {
 }
 
 external interface PxVehicleDifferential4WData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -283,6 +318,11 @@ fun PxVehicleDifferential4WData.destroy() {
 
 external interface PxVehicleDifferentialNWData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param wheelId     WebIDL type: unsigned long
      * @param drivenState WebIDL type: boolean
      */
@@ -320,6 +360,11 @@ var PxVehicleDifferentialNWData.drivenWheelStatus
     set(value) { setDrivenWheelStatus(value) }
 
 external interface PxVehicleDrivableSurfaceToTireFrictionPairs {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param maxNbTireTypes    WebIDL type: unsigned long
      * @param maxNbSurfaceTypes WebIDL type: unsigned long
@@ -370,6 +415,11 @@ val PxVehicleDrivableSurfaceToTireFrictionPairs.maxNbTireTypes
 
 external interface PxVehicleDrivableSurfaceType {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var mType: Int
@@ -419,6 +469,11 @@ external interface PxVehicleDrive4W : PxVehicleDrive {
 }
 
 external interface PxVehicleDriveDynData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -642,6 +697,11 @@ external interface PxVehicleDriveNW : PxVehicleDrive {
 
 external interface PxVehicleDriveSimData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: [PxVehicleEngineData] (Const, Ref)
      */
     fun getEngineData(): PxVehicleEngineData
@@ -813,6 +873,11 @@ var PxVehicleDriveTank.driveModel
 
 external interface PxVehicleEngineData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxEngineTorqueLookupTable] (Value)
      */
     var mTorqueCurve: PxEngineTorqueLookupTable
@@ -852,6 +917,11 @@ fun PxVehicleEngineData.destroy() {
 }
 
 external interface PxEngineTorqueLookupTable {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -907,6 +977,11 @@ val PxEngineTorqueLookupTable.nbDataPairs
     get() = getNbDataPairs()
 
 external interface PxVehicleGearsData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -1027,6 +1102,11 @@ val PxVehicleNoDrive.nbBrakeTorque
 
 external interface PxVehicleSuspensionData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var mSpringStrength: Float
@@ -1077,6 +1157,11 @@ fun PxVehicleSuspensionData.destroy() {
 
 external interface PxVehicleTireData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var mLatStiffX: Float
@@ -1108,6 +1193,11 @@ fun PxVehicleTireData.destroy() {
 }
 
 external interface PxVehicleTireLoadFilterData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -1145,6 +1235,11 @@ val PxVehicleTireLoadFilterData.denominator
     get() = getDenominator()
 
 external interface PxVehicleWheelData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -1193,6 +1288,11 @@ fun PxVehicleWheelData.destroy() {
 }
 
 external interface PxVehicleWheelQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxWheelQueryResult]
      */
@@ -1257,6 +1357,11 @@ val PxVehicleWheels.nbNonDrivenWheels
     get() = getNbNonDrivenWheels()
 
 external interface PxVehicleWheelsDynData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun setToRestState()
 
     /**
@@ -1312,6 +1417,11 @@ val PxVehicleWheelsDynData.nbWheelRotationAngle
     get() = getNbWheelRotationAngle()
 
 external interface PxVehicleWheelsSimData {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param nbWheels WebIDL type: unsigned long
      * @return WebIDL type: [PxVehicleWheelsSimData]
@@ -1686,6 +1796,11 @@ var PxVehicleWheelsSimData.highForwardSpeedSubStepCount
 
 external interface PxVehicleWheelsSimFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxVehicleWheelsSimFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -1716,6 +1831,11 @@ fun PxVehicleWheelsSimFlags.destroy() {
 }
 
 external interface PxWheelQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxVec3] (Value)
      */

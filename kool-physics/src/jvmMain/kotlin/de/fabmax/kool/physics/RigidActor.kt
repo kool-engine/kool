@@ -53,6 +53,9 @@ actual open class RigidActor : CommonRigidActor() {
             }
         }
 
+    override var isActive = true
+        internal set
+
     actual val worldBounds: BoundingBox
         get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
 
@@ -112,7 +115,9 @@ actual open class RigidActor : CommonRigidActor() {
     }
 
     protected fun updateTransform() {
-        pxRigidActor.globalPose.toMat4f(transform)
+        if (isActive) {
+            pxRigidActor.globalPose.toMat4f(transform)
+        }
     }
 
     companion object {

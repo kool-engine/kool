@@ -758,7 +758,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
             val ct = props.charTransform
             var advanced = 0f
-            for (c in props.text) {
+            val txt = if (props.autoWrapWidth > 0f) wrapText(props) else props.text
+            for (c in txt) {
                 if (c == '\n') {
                     translate(0f, -props.font.lineSpace, 0f)
                     advanced = 0f
@@ -794,6 +795,25 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 }
             }
         }
+    }
+
+    private fun wrapText(txtProps: TextProps): String {
+        val words = txtProps.text.split(' ')
+        val outTxt = StringBuilder()
+
+        var pos = 0f
+        words.forEach { w ->
+            val ww = txtProps.font.textWidth(w) + txtProps.font.charWidth(' ')
+            val advPos = pos + ww
+            pos = if (pos > 0f && advPos > txtProps.autoWrapWidth) {
+                outTxt.append('\n')
+                ww
+            } else {
+                advPos
+            }
+            outTxt.append(w).append(' ')
+        }
+        return outTxt.toString()
     }
 }
 
@@ -1017,6 +1037,7 @@ class CylinderProps {
 class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
+    var autoWrapWidth = -1f
 
     var charTransform: (MeshBuilder.(Float) -> Unit)? = null
 }

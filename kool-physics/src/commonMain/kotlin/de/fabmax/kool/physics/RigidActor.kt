@@ -23,6 +23,8 @@ abstract class CommonRigidActor : Releasable {
 
     abstract var isTrigger: Boolean
 
+    abstract val isActive: Boolean
+
     val transform = Mat4f()
     protected val invTransformLazy = LazyMat4f { transform.invert(it) }
     val invTransform: Mat4f

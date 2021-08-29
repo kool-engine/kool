@@ -10,6 +10,7 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.PxVec3
 import physx.physics.*
+import physx.support.SupportFunctions
 import physx.support.TypeHelpers
 import kotlin.collections.set
 
@@ -25,6 +26,10 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
             pxScene.gravity = value.toPxVec3(bufPxGravity)
         }
 
+    private var mutActiveActors = 0
+    actual val activeActors: Int
+        get() = mutActiveActors
+
     private val pxActors = mutableMapOf<PxRigidActor, RigidActor>()
 
     init {
@@ -36,6 +41,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
             sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
+            sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
@@ -48,6 +54,16 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
 
     override fun fetchAsyncStepResults() {
         pxScene.fetchResults(true)
+
+        for (i in actors.indices) {
+            actors[i].isActive = false
+        }
+        val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
+        mutActiveActors = activeActors.size()
+        for (i in 0 until mutActiveActors) {
+            pxActors[activeActors.at(i)]?.isActive = true
+        }
+
         super.fetchAsyncStepResults()
     }
 

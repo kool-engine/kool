@@ -7,11 +7,22 @@ package physx
 
 external interface SupportFunctions {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param actor WebIDL type: [PxRigidActor] (Ref)
      * @param index WebIDL type: long
      * @return WebIDL type: [PxShape]
      */
     fun PxActor_getShape(actor: PxRigidActor, index: Int): PxShape
+
+    /**
+     * @param scene WebIDL type: [PxScene]
+     * @return WebIDL type: [Vector_PxActorPtr] (Ref)
+     */
+    fun PxScene_getActiveActors(scene: PxScene): Vector_PxActorPtr
 
 }
 
@@ -86,6 +97,11 @@ fun PxU32ConstPtr.destroy() {
 }
 
 external interface TypeHelpers {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param base  WebIDL type: [PxU8ConstPtr] (Ref)
      * @param index WebIDL type: long
@@ -179,6 +195,11 @@ fun TypeHelpers.destroy() {
 
 external interface Vector_PxMaterialConst {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxMaterial] (Const)
      */
@@ -221,6 +242,11 @@ fun Vector_PxMaterialConst.destroy() {
 }
 
 external interface Vector_PxHeightFieldSample {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxHeightFieldSample] (Ref)
@@ -265,6 +291,11 @@ fun Vector_PxHeightFieldSample.destroy() {
 
 external interface Vector_PxReal {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: float
      */
@@ -307,6 +338,11 @@ fun Vector_PxReal.destroy() {
 }
 
 external interface Vector_PxU8 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: octet
@@ -351,6 +387,11 @@ fun Vector_PxU8.destroy() {
 
 external interface Vector_PxU16 {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: unsigned short
      */
@@ -393,6 +434,11 @@ fun Vector_PxU16.destroy() {
 }
 
 external interface Vector_PxU32 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: unsigned long
@@ -437,6 +483,11 @@ fun Vector_PxU32.destroy() {
 
 external interface Vector_PxVec3 {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxVec3] (Ref)
      */
@@ -478,7 +529,60 @@ fun Vector_PxVec3.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface Vector_PxActorPtr {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxActor]
+     */
+    fun at(index: Int): PxActor
+
+    /**
+     * @return WebIDL type: [PxActorPtr]
+     */
+    fun data(): PxActorPtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxActor]
+     */
+    fun push_back(value: PxActor)
+
+    fun clear()
+
+}
+
+fun Vector_PxActorPtr(): Vector_PxActorPtr {
+    fun _Vector_PxActorPtr(_module: dynamic) = js("new _module.Vector_PxActorPtr()")
+    return _Vector_PxActorPtr(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun Vector_PxActorPtr(size: Int): Vector_PxActorPtr {
+    fun _Vector_PxActorPtr(_module: dynamic, size: Int) = js("new _module.Vector_PxActorPtr(size)")
+    return _Vector_PxActorPtr(PhysXJsLoader.physXJs, size)
+}
+
+fun Vector_PxActorPtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxRaycastQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxRaycastQueryResult] (Ref)
@@ -523,6 +627,11 @@ fun Vector_PxRaycastQueryResult.destroy() {
 
 external interface Vector_PxSweepQueryResult {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxSweepQueryResult] (Ref)
      */
@@ -565,6 +674,11 @@ fun Vector_PxSweepQueryResult.destroy() {
 }
 
 external interface Vector_PxRaycastHit {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxRaycastHit] (Ref)
@@ -609,6 +723,11 @@ fun Vector_PxRaycastHit.destroy() {
 
 external interface Vector_PxSweepHit {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxSweepHit] (Ref)
      */
@@ -651,6 +770,11 @@ fun Vector_PxSweepHit.destroy() {
 }
 
 external interface Vector_PxVehicleDrivableSurfaceType {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxVehicleDrivableSurfaceType] (Ref)
@@ -695,6 +819,11 @@ fun Vector_PxVehicleDrivableSurfaceType.destroy() {
 
 external interface Vector_PxWheelQueryResult {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxWheelQueryResult] (Ref)
      */
@@ -738,6 +867,11 @@ fun Vector_PxWheelQueryResult.destroy() {
 
 external interface Vector_PxVehicleWheels {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param index WebIDL type: unsigned long
      * @return WebIDL type: [PxVehicleWheels]
      */
@@ -780,6 +914,11 @@ fun Vector_PxVehicleWheels.destroy() {
 }
 
 external interface PxPvdTransport {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @return WebIDL type: boolean
      */
@@ -833,6 +972,11 @@ fun JSPvdTransport(): JSPvdTransport {
 
 external interface PxPvdInstrumentationFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -863,6 +1007,11 @@ fun PxPvdInstrumentationFlags.destroy() {
 }
 
 external interface PxPvd {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param transport WebIDL type: [PxPvdTransport] (Ref)
      * @param flags     WebIDL type: [PxPvdInstrumentationFlags] (Ref)

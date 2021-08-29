@@ -194,6 +194,11 @@ fun PxCapsuleObstacle.destroy() {
 
 external interface PxController {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: [PxControllerShapeTypeEnum] (enum)
      */
     fun getType(): Int
@@ -364,6 +369,11 @@ var PxController.userData
 
 external interface PxControllerCollisionFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -394,6 +404,11 @@ fun PxControllerCollisionFlags.destroy() {
 }
 
 external interface PxControllerDesc {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxExtendedVec3] (Value)
      */
@@ -472,6 +487,11 @@ val PxControllerDesc.type
 
 external interface PxControllerFilters {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxFilterData] (Const)
      */
     var mFilterData: PxFilterData
@@ -500,6 +520,11 @@ fun PxControllerFilters.destroy() {
 
 external interface PxControllerHit {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxController]
      */
     var controller: PxController
@@ -526,6 +551,11 @@ fun PxControllerHit.destroy() {
 }
 
 external interface PxControllerManager {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
     /**
@@ -651,6 +681,11 @@ fun PxControllersHit.destroy() {
 
 external interface PxControllerState {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxVec3] (Value)
      */
     var deltaXP: PxVec3
@@ -695,6 +730,11 @@ fun PxControllerState.destroy() {
 
 external interface PxControllerStats {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned short
      */
     var nbIterations: Short
@@ -717,6 +757,11 @@ fun PxControllerStats.destroy() {
 }
 
 external interface PxExtendedVec3 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: double
      */
@@ -752,6 +797,11 @@ fun PxExtendedVec3.destroy() {
 
 external interface PxObstacle {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: VoidPtr
      */
     var mUserData: Any
@@ -779,6 +829,11 @@ val PxObstacle.type
     get() = getType()
 
 external interface PxObstacleContext {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
     /**
@@ -834,6 +889,11 @@ val PxObstacleContext.nbObstacles
     get() = getNbObstacles()
 
 external interface PxUserControllerHitReport {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param hit WebIDL type: [PxControllerShapeHit] (Const, Ref)
      */

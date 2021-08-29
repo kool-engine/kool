@@ -96,6 +96,11 @@ var PxActor.ownerClient
 
 external interface PxActorFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxActorFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -127,6 +132,11 @@ fun PxActorFlags.destroy() {
 
 external interface PxActorShape {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxRigidActor]
      */
     var actor: PxRigidActor
@@ -141,6 +151,11 @@ fun PxActorShape.destroy() {
 }
 
 external interface PxActorTypeFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -329,6 +344,11 @@ var PxArticulation.externalDriveIterations
 
 external interface PxArticulationBase : PxBase {
     /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+
+    /**
      * @return WebIDL type: [PxScene]
      */
     fun getScene(): PxScene
@@ -438,6 +458,11 @@ external interface PxArticulationCache
 
 external interface PxArticulationCacheFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxArticulationCacheEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -470,6 +495,11 @@ fun PxArticulationCacheFlags.destroy() {
 external interface PxArticulationDriveCache
 
 external interface PxArticulationFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxArticulationFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -1043,6 +1073,11 @@ var PxArticulationReducedCoordinate.articulationFlags
     set(value) { setArticulationFlags(value) }
 
 external interface PxBatchQuery {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun execute()
 
     /**
@@ -1094,6 +1129,11 @@ var PxBatchQuery.userMemory
 
 external interface PxBatchQueryDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: any
      */
     var filterShaderData: Int
@@ -1136,6 +1176,11 @@ fun PxBatchQueryDesc.destroy() {
 }
 
 external interface PxBatchQueryMemory {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxRaycastQueryResult]
      */
@@ -1192,6 +1237,11 @@ fun PxBatchQueryPreFilterShader.destroy() {
 
 external interface PxBroadPhaseCaps {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var maxNbRegions: Int
@@ -1216,6 +1266,11 @@ fun PxBroadPhaseCaps.destroy() {
 
 external interface PxBroadPhaseRegion {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxBounds3] (Value)
      */
     var bounds: PxBounds3
@@ -1235,6 +1290,11 @@ fun PxBroadPhaseRegion.destroy() {
 }
 
 external interface PxBroadPhaseRegionInfo {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxBroadPhaseRegion] (Value)
      */
@@ -1339,6 +1399,11 @@ var PxConstraint.minResponseThreshold
 
 external interface PxConstraintFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxConstraintFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -1370,6 +1435,11 @@ fun PxConstraintFlags.destroy() {
 
 external interface PxConstraintInfo {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxConstraint]
      */
     var constraint: PxConstraint
@@ -1388,6 +1458,11 @@ fun PxConstraintInfo.destroy() {
 }
 
 external interface PxContactPairHeaderFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxContactPairHeaderFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -1420,6 +1495,11 @@ fun PxContactPairHeaderFlags.destroy() {
 
 external interface PxContactPair {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxShape]
      */
     var shapes: Array<PxShape>
@@ -1446,6 +1526,11 @@ fun PxContactPair.destroy() {
 }
 
 external interface PxContactPairFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxContactPairFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -1478,6 +1563,11 @@ fun PxContactPairFlags.destroy() {
 
 external interface PxContactPairHeader {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxRigidActor]
      */
     var actors: Array<PxRigidActor>
@@ -1500,6 +1590,11 @@ fun PxContactPairHeader.destroy() {
 }
 
 external interface PxDominanceGroupPair {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: octet
      */
@@ -1524,6 +1619,11 @@ fun PxDominanceGroupPair.destroy() {
 }
 
 external interface PxgDynamicsMemoryConfig {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: unsigned long
      */
@@ -1569,6 +1669,11 @@ fun PxgDynamicsMemoryConfig.destroy() {
 
 external interface PxFilterData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var word0: Int
@@ -1607,6 +1712,11 @@ fun PxFilterData.destroy() {
 }
 
 external interface PxHitFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxHitFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -1724,6 +1834,11 @@ val PxOverlapBuffer10.maxNbTouches
 
 external interface PxOverlapCallback {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: boolean
      */
     fun hasAnyHits(): Boolean
@@ -1741,6 +1856,11 @@ fun PxOverlapHit.destroy() {
 }
 
 external interface PxOverlapQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxOverlapHit] (Value)
      */
@@ -1791,9 +1911,146 @@ external interface PxMaterial : PxBase {
      * WebIDL type: VoidPtr
      */
     var userData: Any
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getReferenceCount(): Int
+
+    fun acquireReference()
+
+    /**
+     * @param coef WebIDL type: float
+     */
+    fun setDynamicFriction(coef: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getDynamicFriction(): Float
+
+    /**
+     * @param coef WebIDL type: float
+     */
+    fun setStaticFriction(coef: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getStaticFriction(): Float
+
+    /**
+     * @param coef WebIDL type: float
+     */
+    fun setRestitution(coef: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getRestitution(): Float
+
+    /**
+     * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
+     * @param b    WebIDL type: boolean
+     */
+    fun setFlag(flag: Int, b: Boolean)
+
+    /**
+     * @param flags WebIDL type: [PxMaterialFlags] (Ref)
+     */
+    fun setFlags(flags: PxMaterialFlags)
+
+    /**
+     * @return WebIDL type: [PxMaterialFlags] (Value)
+     */
+    fun getFlags(): PxMaterialFlags
+
+    /**
+     * @param combMode WebIDL type: [PxCombineModeEnum] (enum)
+     */
+    fun setFrictionCombineMode(combMode: Int)
+
+    /**
+     * @return WebIDL type: [PxCombineModeEnum] (enum)
+     */
+    fun getFrictionCombineMode(): Int
+
+    /**
+     * @param combMode WebIDL type: [PxCombineModeEnum] (enum)
+     */
+    fun setRestitutionCombineMode(combMode: Int)
+
+    /**
+     * @return WebIDL type: [PxCombineModeEnum] (enum)
+     */
+    fun getRestitutionCombineMode(): Int
+
+}
+
+val PxMaterial.referenceCount
+    get() = getReferenceCount()
+
+var PxMaterial.dynamicFriction
+    get() = getDynamicFriction()
+    set(value) { setDynamicFriction(value) }
+var PxMaterial.staticFriction
+    get() = getStaticFriction()
+    set(value) { setStaticFriction(value) }
+var PxMaterial.restitution
+    get() = getRestitution()
+    set(value) { setRestitution(value) }
+var PxMaterial.flags
+    get() = getFlags()
+    set(value) { setFlags(value) }
+var PxMaterial.frictionCombineMode
+    get() = getFrictionCombineMode()
+    set(value) { setFrictionCombineMode(value) }
+var PxMaterial.restitutionCombineMode
+    get() = getRestitutionCombineMode()
+    set(value) { setRestitutionCombineMode(value) }
+
+external interface PxMaterialFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: unsigned short
+ */
+fun PxMaterialFlags(flags: Short): PxMaterialFlags {
+    fun _PxMaterialFlags(_module: dynamic, flags: Short) = js("new _module.PxMaterialFlags(flags)")
+    return _PxMaterialFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxMaterialFlags.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 external interface PxPairFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxPairFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -1825,6 +2082,11 @@ fun PxPairFlags.destroy() {
 }
 
 external interface PxPhysics {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
     /**
@@ -1931,6 +2193,11 @@ val PxPhysics.physicsInsertionCallback
 
 external interface PxQueryFilterData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxFilterData] (Value)
      */
     var data: PxFilterData
@@ -1967,6 +2234,11 @@ fun PxQueryFilterData.destroy() {
 }
 
 external interface PxQueryFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -2072,6 +2344,11 @@ val PxRaycastBuffer10.maxNbTouches
 
 external interface PxRaycastCallback {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: boolean
      */
     fun hasAnyHits(): Boolean
@@ -2103,6 +2380,11 @@ fun PxRaycastHit.destroy() {
 }
 
 external interface PxRaycastQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxRaycastHit] (Value)
      */
@@ -2470,6 +2752,11 @@ var PxRigidBody.maxContactImpulse
 
 external interface PxRigidBodyFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxRigidBodyFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -2607,6 +2894,11 @@ var PxRigidDynamic.contactReportThreshold
 
 external interface PxRigidDynamicLockFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -2639,6 +2931,11 @@ fun PxRigidDynamicLockFlags.destroy() {
 external interface PxRigidStatic : PxRigidActor
 
 external interface PxScene {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: VoidPtr
      */
@@ -3371,6 +3668,11 @@ var PxScene.limits
 
 external interface PxSceneDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxVec3] (Value)
      */
     var gravity: PxVec3
@@ -3537,6 +3839,11 @@ fun PxSceneDesc.destroy() {
 
 external interface PxSceneFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxSceneFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -3567,6 +3874,11 @@ fun PxSceneFlags.destroy() {
 }
 
 external interface PxSceneLimits {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: unsigned long
      */
@@ -3860,6 +4172,11 @@ var PxShape.queryFilterData
 
 external interface PxShapeFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxShapeFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -3980,6 +4297,11 @@ fun PxSimulationFilterShader.destroy() {
 
 external interface PxSimulationStatistics {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var nbActiveConstraints: Int
@@ -4079,6 +4401,11 @@ fun PxSimulationStatistics.destroy() {
 
 external interface PxSpatialVelocity {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxVec3] (Value)
      */
     var linear: PxVec3
@@ -4156,6 +4483,11 @@ val PxSweepBuffer10.maxNbTouches
 
 external interface PxSweepCallback {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: boolean
      */
     fun hasAnyHits(): Boolean
@@ -4173,6 +4505,11 @@ fun PxSweepHit.destroy() {
 }
 
 external interface PxSweepQueryResult {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxSweepHit] (Value)
      */
@@ -4220,6 +4557,11 @@ val PxSweepQueryResult.nbAnyHits
 
 external interface PxTriggerPair {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxShape]
      */
     var triggerShape: PxShape
@@ -4250,6 +4592,11 @@ fun PxTriggerPair.destroy() {
 }
 
 external interface PxTriggerPairFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxTriggerPairFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -4361,6 +4708,13 @@ object PxBroadPhaseTypeEnum {
     val eLAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eLAST()
 }
 
+object PxCombineModeEnum {
+    val eAVERAGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eAVERAGE()
+    val eMIN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMIN()
+    val eMULTIPLY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMULTIPLY()
+    val eMAX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMAX()
+}
+
 object PxConstraintFlagEnum {
     val eBROKEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eBROKEN()
     val ePROJECT_TO_ACTOR0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_ePROJECT_TO_ACTOR0()
@@ -4416,6 +4770,12 @@ object PxHitFlagEnum {
     val eFACE_INDEX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eFACE_INDEX()
     val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eDEFAULT()
     val eMODIFIABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS()
+}
+
+object PxMaterialFlagEnum {
+    val eDISABLE_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_FRICTION()
+    val eDISABLE_STRONG_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_STRONG_FRICTION()
+    val eIMPROVED_PATCH_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eIMPROVED_PATCH_FRICTION()
 }
 
 object PxPairFilteringModeEnum {

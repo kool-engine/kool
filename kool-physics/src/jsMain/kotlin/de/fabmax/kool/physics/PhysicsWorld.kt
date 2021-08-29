@@ -20,6 +20,10 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
             pxScene.gravity = value.toPxVec3(bufPxGravity)
         }
 
+    private var mutActiveActors = 0
+    actual val activeActors: Int
+        get() = mutActiveActors
+
     private val pxActors = mutableMapOf<Int, RigidActor>()
 
     init {
@@ -32,6 +36,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
             sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
             sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
+            sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
 
@@ -45,30 +50,40 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
 
     override fun fetchAsyncStepResults() {
         pxScene.fetchResults(true)
+
+        for (i in actors.indices) {
+            actors[i].isActive = false
+        }
+        val activeActors = Physics.SupportFunctions.PxScene_getActiveActors(pxScene)
+        mutActiveActors = activeActors.size()
+        for (i in 0 until mutActiveActors) {
+            pxActors[activeActors.at(i).ptr]?.isActive = true
+        }
+
         super.fetchAsyncStepResults()
     }
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
         pxScene.addActor(actor.pxRigidActor)
-        pxActors[actor.pxRigidActor.address] = actor
+        pxActors[actor.pxRigidActor.ptr] = actor
     }
 
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
         pxScene.removeActor(actor.pxRigidActor)
-        pxActors -= actor.pxRigidActor.address
+        pxActors -= actor.pxRigidActor.ptr
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        articulation.links.forEach { pxActors[it.pxLink.address] = it }
+        articulation.links.forEach { pxActors[it.pxLink.ptr] = it }
         pxScene.addArticulation(articulation.pxArticulation)
     }
 
     override fun removeArticulation(articulation: Articulation) {
         super.removeArticulation(articulation)
-        articulation.links.forEach { pxActors -= it.pxLink.address }
+        articulation.links.forEach { pxActors -= it.pxLink.ptr }
         pxScene.removeArticulation(articulation.pxArticulation)
     }
 
@@ -95,7 +110,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
                     }
                 }
                 if (nearestHit != null) {
-                    result.hitActor = pxActors[nearestHit.actor.address]
+                    result.hitActor = pxActors[nearestHit.actor.ptr]
                     result.hitDistance = minDist
                     nearestHit.position.toVec3f(result.hitPosition)
                     nearestHit.normal.toVec3f(result.hitNormal)
@@ -117,13 +132,13 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
             for (i in 0 until count) {
                 val pair = Physics.TypeHelpers.getTriggerPairAt(pairs, i)
                 val isEnter = pair.status == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
-                val trigger = pxActors[pair.triggerActor.address]
-                val actor = pxActors[pair.otherActor.address]
+                val trigger = pxActors[pair.triggerActor.ptr]
+                val actor = pxActors[pair.otherActor.ptr]
                 if (trigger != null && actor != null) {
                     triggerListeners[trigger]?.apply {
                         var cnt = actorEnterCounts.getOrPut(actor) { 0 }
-                        val shapeAddr = pair.otherShape.address
-                        val shape = actor.shapes.find { it.pxShape?.address == shapeAddr }
+                        val shapeAddr = pair.otherShape.ptr
+                        val shape = actor.shapes.find { it.pxShape?.ptr == shapeAddr }
                         if (shape == null) {
                             logE { "shape reference not found" }
                         }

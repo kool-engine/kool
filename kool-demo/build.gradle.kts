@@ -18,9 +18,9 @@ kotlin {
             }
             commonWebpackConfig {
                 // small js code
-                //mode = KotlinWebpackConfig.Mode.PRODUCTION
+                mode = KotlinWebpackConfig.Mode.PRODUCTION
                 // readable js code but ~twice the file size
-                mode = KotlinWebpackConfig.Mode.DEVELOPMENT
+                //mode = KotlinWebpackConfig.Mode.DEVELOPMENT
             }
             binaries.executable()
         }
@@ -62,7 +62,7 @@ kotlin {
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
-                useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
+                optIn("kotlin.ExperimentalStdlibApi")
             }
         }
     }

@@ -7,6 +7,11 @@ package physx
 
 external interface PxTopLevelFunctions {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var PHYSICS_VERSION: Int
@@ -73,6 +78,8 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: boolean
      */
     fun InitExtensions(physics: PxPhysics): Boolean
+
+    fun CloseExtensions()
 
     /**
      * @param foundation WebIDL type: [PxFoundation] (Ref)
