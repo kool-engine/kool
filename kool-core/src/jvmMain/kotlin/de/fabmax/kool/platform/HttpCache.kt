@@ -27,7 +27,7 @@ class HttpCache private constructor(private val cacheDir: File) {
     init {
         try {
             GZIPInputStream(FileInputStream(File(cacheDir, ".cacheIndex.json.gz"))).use { inStream ->
-                val txt = String(inStream.readAllBytes(), StandardCharsets.UTF_8)
+                val txt = String(inStream.readBytes(), StandardCharsets.UTF_8)
                 val serCache = Json.decodeFromString<SerCache>(txt)
                 serCache.items.forEach {
                     val f = File(it.file)

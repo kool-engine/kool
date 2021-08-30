@@ -27,6 +27,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
     val color = ColorInput("uColor", cfg.color)
     val colorMap = Texture2dInput("tColor", cfg.colorMap)
     val normalMap = Texture2dInput("tNormal", cfg.normalMap)
+    val ambient = ColorInput("uAmbient", Color(0.22f, 0.22f, 0.22f))
 
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
@@ -51,6 +52,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
         color.connect(model)
         colorMap.connect(model)
         normalMap.connect(model)
+        ambient.connect(model)
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -147,6 +149,10 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                     lightBacksides = cfg.lightBacksides
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
+                    inAmbient = pushConstantNodeColor("uAmbient").output
+                    inLightCount = lightNode.outLightCount
+                    inFragToLight = lightNode.outFragToLightDirection
+                    inRadiance = lightNode.outRadiance
                 }
                 colorOutput(phongMat.outColor)
             }

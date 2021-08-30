@@ -138,7 +138,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     internal fun openLocalStream(assetPath: String): InputStream {
-        var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+        var resPath = assetPath.replace('\\', '/')
+        if (resPath.startsWith("/")) {
+            resPath = resPath.substring(1)
+        }
+        var inStream = ClassLoader.getSystemResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
             inStream = FileInputStream(assetPath)
