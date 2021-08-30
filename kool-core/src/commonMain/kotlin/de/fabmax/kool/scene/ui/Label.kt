@@ -57,7 +57,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-        shader.alpha = label.alpha
+        shader.alpha(label.alpha)
     }
 
     override fun createUi(ctx: KoolContext) {
@@ -75,7 +75,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         if (label.font.isUpdate) {
 //            label.font.prop?.dispose(ctx)
             font = label.font.apply()
-            shader.font = font
+            shader.font(font)
         }
 
         label.setupBuilder(meshBuilder)

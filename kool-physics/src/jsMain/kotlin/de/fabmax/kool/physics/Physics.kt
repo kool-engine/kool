@@ -2,7 +2,6 @@ package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.vehicle.FrictionPairs
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +27,7 @@ actual object Physics : CoroutineScope {
 
     // static top-level PhysX functions
     val TypeHelpers: TypeHelpers get() = PhysXJsLoader.physXJs.TypeHelpers.prototype
+    val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype
     val Px: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype
     val PxVehicle: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype
     val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype

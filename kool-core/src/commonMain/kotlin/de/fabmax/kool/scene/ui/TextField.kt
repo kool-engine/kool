@@ -47,6 +47,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
                             }
                             InputManager.KEY_HOME -> editText.moveCaret(EditableText.MOVE_START, e.isShiftDown)
                             InputManager.KEY_END -> editText.moveCaret(EditableText.MOVE_END, e.isShiftDown)
+                            else -> { }
                         }
                     }
                 }

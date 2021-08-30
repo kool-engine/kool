@@ -7,6 +7,11 @@ package physx
 
 external interface PxBVH33MidphaseDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var meshSizePerformanceTradeOff: Float
@@ -30,6 +35,11 @@ fun PxBVH33MidphaseDesc.destroy() {
 
 external interface PxBVH34MidphaseDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var numPrimsPerLeaf: Int
@@ -48,6 +58,11 @@ fun PxBVH34MidphaseDesc.destroy() {
 }
 
 external interface PxConvexFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -80,6 +95,11 @@ fun PxConvexFlags.destroy() {
 
 external interface PxConvexMeshDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxBoundedData] (Value)
      */
     var points: PxBoundedData
@@ -99,6 +119,11 @@ fun PxConvexMeshDesc.destroy() {
 }
 
 external interface PxCooking {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
     /**
@@ -125,6 +150,11 @@ external interface PxCooking {
 }
 
 external interface PxCookingParams {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -185,6 +215,11 @@ fun PxCookingParams.destroy() {
 
 external interface PxMeshPreprocessingFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -215,6 +250,11 @@ fun PxMeshPreprocessingFlags.destroy() {
 }
 
 external interface PxMidphaseDesc {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxBVH33MidphaseDesc] (Value)
      */

@@ -33,16 +33,16 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation("de.fabmax:physx-jni:0.4.13")
-                runtimeOnly("de.fabmax:physx-jni:0.4.13:native-win64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.13:native-linux64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.13:native-mac64")
+                implementation("de.fabmax:physx-jni:0.4.14")
+                runtimeOnly("de.fabmax:physx-jni:0.4.14:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.14:native-linux64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.14:native-mac64")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "0.4.11"))
+                implementation(npm("physx-js-webidl", "0.4.14"))
 //                implementation(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }
@@ -50,8 +50,8 @@ kotlin {
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
-                useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
-                useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+                optIn("kotlin.ExperimentalStdlibApi")
+                optIn("kotlin.contracts.ExperimentalContracts")
             }
         }
     }

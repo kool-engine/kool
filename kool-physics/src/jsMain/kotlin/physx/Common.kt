@@ -6,6 +6,11 @@
 package physx
 
 external interface PxBase {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
     /**
@@ -52,6 +57,11 @@ var PxBase.baseFlags
 
 external interface PxBaseFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -89,6 +99,11 @@ fun PxBaseTask.destroy() {
 
 external interface PxBoundedData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var count: Int
@@ -112,6 +127,11 @@ fun PxBoundedData.destroy() {
 }
 
 external interface PxBounds3 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxVec3] (Value)
      */
@@ -234,6 +254,11 @@ val PxBounds3.extents
 
 external interface PxCollection {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param obj WebIDL type: [PxBase] (Ref)
      */
     fun add(obj: PxBase)
@@ -310,6 +335,11 @@ fun PxCpuDispatcher.destroy() {
 }
 
 external interface PxCudaContextManager {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @return WebIDL type: boolean
      */
@@ -452,6 +482,11 @@ var PxCudaContextManager.usingConcurrentStreams
 
 external interface PxCudaContextManagerDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: VoidPtr
      */
     var graphicsDevice: Any
@@ -495,6 +530,11 @@ fun PxDefaultErrorCallback.destroy() {
 
 external interface PxErrorCallback {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param code    WebIDL type: [PxErrorCodeEnum] (enum)
      * @param message WebIDL type: DOMString (Const)
      * @param file    WebIDL type: DOMString (Const)
@@ -525,6 +565,11 @@ fun JavaErrorCallback(): JavaErrorCallback {
 }
 
 external interface PxFoundation {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
 }
@@ -544,6 +589,11 @@ fun PxOutputStream.destroy() {
 external interface PxPhysicsInsertionCallback
 
 external interface PxQuat {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -565,6 +615,14 @@ external interface PxQuat {
 fun PxQuat(): PxQuat {
     fun _PxQuat(_module: dynamic) = js("new _module.PxQuat()")
     return _PxQuat(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param r WebIDL type: [PxIDENTITYEnum] (enum)
+ */
+fun PxQuat(r: Int): PxQuat {
+    fun _PxQuat(_module: dynamic, r: Int) = js("new _module.PxQuat(r)")
+    return _PxQuat(PhysXJsLoader.physXJs, r)
 }
 
 /**
@@ -595,6 +653,11 @@ fun PxTolerancesScale.destroy() {
 
 external interface PxTransform {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxQuat] (Value)
      */
     var q: PxQuat
@@ -602,6 +665,11 @@ external interface PxTransform {
      * WebIDL type: [PxVec3] (Value)
      */
     var p: PxVec3
+}
+
+fun PxTransform(): PxTransform {
+    fun _PxTransform(_module: dynamic) = js("new _module.PxTransform()")
+    return _PxTransform(PhysXJsLoader.physXJs)
 }
 
 /**
@@ -627,6 +695,11 @@ fun PxTransform.destroy() {
 
 external interface PxStridedData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var stride: Int
@@ -642,6 +715,11 @@ fun PxStridedData.destroy() {
 
 external interface PxU16StridedData {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var stride: Int
@@ -656,6 +734,11 @@ fun PxU16StridedData.destroy() {
 }
 
 external interface PxVec3 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */

@@ -7,6 +7,11 @@ package physx
 
 external interface PxCollectionExt {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param collection WebIDL type: [PxCollection] (Ref)
      */
     fun releaseObjects(collection: PxCollection)
@@ -42,7 +47,7 @@ fun PxCollectionExt.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxD6Joint {
+external interface PxD6Joint : PxJoint {
     /**
      * @param axis WebIDL type: [PxD6AxisEnum] (enum)
      * @param type WebIDL type: [PxD6MotionEnum] (enum)
@@ -221,6 +226,11 @@ fun PxD6JointDrive.destroy() {
 }
 
 external interface PxD6JointDriveFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxD6JointDriveFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -444,6 +454,11 @@ var PxDistanceJoint.distanceJointFlags
 
 external interface PxDistanceJointFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxDistanceJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -508,6 +523,11 @@ var PxFixedJoint.projectionAngularTolerance
     set(value) { setProjectionAngularTolerance(value) }
 
 external interface PxJoint : PxBase {
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: Any
+
     /**
      * @param actor0 WebIDL type: [PxRigidActor]
      * @param actor1 WebIDL type: [PxRigidActor]
@@ -683,6 +703,11 @@ fun PxJointLimitCone.destroy() {
 
 external interface PxJointLimitParameters {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var restitution: Float
@@ -751,6 +776,11 @@ fun PxJointLimitPyramid.destroy() {
 }
 
 external interface PxJointLinearLimit {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -870,6 +900,11 @@ var PxPrismaticJoint.projectionAngularTolerance
 
 external interface PxPrismaticJointFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxPrismaticJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -901,6 +936,11 @@ fun PxPrismaticJointFlags.destroy() {
 
 external interface PxRigidActorExt {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param actor    WebIDL type: [PxRigidActor] (Ref)
      * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
      * @param material WebIDL type: [PxMaterial] (Const, Ref)
@@ -924,6 +964,11 @@ fun PxRigidActorExt.destroy() {
 }
 
 external interface PxRigidBodyExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param body    WebIDL type: [PxRigidBody] (Ref)
      * @param density WebIDL type: float
@@ -1248,6 +1293,11 @@ var PxRevoluteJoint.projectionAngularTolerance
 
 external interface PxRevoluteJointFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxRevoluteJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -1278,6 +1328,11 @@ fun PxRevoluteJointFlags.destroy() {
 }
 
 external interface PxSerialization {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param collection WebIDL type: [PxCollection] (Ref)
      * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
@@ -1419,6 +1474,11 @@ fun PxSerialization.destroy() {
 }
 
 external interface PxSerializationRegistry {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     fun release()
 
 }
@@ -1485,6 +1545,11 @@ var PxSphericalJoint.projectionLinearTolerance
 
 external interface PxSphericalJointFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxSphericalJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -1516,6 +1581,11 @@ fun PxSphericalJointFlags.destroy() {
 
 external interface PxSpring {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: float
      */
     var stiffness: Float
@@ -1539,6 +1609,11 @@ fun PxSpring.destroy() {
 }
 
 external interface BatchVehicleUpdateDesc {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: [PxFoundation]
      */
@@ -1591,6 +1666,11 @@ fun BatchVehicleUpdateDesc.destroy() {
 }
 
 external interface BatchVehicleUpdate {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param vehicle WebIDL type: [PxVehicleWheels]
      */

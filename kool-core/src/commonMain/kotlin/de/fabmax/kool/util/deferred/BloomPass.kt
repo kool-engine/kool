@@ -41,14 +41,14 @@ class BloomPass(val pbrPass: PbrLightingPass) :
             kernelRadius = 16
             isWithMinBrightness = true
         }
-        pingShader = BlurShader(pingCfg).apply { isVertical = false }
-        pingShader.blurInput = pbrPass.colorTexture
+        pingShader = BlurShader(pingCfg).apply { isVertical(0) }
+        pingShader.blurInput(pbrPass.colorTexture)
 
         val pongCfg = BlurShaderConfig().apply {
             kernelRadius = 12
         }
-        pongShader = BlurShader(pongCfg).apply { isVertical = true }
-        pongShader.blurInput = ping.colorTexture
+        pongShader = BlurShader(pongCfg).apply { isVertical(1) }
+        pongShader.blurInput(ping.colorTexture)
 
         pingContent.fullScreenQuad(pingShader)
         pongContent.fullScreenQuad(pongShader)
@@ -71,8 +71,8 @@ class BloomPass(val pbrPass: PbrLightingPass) :
     private fun updateBloomRadius() {
         val ar = width.toFloat() / height
         val bloomRadius = Vec2f(bloomRadius / 800f, bloomRadius * ar / 800f)
-        pingShader.radiusFac = bloomRadius
-        pongShader.radiusFac = bloomRadius
+        pingShader.radiusFac(bloomRadius)
+        pongShader.radiusFac(bloomRadius)
     }
 
     private fun Group.fullScreenQuad(quadShader: Shader) {

@@ -376,6 +376,11 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     text = "${physicsStepper.perfCpuTime.toString(2)} ms"
                 }
             }
+            textWithValue("Active Actors:", "0").apply {
+                onUpdate += {
+                    text = "${physicsWorld.activeActors}"
+                }
+            }
             textWithValue("Time Factor:", "1.00 x").apply {
                 onUpdate += {
                     text = "${physicsStepper.perfTimeFactor.toString(2)} x"

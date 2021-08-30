@@ -133,6 +133,11 @@ fun PxConvexMeshGeometry.destroy() {
 
 external interface PxConvexMeshGeometryFlags {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @param flag WebIDL type: [PxConvexMeshGeometryFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
@@ -164,6 +169,11 @@ fun PxConvexMeshGeometryFlags.destroy() {
 
 external interface PxGeometry {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * @return WebIDL type: [PxGeometryTypeEnum] (enum)
      */
     fun getType(): Int
@@ -178,6 +188,11 @@ val PxGeometry.type
     get() = getType()
 
 external interface PxGeometryHolder {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @return WebIDL type: [PxGeometryTypeEnum] (enum)
      */
@@ -246,6 +261,11 @@ val PxGeometryHolder.type
     get() = getType()
 
 external interface PxGeometryQuery {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
      * @param maxDist  WebIDL type: float
@@ -465,6 +485,11 @@ val PxHeightField.timestamp
 
 external interface PxHeightFieldDesc {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: unsigned long
      */
     var nbRows: Int
@@ -508,6 +533,11 @@ fun PxHeightFieldDesc.destroy() {
 }
 
 external interface PxHeightFieldFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -590,6 +620,11 @@ fun PxHeightFieldGeometry.destroy() {
 
 external interface PxHeightFieldSample {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: short
      */
     var height: Short
@@ -608,6 +643,11 @@ fun PxHeightFieldSample.destroy() {
 }
 
 external interface PxHullPolygon {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * WebIDL type: float
      */
@@ -632,6 +672,11 @@ fun PxHullPolygon.destroy() {
 }
 
 external interface PxMeshFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxMeshFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -663,6 +708,11 @@ fun PxMeshFlags.destroy() {
 }
 
 external interface PxMeshGeometryFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxMeshGeometryFlagEnum] (enum)
      * @return WebIDL type: boolean
@@ -734,6 +784,11 @@ fun PxPlaneGeometry.destroy() {
 
 external interface PxSimpleTriangleMesh {
     /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
      * WebIDL type: [PxBoundedData] (Value)
      */
     var points: PxBoundedData
@@ -779,6 +834,11 @@ fun PxSphereGeometry.destroy() {
 }
 
 external interface PxTriangle {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param normal WebIDL type: [PxVec3] (Ref)
      */
@@ -903,6 +963,11 @@ val PxTriangleMesh.referenceCount
     get() = getReferenceCount()
 
 external interface PxTriangleMeshFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
     /**
      * @param flag WebIDL type: [PxTriangleMeshFlagEnum] (enum)
      * @return WebIDL type: boolean

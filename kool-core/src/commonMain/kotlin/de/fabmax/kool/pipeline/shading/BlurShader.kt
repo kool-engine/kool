@@ -2,53 +2,32 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
 class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
-    private var uIsVertical: Uniform1i? = null
-    var isVertical = false
-        set(value) {
-            field = value
-            uIsVertical?.value = if (value) 1 else 0
-        }
+    val isVertical = IntInput("uIsVertical")
+    val blurInput = Texture2dInput("tBlurInput")
+    val minBrightness = Vec2fInput("uMinBrightness", Vec2f(1f, 2f))
+    val radiusFac = Vec2fInput("uRadiusFac", Vec2f(1f / 800f, 1f / 450f))
 
-    private var blurSampler: TextureSampler2d? = null
-    var blurInput: Texture2d? = null
+    var minBrightnessLower: Float
+        get() = minBrightness.value.x
         set(value) {
-            field = value
-            blurSampler?.texture = value
+            minBrightness.value = Vec2f(value, minBrightness.value.y)
         }
-
-    private var uMinBrightness: Uniform2f? = null
-    var minBrightnessLower = 0.5f
+    var minBrightnessUpper: Float
+        get() = minBrightness.value.y
         set(value) {
-            field = value
-            uMinBrightness?.value?.x = value
-        }
-    var minBrightnessUpper = 1f
-        set(value) {
-            field = value
-            uMinBrightness?.value?.y = value
-        }
-
-    private var uRadiusFac: Uniform2f? = null
-    var radiusFac = Vec2f(1f / 800f, 1f / 450f)
-        set(value) {
-            field = value
-            uRadiusFac?.value?.set(value)
+            minBrightness.value = Vec2f(minBrightness.value.x, value)
         }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        uIsVertical = model.findNode<PushConstantNode1i>("uIsVertical")?.uniform
-        uIsVertical?.value = if (isVertical) 1 else 0
-        blurSampler = model.findNode<Texture2dNode>("tBlurInput")?.sampler
-        blurSampler?.let { it.texture = blurInput }
-        uMinBrightness = model.findNode<PushConstantNode2f>("uMinBrightness")?.uniform
-        uMinBrightness?.value?.set(minBrightnessLower, minBrightnessUpper)
-        uRadiusFac = model.findNode<PushConstantNode2f>("uRadiusFac")?.uniform
-        uRadiusFac?.value?.set(radiusFac)
+        isVertical.connect(model)
+        blurInput.connect(model)
+        minBrightness.connect(model)
+        radiusFac.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -71,7 +50,11 @@ class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
                     }
                 }
 
-                colorOutput(blurNd.outColor)
+                if (cfg.convertOutputHdrToLdr) {
+                    colorOutput(hdrToLdrNode(blurNd.outColor).outColor)
+                } else {
+                    colorOutput(blurNd.outColor)
+                }
             }
         }
     }
@@ -80,4 +63,5 @@ class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
 class BlurShaderConfig {
     var kernelRadius = 4
     var isWithMinBrightness = false
+    var convertOutputHdrToLdr = false
 }

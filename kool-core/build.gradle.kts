@@ -73,10 +73,11 @@ kotlin {
         sourceSets.all {
             languageSettings.apply {
                 progressiveMode = true
-                useExperimentalAnnotation("kotlinx.coroutines.ExperimentalCoroutinesApi")
-                useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
-                useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-                useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
+                optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+                optIn("kotlin.contracts.ExperimentalContracts")
+                optIn("kotlin.ExperimentalUnsignedTypes")
+                optIn("kotlin.ExperimentalStdlibApi")
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
             }
         }
     }
