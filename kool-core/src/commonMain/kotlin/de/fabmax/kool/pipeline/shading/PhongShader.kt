@@ -106,10 +106,14 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                 } else {
                     null
                 }
-                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+
+                val localPosInput = namedVariable("localPosInput", attrPositions().output)
+                val localNormalInput = namedVariable("localNormalInput", attrNormals().output)
+
+                val nrm = vec3TransformNode(localNormalInput.output, modelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
+                val worldPos = vec3TransformNode(localPosInput.output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
                 val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
@@ -120,7 +124,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+                positionOutput = vec4TransformNode(localPosInput.output, mvpMat).outVec4
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
