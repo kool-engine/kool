@@ -180,6 +180,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
                         inScenePos = ifWorldPos.output
                         inCamPos = fragMvp.outCamPos
                         inLookDir = viewDir
+                        randomizeStartOffsets = false
                     }
                     colorOutput(atmoNd.outColor)
                 }

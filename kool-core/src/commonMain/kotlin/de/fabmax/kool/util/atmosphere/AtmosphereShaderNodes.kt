@@ -70,6 +70,7 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
     val outColor = ShaderNodeIoVar(ModelVar4f("outColor"), this)
 
     var numScatterSamples = 16
+    var randomizeStartOffsets = true
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -199,6 +200,12 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
             """)
 
         } else {
+            val startRayOffset = if (randomizeStartOffsets) {
+                "float(int(gl_FragCoord.x + $uRandomOffset.x) * 18913541 * int(gl_FragCoord.y + $uRandomOffset.y) * 31845071) / 4294967296.0"
+            } else {
+                "0.0"
+            }
+
             generator.appendFunction("scatterLight", """
                 vec3 scatterLight(vec3 origin, vec3 dir, float rayLength, vec3 dirToSun) {
                     float atmosphereThickness = $uAtmosphereRadius - $uSurfaceRadius;
@@ -207,7 +214,7 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
                     vec3 inScatteredLight = vec3(0.0);
                     
                     // random offset in range (-0.5..0.5) * stepSize
-                    float r = float(int(gl_FragCoord.x + $uRandomOffset.x) * 18913541 * int(gl_FragCoord.y + $uRandomOffset.y) * 31845071) / 4294967296.0;
+                    float r = $startRayOffset;
                     inScatterPt += dir * stepSize * r;
                     
                     for (int i = 0; i < $numScatterSamples; i++) {
