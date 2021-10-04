@@ -6,7 +6,7 @@ import org.khronos.webgl.*
 /**
  * @author fabmax
  */
-internal abstract class GenericBuffer<out B: ArrayBufferView>(override val capacity: Int, create: () -> B) : Buffer {
+abstract class GenericBuffer<out B: ArrayBufferView>(override val capacity: Int, create: () -> B) : Buffer {
     val buffer = create()
 
     override var limit = capacity
@@ -39,7 +39,7 @@ internal abstract class GenericBuffer<out B: ArrayBufferView>(override val capac
 /**
  * ByteBuffer buffer implementation
  */
-internal class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<Uint8Array>(array.length, { array }) {
+class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<Uint8Array>(array.length, { array }) {
 
     constructor(capacity: Int) : this(Uint8Array(capacity))
 
@@ -74,7 +74,7 @@ internal class Uint8BufferImpl(array: Uint8Array) : Uint8Buffer, GenericBuffer<U
 /**
  * ShortBuffer buffer implementation
  */
-internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array>(capacity, {
+class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array>(capacity, {
     Uint16Array(capacity)
 }) {
     override fun get(i: Int): Short {
@@ -108,7 +108,7 @@ internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uin
 /**
  * IntBuffer buffer implementation
  */
-internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array>(capacity, {
+class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array>(capacity, {
     Uint32Array(capacity)
 }) {
     override fun get(i: Int): Int {
@@ -142,7 +142,7 @@ internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uin
 /**
  * FloatBuffer buffer implementation
  */
-internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<Float32Array>(capacity, {
+class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<Float32Array>(capacity, {
     Float32Array(capacity)
 }) {
     override fun get(i: Int): Float {
@@ -173,7 +173,7 @@ internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<F
     }
 }
 
-internal class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capacity, {
+class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capacity, {
     DataView(ArrayBuffer(capacity))
 }) {
     override fun putUint8(value: Byte): MixedBuffer {

@@ -140,6 +140,19 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         circle(props)
     }
 
+    fun fillPolygon(poly: PolyUtil.TriangulatedPolygon) {
+        val meshIndices = IntArray(poly.vertices.size)
+        poly.vertices.forEachIndexed { i, v ->
+            meshIndices[i] = vertex {
+                set(v)
+                normal.set(poly.normal)
+            }
+        }
+        for (i in poly.indices.indices step 3) {
+            geometry.addTriIndices(meshIndices[poly.indices[i]], meshIndices[poly.indices[i + 1]], meshIndices[poly.indices[i + 2]])
+        }
+    }
+
     fun fillPolygon(points: List<Vec3f>, normal: Vec3f? = null) {
         val indices = points.map { pt ->
             vertex {

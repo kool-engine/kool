@@ -222,7 +222,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             sliderWithValue("Strength:", aoPipeline.strength, 0f, 5f, 2) {
                 aoPipeline.strength = value
             }
-            sliderWithValue("AO Samples:", aoPipeline.kernelSz.toFloat(), 4f, 128f, 0) {
+            sliderWithValue("AO Samples:", aoPipeline.kernelSz.toFloat(), 4f, 64f, 0) {
                 aoPipeline.kernelSz = value.roundToInt()
             }
             sliderWithValue("Map Size:", aoPipeline.mapSize, 0.1f, 1f, 1) {

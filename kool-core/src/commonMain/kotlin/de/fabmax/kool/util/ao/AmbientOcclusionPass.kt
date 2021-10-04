@@ -262,7 +262,11 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                 }
                 
                 float occlFac = 1.0;
-                if (linDistance < ${aoUniforms.uRadius} * 200.0) {
+                float sampleR = ${aoUniforms.uRadius};
+                if (sampleR < 0.0) {
+                    sampleR *= -linDistance;
+                }
+                if (linDistance < sampleR * 200.0) {
                     // compute kernel rotation
                     vec2 noiseCoord = ${inScreenPos.ref2f()} * ${aoUniforms.uNoiseScale};
                     vec3 rotVec = ${generator.sampleTexture2d(noiseTex.name, "noiseCoord")}.xyz * 2.0 - 1.0;
@@ -271,10 +275,10 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     mat3 tbn = mat3(tangent, bitangent, ${inNormal.ref3f()});
                     
                     float occlusion = 0.0;
-                    float bias = ${aoUniforms.uBias} * ${aoUniforms.uRadius};
+                    float bias = ${aoUniforms.uBias} * sampleR;
                     for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
                         vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
-                        vec3 samplePos = $inOrigin + kernel * ${aoUniforms.uRadius};
+                        vec3 samplePos = $inOrigin + kernel * sampleR;
                         
                         vec4 sampleProj = ${aoUniforms.uProj} * vec4(samplePos, 1.0);
                         sampleProj.xyz /= sampleProj.w;
@@ -282,13 +286,13 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                         
                         if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
                             float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
-                            float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * ${aoUniforms.uRadius}));
+                            float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * sampleR));
                             float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
                             occlusion += occlusionInc * rangeCheck;
                         }
                     }
                     occlusion /= float(${aoUniforms.uKernelN});
-                    float distFac = 1.0 - smoothstep(${aoUniforms.uRadius} * 150.0, ${aoUniforms.uRadius} * 200.0, linDistance);
+                    float distFac = 1.0 - smoothstep(sampleR * 150.0, sampleR * 200.0, linDistance);
                     occlFac = pow(clamp(1.0 - occlusion * distFac * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
                 }
                 
@@ -298,7 +302,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
     }
 
     companion object {
-        const val MAX_KERNEL_SIZE = 128
+        const val MAX_KERNEL_SIZE = 64
     }
 }
 

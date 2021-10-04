@@ -27,6 +27,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
     val color = ColorInput("uColor", cfg.color)
     val colorMap = Texture2dInput("tColor", cfg.colorMap)
     val normalMap = Texture2dInput("tNormal", cfg.normalMap)
+    val ambient = ColorInput("uAmbient", Color(0.22f, 0.22f, 0.22f))
 
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
 
@@ -51,6 +52,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
         color.connect(model)
         colorMap.connect(model)
         normalMap.connect(model)
+        ambient.connect(model)
 
         if (isReceivingShadow) {
             for (i in depthSamplers.indices) {
@@ -104,10 +106,14 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                 } else {
                     null
                 }
-                val nrm = vec3TransformNode(attrNormals().output, modelMat, 0f)
+
+                val localPosInput = namedVariable("localPosInput", attrPositions().output)
+                val localNormalInput = namedVariable("localNormalInput", attrNormals().output)
+
+                val nrm = vec3TransformNode(localNormalInput.output, modelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.outVec3)
 
-                val worldPos = vec3TransformNode(attrPositions().output, modelMat, 1f).outVec3
+                val worldPos = vec3TransformNode(localPosInput.output, modelMat, 1f).outVec3
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
                 val viewPos = vec4TransformNode(worldPos, mvpNode.outViewMat).outVec4
@@ -118,7 +124,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                         is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos)
                     }
                 }
-                positionOutput = vec4TransformNode(attrPositions().output, mvpMat).outVec4
+                positionOutput = vec4TransformNode(localPosInput.output, mvpMat).outVec4
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
@@ -147,6 +153,10 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
                     lightBacksides = cfg.lightBacksides
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
+                    inAmbient = pushConstantNodeColor("uAmbient").output
+                    inLightCount = lightNode.outLightCount
+                    inFragToLight = lightNode.outFragToLightDirection
+                    inRadiance = lightNode.outRadiance
                 }
                 colorOutput(phongMat.outColor)
             }
