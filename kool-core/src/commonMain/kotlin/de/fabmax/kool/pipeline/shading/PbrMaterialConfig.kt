@@ -25,9 +25,9 @@ class PbrMaterialConfig {
     val morphAttributes = mutableListOf<Attribute>()
 
     var albedoMapMode = AlbedoMapMode.UNMODIFIED
-    var isMultiplyEmissiveMap = false
-    var isMultiplyRoughnessMap = false
-    var isMultiplyMetallicMap = false
+    var isMultiplyEmissive = false
+    var isMultiplyRoughness = false
+    var isMultiplyMetallic = false
 
     var isImageBasedLighting = false
     var isScrSpcAmbientOcclusion = false
@@ -57,6 +57,9 @@ class PbrMaterialConfig {
     var metallic = 0.0f
     var refractionIor = 1.4f
     var materialThickness = 1f
+
+    var useVertexAttributeEmissive = false
+    var useVertexAttributeMetalRough = false
 
     var normalStrength = 1f
     var displacementStrength = 0.1f
@@ -121,12 +124,19 @@ class PbrMaterialConfig {
         isDisplacementMapped = true
     }
 
-    fun useEmissiveMap(emissiveMap: String, isMultiplyEmissiveMap: Boolean = false) =
-            useEmissiveMap(Texture2d(emissiveMap), isMultiplyEmissiveMap)
+    fun useEmissiveMap(emissiveMap: String, isMultiplyEmissive: Boolean = false) =
+            useEmissiveMap(Texture2d(emissiveMap), isMultiplyEmissive)
 
     fun useEmissiveMap(emissiveMap: Texture2d?, isMultiplyEmissiveMap: Boolean = false) {
         this.emissiveMap = emissiveMap
-        this.isMultiplyEmissiveMap = isMultiplyEmissiveMap
+        this.isMultiplyEmissive = isMultiplyEmissiveMap
+        isEmissiveMapped = true
+    }
+
+    fun useEmissiveVertexAttrib(isMultiplyEmissive: Boolean = false) {
+        this.emissiveMap = null
+        this.isMultiplyEmissive = isMultiplyEmissive
+        useVertexAttributeEmissive = true
         isEmissiveMapped = true
     }
 
@@ -135,7 +145,7 @@ class PbrMaterialConfig {
 
     fun useMetallicMap(metallicMap: Texture2d?, isMultiplyMetallicMap: Boolean = false) {
         this.metallicMap = metallicMap
-        this.isMultiplyMetallicMap = isMultiplyMetallicMap
+        this.isMultiplyMetallic = isMultiplyMetallicMap
         isMetallicMapped = true
     }
 
@@ -144,7 +154,17 @@ class PbrMaterialConfig {
 
     fun useRoughnessMap(roughnessMap: Texture2d?, isMultiplyRoughnessMap: Boolean = false) {
         this.roughnessMap = roughnessMap
-        this.isMultiplyRoughnessMap = isMultiplyRoughnessMap
+        this.isMultiplyRoughness = isMultiplyRoughnessMap
+        isRoughnessMapped = true
+    }
+
+    fun useMetalRoughVertexAttrib(isMultiplyMetalRough: Boolean = false) {
+        this.metallicMap = null
+        this.roughnessMap = null
+        this.isMultiplyMetallic = isMultiplyMetalRough
+        this.isMultiplyRoughness = isMultiplyMetalRough
+        useVertexAttributeMetalRough = true
+        isMetallicMapped = true
         isRoughnessMapped = true
     }
 
@@ -168,10 +188,10 @@ class PbrMaterialConfig {
     fun requiresTexCoords(): Boolean {
         return albedoSource == Albedo.TEXTURE_ALBEDO ||
                 isNormalMapped ||
-                isRoughnessMapped ||
-                isMetallicMapped ||
+                (isRoughnessMapped && !useVertexAttributeMetalRough) ||
+                (isMetallicMapped && !useVertexAttributeMetalRough) ||
                 isAoMapped ||
                 isDisplacementMapped ||
-                isEmissiveMapped
+                (isEmissiveMapped && !useVertexAttributeEmissive)
     }
 }

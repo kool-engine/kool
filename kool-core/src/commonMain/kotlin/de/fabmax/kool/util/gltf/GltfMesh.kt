@@ -43,7 +43,7 @@ data class GltfMesh(
         @Transient
         var materialRef: GltfMaterial? = null
 
-        fun toGeometry(generateNormals: Boolean, gltfAccessors: List<GltfAccessor>): IndexedVertexList {
+        fun toGeometry(cfg: GltfFile.ModelGenerateConfig, gltfAccessors: List<GltfAccessor>): IndexedVertexList {
             val indexAccessor = if (indices >= 0) gltfAccessors[indices] else null
 
             val positionAcc = attributes[ATTRIBUTE_POSITION]?.let { gltfAccessors[it] }
@@ -71,7 +71,11 @@ data class GltfMesh(
             attribs += Attribute.POSITIONS
             attribs += Attribute.NORMALS
 
-            if (colorAcc != null) { attribs += Attribute.COLORS }
+            if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { attribs += Attribute.COLORS }
+            if (cfg.setVertexAttribsFromMaterial) {
+                attribs += Attribute.EMISSIVE_COLOR
+                attribs += Attribute.METAL_ROUGH
+            }
             if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS }
             if (tangentAcc != null) {
                 attribs += Attribute.TANGENTS
@@ -104,6 +108,22 @@ data class GltfMesh(
                     jnts?.next(joints)
                     wgts?.next(weights)
 
+                    if (cfg.setVertexAttribsFromMaterial) {
+                        metallicRoughness.set(0f, 0.5f)
+                        materialRef?.let { mat ->
+                            val col = mat.pbrMetallicRoughness.baseColorFactor
+                            if (col.size == 4) {
+                                color.set(col[0], col[1], col[2], col[3])
+                            }
+                            metallicRoughness.set(mat.pbrMetallicRoughness.metallicFactor, mat.pbrMetallicRoughness.roughnessFactor)
+                            mat.emissiveFactor?.let { emissiveCol ->
+                                if (emissiveCol.size >= 3) {
+                                    emissiveColor.set(emissiveCol[0], emissiveCol[1], emissiveCol[2])
+                                }
+                            }
+                        }
+                    }
+
                     morphAccessors.forEach { (attrib, acc) ->
                         getVec3fAttribute(attrib)?.let { acc.next(it) }
                     }
@@ -124,7 +144,7 @@ data class GltfMesh(
             if (generateTangents) {
                 verts.generateTangents()
             }
-            if (generateNormals || normalAcc == null) {
+            if (cfg.generateNormals || normalAcc == null) {
                 verts.generateNormals()
             }
             return verts

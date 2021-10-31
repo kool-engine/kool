@@ -162,10 +162,23 @@ abstract class DataStreamAccessor(val accessor: GltfAccessor) {
     }
 
     protected fun nextFloat(): Float {
-        if (index < accessor.count) {
-            return selectDataStream()?.readFloat() ?: 0f
+        if (accessor.componentType == GltfAccessor.COMP_TYPE_FLOAT) {
+            if (index < accessor.count) {
+                return selectDataStream()?.readFloat() ?: 0f
+            } else {
+                throw IndexOutOfBoundsException("Accessor overflow")
+            }
         } else {
-            throw IndexOutOfBoundsException("Accessor overflow")
+            // implicitly convert int type to normalized float
+            return nextInt() / when (accessor.componentType) {
+                GltfAccessor.COMP_TYPE_BYTE -> 128f
+                GltfAccessor.COMP_TYPE_UNSIGNED_BYTE -> 255f
+                GltfAccessor.COMP_TYPE_SHORT -> 32767f
+                GltfAccessor.COMP_TYPE_UNSIGNED_SHORT -> 65535f
+                GltfAccessor.COMP_TYPE_INT -> 2147483647f
+                GltfAccessor.COMP_TYPE_UNSIGNED_INT -> 4294967296f
+                else -> throw IllegalStateException("Unknown component type: ${accessor.componentType}")
+            }
         }
     }
 
@@ -229,9 +242,9 @@ class FloatAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
         if (accessor.type != GltfAccessor.TYPE_SCALAR) {
             throw IllegalArgumentException("Vec2fAccessor requires accessor type ${GltfAccessor.TYPE_SCALAR}, provided was ${accessor.type}")
         }
-        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
-            throw IllegalArgumentException("FloatAccessor requires a float component type, provided was ${accessor.componentType}")
-        }
+//        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
+//            throw IllegalArgumentException("FloatAccessor requires a float component type, provided was ${accessor.componentType}")
+//        }
     }
 
     fun next(): Float {
@@ -254,9 +267,9 @@ class Vec2fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
         if (accessor.type != GltfAccessor.TYPE_VEC2) {
             throw IllegalArgumentException("Vec2fAccessor requires accessor type ${GltfAccessor.TYPE_VEC2}, provided was ${accessor.type}")
         }
-        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
-            throw IllegalArgumentException("Vec2fAccessor requires a float component type, provided was ${accessor.componentType}")
-        }
+//        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
+//            throw IllegalArgumentException("Vec2fAccessor requires a float component type, provided was ${accessor.componentType}")
+//        }
     }
 
     fun next(): MutableVec2f = next(MutableVec2f())
@@ -289,9 +302,9 @@ class Vec3fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
         if (accessor.type != GltfAccessor.TYPE_VEC3) {
             throw IllegalArgumentException("Vec3fAccessor requires accessor type ${GltfAccessor.TYPE_VEC3}, provided was ${accessor.type}")
         }
-        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
-            throw IllegalArgumentException("Vec3fAccessor requires a float component type, provided was ${accessor.componentType}")
-        }
+//        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
+//            throw IllegalArgumentException("Vec3fAccessor requires a float component type, provided was ${accessor.componentType}")
+//        }
     }
 
     fun next(): MutableVec3f = next(MutableVec3f())
@@ -326,9 +339,9 @@ class Vec4fAccessor(accessor: GltfAccessor) : DataStreamAccessor(accessor) {
         if (accessor.type != GltfAccessor.TYPE_VEC4) {
             throw IllegalArgumentException("Vec4fAccessor requires accessor type ${GltfAccessor.TYPE_VEC4}, provided was ${accessor.type}")
         }
-        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
-            throw IllegalArgumentException("Vec4fAccessor requires a float component type, provided was ${accessor.componentType}")
-        }
+//        if (accessor.componentType != GltfAccessor.COMP_TYPE_FLOAT) {
+//            throw IllegalArgumentException("Vec4fAccessor requires a float component type, provided was ${accessor.componentType}")
+//        }
     }
 
     fun next(): MutableVec4f = next(MutableVec4f())

@@ -26,6 +26,8 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
     val texCoord: MutableVec2f
     val joints: MutableVec4i
     val weights: MutableVec4f
+    val emissiveColor: MutableVec3f
+    val metallicRoughness: MutableVec2f
 
     private val attributeViews: Map<Attribute, Any>
 
@@ -54,6 +56,20 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
         color = getColorAttribute(Attribute.COLORS) ?: ColorWrapView(Vec4fView(-1))
         joints = getVec4iAttribute(Attribute.JOINTS) ?: Vec4iView(-1)
         weights = getVec4fAttribute(Attribute.WEIGHTS) ?: Vec4fView(-1)
+        emissiveColor = getVec3fAttribute(Attribute.EMISSIVE_COLOR) ?: Vec3fView(-1)
+        metallicRoughness = getVec2fAttribute(Attribute.METAL_ROUGH) ?: Vec2fView(-1)
+    }
+
+    fun setEmissiveColor(emissiveColor: Color) {
+        this.emissiveColor.set(emissiveColor.r, emissiveColor.g, emissiveColor.b)
+    }
+
+    fun setMetallic(metallicFactor: Float) {
+        metallicRoughness.x = metallicFactor
+    }
+
+    fun setRoughness(roughnessFactor: Float) {
+        metallicRoughness.y = roughnessFactor
     }
 
     override fun get(i: Int) = position[i]

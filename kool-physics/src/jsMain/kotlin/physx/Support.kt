@@ -577,6 +577,54 @@ fun Vector_PxActorPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface Vector_PxContactPairPoint {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxContactPairPoint] (Ref)
+     */
+    fun at(index: Int): PxContactPairPoint
+
+    /**
+     * @return WebIDL type: [PxContactPairPoint]
+     */
+    fun data(): PxContactPairPoint
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxContactPairPoint] (Ref)
+     */
+    fun push_back(value: PxContactPairPoint)
+
+    fun clear()
+
+}
+
+fun Vector_PxContactPairPoint(): Vector_PxContactPairPoint {
+    fun _Vector_PxContactPairPoint(_module: dynamic) = js("new _module.Vector_PxContactPairPoint()")
+    return _Vector_PxContactPairPoint(PhysXJsLoader.physXJs)
+}
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun Vector_PxContactPairPoint(size: Int): Vector_PxContactPairPoint {
+    fun _Vector_PxContactPairPoint(_module: dynamic, size: Int) = js("new _module.Vector_PxContactPairPoint(size)")
+    return _Vector_PxContactPairPoint(PhysXJsLoader.physXJs, size)
+}
+
+fun Vector_PxContactPairPoint.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface Vector_PxRaycastQueryResult {
     /**
      * Native object address.

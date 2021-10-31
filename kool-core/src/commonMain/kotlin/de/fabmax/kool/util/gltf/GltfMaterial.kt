@@ -78,7 +78,7 @@ data class GltfMaterial(
             cfg.isEmissiveMapped = true
             cfg.emissiveMap = emTex
             if (emissiveFactor != null) {
-                cfg.isMultiplyEmissiveMap = true
+                cfg.isMultiplyEmissive = true
             }
         }
         if (emissiveFactor != null) {
@@ -98,7 +98,7 @@ data class GltfMaterial(
             cfg.isRoughnessMapped = true
             cfg.roughnessMap = roughnessTexture
             if (pbrMetallicRoughness.roughnessFactor != 1f) {
-                cfg.isMultiplyRoughnessMap = true
+                cfg.isMultiplyRoughness = true
             }
         } else {
             cfg.isRoughnessMapped = false
@@ -110,7 +110,7 @@ data class GltfMaterial(
             cfg.isMetallicMapped = true
             cfg.metallicMap = metallicTexture
             if (pbrMetallicRoughness.metallicFactor != 1f) {
-                cfg.isMultiplyMetallicMap = true
+                cfg.isMultiplyMetallic = true
             }
         } else {
             cfg.isMetallicMapped = false

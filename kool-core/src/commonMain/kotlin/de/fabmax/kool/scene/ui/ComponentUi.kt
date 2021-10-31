@@ -56,7 +56,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         }
     }
 
-    override fun onRender(ctx: KoolContext) {
+//    override fun onRender(ctx: KoolContext) {
 //        shader?.setDrawBounds(component.drawBounds)
-    }
+//    }
 }

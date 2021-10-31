@@ -13,6 +13,9 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     val transform = Mat4fStack()
 
     var color = Color.GRAY
+    var emissiveColor = Color.BLACK
+    var metallic = 0f
+    var roughness = 0.5f
     var vertexModFun: (VertexView.() -> Unit)? = null
 
     val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
@@ -20,6 +23,9 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     inline fun vertex(block: VertexView.() -> Unit): Int {
         return geometry.addVertex {
             color.set(this@MeshBuilder.color)
+            setEmissiveColor(this@MeshBuilder.emissiveColor)
+            setMetallic(this@MeshBuilder.metallic)
+            setRoughness(this@MeshBuilder.roughness)
             block()
 
             transform.transform(position)
@@ -43,13 +49,28 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         transform.pop()
     }
 
-    inline fun withColor(color: Color?, block: MeshBuilder.() -> Unit) {
+    inline fun withColor(color: Color, block: MeshBuilder.() -> Unit) {
         val c = this.color
-        if (color != null) {
-            this.color = color
-        }
+        this.color = color
         this.block()
         this.color = c
+    }
+
+    inline fun withEmissiveColor(emissiveColor: Color, block: MeshBuilder.() -> Unit) {
+        val c = this.emissiveColor
+        this.emissiveColor = emissiveColor
+        this.block()
+        this.emissiveColor = c
+    }
+
+    inline fun withMetallicRoughness(metallic: Float, roughness: Float, block: MeshBuilder.() -> Unit) {
+        val m = this.metallic
+        val r = this.roughness
+        this.metallic = metallic
+        this.roughness = roughness
+        this.block()
+        this.metallic = m
+        this.roughness = r
     }
 
     fun clear() {
@@ -544,7 +565,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         props.fixNegativeSize()
 
         // front
-        withColor(props.frontColor) {
+        withColor(props.frontColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 1f))
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 0f))
@@ -554,7 +575,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         // right
-        withColor(props.rightColor) {
+        withColor(props.rightColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 1f))
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 0f))
@@ -564,7 +585,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         // back
-        withColor(props.backColor) {
+        withColor(props.backColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 0f))
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 1f))
@@ -574,7 +595,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         // left
-        withColor(props.leftColor) {
+        withColor(props.leftColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 1f))
             val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 0f))
             val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 0f))
@@ -584,7 +605,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         // top
-        withColor(props.topColor) {
+        withColor(props.topColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(0f, 1f))
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(1f, 0f))
@@ -594,7 +615,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         // bottom
-        withColor(props.bottomColor) {
+        withColor(props.bottomColor ?: color) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 1f))
             val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 1f))
             val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 0f))

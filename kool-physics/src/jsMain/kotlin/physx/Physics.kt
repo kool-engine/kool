@@ -1519,6 +1519,14 @@ external interface PxContactPair {
      * WebIDL type: [PxPairFlags] (Value)
      */
     var events: PxPairFlags
+
+    /**
+     * @param userBuffer WebIDL type: [PxContactPairPoint]
+     * @param bufferSize WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun extractContacts(userBuffer: PxContactPairPoint, bufferSize: Int): Int
+
 }
 
 fun PxContactPair.destroy() {
@@ -1586,6 +1594,42 @@ external interface PxContactPairHeader {
 }
 
 fun PxContactPairHeader.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxContactPairPoint {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var position: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var separation: Float
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var normal: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var internalFaceIndex0: Int
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var impulse: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var internalFaceIndex1: Int
+}
+
+fun PxContactPairPoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

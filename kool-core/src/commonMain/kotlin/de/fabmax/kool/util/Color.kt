@@ -1,7 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.clamp
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -46,6 +48,14 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
     fun gamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
+    }
+
+    fun toHexString(): String {
+        val ir = (r * 255).roundToInt().clamp(0, 255)
+        val ig = (g * 255).roundToInt().clamp(0, 255)
+        val ib = (b * 255).roundToInt().clamp(0, 255)
+        val ia = (a * 255).roundToInt().clamp(0, 255)
+        return ir.toString(16) + ig.toString(16) + ib.toString(16) + ia.toString(16)
     }
 
     companion object {

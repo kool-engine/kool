@@ -119,6 +119,8 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
             val ifTangents: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode
             val ifTexCoords: StageInterfaceNode?
+            val ifEmissive: StageInterfaceNode?
+            val ifMetalRough: StageInterfaceNode?
             val mvpNode: UniformBufferMvp
             val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
@@ -149,6 +151,16 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO
                             || (cfg.albedoSource == Albedo.TEXTURE_ALBEDO && cfg.albedoMapMode == AlbedoMapMode.MULTIPLY_BY_VERTEX)) {
                     stageInterfaceNode("ifColors", attrColors().output)
+                } else {
+                    null
+                }
+                ifEmissive = if (cfg.useVertexAttributeEmissive) {
+                    stageInterfaceNode("ifEmissive", attributeNode(Attribute.EMISSIVE_COLOR).output)
+                } else {
+                    null
+                }
+                ifMetalRough = if (cfg.useVertexAttributeMetalRough) {
+                    stageInterfaceNode("ifMetalRough", attributeNode(Attribute.METAL_ROUGH).output)
                 } else {
                     null
                 }
@@ -296,10 +308,14 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     inReflectionStrength = ambientStr
 
                     if (cfg.isEmissiveMapped) {
-                        val emissive = texture2dSamplerNode(texture2dNode("tEmissive"), ifTexCoords!!.output).outColor
-                        val emissiveLin = gammaNode(emissive).outColor
-                        inEmissive = if (cfg.isMultiplyEmissiveMap) {
-                            val fac = pushConstantNodeColor("uEmissive").output
+                        val emissiveLin: ShaderNodeIoVar = if (ifEmissive != null) {
+                            ifEmissive.output
+                        } else {
+                            val emissiveMap = texture2dSamplerNode(texture2dNode("tEmissive"), ifTexCoords!!.output).outColor
+                            splitNode(gammaNode(emissiveMap).outColor, "rgb").output
+                        }
+                        inEmissive = if (cfg.isMultiplyEmissive) {
+                            val fac = splitNode(pushConstantNodeColor("uEmissive").output, "rgb").output
                             multiplyNode(emissiveLin, fac).output
                         } else {
                             emissiveLin
@@ -310,27 +326,33 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
 
                     val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                     if (cfg.isRoughnessMapped) {
-                        val roughness = texture2dSamplerNode(texture2dNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor
-                        rmoSamplers[cfg.roughnessTexName] = roughness
-                        val rawRoughness = splitNode(roughness, cfg.roughnessChannel).output
-                        inRoughness = if (cfg.isMultiplyRoughnessMap) {
-                            val fac = pushConstantNode1f("uRoughness").output
-                            multiplyNode(rawRoughness, fac).output
+                        val roughnessVal: ShaderNodeIoVar = if (ifMetalRough != null) {
+                            splitNode(ifMetalRough.output, "y").output
                         } else {
-                            rawRoughness
+                            val roughnessMap = rmoSamplers.getOrPut(cfg.roughnessTexName) { texture2dSamplerNode(texture2dNode(cfg.roughnessTexName), ifTexCoords!!.output).outColor }
+                            splitNode(roughnessMap, cfg.roughnessChannel).output
+                        }
+                        inRoughness = if (cfg.isMultiplyRoughness) {
+                            val fac = pushConstantNode1f("uRoughness").output
+                            multiplyNode(roughnessVal, fac).output
+                        } else {
+                            roughnessVal
                         }
                     } else {
                         inRoughness = pushConstantNode1f("uRoughness").output
                     }
                     if (cfg.isMetallicMapped) {
-                        val metallic = rmoSamplers.getOrPut(cfg.metallicTexName) { texture2dSamplerNode(texture2dNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
-                        rmoSamplers[cfg.metallicTexName] = metallic
-                        val rawMetallic = splitNode(metallic, cfg.metallicChannel).output
-                        inMetallic = if (cfg.isMultiplyMetallicMap) {
-                            val fac = pushConstantNode1f("uMetallic").output
-                            multiplyNode(rawMetallic, fac).output
+                        val metallicVal: ShaderNodeIoVar = if (ifMetalRough != null) {
+                            splitNode(ifMetalRough.output, "x").output
                         } else {
-                            rawMetallic
+                            val metallicMap = rmoSamplers.getOrPut(cfg.metallicTexName) { texture2dSamplerNode(texture2dNode(cfg.metallicTexName), ifTexCoords!!.output).outColor }
+                            splitNode(metallicMap, cfg.metallicChannel).output
+                        }
+                        inMetallic = if (cfg.isMultiplyMetallic) {
+                            val fac = pushConstantNode1f("uMetallic").output
+                            multiplyNode(metallicVal, fac).output
+                        } else {
+                            metallicVal
                         }
                     } else {
                         inMetallic = pushConstantNode1f("uMetallic").output
@@ -338,7 +360,6 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     var aoFactor = constFloat(1f)
                     if (cfg.isAoMapped) {
                         val occlusion = rmoSamplers.getOrPut(cfg.aoTexName) { texture2dSamplerNode(texture2dNode(cfg.aoTexName), ifTexCoords!!.output).outColor }
-                        rmoSamplers[cfg.aoTexName] = occlusion
                         val rawAo = splitNode(occlusion, cfg.occlusionChannel).output
                         aoFactor = if (cfg.aoStrength != 1f) {
                             val str = cfg.aoStrength

@@ -42,23 +42,23 @@ import kotlin.math.min
  */
 @Serializable
 data class GltfFile(
-        val extensionsUsed: List<String> = emptyList(),
-        val extensionsRequired: List<String> = emptyList(),
-        val accessors: List<GltfAccessor> = emptyList(),
-        val animations: List<GltfAnimation> = emptyList(),
-        val asset: GltfAsset,
-        val buffers: List<GltfBuffer> = emptyList(),
-        val bufferViews: List<GltfBufferView> = emptyList(),
-        //val cameras List<Camera> = emptyList(),
-        val images: List<GltfImage> = emptyList(),
-        val materials: List<GltfMaterial> = emptyList(),
-        val meshes: List<GltfMesh> = emptyList(),
-        val nodes: List<GltfNode> = emptyList(),
-        //val samplers: List<Sampler> = emptyList(),
-        val scene: Int = 0,
-        val scenes: List<GltfScene> = emptyList(),
-        val skins: List<GltfSkin> = emptyList(),
-        val textures: List<GltfTexture> = emptyList()
+    val extensionsUsed: List<String> = emptyList(),
+    val extensionsRequired: List<String> = emptyList(),
+    val accessors: List<GltfAccessor> = emptyList(),
+    val animations: List<GltfAnimation> = emptyList(),
+    val asset: GltfAsset,
+    val buffers: List<GltfBuffer> = emptyList(),
+    val bufferViews: List<GltfBufferView> = emptyList(),
+    //val cameras List<Camera> = emptyList(),
+    val images: List<GltfImage> = emptyList(),
+    val materials: List<GltfMaterial> = emptyList(),
+    val meshes: List<GltfMesh> = emptyList(),
+    val nodes: List<GltfNode> = emptyList(),
+    //val samplers: List<Sampler> = emptyList(),
+    val scene: Int = 0,
+    val scenes: List<GltfScene> = emptyList(),
+    val skins: List<GltfSkin> = emptyList(),
+    val textures: List<GltfTexture> = emptyList()
 ) {
 
     fun makeModel(modelCfg: ModelGenerateConfig = ModelGenerateConfig(), scene: Int = this.scene): Model {
@@ -116,24 +116,25 @@ data class GltfFile(
     }
 
     class ModelGenerateConfig(
-            val generateNormals: Boolean = false,
-            val applyMaterials: Boolean = true,
-            val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
-            val loadAnimations: Boolean = true,
-            val applySkins: Boolean = true,
-            val applyMorphTargets: Boolean = true,
-            val applyTransforms: Boolean = false,
-            val removeEmptyNodes: Boolean = true,
-            val mergeMeshesByMaterial: Boolean = false,
-            val sortNodesByAlpha: Boolean = true,
-            val pbrBlock: (PbrMaterialConfig.(GltfMesh.Primitive) -> Unit)? = null
+        val generateNormals: Boolean = false,
+        val applyMaterials: Boolean = true,
+        val materialConfig: ModelMaterialConfig = ModelMaterialConfig(),
+        val setVertexAttribsFromMaterial: Boolean = false,
+        val loadAnimations: Boolean = true,
+        val applySkins: Boolean = true,
+        val applyMorphTargets: Boolean = true,
+        val applyTransforms: Boolean = false,
+        val removeEmptyNodes: Boolean = true,
+        val mergeMeshesByMaterial: Boolean = false,
+        val sortNodesByAlpha: Boolean = true,
+        val pbrBlock: (PbrMaterialConfig.(GltfMesh.Primitive) -> Unit)? = null
     )
 
     class ModelMaterialConfig(
-            val shadowMaps: List<ShadowMap> = emptyList(),
-            val scrSpcAmbientOcclusionMap: Texture2d? = null,
-            val environmentMaps: EnvironmentMaps? = null,
-            val isDeferredShading: Boolean = false
+        val shadowMaps: List<ShadowMap> = emptyList(),
+        val scrSpcAmbientOcclusionMap: Texture2d? = null,
+        val environmentMaps: EnvironmentMaps? = null,
+        val isDeferredShading: Boolean = false
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
@@ -523,15 +524,15 @@ data class GltfFile(
         }
 
         private fun GltfNode.createMeshes(model: Model, nodeGrp: Group, cfg: ModelGenerateConfig) {
-            meshRef?.primitives?.forEachIndexed { index, p ->
+            meshRef?.primitives?.forEachIndexed { index, prim ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
-                val geometry = p.toGeometry(cfg.generateNormals, accessors)
+                val geometry = prim.toGeometry(cfg, accessors)
                 if (!geometry.isEmpty()) {
                     val mesh = Mesh(geometry, name)
                     nodeGrp += mesh
 
-                    meshesByMaterial.getOrPut(p.material) { mutableSetOf() } += mesh
-                    meshMaterials[mesh] = p.materialRef
+                    meshesByMaterial.getOrPut(prim.material) { mutableSetOf() } += mesh
+                    meshMaterials[mesh] = prim.materialRef
 
                     if (cfg.loadAnimations && cfg.applySkins && skin >= 0) {
                         mesh.skin = model.skins[skin]
@@ -542,16 +543,16 @@ data class GltfFile(
                         }
                         mesh.isFrustumChecked = false
                     }
-                    if (cfg.loadAnimations && cfg.applyMorphTargets && p.targets.isNotEmpty()) {
-                        mesh.morphWeights = FloatArray(p.targets.sumOf { it.size })
+                    if (cfg.loadAnimations && cfg.applyMorphTargets && prim.targets.isNotEmpty()) {
+                        mesh.morphWeights = FloatArray(prim.targets.sumOf { it.size })
                         mesh.isFrustumChecked = false
                     }
 
                     if (cfg.applyMaterials) {
                         var renderDeferred = cfg.materialConfig.isDeferredShading
-                        val useVertexColor = p.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
+                        val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
                         val pbrConfig = PbrMaterialConfig().apply {
-                            val material = p.materialRef
+                            val material = prim.materialRef
                             if (material != null) {
                                 material.applyTo(this, useVertexColor, this@GltfFile)
                             } else {
@@ -570,7 +571,7 @@ data class GltfFile(
                                 matCfg.scrSpcAmbientOcclusionMap?.let { useScreenSpaceAmbientOcclusion(it) }
                                 useImageBasedLighting(matCfg.environmentMaps)
                             }
-                            cfg.pbrBlock?.invoke(this, p)
+                            cfg.pbrBlock?.invoke(this, prim)
 
                             if (alphaMode is AlphaModeBlend) {
                                 mesh.isOpaque = false

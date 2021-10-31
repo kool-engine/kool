@@ -484,6 +484,7 @@ interface PxContactPairHeaderFlags {
 
 [Prefix="physx::"]
 interface PxContactPair {
+    unsigned long extractContacts(PxContactPairPoint userBuffer, unsigned long bufferSize);
     attribute PxShape[] shapes;
     attribute octet contactCount;
     attribute octet patchCount;
@@ -516,6 +517,16 @@ interface PxContactPairHeader {
     [Value] attribute PxContactPairHeaderFlags flags;
     [Const] attribute PxContactPair pairs;
     attribute unsigned long nbPairs;
+};
+
+[Prefix="physx::"]
+interface PxContactPairPoint {
+    [Value] attribute PxVec3 position;
+    attribute float separation;
+    [Value] attribute PxVec3 normal;
+    attribute unsigned long internalFaceIndex0;
+    [Value] attribute PxVec3 impulse;
+    attribute unsigned long internalFaceIndex1;
 };
 
 [Prefix="physx::"]
@@ -3329,6 +3340,16 @@ interface Vector_PxActorPtr {
     PxActorPtr data();
     unsigned long size();
     void push_back(PxActor value);
+    void clear();
+};
+
+interface Vector_PxContactPairPoint {
+    void Vector_PxContactPairPoint();
+    void Vector_PxContactPairPoint(unsigned long size);
+    [Ref] PxContactPairPoint at(unsigned long index);
+    PxContactPairPoint data();
+    unsigned long size();
+    void push_back([Ref] PxContactPairPoint value);
     void clear();
 };
 
