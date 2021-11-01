@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Uniform3f
 import de.fabmax.kool.pipeline.UniformColor
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logW
 
 class RaySphereIntersectionNode(graph: ShaderGraph) : ShaderNode("raySphereIntersection", graph) {
     override fun generateCode(generator: CodeGenerator) {
@@ -76,8 +77,13 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
         super.setup(shaderGraph)
         dependsOn(inSceneColor, inSceneDepth, inScenePos, inSkyColor, inViewDepth, inCamPos, inLookDir)
 
-        inSunShadow?.let { dependsOn(it) }
         inSunShadowProj?.let { dependsOn(it) }
+        inSunShadow?.let {
+            if (!it.isDepthTexture) {
+                logW { "sunShadow texture is supposed to be a depth texture" }
+            }
+            dependsOn(it)
+        }
 
         shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
@@ -171,13 +177,11 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
                         inScatterPt += dir * stepSize;
                         
                         vec4 posLightSpaceProj = ${sunProj.name} * vec4(inScatterPt, 1.0);
-                        vec3 posLightSpace = posLightSpaceProj.xyz / posLightSpaceProj.w;
-                        float shadowDepth = ${generator.sampleTexture2d(sunShadow.name, "posLightSpace.xy")}.x;
-                        bool isInShadow = posLightSpaceProj.z > shadowDepth;
+                        float shadowFac = ${generator.sampleTexture2dDepth(sunShadow.name, "posLightSpaceProj")};
                         
                         float dPlanetIn, dPlanetOut;
                         bool planetHit = raySphereIntersection(inScatterPt, dirToSun, vec3(0.0), $uSurfaceRadius, dPlanetIn, dPlanetOut);
-                        if (!planetHit && !isInShadow) {
+                        if (!planetHit && shadowFac > 0.01) {
                             vec3 verticalDir = normalize(inScatterPt);
                             float cosTheta = dot(dirToSun, verticalDir);
                             float altitude = (length(inScatterPt) - $uSurfaceRadius) / atmosphereThickness;
@@ -188,7 +192,7 @@ class AtmosphereNode(val opticalDepthLut: Texture2dNode, graph: ShaderGraph) : S
                             float localDensity = opticalDepthToSun.y;
                             vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * $uScatteringCoeffs);
 
-                            inScatteredLight += localDensity * transmittance * $uScatteringCoeffs * stepSize;
+                            inScatteredLight += localDensity * transmittance * $uScatteringCoeffs * stepSize * shadowFac;
                         }
                     }
                     
