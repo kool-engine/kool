@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -167,6 +168,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract suspend fun loadAndPrepareTexture(texData: TextureData, props: TextureProps = TextureProps(), name: String? = null): Texture2d
 
     abstract suspend fun loadAndPrepareCubeMap(texData: TextureDataCube, props: TextureProps = TextureProps(), name: String? = null): TextureCube
+
+    abstract suspend fun loadAudioClip(assetPath: String): AudioClip
 
     fun assetPathToName(assetPath: String): String {
         return if (assetPath.startsWith("data:", true)) {

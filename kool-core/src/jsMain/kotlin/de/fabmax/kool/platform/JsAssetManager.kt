@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
@@ -12,11 +13,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
-import org.w3c.dom.Element
-import org.w3c.dom.Image
+import org.w3c.dom.*
 import org.w3c.dom.events.Event
-import org.w3c.dom.get
-import org.w3c.dom.set
 import org.w3c.files.FileList
 import org.w3c.files.get
 import org.w3c.xhr.ARRAYBUFFER
@@ -229,6 +227,14 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         tex.loadedTexture = TextureLoader.loadTextureCube(ctx, props, texData)
         tex.loadingState = Texture.LoadingState.LOADED
         return tex
+    }
+
+    override suspend fun loadAudioClip(assetPath: String): AudioClip {
+        return if (isHttpAsset(assetPath)) {
+            AudioClip(assetPath)
+        } else {
+            AudioClip("$assetsBaseDir/$assetPath")
+        }
     }
 
     companion object {

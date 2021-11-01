@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
@@ -276,6 +277,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
             deferred.complete(tex)
         }
         return deferred.await()
+    }
+
+    override suspend fun loadAudioClip(assetPath: String): AudioClip {
+        val asset = loadAsset(assetPath) ?: throw FileNotFoundException(assetPath)
+        return AudioClip(asset.toArray())
     }
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
