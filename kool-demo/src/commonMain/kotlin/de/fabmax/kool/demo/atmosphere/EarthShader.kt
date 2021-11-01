@@ -142,7 +142,7 @@ class EarthShader(textures: Map<String, Texture2d>, cfg: PbrMaterialConfig = sha
         lateinit var inEmissive: ShaderNodeIoVar
 
         val outAlbedo = ShaderNodeIoVar(ModelVar4f("${name}_outAlbedo"), this)
-        val outEmissive = ShaderNodeIoVar(ModelVar4f("${name}_outEmissive"), this)
+        val outEmissive = ShaderNodeIoVar(ModelVar3f("${name}_outEmissive"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -152,8 +152,8 @@ class EarthShader(textures: Map<String, Texture2d>, cfg: PbrMaterialConfig = sha
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
             float ${name}_mix = (clamp(dot($inNormal, $inSunDir), -0.05, 0.05) + 0.05) * 10.0;
-            ${outAlbedo.declare()} = $inAlbedo * ${name}_mix;
-            ${outEmissive.declare()} = $inEmissive * (1.0 - ${name}_mix) * 0.6;
+            ${outAlbedo.declare()} = ${inAlbedo.ref4f()} * ${name}_mix;
+            ${outEmissive.declare()} = ${inEmissive.ref3f()} * (1.0 - ${name}_mix) * 0.6;
         """)
         }
     }
