@@ -6,16 +6,21 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.PxVec3
+import physx.extensions.PxDefaultCpuDispatcher
 import physx.physics.*
 import physx.support.SupportFunctions
 import physx.support.TypeHelpers
+import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
 actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
+
+    private val cpuDispatcher: PxDefaultCpuDispatcher
 
     private val raycastResult = PxRaycastBuffer10()
     private val bufPxGravity = gravity.toPxVec3(PxVec3())
@@ -32,16 +37,20 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
 
     private val pxActors = mutableMapOf<PxRigidActor, RigidActor>()
 
+//    private val filterShader = TestShader()
+
     init {
         Physics.checkIsLoaded()
+        cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
 
         MemoryStack.stackPush().use { mem ->
             val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
-            sceneDesc.cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
+            sceneDesc.cpuDispatcher = this.cpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
             sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
+//            PxTopLevelFunctions.setupPassThroughFilterShader(sceneDesc, filterShader)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
@@ -96,6 +105,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
+        cpuDispatcher.destroy()
     }
 
     actual fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean {
@@ -129,6 +139,8 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
     }
 
     private inner class SimEventCallback : JavaSimulationEventCallback() {
+        val contacts = Vector_PxContactPairPoint(64)
+
         override fun onTrigger(pairs: PxTriggerPair, count: Int) {
             for (i in 0 until count) {
                 val pair = TypeHelpers.getTriggerPairAt(pairs, i)
@@ -160,6 +172,39 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
                     }
                 } else {
                     logE { "actor reference not found" }
+                }
+            }
+        }
+
+        override fun onContact(pairHeader: PxContactPairHeader, pairs: PxContactPair, nbPairs: Int) {
+            val actorA = pxActors[pairHeader.getActors(0)]
+            val actorB = pxActors[pairHeader.getActors(1)]
+
+            if (actorA == null || actorB == null) {
+                logW { "onContact: actor reference not found" }
+                return
+            }
+
+            for (i in 0 until nbPairs) {
+                val pair = TypeHelpers.getContactPairAt(pairs, i)
+                val evts = pair.events
+
+                if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
+                    val contactPoints: MutableList<ContactPoint>?
+                    val pxContactPoints = pair.extractContacts(contacts.data(), 64)
+                    if (pxContactPoints > 0) {
+                        contactPoints = mutableListOf()
+                        for (iPt in 0 until pxContactPoints) {
+                            val contact = contacts.at(iPt)
+                            contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
+                        }
+                    } else {
+                        contactPoints = null
+                    }
+                    fireOnTouchFound(actorA, actorB, contactPoints)
+
+                } else if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_LOST)) {
+                    fireOnTouchLost(actorA, actorB)
                 }
             }
         }

@@ -123,10 +123,11 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
     }
 
     private fun simEventCallback() = JavaSimulationEventCallback().apply {
+        val contacts = Vector_PxContactPairPoint(64)
+
         onConstraintBreak = { _, _ -> }
         onWake = { _, _ -> }
         onSleep = { _, _ -> }
-        onContact = { _, _, _ -> }
 
         onTrigger = { pairs: PxTriggerPair, count: Int ->
             for (i in 0 until count) {
@@ -159,6 +160,36 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
                     }
                 } else {
                     logE { "actor reference not found" }
+                }
+            }
+        }
+
+        onContact = { pairHeader, pairs, nbPairs ->
+            // fixme: actor array access does not work on JS
+            //val actorA = pxActors[pairHeader.actors[0].ptr]
+            //val actorB = pxActors[pairHeader.actors[1].ptr]
+            val fakeActor = pxActors.values.first()
+
+            for (i in 0 until nbPairs) {
+                val pair = Physics.TypeHelpers.getContactPairAt(pairs, i)
+                val evts = pair.events
+
+                if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
+                    val contactPoints: MutableList<ContactPoint>?
+                    val pxContactPoints = pair.extractContacts(contacts.data(), 64)
+                    if (pxContactPoints > 0) {
+                        contactPoints = mutableListOf()
+                        for (iPt in 0 until pxContactPoints) {
+                            val contact = contacts.at(iPt)
+                            contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
+                        }
+                    } else {
+                        contactPoints = null
+                    }
+                    fireOnTouchFound(fakeActor, fakeActor, contactPoints)
+
+                } else if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_LOST)) {
+                    fireOnTouchLost(fakeActor, fakeActor)
                 }
             }
         }

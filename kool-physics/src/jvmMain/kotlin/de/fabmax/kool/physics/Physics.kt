@@ -16,6 +16,7 @@ import physx.cooking.PxCookingParams
 import physx.cooking.PxMeshMidPhaseEnum
 import physx.cooking.PxMidphaseDesc
 import physx.extensions.PxDefaultAllocator
+import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
 import physx.physics.PxShapeFlagEnum
 import physx.physics.PxShapeFlags
@@ -24,6 +25,13 @@ import physx.vehicle.PxVehicleUpdateModeEnum
 import kotlin.coroutines.CoroutineContext
 
 actual object Physics : CoroutineScope {
+
+    actual val NOTIFY_TOUCH_FOUND: Int
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
+    actual val NOTIFY_TOUCH_LOST: Int
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST
+    actual val NOTIFY_CONTACT_POINTS: Int
+        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
 
     private val job = Job()
     override val coroutineContext: CoroutineContext

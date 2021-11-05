@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.audio
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.now
 import de.fabmax.kool.util.logE
 import java.io.ByteArrayInputStream
@@ -68,7 +69,7 @@ actual class AudioClip(private val audioData: ByteArray) {
     }
 
     companion object {
-        const val MIN_PLAY_INTERVAL_MS = 100.0
+        const val MIN_PLAY_INTERVAL_MS = 150.0
         const val MAX_CLIP_POOL_SIZE = 5
     }
 
@@ -94,7 +95,7 @@ actual class AudioClip(private val audioData: ByteArray) {
                 val gainControl = clip?.getControl(FloatControl.Type.MASTER_GAIN)
                 if (gainControl != null) {
                     gainControl as FloatControl
-                    gainControl.value = 20f * log10(value)
+                    gainControl.value = (20f * log10(value)).clamp(-79.9f, 0f)
                 }
             }
 

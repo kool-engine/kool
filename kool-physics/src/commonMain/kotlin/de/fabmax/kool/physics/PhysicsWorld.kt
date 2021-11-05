@@ -33,6 +33,7 @@ abstract class CommonPhysicsWorld : Releasable {
         get() = mutArticulations
 
     protected val triggerListeners = mutableMapOf<RigidActor, TriggerListenerContext>()
+    protected val contactListeners = mutableListOf<ContactListener>()
 
     private var registeredAtScene: Scene? = null
     private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
@@ -59,6 +60,26 @@ abstract class CommonPhysicsWorld : Releasable {
     fun unregisterTriggerListener(listener: TriggerListener) {
         triggerListeners.values.forEach { it.listeners -= listener }
         triggerListeners.keys.removeAll { k -> triggerListeners[k]?.listeners?.isEmpty() ?: false }
+    }
+
+    fun registerContactListener(listener: ContactListener) {
+        contactListeners += listener
+    }
+
+    fun unregisterContactListener(listener: ContactListener) {
+        contactListeners -= listener
+    }
+
+    protected fun fireOnTouchFound(a: RigidActor, b: RigidActor, contactPoints: List<ContactPoint>?) {
+        for (i in contactListeners.indices) {
+            contactListeners[i].onTouchFound(a, b, contactPoints)
+        }
+    }
+
+    protected fun fireOnTouchLost(a: RigidActor, b: RigidActor) {
+        for (i in contactListeners.indices) {
+            contactListeners[i].onTouchLost(a, b)
+        }
     }
 
     override fun release() {

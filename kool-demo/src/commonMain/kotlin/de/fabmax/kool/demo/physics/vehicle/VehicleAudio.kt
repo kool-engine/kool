@@ -3,11 +3,19 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.audio.*
+import de.fabmax.kool.physics.ContactListener
+import de.fabmax.kool.physics.ContactPoint
+import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RigidActor
 import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 
-class VehicleAudio() {
+class VehicleAudio(physicsWorld: PhysicsWorld) {
+
+    var isEnabled = false
 
     var rpm = 0f
     var throttle = 0f
@@ -27,8 +35,19 @@ class VehicleAudio() {
     private lateinit var squealMix: SquealModulateNode
     private lateinit var gearShiftNode: WavNode
 
+    private val contactListener = VehicleContactListener()
+    private val crashSounds = mutableListOf<AudioClip>()
+
+    init {
+        physicsWorld.registerContactListener(contactListener)
+    }
+
     suspend fun loadAudio(assetMgr: AssetManager) {
         assetMgr.apply {
+            for (i in 1..5) {
+                crashSounds += loadAudioClip("${Demo.soundsBasePath}/car/crash$i.wav")
+            }
+
             val idle1 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_idle1.wav")!!))
             val idle2 = WavNode(WavFile(loadAsset("${Demo.soundsBasePath}/car/rpm_idle2.wav")!!))
             val idleMix = ModulateNode(idle1, idle2).apply { gain = 1.5f }
@@ -70,6 +89,7 @@ class VehicleAudio() {
     }
 
     fun start() {
+        isEnabled = true
         val gearShiftGain = 0.5f
 
         audioOutput = AudioOutput().apply {
@@ -105,6 +125,30 @@ class VehicleAudio() {
     fun stop() {
         audioOutput?.close()
         audioOutput = null
+        isEnabled = false
+    }
+
+    private inner class VehicleContactListener : ContactListener {
+        override fun onTouchFound(actorA: RigidActor, actorB: RigidActor, contactPoints: List<ContactPoint>?) {
+            if (isEnabled && crashSounds.isNotEmpty()) {
+                var impulse = 10000f
+                contactPoints?.let {
+                    impulse = 0f
+                    it.forEach { pt ->
+                        val imp = pt.impulse.length()
+                        if (imp > impulse) {
+                            impulse = imp
+                        }
+                    }
+                }
+
+                if (impulse > 100f) {
+                    val clip = crashSounds[randomI(crashSounds.indices)]
+                    clip.play()
+                    clip.volume = (sqrt(impulse) / 400).clamp(0.2f, 0.5f)
+                }
+            }
+        }
     }
 
     private open class ModulateNode(in1: AudioNode, in2: AudioNode) : MixNode(listOf(in1, in2)) {

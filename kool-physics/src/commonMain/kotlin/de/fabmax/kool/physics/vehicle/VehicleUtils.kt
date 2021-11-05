@@ -20,8 +20,8 @@ object VehicleUtils {
 
     fun defaultChassisShape(boxSize: Vec3f) = defaultChassisShape(BoxGeometry(boxSize))
 
-    fun defaultChassisShape(geometry: CollisionGeometry): Shape {
-        val simFilterData = FilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST)
+    fun defaultChassisShape(geometry: CollisionGeometry, contactFlags: Int = 0): Shape {
+        val simFilterData = FilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST, contactFlags)
         val qryFilterData = setupNonDrivableSurface(FilterData())
         return Shape(geometry, defaultChassisMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
     }

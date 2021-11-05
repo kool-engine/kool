@@ -12,4 +12,8 @@ expect object Physics : CoroutineScope {
 
     suspend fun awaitLoaded()
 
+    val NOTIFY_TOUCH_FOUND: Int
+    val NOTIFY_TOUCH_LOST: Int
+    val NOTIFY_CONTACT_POINTS: Int
+
 }

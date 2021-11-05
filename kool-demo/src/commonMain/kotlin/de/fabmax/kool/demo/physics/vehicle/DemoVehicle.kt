@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
@@ -31,7 +32,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
     val vehicle: Vehicle
     val vehicleGroup = Group()
 
-    val vehicleAudio = VehicleAudio()
+    val vehicleAudio = VehicleAudio(world.physics)
 
     private lateinit var vehicleGeometry: ConvexMeshGeometry
 
@@ -227,7 +228,7 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         ))
 
         vehicleGeometry = ConvexMeshGeometry(vehicleMesh)
-        val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry)
+        val chassisBox = VehicleUtils.defaultChassisShape(vehicleGeometry, Physics.NOTIFY_TOUCH_FOUND or Physics.NOTIFY_CONTACT_POINTS)
         vehicleProps.chassisShapes = listOf(chassisBox)
 
         val vehicle = Vehicle(vehicleProps, world.physics)

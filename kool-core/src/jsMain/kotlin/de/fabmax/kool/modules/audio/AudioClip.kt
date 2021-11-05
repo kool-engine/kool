@@ -59,6 +59,16 @@ actual class AudioClip(val assetPath: String) {
         latestClip.stop()
     }
 
+    companion object {
+        const val MIN_PLAY_INTERVAL_MS = 150.0
+        const val MAX_CLIP_POOL_SIZE = 5
+    }
+
+    private enum class ClipState {
+        STOPPED,
+        PLAYING
+    }
+
     private inner class ClipWrapper {
         val audioElement = Audio(assetPath)
 
@@ -110,15 +120,5 @@ actual class AudioClip(val assetPath: String) {
             audioElement.pause()
             clipState = ClipState.STOPPED
         }
-    }
-
-    companion object {
-        const val MIN_PLAY_INTERVAL_MS = 100.0
-        const val MAX_CLIP_POOL_SIZE = 5
-    }
-
-    private enum class ClipState {
-        STOPPED,
-        PLAYING
     }
 }

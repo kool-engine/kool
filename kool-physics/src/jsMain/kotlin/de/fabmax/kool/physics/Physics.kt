@@ -12,6 +12,13 @@ import kotlin.coroutines.CoroutineContext
 @Suppress("UnsafeCastFromDynamic")
 actual object Physics : CoroutineScope {
 
+    actual val NOTIFY_TOUCH_FOUND: Int
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
+    actual val NOTIFY_TOUCH_LOST: Int
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST
+    actual val NOTIFY_CONTACT_POINTS: Int
+        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
+
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job
