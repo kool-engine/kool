@@ -18,6 +18,7 @@ fun main() {
     val ctx = createContext {
         renderBackend = Lwjgl3Context.Backend.OPEN_GL
         title = "Kool Demo @ ${renderBackend.displayName}"
+        setWindowed(1600, 900)
     }
 
     // launch demo

@@ -53,15 +53,23 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
 
         // create window
-        val monHndl = if (props.monitor == 0) 0L else DesktopImpl.monitors[props.monitor].monitor
-        glfwWindowHandle = glfwCreateWindow(props.width, props.height, props.title, monHndl, props.share)
+        val monitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
+        val width = if (props.width < 0) monitor.widthPx else props.width
+        val height = if (props.height < 0) monitor.heightPx else props.height
+        glfwWindowHandle = glfwCreateWindow(width, height, props.title, 0L, props.share)
+        if (props.isFullscreen) {
+            glfwSetWindowMonitor(glfwWindowHandle, monitor.monitor, 0, 0, width, height, GLFW_DONT_CARE)
+        }
+        windowWidth = width
+        windowHeight = height
+
         if (glfwWindowHandle == MemoryUtil.NULL) {
             throw KoolException("Failed to create the GLFW window")
         }
 
-        glfwSetFramebufferSizeCallback(glfwWindowHandle) { _, width, height ->
-            windowWidth = width
-            windowHeight = height
+        glfwSetFramebufferSizeCallback(glfwWindowHandle) { _, w, h ->
+            windowWidth = w
+            windowHeight = h
         }
 
         // make the OpenGL context current

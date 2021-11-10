@@ -23,13 +23,21 @@ class GlfwWindow(val sys: VkSystem, var width: Int = 800, var height: Int = 600)
 
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
 
-        val monHndl = if (sys.props.monitor == 0) 0L else DesktopImpl.monitors[sys.props.monitor].monitor
-        glfwWindow = GLFW.glfwCreateWindow(width, height, sys.props.title, monHndl, sys.props.share)
-        GLFW.glfwSetFramebufferSizeCallback(glfwWindow) { _, width, height ->
-            this.width = width
-            this.height = height
+        val monitor = if (sys.props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[sys.props.monitor]
+        val width = if (sys.props.width < 0) monitor.widthPx else sys.props.width
+        val height = if (sys.props.height < 0) monitor.heightPx else sys.props.height
+        glfwWindow = GLFW.glfwCreateWindow(1920, 1080, sys.props.title, 0L, sys.props.share)
+        if (sys.props.isFullscreen) {
+            GLFW.glfwSetWindowMonitor(glfwWindow, monitor.monitor, 0, 0, width, height, GLFW.GLFW_DONT_CARE)
+        }
+        this.width = width
+        this.height = height
+
+        GLFW.glfwSetFramebufferSizeCallback(glfwWindow) { _, w, h ->
+            this.width = w
+            this.height = h
             for (listener in onResize) {
-                listener.onResize(this, width, height)
+                listener.onResize(this, w, h)
             }
         }
 
