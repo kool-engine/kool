@@ -7,9 +7,9 @@ import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.vulkan.VK10.vkDeviceWaitIdle
 
-class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRenderBackend, val ctx: Lwjgl3Context) : VkResource() {
+class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjgl3Context) : VkResource() {
 
-    val window: GlfwWindow
+    val window: GlfwVkWindow
 
     val instance: Instance
     val physicalDevice: PhysicalDevice
@@ -25,7 +25,8 @@ class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(
     var swapChain: SwapChain? = null
 
     init {
-        window = GlfwWindow(this, backend.windowWidth, backend.windowHeight)
+        window = GlfwVkWindow(this, props.width, props.height, props.title)
+        window.isFullscreen = props.isFullscreen
         instance = Instance(this, props.title)
         window.createSurface()
 

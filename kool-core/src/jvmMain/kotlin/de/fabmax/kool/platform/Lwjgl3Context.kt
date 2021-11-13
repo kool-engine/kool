@@ -30,6 +30,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.windowWidth
     override val windowHeight: Int
         get() = renderBackend.windowHeight
+    override var isFullscreen: Boolean
+        get() = renderBackend.isFullscreen
+        set(value) { renderBackend.isFullscreen = value }
     var isWindowFocued: Boolean = false
         private set(value) {
             field = value
@@ -231,8 +234,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         }
 
         fun setFullscreen(monitor: Int = -1) {
-            this.width = -1
-            this.height = -1
+            this.width = 1600
+            this.height = 900
             this.monitor = monitor
             this.isFullscreen = true
         }

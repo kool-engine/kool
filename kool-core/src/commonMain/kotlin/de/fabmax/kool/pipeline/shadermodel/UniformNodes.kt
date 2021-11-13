@@ -107,7 +107,7 @@ class UniformMat3fNode(graph: ShaderGraph, name: String) : ShaderNode(name, grap
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
-            uniformBuffer(name, shaderGraph.stage) {
+            uniformBuffer("_${name}", shaderGraph.stage) {
                 stages += graph.stage
                 +{ uniform }
             }
@@ -122,7 +122,7 @@ class UniformMat4fNode(graph: ShaderGraph, name: String) : ShaderNode(name, grap
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
-            uniformBuffer(name, shaderGraph.stage) {
+            uniformBuffer("_${name}", shaderGraph.stage) {
                 stages += graph.stage
                 +{ uniform }
             }

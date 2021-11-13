@@ -18,17 +18,21 @@ import org.lwjgl.opengl.GL11C.glGetString
 import org.lwjgl.opengl.GL20.GL_MAX_TEXTURE_IMAGE_UNITS
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
-import org.lwjgl.system.MemoryUtil
 
 class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
     override val apiName: String
     override val deviceName: String
 
-    override var windowWidth = 0
-        private set
-    override var windowHeight = 0
-        private set
+    private val glfwWindow: GlfwGlWindow
+    override val windowWidth: Int
+        get() = glfwWindow.framebufferWidth
+    override val windowHeight: Int
+        get() = glfwWindow.framebufferHeight
     override val glfwWindowHandle: Long
+        get() = glfwWindow.windowPtr
+    override var isFullscreen: Boolean
+        get() = glfwWindow.isFullscreen
+        set(value) { glfwWindow.isFullscreen = value }
 
     override val shaderGenerator = ShaderGeneratorImplGL()
 
@@ -53,24 +57,9 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
 
         // create window
-        val monitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        val width = if (props.width < 0) monitor.widthPx else props.width
-        val height = if (props.height < 0) monitor.heightPx else props.height
-        glfwWindowHandle = glfwCreateWindow(width, height, props.title, 0L, props.share)
-        if (props.isFullscreen) {
-            glfwSetWindowMonitor(glfwWindowHandle, monitor.monitor, 0, 0, width, height, GLFW_DONT_CARE)
-        }
-        windowWidth = width
-        windowHeight = height
-
-        if (glfwWindowHandle == MemoryUtil.NULL) {
-            throw KoolException("Failed to create the GLFW window")
-        }
-
-        glfwSetFramebufferSizeCallback(glfwWindowHandle) { _, w, h ->
-            windowWidth = w
-            windowHeight = h
-        }
+        val fsMonitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
+        glfwWindow = GlfwGlWindow(props.width, props.height, props.title, fsMonitor)
+        glfwWindow.isFullscreen = props.isFullscreen
 
         // make the OpenGL context current
         glfwMakeContextCurrent(glfwWindowHandle)

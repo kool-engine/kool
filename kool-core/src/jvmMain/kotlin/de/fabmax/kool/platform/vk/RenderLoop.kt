@@ -34,8 +34,8 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
 
         sys.device.addDependingResource(this)
 
-        sys.window.onResize += object : GlfwWindow.OnWindowResizeListener {
-            override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
+        sys.window.onResize += object : GlfwVkWindow.OnWindowResizeListener {
+            override fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int) {
                 framebufferResized = true
             }
         }

@@ -42,6 +42,17 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         private set
     override var windowHeight = 0
         private set
+    override var isFullscreen = false
+        set(value) {
+            if (value != field) {
+                if (value) {
+                    canvas.requestFullscreen()
+                } else {
+                    document.exitFullscreen()
+                }
+                field = value
+            }
+        }
 
     private val canvas: HTMLCanvasElement
     internal val gl: WebGL2RenderingContext

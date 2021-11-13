@@ -23,11 +23,15 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override val apiName: String
     override val deviceName: String
 
-    override var windowWidth = 0
-        private set
-    override var windowHeight = 0
-        private set
+    override val windowWidth: Int
+        get() = vkSystem.window.framebufferWidth
+    override val windowHeight: Int
+        get() = vkSystem.window.framebufferHeight
     override val glfwWindowHandle: Long
+        get() = vkSystem.window.glfwWindow
+    override var isFullscreen: Boolean
+        get() = vkSystem.window.isFullscreen
+        set(value) { vkSystem.window.isFullscreen = value }
 
     override val projCorrectionMatrixScreen = Mat4d()
     override val projCorrectionMatrixOffscreen = Mat4d()
@@ -42,26 +46,21 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     private val renderPassGraph = RenderPassGraph()
 
     init {
-        windowWidth = props.width
-        windowHeight = props.height
-
         val vkSetup = VkSetup().apply {
             isValidating = true
         }
-        vkSystem = VkSystem(props, vkSetup, vkScene, this, ctx)
+        vkSystem = VkSystem(props, vkSetup, vkScene, ctx)
         semaPool = SemaphorePool(vkSystem)
         vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
 
-        glfwWindowHandle = vkSystem.window.glfwWindow
-
-        vkSystem.window.onResize += object : GlfwWindow.OnWindowResizeListener {
-            override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
-                windowWidth = newWidth
-                windowHeight = newHeight
-            }
-        }
+//        vkSystem.window.onResize += object : GlfwVkWindow.OnWindowResizeListener {
+//            override fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int) {
+//                windowWidth = newWidth
+//                windowHeight = newHeight
+//            }
+//        }
 
         // maps camera projection matrices to Vulkan screen coordinates
         projCorrectionMatrixScreen.apply {

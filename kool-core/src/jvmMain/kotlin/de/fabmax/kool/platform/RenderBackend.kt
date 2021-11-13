@@ -13,6 +13,7 @@ interface RenderBackend {
     val windowWidth: Int
     val windowHeight: Int
     val glfwWindowHandle: Long
+    var isFullscreen: Boolean
 
     val projCorrectionMatrixScreen: Mat4d
     val projCorrectionMatrixOffscreen: Mat4d
