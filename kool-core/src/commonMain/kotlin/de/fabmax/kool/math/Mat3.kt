@@ -59,7 +59,7 @@ class Mat3f {
         return this
     }
 
-    fun transpose(result: Mat4f): Mat4f {
+    fun transpose(result: Mat3f): Mat3f {
         result[0] = this[0]
         result[1] = this[3]
         result[2] = this[6]

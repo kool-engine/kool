@@ -191,22 +191,29 @@ class MappedUniform4i(val uniform: Uniform4i, val location: Int) : MappedUniform
 abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUniform {
     protected fun checkLoadingState(ctx: Lwjgl3Context, texture: Texture, arrayIdx: Int): Boolean {
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            texture.loader?.let { loader ->
-                texture.loadingState = Texture.LoadingState.LOADING
-                val defTex = ctx.assetMgr.loadTextureAsync(loader)
-                defTex.invokeOnCompletion { ex ->
-                    ctx.runOnMainThread {
-                        if (ex != null) {
-                            logE { "Texture loading failed: $ex" }
-                            texture.loadingState = Texture.LoadingState.LOADING_FAILED
-                        } else {
-                            texture.loadedTexture = getLoadedTex(defTex.getCompleted(), texture, ctx)
-                            texture.loadingState = Texture.LoadingState.LOADED
+            when (texture.loader) {
+                is AsyncTextureLoader -> {
+                    val deferredData = texture.loader.loadTextureDataAsync(ctx)
+                    deferredData.invokeOnCompletion { ex ->
+                        ctx.runOnMainThread {
+                            if (ex != null) {
+                                logE { "Texture loading failed: $ex" }
+                                texture.loadingState = Texture.LoadingState.LOADING_FAILED
+                            } else {
+                                texture.loadedTexture = getLoadedTex(deferredData.getCompleted(), texture, ctx)
+                                texture.loadingState = Texture.LoadingState.LOADED
+                            }
                         }
                     }
                 }
+                is BufferedTextureLoader -> {
+                    texture.loadedTexture = getLoadedTex(texture.loader.data, texture, ctx)
+                    texture.loadingState = Texture.LoadingState.LOADED
+                }
+                else -> {
+                    // loader is null
+                }
             }
-
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = texture.loadedTexture as LoadedTextureGl

@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by it's properties and a loader function which is called once the texture is used.
  */
-abstract class Texture(val props: TextureProps, val name: String?, val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
+abstract class Texture(val props: TextureProps, val name: String?, val loader: TextureLoader? = null) {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -50,29 +50,44 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: (
     }
 }
 
-open class Texture1d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData1d)? = null) :
+open class Texture1d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
+
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData1d)? = null) :
+            this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     override val type = "1D"
 }
 
-open class Texture2d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+open class Texture2d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
 
-    override val type = "2D"
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+            this(props, name, loader?.let { AsyncTextureLoader(it) })
+
+    constructor(props: TextureProps = TextureProps(), data: TextureData2d, name: String? = null) :
+            this(props, name, BufferedTextureLoader(data))
 
     constructor(assetPath: String, name: String? = null, props: TextureProps = TextureProps()) :
-            this(props, name, { it.loadTextureData(assetPath, props.format) })
+            this(props, name, AsyncTextureLoader { it.loadTextureData(assetPath, props.format) })
+
+    override val type = "2D"
 }
 
-open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+open class Texture3d(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
+
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureData)? = null) :
+            this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     override val type = "3D"
 }
 
-open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureDataCube)? = null) :
+open class TextureCube(props: TextureProps = TextureProps(), name: String? = null, loader: TextureLoader?) :
         Texture(props, name, loader) {
+
+    constructor(props: TextureProps = TextureProps(), name: String? = null, loader: (suspend CoroutineScope.(AssetManager) -> TextureDataCube)? = null) :
+            this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     override val type = "Cube"
 }
@@ -84,7 +99,7 @@ class SingleColorTexture(color: Color) : Texture2d(
                 mipMapping = false,
                 maxAnisotropy = 1),
         color.toString(),
-        loader = { getColorTextureData(color) }) {
+        loader = BufferedTextureLoader(getColorTextureData(color))) {
 
     override val type = "SingleColor"
 
@@ -106,7 +121,7 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256) : Texture1d(
                 mipMapping = false,
                 maxAnisotropy = 1),
         "gradientTex-$size",
-        loader = { TextureData1d.gradient(gradient, size) }) {
+        loader = BufferedTextureLoader(TextureData1d.gradient(gradient, size))) {
 
     override val type = "Gradient"
 

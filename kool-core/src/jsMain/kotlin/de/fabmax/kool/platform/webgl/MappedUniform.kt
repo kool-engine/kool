@@ -197,17 +197,25 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
     protected fun checkLoadingState(ctx: JsContext, texture: Texture, arrayIdx: Int): Boolean {
         val gl = ctx.gl
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            texture.loader?.let { loader ->
-                texture.loadingState = Texture.LoadingState.LOADING
-                val defTex = ctx.assetMgr.loadTextureAsync(loader)
-                defTex.invokeOnCompletion { ex ->
-                    if (ex != null) {
-                        logE { "Texture loading failed: $ex" }
-                        texture.loadingState = Texture.LoadingState.LOADING_FAILED
-                    } else {
-                        texture.loadedTexture = getLoadedTex(defTex.getCompleted(), texture, ctx)
-                        texture.loadingState = Texture.LoadingState.LOADED
+            when (texture.loader) {
+                is AsyncTextureLoader -> {
+                    val deferredData = texture.loader.loadTextureDataAsync(ctx)
+                    deferredData.invokeOnCompletion { ex ->
+                        if (ex != null) {
+                            logE { "Texture loading failed: $ex" }
+                            texture.loadingState = Texture.LoadingState.LOADING_FAILED
+                        } else {
+                            texture.loadedTexture = getLoadedTex(deferredData.getCompleted(), texture, ctx)
+                            texture.loadingState = Texture.LoadingState.LOADED
+                        }
                     }
+                }
+                is BufferedTextureLoader -> {
+                    texture.loadedTexture = getLoadedTex(texture.loader.data, texture, ctx)
+                    texture.loadingState = Texture.LoadingState.LOADED
+                }
+                else -> {
+                    // loader is null
                 }
             }
         }

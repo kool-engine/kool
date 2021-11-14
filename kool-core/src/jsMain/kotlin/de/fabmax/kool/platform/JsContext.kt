@@ -42,17 +42,18 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         private set
     override var windowHeight = 0
         private set
-    override var isFullscreen = false
+    override var isFullscreen
+        get() = isFullscreenEnabled
         set(value) {
-            if (value != field) {
+            if (value != isFullscreenEnabled) {
                 if (value) {
                     canvas.requestFullscreen()
                 } else {
                     document.exitFullscreen()
                 }
-                field = value
             }
         }
+    private var isFullscreenEnabled = false
 
     private val canvas: HTMLCanvasElement
     internal val gl: WebGL2RenderingContext
@@ -91,6 +92,11 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         if (extAnisotropic != null) {
             glCapabilities.maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
             glCapabilities.glTextureMaxAnisotropyExt = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
+        }
+
+        document.onfullscreenchange = {
+            isFullscreenEnabled = document.fullscreenElement != null
+            null
         }
 
         screenDpi = JsImpl.dpi

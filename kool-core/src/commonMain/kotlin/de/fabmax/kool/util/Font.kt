@@ -2,10 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.pipeline.AddressMode
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 
 /**
  * @author fabmax
@@ -33,7 +30,7 @@ class Font(val charMap: CharMap) : Texture2d(
                 addressModeV = AddressMode.CLAMP_TO_EDGE
         ),
         charMap.toString(),
-        loader = { charMap.textureData }) {
+        loader = BufferedTextureLoader(charMap.textureData)) {
 
     override val type = "Font"
 
