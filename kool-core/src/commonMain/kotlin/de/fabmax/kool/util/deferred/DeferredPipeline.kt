@@ -17,7 +17,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
     val aoPipeline: AoPipeline.DeferredAoPipeline?
     val reflectionPass: ReflectionPass?
     val reflectionDenoisePass: ReflectionDenoisePass?
-    val bloomPass: BloomPass?
+    val bloom: Bloom?
     val shadowMaps: List<ShadowMap>
 
     val contentGroup: Group
@@ -56,13 +56,16 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
             field = value && isBloomAvailable
             updateEnabled()
         }
-    var bloomMapSize = 0.5f
+
     var bloomStrength: Float
         get() = outputShader.bloomStrength.value
         set(value) { outputShader.bloomStrength(value) }
-    var bloomRadius: Float
-        get() = bloomPass?.bloomRadius ?: 0f
-        set(value) { bloomPass?.bloomRadius = value }
+    var bloomScale: Float
+        get() = bloom?.blurPass?.bloomScale ?: 0f
+        set(value) { bloom?.blurPass?.bloomScale = value }
+    var bloomMapSize: Int
+        get() = bloom?.desiredMapHeight ?: 0
+        set(value) { bloom?.desiredMapHeight = value }
 
     init {
         mrtPass = DeferredMrtPass(scene, cfg.isWithExtendedMaterials)
@@ -99,13 +102,15 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         }
 
         if (cfg.isWithBloom) {
-            bloomPass = BloomPass(pbrPass)
-            scene.addOffscreenPass(bloomPass)
+            bloom = Bloom(cfg, pbrPass)
+            scene.addOffscreenPass(bloom.thresholdPass)
+            scene.addOffscreenPass(bloom.blurPass)
+
         } else {
-            bloomPass = null
+            bloom = null
         }
 
-        renderOutput = createOutputQuad(cfg.outputDepthTest)
+        renderOutput = createOutputQuad(cfg)
         outputShader = renderOutput.shader as DeferredOutputShader
 
         scene.onRenderScene += { ctx ->
@@ -126,13 +131,7 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
                 }
             }
 
-            bloomPass?.let { rp ->
-                val bloomMapW = (vpW * bloomMapSize).roundToInt()
-                val bloomMapH = (vpH * bloomMapSize).roundToInt()
-                if (bloomMapW > 0 && bloomMapH > 0 && (bloomMapW != rp.width || bloomMapH != rp.height)) {
-                    rp.resize(bloomMapW, bloomMapH, ctx)
-                }
-            }
+            bloom?.checkSize(vpW, vpH, ctx)
         }
 
         scene.onDispose += {
@@ -142,17 +141,18 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
     }
 
     fun setBloomBrightnessThresholds(lower: Float, upper: Float) {
-        bloomPass?.setMinBrightnessThresholds(lower, upper)
+        bloom?.lowerThreshold = lower
+        bloom?.upperThreshold = upper
     }
 
-    private fun createOutputQuad(depthTestMode: DepthCompareOp) = textureMesh {
+    private fun createOutputQuad(cfg: DeferredPipelineConfig) = textureMesh {
         isFrustumChecked = false
         generate {
             rect {
                 mirrorTexCoordsY()
             }
         }
-        shader = DeferredOutputShader(pbrPass.colorTexture!!, mrtPass.depthTexture!!, bloomPass?.bloomMap, depthTestMode)
+        shader = DeferredOutputShader(cfg, pbrPass.colorTexture!!, mrtPass.depthTexture!!, bloom?.bloomMap)
     }
 
     private fun updateEnabled() {
@@ -163,8 +163,8 @@ class DeferredPipeline(val scene: Scene, cfg: DeferredPipelineConfig) {
         reflectionPass?.isEnabled = isEnabled && isSsrEnabled
         reflectionDenoisePass?.isEnabled = isEnabled && isSsrEnabled
         pbrPass.sceneShader.scrSpcReflectionMap(if (isSsrEnabled) reflectionDenoisePass?.colorTexture else noSsrMap)
-        bloomPass?.isEnabled = isEnabled && isBloomEnabled
-        outputShader.bloomMap(if (isBloomEnabled) bloomPass?.bloomMap else noBloomMap)
+        bloom?.isEnabled = isEnabled && isBloomEnabled
+        outputShader.bloomMap(if (isBloomEnabled) bloom?.bloomMap else noBloomMap)
     }
 
     private fun createShadowMapsFromSceneLights(): List<ShadowMap> {
@@ -191,10 +191,14 @@ class DeferredPipelineConfig {
     var isWithScreenSpaceReflections = false
     var isWithImageBasedLighting = false
     var isWithBloom = false
+    var isWithVignette = false
+    var isWithChromaticAberration = false
 
     var maxGlobalLights = 4
     var lightBacksides = false
     var baseReflectionStep = 0.1f
+    var bloomKernelSize = 8
+    var bloomAvgDownSampling = true
     var environmentMaps: EnvironmentMaps? = null
     var shadowMaps: List<ShadowMap>? = null
 

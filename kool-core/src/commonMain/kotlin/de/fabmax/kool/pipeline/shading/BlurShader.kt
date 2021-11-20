@@ -7,28 +7,21 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
 class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
-    val isVertical = IntInput("uIsVertical")
     val blurInput = Texture2dInput("tBlurInput")
-    val minBrightness = Vec2fInput("uMinBrightness", Vec2f(1f, 2f))
-    val radiusFac = Vec2fInput("uRadiusFac", Vec2f(1f / 800f, 1f / 450f))
-
-    var minBrightnessLower: Float
-        get() = minBrightness.value.x
-        set(value) {
-            minBrightness.value = Vec2f(value, minBrightness.value.y)
-        }
-    var minBrightnessUpper: Float
-        get() = minBrightness.value.y
-        set(value) {
-            minBrightness.value = Vec2f(minBrightness.value.x, value)
-        }
+    val direction = Vec2fInput("uBlurDirection", Vec2f(0.001f, 0f))
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        isVertical.connect(model)
         blurInput.connect(model)
-        minBrightness.connect(model)
-        radiusFac.connect(model)
+        direction.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
+    }
+
+    fun setXDirectionByTexWidth(width: Int, scale: Float = 1f) {
+        direction.value = Vec2f(1f / width * scale, 0f)
+    }
+
+    fun setYDirectionByTexHeight(height: Int, scale: Float = 1f) {
+        direction.value = Vec2f(0f, 1f / height * scale)
     }
 
     companion object {
@@ -41,13 +34,9 @@ class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
             }
             fragmentStage {
                 val inTex = texture2dNode("tBlurInput")
-                val inDir = pushConstantNode1i("uIsVertical").output
-                val blurNd = blurNode(inTex, ifTexCoords.output, inDir).apply {
+                val blurNd = blurNode(inTex, ifTexCoords.output).apply {
                     kernel = BlurNode.blurKernel(cfg.kernelRadius)
-                    inRadiusFac = pushConstantNode2f("uRadiusFac").output
-                    if (cfg.isWithMinBrightness) {
-                        minBrightness = pushConstantNode2f("uMinBrightness").output
-                    }
+                    inDirection = pushConstantNode2f("uBlurDirection").output
                 }
 
                 if (cfg.convertOutputHdrToLdr) {
@@ -61,7 +50,6 @@ class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
 }
 
 class BlurShaderConfig {
-    var kernelRadius = 4
-    var isWithMinBrightness = false
+    var kernelRadius = 8
     var convertOutputHdrToLdr = false
 }

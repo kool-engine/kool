@@ -5,10 +5,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -16,6 +13,7 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.deferred.*
+import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.sqrt
 
 class DeferredDemo : DemoScene("Deferred Shading") {
@@ -67,6 +65,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         // don't use any global lights
         lighting.lights.clear()
 
+        val ibl = EnvironmentHelper.singleColorEnvironment(this, Color(0.15f, 0.15f, 0.15f))
+
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 0
             isWithExtendedMaterials = true
@@ -74,12 +74,19 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             isWithScreenSpaceReflections = false
             isWithImageBasedLighting = false
             isWithBloom = true
+            isWithVignette = true
+            isWithChromaticAberration = true
+
+            // set output depth compare op to ALWAYS, so that the skybox with maximum depth value is drawn
+            outputDepthTest = DepthCompareOp.ALWAYS
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
         deferredPipeline.apply {
-            bloomRadius = 0.35f
+            bloomScale = 0.5f
             bloomStrength = 0.75f
-            outputShader.setupVignette(strength = 0f)
+            setBloomBrightnessThresholds(0.5f, 1f)
+
+            pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
         deferredPipeline.contentGroup.makeContent()
         +deferredPipeline.renderOutput
@@ -289,7 +296,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         images += image(imageShader = MetalRoughAoTex(deferredPipeline.mrtPass)).apply {
             setupImage(0.35f, 0.675f)
         }
-        images += image(imageShader = ModeledShader.HdrTextureColor(deferredPipeline.bloomPass?.bloomMap)).apply {
+        images += image(imageShader = ModeledShader.HdrTextureColor(deferredPipeline.bloom?.bloomMap)).apply {
             setupImage(0.35f, 0.025f)
         }
 
@@ -309,10 +316,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
         section("Bloom") {
             sliderWithValue("Strength", deferredPipeline.bloomStrength, 0f, 2f) { deferredPipeline.bloomStrength = value }
-            sliderWithValue("Radius", deferredPipeline.bloomRadius, 0f, 2f) { deferredPipeline.bloomRadius = value }
-            sliderWithValue("Min Brightness", deferredPipeline.bloomPass?.minBrightnessLower ?: 0f, 0f, 1f) {
-                deferredPipeline.bloomPass?.minBrightnessLower = value
-                deferredPipeline.bloomPass?.minBrightnessUpper = value + 0.2f
+            sliderWithValue("Radius", deferredPipeline.bloomScale, 0f, 2f) { deferredPipeline.bloomScale = value }
+            sliderWithValue("Min Brightness", deferredPipeline.bloom?.lowerThreshold ?: 0f, 0f, 2f) {
+                deferredPipeline.bloom?.lowerThreshold = value
+                deferredPipeline.bloom?.upperThreshold = value + 0.5f
             }
         }
         section("Scene") {

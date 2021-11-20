@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.pipeline.*
+import kotlin.math.round
 
 /**
  * @author fabmax
@@ -34,7 +35,7 @@ class Font(val charMap: CharMap) : Texture2d(
 
     override val type = "Font"
 
-    val lineSpace = charMap.fontProps.sizePts * 1.2f
+    val lineSpace = round(charMap.fontProps.sizePts * 1.2f)
     val normHeight = charMap.fontProps.sizePts * 0.7f
 
     constructor(fontProps: FontProps, ctx: KoolContext) : this(ctx.assetMgr.createCharMap(fontProps))

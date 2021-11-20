@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitInputTransform
@@ -43,7 +44,6 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
         ctx.assetMgr.launch {
             val ibl = EnvironmentHelper.hdriEnvironment(this@setupMainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-            +Skybox.cube(ibl.reflectionMap, 1f)
 
             val shadowMap = SimpleShadowMap(this@setupMainScene, 0).apply {
                 setDefaultDepthOffset(true)
@@ -54,8 +54,11 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 isWithAmbientOcclusion = true
                 isWithExtendedMaterials = true
                 maxGlobalLights = 1
+                isWithVignette = true
+                isWithBloom = true
                 useImageBasedLighting(ibl)
                 useShadowMaps(listOf(shadowMap))
+                outputDepthTest = DepthCompareOp.ALWAYS
             }
             val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
                 aoPipeline?.radius = 0.6f
@@ -68,6 +71,10 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
                     roses = Roses()
                     +roses
+                }
+
+                pbrPass.content.apply {
+                    +Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
                 }
             }
             shadowMap.drawNode = deferredPipeline.contentGroup

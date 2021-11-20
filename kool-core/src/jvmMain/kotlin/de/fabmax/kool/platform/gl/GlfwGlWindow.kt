@@ -89,6 +89,8 @@ open class GlfwGlWindow(width: Int, height: Int, title: String, fullscreenMonito
 
             val vidMode = glfwGetVideoMode(fsMonitor)!!
             glfwSetWindowMonitor(windowPtr, fsMonitor, 0, 0, vidMode.width(), vidMode.height(), GLFW_DONT_CARE)
+            // re-enable v-sync
+            glfwSwapInterval(1)
         } else {
             glfwSetWindowMonitor(windowPtr, 0, windowedPosX, windowedPosY, windowedWidth, windowedHeight, GLFW_DONT_CARE)
         }

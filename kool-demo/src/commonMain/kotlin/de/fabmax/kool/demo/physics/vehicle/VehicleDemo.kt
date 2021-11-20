@@ -67,6 +67,10 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithBloom = true
+            isWithVignette = true
+
+            bloomKernelSize = 10
+            bloomAvgDownSampling = false
 
             useImageBasedLighting(ibl)
             useShadowMaps(emptyList())
@@ -79,8 +83,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             aoPipeline?.mapSize = 0.75f
             pbrPass.sceneShader.ambientShadowFactor(0.3f)
             bloomStrength = 0.25f
-            bloomRadius = 1f
-            setBloomBrightnessThresholds(3.5f, 4.5f)
+            bloomScale = 1f
+            setBloomBrightnessThresholds(1f, 2f)
 
             pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }

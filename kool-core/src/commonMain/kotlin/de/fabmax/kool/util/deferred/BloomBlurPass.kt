@@ -8,46 +8,42 @@ import de.fabmax.kool.pipeline.shading.BlurShaderConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
+import kotlin.math.sqrt
 
-class BloomPass(val pbrPass: PbrLightingPass) :
+class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         OffscreenRenderPass2dPingPong(renderPassConfig {
-            name = "BloomPass"
-            setSize(pbrPass.config.width, pbrPass.config.height)
+            name = "BloomBlurPass"
+            setSize(0, 0)
             addColorTexture(TexFormat.RGBA_F16)
             clearDepthTexture()
         }) {
 
     private val pingShader: BlurShader
     private val pongShader: BlurShader
+    private var blurDirDirty = true
 
     val bloomMap: Texture2d
         get() = pong.colorTexture!!
-    var minBrightnessLower: Float
-        get() = pingShader.minBrightnessLower
-        set(value) { pingShader.minBrightnessLower = value }
-    var minBrightnessUpper: Float
-        get() = pingShader.minBrightnessUpper
-        set(value) { pingShader.minBrightnessUpper = value }
-    var bloomRadius = 1f
+
+    var bloomScale = 1f
         set(value) {
             field = value
-            updateBloomRadius()
+            blurDirDirty = true
         }
 
     init {
         pingPongPasses = 1
 
         val pingCfg = BlurShaderConfig().apply {
-            kernelRadius = 16
-            isWithMinBrightness = true
+            kernelRadius = kernelSize
         }
-        pingShader = BlurShader(pingCfg).apply { isVertical(0) }
-        pingShader.blurInput(pbrPass.colorTexture)
+        pingShader = BlurShader(pingCfg)
+        pingShader.blurInput(thresholdPass.colorTexture)
 
         val pongCfg = BlurShaderConfig().apply {
-            kernelRadius = 12
+            kernelRadius = kernelSize
         }
-        pongShader = BlurShader(pongCfg).apply { isVertical(1) }
+        pongShader = BlurShader(pongCfg)
         pongShader.blurInput(ping.colorTexture)
 
         pingContent.fullScreenQuad(pingShader)
@@ -55,24 +51,27 @@ class BloomPass(val pbrPass: PbrLightingPass) :
         ping.clearColor = Color(0f, 0f, 0f, 0f)
         pong.clearColor = Color(0f, 0f, 0f, 0f)
 
-        dependsOn(pbrPass)
+        dependsOn(thresholdPass)
     }
 
-    fun setMinBrightnessThresholds(lower: Float, upper: Float) {
-        minBrightnessLower = lower
-        minBrightnessUpper = upper
+    override fun update(ctx: KoolContext) {
+        super.update(ctx)
+//        pingShader.setXDirectionByTexWidth(width, bloomScale)
+//        pongShader.setYDirectionByTexHeight(height, bloomScale)
+
+        if (blurDirDirty) {
+            val sqrt2 = sqrt(2f)
+            val dx = 1f / width * bloomScale * sqrt2
+            val dy = 1f / height * bloomScale * sqrt2
+
+            pingShader.direction.value = Vec2f(dx, dy)
+            pongShader.direction.value = Vec2f(dx, -dy)
+        }
     }
 
     override fun resize(width: Int, height: Int, ctx: KoolContext) {
         super.resize(width, height, ctx)
-        updateBloomRadius()
-    }
-
-    private fun updateBloomRadius() {
-        val ar = width.toFloat() / height
-        val bloomRadius = Vec2f(bloomRadius / 800f, bloomRadius * ar / 800f)
-        pingShader.radiusFac(bloomRadius)
-        pongShader.radiusFac(bloomRadius)
+        blurDirDirty = true
     }
 
     private fun Group.fullScreenQuad(quadShader: Shader) {

@@ -518,11 +518,10 @@ class ShaderModel(val modelInfo: String = "") {
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
 
-        fun blurNode(inputTex: Texture2dNode? = null, texCoord: ShaderNodeIoVar? = null, direction: ShaderNodeIoVar?): BlurNode {
+        fun blurNode(inputTex: Texture2dNode? = null, texCoord: ShaderNodeIoVar? = null): BlurNode {
             val nd = addNode(BlurNode(stage))
             inputTex?.let { nd.inTexture = it }
             texCoord?.let { nd.inTexCoord = it }
-            direction?.let { nd.inDirection = it }
             return nd
         }
 

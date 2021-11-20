@@ -100,6 +100,8 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
             maxGlobalLights = 1
             shadowMaps = shadows
             pbrSceneShader = makeDeferredPbrShader(this)
+            isWithVignette = true
+            isWithChromaticAberration = true
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
         deferredPipeline.pbrPass.sceneShader.ambient(Color(0.05f, 0.05f, 0.05f).toLinear())

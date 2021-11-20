@@ -84,6 +84,7 @@ class GltfDemo : DemoScene("glTF Models") {
             isWithExtendedMaterials = true
             baseReflectionStep = 0.02f
             maxGlobalLights = 2
+            isWithVignette = true
             useImageBasedLighting(envMaps)
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg)

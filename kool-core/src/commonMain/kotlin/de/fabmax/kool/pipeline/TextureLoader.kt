@@ -9,8 +9,14 @@ import kotlinx.coroutines.async
 sealed class TextureLoader
 
 class AsyncTextureLoader(val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)) : TextureLoader() {
+    private var deferred: Deferred<TextureData>? = null
+
     fun loadTextureDataAsync(ctx: KoolContext): Deferred<TextureData> {
-        return ctx.assetMgr.async { loader(ctx.assetMgr) }
+        val def = deferred ?: ctx.assetMgr.async { loader(ctx.assetMgr) }
+        if (deferred == null) {
+            deferred = def
+        }
+        return def
     }
 }
 
