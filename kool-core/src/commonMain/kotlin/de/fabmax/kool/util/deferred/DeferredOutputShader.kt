@@ -61,7 +61,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
             }
             fragmentStage {
                 val linearColor = if (cfg.isWithChromaticAberration) {
-                    addNode(ChromaticAberrationNode(stage).apply {
+                    addNode(ChromaticAberrationSamplerNode(stage).apply {
                         inTexture = texture2dNode("deferredPbrOutput")
                         inTexCoord = ifTexCoords.output
                         inStrength = pushConstantNode3f("uChromaticAberration").output
@@ -72,7 +72,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
 
                 val color = if (cfg.isWithBloom) {
                     val bloom = if (cfg.isWithChromaticAberration) {
-                        addNode(ChromaticAberrationNode(stage).apply {
+                        addNode(ChromaticAberrationSamplerNode(stage).apply {
                             inTexture = texture2dNode("bloom")
                             inTexCoord = ifTexCoords.output
                             inStrength = pushConstantNode3f("uChromaticAberrationBloom").output
@@ -106,7 +106,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
         }
     }
 
-    private class VignetteNode(graph: ShaderGraph) : ShaderNode("vignette", graph) {
+    class VignetteNode(graph: ShaderGraph) : ShaderNode("vignette", graph) {
         lateinit var inColor: ShaderNodeIoVar
         lateinit var inTexCoord: ShaderNodeIoVar
         lateinit var inVignetteCfg: ShaderNodeIoVar
@@ -131,7 +131,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
         }
     }
 
-    private class ChromaticAberrationNode(graph: ShaderGraph) : ShaderNode("chromaticAberration_${graph.nextNodeId}", graph) {
+    class ChromaticAberrationSamplerNode(graph: ShaderGraph) : ShaderNode("chromaticAberration_${graph.nextNodeId}", graph) {
         lateinit var inTexCoord: ShaderNodeIoVar
         lateinit var inTexture: Texture2dNode
         lateinit var inStrength: ShaderNodeIoVar

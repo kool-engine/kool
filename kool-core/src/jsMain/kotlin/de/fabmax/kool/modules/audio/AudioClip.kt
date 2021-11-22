@@ -29,6 +29,8 @@ actual class AudioClip(val assetPath: String) {
             latestClip.loop = value
         }
 
+    actual var minIntervalMs: Float = MIN_PLAY_INTERVAL_MS
+
     private val clipPool = mutableListOf(ClipWrapper())
     private var latestClip = clipPool.first()
     private var lastPlay = Double.NEGATIVE_INFINITY
@@ -49,7 +51,7 @@ actual class AudioClip(val assetPath: String) {
 
     actual fun play() {
         val t = now()
-        if (t - lastPlay > MIN_PLAY_INTERVAL_MS) {
+        if (t - lastPlay > minIntervalMs) {
             lastPlay = t
             latestClip = nextClip().apply { play() }
         }
@@ -60,7 +62,7 @@ actual class AudioClip(val assetPath: String) {
     }
 
     companion object {
-        const val MIN_PLAY_INTERVAL_MS = 150.0
+        const val MIN_PLAY_INTERVAL_MS = 150f
         const val MAX_CLIP_POOL_SIZE = 5
     }
 

@@ -67,13 +67,11 @@ class BloomThresholdPass(val cfg: DeferredPipelineConfig, val pbrPass: PbrLighti
             get() = thresholds.value.x
             set(value) {
                 thresholds.value = Vec2f(value, thresholds.value.y)
-                println("lower threshold changed, new thresholds: ${thresholds.value}")
             }
         var upperThreshold: Float
             get() = thresholds.value.y
             set(value) {
                 thresholds.value = Vec2f(thresholds.value.x, value)
-                println("upper threshold changed, new thresholds: ${thresholds.value}")
             }
 
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {

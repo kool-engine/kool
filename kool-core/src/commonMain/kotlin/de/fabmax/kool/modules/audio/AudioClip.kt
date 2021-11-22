@@ -7,6 +7,7 @@ expect class AudioClip {
     val duration: Float
     val isEnded: Boolean
     var loop: Boolean
+    var minIntervalMs: Float
 
     fun play()
     fun stop()
