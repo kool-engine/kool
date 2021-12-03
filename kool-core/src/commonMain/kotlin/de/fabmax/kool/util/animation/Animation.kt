@@ -14,6 +14,8 @@ class Animation(val name: String?) {
     var duration = 1f
         private set
 
+    var progress = 0f
+
     private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
@@ -22,13 +24,13 @@ class Animation(val name: String?) {
         animationNodes += channels.map { it.animationNode }.distinct()
     }
 
-    fun apply(time: Double, firstWeightedTransform: Boolean = true) {
-        val t = ((time * speed) % (duration)).toFloat()
+    fun apply(deltaT: Float, firstWeightedTransform: Boolean = true) {
+        progress = (progress + deltaT * speed) % duration
         for (i in animationNodes.indices) {
             animationNodes[i].initTransform()
         }
         for (i in channels.indices) {
-            channels[i].apply(t)
+            channels[i].apply(progress)
         }
         if (weight == 1f) {
             for (i in animationNodes.indices) {

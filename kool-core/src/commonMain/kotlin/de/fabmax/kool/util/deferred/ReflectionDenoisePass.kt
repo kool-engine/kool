@@ -5,17 +5,21 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture2d) :
+class ReflectionDenoisePass(reflectionPass: ReflectionPass) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "ReflectionDenoisePass"
             setSize(reflectionPass.config.width, reflectionPass.config.height)
             addColorTexture(TexFormat.RGBA)
             clearDepthTexture()
         }) {
+
+    private val noisyReflections = Texture2dInput("noisyRefl", reflectionPass.colorTexture)
+    private val positionAo = Texture2dInput("positionAo")
 
     init {
         clearColor = Color(0f, 0f, 0f, 0f)
@@ -49,14 +53,18 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass, positionAo: Texture2
                         builder.blendMode = BlendMode.DISABLED
                     }
                     onPipelineCreated += { _, _, _ ->
-                        model.findNode<Texture2dNode>("noisyRefl")!!.sampler.texture = reflectionPass.colorTexture
-                        model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = positionAo
+                        noisyReflections.connect(model)
+                        positionAo.connect(model)
                     }
                 }
             }
         }
 
         dependsOn(reflectionPass)
+    }
+
+    fun setPositionInput(materialPass: MaterialPass) {
+        positionAo(materialPass.positionAo)
     }
 
     override fun dispose(ctx: KoolContext) {

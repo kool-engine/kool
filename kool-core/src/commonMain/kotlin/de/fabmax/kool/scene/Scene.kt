@@ -73,13 +73,13 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     fun renderScene(ctx: KoolContext) {
-        // remove all offscreen passes that were scheduled for removal in last frame
-        removeOffscreenPasses()
-        addOffscreenPasses()
-
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
+
+        // remove all offscreen passes that were scheduled for removal in last frame
+        removeOffscreenPasses()
+        addOffscreenPasses()
 
         mainRenderPass.update(ctx)
 

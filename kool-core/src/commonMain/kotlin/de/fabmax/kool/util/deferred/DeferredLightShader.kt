@@ -9,25 +9,32 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logE
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
  * metallic and texture-based AO and computes the final color output.
  */
-class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
+class DeferredLightShader(lightType: Light.Type) : ModeledShader(shaderModel(lightType)) {
 
     private var deferredCameraNode: DeferredCameraNode? = null
-    var sceneCamera: Camera? = cfg.sceneCamera
+    var sceneCamera: Camera? = null
         set(value) {
             field = value
             deferredCameraNode?.sceneCam = value
         }
 
-    val positionAo = Texture2dInput("positionAo", cfg.positionAo)
-    val normalRoughness = Texture2dInput("normalRoughness", cfg.normalRoughness)
-    val albedoMetal = Texture2dInput("albedoMetal", cfg.albedoMetal)
-    val emissiveMat = Texture2dInput("emissiveMat", cfg.emissiveMat ?: SingleColorTexture(Color.BLACK.withAlpha(0f)))
+    val positionAo = Texture2dInput("positionAo")
+    val normalRoughness = Texture2dInput("normalRoughness")
+    val albedoMetal = Texture2dInput("albedoMetal")
+    val emissiveMat = Texture2dInput("emissiveMat")
+
+    fun setMaterialInput(materialPass: MaterialPass) {
+        sceneCamera = materialPass.camera
+        positionAo(materialPass.positionAo)
+        normalRoughness(materialPass.normalRoughness)
+        albedoMetal(materialPass.albedoMetal)
+        emissiveMat(materialPass.emissive?: SingleColorTexture(Color.BLACK.withAlpha(0f)))
+    }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.BLEND_ADDITIVE
@@ -51,7 +58,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
         val LIGHT_DIR = Attribute("aLightDir", GlslType.VEC_4F)
         val LIGHT_DATA = Attribute("aLightData", GlslType.VEC_4F)
 
-        fun shaderModel(cfg: Config) = ShaderModel("point light shader model").apply {
+        fun shaderModel(lightType: Light.Type) = ShaderModel("point light shader model").apply {
             val ifFragCoords: StageInterfaceNode
             val ifLightColor: StageInterfaceNode
             val ifLightPos: StageInterfaceNode
@@ -67,7 +74,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 ifLightColor = stageInterfaceNode("ifLightColor", instanceAttributeNode(Attribute.COLORS).output, true)
                 ifLightPos = stageInterfaceNode("ifLightPos", instanceAttributeNode(LIGHT_POS).output, true)
                 ifLightData = stageInterfaceNode("ifLightData", instanceAttributeNode(LIGHT_DATA).output, true)
-                ifLightDir = if (cfg.lightType == Light.Type.POINT) {
+                ifLightDir = if (lightType == Light.Type.POINT) {
                     null
                 } else {
                     stageInterfaceNode("ifLightDir", instanceAttributeNode(LIGHT_DIR).output, true)
@@ -102,7 +109,7 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                     inRoughness = mrtDeMultiplex.outRoughness
                     inAlwaysLit = mrtDeMultiplex.outLightBacksides
 
-                    if (cfg.lightType == Light.Type.SPOT) {
+                    if (lightType == Light.Type.SPOT) {
                         val spot = addNode(SingleSpotLightNode(stage)).apply {
                             isReducedSoi = true
                             inShadowFac = mrtDeMultiplex.outAo
@@ -132,24 +139,5 @@ class DeferredLightShader(cfg: Config) : ModeledShader(shaderModel(cfg)) {
                 colorOutput(mat.outColor)
             }
         }
-    }
-
-    class Config {
-        var lightType = Light.Type.POINT
-            set(value) {
-                field = if (value == Light.Type.DIRECTIONAL) {
-                    logE { "Directional lights are not supported for deferred lights, use global lighting instead." }
-                    Light.Type.POINT
-                } else {
-                    value
-                }
-            }
-
-        var sceneCamera: Camera? = null
-
-        var positionAo: Texture2d? = null
-        var normalRoughness: Texture2d? = null
-        var albedoMetal: Texture2d? = null
-        var emissiveMat: Texture2d? = null
     }
 }

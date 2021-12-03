@@ -12,11 +12,7 @@ import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.deferredPbrShader
 
-class VehicleWorld(
-    val scene: Scene,
-    val physics: PhysicsWorld,
-    val deferredPipeline: DeferredPipeline
-) {
+class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipeline: DeferredPipeline) {
 
     val defaultMaterial = Material(0.5f)
     val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)

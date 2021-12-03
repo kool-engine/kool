@@ -6,9 +6,9 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.logD
 import kotlin.math.roundToInt
 
-class Bloom(cfg: DeferredPipelineConfig, val pbrPass: PbrLightingPass) {
+class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : DeferredPassSwapListener {
 
-    val thresholdPass = BloomThresholdPass(cfg, pbrPass)
+    val thresholdPass = BloomThresholdPass(deferredPipeline, cfg)
     val blurPass = BloomBlurPass(cfg.bloomKernelSize, thresholdPass)
 
     var desiredMapHeight = 400
@@ -29,7 +29,9 @@ class Bloom(cfg: DeferredPipelineConfig, val pbrPass: PbrLightingPass) {
     var bloomScale: Float
         get() = blurPass.bloomScale
         set(value) { blurPass.bloomScale = value }
-
+    var bloomStrength: Float
+        get() = blurPass.bloomStrength
+        set(value) { blurPass.bloomStrength = value }
     var lowerThreshold: Float
         get() = thresholdPass.outputShader.lowerThreshold
         set(value) {
@@ -41,17 +43,22 @@ class Bloom(cfg: DeferredPipelineConfig, val pbrPass: PbrLightingPass) {
             thresholdPass.outputShader.upperThreshold = value
         }
 
-    fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
-        val bestSamples = (viewportH / desiredMapHeight.toFloat()).roundToInt().clamp(1, 8)
-        thresholdPass.setupDownSampling(bestSamples)
-
-        val bloomMapW = (viewportW / bestSamples.toFloat()).roundToInt()
-        val bloomMapH = (viewportH / bestSamples.toFloat()).roundToInt()
-        if (bloomMapW > 0 && bloomMapH > 0 && (bloomMapW != thresholdPass.width || bloomMapH != thresholdPass.height)) {
-            logD { "Bloom threshold down sampling: $bestSamples" }
-            thresholdPass.resize(bloomMapW, bloomMapH, ctx)
-            blurPass.resize(bloomMapW, bloomMapH, ctx)
-        }
+    override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+        thresholdPass.setLightingInput(currentPasses.lightingPass)
     }
 
+    fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+        if (isEnabled) {
+            val bestSamples = (viewportH / desiredMapHeight.toFloat()).roundToInt().clamp(1, 8)
+            thresholdPass.setupDownSampling(bestSamples)
+
+            val bloomMapW = (viewportW / bestSamples.toFloat()).roundToInt()
+            val bloomMapH = (viewportH / bestSamples.toFloat()).roundToInt()
+            if (bloomMapW > 0 && bloomMapH > 0 && (bloomMapW != thresholdPass.width || bloomMapH != thresholdPass.height)) {
+                logD { "Bloom threshold down sampling: $bestSamples" }
+                thresholdPass.resize(bloomMapW, bloomMapH, ctx)
+                blurPass.resize(bloomMapW, bloomMapH, ctx)
+            }
+        }
+    }
 }

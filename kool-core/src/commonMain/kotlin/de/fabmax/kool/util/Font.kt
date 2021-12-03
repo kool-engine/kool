@@ -18,7 +18,11 @@ data class FontProps(
         val family: String,
         val sizePts: Float,
         val style: Int = Font.PLAIN,
-        val chars: String = Font.STD_CHARS) {
+        val chars: String = Font.STD_CHARS,
+        val magFilter: FilterMethod = FilterMethod.LINEAR,
+        val minFilter: FilterMethod = FilterMethod.LINEAR,
+        val mipMapping: Boolean = false,
+        val maxAnisotropy: Int = 0) {
 
     override fun toString(): String {
         return "FontProps($family, ${sizePts}pts, $style)"
@@ -27,8 +31,12 @@ data class FontProps(
 
 class Font(val charMap: CharMap) : Texture2d(
         TextureProps(
-                addressModeU = AddressMode.CLAMP_TO_EDGE,
-                addressModeV = AddressMode.CLAMP_TO_EDGE
+            addressModeU = AddressMode.CLAMP_TO_EDGE,
+            addressModeV = AddressMode.CLAMP_TO_EDGE,
+            magFilter = charMap.fontProps.magFilter,
+            minFilter = charMap.fontProps.minFilter,
+            mipMapping = charMap.fontProps.mipMapping,
+            maxAnisotropy = charMap.fontProps.maxAnisotropy
         ),
         charMap.toString(),
         loader = BufferedTextureLoader(charMap.textureData)) {

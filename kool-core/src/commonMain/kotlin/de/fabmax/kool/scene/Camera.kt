@@ -340,25 +340,25 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
         return true
     }
+}
 
-    class Proxy(val master: PerspectiveCamera) : PerspectiveCamera() {
-        init {
-            useViewportAspectRatio = false
-            projCorrectionMode = ProjCorrectionMode.OFFSCREEN
-        }
+open class PerspectiveProxyCam(val sceneCam: PerspectiveCamera) : PerspectiveCamera() {
+    init {
+        useViewportAspectRatio = false
+        projCorrectionMode = ProjCorrectionMode.OFFSCREEN
+    }
 
-        fun sync(renderPass: RenderPass, ctx: KoolContext) {
-            master.updateCamera(renderPass, ctx)
+    open fun sync(renderPass: RenderPass, ctx: KoolContext) {
+        sceneCam.updateCamera(renderPass, ctx)
 
-            position.set(master.globalPos)
-            lookAt.set(master.globalLookAt)
-            up.set(master.globalUp)
+        position.set(sceneCam.globalPos)
+        lookAt.set(sceneCam.globalLookAt)
+        up.set(sceneCam.globalUp)
 
-            aspectRatio = master.aspectRatio
-            fovY = master.fovY
-            clipNear = master.clipNear
-            clipFar = master.clipFar
-        }
+        aspectRatio = sceneCam.aspectRatio
+        fovY = sceneCam.fovY
+        clipNear = sceneCam.clipNear
+        clipFar = sceneCam.clipFar
     }
 }
 

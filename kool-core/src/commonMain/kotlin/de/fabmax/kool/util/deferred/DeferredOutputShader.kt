@@ -6,16 +6,17 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.FloatInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.pipeline.shading.Vec3fInput
 import de.fabmax.kool.scene.Mesh
 
-class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: Texture2d, private val depth: Texture2d, bloom: Texture2d?) :
+class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     ModeledShader(outputModel(cfg)) {
 
-    val bloomStrength = FloatInput("uBloomStrength", 0.5f)
+    private val currentLighting = Texture2dInput("currentLighting")
+    private val depthTex = Texture2dInput("currentDepth")
+
     val bloomMap = Texture2dInput("bloom", bloom)
 
     private val depthMode: DepthCompareOp = cfg.outputDepthTest
@@ -41,14 +42,18 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
     }
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        model.findNode<Texture2dNode>("deferredPbrOutput")?.sampler?.texture = pbrOutput
-        model.findNode<Texture2dNode>("deferredDepthOutput")?.sampler?.texture = depth
-        bloomStrength.connect(model)
+        currentLighting.connect(model)
+        depthTex.connect(model)
         bloomMap.connect(model)
         vignetteCfg.connect(model)
         chromaticAberrationStrength.connect(model)
         chromaticAberrationStrengthBloom.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
+    }
+
+    fun setDeferredInput(current: DeferredPasses) {
+        currentLighting(current.lightingPass.colorTexture)
+        depthTex(current.materialPass.depthTexture)
     }
 
     companion object {
@@ -62,12 +67,12 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
             fragmentStage {
                 val linearColor = if (cfg.isWithChromaticAberration) {
                     addNode(ChromaticAberrationSamplerNode(stage).apply {
-                        inTexture = texture2dNode("deferredPbrOutput")
+                        inTexture = texture2dNode("currentLighting")
                         inTexCoord = ifTexCoords.output
                         inStrength = pushConstantNode3f("uChromaticAberration").output
                     }).outColor
                 } else {
-                    texture2dSamplerNode(texture2dNode("deferredPbrOutput"), ifTexCoords.output).outColor
+                    texture2dSamplerNode(texture2dNode("currentLighting"), ifTexCoords.output).outColor
                 }
 
                 val color = if (cfg.isWithBloom) {
@@ -81,9 +86,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
                         texture2dSamplerNode(texture2dNode("bloom"), ifTexCoords.output).outColor
                     }
 
-                    val bloomStrength = pushConstantNode1f("uBloomStrength").output
-                    val bloomScaled = multiplyNode(bloom, bloomStrength).output
-                    val composed = addNode(linearColor, bloomScaled).output
+                    val composed = addNode(linearColor, bloom).output
                     hdrToLdrNode(composed).outColor
                 } else {
                     hdrToLdrNode(linearColor).outColor
@@ -100,7 +103,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, private val pbrOutput: T
                     colorOutput(color)
                 }
 
-                val depthSampler = texture2dSamplerNode(texture2dNode("deferredDepthOutput"), ifTexCoords.output)
+                val depthSampler = texture2dSamplerNode(texture2dNode("currentDepth"), ifTexCoords.output)
                 depthOutput(depthSampler.outColor)
             }
         }

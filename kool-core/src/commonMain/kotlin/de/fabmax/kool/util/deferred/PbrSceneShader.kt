@@ -53,13 +53,13 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
     private val depthSamplers = Array<TextureSampler2d?>(shadowMaps.size) { null }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
-    fun setMrtMaps(mrtPass: DeferredMrtPass) {
-        sceneCamera = mrtPass.camera
-        depth(mrtPass.depthTexture)
-        positionAo(mrtPass.positionAo)
-        normalRoughness(mrtPass.normalRoughness)
-        albedoMetal(mrtPass.albedoMetal)
-        emissive(mrtPass.emissive)
+    fun setMaterialInput(materialPass: MaterialPass) {
+        sceneCamera = materialPass.camera
+        depth(materialPass.depthTexture)
+        positionAo(materialPass.positionAo)
+        normalRoughness(materialPass.normalRoughness)
+        albedoMetal(materialPass.albedoMetal)
+        emissive(materialPass.emissive)
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {

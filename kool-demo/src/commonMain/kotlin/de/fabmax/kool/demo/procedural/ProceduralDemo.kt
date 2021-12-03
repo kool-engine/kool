@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.procedural
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
@@ -18,10 +19,17 @@ import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
 import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
     var autoRotate = true
     lateinit var roses: Roses
+
+    lateinit var ibl: EnvironmentMaps
+
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         +orbitInputTransform {
@@ -42,44 +50,37 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             setColor(MdColor.AMBER.mix(Color.WHITE, 0.5f).toLinear(), 3f)
         }
 
-        ctx.assetMgr.launch {
-            val ibl = EnvironmentHelper.hdriEnvironment(this@setupMainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
-
-            val shadowMap = SimpleShadowMap(this@setupMainScene, 0).apply {
-                setDefaultDepthOffset(true)
-                shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
-            }
-            val deferredCfg = DeferredPipelineConfig().apply {
-                isWithScreenSpaceReflections = true
-                isWithAmbientOcclusion = true
-                isWithExtendedMaterials = true
-                maxGlobalLights = 1
-                isWithVignette = true
-                isWithBloom = true
-                useImageBasedLighting(ibl)
-                useShadowMaps(listOf(shadowMap))
-                outputDepthTest = DepthCompareOp.ALWAYS
-            }
-            val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
-                aoPipeline?.radius = 0.6f
-                outputShader.setupVignette(strength = 0f)
-
-                contentGroup.apply {
-                    +Glas(pbrPass.colorTexture!!, ibl)
-                    +Vase()
-                    +Table()
-
-                    roses = Roses()
-                    +roses
-                }
-
-                pbrPass.content.apply {
-                    +Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
-                }
-            }
-            shadowMap.drawNode = deferredPipeline.contentGroup
-            +deferredPipeline.renderOutput
+        val shadowMap = SimpleShadowMap(this@setupMainScene, 0).apply {
+            setDefaultDepthOffset(true)
+            shadowBounds = BoundingBox(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
         }
+        val deferredCfg = DeferredPipelineConfig().apply {
+            isWithScreenSpaceReflections = true
+            isWithAmbientOcclusion = true
+            isWithExtendedMaterials = true
+            maxGlobalLights = 1
+            isWithVignette = true
+            isWithBloom = true
+            useImageBasedLighting(ibl)
+            useShadowMaps(listOf(shadowMap))
+            outputDepthTest = DepthCompareOp.ALWAYS
+        }
+        val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
+            aoPipeline?.radius = 0.6f
+
+            sceneContent.apply {
+                +Glas(ibl).also { onSwap += it }
+                +Vase()
+                +Table()
+
+                roses = Roses()
+                +roses
+            }
+
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+        }
+        shadowMap.drawNode = deferredPipeline.sceneContent
+        +deferredPipeline.createDefaultOutputQuad()
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {

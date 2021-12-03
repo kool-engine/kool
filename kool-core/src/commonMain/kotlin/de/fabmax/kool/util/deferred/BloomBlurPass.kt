@@ -30,6 +30,11 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
             field = value
             blurDirDirty = true
         }
+    var bloomStrength: Float
+        get() = pongShader.strength.value
+        set(value) {
+            pongShader.strength.value = value
+        }
 
     init {
         pingPongPasses = 1
@@ -50,6 +55,8 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         pongContent.fullScreenQuad(pongShader)
         ping.clearColor = Color(0f, 0f, 0f, 0f)
         pong.clearColor = Color(0f, 0f, 0f, 0f)
+
+        bloomStrength = 0.5f
 
         dependsOn(thresholdPass)
     }

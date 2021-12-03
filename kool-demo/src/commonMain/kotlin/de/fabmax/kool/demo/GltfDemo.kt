@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
+import de.fabmax.kool.util.deferred.DeferredOutputShader
 import de.fabmax.kool.util.deferred.DeferredPbrShader
 import de.fabmax.kool.util.deferred.DeferredPipeline
 import de.fabmax.kool.util.deferred.DeferredPipelineConfig
@@ -57,7 +58,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private val contentGroupDeferred = Group()
 
     private var animationSpeed = .5f
-    private var animationTime = 0.0
+    private var animationDeltaTime = 0f
     private var autoRotate = true
     private var useDeferredPipeline = true
     private var isAo = true
@@ -88,7 +89,6 @@ class GltfDemo : DemoScene("glTF Models") {
             useImageBasedLighting(envMaps)
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg)
-        deferredPipeline.outputShader.setupVignette(strength = 0f)
         deferredPipeline.aoPipeline?.apply {
             radius = 0.2f
         }
@@ -120,7 +120,7 @@ class GltfDemo : DemoScene("glTF Models") {
         setupPipelines()
 
         onUpdate += {
-            animationTime += ctx.deltaT * animationSpeed
+            animationDeltaTime = ctx.deltaT * animationSpeed
             foxAnimator.updatePosition(ctx)
         }
     }
@@ -144,12 +144,14 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private fun Scene.makeDeferredContent(ctx: KoolContext) {
-        deferredPipeline.contentGroup.setupContentGroup(true, ctx)
+        deferredPipeline.sceneContent.setupContentGroup(true, ctx)
 
         // main scene only contains a quad used to draw the deferred shading output
         +contentGroupDeferred.apply {
             isFrustumChecked = false
-            +deferredPipeline.renderOutput
+            val outputMesh = deferredPipeline.createDefaultOutputQuad()
+            (outputMesh.shader as? DeferredOutputShader)?.setupVignette(0f)
+            +outputMesh
         }
     }
 
@@ -338,8 +340,8 @@ class GltfDemo : DemoScene("glTF Models") {
         var deferredModel: Model? = null
         var isVisible: Boolean = false
 
-        var animate: Model.(Double, KoolContext) -> Unit = { t, _ ->
-            applyAnimation(t)
+        var animate: Model.(Float, KoolContext) -> Unit = { dt, _ ->
+            applyAnimation(dt)
         }
 
         override fun toString() = name
@@ -369,7 +371,7 @@ class GltfDemo : DemoScene("glTF Models") {
                     enableAnimation(0)
                     onUpdate += {
                         isVisible = this@GltfModel.isVisible
-                        animate(animationTime, ctx)
+                        animate(animationDeltaTime, ctx)
                     }
                 }
             }
@@ -407,7 +409,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 model.setAnimationWeight(1, w0)
                 model.setAnimationWeight(2, w1)
             }
-            model.applyAnimation(ctx.time)
+            model.applyAnimation(ctx.deltaT)
 
             // move model according to animation speed
             model.setIdentity()

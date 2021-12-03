@@ -12,13 +12,14 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class BloomThresholdPass(val cfg: DeferredPipelineConfig, val pbrPass: PbrLightingPass) : OffscreenRenderPass2d(Group(), renderPassConfig {
+class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : OffscreenRenderPass2d(Group(), renderPassConfig {
     name = "BloomThresholdPass"
     setSize(0, 0)
     addColorTexture(TexFormat.RGBA_F16)
     clearDepthTexture()
 }) {
 
+    private val doAvgDownsampling = cfg.bloomAvgDownSampling
     private var samples = 3
     var outputShader = ThresholdShader(samples, cfg.bloomAvgDownSampling)
         private set
@@ -26,9 +27,6 @@ class BloomThresholdPass(val cfg: DeferredPipelineConfig, val pbrPass: PbrLighti
     private val quad: Mesh
 
     init {
-        outputShader.inputTexture(pbrPass.colorTexture)
-        dependsOn(pbrPass)
-
         clearColor = Color.RED
 
         (drawNode as Group).apply {
@@ -45,6 +43,12 @@ class BloomThresholdPass(val cfg: DeferredPipelineConfig, val pbrPass: PbrLighti
             }
             +quad
         }
+
+        deferredPipeline.passes.forEach { dependsOn(it.lightingPass) }
+    }
+
+    fun setLightingInput(newPass: PbrLightingPass) {
+        outputShader.inputTexture(newPass.colorTexture)
     }
 
     fun setupDownSampling(samples: Int) {
@@ -52,9 +56,8 @@ class BloomThresholdPass(val cfg: DeferredPipelineConfig, val pbrPass: PbrLighti
             this.samples = samples
             val thresholds = Vec2f(outputShader.thresholds.value)
 
-            outputShader = ThresholdShader(samples, cfg.bloomAvgDownSampling)
+            outputShader = ThresholdShader(samples, doAvgDownsampling)
             outputShader.thresholds.value = thresholds
-            outputShader.inputTexture(pbrPass.colorTexture)
             quad.shader = outputShader
         }
     }

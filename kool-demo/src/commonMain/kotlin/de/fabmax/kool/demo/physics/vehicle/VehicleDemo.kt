@@ -81,16 +81,16 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
             aoPipeline?.mapSize = 0.75f
-            pbrPass.sceneShader.ambientShadowFactor(0.3f)
+            lightingPassShader.ambientShadowFactor(0.3f)
             bloomStrength = 0.25f
             bloomScale = 1f
             setBloomBrightnessThresholds(1f, 2f)
 
-            pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
-        mainScene += deferredPipeline.renderOutput
+        mainScene += deferredPipeline.createDefaultOutputQuad()
 
-        shadows.drawNode = deferredPipeline.contentGroup
+        shadows.drawNode = deferredPipeline.sceneContent
 
         showLoadText("Creating Physics World")
         val physics = PhysicsWorld()
@@ -103,7 +103,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         vehicle.vehicleAudio.loadAudio(this)
 
         showLoadText("Creating Physics World")
-        deferredPipeline.contentGroup.apply {
+        deferredPipeline.sceneContent.apply {
             +vehicle.vehicleGroup
 
             makeGround()
@@ -115,6 +115,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        mainRenderPass.clearColor = null
+
         lighting.singleLight {
             setDirectional(Vec3f(-1f, -0.6f, -1f))
             setColor(Color.WHITE, 0.75f)

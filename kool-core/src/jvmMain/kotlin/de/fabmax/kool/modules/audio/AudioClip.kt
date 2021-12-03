@@ -14,10 +14,16 @@ import kotlin.math.pow
 
 actual class AudioClip(private val audioData: ByteArray) {
 
+    actual var masterVolume = 1f
+        set(value) {
+            field = value
+            latestClip.volume = volume * value
+        }
+
     actual var volume = 1f
         set(value) {
             field = value
-            latestClip.volume = value
+            latestClip.volume = value * masterVolume
         }
 
     actual var currentTime: Float
@@ -131,7 +137,7 @@ actual class AudioClip(private val audioData: ByteArray) {
                         clipState = ClipState.STOPPED
                     }
                 }
-                volume = this@AudioClip.volume
+                volume = this@AudioClip.volume * this@AudioClip.masterVolume
             } catch (e: Exception) {
                 logE { "Failed playing audio clip: $e" }
             }

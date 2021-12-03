@@ -32,7 +32,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
 
     init {
         val scene = atmosphereDemo.mainScene
-        val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
+        val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
         camera = proxyCamera
         onBeforeCollectDrawCommands += { ctx ->
             proxyCamera.sync(scene.mainRenderPass, ctx)

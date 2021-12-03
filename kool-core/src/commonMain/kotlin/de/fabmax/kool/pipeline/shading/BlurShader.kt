@@ -9,10 +9,12 @@ import de.fabmax.kool.scene.Mesh
 class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
     val blurInput = Texture2dInput("tBlurInput")
     val direction = Vec2fInput("uBlurDirection", Vec2f(0.001f, 0f))
+    val strength = FloatInput("uBloomStrength", 1f)
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         blurInput.connect(model)
         direction.connect(model)
+        strength.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -39,10 +41,11 @@ class BlurShader(cfg: BlurShaderConfig) : ModeledShader(defaultBlurModel(cfg)) {
                     inDirection = pushConstantNode2f("uBlurDirection").output
                 }
 
+                val strength = pushConstantNode1f("uBloomStrength").output
                 if (cfg.convertOutputHdrToLdr) {
-                    colorOutput(hdrToLdrNode(blurNd.outColor).outColor)
+                    colorOutput(multiplyNode(hdrToLdrNode(blurNd.outColor).outColor, strength).output)
                 } else {
-                    colorOutput(blurNd.outColor)
+                    colorOutput(multiplyNode(blurNd.outColor, strength).output)
                 }
             }
         }

@@ -1,10 +1,15 @@
 package de.fabmax.kool.util.ao
 
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.deferred.DeferredMrtPass
+import de.fabmax.kool.util.deferred.DeferredPassSwapListener
+import de.fabmax.kool.util.deferred.DeferredPasses
+import de.fabmax.kool.util.deferred.DeferredPipeline
 
 abstract class AoPipeline {
 
@@ -12,7 +17,7 @@ abstract class AoPipeline {
     abstract val denoisePass: AoDenoisePass
 
     // ao map size relative to screen resolution
-    var mapSize = 0.5f
+    var mapSize = 0.7f
 
     val aoMap: Texture2d
         get() = denoisePass.colorTexture!!
@@ -52,8 +57,12 @@ abstract class AoPipeline {
         if (isEnabled) {
             denoisePass.isEnabled = true
             denoisePass.clearAndDisable = false
+            if (aoPass !in denoisePass.dependencies) {
+                denoisePass.dependencies += aoPass
+            }
         } else {
             denoisePass.clearAndDisable = true
+            denoisePass.dependencies -= aoPass
         }
     }
 
@@ -66,7 +75,7 @@ abstract class AoPipeline {
         private var mapHeight = 0
 
         init {
-            val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
+            val proxyCamera = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
             depthPass = NormalLinearDepthMapPass(scene, mapWidth, mapHeight)
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
@@ -74,10 +83,12 @@ abstract class AoPipeline {
                 proxyCamera.sync(scene.mainRenderPass, ctx)
             }
 
-            aoPass = AmbientOcclusionPass(proxyCamera, AoSetup.forward(depthPass), mapWidth, mapHeight)
+            aoPass = AmbientOcclusionPass(AoSetup.forward(depthPass), mapWidth, mapHeight)
+            aoPass.sceneCam = proxyCamera
             aoPass.dependsOn(depthPass)
-            denoisePass = AoDenoisePass(aoPass, depthPass.colorTexture!!, "a")
-            //denoisePass.dependsOn(aoPass)
+            denoisePass = AoDenoisePass(aoPass, "a")
+            denoisePass.depthInput(depthPass.colorTexture)
+            denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
             scene.addOffscreenPass(aoPass)
@@ -103,7 +114,7 @@ abstract class AoPipeline {
         }
     }
 
-    class DeferredAoPipeline(scene: Scene, mrtPass: DeferredMrtPass) : AoPipeline() {
+    class DeferredAoPipeline(deferredPipeline: DeferredPipeline) : AoPipeline(), DeferredPassSwapListener {
         override val aoPass: AmbientOcclusionPass
         override val denoisePass: AoDenoisePass
 
@@ -111,30 +122,38 @@ abstract class AoPipeline {
         private var mapHeight = 0
 
         init {
-            aoPass = AmbientOcclusionPass(mrtPass.camera, AoSetup.deferred(mrtPass), mapWidth, mapHeight)
-            aoPass.dependsOn(mrtPass)
-            denoisePass = AoDenoisePass(aoPass, mrtPass.positionAo, "z")
-            //denoisePass.dependsOn(aoPass)
+            aoPass = AmbientOcclusionPass(AoSetup.deferred(), mapWidth, mapHeight)
+            denoisePass = AoDenoisePass(aoPass, "z")
+            denoisePass.dependsOn(aoPass)
 
-            scene.addOffscreenPass(aoPass)
-            scene.addOffscreenPass(denoisePass)
+            deferredPipeline.passes.forEach { aoPass.dependsOn(it.materialPass) }
 
-            scene.onRenderScene += { ctx ->
-                val mapW = (mrtPass.width * mapSize).toInt()
-                val mapH = (mrtPass.height * mapSize).toInt()
+            deferredPipeline.scene.addOffscreenPass(aoPass)
+            deferredPipeline.scene.addOffscreenPass(denoisePass)
+        }
 
-                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != aoPass.width || mapH != aoPass.height)) {
-                    aoPass.resize(mapW, mapH, ctx)
-                }
-                if (isEnabled && mapW > 0 && mapH > 0 && (mapW != denoisePass.width || mapH != denoisePass.height)) {
-                    denoisePass.resize(mapW, mapH, ctx)
-                }
+        override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+            aoPass.sceneCam = currentPasses.materialPass.camera
+            aoPass.deferredPosition(currentPasses.materialPass.positionAo)
+            aoPass.deferredNormal(currentPasses.materialPass.normalRoughness)
+            denoisePass.depthInput(currentPasses.materialPass.positionAo)
+        }
+
+        fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {
+            val width = (viewportW * mapSize).toInt().clamp(1, 4096)
+            val height = (viewportH * mapSize).toInt().clamp(1, 4096)
+
+            if (aoPass.isEnabled && (width != aoPass.width || height != aoPass.height)) {
+                aoPass.resize(width, height, ctx)
+            }
+            if (denoisePass.isEnabled && (width != denoisePass.width || height != denoisePass.height)) {
+                denoisePass.resize(width, height, ctx)
             }
         }
     }
 
     companion object {
         fun createForward(scene: Scene) = ForwardAoPipeline(scene)
-        fun createDeferred(scene: Scene, mrtPass: DeferredMrtPass) = DeferredAoPipeline(scene, mrtPass)
+        fun createDeferred(deferredPipeline: DeferredPipeline) = DeferredAoPipeline(deferredPipeline)
     }
 }

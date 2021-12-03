@@ -78,7 +78,7 @@ fun Scene.helloGltfScene(ctx: KoolContext) {
             if (model.animations.isNotEmpty()) {
                 model.enableAnimation(0)
                 model.onUpdate += { updateEvt ->
-                    model.applyAnimation(updateEvt.time)
+                    model.applyAnimation(updateEvt.deltaT)
                 }
             }
         }

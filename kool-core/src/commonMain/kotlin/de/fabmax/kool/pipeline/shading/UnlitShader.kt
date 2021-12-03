@@ -44,7 +44,7 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
     }
 
     companion object {
-        fun defaultUnlitModel(cfg: UnlitMaterialConfig) = ShaderModel("defaultPbrModel()").apply {
+        fun defaultUnlitModel(cfg: UnlitMaterialConfig) = ShaderModel("defaultUnlitModel()").apply {
             val ifColors: StageInterfaceNode?
             val ifTexCoords: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode?

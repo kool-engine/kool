@@ -11,7 +11,7 @@ import de.fabmax.kool.util.MutableColor
 import kotlin.math.*
 
 
-class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
+class DeferredSpotLights(val maxSpotAngle: Float) {
     val lightInstances = mutableListOf<SpotLight>()
     var isDynamic = true
 
@@ -22,6 +22,8 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
     private val encodedLightData = FloatArray(16)
     private val tmpLightDir = MutableVec3f()
 
+    val lightShader = DeferredLightShader(Light.Type.SPOT)
+
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
         isFrustumChecked = false
         instances = lightInstanceData
@@ -30,16 +32,7 @@ class DeferredSpotLights(val maxSpotAngle: Float, mrtPass: DeferredMrtPass) {
             makeHalfSphereCone(maxSpotAngle, 1.17f)
         }
 
-        val lightCfg = DeferredLightShader.Config().apply {
-            lightType = Light.Type.SPOT
-            sceneCamera = mrtPass.camera
-            positionAo = mrtPass.positionAo
-            normalRoughness = mrtPass.normalRoughness
-            albedoMetal = mrtPass.albedoMetal
-            emissiveMat = mrtPass.emissive
-        }
-        shader = DeferredLightShader(lightCfg)
-
+        shader = lightShader
         onUpdate += {
             if (isDynamic) {
                 updateLightData()

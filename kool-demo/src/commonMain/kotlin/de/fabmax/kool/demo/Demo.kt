@@ -248,7 +248,7 @@ abstract class DemoScene(val name: String) {
 
         if (demoState == State.SETUP) {
             // setup scene after required resources are loaded, blocking in main thread
-            setupScenes(ctx)
+            ctx.runDelayed(1) { setupScenes(ctx) }
             demoState = State.RUNNING
         }
     }

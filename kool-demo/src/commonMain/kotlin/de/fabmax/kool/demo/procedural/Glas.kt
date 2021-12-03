@@ -3,7 +3,6 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -17,18 +16,28 @@ import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.deferred.DeferredPassSwapListener
+import de.fabmax.kool.util.deferred.DeferredPasses
 import de.fabmax.kool.util.deferred.deferredPbrShader
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 
-class Glas(val pbrColorOut: Texture2d, val ibl: EnvironmentMaps) : Group() {
+class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
+
+    private val glasShader: PbrShader
 
     init {
+        glasShader = glasShader()
+
         +makeWine()
         +makeBody()
         +makeShaft()
 
         translate(7.5f, 0f, 2.5f)
         scale(0.9f)
+    }
+
+    override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+        glasShader.refractionColorMap(currentPasses.lightingPass.colorTexture)
     }
 
     private fun makeBody() = colorMesh {
@@ -54,7 +63,7 @@ class Glas(val pbrColorOut: Texture2d, val ibl: EnvironmentMaps) : Group() {
         }
 
         isOpaque = false
-        shader = glasShader()
+        shader = glasShader
     }
 
     private fun makeWine() = colorMesh {
@@ -190,10 +199,10 @@ class Glas(val pbrColorOut: Texture2d, val ibl: EnvironmentMaps) : Group() {
 
     private fun glasShader(): PbrShader {
         val glasCfg = PbrMaterialConfig().apply {
-            useRefraction(pbrColorOut)
             useImageBasedLighting(ibl)
             roughness = 0f
             alphaMode = AlphaModeBlend()
+            isRefraction = true
         }
         val glasModel = PbrShader.defaultPbrModel(glasCfg).apply {
             val ifThickness: StageInterfaceNode

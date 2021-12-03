@@ -95,12 +95,12 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
             power = 0f
             maxIntensity = 50f
         }
-        val headLights = world.deferredPipeline.pbrPass.addSpotLights(30f)
+        val headLights = world.deferredPipeline.createSpotLights(30f)
         headLights.addSpotLight(headLightLt)
         headLights.addSpotLight(headLightRt)
 
-        rearLightLt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
-        rearLightRt = world.deferredPipeline.pbrPass.dynamicPointLights.addPointLight { }
+        rearLightLt = world.deferredPipeline.dynamicPointLights.addPointLight { }
+        rearLightRt = world.deferredPipeline.dynamicPointLights.addPointLight { }
 
         vehicleModel.onUpdate += { ev ->
             updateVehicle(ev)

@@ -11,15 +11,16 @@ import de.fabmax.kool.util.MutableColor
 import kotlin.math.sqrt
 
 
-class DeferredPointLights(mrtPass: DeferredMrtPass) {
+class DeferredPointLights(var isDynamic: Boolean) {
     val lightInstances = mutableListOf<PointLight>()
-    var isDynamic = true
 
     private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS,
         Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
 
     private val modelMat = Mat4f()
     private val encodedLightData = FloatArray(12)
+
+    val lightShader = DeferredLightShader(Light.Type.POINT)
 
     val mesh = mesh(listOf(Attribute.POSITIONS)) {
         isFrustumChecked = false
@@ -32,15 +33,7 @@ class DeferredPointLights(mrtPass: DeferredMrtPass) {
             }
         }
 
-        val lightCfg = DeferredLightShader.Config().apply {
-            lightType = Light.Type.POINT
-            sceneCamera = mrtPass.camera
-            positionAo = mrtPass.positionAo
-            normalRoughness = mrtPass.normalRoughness
-            albedoMetal = mrtPass.albedoMetal
-            emissiveMat = mrtPass.emissive
-        }
-        shader = DeferredLightShader(lightCfg)
+        shader = lightShader
 
         onUpdate += {
             if (isDynamic) {

@@ -5,20 +5,20 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.Color
 
-abstract class ShaderInput<T: ShaderNode>(val uniformName: String) {
+open class ShaderInput<T: ShaderNode>(val nodeName: String) {
     var node: T? = null
         protected set
 
+    var onConnect: () -> Unit = { }
+
     open fun connect(model: ShaderModel) {
         @Suppress("UNCHECKED_CAST")
-        node = model.findNodeByName(uniformName) as? T
+        node = model.findNodeByName(nodeName) as? T
         onConnect()
     }
 
-    protected abstract fun onConnect()
-
     override fun toString(): String {
-        return uniformName
+        return nodeName
     }
 }
 
@@ -29,16 +29,16 @@ class Texture1dInput(uniformName: String, initial: Texture1d? = null) : ShaderIn
             node?.sampler?.texture = value
         }
 
+    init {
+        onConnect = { node?.sampler?.texture = texture }
+    }
+
     fun dispose() {
         texture?.dispose()
     }
 
     operator fun invoke(texture: Texture1d?) {
         this.texture = texture
-    }
-
-    override fun onConnect() {
-        node?.sampler?.texture = texture
     }
 }
 
@@ -49,16 +49,16 @@ class Texture2dInput(uniformName: String, initial: Texture2d? = null) : ShaderIn
             node?.sampler?.texture = value
         }
 
+    init {
+        onConnect = { node?.sampler?.texture = texture }
+    }
+
     fun dispose() {
         texture?.dispose()
     }
 
     operator fun invoke(texture: Texture2d?) {
         this.texture = texture
-    }
-
-    override fun onConnect() {
-        node?.sampler?.texture = texture
     }
 }
 
@@ -69,16 +69,16 @@ class Texture3dInput(uniformName: String, initial: Texture3d? = null) : ShaderIn
             node?.sampler?.texture = value
         }
 
+    init {
+        onConnect = { node?.sampler?.texture = texture }
+    }
+
     fun dispose() {
         texture?.dispose()
     }
 
     operator fun invoke(texture: Texture3d?) {
         this.texture = texture
-    }
-
-    override fun onConnect() {
-        node?.sampler?.texture = texture
     }
 }
 
@@ -89,16 +89,16 @@ class TextureCubeInput(uniformName: String, initial: TextureCube? = null) : Shad
             node?.sampler?.texture = value
         }
 
+    init {
+        onConnect = { node?.sampler?.texture = texture }
+    }
+
     fun dispose() {
         texture?.dispose()
     }
 
     operator fun invoke(texture: TextureCube?) {
         this.texture = texture
-    }
-
-    override fun onConnect() {
-        node?.sampler?.texture = texture
     }
 }
 
@@ -109,12 +109,12 @@ class FloatInput(uniformName: String, initial: Float = 0f) : ShaderInput<PushCon
             node?.uniform?.value = value
         }
 
-    operator fun invoke(value: Float) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value = value }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value = value
+    operator fun invoke(value: Float) {
+        this.value = value
     }
 }
 
@@ -125,12 +125,12 @@ class Vec2fInput(uniformName: String, initial: Vec2f = Vec2f.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec2f) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec2f) {
+        this.value = value
     }
 }
 
@@ -141,12 +141,12 @@ class Vec3fInput(uniformName: String, initial: Vec3f = Vec3f.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec3f) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec3f) {
+        this.value = value
     }
 }
 
@@ -157,12 +157,12 @@ class Vec4fInput(uniformName: String, initial: Vec4f = Vec4f.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec4f) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec4f) {
+        this.value = value
     }
 }
 
@@ -173,12 +173,12 @@ class ColorInput(uniformName: String, initial: Color = Color.BLACK) : ShaderInpu
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Color) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Color) {
+        this.value = value
     }
 }
 
@@ -189,12 +189,12 @@ class IntInput(uniformName: String, initial: Int = 0) : ShaderInput<PushConstant
             node?.uniform?.value = value
         }
 
-    operator fun invoke(value: Int) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value = value }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value = value
+    operator fun invoke(value: Int) {
+        this.value = value
     }
 }
 
@@ -205,12 +205,12 @@ class Vec2iInput(uniformName: String, initial: Vec2i = Vec2i.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec2i) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec2i) {
+        this.value = value
     }
 }
 
@@ -221,12 +221,12 @@ class Vec3iInput(uniformName: String, initial: Vec3i = Vec3i.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec3i) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec3i) {
+        this.value = value
     }
 }
 
@@ -237,12 +237,12 @@ class Vec4iInput(uniformName: String, initial: Vec4i = Vec4i.ZERO) : ShaderInput
             node?.uniform?.value?.set(value)
         }
 
-    operator fun invoke(value: Vec4i) {
-        this.value = value
+    init {
+        onConnect = { node?.uniform?.value?.set(value) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(value)
+    operator fun invoke(value: Vec4i) {
+        this.value = value
     }
 }
 
@@ -252,12 +252,12 @@ class Mat3fInput(uniformName: String, initial: Mat3f? = null) : ShaderInput<Unif
     val value: Mat3f
         get() = node?.uniform?.value ?: backupField
 
-    operator fun invoke(value: Mat3f) {
-        this.value.set(value)
+    init {
+        onConnect = { node?.uniform?.value?.set(backupField) }
     }
 
-    override fun onConnect() {
-        node?.uniform?.value?.set(backupField)
+    operator fun invoke(value: Mat3f) {
+        this.value.set(value)
     }
 }
 
@@ -267,15 +267,15 @@ class Mat4fInput(uniformName: String, initial: Mat4f? = null) : ShaderInput<Unif
     val value: Mat4f
         get() = node?.uniform?.value ?: backupField
 
+    init {
+        onConnect = { node?.uniform?.value?.set(backupField) }
+    }
+
     operator fun invoke(value: Mat4f) {
         this.value.set(value)
     }
 
     operator fun invoke(value: Mat4d) {
         this.value.set(value)
-    }
-
-    override fun onConnect() {
-        node?.uniform?.value?.set(backupField)
     }
 }

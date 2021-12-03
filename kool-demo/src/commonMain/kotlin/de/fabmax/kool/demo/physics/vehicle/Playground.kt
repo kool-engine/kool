@@ -19,11 +19,10 @@ import de.fabmax.kool.util.simpleShape
 object Playground {
 
     fun makePlayground(vehicleWorld: VehicleWorld) {
-
         makeBoxes(Mat4f().translate(-20f, 0f, 30f), vehicleWorld)
         makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
 
-        vehicleWorld.deferredPipeline.contentGroup += colorMesh {
+        vehicleWorld.deferredPipeline.sceneContent += colorMesh {
             generate {
                 makeRamp(Mat4f().translate(-20f, 0f, 80f).rotate(180f, Vec3f.Y_AXIS))
                 makeBumps(Mat4f().translate(20f, 0f, 0f))
@@ -57,7 +56,7 @@ object Playground {
                 world.physics.addActor(body)
 
                 val color = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
-                world.deferredPipeline.contentGroup += world.toPrettyMesh(body, color)
+                world.deferredPipeline.sceneContent += world.toPrettyMesh(body, color)
             }
         }
     }
@@ -77,8 +76,8 @@ object Playground {
         }
         world.physics.addActor(anchor)
         world.physics.addActor(rocker)
-        world.deferredPipeline.contentGroup += world.toPrettyMesh(anchor, VehicleDemo.color(400))
-        world.deferredPipeline.contentGroup += world.toPrettyMesh(rocker, VehicleDemo.color(200))
+        world.deferredPipeline.sceneContent += world.toPrettyMesh(anchor, VehicleDemo.color(400))
+        world.deferredPipeline.sceneContent += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
         RevoluteJoint(anchor, rocker, Mat4f().translate(0f, 0.85f, 0f), Mat4f().translate(0f, 0f, 0.2f))
     }

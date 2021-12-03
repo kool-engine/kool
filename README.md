@@ -154,7 +154,7 @@ fun main() {
                 if (model.animations.isNotEmpty()) {
                     model.enableAnimation(0)
                     model.onUpdate += { updateEvt ->
-                        model.applyAnimation(updateEvt.time)
+                        model.applyAnimation(updateEvt.deltaT)
                     }
                 }
             }
@@ -246,14 +246,14 @@ an instance color attribute to draw individual mesh instances in different color
 
 ## Physics Simulation
 
-Big update on physics: After playing around with various different engines on javascript and JVM I came to the
+After playing around with various different engines on javascript and JVM I came to the
 conclusion that all of them had some kind of flaw. So I decided to write my own bindings for
 [Nvidia PhysX](https://github.com/NVIDIAGameWorks/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
 [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
 
 This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
 I get the features I need, and, even better, I get the same features for javascript and JVM, which makes the
-multiplatform approach much easier. Nonetheless, physics integration is still in an early state.
+multiplatform approach much easier.
 
 ## Usage
 

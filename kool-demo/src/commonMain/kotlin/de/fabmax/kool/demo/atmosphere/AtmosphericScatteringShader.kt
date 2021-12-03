@@ -10,9 +10,11 @@ import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.atmosphere.AtmosphereNode
 import de.fabmax.kool.util.atmosphere.RaySphereIntersectionNode
+import de.fabmax.kool.util.deferred.DeferredPassSwapListener
+import de.fabmax.kool.util.deferred.DeferredPasses
 import kotlin.math.pow
 
-class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
+class AtmosphericScatteringShader : ModeledShader(atmosphereModel()), DeferredPassSwapListener {
 
     private var atmosphereNode: AtmosphereNode? = null
 
@@ -207,5 +209,10 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()) {
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("${outWorldPos.declare()} = $uInvViewMat * vec4(${inViewPos.ref3f()}, 1.0);")
         }
+    }
+
+    override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+        sceneColor(currentPasses.lightingPass.colorTexture)
+        scenePos(currentPasses.materialPass.positionAo)
     }
 }

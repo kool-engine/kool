@@ -12,7 +12,10 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.deferred.*
+import de.fabmax.kool.util.deferred.DeferredPbrShader
+import de.fabmax.kool.util.deferred.DeferredPipeline
+import de.fabmax.kool.util.deferred.DeferredPipelineConfig
+import de.fabmax.kool.util.deferred.DeferredPointLights
 import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.sqrt
 
@@ -64,6 +67,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         // don't use any global lights
         lighting.lights.clear()
+        // no need to clear the screen, as we draw a fullscreen quad containing the deferred render output every frame
+        mainRenderPass.clearColor = null
 
         val ibl = EnvironmentHelper.singleColorEnvironment(this, Color(0.15f, 0.15f, 0.15f))
 
@@ -86,10 +91,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             bloomStrength = 0.75f
             setBloomBrightnessThresholds(0.5f, 1f)
 
-            pbrPass.content += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
         }
-        deferredPipeline.contentGroup.makeContent()
-        +deferredPipeline.renderOutput
+        deferredPipeline.sceneContent.makeContent()
+        +deferredPipeline.createDefaultOutputQuad()
         makeLightOverlays()
 
         onUpdate += { evt ->
@@ -99,7 +104,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private fun Scene.makeLightOverlays() {
         apply {
-            lightVolumeMesh = wireframeMesh(deferredPipeline.pbrPass.dynamicPointLights.mesh.geometry).apply {
+            lightVolumeMesh = wireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry).apply {
                 isFrustumChecked = false
                 isVisible = false
                 shader = ModeledShader(instancedLightVolumeModel())
@@ -118,7 +123,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     lightVolInsts.clear()
                     val srgbColor = MutableColor()
 
-                    deferredPipeline.pbrPass.dynamicPointLights.lightInstances.forEach { light ->
+                    deferredPipeline.dynamicPointLights.lightInstances.forEach { light ->
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
 
@@ -246,18 +251,18 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         if (forced) {
             lights.clear()
-            deferredPipeline.pbrPass.dynamicPointLights.lightInstances.clear()
+            deferredPipeline.dynamicPointLights.lightInstances.clear()
         } else {
             while (lights.size > lightCount) {
                 lights.removeAt(lights.lastIndex)
-                deferredPipeline.pbrPass.dynamicPointLights.lightInstances.removeAt(deferredPipeline.pbrPass.dynamicPointLights.lightInstances.lastIndex)
+                deferredPipeline.dynamicPointLights.lightInstances.removeAt(deferredPipeline.dynamicPointLights.lightInstances.lastIndex)
             }
         }
 
         while (lights.size < lightCount) {
             val grp = lightGroups[rand.randomI(lightGroups.indices)]
             val x = rand.randomI(0 until grp.rows)
-            val light = deferredPipeline.pbrPass.dynamicPointLights.addPointLight {
+            val light = deferredPipeline.dynamicPointLights.addPointLight {
                 power = 1.0f
             }
             val animLight = AnimatedLight(light).apply {
@@ -281,19 +286,19 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
         val images = mutableListOf<UiImage>()
-        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.albedoMetal, 0f, 1f)).apply {
+        images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.albedoMetal, 0f, 1f)).apply {
             setupImage(0.025f, 0.025f)
         }
-        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.normalRoughness, 1f, 0.5f)).apply {
+        images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.normalRoughness, 1f, 0.5f)).apply {
             setupImage(0.025f, 0.35f)
         }
-        images += image(imageShader = gBufferShader(deferredPipeline.mrtPass.positionAo, 10f, 0.05f)).apply {
+        images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.positionAo, 10f, 0.05f)).apply {
             setupImage(0.025f, 0.675f)
         }
         images += image(imageShader = ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, model = AoDemo.aoMapColorModel())).apply {
             setupImage(0.35f, 0.35f)
         }
-        images += image(imageShader = MetalRoughAoTex(deferredPipeline.mrtPass)).apply {
+        images += image(imageShader = MetalRoughAoTex(deferredPipeline)).apply {
             setupImage(0.35f, 0.675f)
         }
         images += image(imageShader = ModeledShader.HdrTextureColor(deferredPipeline.bloom?.bloomMap)).apply {
@@ -435,11 +440,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
     }
 
-    private class MetalRoughAoTex(val mrtPass: DeferredMrtPass) : ModeledShader(shaderModel()) {
+    private class MetalRoughAoTex(val deferredPipeline: DeferredPipeline) : ModeledShader(shaderModel()) {
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = mrtPass.positionAo
-            model.findNode<Texture2dNode>("normalRough")!!.sampler.texture = mrtPass.normalRoughness
-            model.findNode<Texture2dNode>("albedoMetal")!!.sampler.texture = mrtPass.albedoMetal
+            model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = deferredPipeline.activePass.materialPass.positionAo
+            model.findNode<Texture2dNode>("normalRough")!!.sampler.texture = deferredPipeline.activePass.materialPass.normalRoughness
+            model.findNode<Texture2dNode>("albedoMetal")!!.sampler.texture = deferredPipeline.activePass.materialPass.albedoMetal
             super.onPipelineCreated(pipeline, mesh, ctx)
         }
 

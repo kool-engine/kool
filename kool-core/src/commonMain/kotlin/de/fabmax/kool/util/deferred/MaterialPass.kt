@@ -6,12 +6,12 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.util.Color
 
-class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
-        OffscreenRenderPass2d(Group(), renderPassConfig {
-            name = "DeferredMrtPass"
+class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive: Boolean = false) :
+        OffscreenRenderPass2d(pipeline.sceneContent, renderPassConfig {
+            name = "MaterialPass-$suffix"
             setDynamicSize()
             setDepthTexture(false)
             val formats = if (withEmissive) FORMATS_DEFERRED_EMISSIVE else FORMATS_DEFERRED
@@ -37,23 +37,27 @@ class DeferredMrtPass(scene: Scene, val withEmissive: Boolean = false) :
     val emissive: Texture2d?
         get() = if (withEmissive) colorTextures[3] else null
 
+    var proxyCamera: PerspectiveProxyCam? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                camera = value
+            }
+        }
+
     init {
-        val proxyCamera = PerspectiveCamera.Proxy(scene.camera as PerspectiveCamera)
-        camera = proxyCamera
+        (pipeline.scene.camera as? PerspectiveCamera)?.let {
+            proxyCamera = PerspectiveProxyCam(it)
+        }
         onBeforeCollectDrawCommands += { ctx ->
-            proxyCamera.sync(scene.mainRenderPass, ctx)
+            //proxyCamera?.sync(scene.mainRenderPass, ctx)
+            proxyCamera?.sync(this, ctx)
         }
 
-        scene.addOffscreenPass(this)
-
-        // update content group from scene.onUpdate, so it is updated before any offscreen passes are updated
-        // otherwise shadow maps are rendered before content group is updated and shadows have a latency of one frame
+        // do not update draw node from render pass onUpdate, it is updated from DeferredPipeline
         isUpdateDrawNode = false
-        scene.onUpdate += { ev ->
-            content.update(ev)
-        }
 
-        // encoded position is in view space -> z value of valid positions is always negative, use a positive z value
+        // encoded position is in view space -> z value of valid position is always negative, use a positive z value
         // in clear color to encode clear areas
         clearColors[0] = Color(0f, 0f, 1f, 0f)
         clearColors[1] = null

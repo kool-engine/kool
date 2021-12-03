@@ -5,12 +5,13 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture2d, depthComponent: String) :
+class AoDenoisePass(aoPass: AmbientOcclusionPass, depthComponent: String) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "AoDenoisePass"
             setSize(aoPass.config.width, aoPass.config.height)
@@ -27,6 +28,9 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture2d, depth
     var clearAndDisable = false
     private val denoiseMesh: Mesh
     private val clearMesh: Mesh
+
+    val noisyAoInput = Texture2dInput("noisyAo", aoPass.colorTexture)
+    val depthInput = Texture2dInput("depth")
 
     init {
         clearColor = Color.BLACK
@@ -61,8 +65,8 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthTexture: Texture2d, depth
                     builder.depthTest = DepthCompareOp.DISABLED
                 }
                 onPipelineCreated += { _, _, _ ->
-                    model.findNode<Texture2dNode>("noisyAo")!!.sampler.texture = aoPass.colorTexture
-                    model.findNode<Texture2dNode>("depth")!!.sampler.texture = depthTexture
+                    noisyAoInput.connect(model)
+                    depthInput.connect(model)
                 }
             }
         }

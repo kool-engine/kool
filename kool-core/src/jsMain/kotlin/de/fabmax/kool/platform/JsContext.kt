@@ -162,13 +162,15 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
+        doneRenderPasses.clear()
         for (i in scene.offscreenPasses.indices) {
             val rp = scene.offscreenPasses[i]
             if (rp.isEnabled) {
                 openRenderPasses += rp
+            } else {
+                doneRenderPasses += rp
             }
         }
-        doneRenderPasses.clear()
         while (openRenderPasses.isNotEmpty()) {
             var anyDrawn = false
             for (i in openRenderPasses.indices) {

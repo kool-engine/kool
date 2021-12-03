@@ -135,13 +135,15 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
+        doneRenderPasses.clear()
         for (i in scene.offscreenPasses.indices) {
             val rp = scene.offscreenPasses[i]
             if (rp.isEnabled) {
                 openRenderPasses += rp
+            } else {
+                doneRenderPasses += rp
             }
         }
-        doneRenderPasses.clear()
         while (openRenderPasses.isNotEmpty()) {
             var anyDrawn = false
             for (i in openRenderPasses.indices) {
@@ -165,7 +167,10 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             }
             if (!anyDrawn) {
                 logE { "Failed to render all offscreen passes, remaining:" }
-                openRenderPasses.forEach { logE { "  ${it.name}" } }
+                openRenderPasses.forEach { p ->
+                    val missingPasses = p.dependencies.filter { it !in doneRenderPasses }.map { it.name }
+                    logE { "  ${p.name}, missing dependencies: $missingPasses" }
+                }
                 openRenderPasses.clear()
                 break
             }

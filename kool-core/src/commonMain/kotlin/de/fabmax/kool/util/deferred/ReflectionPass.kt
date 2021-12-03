@@ -9,16 +9,17 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.FloatInput
 import de.fabmax.kool.pipeline.shading.IntInput
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
 
-class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLightingPass, val baseReflectionStep: Float) :
+class ReflectionPass(val baseReflectionStep: Float) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "ReflectionPass"
-            setSize(pbrLightingPass.config.width, pbrLightingPass.config.height)
+            setSize(0, 0)
             addColorTexture(TexFormat.RGBA)
             clearDepthTexture()
         }) {
@@ -27,7 +28,11 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
     val roughnessThresholdHigh = FloatInput("uRoughThreshHigh", 0.6f)
     val scrSpcReflectionIterations = IntInput("uMaxIterations", 24)
 
-    private val noiseTex = generateScrSpcReflectionNoiseTex()
+    private var deferredCam: DeferredCameraNode? = null
+    private val positionAo = Texture2dInput("positionAo")
+    private val normalRoughness = Texture2dInput("normalRoughness")
+    private val ssrInput = Texture2dInput("ssrMap")
+    private val ssrNoise = Texture2dInput("ssrNoiseTex", generateScrSpcReflectionNoiseTex())
 
     init {
         clearColor = Color(0f, 0f, 0f, 0f)
@@ -45,13 +50,18 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
                 shader = ReflectionShader()
             }
         }
+    }
 
-        dependsOn(mrtPass)
+    fun setInput(lightingPass: PbrLightingPass, materialPass: MaterialPass) {
+        deferredCam?.sceneCam = materialPass.camera
+        positionAo(materialPass.positionAo)
+        normalRoughness(materialPass.normalRoughness)
+        ssrInput(lightingPass.colorTexture)
     }
 
     override fun dispose(ctx: KoolContext) {
         drawNode.dispose(ctx)
-        noiseTex.dispose()
+        ssrNoise.texture?.dispose()
         super.dispose(ctx)
     }
 
@@ -63,18 +73,12 @@ class ReflectionPass(val mrtPass: DeferredMrtPass, val pbrLightingPass: PbrLight
         }
 
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            val deferredCameraNode = model.findNode<DeferredCameraNode>("deferredCam")
-            deferredCameraNode?.let { it.sceneCam = mrtPass.camera }
+            deferredCam = model.findNode("deferredCam")
 
-            val positionAoSampler = model.findNode<Texture2dNode>("positionAo")?.sampler
-            positionAoSampler?.let { it.texture = mrtPass.positionAo }
-            val normalRoughnessSampler = model.findNode<Texture2dNode>("normalRoughness")?.sampler
-            normalRoughnessSampler?.let { it.texture = mrtPass.normalRoughness }
-
-            val ssrSampler = model.findNode<Texture2dNode>("ssrMap")?.sampler
-            ssrSampler?.let { it.texture = pbrLightingPass.colorTexture }
-            val ssrNoiseSampler = model.findNode<Texture2dNode>("ssrNoiseTex")?.sampler
-            ssrNoiseSampler?.let { it.texture = noiseTex }
+            positionAo.connect(model)
+            normalRoughness.connect(model)
+            ssrInput.connect(model)
+            ssrNoise.connect(model)
 
             roughnessThresholdLow.connect(model)
             roughnessThresholdHigh.connect(model)

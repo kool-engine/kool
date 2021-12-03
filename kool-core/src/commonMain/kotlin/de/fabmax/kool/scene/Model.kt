@@ -30,11 +30,11 @@ class Model(name: String? = null) : Group(name) {
         }
     }
 
-    fun applyAnimation(time: Double) {
+    fun applyAnimation(deltaT: Float) {
         var firstActive = true
         for (i in animations.indices) {
             if (animations[i].weight > 0f) {
-                animations[i].apply(time, firstActive)
+                animations[i].apply(deltaT, firstActive)
                 firstActive = false
             }
         }

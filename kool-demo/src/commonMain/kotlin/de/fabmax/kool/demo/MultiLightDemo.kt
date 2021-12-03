@@ -11,10 +11,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.deferred.DeferredPbrShader
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.deferred.deferredPbrShader
+import de.fabmax.kool.util.deferred.*
 import de.fabmax.kool.util.gltf.GltfFile
 import de.fabmax.kool.util.gltf.loadGltfFile
 import de.fabmax.kool.util.ibl.EnvironmentHelper
@@ -86,16 +83,17 @@ class MultiLightDemo : DemoScene("Reflections") {
             useImageBasedLighting(envMaps)
         }
         deferredPipeline = DeferredPipeline(scene, defCfg)
-        deferredPipeline.outputShader.setupVignette(strength = 0f)
 
-        scene += deferredPipeline.renderOutput
+        scene += deferredPipeline.createDefaultOutputQuad().also {
+            (it.shader as? DeferredOutputShader)?.setupVignette(0f)
+        }
         scene += Skybox.cube(envMaps.reflectionMap, 1f)
 
         scene.onDispose += {
             noSsrMap.dispose()
         }
 
-        deferredPipeline.contentGroup.apply {
+        deferredPipeline.sceneContent.apply {
             ctx.assetMgr.launch {
                 val floorAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
                 val floorNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
@@ -166,7 +164,7 @@ class MultiLightDemo : DemoScene("Reflections") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
-        val ssrMap = image(deferredPipeline.reflectionDenoisePass?.colorTexture)
+        val ssrMap = image(deferredPipeline.reflections?.reflectionMap)
 
         section("Lights") {
             cycler("Lights:", Cycler(1, 2, 3, 4).apply { index = 3 }) { count, _ ->

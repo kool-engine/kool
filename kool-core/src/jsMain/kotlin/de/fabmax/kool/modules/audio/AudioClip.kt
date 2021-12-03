@@ -5,10 +5,16 @@ import org.w3c.dom.Audio
 
 actual class AudioClip(val assetPath: String) {
 
+    actual var masterVolume = 1f
+        set(value) {
+            field = value
+            latestClip.volume = volume * value
+        }
+
     actual var volume = 1f
         set(value) {
             field = value
-            latestClip.volume = value
+            latestClip.volume = value * masterVolume
         }
 
     actual var currentTime: Float
@@ -102,7 +108,7 @@ actual class AudioClip(val assetPath: String) {
         var startTime = 0.0
 
         init {
-            volume = this@AudioClip.volume
+            volume = this@AudioClip.volume * this@AudioClip.masterVolume
             audioElement.onended = {
                 clipState = ClipState.STOPPED
                 true.asDynamic()

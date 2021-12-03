@@ -7,22 +7,23 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.createUint8Buffer
-import de.fabmax.kool.util.deferred.DeferredMrtPass
 import kotlin.math.*
 import kotlin.random.Random
 
-class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, height: Int) :
+class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "AmbientOcclusionPass"
             setSize(width, height)
             clearDepthTexture()
-            addColorTexture(TexFormat.RGBA)
+            addColorTexture(TexFormat.R)
         }) {
+
+    var sceneCam: Camera? = null
 
     var radius = 1f
     var strength = 1.25f
@@ -37,10 +38,14 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
     private var aoUniforms: AoUniforms? = null
     private var aoNode: AoNode? = null
 
-    private val noiseTex = makeNoiseTexture()
+    private val noiseTex = Texture2dInput("noiseTex", makeNoiseTexture())
+
+    val fwdNormalDepth = Texture2dInput("normalDepthTex", aoSetup.linearDepthPass?.colorTexture)
+    val deferredPosition = Texture2dInput("positionTex")
+    val deferredNormal = Texture2dInput("normalTex")
 
     init {
-        clearColor = Color.WHITE
+        clearColor = null
 
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
@@ -59,7 +64,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     }
                     fragmentStage {
                         val noiseTex = texture2dNode("noiseTex")
-                        val aoUnis = addNode(AoUniforms(screenCam, true, stage))
+                        val aoUnis = addNode(AoUniforms(true, stage))
 
                         val depthTex: Texture2dNode
                         val depthComponent: String
@@ -93,13 +98,11 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                 }
                 shader = ModeledShader(model).apply {
                     onPipelineCreated += { _, _, _ ->
-                        if (aoSetup.isForward) {
-                            model.findNode<Texture2dNode>("normalDepthTex")!!.sampler.texture = aoSetup.linearDepthPass?.colorTexture
-                        } else {
-                            model.findNode<Texture2dNode>("positionTex")!!.sampler.texture = aoSetup.mrtPass?.positionAo
-                            model.findNode<Texture2dNode>("normalTex")!!.sampler.texture = aoSetup.mrtPass?.normalRoughness
-                        }
-                        model.findNode<Texture2dNode>("noiseTex")!!.sampler.texture = noiseTex
+                        fwdNormalDepth.connect(model)
+                        deferredPosition.connect(model)
+                        deferredNormal.connect(model)
+
+                        noiseTex.connect(model)
                         aoUniforms = model.findNode("aoUniforms")
                         aoNode = model.findNode("aoNode")
                         setKernelSize(kernelSz)
@@ -178,7 +181,7 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
         super.dispose(ctx)
     }
 
-    private inner class AoUniforms(val cam: Camera, val withInvProj: Boolean, graph: ShaderGraph) : ShaderNode("aoUniforms", graph) {
+    private inner class AoUniforms(val withInvProj: Boolean, graph: ShaderGraph) : ShaderNode("aoUniforms", graph) {
         val uKernel = Uniform3fv("uKernel", MAX_KERNEL_SIZE)
         val uKernelN = Uniform1i(32, "uKernelN")
         val uProj = UniformMat4f("uProj")
@@ -204,16 +207,17 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
                     +{ uKernelN }
 
                     onUpdate = { _, _ ->
-                        uProj.value.set(cam.proj)
+                        sceneCam?.let {
+                            uProj.value.set(it.proj)
+                            if (withInvProj) {
+                                uInvProj.value.set(it.invProj)
+                            }
+                        }
                         uNoiseScale.value.set(width / 4f, height / 4f)
                         uRadius.value = radius
                         uStrength.value = strength
                         uPower.value = power
                         uBias.value = bias
-
-                        if (withInvProj) {
-                            uInvProj.value.set(cam.invProj)
-                        }
                     }
                 }
             }
@@ -256,47 +260,46 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
+                ${outColor.declare()} = vec4(1.0, 0.0, 0.0, 1.0);
                 float linDistance = -$inOrigin.z;
-                if (linDistance < 0.0) {
-                    discard;
-                }
-                
-                float occlFac = 1.0;
-                float sampleR = ${aoUniforms.uRadius};
-                if (sampleR < 0.0) {
-                    sampleR *= -linDistance;
-                }
-                if (linDistance < sampleR * 200.0) {
-                    // compute kernel rotation
-                    vec2 noiseCoord = ${inScreenPos.ref2f()} * ${aoUniforms.uNoiseScale};
-                    vec3 rotVec = ${generator.sampleTexture2d(noiseTex.name, "noiseCoord")}.xyz * 2.0 - 1.0;
-                    vec3 tangent = normalize(rotVec - ${inNormal.ref3f()} * dot(rotVec, ${inNormal.ref3f()}));
-                    vec3 bitangent = cross(${inNormal.ref3f()}, tangent);
-                    mat3 tbn = mat3(tangent, bitangent, ${inNormal.ref3f()});
-                    
-                    float occlusion = 0.0;
-                    float bias = ${aoUniforms.uBias} * sampleR;
-                    for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
-                        vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
-                        vec3 samplePos = $inOrigin + kernel * sampleR;
-                        
-                        vec4 sampleProj = ${aoUniforms.uProj} * vec4(samplePos, 1.0);
-                        sampleProj.xyz /= sampleProj.w;
-                        sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
-                        
-                        if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
-                            float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
-                            float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * sampleR));
-                            float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
-                            occlusion += occlusionInc * rangeCheck;
-                        }
+                if (linDistance > 0.0) {
+                    float occlFac = 1.0;
+                    float sampleR = ${aoUniforms.uRadius};
+                    if (sampleR < 0.0) {
+                        sampleR *= -linDistance;
                     }
-                    occlusion /= float(${aoUniforms.uKernelN});
-                    float distFac = 1.0 - smoothstep(sampleR * 150.0, sampleR * 200.0, linDistance);
-                    occlFac = pow(clamp(1.0 - occlusion * distFac * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
+                    if (linDistance < sampleR * 200.0) {
+                        // compute kernel rotation
+                        vec2 noiseCoord = ${inScreenPos.ref2f()} * ${aoUniforms.uNoiseScale};
+                        vec3 rotVec = ${generator.sampleTexture2d(noiseTex.name, "noiseCoord")}.xyz * 2.0 - 1.0;
+                        vec3 tangent = normalize(rotVec - ${inNormal.ref3f()} * dot(rotVec, ${inNormal.ref3f()}));
+                        vec3 bitangent = cross(${inNormal.ref3f()}, tangent);
+                        mat3 tbn = mat3(tangent, bitangent, ${inNormal.ref3f()});
+                        
+                        float occlusion = 0.0;
+                        float bias = ${aoUniforms.uBias} * sampleR;
+                        for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
+                            vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
+                            vec3 samplePos = $inOrigin + kernel * sampleR;
+                            
+                            vec4 sampleProj = ${aoUniforms.uProj} * vec4(samplePos, 1.0);
+                            sampleProj.xyz /= sampleProj.w;
+                            sampleProj.xy = sampleProj.xy * 0.5 + 0.5;
+                            
+                            if (sampleProj.x > 0.0 && sampleProj.x < 1.0 && sampleProj.y > 0.0 && sampleProj.y < 1.0 && sampleProj.z > 0.0) {
+                                float sampleDepth = ${generator.sampleTexture2d(depthTex.name, "sampleProj.xy")}.$depthComponent;
+                                float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs($inOrigin.z - sampleDepth) / (4.0 * sampleR));
+                                float occlusionInc = clamp((sampleDepth - (samplePos.z + bias)) * 10.0, 0.0, 1.0);
+                                occlusion += occlusionInc * rangeCheck;
+                            }
+                        }
+                        occlusion /= float(${aoUniforms.uKernelN});
+                        float distFac = 1.0 - smoothstep(sampleR * 150.0, sampleR * 200.0, linDistance);
+                        occlFac = pow(clamp(1.0 - occlusion * distFac * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
+                    }
+                    
+                    $outColor = vec4(occlFac, 0.0, 0.0, 0.0);
                 }
-                
-                ${outColor.declare()} = vec4(occlFac, 0.0, 0.0, 1.0);
             """)
         }
     }
@@ -306,14 +309,14 @@ class AmbientOcclusionPass(screenCam: Camera, val aoSetup: AoSetup, width: Int, 
     }
 }
 
-class AoSetup private constructor(val mrtPass: DeferredMrtPass?, val linearDepthPass: NormalLinearDepthMapPass?) {
+class AoSetup private constructor(val linearDepthPass: NormalLinearDepthMapPass?) {
     val isDeferred: Boolean
-        get() = mrtPass != null
+        get() = linearDepthPass == null
     val isForward: Boolean
         get() = linearDepthPass != null
 
     companion object {
-        fun deferred(mrtPass: DeferredMrtPass) = AoSetup(mrtPass, null)
-        fun forward(linearDepthPass: NormalLinearDepthMapPass) = AoSetup(null, linearDepthPass)
+        fun deferred() = AoSetup(null)
+        fun forward(linearDepthPass: NormalLinearDepthMapPass) = AoSetup(linearDepthPass)
     }
 }

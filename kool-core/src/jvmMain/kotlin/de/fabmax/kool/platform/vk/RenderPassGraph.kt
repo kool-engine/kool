@@ -14,6 +14,7 @@ class RenderPassGraph {
     private val groupPool = mutableListOf<RenderPassGroup>()
 
     private val remainingPasses = mutableSetOf<RenderPass>()
+    private val processedPasses = mutableSetOf<RenderPass>()
     private val addedPasses = mutableSetOf<RenderPass>()
 
     fun updateGraph(ctx: Lwjgl3Context) {
@@ -23,6 +24,7 @@ class RenderPassGraph {
         groups.clear()
 
         remainingPasses.clear()
+        processedPasses.clear()
         addedPasses.clear()
 
         // we require at least one cmd buffer for on screen content
@@ -33,6 +35,8 @@ class RenderPassGraph {
             val offscreen = ctx.backgroundPasses[j]
             if (offscreen.isEnabled) {
                 remainingPasses.add(offscreen)
+            } else {
+                processedPasses.add(offscreen)
             }
         }
         for (i in scenes.indices) {
@@ -44,6 +48,8 @@ class RenderPassGraph {
                         remainingPasses.add(offscreen)
                         // add additional cmd buffers for each offscreen pass (ping-pong passes can resolve to multiple passes)
                         requiredCommandBuffers += if (offscreen is OffscreenRenderPass2dPingPong) offscreen.pingPongPasses else 1
+                    } else {
+                        processedPasses.add(offscreen)
                     }
                 }
             }
@@ -56,7 +62,7 @@ class RenderPassGraph {
         while (remainingPasses.isNotEmpty()) {
             var added: RenderPass? = null
             for (candidate in remainingPasses) {
-                if (addedPasses.containsAll(candidate.dependencies)) {
+                if (processedPasses.containsAll(candidate.dependencies)) {
                     if (groups.isNotEmpty()) {
                         val grp = groups.last()
                         if (grp.containsNone(candidate.dependencies)) {
@@ -88,6 +94,7 @@ class RenderPassGraph {
                 break
             } else {
                 addedPasses += added
+                processedPasses += added
                 remainingPasses -= added
             }
         }
