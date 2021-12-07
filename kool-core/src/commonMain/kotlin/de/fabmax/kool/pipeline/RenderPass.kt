@@ -19,6 +19,7 @@ abstract class RenderPass(var drawNode: Node) {
     var lighting: Lighting? = null
 
     var isUpdateDrawNode = true
+    var drawMeshFilter: (Mesh) -> Boolean = { true }
     private var updateEvent: UpdateEvent? = null
 
     var clearColors = Array<Color?>(1) { Color(0.15f, 0.15f, 0.15f, 1f) }
@@ -35,7 +36,11 @@ abstract class RenderPass(var drawNode: Node) {
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
-    private fun updateEvent(ctx: KoolContext) = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
+    private fun setupUpdateEvent(ctx: KoolContext): UpdateEvent {
+        val event = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
+        event.meshFilter = drawMeshFilter
+        return event
+    }
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass
@@ -43,13 +48,13 @@ abstract class RenderPass(var drawNode: Node) {
 
     open fun update(ctx: KoolContext) {
         if (isUpdateDrawNode) {
-            drawNode.update(updateEvent(ctx))
+            drawNode.update(setupUpdateEvent(ctx))
         }
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
         beforeCollectDrawCommands(ctx)
-        drawNode.collectDrawCommands(updateEvent(ctx))
+        drawNode.collectDrawCommands(setupUpdateEvent(ctx))
         afterCollectDrawCommands(ctx)
     }
 
@@ -91,6 +96,8 @@ abstract class RenderPass(var drawNode: Node) {
             get() = renderPass.camera
         val viewport: Viewport
             get() = renderPass.viewport
+
+        var meshFilter: (Mesh) -> Boolean = { true }
 
         operator fun component1() = renderPass
         operator fun component2() = ctx

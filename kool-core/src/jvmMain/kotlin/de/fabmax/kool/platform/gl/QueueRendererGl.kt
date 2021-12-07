@@ -49,26 +49,29 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             }
         }
 
+        var numPrimitives = 0
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->
                 glAttribs.setupPipelineAttribs(pipeline)
 
-                if (cmd.mesh.geometry.numIndices > 0) {
+                if (cmd.geometry.numIndices > 0) {
                     val shaderInst = shaderMgr.setupShader(cmd)
                     if (shaderInst != null && shaderInst.indexType != 0) {
                         val insts = cmd.mesh.instances
                         if (insts == null) {
                             glDrawElements(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, 0)
-                            ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                            numPrimitives += cmd.geometry.numPrimitives
                         } else if (insts.numInstances > 0) {
                             glDrawElementsInstanced(shaderInst.primitiveType, shaderInst.numIndices, shaderInst.indexType, 0, insts.numInstances)
-                            ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
+                            numPrimitives += cmd.geometry.numPrimitives * insts.numInstances
                         }
                         ctx.engineStats.addDrawCommandCount(1)
                     }
                 }
             }
         }
+        ctx.engineStats.addPrimitiveCount(numPrimitives)
+        //println("${queue.renderPass.name}: $numPrimitives triangles")
     }
 
     private inner class GlAttribs {

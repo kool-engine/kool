@@ -61,6 +61,8 @@ class DemoVehicle(world: VehicleWorld, private val vehicleModel: Model, ctx: Koo
         }
 
     init {
+        vehicleModel.meshes.values.forEach { it.disableShadowCastingAboveLevel(1) }
+
         vehicleGroup += vehicleModel
         vehicle = makeRaycastVehicle(world)
         registerKeyHandlers(ctx)

@@ -12,27 +12,19 @@ class DrawQueue(val renderPass: RenderPass) {
     private val mutCommands = mutableListOf<DrawCommand>()
     private val commandPool = mutableListOf<DrawCommand>()
 
-    var meshFilter: (Mesh) -> Boolean = { true }
-
     fun clear() {
         commandPool.addAll(mutCommands)
         mutCommands.clear()
     }
 
-    fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {
-        return if (!meshFilter(mesh)) {
-            null
+    fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand {
+        val cmd = if (commandPool.isNotEmpty()) {
+            commandPool.removeAt(commandPool.lastIndex)
         } else {
-            val cmd = if (commandPool.isNotEmpty()) {
-                commandPool.removeAt(commandPool.lastIndex)
-            } else {
-                DrawCommand(renderPass)
-            }
-            cmd.mesh = mesh
-            cmd.pipeline = mesh.getPipeline(ctx)
-            cmd.captureMatrices()
-            mutCommands.add(cmd)
-            cmd
+            DrawCommand(renderPass, mesh)
         }
+        cmd.setup(mesh, ctx)
+        mutCommands.add(cmd)
+        return cmd
     }
 }

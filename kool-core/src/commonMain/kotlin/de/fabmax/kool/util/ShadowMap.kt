@@ -7,6 +7,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler2d
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.*
 import kotlin.math.abs
@@ -29,6 +30,7 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
 
     val lightViewProjMat = Mat4d()
 
+    var shadowMapLevel = 0
     var sceneCam = scene.camera
     var clipNear = 1f
     var clipFar = 100f
@@ -51,8 +53,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
         isUpdateDrawNode = false
         scene.addOffscreenPass(this)
 
-        drawQueue.meshFilter = {
-            it.isCastingShadow
+        drawMeshFilter = {
+            it.isCastingShadow(shadowMapLevel)
         }
 
         onBeforeCollectDrawCommands += { ctx ->
@@ -62,6 +64,13 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
                 camera.updateCamera(this, ctx)
                 ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
             }
+        }
+    }
+
+    override fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
+        super.setupDrawCommand(cmd, ctx)
+        if (cmd.geometry === cmd.mesh.geometry && cmd.mesh.shadowGeometry.isNotEmpty()) {
+            cmd.geometry = cmd.mesh.shadowGeometry[min(cmd.mesh.shadowGeometry.lastIndex, shadowMapLevel)]
         }
     }
 
@@ -176,7 +185,13 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, var maxRange: Float =
         MapRange(near, far)
     }
 
-    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSizes?.get(it) ?: 2048, drawNode).apply { setDefaultDepthOffset(true) } }
+    val cascades = Array(numCascades) { level ->
+        SimpleShadowMap(scene, lightIndex, mapSizes?.get(level) ?: 2048, drawNode).apply {
+            name = "CascadedShadopwMap-level-$level"
+            shadowMapLevel = level
+            setDefaultDepthOffset(true)
+        }
+    }
 
     var drawNode: Node
         get() = cascades[0].drawNode

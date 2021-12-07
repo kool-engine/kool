@@ -3,7 +3,8 @@ package de.fabmax.kool.platform.webgl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.Usage
 import org.khronos.webgl.WebGLProgram
@@ -114,7 +115,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     fun bindInstance(cmd: DrawCommand): ShaderInstance? {
         val pipelineInst = cmd.pipeline!!
         val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) {
-            ShaderInstance(cmd.mesh, pipelineInst)
+            ShaderInstance(cmd.geometry, cmd.mesh.instances, pipelineInst)
         }
         return if (inst.bindInstance(cmd)) { inst } else { null }
     }
@@ -133,7 +134,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         ctx.gl.deleteProgram(prog)
     }
 
-    inner class ShaderInstance(val mesh: Mesh, val pipeline: Pipeline) {
+    inner class ShaderInstance(var geometry: IndexedVertexList, val instances: MeshInstanceList?, val pipeline: Pipeline) {
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures1d = mutableListOf<TextureSampler1d>()
@@ -218,6 +219,11 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         }
 
         fun bindInstance(drawCmd: DrawCommand): Boolean {
+            if (geometry !== drawCmd.geometry) {
+                geometry = drawCmd.geometry
+                destroyBuffers()
+            }
+
             // call onUpdate callbacks
             for (i in pushConstants.indices) {
                 pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
@@ -256,7 +262,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             return uniformsValid
         }
 
-        fun destroyInstance() {
+        private fun destroyBuffers() {
+            attributeBinders.clear()
+            instanceAttribBinders.clear()
             dataBufferF?.delete(ctx)
             dataBufferI?.delete(ctx)
             indexBuffer?.delete(ctx)
@@ -265,6 +273,11 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             dataBufferI = null
             indexBuffer = null
             instanceBuffer = null
+            buffersSet = false
+        }
+
+        fun destroyInstance() {
+            destroyBuffers()
 
             pushConstants.clear()
             ubos.clear()
@@ -273,12 +286,10 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             textures3d.clear()
             texturesCube.clear()
             mappings.clear()
-            attributeBinders.clear()
-            instanceAttribBinders.clear()
         }
 
         private fun checkBuffers() {
-            val md = mesh.geometry
+            val md = geometry
             if (indexBuffer == null) {
                 indexBuffer = BufferResource(ELEMENT_ARRAY_BUFFER, ctx)
             }
@@ -308,7 +319,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
 
-            val instanceList = mesh.instances
+            val instanceList = instances
             if (instanceList != null) {
                 var instBuf = instanceBuffer
                 if (instBuf == null) {

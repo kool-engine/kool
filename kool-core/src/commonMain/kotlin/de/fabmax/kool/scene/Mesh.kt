@@ -68,6 +68,23 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
      */
     var depthShader: Shader? = null
 
+    /**
+     * Optional list with lod geometry used by shadow passes. Shadow passes will use the geometry at index
+     * [de.fabmax.kool.util.SimpleShadowMap.shadowMapLevel] or the last list entry in case the list has fewer entries.
+     * If list is empty the regular geometry is used.
+     */
+    val shadowGeometry = mutableListOf<IndexedVertexList>()
+
+    /**
+     * Determines whether this node is considered during shadow pass.
+     */
+    var isCastingShadowLevelMask = -1
+    var isCastingShadow: Boolean
+        get() = isCastingShadowLevelMask != 0
+        set(value) {
+            isCastingShadowLevelMask = if (value) -1 else 0
+        }
+
     private var pipeline: Pipeline? = null
     private val discardedPipelines = mutableListOf<Pipeline>()
 
@@ -93,6 +110,22 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         }
     }
 
+    fun setIsCastingShadow(shadowMapLevel: Int, enabled: Boolean) {
+        isCastingShadowLevelMask = if (enabled) {
+            isCastingShadowLevelMask or (1 shl shadowMapLevel)
+        } else {
+            isCastingShadowLevelMask and (1 shl shadowMapLevel).inv()
+        }
+    }
+
+    fun disableShadowCastingAboveLevel(shadowMapLevel: Int) {
+        isCastingShadowLevelMask = isCastingShadowLevelMask and ((2 shl shadowMapLevel) - 1)
+    }
+
+    fun isCastingShadow(shadowMapLevel: Int): Boolean {
+        return (isCastingShadowLevelMask and (1 shl shadowMapLevel)) != 0
+    }
+
     override fun rayTest(test: RayTest) = rayTest.rayTest(test)
 
     /**
@@ -105,6 +138,10 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     }
 
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+        if (!updateEvent.meshFilter(this)) {
+            return
+        }
+
         super.collectDrawCommands(updateEvent)
 
         if (!isRendered) {

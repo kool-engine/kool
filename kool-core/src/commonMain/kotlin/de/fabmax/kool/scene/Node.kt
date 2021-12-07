@@ -63,11 +63,6 @@ abstract class Node(val name: String? = null) : Disposable {
     open var isVisible = true
 
     /**
-     * Determines whether this node is considered during shadow pass.
-     */
-    var isCastingShadow = true
-
-    /**
      * Determines whether this node is considered for ray-picking tests.
      */
     open var isPickable = true

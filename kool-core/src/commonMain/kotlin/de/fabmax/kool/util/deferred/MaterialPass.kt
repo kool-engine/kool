@@ -68,7 +68,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive:
 
         content.isFrustumChecked = false
 
-        drawQueue.meshFilter = { it.isOpaque }
+        drawMeshFilter = { it.isOpaque }
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {

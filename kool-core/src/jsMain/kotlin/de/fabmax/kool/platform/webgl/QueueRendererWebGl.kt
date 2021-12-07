@@ -66,16 +66,16 @@ class QueueRendererWebGl(val ctx: JsContext) {
             cmd.pipeline?.let { pipeline ->
                 glAttribs.setupPipelineAttribs(pipeline)
 
-                if (cmd.mesh.geometry.numIndices > 0) {
+                if (cmd.geometry.numIndices > 0) {
                     shaderMgr.setupShader(cmd)?.let {
                         if (it.indexType != 0) {
                             val insts = cmd.mesh.instances
                             if (insts == null) {
                                 gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
-                                ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                                ctx.engineStats.addPrimitiveCount(cmd.geometry.numPrimitives)
                             } else if (insts.numInstances > 0) {
                                 gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
-                                ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
+                                ctx.engineStats.addPrimitiveCount(cmd.geometry.numPrimitives * insts.numInstances)
                             }
                             ctx.engineStats.addDrawCommandCount(1)
                         }

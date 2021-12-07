@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.pipeline.shading.DepthShaderConfig
 import de.fabmax.kool.pipeline.shading.LinearDepthShader
@@ -23,10 +24,14 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     init {
         onAfterCollectDrawCommands += { ctx ->
             // replace regular object shaders by cheaper shadow versions
-            drawQueue.commands.forEach {
-                it.pipeline = getDepthPipeline(it.mesh, ctx)
+            for (i in drawQueue.commands.indices) {
+                setupDrawCommand(drawQueue.commands[i], ctx)
             }
         }
+    }
+
+    protected open fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
+        cmd.pipeline = getDepthPipeline(cmd.mesh, ctx)
     }
 
     protected open fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
