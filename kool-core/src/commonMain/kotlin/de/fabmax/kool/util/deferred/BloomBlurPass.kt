@@ -56,7 +56,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         ping.clearColor = Color(0f, 0f, 0f, 0f)
         pong.clearColor = Color(0f, 0f, 0f, 0f)
 
-        bloomStrength = 0.5f
+        bloomStrength = 1f
 
         dependsOn(thresholdPass)
     }
