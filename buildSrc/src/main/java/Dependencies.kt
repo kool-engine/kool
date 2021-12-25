@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 object Versions {
-    val kotlinVersion = "1.6.0"
+    val kotlinVersion = "1.6.10"
     val kotlinCorroutinesVersion = "1.5.2"
     val kotlinSerializationVersion = "1.3.1"
 

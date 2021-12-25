@@ -1,6 +1,5 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
@@ -34,16 +33,16 @@ kotlin {
                 implementation(DepsJvm.lwjgl())
                 runtimeOnly(DepsJvm.lwjglNatives())
 
-                implementation("de.fabmax:physx-jni:0.4.15")
-                runtimeOnly("de.fabmax:physx-jni:0.4.15:native-win64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.15:native-linux64")
-                runtimeOnly("de.fabmax:physx-jni:0.4.15:native-mac64")
+                implementation("de.fabmax:physx-jni:0.4.16")
+                runtimeOnly("de.fabmax:physx-jni:0.4.16:native-win64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.16:native-linux64")
+                runtimeOnly("de.fabmax:physx-jni:0.4.16:native-mac64")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("physx-js-webidl", "0.4.15"))
+                implementation(npm("physx-js-webidl", "0.4.16"))
 //                implementation(npm(File("$projectDir/npm/physx-js-webidl")))
             }
         }

@@ -22,6 +22,12 @@ external interface PxTopLevelFunctions {
     fun DefaultFilterShader(): PxSimulationFilterShader
 
     /**
+     * @param sceneDesc    WebIDL type: [PxSceneDesc]
+     * @param filterShader WebIDL type: [PassThroughFilterShader]
+     */
+    fun setupPassThroughFilterShader(sceneDesc: PxSceneDesc, filterShader: PassThroughFilterShader)
+
+    /**
      * @param scene WebIDL type: [PxScene] (Ref)
      * @return WebIDL type: [PxControllerManager]
      */

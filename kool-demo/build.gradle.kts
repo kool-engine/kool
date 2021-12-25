@@ -18,9 +18,9 @@ kotlin {
             }
             commonWebpackConfig {
                 // small js code
-                mode = KotlinWebpackConfig.Mode.PRODUCTION
+//                mode = KotlinWebpackConfig.Mode.PRODUCTION
                 // readable js code but ~twice the file size
-                //mode = KotlinWebpackConfig.Mode.DEVELOPMENT
+                mode = KotlinWebpackConfig.Mode.DEVELOPMENT
             }
             binaries.executable()
         }
@@ -45,6 +45,10 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
+                implementation(DepsJvm.lwjgl())
+                implementation(DepsJvm.lwjgl("stb"))
+                runtimeOnly(DepsJvm.lwjglNatives("stb"))
+
                 runtimeOnly(DepsJvm.lwjglNatives())
                 runtimeOnly(DepsJvm.lwjglNatives("glfw"))
                 runtimeOnly(DepsJvm.lwjglNatives("jemalloc"))

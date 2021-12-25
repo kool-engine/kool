@@ -103,9 +103,11 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
         for (i in node.children.indices) {
             val child = node.children[i]
-            val dSqr = pointDistance.nodeSqrDistanceToPoint(child, center)
-            if (dSqr < radiusSqr) {
-                traverseNode(tree, child)
+            if (!child.isEmpty) {
+                val dSqr = pointDistance.nodeSqrDistanceToPoint(child, center)
+                if (dSqr < radiusSqr) {
+                    traverseNode(tree, child)
+                }
             }
         }
     }
@@ -181,10 +183,11 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
         } else {
             for (i in node.children.indices) {
                 val child = node.children[i]
-                val dSqr = pointDistance.nodeSqrDistanceToPoint(child, center)
-
-                if (dSqr < sqrDist) {
-                    traverseNode(tree, child)
+                if (!child.isEmpty) {
+                    val dSqr = pointDistance.nodeSqrDistanceToPoint(child, center)
+                    if (dSqr < sqrDist) {
+                        traverseNode(tree, child)
+                    }
                 }
             }
         }
@@ -253,12 +256,14 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
             childLists.sortByDistance(childList)
 
             for (i in node.children.indices) {
-                val maxDist = if (items.size < k) { radiusSqr } else { items.peek().dSqr }
                 val child = childList[i]
-                if (child.dist < maxDist) {
-                    traverseNode(tree, child.node!!)
-                } else {
-                    break
+                if (!child.node!!.isEmpty) {
+                    val maxDist = if (items.size < k) { radiusSqr } else { items.peek().dSqr }
+                    if (child.dist < maxDist) {
+                        traverseNode(tree, child.node!!)
+                    } else {
+                        break
+                    }
                 }
             }
         }
@@ -335,10 +340,12 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
 
             for (i in node.children.indices) {
                 val child = childList[i]
-                if (child.dist < distanceSqr) {
-                    traverseNode(tree, child.node!!)
-                } else {
-                    break
+                if (!child.node!!.isEmpty) {
+                    if (child.dist < distanceSqr) {
+                        traverseNode(tree, child.node!!)
+                    } else {
+                        break
+                    }
                 }
             }
         }

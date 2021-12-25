@@ -38,6 +38,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             field = value
             onFocusChanged.forEach { it(value) }
         }
+    private val forceDpi = props.forceDpi
 
     val onFocusChanged = mutableListOf<(Boolean) -> Unit>()
 
@@ -94,14 +95,22 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         // install window callbacks
         glfwSetWindowPosCallback(renderBackend.glfwWindowHandle) { _, x, y ->
-            screenDpi = getResolutionAt(x, y)
+            updateScreenDpi(getResolutionAt(x, y))
         }
         glfwSetWindowFocusCallback(renderBackend.glfwWindowHandle) { _, isFocused ->
             isWindowFocued = isFocused
         }
         isWindowFocued = glfwGetWindowAttrib(renderBackend.glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
         val monitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        screenDpi = monitor.dpi
+        updateScreenDpi(monitor.dpi)
+    }
+
+    private fun updateScreenDpi(monitorDpi: Float) {
+        screenDpi = if (forceDpi <= 0) {
+            monitorDpi
+        } else {
+            forceDpi
+        }
     }
 
     override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
@@ -209,7 +218,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var height = 900
         var title = "Kool"
         var monitor = -1
-        var share = 0L
+        var forceDpi = 0f
         var isFullscreen = false
 
         var renderBackend = Backend.OPEN_GL

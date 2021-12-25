@@ -4787,6 +4787,19 @@ object PxContactPairFlagEnum {
     val eINTERNAL_CONTACTS_ARE_FLIPPED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eINTERNAL_CONTACTS_ARE_FLIPPED()
 }
 
+object PxFilterFlagEnum {
+    val eKILL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eKILL()
+    val eSUPPRESS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eSUPPRESS()
+    val eCALLBACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eCALLBACK()
+    val eNOTIFY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eNOTIFY()
+    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eDEFAULT()
+}
+
+object PxFilterObjectFlagEnum {
+    val eKINEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eKINEMATIC()
+    val eTRIGGER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eTRIGGER()
+}
+
 object PxForceModeEnum {
     val eFORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eFORCE()
     val eIMPULSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eIMPULSE()
@@ -4847,6 +4860,7 @@ object PxPairFlagEnum {
     val eCONTACT_EVENT_POSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_EVENT_POSE()
     val eNEXT_FREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNEXT_FREE()
     val eCONTACT_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_DEFAULT()
+    val eTRIGGER_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eTRIGGER_DEFAULT()
 }
 
 object PxPruningStructureTypeEnum {

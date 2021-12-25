@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 import physx.*
 
 actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
@@ -164,32 +165,35 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
             }
         }
 
-        onContact = { pairHeader, pairs, nbPairs ->
-            // fixme: actor array access does not work on JS
-            //val actorA = pxActors[pairHeader.actors[0].ptr]
-            //val actorB = pxActors[pairHeader.actors[1].ptr]
-            val fakeActor = pxActors.values.first()
+        onContact = { ph: PxContactPairHeader, pairs: PxContactPair, nbPairs: Int ->
+            val actorA = pxActors[Physics.SupportFunctions.PxContactPairHeader_getActor(ph, 0).ptr]
+            val actorB = pxActors[Physics.SupportFunctions.PxContactPairHeader_getActor(ph, 1).ptr]
 
-            for (i in 0 until nbPairs) {
-                val pair = Physics.TypeHelpers.getContactPairAt(pairs, i)
-                val evts = pair.events
+            if (actorA == null || actorB == null) {
+                logW { "onContact: actor reference not found" }
 
-                if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
-                    val contactPoints: MutableList<ContactPoint>?
-                    val pxContactPoints = pair.extractContacts(contacts.data(), 64)
-                    if (pxContactPoints > 0) {
-                        contactPoints = mutableListOf()
-                        for (iPt in 0 until pxContactPoints) {
-                            val contact = contacts.at(iPt)
-                            contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
+            } else {
+                for (i in 0 until nbPairs) {
+                    val pair = Physics.TypeHelpers.getContactPairAt(pairs, i)
+                    val evts = pair.events
+
+                    if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {
+                        val contactPoints: MutableList<ContactPoint>?
+                        val pxContactPoints = pair.extractContacts(contacts.data(), 64)
+                        if (pxContactPoints > 0) {
+                            contactPoints = mutableListOf()
+                            for (iPt in 0 until pxContactPoints) {
+                                val contact = contacts.at(iPt)
+                                contactPoints += ContactPoint(contact.position.toVec3f(), contact.normal.toVec3f(), contact.impulse.toVec3f(), contact.separation)
+                            }
+                        } else {
+                            contactPoints = null
                         }
-                    } else {
-                        contactPoints = null
-                    }
-                    fireOnTouchFound(fakeActor, fakeActor, contactPoints)
+                        fireOnTouchFound(actorA, actorB, contactPoints)
 
-                } else if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_LOST)) {
-                    fireOnTouchLost(fakeActor, fakeActor)
+                    } else if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_LOST)) {
+                        fireOnTouchLost(actorA, actorB)
+                    }
                 }
             }
         }

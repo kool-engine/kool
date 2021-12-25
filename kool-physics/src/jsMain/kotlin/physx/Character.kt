@@ -367,6 +367,97 @@ var PxController.userData
     get() = getUserData()
     set(value) { setUserData(value) }
 
+external interface PxControllerBehaviorCallback
+
+external interface SimpleControllerBehaviorCallback : PxControllerBehaviorCallback {
+    /**
+     * @param shape WebIDL type: [PxShape] (Const, Ref)
+     * @param actor WebIDL type: [PxActor] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun getShapeBehaviorFlags(shape: PxShape, actor: PxActor): Int
+
+    /**
+     * @param controller WebIDL type: [PxController] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun getControllerBehaviorFlags(controller: PxController): Int
+
+    /**
+     * @param obstacle WebIDL type: [PxObstacle] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun getObstacleBehaviorFlags(obstacle: PxObstacle): Int
+
+}
+
+fun SimpleControllerBehaviorCallback.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface JavaControllerBehaviorCallback : SimpleControllerBehaviorCallback {
+    /**
+     * param shape WebIDL type: [PxShape] (Const, Ref)
+     * param actor WebIDL type: [PxActor] (Const, Ref)
+     * return WebIDL type: unsigned long
+     */
+    var getShapeBehaviorFlags: (shape: PxShape, actor: PxActor) -> Int
+
+    /**
+     * param controller WebIDL type: [PxController] (Const, Ref)
+     * return WebIDL type: unsigned long
+     */
+    var getControllerBehaviorFlags: (controller: PxController) -> Int
+
+    /**
+     * param obstacle WebIDL type: [PxObstacle] (Const, Ref)
+     * return WebIDL type: unsigned long
+     */
+    var getObstacleBehaviorFlags: (obstacle: PxObstacle) -> Int
+
+}
+
+fun JavaControllerBehaviorCallback(): JavaControllerBehaviorCallback {
+    fun _JavaControllerBehaviorCallback(_module: dynamic) = js("new _module.JavaControllerBehaviorCallback()")
+    return _JavaControllerBehaviorCallback(PhysXJsLoader.physXJs)
+}
+
+external interface PxControllerBehaviorFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
+     */
+    fun set(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: octet
+ */
+fun PxControllerBehaviorFlags(flags: Byte): PxControllerBehaviorFlags {
+    fun _PxControllerBehaviorFlags(_module: dynamic, flags: Byte) = js("new _module.PxControllerBehaviorFlags(flags)")
+    return _PxControllerBehaviorFlags(PhysXJsLoader.physXJs, flags)
+}
+
+fun PxControllerBehaviorFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxControllerCollisionFlags {
     /**
      * Native object address.
@@ -453,6 +544,10 @@ external interface PxControllerDesc {
      * WebIDL type: [PxUserControllerHitReport]
      */
     var reportCallback: PxUserControllerHitReport
+    /**
+     * WebIDL type: [PxControllerBehaviorCallback]
+     */
+    var behaviorCallback: PxControllerBehaviorCallback
     /**
      * WebIDL type: [PxControllerNonWalkableModeEnum] (enum)
      */
@@ -937,6 +1032,12 @@ fun JavaUserControllerHitReport(): JavaUserControllerHitReport {
 object PxCapsuleClimbingModeEnum {
     val eEASY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eEASY()
     val eCONSTRAINED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eCONSTRAINED()
+}
+
+object PxControllerBehaviorFlagEnum {
+    val eCCT_CAN_RIDE_ON_OBJECT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_CAN_RIDE_ON_OBJECT()
+    val eCCT_SLIDE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_SLIDE()
+    val eCCT_USER_DEFINED_RIDE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_USER_DEFINED_RIDE()
 }
 
 object PxControllerCollisionFlagEnum {

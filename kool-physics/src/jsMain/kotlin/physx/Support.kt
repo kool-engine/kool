@@ -19,6 +19,13 @@ external interface SupportFunctions {
     fun PxActor_getShape(actor: PxRigidActor, index: Int): PxShape
 
     /**
+     * @param pairHeader WebIDL type: [PxContactPairHeader] (Ref)
+     * @param index      WebIDL type: long
+     * @return WebIDL type: [PxActor]
+     */
+    fun PxContactPairHeader_getActor(pairHeader: PxContactPairHeader, index: Int): PxActor
+
+    /**
      * @param scene WebIDL type: [PxScene]
      * @return WebIDL type: [Vector_PxActorPtr] (Ref)
      */
@@ -131,11 +138,46 @@ external interface TypeHelpers {
     fun getRealAt(base: PxRealPtr, index: Int): Float
 
     /**
+     * @param base  WebIDL type: [PxActor]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxActor]
+     */
+    fun getActorAt(base: PxActor, index: Int): PxActor
+
+    /**
      * @param base  WebIDL type: [PxContactPair]
      * @param index WebIDL type: long
      * @return WebIDL type: [PxContactPair]
      */
     fun getContactPairAt(base: PxContactPair, index: Int): PxContactPair
+
+    /**
+     * @param base  WebIDL type: [PxContactPairHeader]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxContactPairHeader]
+     */
+    fun getContactPairHeaderAt(base: PxContactPairHeader, index: Int): PxContactPairHeader
+
+    /**
+     * @param base  WebIDL type: [PxController]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxController]
+     */
+    fun getControllerAt(base: PxController, index: Int): PxController
+
+    /**
+     * @param base  WebIDL type: [PxObstacle]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxObstacle]
+     */
+    fun getObstacleAt(base: PxObstacle, index: Int): PxObstacle
+
+    /**
+     * @param base  WebIDL type: [PxShape]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxShape]
+     */
+    fun getShapeAt(base: PxShape, index: Int): PxShape
 
     /**
      * @param base  WebIDL type: [PxTriggerPair]
@@ -1067,6 +1109,56 @@ external interface PxPvd {
      */
     fun connect(transport: PxPvdTransport, flags: PxPvdInstrumentationFlags): Boolean
 
+}
+
+external interface PassThroughFilterShader : PxSimulationFilterShader {
+    /**
+     * WebIDL type: unsigned long
+     */
+    var outputPairFlags: Int
+
+    /**
+     * @param attributes0   WebIDL type: unsigned long
+     * @param filterData0w0 WebIDL type: unsigned long
+     * @param filterData0w1 WebIDL type: unsigned long
+     * @param filterData0w2 WebIDL type: unsigned long
+     * @param filterData0w3 WebIDL type: unsigned long
+     * @param attributes1   WebIDL type: unsigned long
+     * @param filterData1w0 WebIDL type: unsigned long
+     * @param filterData1w1 WebIDL type: unsigned long
+     * @param filterData1w2 WebIDL type: unsigned long
+     * @param filterData1w3 WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun filterShader(attributes0: Int, filterData0w0: Int, filterData0w1: Int, filterData0w2: Int, filterData0w3: Int, attributes1: Int, filterData1w0: Int, filterData1w1: Int, filterData1w2: Int, filterData1w3: Int): Int
+
+}
+
+fun PassThroughFilterShader.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface JavaPassThroughFilterShader : PassThroughFilterShader {
+    /**
+     * param attributes0   WebIDL type: unsigned long
+     * param filterData0w0 WebIDL type: unsigned long
+     * param filterData0w1 WebIDL type: unsigned long
+     * param filterData0w2 WebIDL type: unsigned long
+     * param filterData0w3 WebIDL type: unsigned long
+     * param attributes1   WebIDL type: unsigned long
+     * param filterData1w0 WebIDL type: unsigned long
+     * param filterData1w1 WebIDL type: unsigned long
+     * param filterData1w2 WebIDL type: unsigned long
+     * param filterData1w3 WebIDL type: unsigned long
+     * return WebIDL type: unsigned long
+     */
+    var filterShader: (attributes0: Int, filterData0w0: Int, filterData0w1: Int, filterData0w2: Int, filterData0w3: Int, attributes1: Int, filterData1w0: Int, filterData1w1: Int, filterData1w2: Int, filterData1w3: Int) -> Int
+
+}
+
+fun JavaPassThroughFilterShader(): JavaPassThroughFilterShader {
+    fun _JavaPassThroughFilterShader(_module: dynamic) = js("new _module.JavaPassThroughFilterShader()")
+    return _JavaPassThroughFilterShader(PhysXJsLoader.physXJs)
 }
 
 object PxPvdInstrumentationFlagEnum {

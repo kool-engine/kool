@@ -21,6 +21,9 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
     val trackColorOff = ThemeOrCustomProp(Color.GRAY)
     val trackColorOn = ThemeOrCustomProp(Color.LIGHT_GRAY)
 
+    var trackWidth = 24f
+    var trackHeight = 6f
+    var knobRadius = 10f
 
     var isEnabled = initState
         set(value) {
@@ -92,9 +95,9 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         super.updateUi(ctx)
 
         val paddingR = tb.padding.right.toUnits(tb.width, tb.dpi)
-        val trackW = tb.dp(24f)
-        val trackH = tb.dp(6f)
-        val knobR = tb.dp(10f)
+        val trackW = tb.dp(tb.trackWidth)
+        val trackH = tb.dp(tb.trackHeight)
+        val knobR = tb.dp(tb.knobRadius)
         val x = tb.width - paddingR - trackW - knobR
         val y = (tb.height - trackH) / 2f
 
