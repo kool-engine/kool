@@ -9,12 +9,12 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.util.Color
 
-class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive: Boolean = false) :
+class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         OffscreenRenderPass2d(pipeline.sceneContent, renderPassConfig {
             name = "MaterialPass-$suffix"
             setDynamicSize()
             setDepthTexture(false)
-            val formats = if (withEmissive) FORMATS_DEFERRED_EMISSIVE else FORMATS_DEFERRED
+            val formats = FORMATS_DEFERRED_EMISSIVE
             formats.forEach { fmt ->
                 addColorTexture {
                     colorFormat = fmt
@@ -28,14 +28,14 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive:
     val content = drawNode as Group
     internal val alphaMeshes = mutableListOf<Mesh>()
 
-    val positionAo: Texture2d
+    val positionFlags: Texture2d
         get() = colorTextures[0]
     val normalRoughness: Texture2d
         get() = colorTextures[1]
     val albedoMetal: Texture2d
         get() = colorTextures[2]
-    val emissive: Texture2d?
-        get() = if (withEmissive) colorTextures[3] else null
+    val emissiveAo: Texture2d
+        get() = colorTextures[3]
 
     var proxyCamera: PerspectiveProxyCam? = null
         set(value) {
@@ -62,13 +62,9 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive:
         clearColors[0] = Color(0f, 0f, 1f, 0f)
         clearColors[1] = null
         clearColors[2] = null
-        if (withEmissive) {
-            clearColors[3] = null
-        }
+        clearColors[3] = null
 
         content.isFrustumChecked = false
-
-        drawMeshFilter = { it.isOpaque }
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
@@ -91,12 +87,11 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String, val withEmissive:
     }
 
     companion object {
-        val FMT_POSITION_AO = TexFormat.RGBA_F16
+        val FMT_POSITION_FLAGS = TexFormat.RGBA_F16
         val FMT_NORMAL_ROUGH = TexFormat.RGBA_F16
         val FMT_ALBEDO_METAL = TexFormat.RGBA
-        val FMT_EMISSIVE = TexFormat.RGBA_F16
+        val FMT_EMISSIVE_AO = TexFormat.RGBA_F16
 
-        val FORMATS_DEFERRED = listOf(FMT_POSITION_AO, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL)
-        val FORMATS_DEFERRED_EMISSIVE = listOf(FMT_POSITION_AO, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL, FMT_EMISSIVE)
+        val FORMATS_DEFERRED_EMISSIVE = listOf(FMT_POSITION_FLAGS, FMT_NORMAL_ROUGH, FMT_ALBEDO_METAL, FMT_EMISSIVE_AO)
     }
 }

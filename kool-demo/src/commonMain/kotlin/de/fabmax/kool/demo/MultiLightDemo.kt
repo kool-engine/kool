@@ -77,7 +77,6 @@ class MultiLightDemo : DemoScene("Reflections") {
     private fun setupDeferred(scene: Scene, ctx: KoolContext) {
         val envMaps = EnvironmentHelper.singleColorEnvironment(scene, Color(0.15f, 0.15f, 0.15f))
         val defCfg = DeferredPipelineConfig().apply {
-            isWithExtendedMaterials = false
             isWithAmbientOcclusion = false
             isWithScreenSpaceReflections = true
             useImageBasedLighting(envMaps)

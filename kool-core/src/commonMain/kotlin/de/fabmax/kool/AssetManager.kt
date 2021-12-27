@@ -75,6 +75,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     protected abstract suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
 
+    abstract suspend fun waitForFonts()
+
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
     abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer

@@ -66,6 +66,9 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
     }
 
     companion object {
+        const val MATERIAL_FLAG_ALWAYS_LIT = 1
+        const val MATERIAL_FLAG_IS_MOVING = 2
+
         fun defaultMrtPbrModel(cfg: PbrMaterialConfig) = ShaderModel("defaultMrtPbrModel()").apply {
             val ifColors: StageInterfaceNode?
             val ifNormals: StageInterfaceNode
@@ -284,7 +287,10 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     }
                 }
                 if (cfg.isAlwaysLit) {
-                    materialBits = materialBits or 1
+                    materialBits = materialBits or MATERIAL_FLAG_ALWAYS_LIT
+                }
+                if (cfg.isMoving) {
+                    materialBits = materialBits or MATERIAL_FLAG_IS_MOVING
                 }
 
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
@@ -295,17 +301,14 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     inRoughness = roughness
                     inMetallic = metallic
                     inAo = aoFactor
-                    inMaterialBits = constFloat(materialBits.toFloat())
+                    inMaterialFlags = constFloat(materialBits.toFloat())
                 }
 
                 colorOutput(channels = 4).apply {
-                    inColors[0] = mrtMultiplexNode.outPositionAo
+                    inColors[0] = mrtMultiplexNode.outPositionFlags
                     inColors[1] = mrtMultiplexNode.outNormalRough
                     inColors[2] = mrtMultiplexNode.outAlbedoMetallic
-                    // fixme: depending on mrt pass setup emissive color attachment might not exist, in this case
-                    //  writing to it isn't particularly good style (and produces a Vulkan Validation Layer warning)
-                    //  however written values are simply discarded and shouldn't do much harm
-                    inColors[3] = mrtMultiplexNode.outEmissiveMat
+                    inColors[3] = mrtMultiplexNode.outEmissiveAo
                 }
             }
         }
@@ -319,12 +322,12 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.5f))
         var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0f))
         var inAo = ShaderNodeIoVar(ModelVar1fConst(1f))
-        var inMaterialBits = ShaderNodeIoVar(ModelVar1fConst(0f))
+        var inMaterialFlags = ShaderNodeIoVar(ModelVar1fConst(0f))
 
-        val outPositionAo = ShaderNodeIoVar(ModelVar4f("outPositionAo"), this)
+        val outPositionFlags = ShaderNodeIoVar(ModelVar4f("outPositionFlags"), this)
         val outNormalRough = ShaderNodeIoVar(ModelVar4f("outNormalRough"), this)
         val outAlbedoMetallic = ShaderNodeIoVar(ModelVar4f("outAlbedoMetallic"), this)
-        val outEmissiveMat = ShaderNodeIoVar(ModelVar4f("outEmissive"), this)
+        val outEmissiveAo = ShaderNodeIoVar(ModelVar4f("outEmissiveAo"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
@@ -333,19 +336,19 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
-                ${outPositionAo.declare()} = vec4(${inViewPos.ref3f()}, ${inAo.ref1f()});
+                ${outPositionFlags.declare()} = vec4(${inViewPos.ref3f()}, ${inMaterialFlags.ref1f()});
                 ${outNormalRough.declare()} = vec4(${inViewNormal.ref3f()}, ${inRoughness.ref1f()});
                 ${outAlbedoMetallic.declare()} = vec4(${inAlbedo.ref3f()}, ${inMetallic.ref1f()});
-                ${outEmissiveMat.declare()} = vec4(${inEmissive.ref3f()}, ${inMaterialBits.ref1f()});
+                ${outEmissiveAo.declare()} = vec4(${inEmissive.ref3f()}, ${inAo.ref1f()});
             """)
         }
     }
 
     class MrtDeMultiplexNode(graph: ShaderGraph) : ShaderNode("mrtDeMultiplex", graph, ShaderStage.FRAGMENT_SHADER.mask) {
-        var inPositionAo = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+        var inPositionFlags = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inNormalRough = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
         var inAlbedoMetallic = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
-        var inEmissiveMat = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+        var inEmissiveAo = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
 
         val outViewPos = ShaderNodeIoVar(ModelVar4f("outViewPos"), this)
         val outAlbedo = ShaderNodeIoVar(ModelVar4f("outAlbedo"), this)
@@ -354,25 +357,25 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
         val outRoughness = ShaderNodeIoVar(ModelVar1f("outRoughness"), this)
         val outMetallic = ShaderNodeIoVar(ModelVar1f("outMetallic"), this)
         val outAo = ShaderNodeIoVar(ModelVar1f("outAo"), this)
-        val outMaterialBits = ShaderNodeIoVar(ModelVar1i("outMaterialBits"), this)
+        val outMaterialFlags = ShaderNodeIoVar(ModelVar1i("outMaterialBits"), this)
         val outLightBacksides = ShaderNodeIoVar(ModelVar1i("outLightBacksides"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            dependsOn(inPositionAo, inNormalRough, inAlbedoMetallic)
+            dependsOn(inPositionFlags, inNormalRough, inAlbedoMetallic, inEmissiveAo)
         }
 
         override fun generateCode(generator: CodeGenerator) {
             generator.appendMain("""
-                ${outViewPos.declare()} = vec4(${inPositionAo.ref3f()}, 1.0);
+                ${outViewPos.declare()} = vec4(${inPositionFlags.ref3f()}, 1.0);
                 ${outAlbedo.declare()} = vec4(${inAlbedoMetallic.ref3f()}, 1.0);
-                ${outEmissive.declare()} = ${inEmissiveMat.ref3f()};
+                ${outEmissive.declare()} = ${inEmissiveAo.ref3f()};
                 ${outViewNormal.declare()} = normalize(${inNormalRough.ref3f()});
                 ${outRoughness.declare()} = ${inNormalRough.ref4f()}.a;
                 ${outMetallic.declare()} = ${inAlbedoMetallic.ref4f()}.a;
-                ${outAo.declare()} = ${inPositionAo.ref4f()}.a;
-                ${outMaterialBits.declare()} = int(${inEmissiveMat.ref4f()}.a);
-                ${outLightBacksides.declare()} = $outMaterialBits & 1;
+                ${outAo.declare()} = ${inEmissiveAo.ref4f()}.a;
+                ${outMaterialFlags.declare()} = int(${inPositionFlags.ref4f()}.a);
+                ${outLightBacksides.declare()} = $outMaterialFlags & 1;
             """)
         }
     }

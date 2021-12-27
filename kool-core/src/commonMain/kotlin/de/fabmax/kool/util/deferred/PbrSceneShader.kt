@@ -29,10 +29,10 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
         }
 
     val depth = Texture2dInput("depth")
-    val positionAo = Texture2dInput("positionAo")
+    val positionFlags = Texture2dInput("positionFlags")
     val normalRoughness = Texture2dInput("normalRoughness")
     val albedoMetal = Texture2dInput("albedoMetal")
-    val emissive = Texture2dInput("emissive")
+    val emissiveAo = Texture2dInput("emissiveAo")
 
     // Lighting props
     val ambient = ColorInput("uAmbient", Color(0.03f, 0.03f, 0.03f, 1f))
@@ -56,10 +56,10 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
     fun setMaterialInput(materialPass: MaterialPass) {
         sceneCamera = materialPass.camera
         depth(materialPass.depthTexture)
-        positionAo(materialPass.positionAo)
+        positionFlags(materialPass.positionFlags)
         normalRoughness(materialPass.normalRoughness)
         albedoMetal(materialPass.albedoMetal)
-        emissive(materialPass.emissive)
+        emissiveAo(materialPass.emissiveAo)
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
@@ -73,10 +73,10 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
 
         depth.connect(model)
-        positionAo.connect(model)
+        positionFlags.connect(model)
         normalRoughness.connect(model)
         albedoMetal.connect(model)
-        emissive.connect(model)
+        emissiveAo.connect(model)
 
         ambient.connect(model)
 
@@ -110,14 +110,12 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
             fragmentStage {
                 val coord = ifTexCoords.output
 
-                val posAoTex = texture2dNode("positionAo")
+                val posFlagsTex = texture2dNode("positionFlags")
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionAo = texture2dSamplerNode(posAoTex, coord).outColor
+                    inPositionFlags = texture2dSamplerNode(posFlagsTex, coord).outColor
                     inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
-                    if (cfg.isWithEmissive) {
-                        inEmissiveMat = texture2dSamplerNode(texture2dNode("emissive"), coord).outColor
-                    }
+                    inEmissiveAo = texture2dSamplerNode(texture2dNode("emissiveAo"), coord).outColor
                 }
 
                 addNode(DiscardClearNode(stage)).apply { inViewPos = mrtDeMultiplex.outViewPos }
@@ -212,7 +210,6 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
         var isImageBasedLighting = false
         var isScrSpcAmbientOcclusion = false
         var isScrSpcReflections = false
-        var isWithEmissive = false
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()

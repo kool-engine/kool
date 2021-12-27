@@ -125,6 +125,8 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         return inStream
     }
 
+    override suspend fun waitForFonts() { }
+
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())

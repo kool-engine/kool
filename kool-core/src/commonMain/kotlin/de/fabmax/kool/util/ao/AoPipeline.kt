@@ -134,9 +134,9 @@ abstract class AoPipeline {
 
         override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
             aoPass.sceneCam = currentPasses.materialPass.camera
-            aoPass.deferredPosition(currentPasses.materialPass.positionAo)
+            aoPass.deferredPosition(currentPasses.materialPass.positionFlags)
             aoPass.deferredNormal(currentPasses.materialPass.normalRoughness)
-            denoisePass.depthInput(currentPasses.materialPass.positionAo)
+            denoisePass.depthInput(currentPasses.materialPass.positionFlags)
         }
 
         fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {

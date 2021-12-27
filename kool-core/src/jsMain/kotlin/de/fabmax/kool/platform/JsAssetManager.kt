@@ -6,10 +6,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Element
@@ -87,6 +84,13 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
         return async { loader(this@JsAssetManager) }
+    }
+
+    override suspend fun waitForFonts() {
+        if (fontGenerator.loadingFonts.isNotEmpty()) {
+            fontGenerator.loadingFonts.forEach { it.await() }
+            fontGenerator.loadingFonts.clear()
+        }
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)

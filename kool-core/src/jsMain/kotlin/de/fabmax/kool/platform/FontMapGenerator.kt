@@ -24,6 +24,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
     private val charMaps = mutableMapOf<FontProps, CharMap>()
 
+    val loadingFonts = mutableListOf<Promise<FontFace>>()
+
     init {
         canvas.width = maxWidth
         canvas.height = maxHeight
@@ -38,9 +40,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
     private fun loadFont(family: String, url: String) {
         val font = FontFace(family, "url($url)")
-        font.load().then { f ->
+        val promise = font.load()
+        loadingFonts += promise
+        promise.then { f ->
             js("document.fonts.add(f);")
-            logD { "Loaded custom font: $family" }
+            logD { "Loaded custom font: ${f.family}" }
         }
     }
 
@@ -156,5 +160,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 }
 
 external class FontFace(family: String, source: String) {
+    val family: String
+
     fun load(): Promise<FontFace>
 }

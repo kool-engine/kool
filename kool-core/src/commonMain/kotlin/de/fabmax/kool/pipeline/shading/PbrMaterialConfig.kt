@@ -38,6 +38,7 @@ class PbrMaterialConfig {
     val shadowMaps = mutableListOf<ShadowMap>()
     var isAlwaysLit = false
     var ambientShadowFactor = 0f
+    var isMoving = false
 
     var cullMethod = CullMethod.CULL_BACK_FACES
     var alphaMode: AlphaMode = AlphaModeOpaque()

@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Color
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -23,17 +22,17 @@ class DeferredLightShader(lightType: Light.Type) : ModeledShader(shaderModel(lig
             deferredCameraNode?.sceneCam = value
         }
 
-    val positionAo = Texture2dInput("positionAo")
+    val positionFlags = Texture2dInput("positionFlags")
     val normalRoughness = Texture2dInput("normalRoughness")
     val albedoMetal = Texture2dInput("albedoMetal")
-    val emissiveMat = Texture2dInput("emissiveMat")
+    val emissiveAo = Texture2dInput("emissiveAo")
 
     fun setMaterialInput(materialPass: MaterialPass) {
         sceneCamera = materialPass.camera
-        positionAo(materialPass.positionAo)
+        positionFlags(materialPass.positionFlags)
         normalRoughness(materialPass.normalRoughness)
         albedoMetal(materialPass.albedoMetal)
-        emissiveMat(materialPass.emissive?: SingleColorTexture(Color.BLACK.withAlpha(0f)))
+        emissiveAo(materialPass.emissiveAo)
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
@@ -46,10 +45,10 @@ class DeferredLightShader(lightType: Light.Type) : ModeledShader(shaderModel(lig
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         deferredCameraNode = model.findNode("deferredCam")
         deferredCameraNode?.let { it.sceneCam = sceneCamera }
-        positionAo.connect(model)
+        positionFlags.connect(model)
         normalRoughness.connect(model)
         albedoMetal.connect(model)
-        emissiveMat.connect(model)
+        emissiveAo.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
@@ -86,10 +85,10 @@ class DeferredLightShader(lightType: Light.Type) : ModeledShader(shaderModel(lig
 
                 val coord = texPos
                 val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                    inPositionAo = texture2dSamplerNode(texture2dNode("positionAo"), coord).outColor
+                    inPositionFlags = texture2dSamplerNode(texture2dNode("positionFlags"), coord).outColor
                     inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
                     inAlbedoMetallic = texture2dSamplerNode(texture2dNode("albedoMetal"), coord).outColor
-                    inEmissiveMat = texture2dSamplerNode(texture2dNode("emissiveMat"), coord).outColor
+                    inEmissiveAo = texture2dSamplerNode(texture2dNode("emissiveAo"), coord).outColor
                 }
 
                 // discard fragment if it contains background / clear color

@@ -63,7 +63,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         showLoadText("Creating Deferred Render Pipeline")
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1
-            isWithExtendedMaterials = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithBloom = true

@@ -213,6 +213,6 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()), DeferredPa
 
     override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
         sceneColor(currentPasses.lightingPass.colorTexture)
-        scenePos(currentPasses.materialPass.positionAo)
+        scenePos(currentPasses.materialPass.positionFlags)
     }
 }

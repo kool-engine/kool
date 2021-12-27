@@ -19,7 +19,7 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass) :
         }) {
 
     private val noisyReflections = Texture2dInput("noisyRefl", reflectionPass.colorTexture)
-    private val positionAo = Texture2dInput("positionAo")
+    private val positionFlags = Texture2dInput("positionFlags")
 
     init {
         clearColor = Color(0f, 0f, 0f, 0f)
@@ -41,7 +41,7 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass) :
                     }
                     fragmentStage {
                         val noisyRefl = texture2dNode("noisyRefl")
-                        val depthTex = texture2dNode("positionAo")
+                        val depthTex = texture2dNode("positionFlags")
                         val blurNd = addNode(BlurNode(noisyRefl, depthTex, stage))
                         blurNd.inScreenPos = ifTexCoords.output
                         colorOutput(blurNd.outColor)
@@ -54,7 +54,7 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass) :
                     }
                     onPipelineCreated += { _, _, _ ->
                         noisyReflections.connect(model)
-                        positionAo.connect(model)
+                        positionFlags.connect(model)
                     }
                 }
             }
@@ -64,7 +64,7 @@ class ReflectionDenoisePass(reflectionPass: ReflectionPass) :
     }
 
     fun setPositionInput(materialPass: MaterialPass) {
-        positionAo(materialPass.positionAo)
+        positionFlags(materialPass.positionFlags)
     }
 
     override fun dispose(ctx: KoolContext) {

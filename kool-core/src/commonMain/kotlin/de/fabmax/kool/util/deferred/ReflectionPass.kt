@@ -29,7 +29,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
     val scrSpcReflectionIterations = IntInput("uMaxIterations", 24)
 
     private var deferredCam: DeferredCameraNode? = null
-    private val positionAo = Texture2dInput("positionAo")
+    private val positionFlags = Texture2dInput("positionFlags")
     private val normalRoughness = Texture2dInput("normalRoughness")
     private val ssrInput = Texture2dInput("ssrMap")
     private val ssrNoise = Texture2dInput("ssrNoiseTex", generateScrSpcReflectionNoiseTex())
@@ -54,7 +54,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
     fun setInput(lightingPass: PbrLightingPass, materialPass: MaterialPass) {
         deferredCam?.sceneCam = materialPass.camera
-        positionAo(materialPass.positionAo)
+        positionFlags(materialPass.positionFlags)
         normalRoughness(materialPass.normalRoughness)
         ssrInput(lightingPass.colorTexture)
     }
@@ -75,7 +75,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
             deferredCam = model.findNode("deferredCam")
 
-            positionAo.connect(model)
+            positionFlags.connect(model)
             normalRoughness.connect(model)
             ssrInput.connect(model)
             ssrNoise.connect(model)
@@ -96,9 +96,9 @@ class ReflectionPass(val baseReflectionStep: Float) :
         fragmentStage {
             val coord = ifTexCoords.output
 
-            val posAoTex = texture2dNode("positionAo")
+            val posFlagsTex = texture2dNode("positionFlags")
             val mrtDeMultiplex = addNode(DeferredPbrShader.MrtDeMultiplexNode(stage)).apply {
-                inPositionAo = texture2dSamplerNode(posAoTex, coord).outColor
+                inPositionFlags = texture2dSamplerNode(posFlagsTex, coord).outColor
                 inNormalRough = texture2dSamplerNode(texture2dNode("normalRoughness"), coord).outColor
             }
 
@@ -121,7 +121,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
             val rayDirMod = multiplyNode(rayDirNoise, mrtDeMultiplex.outRoughness).output
             val roughRayDir = normalizeNode(addNode(rayDir, rayDirMod).output).output
 
-            val rayTraceNode = addNode(ScreenSpaceRayTraceNode(posAoTex, stage)).apply {
+            val rayTraceNode = addNode(ScreenSpaceRayTraceNode(posFlagsTex, stage)).apply {
                 inProjMat = defCam.outProjMat
                 inRayOrigin = viewPos
                 inRayDirection = roughRayDir

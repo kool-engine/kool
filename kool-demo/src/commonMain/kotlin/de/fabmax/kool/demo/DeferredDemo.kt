@@ -74,7 +74,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 0
-            isWithExtendedMaterials = true
             isWithAmbientOcclusion = true
             isWithScreenSpaceReflections = false
             isWithImageBasedLighting = false
@@ -292,13 +291,13 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.normalRoughness, 1f, 0.5f)).apply {
             setupImage(0.025f, 0.35f)
         }
-        images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.positionAo, 10f, 0.05f)).apply {
+        images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.positionFlags, 10f, 0.05f)).apply {
             setupImage(0.025f, 0.675f)
         }
         images += image(imageShader = ModeledShader.TextureColor(deferredPipeline.aoPipeline?.aoMap, model = AoDemo.aoMapColorModel())).apply {
             setupImage(0.35f, 0.35f)
         }
-        images += image(imageShader = MetalRoughAoTex(deferredPipeline)).apply {
+        images += image(imageShader = MetalRoughFlagsTex(deferredPipeline)).apply {
             setupImage(0.35f, 0.675f)
         }
         images += image(imageShader = ModeledShader.HdrTextureColor(deferredPipeline.bloom?.bloomMap)).apply {
@@ -440,9 +439,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
     }
 
-    private class MetalRoughAoTex(val deferredPipeline: DeferredPipeline) : ModeledShader(shaderModel()) {
+    private class MetalRoughFlagsTex(val deferredPipeline: DeferredPipeline) : ModeledShader(shaderModel()) {
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-            model.findNode<Texture2dNode>("positionAo")!!.sampler.texture = deferredPipeline.activePass.materialPass.positionAo
+            model.findNode<Texture2dNode>("positionFlags")!!.sampler.texture = deferredPipeline.activePass.materialPass.positionFlags
             model.findNode<Texture2dNode>("normalRough")!!.sampler.texture = deferredPipeline.activePass.materialPass.normalRoughness
             model.findNode<Texture2dNode>("albedoMetal")!!.sampler.texture = deferredPipeline.activePass.materialPass.albedoMetal
             super.onPipelineCreated(pipeline, mesh, ctx)
@@ -457,14 +456,14 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     positionOutput = simpleVertexPositionNode().outVec4
                 }
                 fragmentStage {
-                    val aoSampler = texture2dSamplerNode(texture2dNode("positionAo"), ifTexCoords.output)
+                    val flagsSampler = texture2dSamplerNode(texture2dNode("positionFlags"), ifTexCoords.output)
                     val roughSampler = texture2dSamplerNode(texture2dNode("normalRough"), ifTexCoords.output)
                     val metalSampler = texture2dSamplerNode(texture2dNode("albedoMetal"), ifTexCoords.output)
-                    val ao = splitNode(aoSampler.outColor, "a").output
+                    val flags = splitNode(flagsSampler.outColor, "a").output
                     val rough = splitNode(roughSampler.outColor, "a").output
                     val metal = splitNode(metalSampler.outColor, "a").output
                     val outColor = combineNode(GlslType.VEC_3F).apply {
-                        inX = ao
+                        inX = flags
                         inY = rough
                         inZ = metal
                     }

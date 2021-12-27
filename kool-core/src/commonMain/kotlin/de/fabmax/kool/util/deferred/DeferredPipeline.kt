@@ -48,8 +48,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         get() = mutSpotLights
     private val mutSpotLights = mutableListOf<DeferredSpotLights>()
 
-    private val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
-    private val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
+    val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
+    val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private val maxGlobalLights = cfg.maxGlobalLights
     private val isAoAvailable = cfg.isWithAmbientOcclusion
@@ -95,12 +95,11 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         set(value) { bloom?.desiredMapHeight = value }
 
     init {
-        passes = createPasses(cfg)
+        passes = createPasses()
 
         shadowMaps = cfg.shadowMaps ?: createShadowMapsFromSceneLights()
         lightingPassShader = cfg.pbrSceneShader ?:
                 PbrSceneShader(PbrSceneShader.DeferredPbrConfig().apply {
-                    isWithEmissive = cfg.isWithExtendedMaterials
                     isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
                     isScrSpcReflections = cfg.isWithScreenSpaceReflections
                     maxLights = cfg.maxGlobalLights
@@ -178,11 +177,11 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
     }
 
-    private fun createPasses(cfg: DeferredPipelineConfig): List<DeferredPasses> {
-        val matPass0 = MaterialPass(this, "0", cfg.isWithExtendedMaterials)
+    private fun createPasses(): List<DeferredPasses> {
+        val matPass0 = MaterialPass(this, "0")
         val lightPass0 = PbrLightingPass(this, "0", matPass0)
 
-        val matPass1 = MaterialPass(this, "1", cfg.isWithExtendedMaterials)
+        val matPass1 = MaterialPass(this, "1")
         val lightPass1 = PbrLightingPass(this, "1", matPass1)
 
         scene.addOffscreenPass(matPass0)
@@ -288,7 +287,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 }
 
 class DeferredPipelineConfig {
-    var isWithExtendedMaterials = false
     var isWithAmbientOcclusion = false
     var isWithScreenSpaceReflections = false
     var isWithImageBasedLighting = false
@@ -297,7 +295,6 @@ class DeferredPipelineConfig {
     var isWithChromaticAberration = false
 
     var maxGlobalLights = 4
-    var lightBacksides = false
     var baseReflectionStep = 0.1f
     var bloomKernelSize = 8
     var bloomAvgDownSampling = true
