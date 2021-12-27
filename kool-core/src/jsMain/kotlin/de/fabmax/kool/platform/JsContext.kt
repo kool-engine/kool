@@ -31,7 +31,7 @@ import org.w3c.dom.events.UIEvent
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
-    override val assetMgr = JsAssetManager(props.assetsBaseDir, this)
+    override val assetMgr = JsAssetManager(props, this)
     override val inputMgr: JsInputManager
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
@@ -245,6 +245,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5", "F11")
 
         var assetsBaseDir = "./assets"
+        val customFonts = mutableMapOf<String, String>()
     }
 }
 

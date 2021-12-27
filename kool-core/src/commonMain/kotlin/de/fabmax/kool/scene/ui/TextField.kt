@@ -17,13 +17,20 @@ import kotlin.math.min
 
 class TextField(name: String, root: UiRoot) : Label(name, root) {
 
+    var hasFocus = true
+
     val editText = EditableText()
+    var maxLength: Int
+        get() = editText.maxLength
+        set(value) { editText.maxLength = value }
+
+    val onKeyEvent = mutableListOf<(InputManager.KeyEvent) -> Unit>()
 
     init {
         onUpdate += { evt ->
-            val ctx = evt.ctx
-            if (!ctx.inputMgr.keyEvents.isEmpty()) {
-                for (e in ctx.inputMgr.keyEvents) {
+            if (isVisible && hasFocus && evt.ctx.inputMgr.keyEvents.isNotEmpty()) {
+                for (e in evt.ctx.inputMgr.keyEvents) {
+                    onKeyEvent.forEach { it(e) }
                     if (e.isCharTyped) {
                         editText.charTyped(e.typedChar)
 
@@ -151,6 +158,8 @@ class EditableText(txt: String = "") {
             field = value
         }
 
+    var maxLength = 100
+
     var caretPosition = 0
         set(value) {
             field = value.clamp(0, text.length)
@@ -222,10 +231,12 @@ class EditableText(txt: String = "") {
         val start = min(selectionStart, caretPosition)
         val end = max(selectionStart, caretPosition)
 
-        text = text.substring(0, start) + string + text.substring(end)
-
-        caretPosition = min(selectionStart, caretPosition) + string.length
-        selectionStart = caretPosition
+        val newText = text.substring(0, start) + string + text.substring(end)
+        if (maxLength <= 0 || newText.length < text.length || newText.length <= maxLength) {
+            text = newText
+            caretPosition = min(selectionStart, caretPosition) + string.length
+            selectionStart = caretPosition
+        }
     }
 
     operator fun get(index: Int): Char {

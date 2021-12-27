@@ -89,7 +89,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
-        val loadScene = startScene ?: ctx.assetMgr.loadString("selectedScene")
+        val loadScene = startScene ?: ctx.assetMgr.storage.loadString("selectedScene")
         val loadDemo = loadScene?.let { demos[loadScene] } ?: defaultScene.second
         switchDemo = loadScene to loadDemo.newInstance(ctx)
 
@@ -98,7 +98,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
 
     private fun onRender(ctx: KoolContext) {
         switchDemo?.let { newDemo ->
-            newDemo.first?.let { ctx.assetMgr.storeString("selectedScene", it) }
+            newDemo.first?.let { ctx.assetMgr.storage.storeString("selectedScene", it) }
             // release old demo
             currentDemo?.let { demo ->
                 demo.scenes.forEach {

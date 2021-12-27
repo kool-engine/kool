@@ -9,6 +9,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.MutableColor
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -18,6 +19,8 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
     val onValueChanged: MutableList<Slider.(Float) -> Unit> = mutableListOf()
     val onDragFinished: MutableList<Slider.(Float) -> Unit> = mutableListOf()
+
+    var snapTicks = 0f
 
     var trackColor = Color.GRAY
     val trackColorHighlighted = ThemeOrCustomProp(Color.LIGHT_GRAY)
@@ -43,12 +46,16 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             }
         }
 
-    var value = value
+    var value = value.clamp(min, max)
         set(value) {
-            if (value != field) {
-                field = value.clamp(min, max)
+            var f = value
+            if (snapTicks > 0f) {
+                val ticks = (f / snapTicks).roundToInt()
+                f = (ticks * snapTicks).clamp(min, max)
+            }
+            if (f != field) {
+                field = f
                 requestUiUpdate()
-
                 for (i in onValueChanged.indices) {
                     onValueChanged[i](field)
                 }
@@ -97,7 +104,12 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
                     startDragValue = value
                 }
                 val deltaX = hitPos.x - initHitPos.x
-                value = startDragValue + (deltaX / trackWidth) * (max - min)
+                var p = startDragValue + (deltaX / trackWidth) * (max - min)
+                if (snapTicks > 0f) {
+                    val ticks = (p / snapTicks).roundToInt()
+                    p = ticks * snapTicks
+                }
+                value = p.clamp(min, max)
             }
             dragPtrs[0].consume()
 

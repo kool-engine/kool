@@ -52,6 +52,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
+    abstract val storage: KeyValueStorage
+
     private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>, loadedAssets: SendChannel<LoadedAsset>) = launch {
         for (ref in assetRefs) {
             loadedAssets.send(loadAsset(ref))
@@ -79,14 +81,6 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract fun deflate(data: Uint8Buffer): Uint8Buffer
 
-    abstract fun store(key: String, data: Uint8Buffer): Boolean
-
-    abstract fun storeString(key: String, data: String): Boolean
-
-    abstract fun load(key: String): Uint8Buffer?
-
-    abstract fun loadString(key: String): String?
-
     abstract suspend fun loadFileByUser(): Uint8Buffer?
 
     abstract fun saveFileByUser(data: Uint8Buffer, fileName: String, mimeType: String = "application/octet-stream")
@@ -103,12 +97,16 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
-    suspend fun loadAsset(assetPath: String): Uint8Buffer? {
-        val ref = if (isHttpAsset(assetPath)) {
+    fun makeAssetRef(assetPath: String): RawAssetRef {
+        return if (isHttpAsset(assetPath)) {
             RawAssetRef(assetPath, false)
         } else {
             RawAssetRef("$assetsBaseDir/$assetPath", true)
         }
+    }
+
+    suspend fun loadAsset(assetPath: String): Uint8Buffer? {
+        val ref = makeAssetRef(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedRawAsset

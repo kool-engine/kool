@@ -4,12 +4,14 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.runBlocking
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import kotlin.math.roundToInt
 
@@ -17,7 +19,7 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lwjgl3Context.InitProps, assetManager: JvmAssetManager) {
+internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lwjgl3Context.InitProps, val assetManager: JvmAssetManager) {
 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
@@ -25,6 +27,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
     private val charMaps = mutableMapOf<FontProps, CharMap>()
 
     private val availableFamilies: Set<String>
+    private val customFonts = mutableMapOf<String, java.awt.Font>()
 
     init {
         val families: MutableSet<String> = mutableSetOf()
@@ -32,15 +35,18 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
         for (family in ge.availableFontFamilyNames) {
             families.add(family)
         }
-        for (f in props.extraFonts) {
+
+        props.customFonts.forEach { (family, path) ->
             try {
-                val inStream = assetManager.openLocalStream(f)
-                val localFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inStream)
-                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(localFont)
-                families.add(localFont.family)
-                logI { "Registered font: $f -> ${localFont.family}" }
+                val inStream = runBlocking {
+                    ByteArrayInputStream(assetManager.loadAsset(path)!!.toArray())
+                }
+                val ttfFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inStream)
+                customFonts[family] = ttfFont
+                logD { "Loaded custom font: $family" }
             } catch (e: IOException) {
-                logW { "Font not found: $f" }
+                logE { "Failed loading font $family: $e" }
+                e.printStackTrace()
             }
         }
 
@@ -81,7 +87,10 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
             }
         }
 
-        g.font = java.awt.Font(family, style, fontProps.sizePts.roundToInt())
+        val font: java.awt.Font = customFonts[fontProps.family]?.deriveFont(fontProps.style, fontProps.sizePts) ?:
+                java.awt.Font(family, style, fontProps.sizePts.roundToInt())
+
+        g.font = font
         g.color = Color.BLACK
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()

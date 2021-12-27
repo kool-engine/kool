@@ -6,14 +6,14 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
-import kotlinx.browser.localStorage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
-import org.w3c.dom.*
+import org.w3c.dom.Element
+import org.w3c.dom.Image
 import org.w3c.dom.events.Event
 import org.w3c.files.FileList
 import org.w3c.files.get
@@ -22,10 +22,10 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.js.Promise
 
-class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsContext) : AssetManager(assetsBaseDir) {
+class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: JsContext) : AssetManager(props.assetsBaseDir) {
 
     private val pako = js("require('pako')")
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
     private var fileLoadDeferred: CompletableDeferred<Uint8Buffer?>? = null
     private val onFileSelectionChanged: (Event) -> Unit = { loadSelectedFile() }
@@ -35,6 +35,8 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         asDynamic().style.display = "none"
         document.body?.appendChild(this)
     }
+
+    override val storage = KeyValueStorageJs(this)
 
     override suspend fun loadRaw(rawRef: RawAssetRef) = LoadedRawAsset(rawRef, loadRaw(rawRef.url))
 
@@ -99,34 +101,6 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return Uint8BufferImpl(pako.deflate(uint8Data) as Uint8Array)
     }
 
-    override fun store(key: String, data: Uint8Buffer): Boolean {
-        return try {
-            localStorage[key] = binToBase64((data as Uint8BufferImpl).buffer)
-            true
-        } catch (e: Exception) {
-            logE { "Failed storing data '$key' to localStorage: $e" }
-            false
-        }
-    }
-
-    override fun storeString(key: String, data: String): Boolean {
-        return try {
-            localStorage[key] = data
-            true
-        } catch (e: Exception) {
-            logE { "Failed storing string '$key' to localStorage: $e" }
-            false
-        }
-    }
-
-    override fun load(key: String): Uint8Buffer? {
-        return localStorage[key]?.let { Uint8BufferImpl(base64ToBin(it)) }
-    }
-
-    override fun loadString(key: String): String? {
-        return localStorage[key]
-    }
-
     override suspend fun loadFileByUser(): Uint8Buffer? {
         val deferred = CompletableDeferred<Uint8Buffer?>()
         fileLoadDeferred = deferred
@@ -177,7 +151,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
      * Cumbersome / ugly method to convert Uint8Array into a base64 string in javascript
      */
     @Suppress("UNUSED_PARAMETER")
-    private fun binToBase64(uint8Data: Uint8Array): String = js("""
+    fun binToBase64(uint8Data: Uint8Array): String = js("""
         var chunkSize = 0x8000;
         var c = [];
         for (var i = 0; i < uint8Data.length; i += chunkSize) {
@@ -187,7 +161,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
     """) as String
 
     @Suppress("UNUSED_PARAMETER")
-    private fun base64ToBin(base64: String): Uint8Array = js ("""
+    fun base64ToBin(base64: String): Uint8Array = js ("""
         var binary_string = window.atob(base64);
         var len = binary_string.length;
         var bytes = new Uint8Array(len);

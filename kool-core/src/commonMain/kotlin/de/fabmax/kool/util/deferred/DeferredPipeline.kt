@@ -1,6 +1,7 @@
 package de.fabmax.kool.util.deferred
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.SingleColorTexture
@@ -9,8 +10,14 @@ import de.fabmax.kool.util.*
 import de.fabmax.kool.util.ao.AoPipeline
 import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
+
+    var renderResolution = 1f
+        set(value) {
+            field = value.clamp(0.1f, 2f)
+        }
 
     val passes: List<DeferredPasses>
     var activePassIndex = 0
@@ -209,8 +216,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         if (isEnabled) {
             swapPasses()
 
-            val vpW = scene.mainRenderPass.viewport.width
-            val vpH = scene.mainRenderPass.viewport.height
+            val vpW = (scene.mainRenderPass.viewport.width * renderResolution).roundToInt()
+            val vpH = (scene.mainRenderPass.viewport.height * renderResolution).roundToInt()
 
             activePass.checkSize(vpW, vpH, ctx)
             reflections?.checkSize(vpW, vpH, ctx)

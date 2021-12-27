@@ -41,7 +41,7 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 }
 
-open class LabelUi(val label: Label, private val baseUi: ComponentUi) : ComponentUi by baseUi {
+open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by baseUi {
 
     protected var font = label.font.prop
     protected var textColor = MutableColor()

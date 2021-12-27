@@ -8,6 +8,7 @@ import kotlinx.browser.document
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.js.Promise
 import kotlin.math.max
 import kotlin.math.round
 import kotlin.math.roundToInt
@@ -16,7 +17,7 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
+class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.InitProps, assetManager: JsAssetManager) {
 
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
     private val canvasCtx: CanvasRenderingContext2D
@@ -27,24 +28,28 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         canvas.width = maxWidth
         canvas.height = maxHeight
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
+
+        props.customFonts.forEach { (family, url) ->
+            loadFont(family, assetManager.makeAssetRef(url).url)
+        }
     }
 
     fun getCharMap(fontProps: FontProps): CharMap = charMaps.getOrPut(fontProps) { generateCharMap(fontProps) }
+
+    private fun loadFont(family: String, url: String) {
+        val font = FontFace(family, "url($url)")
+        font.load().then { f ->
+            js("document.fonts.add(f);")
+            logD { "Loaded custom font: $family" }
+        }
+    }
 
     private fun generateCharMap(fontProps: FontProps): CharMap {
         // clear canvas
         canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 
-        var style = "lighter "
-        if (fontProps.style and Font.BOLD != 0) {
-            style = "bold "
-        }
-        if (fontProps.style and Font.ITALIC != 0) {
-            style += "italic "
-        }
-
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(fontProps, style, metrics)
+        val texHeight = makeMap(fontProps, metrics)
 
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
@@ -56,8 +61,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         return CharMap(TextureData2d(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
     }
 
-    private fun makeMap(fontProps: FontProps, style: String, map: MutableMap<Char, CharMetrics>): Int {
-        canvasCtx.font = "$style${fontProps.sizePts}px ${fontProps.family}"
+    private fun makeMap(fontProps: FontProps, map: MutableMap<Char, CharMetrics>): Int {
+        var style = "lighter "
+        if (fontProps.style and Font.BOLD != 0) {
+            style = "bold "
+        }
+        if (fontProps.style and Font.ITALIC != 0) {
+            style += "italic "
+        }
+
+        val fontStr = "$style ${fontProps.sizePts}px ${fontProps.family}"
+        canvasCtx.font = fontStr
         canvasCtx.fillStyle = "#ffffff"
 
         val padding = (if (fontProps.style == Font.ITALIC) 3 else 6) * (fontProps.sizePts / 30f).clamp(1f, 3f)
@@ -139,4 +153,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         }
         return pow2
     }
+}
+
+external class FontFace(family: String, source: String) {
+    fun load(): Promise<FontFace>
 }
