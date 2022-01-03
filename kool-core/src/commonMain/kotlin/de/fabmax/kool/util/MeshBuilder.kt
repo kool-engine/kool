@@ -788,35 +788,37 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                 val s = fontSizeUnits / props.font.charMap.fontProps.sizePts
                 scale(s, s, s)
             }
-            translate(props.origin)
+
+            if (props.roundOriginToUnits) {
+                translate(round(props.origin.x), round(props.origin.y), props.origin.z)
+            } else {
+                translate(props.origin)
+            }
 
             val ct = props.charTransform
             var advanced = 0f
             val txt = if (props.autoWrapWidth > 0f) wrapText(props) else props.text
             for (c in txt) {
                 if (c == '\n') {
-                    translate(0f, -props.font.lineSpace, 0f)
+                    translate(0f, -round(props.font.lineSpace), 0f)
                     advanced = 0f
                 }
 
                 val metrics = props.font.charMap[c]
                 if (metrics != null) {
-                    if (ct != null) {
-                        withTransform {
+                    withTransform {
+                        var advOffset = 0f
+                        if (ct == null) {
+                            advOffset = advanced
+                        } else {
                             ct(advanced)
-                            rect {
-                                origin.set(-metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
-                                size.set(metrics.width, metrics.height)
-
-                                texCoordUpperLeft.set(metrics.uvMin)
-                                texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
-                                texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
-                                texCoordLowerRight.set(metrics.uvMax)
-                            }
                         }
-                    } else {
                         rect {
-                            origin.set(advanced - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
+                            if (props.roundOriginToUnits) {
+                                origin.set(round(advOffset - metrics.xOffset), round(metrics.yBaseline - metrics.height), 0f)
+                            } else {
+                                origin.set(advOffset - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
+                            }
                             size.set(metrics.width, metrics.height)
 
                             texCoordUpperLeft.set(metrics.uvMin)
@@ -1071,6 +1073,7 @@ class CylinderProps {
 class TextProps(var font: Font) {
     var text = ""
     val origin = MutableVec3f()
+    var roundOriginToUnits = true
     var autoWrapWidth = -1f
 
     var charTransform: (MeshBuilder.(Float) -> Unit)? = null

@@ -241,7 +241,6 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                 val roughness: ShaderNodeIoVar
                 val metallic: ShaderNodeIoVar
                 var aoFactor = constFloat(1f)
-                var materialBits = 0
 
                 val rmoSamplers = mutableMapOf<String, ShaderNodeIoVar>()
                 if (cfg.isRoughnessMapped) {
@@ -286,12 +285,6 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                         rawAo
                     }
                 }
-                if (cfg.isAlwaysLit) {
-                    materialBits = materialBits or MATERIAL_FLAG_ALWAYS_LIT
-                }
-                if (cfg.isMoving) {
-                    materialBits = materialBits or MATERIAL_FLAG_IS_MOVING
-                }
 
                 val mrtMultiplexNode = addNode(MrtMultiplexNode(stage)).apply {
                     inViewPos = viewPos
@@ -301,7 +294,7 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     inRoughness = roughness
                     inMetallic = metallic
                     inAo = aoFactor
-                    inMaterialFlags = constFloat(materialBits.toFloat())
+                    inMaterialFlags = constFloat(cfg.materialFlags.toFloat())
                 }
 
                 colorOutput(channels = 4).apply {

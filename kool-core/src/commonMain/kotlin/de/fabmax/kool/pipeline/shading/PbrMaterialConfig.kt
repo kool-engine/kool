@@ -36,9 +36,27 @@ class PbrMaterialConfig {
 
     var maxLights = 4
     val shadowMaps = mutableListOf<ShadowMap>()
-    var isAlwaysLit = false
     var ambientShadowFactor = 0f
-    var isMoving = false
+    var materialFlags = 0
+
+    var isAlwaysLit: Boolean
+        get() = (materialFlags and MATERIAL_FLAG_IS_ALWAYS_LIT) != 0
+        set(value) {
+            materialFlags = if (value) {
+                materialFlags or MATERIAL_FLAG_IS_ALWAYS_LIT
+            } else {
+                materialFlags and MATERIAL_FLAG_IS_ALWAYS_LIT.inv()
+            }
+        }
+    var isMoving: Boolean
+        get() = (materialFlags and MATERIAL_FLAG_IS_MOVING) != 0
+        set(value) {
+            materialFlags = if (value) {
+                materialFlags or MATERIAL_FLAG_IS_MOVING
+            } else {
+                materialFlags and MATERIAL_FLAG_IS_MOVING.inv()
+            }
+        }
 
     var cullMethod = CullMethod.CULL_BACK_FACES
     var alphaMode: AlphaMode = AlphaModeOpaque()
@@ -194,5 +212,10 @@ class PbrMaterialConfig {
                 isAoMapped ||
                 isDisplacementMapped ||
                 (isEmissiveMapped && !useVertexAttributeEmissive)
+    }
+
+    companion object {
+        const val MATERIAL_FLAG_IS_ALWAYS_LIT = 1
+        const val MATERIAL_FLAG_IS_MOVING = 2
     }
 }

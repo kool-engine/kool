@@ -9,9 +9,7 @@ import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Promise
-import kotlin.math.max
-import kotlin.math.round
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -128,12 +126,12 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             metrics.yBaseline = hab.toFloat()
             metrics.advance = metrics.width
 
-            metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
-            metrics.uvMax.set((x + padding + widthPx).toFloat(), (y - hab).toFloat() + heightPx)
+            metrics.uvMin.set(floor(x + padding).toFloat(), floor(y - hab).toFloat())
+            metrics.uvMax.set(ceil(x + padding + widthPx).toFloat(), ceil(y - hab).toFloat() + heightPx)
             map[c] = metrics
 
             val xStartOff = max(0.0, txtMetrics.actualBoundingBoxLeft).roundToInt()
-            canvasCtx.fillText(txt, x + padding + xStartOff, y)
+            canvasCtx.fillText(txt, round(x + padding + xStartOff), round(y))
             x += paddedWidth
         }
 

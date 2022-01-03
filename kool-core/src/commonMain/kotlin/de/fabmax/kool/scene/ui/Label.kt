@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -25,6 +26,8 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
                 requestUiUpdate()
             }
         }
+
+    var autoWrapWidth = -1f
 
     // fixme: updateUi() is not issued when custom values are set
     val font = ThemeOrCustomProp<Font?>(null)
@@ -51,9 +54,9 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
     protected val mesh = Mesh(geom)
     protected val shader = UiShader()
 
-    protected var textStartX = 0f
-    protected var textWidth = 0f
-    protected var textBaseline = 0f
+    var textStartX = 0f
+    var textWidth = 0f
+    var textBaseline = 0f
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
@@ -81,7 +84,7 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
         label.setupBuilder(meshBuilder)
         updateTextColor()
         computeTextMetrics()
-        renderText(ctx)
+        renderText(label.text, ctx)
     }
 
     override fun onRender(ctx: KoolContext) {
@@ -96,7 +99,8 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
     }
 
     protected open fun computeTextMetrics() {
-        textWidth = font?.textWidth(label.text) ?: 0f
+        val txtW = font?.textWidth(label.text) ?: 0f
+        textWidth = if (label.autoWrapWidth > 0) min(label.autoWrapWidth, txtW) else txtW
 
         textStartX = when (label.textAlignment.xAlignment) {
             Alignment.START -> label.padding.left.toUnits(label.width, label.dpi)
@@ -111,13 +115,14 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
         }
     }
 
-    protected open fun renderText(ctx: KoolContext) {
+    protected open fun renderText(dispText: String, ctx: KoolContext) {
         meshBuilder.color = textColor
         val fnt = font
         if (fnt != null) {
             meshBuilder.text(fnt) {
-                origin.set(textStartX, textBaseline, label.dp(.1f))
-                text = label.text
+                origin.set(textStartX, textBaseline, label.dp(0.1f))
+                text = dispText
+                autoWrapWidth = label.autoWrapWidth
             }
         }
     }

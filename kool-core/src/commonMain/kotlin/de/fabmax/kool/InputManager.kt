@@ -184,15 +184,15 @@ abstract class InputManager internal constructor() {
         val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
 
         val isLeftButtonClicked: Boolean get() = isLeftButtonReleased
-                && now() - buttonDownTimes[0] < 200.0 && dragMovement < 10.0
+                && now() - buttonDownTimes[0] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isRightButtonClicked: Boolean get() = isRightButtonReleased
-                && now() - buttonDownTimes[1] < 200.0 && dragMovement < 10.0
+                && now() - buttonDownTimes[1] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased
-                && now() - buttonDownTimes[2] < 200.0 && dragMovement < 10.0
+                && now() - buttonDownTimes[2] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isBackButtonClicked: Boolean get() = isBackButtonReleased
-                && now() - buttonDownTimes[3] < 200.0 && dragMovement < 10.0
+                && now() - buttonDownTimes[3] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
-                && now() - buttonDownTimes[4] < 200.0 && dragMovement < 10.0
+                && now() - buttonDownTimes[4] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
 
         fun consume(mask: Int = CONSUMED_ALL) {
             consumptionMask = consumptionMask or mask
@@ -557,6 +557,10 @@ abstract class InputManager internal constructor() {
     }
 
     companion object {
+        const val MAX_CLICK_MOVE_PX = 20.0
+        const val MAX_CLICK_TIME_MS = 250.0
+        const val DOUBLE_CLICK_INTERVAL_SECS = 0.3
+
         const val LEFT_BUTTON = 0
         const val LEFT_BUTTON_MASK = 1
         const val RIGHT_BUTTON = 1

@@ -29,10 +29,10 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     var strength = 1.25f
     var power = 1.5f
     var bias = 0.05f
-    var kernelSz = 32
+    var kernelSz: Int
+        get() = aoUniforms?.let { it.uKernelRange.value.y - it.uKernelRange.value.x } ?: 16
         set(value) {
-            field = value
-            setKernelSize(value)
+            setKernelRange(0, value)
         }
 
     private var aoUniforms: AoUniforms? = null
@@ -105,34 +105,42 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         noiseTex.connect(model)
                         aoUniforms = model.findNode("aoUniforms")
                         aoNode = model.findNode("aoNode")
-                        setKernelSize(kernelSz)
+                        generateKernels()
+                        setKernelRange(0, 16)
                     }
                 }
             }
         }
     }
 
-    private fun setKernelSize(nKernels: Int) {
-        val n = min(nKernels, MAX_KERNEL_SIZE)
-        aoNode?.apply {
-            val scales = (0 until n)
-                    .map { lerp(0.1f, 1f, (it.toFloat() / n).pow(2)) }
-                    .shuffled(Random(17))
+    fun setKernelRange(start: Int, n: Int) {
+        val from = max(0, start)
+        val to = min(MAX_KERNEL_SIZE, from + n)
+        aoUniforms?.uKernelRange?.value?.let {
+            it.x = from
+            it.y = to
+        }
+    }
 
-            for (i in 0 until n) {
-                val xi = hammersley(i, n)
+    private fun generateKernels() {
+        aoNode?.apply {
+            val scales = (0 until MAX_KERNEL_SIZE)
+                .map { lerp(0.1f, 1f, (it.toFloat() / MAX_KERNEL_SIZE).pow(2)) }
+                .shuffled(Random(17))
+
+            for (i in 0 until MAX_KERNEL_SIZE) {
+                val xi = hammersley(i, MAX_KERNEL_SIZE)
                 val phi = 2f * PI.toFloat() * xi.x
                 val cosTheta = sqrt((1f - xi.y))
                 val sinTheta = sqrt(1f - cosTheta * cosTheta)
 
                 val k = MutableVec3f(
-                        sinTheta * cos(phi),
-                        sinTheta * sin(phi),
-                        cosTheta
+                    sinTheta * cos(phi),
+                    sinTheta * sin(phi),
+                    cosTheta
                 )
                 aoUniforms.uKernel.value[i] = k.norm().scale(scales[i])
             }
-            aoUniforms.uKernelN.value = n
         }
     }
 
@@ -183,7 +191,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     private inner class AoUniforms(val withInvProj: Boolean, graph: ShaderGraph) : ShaderNode("aoUniforms", graph) {
         val uKernel = Uniform3fv("uKernel", MAX_KERNEL_SIZE)
-        val uKernelN = Uniform1i(32, "uKernelN")
+        val uKernelRange = Uniform2i("uKernelRange")
         val uProj = UniformMat4f("uProj")
         val uInvProj = UniformMat4f("uInvProj")
         val uNoiseScale = Uniform2f("uNoiseScale")
@@ -204,7 +212,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                     +{ uStrength }
                     +{ uPower }
                     +{ uBias }
-                    +{ uKernelN }
+                    +{ uKernelRange }
 
                     onUpdate = { _, _ ->
                         sceneCam?.let {
@@ -278,7 +286,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         
                         float occlusion = 0.0;
                         float bias = ${aoUniforms.uBias} * sampleR;
-                        for (int i = 0; i < ${aoUniforms.uKernelN}; i++) {
+                        for (int i = ${aoUniforms.uKernelRange}.x; i < ${aoUniforms.uKernelRange}.y; i++) {
                             vec3 kernel = tbn * ${aoUniforms.uKernel}[i];
                             vec3 samplePos = $inOrigin + kernel * sampleR;
                             
@@ -293,7 +301,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                                 occlusion += occlusionInc * rangeCheck;
                             }
                         }
-                        occlusion /= float(${aoUniforms.uKernelN});
+                        occlusion /= float(${aoUniforms.uKernelRange}.y - ${aoUniforms.uKernelRange});
                         float distFac = 1.0 - smoothstep(sampleR * 150.0, sampleR * 200.0, linDistance);
                         occlFac = pow(clamp(1.0 - occlusion * distFac * ${aoUniforms.uStrength}, 0.0, 1.0), ${aoUniforms.uPower});
                     }
