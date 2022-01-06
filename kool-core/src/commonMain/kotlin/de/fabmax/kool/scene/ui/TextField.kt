@@ -107,7 +107,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
 
         var startI = 0
 
-        var pos = ui.textStartX
+        var pos = ui.textStartX - ui.croppedWidth
         while (pos < left.x && startI < text.length) {
             pos += charWidths[startI++]
             if (pos > left.x) {
@@ -146,6 +146,10 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
     private val caretDrawPos = InterpolatedFloat(0f, 0f)
     private val caretPosAnimator = LinearAnimator(caretDrawPos)
 
+    var cropStartI = 0
+    var cropEndI = textField.text.length
+    var croppedWidth = 0f
+
     init {
         caretAlphaAnimator.duration = 0.5f
         caretAlphaAnimator.repeating = Animator.REPEAT_TOGGLE_DIR
@@ -156,6 +160,30 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
     override fun onRender(ctx: KoolContext) {
         textField.requestUiUpdate()
         super.onRender(ctx)
+    }
+
+    private fun selectCharsFwd(fromChar: Int, availableWidth: Float): Int {
+        var w = availableWidth
+        var i = fromChar
+        while (w > 0f && i < textField.charWidths.size) {
+            w -= textField.charWidths[i++]
+        }
+        if (w < 0f) {
+            i--
+        }
+        return i
+    }
+
+    private fun selectCharsBwd(fromChar: Int, availableWidth: Float): Int {
+        var w = availableWidth
+        var i = fromChar
+        while (w > 0f && i > 0) {
+            w -= textField.charWidths[--i]
+        }
+        if (w < 0f) {
+            i++
+        }
+        return i
     }
 
     override fun renderText(dispText: String, ctx: KoolContext) {
@@ -173,19 +201,31 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
 
         // crop text in case it is too long
         var txt = dispText
-        var cropWidth = 0f
-        if (textWidth > textField.width) {
-            var remaining = x2 - x1 - textField.charWidths.last()
-            var startI = dispText.length - 1
-            while (remaining > 0f && startI > 0) {
-                remaining -= textField.charWidths[startI--]
+        val availableWidth = x2 - x1
+        if (textWidth > availableWidth) {
+            if (textField.editText.caretPosition > cropEndI) {
+                cropEndI = textField.editText.caretPosition
+                cropStartI = selectCharsBwd(cropEndI, availableWidth)
+
+            } else if (textField.editText.caretPosition < cropStartI) {
+                cropStartI = textField.editText.caretPosition
+                cropEndI = selectCharsFwd(cropStartI, availableWidth)
+
+            } else {
+                cropEndI = selectCharsFwd(cropStartI, availableWidth)
+                cropStartI = selectCharsBwd(cropEndI, availableWidth)
             }
-            txt = dispText.substring(startI)
-            cropWidth = (0 until startI).sumOf { textField.charWidths[it].toDouble() }.toFloat()
+            txt = dispText.substring(cropStartI, cropEndI)
+            croppedWidth = (0 until cropStartI).sumOf { textField.charWidths[it].toDouble() }.toFloat()
+
+        } else {
+            cropStartI = 0
+            cropEndI = textField.text.length
+            croppedWidth = 0f
         }
 
-        var caretX = textStartX - cropWidth
-        var selectionX = textStartX - cropWidth
+        var caretX = textStartX - croppedWidth
+        var selectionX = textStartX - croppedWidth
         if (textField.editText.caretPosition > 0 || textField.editText.selectionStart > 0) {
             for (i in 0 until max(textField.editText.caretPosition, textField.editText.selectionStart)) {
                 val w = textField.charWidths[i]
@@ -212,8 +252,15 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
             if (textField.editText.selectionStart != textField.editText.caretPosition) {
                 meshBuilder.color = textField.selectionColor.apply()
                 meshBuilder.rect {
+                    var selWidth = selectionX - caretX
+                    if (caretX + selWidth > x2) {
+                        selWidth = x2 - caretX
+                    } else if (caretX + selWidth < x1) {
+                        selWidth = x1 - caretX
+                    }
+
                     origin.set(caretX, y, 0f)
-                    size.set(selectionX - caretX, (font?.charMap?.fontProps?.sizePts ?: 0f) * 1.2f)
+                    size.set(selWidth, (font?.charMap?.fontProps?.sizePts ?: 0f) * 1.2f)
                     zeroTexCoords()
                 }
             }

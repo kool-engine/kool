@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
@@ -9,7 +8,8 @@ import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.js.Promise
-import kotlin.math.*
+import kotlin.math.ceil
+import kotlin.math.round
 
 /**
  * @author fabmax
@@ -48,7 +48,9 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
     private fun generateCharMap(fontProps: FontProps): CharMap {
         // clear canvas
-        canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
+        //canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
+        canvasCtx.fillStyle = "#ffffff"
+        canvasCtx.fillRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(fontProps, metrics)
@@ -58,13 +60,13 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         // alpha texture
         val buffer = createUint8Buffer(maxWidth * texHeight)
         for (i in 0 until buffer.capacity) {
-            buffer.put(data.data[i*4+3])
+            buffer.put((255 - (data.data[i*4].toInt() and 0xff)).toByte())
         }
         return CharMap(TextureData2d(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
     }
 
     private fun makeMap(fontProps: FontProps, map: MutableMap<Char, CharMetrics>): Int {
-        var style = "lighter "
+        var style = ""
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
         }
@@ -74,11 +76,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
 
         val fontStr = "$style ${fontProps.sizePts}px ${fontProps.family}"
         canvasCtx.font = fontStr
-        canvasCtx.fillStyle = "#ffffff"
+        canvasCtx.fillStyle = "#000000"
+        canvasCtx.strokeStyle = "#000000"
 
-        val padding = (if (fontProps.style == Font.ITALIC) 3 else 6) * (fontProps.sizePts / 30f).clamp(1f, 3f)
         // line height above baseline
-        val hab = round(fontProps.sizePts * 1.1)
+        val hab = round(fontProps.sizePts * 1.1).toInt()
         // line height below baseline
         val hbb = round(fontProps.sizePts * 0.5)
         // overall line height
@@ -93,46 +95,39 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         // enforce constant width for numeric char (0..9)
         val numericChars = setOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
         val numericWidth = numericChars.maxOf { c ->
-            val metrics = canvasCtx.measureText("$c")
-            round(metrics.width + metrics.actualBoundingBoxLeft)
+            val txtMetrics = canvasCtx.measureText("$c")
+            ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toFloat()
         }
 
-        var x = 1.0
+        var x = 1
         var y = hab
         for (c in fontProps.chars) {
-            // super-ugly special treatment for 'j' which has a negative x-offset for most fonts
-            if (c == 'j') {
-                x += fontProps.sizePts * 0.1f
-            }
-
             val txt = "$c"
             val txtMetrics = canvasCtx.measureText(txt)
-            val charW = if (c in numericChars) numericWidth else round(txtMetrics.width + max(0.0, txtMetrics.actualBoundingBoxLeft))
-            val paddedWidth = round(charW + padding * 2)
-            if (x + paddedWidth > maxWidth) {
-                x = 0.0
-                y += height + 10
+            val charW = if (c in numericChars) numericWidth else ceil(txtMetrics.actualBoundingBoxRight + txtMetrics.actualBoundingBoxLeft).toFloat()
+
+            if (x + charW > maxWidth) {
+                x = 0
+                y += (height + 10).toInt()
                 if (y + hbb > maxHeight) {
                     break
                 }
             }
 
-            val widthPx = charW.toFloat()
             val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = widthPx
+            metrics.width = charW
             metrics.height = heightPx
-            metrics.xOffset = 0f
+            metrics.xOffset = txtMetrics.actualBoundingBoxLeft.toFloat()
             metrics.yBaseline = hab.toFloat()
-            metrics.advance = metrics.width
+            metrics.advance = txtMetrics.width.toFloat()
 
-            metrics.uvMin.set(floor(x + padding).toFloat(), floor(y - hab).toFloat())
-            metrics.uvMax.set(ceil(x + padding + widthPx).toFloat(), ceil(y - hab).toFloat() + heightPx)
+            metrics.uvMin.set(x.toFloat(), (y - hab).toFloat())
+            metrics.uvMax.set(x + charW, (y - hab).toFloat() + heightPx)
             map[c] = metrics
 
-            val xStartOff = max(0.0, txtMetrics.actualBoundingBoxLeft).roundToInt()
-            canvasCtx.fillText(txt, round(x + padding + xStartOff), round(y))
-            x += paddedWidth
+            canvasCtx.fillText(txt, x + metrics.xOffset.toDouble(), y.toDouble())
+            x += metrics.width.toInt() + 1
         }
 
         val texW = maxWidth

@@ -113,7 +113,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         }
     }
 
-    override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
+    override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 
     override fun run() {
         var prevTime = System.nanoTime()

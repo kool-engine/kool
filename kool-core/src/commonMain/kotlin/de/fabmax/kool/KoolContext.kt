@@ -70,7 +70,7 @@ abstract class KoolContext {
     abstract val windowHeight: Int
     abstract var isFullscreen: Boolean
 
-    abstract fun openUrl(url: String)
+    abstract fun openUrl(url: String, sameWindow: Boolean = true)
 
     abstract fun run()
 

@@ -220,8 +220,12 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         }
     }
 
-    override fun openUrl(url: String) {
-        window.open(url)
+    override fun openUrl(url: String, sameWindow: Boolean) {
+        if (sameWindow) {
+            window.open(url, "_self")
+        } else {
+            window.open(url)
+        }
     }
 
     override fun run() {
