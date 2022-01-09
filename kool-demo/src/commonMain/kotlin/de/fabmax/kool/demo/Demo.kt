@@ -126,7 +126,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         }
     }
 
-    private fun demoOverlay(ctx: KoolContext): Scene = uiScene(ctx.screenDpi, "demo-overlay") {
+    private fun demoOverlay(ctx: KoolContext): Scene = uiScene("demo-overlay") {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi(::SimpleComponentUi)

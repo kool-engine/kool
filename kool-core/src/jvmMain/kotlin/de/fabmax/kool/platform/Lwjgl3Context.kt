@@ -49,11 +49,11 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         private var prevHeapSzTime = 0L
         private var avgHeapGrowth = 0.0
 
-        fun set(api: String, dev: String) {
+        fun set(api: String, deviceName: String) {
             clear()
             add(System.getProperty("java.vm.name") + " " + System.getProperty("java.version"))
             add(api)
-            add(dev)
+            add(deviceName)
             add("")
             update()
         }
@@ -79,6 +79,10 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     init {
+        if (forceDpi > 0f) {
+            screenDpi = forceDpi
+        }
+
         renderBackend = if (props.renderBackend == Backend.VULKAN) {
             VkRenderBackend(props, this)
         } else {
@@ -106,10 +110,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     private fun updateScreenDpi(monitorDpi: Float) {
-        screenDpi = if (forceDpi <= 0) {
-            monitorDpi
-        } else {
-            forceDpi
+        if (forceDpi <= 0) {
+            screenDpi = monitorDpi
         }
     }
 

@@ -53,9 +53,11 @@ class LoadedTextureGl(val ctx: Lwjgl3Context, val target: Int, val texture: Int,
     }
 
     override fun dispose() {
-        isDestroyed = true
-        glDeleteTextures(texture)
-        ctx.engineStats.textureDeleted(texId)
+        if (!isDestroyed) {
+            isDestroyed = true
+            glDeleteTextures(texture)
+            ctx.engineStats.textureDeleted(texId)
+        }
     }
 
     private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {

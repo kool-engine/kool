@@ -166,7 +166,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Physics") {
             sliderWithValue("Number of Ragdolls:", numRagdolls.toFloat(), 1f, 100f, 0) {
                 numRagdolls = value.toInt()

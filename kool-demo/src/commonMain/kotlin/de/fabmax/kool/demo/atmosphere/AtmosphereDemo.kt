@@ -288,7 +288,7 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
 //        image(opticalDepthLutPass.colorTexture).apply {
 //            aspectRatio = 1f
 //            relativeWidth = 0.25f

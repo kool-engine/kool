@@ -185,7 +185,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         groundNormal.dispose()
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Physics") {
             sliderWithValue("Number of Links:", numLinks.toFloat() / 2, 10f, 50f, textFormat = { "${it.toInt() * 2}" }) {
                 val lnks = value.toInt() * 2

@@ -54,6 +54,8 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     val normals = mutableListOf<MutableVec3f>()
     val texCoords = mutableListOf<MutableVec2f>()
     val colors = mutableListOf<Color>()
+    val emissionColors = mutableListOf<Color>()
+    val metallicRoughs = mutableListOf<Vec2f>()
     val customAttribs = mutableListOf<(VertexView) -> Unit>()
 
     private val prevIndices = mutableListOf<Int>()
@@ -64,16 +66,24 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     val nVerts: Int
         get() = positions.size
 
-    private fun getNormal(i: Int): Vec3f {
+    fun getNormal(i: Int): Vec3f {
         return if (i < normals.size) normals[i] else Vec3f.ZERO
     }
 
-    private fun getTexCoord(i: Int): Vec2f {
+    fun getTexCoord(i: Int): Vec2f {
         return if (i < texCoords.size) texCoords[i] else Vec2f.ZERO
     }
 
-    private fun getColor(i: Int): Color? {
+    fun getColor(i: Int): Color? {
         return if (i < colors.size) colors[i] else null
+    }
+
+    fun getEmissionColor(i: Int): Color? {
+        return if (i < emissionColors.size) emissionColors[i] else null
+    }
+
+    fun getMetallicRoughness(i: Int): Vec2f? {
+        return if (i < metallicRoughs.size) metallicRoughs[i] else null
     }
 
     private fun applyCustomAttribs(v: VertexView, i: Int) {
@@ -142,6 +152,14 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         colors += color
     }
 
+    fun emissionColor(color: Color) {
+        emissionColors += color
+    }
+
+    fun metallicRoughness(metallic: Float, roughness: Float) {
+        metallicRoughs += Vec2f(metallic, roughness)
+    }
+
     fun setTexCoordsX(x: Float) {
         texCoords.forEach { it.x = x }
     }
@@ -161,6 +179,8 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
                 normal.set(getNormal(i))
                 texCoord.set(getTexCoord(i))
                 getColor(i)?.let { color.set(it) }
+                getEmissionColor(i)?.let { emissiveColor.set(it.r, it.g, it.b) }
+                getMetallicRoughness(i)?.let { metallicRoughness.set(it) }
                 applyCustomAttribs(this, i)
             }
         }

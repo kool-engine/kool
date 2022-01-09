@@ -16,7 +16,7 @@ import javax.imageio.ImageIO
 
 class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : AssetManager(props.assetsBaseDir) {
 
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
+    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, ctx)
     private val imageIoLock = Any()
 
     private var fileChooserPath = System.getProperty("user.home")
@@ -26,6 +26,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     init {
         // inits http cache if not already happened
         HttpCache.initCache(File(".httpCache"))
+        fontGenerator.loadCustomFonts(props, this)
     }
 
     override suspend fun loadRaw(rawRef: RawAssetRef): LoadedRawAsset {
@@ -127,7 +128,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     override suspend fun waitForFonts() { }
 
-    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
+    override fun createCharMap(fontProps: FontProps, fontScale: Float) = fontGenerator.getCharMap(fontProps, fontScale)
+
+    override fun updateCharMap(charMap: CharMap, fontScale: Float) {
+        fontGenerator.updateCharMap(charMap, fontScale)
+    }
 
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer = Uint8BufferImpl(GZIPInputStream(ByteArrayInputStream(zipData.toArray())).readBytes())
 

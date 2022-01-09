@@ -175,7 +175,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Scene") {
             val bunnyTxtFormat: ((Float) -> String) = {
                 val n = it.roundToInt()

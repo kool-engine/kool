@@ -20,4 +20,10 @@ class AsyncTextureLoader(val loader: (suspend CoroutineScope.(AssetManager) -> T
     }
 }
 
+class SyncTextureLoader(val loader: (KoolContext) -> TextureData) : TextureLoader() {
+    fun loadTextureDataSync(ctx: KoolContext): TextureData {
+        return loader(ctx)
+    }
+}
+
 class BufferedTextureLoader(val data: TextureData) : TextureLoader()

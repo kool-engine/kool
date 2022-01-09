@@ -1,7 +1,9 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.MdColor
 
 /**
  * @author fabmax
@@ -14,13 +16,11 @@ open class UiTheme {
     var accentColor = Color.LIME
         protected set
 
-    fun standardFont(uiDpi: Float, ctx: KoolContext): Font =
-            uiFont(standardFontProps.family, standardFontProps.sizePts, uiDpi, ctx, standardFontProps.style, standardFontProps.chars)
+    fun standardFont(): Font = Font(standardFontProps)
     var standardFontProps = FontProps(Font.SYSTEM_FONT, 20f)
         protected set
 
-    fun titleFont(uiDpi: Float, ctx: KoolContext): Font =
-            uiFont(titleFontProps.family, titleFontProps.sizePts, uiDpi, ctx, titleFontProps.style, titleFontProps.chars)
+    fun titleFont(): Font = Font(titleFontProps)
     var titleFontProps = FontProps(Font.SYSTEM_FONT, 28f)
         protected set
 
@@ -73,8 +73,8 @@ open class UiTheme {
     }
 }
 
-fun UiComponent.standardFont(ctx: KoolContext): Font = root.theme.standardFont(dpi, ctx)
-fun UiComponent.titleFont(ctx: KoolContext): Font = root.theme.titleFont(dpi, ctx)
+fun UiComponent.standardFont(): Font = root.theme.standardFont()
+fun UiComponent.titleFont(): Font = root.theme.titleFont()
 
 fun theme(base: UiTheme? = null, block: ThemeBuilder.() -> Unit): UiTheme {
     val builder = ThemeBuilder(base)

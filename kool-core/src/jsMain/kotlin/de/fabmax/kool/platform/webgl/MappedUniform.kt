@@ -210,6 +210,11 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                         }
                     }
                 }
+                is SyncTextureLoader -> {
+                    val data = texture.loader.loadTextureDataSync(ctx)
+                    texture.loadedTexture = getLoadedTex(data, texture, ctx)
+                    texture.loadingState = Texture.LoadingState.LOADED
+                }
                 is BufferedTextureLoader -> {
                     texture.loadedTexture = getLoadedTex(texture.loader.data, texture, ctx)
                     texture.loadingState = Texture.LoadingState.LOADED

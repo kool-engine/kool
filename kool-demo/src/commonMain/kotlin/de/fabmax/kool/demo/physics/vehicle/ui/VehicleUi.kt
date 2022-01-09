@@ -12,7 +12,7 @@ import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.round
 
-class VehicleUi(val vehicle: DemoVehicle, ctx: KoolContext) {
+class VehicleUi(val vehicle: DemoVehicle) {
 
     var speedKph: Float = 0f
         set(value) {
@@ -110,15 +110,15 @@ class VehicleUi(val vehicle: DemoVehicle, ctx: KoolContext) {
 
     var onToggleSound: (Boolean) -> Unit = { }
 
-    val uiScene = uiScene(dpi = ctx.screenDpi) {
+    val uiScene = uiScene {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi { BlankComponentUi() }
         }
 
-        val largeFont = uiFont(fontFamily, 89 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890.:")
-        val midFont = uiFont(fontFamily, 64 * scale, uiDpi, ctx, style = Font.ITALIC, chars = "-01234567890.:")
-        val smallFont = uiFont(fontFamily, 19 * scale, uiDpi, ctx, style = Font.ITALIC)
+        val largeFont = Font(FontProps(fontFamily, 89f * scale, Font.ITALIC, chars = "-01234567890.:"))
+        val midFont = Font(FontProps(fontFamily, 64 * scale, Font.ITALIC, chars = "-01234567890.:"))
+        val smallFont = Font(FontProps(fontFamily, 19 * scale, Font.ITALIC))
 
         +container("dashboard") {
             layoutSpec.setOrigin(zero(), zero(), zero())

@@ -30,7 +30,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
     private lateinit var menuContainer: UiContainer
 
     init {
-        ui = uiScene(ctx.screenDpi, "debug-overlay") {
+        ui = uiScene("debug-overlay") {
             theme = theme(UiTheme.DARK_SIMPLE) {
                 componentUi { BlankComponentUi() }
                 containerUi(::SimpleComponentUi)
@@ -66,7 +66,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                     text = ""
-                    font.setCustom(UiTheme.DARK_SIMPLE.standardFont(dpi, ctx))
+                    font.setCustom(UiTheme.DARK_SIMPLE.standardFont())
                     textColor.setCustom(root.theme.accentColor)
 
                     onUpdate += {

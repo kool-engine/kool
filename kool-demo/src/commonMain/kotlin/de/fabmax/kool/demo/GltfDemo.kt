@@ -263,7 +263,7 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = newModel.trackModel
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("glTF models") {
             cycler("Model:", models) { cur, prev -> cycleModel(prev, cur, ctx) }
             sliderWithValue("Animation Speed:", animationSpeed, 0f, 1f, 2) { animationSpeed = value }

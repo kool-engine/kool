@@ -783,9 +783,15 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     fun text(props: TextProps, fontSizeUnits: Float = 0f) {
+        val charMap = props.font.charMap
+        if (charMap == null) {
+            logE { "Font char map has not yet been initialized" }
+            return
+        }
+
         withTransform {
             if (fontSizeUnits != 0f) {
-                val s = fontSizeUnits / props.font.charMap.fontProps.sizePts
+                val s = fontSizeUnits / charMap.fontProps.sizePts
                 scale(s, s, s)
             }
 
@@ -804,7 +810,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                     advanced = 0f
                 }
 
-                val metrics = props.font.charMap[c]
+                val metrics = charMap[c]
                 if (metrics != null) {
                     withTransform {
                         var advOffset = 0f

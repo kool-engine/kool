@@ -184,7 +184,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             body.setRotation(Mat3f().rotate(rand.randomF(-90f, 90f), rand.randomF(-90f, 90f), rand.randomF(-90f, 90f)))
             physicsWorld.addActor(body)
 
-            val coloredBody = ColoredBody(body, color, type, shapes)
+            val coloredBody = ColoredBody(body, color, shapes)
             bodies.getOrPut(type) { mutableListOf() } += coloredBody
         }
     }
@@ -328,7 +328,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         return PbrShader(cfg, model)
     }
 
-    private class ColoredBody(val rigidActor: RigidActor, val color: MutableColor, val shapeType: ShapeType, bodyShapes: ShapeType.CollisionShapes) {
+    private class ColoredBody(val rigidActor: RigidActor, val color: MutableColor, bodyShapes: ShapeType.CollisionShapes) {
         val scale = MutableVec3f()
 
         init {
@@ -354,7 +354,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Physics") {
             cycler("Body Shape:", shapeType) { _, _ -> }
             sliderWithValue("Number of Bodies:", numSpawnBodies.toFloat(), 50f, 2000f, 0) {

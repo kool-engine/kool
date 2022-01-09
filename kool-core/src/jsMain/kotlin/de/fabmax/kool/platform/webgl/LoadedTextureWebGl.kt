@@ -65,9 +65,11 @@ class LoadedTextureWebGl(val ctx: JsContext, val target: Int, val texture: WebGL
     }
 
     override fun dispose() {
-        isDestroyed = true
-        ctx.gl.deleteTexture(texture)
-        ctx.engineStats.textureDeleted(texId)
+        if (!isDestroyed) {
+            isDestroyed = true
+            ctx.gl.deleteTexture(texture)
+            ctx.engineStats.textureDeleted(texId)
+        }
     }
 
     private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {

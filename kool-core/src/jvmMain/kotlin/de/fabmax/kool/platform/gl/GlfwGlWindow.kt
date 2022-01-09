@@ -3,7 +3,6 @@ package de.fabmax.kool.platform.gl
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.MonitorSpec
-import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.system.MemoryUtil
 
@@ -49,17 +48,14 @@ open class GlfwGlWindow(width: Int, height: Int, title: String, fullscreenMonito
         glfwSetWindowSizeCallback(windowPtr) { _, w, h ->
             windowWidth = w
             windowHeight = h
-            logI { "GLFW window resized: $w x $h" }
         }
         glfwSetFramebufferSizeCallback(windowPtr) { _, w, h ->
             framebufferWidth = w
             framebufferHeight = h
-            logI { "GLFW framebuffer resized: $w x $h" }
         }
         glfwSetWindowPosCallback(windowPtr) { _, x, y ->
             windowPosX = x
             windowPosY = y
-            logI { "GLFW window position changed: $x, $y" }
         }
 
         val outInt1 = IntArray(1)

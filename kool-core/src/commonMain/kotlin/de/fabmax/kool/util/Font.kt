@@ -9,11 +9,6 @@ import kotlin.math.round
  * @author fabmax
  */
 
-fun uiFont(family: String, sizeDp: Float, uiDpi: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
-    val pts = (sizeDp * uiDpi / 96f)
-    return Font(FontProps(family, pts, style, chars), ctx)
-}
-
 data class FontProps(
         val family: String,
         val sizePts: Float,
@@ -22,31 +17,31 @@ data class FontProps(
         val magFilter: FilterMethod = FilterMethod.LINEAR,
         val minFilter: FilterMethod = FilterMethod.LINEAR,
         val mipMapping: Boolean = false,
-        val maxAnisotropy: Int = 0) {
+        val maxAnisotropy: Int = 0,
+        val isScaledByScreenDpi: Boolean = true
+) {
 
     override fun toString(): String {
         return "FontProps($family, ${sizePts}pts, $style)"
     }
 }
 
-class Font(val charMap: CharMap) : Texture2d(
-        TextureProps(
-            addressModeU = AddressMode.CLAMP_TO_EDGE,
-            addressModeV = AddressMode.CLAMP_TO_EDGE,
-            magFilter = charMap.fontProps.magFilter,
-            minFilter = charMap.fontProps.minFilter,
-            mipMapping = charMap.fontProps.mipMapping,
-            maxAnisotropy = charMap.fontProps.maxAnisotropy
-        ),
-        charMap.toString(),
-        loader = BufferedTextureLoader(charMap.textureData)) {
+class Font(val fontProps: FontProps) {
 
-    override val type = "Font"
+    var charMap: CharMap? = null
 
-    val lineSpace = round(charMap.fontProps.sizePts * 1.2f)
-    val normHeight = charMap.fontProps.sizePts * 0.7f
+    val lineSpace: Float
+        get() = charMap?.lineSpace ?: round(fontProps.sizePts * 1.2f)
+    val normHeight: Float
+        get() = charMap?.normHeight ?: (fontProps.sizePts * 0.7f)
 
-    constructor(fontProps: FontProps, ctx: KoolContext) : this(ctx.assetMgr.createCharMap(fontProps))
+    constructor(fontProps: FontProps, ctx: KoolContext) : this(fontProps) {
+        getOrInitCharMap(ctx)
+    }
+
+    fun getOrInitCharMap(ctx: KoolContext): CharMap {
+        return charMap ?: ctx.assetMgr.createCharMap(fontProps).also { charMap = it }
+    }
 
     fun textWidth(string: String): Float {
         var width = 0f
@@ -66,11 +61,12 @@ class Font(val charMap: CharMap) : Texture2d(
     }
 
     fun charWidth(char: Char): Float {
-        return charMap[char]?.advance ?: 0f
+        val cm = charMap ?: throw IllegalStateException("Font char map has not yet been initialized")
+        return cm.get(char)?.advance ?: 0f
     }
 
     override fun toString(): String {
-        return "Font(${charMap.fontProps})"
+        return "Font(${fontProps})"
     }
 
     companion object {
@@ -78,10 +74,11 @@ class Font(val charMap: CharMap) : Texture2d(
         const val BOLD = 1
         const val ITALIC = 2
 
-        const val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+        const val SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif"
 
         val STD_CHARS: String
         val DEFAULT_FONT_PROPS: FontProps
+        val DEFAULT_FONT: Font
 
         init {
             var str = ""
@@ -91,9 +88,8 @@ class Font(val charMap: CharMap) : Texture2d(
             str += "äÄöÖüÜß°©"
             STD_CHARS = str
             DEFAULT_FONT_PROPS = FontProps(SYSTEM_FONT, 12f)
+            DEFAULT_FONT = Font(DEFAULT_FONT_PROPS)
         }
-
-        fun defaultFont(ctx: KoolContext): Font = Font(DEFAULT_FONT_PROPS, ctx)
     }
 }
 
@@ -108,4 +104,46 @@ class CharMetrics {
     val uvMax = MutableVec2f()
 }
 
-class CharMap(val textureData: TextureData, private val map: Map<Char, CharMetrics>, val fontProps: FontProps) : Map<Char, CharMetrics> by map
+class CharMap internal constructor(val fontProps: FontProps, private val map: MutableMap<Char, CharMetrics> = mutableMapOf()) :
+    MutableMap<Char, CharMetrics> by map
+{
+    var textureData: TextureData? = null
+        set(value) {
+            field = value
+            if (texture.loadingState == Texture.LoadingState.LOADED) {
+                texture.dispose()
+            }
+        }
+
+    val texture = Texture2d(
+        TextureProps(
+            addressModeU = AddressMode.CLAMP_TO_EDGE,
+            addressModeV = AddressMode.CLAMP_TO_EDGE,
+            magFilter = fontProps.magFilter,
+            minFilter = fontProps.minFilter,
+            mipMapping = fontProps.mipMapping,
+            maxAnisotropy = fontProps.maxAnisotropy
+        ),
+        fontProps.toString(),
+        loader = SyncTextureLoader { getOrGenerateTextureData(it) })
+
+    var lineSpace = round(fontProps.sizePts * 1.2f)
+        private set
+    var normHeight = fontProps.sizePts * 0.7f
+        private set
+
+    val isInitialized: Boolean
+        get() = textureData != null
+
+    fun applyScale(scale: Float) {
+        lineSpace = round(fontProps.sizePts * 1.2f * scale)
+        normHeight = fontProps.sizePts * 0.7f * scale
+    }
+
+    fun getOrGenerateTextureData(ctx: KoolContext): TextureData {
+        if (!isInitialized) {
+            ctx.assetMgr.updateCharMap(this)
+        }
+        return textureData!!
+    }
+}

@@ -205,7 +205,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         shadows.forEach { it.isShadowMapEnabled = spotLight }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         val aoMap = image(imageShader = ModeledShader.TextureColor(aoPipeline.aoMap, model = aoMapColorModel())).apply {
             isVisible = false
         }

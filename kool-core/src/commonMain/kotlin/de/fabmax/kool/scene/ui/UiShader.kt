@@ -11,10 +11,15 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
 
-class UiShader(font: Texture2d? = SingleColorTexture(Color.WHITE)) : ModeledShader(uiShaderModel()) {
+class UiShader : ModeledShader(uiShaderModel()) {
     val alpha = FloatInput(U_ALPHA, 1f)
-    val font = Texture2dInput(U_FONT_TEX, font)
+    val fontTex = Texture2dInput(U_FONT_TEX, nullFontTex)
+
+    fun setFont(font: Font, ctx: KoolContext) {
+        fontTex.texture = font.getOrInitCharMap(ctx).texture
+    }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         builder.blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
@@ -25,11 +30,13 @@ class UiShader(font: Texture2d? = SingleColorTexture(Color.WHITE)) : ModeledShad
 
     override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
         alpha.connect(model)
-        font.connect(model)
+        fontTex.connect(model)
         super.onPipelineCreated(pipeline, mesh, ctx)
     }
 
     companion object {
+        private val nullFontTex = SingleColorTexture(Color.WHITE)
+
         val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.COLORS)
 
         private const val U_ALPHA = "uAlpha"

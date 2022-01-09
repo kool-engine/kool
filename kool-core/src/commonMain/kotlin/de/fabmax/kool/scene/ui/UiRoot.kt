@@ -9,8 +9,9 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.BoundingBox
 
-fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
-    val ui = UiRoot(this, dpi)
+fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 96f, block: UiRoot.() -> Unit): UiRoot {
+    val ui = UiRoot(this)
+    ui.uiDpi = dpi
     ui.contentHeight = contentHeight
     ui.globalWidth = width
     ui.globalHeight = height
@@ -18,7 +19,7 @@ fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi:
     return ui
 }
 
-fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, block: UiRoot.(Scene) -> Unit) = scene(name ?: "uiScene") {
+fun uiScene(name: String? = null, overlay: Boolean = true, block: UiRoot.(Scene) -> Unit) = scene(name ?: "uiScene") {
     camera = OrthographicCamera().apply {
         isClipToViewport = true
         near = -1000f
@@ -29,7 +30,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
         mainRenderPass.clearColor = null
     }
 
-    +embeddedUi(1f, 1f, null, dpi) {
+    +embeddedUi(1f, 1f, null, 0f) {
         isFillViewport = true
         this.block(this@scene)
     }
@@ -38,7 +39,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
 /**
  * @author fabmax
  */
-class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node(name) {
+class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
 
     var globalWidth = 1f
         set(value) {
@@ -78,6 +79,14 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
             }
         }
 
+    var uiDpi = 0f
+        set(value) {
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
+        }
+
     val content = UiContainer("$name-content", this)
     var contentHeight: SizeSpec? = null
         set(value) {
@@ -86,8 +95,6 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
         }
     override val bounds: BoundingBox
         get() = content.bounds
-
-    //private var blurHelper: BlurredBackgroundHelper? = null
 
     private var isLayoutNeeded = true
 
@@ -107,6 +114,8 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
         isLayoutNeeded = true
     }
 
+    private val dpiChangeListener: (KoolContext) -> Unit = { uiDpi = it.screenDpi }
+
     override fun update(updateEvent: RenderPass.UpdateEvent) {
         val viewport = scene.mainRenderPass.viewport
 
@@ -114,6 +123,13 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
                 (globalWidth != viewport.width.toFloat() || globalHeight != viewport.height.toFloat())) {
             globalWidth = viewport.width.toFloat()
             globalHeight = viewport.height.toFloat()
+        }
+
+        if (uiDpi == 0f) {
+            uiDpi = updateEvent.ctx.screenDpi
+            if (dpiChangeListener !in updateEvent.ctx.onScreenDpiChange) {
+                updateEvent.ctx.onScreenDpiChange += dpiChangeListener
+            }
         }
 
         if (isLayoutNeeded) {
@@ -140,7 +156,6 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
     }
 
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-//        blurHelper?.updateDistortionTexture(this, ctx, bounds)
         super.collectDrawCommands(updateEvent)
         content.collectDrawCommands(updateEvent)
     }
@@ -148,7 +163,7 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         content.dispose(ctx)
-//        blurHelper?.dispose(ctx)
+        ctx.onScreenDpiChange -= dpiChangeListener
     }
 
     override fun rayTest(test: RayTest) {

@@ -82,7 +82,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
         +deferredPipeline.createDefaultOutputQuad()
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Roses") {
             button("Empty Vase") {
                 roses.children.forEach { it.dispose(ctx) }

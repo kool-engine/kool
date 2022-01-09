@@ -32,7 +32,6 @@ class MultiLightDemo : DemoScene("Reflections") {
     private var lightPower = 500f
     private var lightSaturation = 0.4f
     private var lightRandomness = 0.3f
-    private var isScrSpcReflections = true
     private var autoRotate = true
     private var showLightIndicators = true
 
@@ -162,7 +161,7 @@ class MultiLightDemo : DemoScene("Reflections") {
         lights.forEach { it.updateVisibility() }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         val ssrMap = image(deferredPipeline.reflections?.reflectionMap)
 
         section("Lights") {

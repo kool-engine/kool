@@ -60,7 +60,7 @@ class GMeterUi(private val gMeter: GMeter) : ComponentUi {
     }
 
     override fun createUi(ctx: KoolContext) {
-        font = uiFont(VehicleUi.fontFamily, 12f * VehicleUi.scale, gMeter.dpi, ctx, Font.ITALIC)
+        font = Font(FontProps(VehicleUi.fontFamily, 12f * VehicleUi.scale, Font.ITALIC))
         bgMesh.shader = UiShader()
         gMeter += bgMesh
 

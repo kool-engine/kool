@@ -88,7 +88,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         menuHeight = 440f
 
         section("Environment") {

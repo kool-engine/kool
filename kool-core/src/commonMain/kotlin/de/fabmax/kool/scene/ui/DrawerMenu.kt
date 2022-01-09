@@ -41,16 +41,8 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                         layoutSpec.setSize(pcs(100f, true), dps(40f, true), full())
                         textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                         text = title
+                        font.setCustom(titleFont())
                         textColor.setCustom(theme.accentColor)
-
-                        // hacky: we need KoolContext to create the title font...
-                        var initFont = true
-                        onUpdate += { evt ->
-                            if (initFont) {
-                                initFont = false
-                                font.setCustom(titleFont(evt.ctx))
-                            }
-                        }
                     }
                     +component("divider") {
                         layoutSpec.setOrigin(pcs(5f), dps(-58f, true), zero())

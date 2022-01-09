@@ -1,25 +1,22 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.uiFont
 
-fun controlUi(ctx: KoolContext, block: ControlUiBuilder.() -> Unit) = uiScene { scene ->
-    val builder = ControlUiBuilder(scene, this, ctx)
+fun controlUi(block: ControlUiBuilder.() -> Unit) = uiScene {
+    val builder = ControlUiBuilder(this)
     builder.block()
     builder.finish()
 }
 
-class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext) {
+class ControlUiBuilder(val uiRoot: UiRoot) {
 
     var menuWidth = 300f
     var menuHeight = 0f
@@ -27,12 +24,12 @@ class ControlUiBuilder(val uiScene: Scene, val uiRoot: UiRoot, ctx: KoolContext)
     val menuContainer: UiContainer
     var menuY = -40f
 
-    private val smallFontProps = FontProps(Font.SYSTEM_FONT, 14f)
+    private val smallFontProps = FontProps(Font.SYSTEM_FONT, 12f)
     val smallFont: Font
 
     init {
         uiRoot.apply {
-            smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, uiDpi, ctx, smallFontProps.style, smallFontProps.chars)
+            smallFont = Font(smallFontProps)
 
             theme = theme(UiTheme.DARK) {
                 componentUi { BlankComponentUi() }

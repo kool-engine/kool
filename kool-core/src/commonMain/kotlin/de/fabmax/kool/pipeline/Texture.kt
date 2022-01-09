@@ -20,7 +20,7 @@ abstract class Texture(val props: TextureProps, val name: String?, val loader: T
 
     protected abstract val type: String
 
-    fun dispose() {
+    open fun dispose() {
         loadedTexture?.dispose()
         loadedTexture = null
         loadingState = LoadingState.NOT_LOADED

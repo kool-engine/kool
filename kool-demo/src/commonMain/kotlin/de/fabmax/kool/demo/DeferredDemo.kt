@@ -283,7 +283,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         val images = mutableListOf<UiImage>()
         images += image(imageShader = gBufferShader(deferredPipeline.activePass.materialPass.albedoMetal, 0f, 1f)).apply {
             setupImage(0.025f, 0.025f)

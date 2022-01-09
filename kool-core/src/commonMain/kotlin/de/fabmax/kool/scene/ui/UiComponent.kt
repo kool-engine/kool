@@ -33,6 +33,8 @@ open class UiComponent(name: String, val root: UiRoot) : Group(name) {
     val height: Float get() = componentBounds.size.y
     val depth: Float get() = componentBounds.size.z
 
+    val onLayout = mutableListOf<(KoolContext) -> Unit>()
+
     var layoutSpec = LayoutSpec()
     var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
         set(value) {

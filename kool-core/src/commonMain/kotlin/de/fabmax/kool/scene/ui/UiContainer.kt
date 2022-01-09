@@ -148,6 +148,7 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     protected open fun computeChildLayoutBounds(result: BoundingBox, child: UiComponent, ctx: KoolContext) {
+        child.onLayout.forEach { it(ctx) }
         var x = child.layoutSpec.x.toUnits(componentBounds.size.x, dpi)
         var y = child.layoutSpec.y.toUnits(componentBounds.size.y, dpi)
         var z = child.layoutSpec.z.toUnits(componentBounds.size.z, dpi)

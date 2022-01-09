@@ -35,7 +35,7 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
 
     override fun setThemeProps(ctx: KoolContext) {
         super.setThemeProps(ctx)
-        font.setTheme(standardFont(ctx))
+        font.setTheme(standardFont())
         textColor.setTheme(root.theme.foregroundColor)
     }
 
@@ -73,12 +73,12 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
         baseUi.updateUi(ctx)
 
         if (!label.font.isUpdate && label.font.prop == null) {
-            label.font.setCustom(Font.defaultFont(ctx))
+            label.font.setCustom(Font.DEFAULT_FONT)
         }
         if (label.font.isUpdate) {
 //            label.font.prop?.dispose(ctx)
             font = label.font.apply()
-            shader.font(font)
+            font?.let { shader.setFont(it, ctx) }
         }
 
         label.setupBuilder(meshBuilder)

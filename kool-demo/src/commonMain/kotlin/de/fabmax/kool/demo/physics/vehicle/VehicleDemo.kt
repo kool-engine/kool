@@ -142,7 +142,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     override fun setupMenu(ctx: KoolContext): Scene {
-        dashboard = VehicleUi(vehicle, ctx).apply {
+        dashboard = VehicleUi(vehicle).apply {
             onToggleSound = { en -> vehicle.toggleSound(en) }
         }
         return dashboard!!.uiScene

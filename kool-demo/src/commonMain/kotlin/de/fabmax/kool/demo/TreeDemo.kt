@@ -172,7 +172,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
         }
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Generator Settings") {
             sliderWithValue("Grow Distance:", treeGen.growDistance, 0.1f, 0.4f) { treeGen.growDistance = value }
             sliderWithValue("Kill Distance:", treeGen.killDistance, 1f, 4f) { treeGen.killDistance = value }

@@ -6,6 +6,9 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logD
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -15,7 +18,16 @@ expect fun createDefaultContext(): KoolContext
 
 abstract class KoolContext {
 
+    var minScreenDpi = 96f
     var screenDpi = 96f
+        set(value) {
+            val chgVal = max(value, minScreenDpi)
+            if (chgVal != field) {
+                logD { "Screen DPI changed: $chgVal (${(chgVal * 100f / 96f).roundToInt()} %)" }
+                field = chgVal
+                onScreenDpiChange.forEach { it(this) }
+            }
+        }
 
     abstract val assetMgr: AssetManager
 
@@ -29,7 +41,8 @@ abstract class KoolContext {
     val projCorrectionMatrixOffscreen = Mat4d()
     val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
-    val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
+    val onScreenDpiChange = mutableListOf<(KoolContext) -> Unit>()
+    val onRender = mutableListOf<(KoolContext) -> Unit>()
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()

@@ -77,7 +77,9 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract suspend fun waitForFonts()
 
-    abstract fun createCharMap(fontProps: FontProps): CharMap
+    abstract fun createCharMap(fontProps: FontProps, fontScale: Float = 0f): CharMap
+
+    abstract fun updateCharMap(charMap: CharMap, fontScale: Float = 0f)
 
     abstract fun inflate(zipData: Uint8Buffer): Uint8Buffer
 

@@ -42,10 +42,12 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     }
 
     override fun dispose() {
-        // fixme: kinda hacky... also might be depending resource of something else than sys.device
-        sys.ctx.runDelayed(sys.swapChain?.nImages ?: 3) {
-            sys.device.removeDependingResource(this)
-            destroy()
+        if (!isDestroyed) {
+            // fixme: kinda hacky... also might be depending resource of something else than sys.device
+            sys.ctx.runDelayed(sys.swapChain?.nImages ?: 3) {
+                sys.device.removeDependingResource(this)
+                destroy()
+            }
         }
     }
 

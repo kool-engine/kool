@@ -138,7 +138,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         return builder.geometry
     }
 
-    override fun setupMenu(ctx: KoolContext) = controlUi(ctx) {
+    override fun setupMenu(ctx: KoolContext) = controlUi {
         section("Model") {
             button("Cow") {
                 srcModel = models["cow"] ?: srcModel

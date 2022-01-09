@@ -109,12 +109,12 @@ class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
     override fun createUi(ctx: KoolContext) {
         super.createUi(ctx)
 
-        largeFont = uiFont(VehicleUi.fontFamily, 19f * VehicleUi.scale, rpmScale.dpi, ctx, Font.ITALIC)
-        largeFontMesh.shader = UiShader(largeFont)
+        largeFont = Font(FontProps(VehicleUi.fontFamily, 19f * VehicleUi.scale, Font.ITALIC))
+        largeFontMesh.shader = UiShader().apply { setFont(largeFont, ctx) }
         rpmScale += largeFontMesh
 
-        smallFont = uiFont(VehicleUi.fontFamily, 14f * VehicleUi.scale, rpmScale.dpi, ctx, Font.ITALIC)
-        smallFontMesh.shader = UiShader(smallFont)
+        smallFont = Font(FontProps(VehicleUi.fontFamily, 14f * VehicleUi.scale, Font.ITALIC))
+        smallFontMesh.shader = UiShader().apply { setFont(smallFont, ctx) }
         rpmScale += smallFontMesh
     }
 

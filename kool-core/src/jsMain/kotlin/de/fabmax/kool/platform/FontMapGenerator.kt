@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
@@ -15,7 +16,7 @@ import kotlin.math.round
  * @author fabmax
  */
 
-class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.InitProps, assetManager: JsAssetManager) {
+class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.InitProps, assetManager: JsAssetManager, val ctx: KoolContext) {
 
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
     private val canvasCtx: CanvasRenderingContext2D
@@ -32,9 +33,15 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         props.customFonts.forEach { (family, url) ->
             loadFont(family, assetManager.makeAssetRef(url).url)
         }
-    }
 
-    fun getCharMap(fontProps: FontProps): CharMap = charMaps.getOrPut(fontProps) { generateCharMap(fontProps) }
+        ctx.onScreenDpiChange += {
+            charMaps.values.forEach {
+                if (it.fontProps.isScaledByScreenDpi) {
+                    updateCharMap(it, 0f)
+                }
+            }
+        }
+    }
 
     private fun loadFont(family: String, url: String) {
         val font = FontFace(family, "url($url)")
@@ -46,15 +53,24 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         }
     }
 
-    private fun generateCharMap(fontProps: FontProps): CharMap {
+    fun getCharMap(fontProps: FontProps, fontScale: Float): CharMap = charMaps.getOrPut(fontProps) { updateCharMap(CharMap(fontProps), fontScale) }
+
+    fun updateCharMap(charMap: CharMap, fontScale: Float): CharMap {
+        val fontProps = charMap.fontProps
+
+        val scale = when {
+            fontProps.isScaledByScreenDpi && fontScale == 0f -> ctx.screenDpi / 96f
+            fontProps.isScaledByScreenDpi && fontScale != 0f -> ctx.screenDpi / 96f * fontScale
+            fontScale != 0f -> fontScale
+            else -> 1f
+        }
+
         // clear canvas
-        //canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
         canvasCtx.fillStyle = "#ffffff"
         canvasCtx.fillRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
-
-        val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(fontProps, metrics)
-
+        // draw font chars
+        val texHeight = makeMap(fontProps, scale, charMap)
+        // copy image data
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
         // alpha texture
@@ -62,10 +78,12 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         for (i in 0 until buffer.capacity) {
             buffer.put((255 - (data.data[i*4].toInt() and 0xff)).toByte())
         }
-        return CharMap(TextureData2d(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
+        charMap.textureData = TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
+        charMap.applyScale(scale)
+        return charMap
     }
 
-    private fun makeMap(fontProps: FontProps, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: FontProps, fontScale: Float, map: MutableMap<Char, CharMetrics>): Int {
         var style = ""
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
@@ -74,17 +92,20 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             style += "italic "
         }
 
-        val fontStr = "$style ${fontProps.sizePts}px ${fontProps.family}"
+        val fontSize = round(fontProps.sizePts * fontScale)
+        val fontStr = "$style ${fontSize}px ${fontProps.family}"
         canvasCtx.font = fontStr
         canvasCtx.fillStyle = "#000000"
         canvasCtx.strokeStyle = "#000000"
 
+        logD { "generate font: $fontStr" }
+
         // line height above baseline
-        val hab = round(fontProps.sizePts * 1.1).toInt()
+        val hab = round(fontSize * 1.1).toInt()
         // line height below baseline
-        val hbb = round(fontProps.sizePts * 0.5)
+        val hbb = round(fontSize * 0.5)
         // overall line height
-        val height = round(fontProps.sizePts * 1.6)
+        val height = round(fontSize * 1.6)
 
         // first pixel is opaque
         canvasCtx.beginPath()
