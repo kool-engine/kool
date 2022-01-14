@@ -12,36 +12,36 @@ import de.fabmax.kool.util.logW
 class RaySphereIntersectionNode(graph: ShaderGraph) : ShaderNode("raySphereIntersection", graph) {
     override fun generateCode(generator: CodeGenerator) {
         generator.appendFunction("raySphereIntersection", """
-                bool raySphereIntersection(vec3 rayOrigin, vec3 rayDir, vec3 center, float radius, out float d1, out float d2) {
-                    vec3 centerToOri = rayOrigin - center;
-                    float a = dot(rayDir, rayDir);
-                    float b = 2.0 * dot(rayDir, centerToOri);
-                    float c = dot(centerToOri, centerToOri) - radius * radius;
-                    
-                    float discriminant = b * b - 4.0 * a * c;
-                    if (discriminant < 0.0) {
-                        return false;
-                    } else {
-                        float q = -0.5 * (b + sign(b) * sqrt(discriminant));
-                        float t1 = q / a;
-                        float t2 = c / q;
-                        d1 = min(t1, t2);
-                        d2 = max(t1, t2);
-                        return d2 > 0.0;
-                    }
+            bool raySphereIntersection(vec3 rayOrigin, vec3 rayDir, vec3 center, float radius, out float d1, out float d2) {
+                vec3 centerToOri = rayOrigin - center;
+                float a = dot(rayDir, rayDir);
+                float b = 2.0 * dot(rayDir, centerToOri);
+                float c = dot(centerToOri, centerToOri) - radius * radius;
+                
+                float discriminant = b * b - 4.0 * a * c;
+                if (discriminant < 0.0) {
+                    return false;
+                } else {
+                    float q = -0.5 * (b + sign(b) * sqrt(discriminant));
+                    float t1 = q / a;
+                    float t2 = c / q;
+                    d1 = min(t1, t2);
+                    d2 = max(t1, t2);
+                    return d2 > 0.0;
                 }
-            """)
+            }
+        """)
 
         generator.appendFunction("rayPointDistance", """
-                vec4 rayPointDistance(vec3 rayOrigin, vec3 rayDir, vec3 point) {
-                    vec3 w = point - rayOrigin;
-                    float c1 = dot(w, rayDir);
-                    float c2 = dot(rayDir, rayDir);
-                    vec3 pn = rayOrigin + rayDir * (c1 / c2);
-                    float dist = length(pn - point) * sign(c1);
-                    return vec4(pn, dist);
-                }
-            """)
+            vec4 rayPointDistance(vec3 rayOrigin, vec3 rayDir, vec3 point) {
+                vec3 w = point - rayOrigin;
+                float c1 = dot(w, rayDir);
+                float c2 = dot(rayDir, rayDir);
+                vec3 pn = rayOrigin + rayDir * (c1 / c2);
+                float dist = length(pn - point) * sign(c1);
+                return vec4(pn, dist);
+            }
+        """)
     }
 }
 

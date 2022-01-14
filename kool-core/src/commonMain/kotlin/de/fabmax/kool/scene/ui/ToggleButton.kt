@@ -33,6 +33,8 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
             }
         }
 
+    var isRadioButtonMode = false
+
     init {
         textAlignment = Gravity(Alignment.START, Alignment.CENTER)
     }
@@ -44,6 +46,10 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
     }
 
     override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: KoolContext) {
+        if (isRadioButtonMode && isEnabled) {
+            // in radio button mode toggle button cannot be disabled (i.e. do nothing on click in case it's already enabled)
+            return
+        }
         isEnabled = !isEnabled
         super.fireOnClick(ptr, rt, ctx)
     }

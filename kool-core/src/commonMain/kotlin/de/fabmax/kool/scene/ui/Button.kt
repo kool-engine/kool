@@ -2,7 +2,6 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
@@ -23,8 +22,6 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
     var isHovered = false
         protected set
 
-    protected var ptrDownPos = MutableVec2f()
-
     init {
         textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
 
@@ -38,22 +35,19 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
         }
 
         onHover += { ptr, rt, ctx ->
+            isPressed = ptr.isLeftButtonDown
+
             if (ptr.isLeftButtonEvent) {
                 ptr.consume(InputManager.LEFT_BUTTON_MASK)
                 if (ptr.isLeftButtonDown) {
                     // button is pressed, issue click event when it is released again
-                    ptrDownPos.set(rt.hitPositionLocal.x - componentBounds.min.x, rt.hitPositionLocal.y - componentBounds.min.y)
                     isPressed = true
-
-                } else if (isPressed) {
+                } else {
                     // button was pressed and pointer is up, issue click event
                     isPressed = false
-                    // check that pointer didn't move to much
-                    ptrDownPos.x -= rt.hitPositionLocal.x - componentBounds.min.x
-                    ptrDownPos.y -= rt.hitPositionLocal.y - componentBounds.min.y
-                    if (ptrDownPos.length() < this@Button.dp(5f)) {
-                        fireOnClick(ptr, rt, ctx)
-                    }
+                    // don't use ptr.isLeftButtonClicked here, because button click is issued no matter how long it
+                    // mouse button was down and how much the mouse moved
+                    fireOnClick(ptr, rt, ctx)
                 }
             }
         }
