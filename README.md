@@ -5,7 +5,10 @@
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
 WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
 
-This is mostly my personal pet-project. However, if you are curious you might be able to use this for your own projects
+I finally made my first real game made with this engine: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
+Give it a try!
+
+If you are curious you might be able to use this for your own projects
 as well (look below for a very short usage guide - that's all the documentation there is) 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
