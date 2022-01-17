@@ -51,7 +51,7 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
 
         init {
             memStack {
-                val vkFunctions = VmaVulkanFunctions.callocStack(this).apply {
+                val vkFunctions = VmaVulkanFunctions.calloc(this).apply {
                     val pCaps = sys.physicalDevice.vkPhysicalDevice.capabilities
                     val dCaps = sys.device.vkDevice.capabilities
                     vkGetPhysicalDeviceMemoryProperties(pCaps.vkGetPhysicalDeviceMemoryProperties)
@@ -75,13 +75,14 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
                     vkUnmapMemory(dCaps.vkUnmapMemory)
                 }
 
-                val allocatorInfo = VmaAllocatorCreateInfo.callocStack(this).apply {
+                val createInfo = VmaAllocatorCreateInfo.calloc(this).apply {
                     physicalDevice(sys.physicalDevice.vkPhysicalDevice)
                     device(sys.device.vkDevice)
+                    instance(sys.instance.vkInstance)
                     pVulkanFunctions(vkFunctions)
                 }
                 val pp = mallocPointer(1)
-                vmaCreateAllocator(allocatorInfo, pp)
+                vmaCreateAllocator(createInfo, pp)
                 allocator = pp[0]
             }
             logD { "Created VMA memory allocator" }
@@ -89,7 +90,7 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
 
         override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int {
             return memStack {
-                val allocInfo = VmaAllocationCreateInfo.callocStack(this).apply { usage(allocUsage) }
+                val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
                 vmaCreateBuffer(allocator, bufferInfo, allocInfo, pBuffer, pAllocation, null)
             }
         }
@@ -100,7 +101,7 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
 
         override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int, pImage: LongBuffer, pAllocation: PointerBuffer): Int {
             return memStack {
-                val allocInfo = VmaAllocationCreateInfo.callocStack(this).apply { usage(allocUsage) }
+                val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
                 vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null)
             }
         }
@@ -153,7 +154,7 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
                 if (res != VK_SUCCESS) { return res }
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
-                val memRequirements = VkMemoryRequirements.mallocStack(this)
+                val memRequirements = VkMemoryRequirements.malloc(this)
                 vkGetBufferMemoryRequirements(sys.device.vkDevice, pBuffer[0], memRequirements)
                 val allocInfo = callocVkMemoryAllocateInfo {
                     sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
@@ -187,7 +188,7 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
                 if (res != VK_SUCCESS) { return res }
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
-                val memRequirements = VkMemoryRequirements.mallocStack(this)
+                val memRequirements = VkMemoryRequirements.malloc(this)
                 vkGetImageMemoryRequirements(sys.device.vkDevice, pImage[0], memRequirements)
                 val allocInfo = callocVkMemoryAllocateInfo {
                     sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)

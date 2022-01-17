@@ -352,7 +352,8 @@ class GltfDemo : DemoScene("glTF Models") {
                         shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
                         scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
                         environmentMaps = envMaps,
-                        isDeferredShading = isDeferredShading
+                        isDeferredShading = isDeferredShading,
+                        maxNumberOfJoints = 64
                 )
                 val modelCfg = GltfFile.ModelGenerateConfig(
                         generateNormals = generateNormals,

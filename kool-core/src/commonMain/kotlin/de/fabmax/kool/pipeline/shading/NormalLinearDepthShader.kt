@@ -23,7 +23,7 @@ class NormalLinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = d
     }
 
     companion object {
-        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel().apply {
+        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel("normal-linear-depth-sahder").apply {
             val ifNormals: StageInterfaceNode
             var ifTexCoords: StageInterfaceNode? = null
 
@@ -37,7 +37,7 @@ class NormalLinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = d
                     modelViewMat = multiplyNode(modelViewMat, instanceAttrModelMat().output).output
                 }
                 if (cfg.isSkinned) {
-                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                     modelViewMat = multiplyNode(modelViewMat, skinNd.outJointMat).output
                 }

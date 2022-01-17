@@ -20,7 +20,7 @@ class PbrMaterialConfig {
 
     var isInstanced = false
     var isSkinned = false
-    var maxJoints = 64
+    var maxJoints = 16
 
     val morphAttributes = mutableListOf<Attribute>()
 

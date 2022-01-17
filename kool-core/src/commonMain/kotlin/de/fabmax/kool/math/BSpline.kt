@@ -1,7 +1,6 @@
 package de.fabmax.kool.math
 
 import kotlin.math.PI
-import kotlin.math.acos
 
 open class BSpline<T>(var degree: Int, private val factory: () -> T, private val copy: (src: T, dst: T) -> Unit,
                  private val mix: (w0: Float, p0: T, w1: Float, p1: T, result: T) -> Unit) {
@@ -44,7 +43,7 @@ open class BSpline<T>(var degree: Int, private val factory: () -> T, private val
         return xx
     }
 
-    private fun linearize(x: Float) = 1f - acos((x - 0.5f) * 2f) / PI.toFloat()
+    private fun linearize(x: Float) = 1f - stableAcos((x - 0.5f) * 2f) / PI.toFloat()
 
     private fun deBoor(k: Int, t: Float, result: T) {
         val kk = k.clamp(degree, ctrlPoints.size - 1)

@@ -74,7 +74,7 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
                 }
             }
             if (!anyAdded) {
-                println("${model.modelInfo} - Remaining nodes:")
+                println("${model.modelName} - Remaining nodes:")
                 nodes.forEach {
                     println(it.name)
                     it.dependencies.forEach { dep ->

@@ -22,6 +22,12 @@ fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContex
 actual fun now(): Double = js("performance.now()") as Double
 
 actual fun Double.toString(precision: Int): String {
+    if (this.isNaN()) {
+        return "NaN"
+    } else if (this.isInfinite()) {
+        return "Infinity"
+    }
+
     val p = precision.clamp(0, 12)
     val s = if (this < 0) "-" else ""
     var a = abs(this)

@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.shading.NormalLinearDepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import kotlin.math.max
 
 
 open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
@@ -48,7 +49,10 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         val depthCfg = DepthShaderConfig().apply {
             cullMethod = getMeshCullMethod(mesh, ctx)
             isInstanced = mesh.instances != null
-            isSkinned = mesh.skin != null
+            mesh.skin?.let {
+                isSkinned = true
+                maxJoints = max(defaultMaxNumberOfJoints, it.nodes.size)
+            }
 
             nMorphWeights = mesh.morphWeights?.size ?: 0
             morphAttributes += mesh.geometry.getMorphAttributes()
@@ -63,6 +67,8 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     }
 
     companion object {
+        var defaultMaxNumberOfJoints = 16
+
         fun defaultSetup(width: Int, height: Int) = renderPassConfig {
             name = "DepthMapPass"
             setSize(width, height)
@@ -86,7 +92,10 @@ class LinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode
         val depthCfg = DepthShaderConfig().apply {
             cullMethod = getMeshCullMethod(mesh, ctx)
             isInstanced = mesh.instances != null
-            isSkinned = mesh.skin != null
+            mesh.skin?.let {
+                isSkinned = true
+                maxJoints = max(defaultMaxNumberOfJoints, it.nodes.size)
+            }
 
             nMorphWeights = mesh.morphWeights?.size ?: 0
             morphAttributes += mesh.geometry.getMorphAttributes()
@@ -125,7 +134,10 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         val depthCfg = DepthShaderConfig().apply {
             cullMethod = getMeshCullMethod(mesh, ctx)
             isInstanced = mesh.instances != null
-            isSkinned = mesh.skin != null
+            mesh.skin?.let {
+                isSkinned = true
+                maxJoints = max(defaultMaxNumberOfJoints, it.nodes.size)
+            }
 
             nMorphWeights = mesh.morphWeights?.size ?: 0
             morphAttributes += mesh.geometry.getMorphAttributes()

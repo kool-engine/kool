@@ -79,7 +79,7 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
 
     fun findSupportedFormat(candidates: List<Int>, tiling: Int, features: Int): Int {
         memStack {
-            val props = VkFormatProperties.mallocStack(this)
+            val props = VkFormatProperties.malloc(this)
             candidates.forEach { format ->
                 vkGetPhysicalDeviceFormatProperties(vkPhysicalDevice, format, props)
                 if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures() and features) == features) {
@@ -94,7 +94,7 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
 
     fun findMemoryType(typeFiler: Int, properties: Int): Int {
         memStack {
-            val memProperties = VkPhysicalDeviceMemoryProperties.mallocStack(this)
+            val memProperties = VkPhysicalDeviceMemoryProperties.malloc(this)
             vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, memProperties)
             for (i in 0 until memProperties.memoryTypeCount()) {
                 if (typeFiler and (1 shl i) != 0 && memProperties.memoryTypes(i).propertyFlags() and properties == properties) {
@@ -118,8 +118,8 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
 
         init {
             queueFamiliyIndices = findQueueFamilies()
-            properties = VkPhysicalDeviceProperties.mallocStack(stack)
-            features = VkPhysicalDeviceFeatures.mallocStack(stack)
+            properties = VkPhysicalDeviceProperties.malloc(stack)
+            features = VkPhysicalDeviceFeatures.malloc(stack)
             vkGetPhysicalDeviceProperties(device, properties)
             vkGetPhysicalDeviceFeatures(device, features)
         }
@@ -128,7 +128,7 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
             memStack {
                 val nFams = mallocInt(1)
                 vkGetPhysicalDeviceQueueFamilyProperties(device, nFams, null)
-                val queueFamilies = VkQueueFamilyProperties.mallocStack(nFams[0], this)
+                val queueFamilies = VkQueueFamilyProperties.malloc(nFams[0], this)
                 vkGetPhysicalDeviceQueueFamilyProperties(device, nFams, queueFamilies)
 
                 val ip = mallocInt(1)

@@ -65,7 +65,7 @@ abstract class InputManager internal constructor() {
                     }
                 }
             }
-            if (evt.localKeyCode.code != 0) {
+            if (evt.localKeyCode.code != 0 && evt.localKeyCode.code != evt.keyCode.code) {
                 keyHandlers[evt.localKeyCode]?.let { listeners ->
                     for (j in listeners.indices) {
                         if (listeners[j].filter(evt)) {

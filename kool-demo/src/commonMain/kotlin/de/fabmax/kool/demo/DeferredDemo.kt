@@ -448,7 +448,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
 
         companion object {
-            fun shaderModel() = ShaderModel().apply {
+            fun shaderModel() = ShaderModel("metal-rough-flags-shader").apply {
                 val ifTexCoords: StageInterfaceNode
 
                 vertexStage {

@@ -25,7 +25,7 @@ class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthS
     }
 
     companion object {
-        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel().apply {
+        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel("depth-shader").apply {
             var ifTexCoords: StageInterfaceNode? = null
 
             vertexStage {
@@ -34,7 +34,7 @@ class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthS
                     mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
                 }
                 if (cfg.isSkinned) {
-                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
                 if (cfg.alphaMode is AlphaModeMask) {
@@ -69,6 +69,7 @@ class DepthShaderConfig {
     var cullMethod = CullMethod.CULL_BACK_FACES
     var isInstanced = false
     var isSkinned = false
+    var maxJoints = 16
 
     var alphaMode: AlphaMode = AlphaModeOpaque()
     var alphaMask: Texture2d? = null

@@ -331,7 +331,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
         fun generateUvs() {
             val pif = PI.toFloat()
-            val uvVerts = verts.map { v -> v to Vec2f((atan2(v.x, v.z) + pif) / (2 * pif), acos(v.y) / pif) }.toMutableList()
+            val uvVerts = verts.map { v -> v to Vec2f((atan2(v.x, v.z) + pif) / (2 * pif), stableAcos(v.y) / pif) }.toMutableList()
             this.uvVerts = uvVerts
 
             // duplicate vertices at texture border
@@ -659,7 +659,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
 
         val dr = props.bottomRadius - props.topRadius
-        val nrmAng = 90f - acos(dr / sqrt(dr * dr + props.height * props.height)).toDeg()
+        val nrmAng = 90f - stableAcos(dr / sqrt(dr * dr + props.height * props.height)).toDeg()
         var i0 = 0
         var i1 = 0
         for (i in 0..props.steps) {

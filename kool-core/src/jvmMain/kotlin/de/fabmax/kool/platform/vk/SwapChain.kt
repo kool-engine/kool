@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryStack
@@ -152,13 +151,13 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         val surface = sys.window.surface.surfaceHandle
         val formatList = mutableListOf<VkSurfaceFormatKHR>()
         val presentModeList = mutableListOf<Int>()
-        val capabilities = VkSurfaceCapabilitiesKHR.mallocStack(this)
+        val capabilities = VkSurfaceCapabilitiesKHR.malloc(this)
 
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, capabilities)
 
         vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, ip, null)
         if (ip[0] > 0) {
-            val formats = VkSurfaceFormatKHR.mallocStack(ip[0], this)
+            val formats = VkSurfaceFormatKHR.malloc(ip[0], this)
             vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, ip, formats)
             formatList.addAll(formats)
         }
@@ -209,7 +208,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
                 val fbWidth = stack.mallocInt(1)
                 val fbHeight = stack.mallocInt(1)
                 GLFW.glfwGetFramebufferSize(sys.window.glfwWindow, fbWidth, fbHeight)
-                VkExtent2D.mallocStack(stack)
+                VkExtent2D.malloc(stack)
                     .width(max(capabilities.minImageExtent().width(), max(capabilities.maxImageExtent().width(), fbWidth[0])))
                     .height(max(capabilities.minImageExtent().height(), max(capabilities.maxImageExtent().height(), fbHeight[0])))
             }

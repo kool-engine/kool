@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.animation.*
 import de.fabmax.kool.util.deferred.DeferredPbrShader
@@ -134,7 +135,8 @@ data class GltfFile(
         val shadowMaps: List<ShadowMap> = emptyList(),
         val scrSpcAmbientOcclusionMap: Texture2d? = null,
         val environmentMaps: EnvironmentMaps? = null,
-        val isDeferredShading: Boolean = false
+        val isDeferredShading: Boolean = false,
+        val maxNumberOfJoints: Int = 64
     )
 
     private inner class ModelGenerator(val cfg: ModelGenerateConfig) {
@@ -561,6 +563,10 @@ data class GltfFile(
                             }
                             if (mesh.skin != null) {
                                 isSkinned = true
+                                maxJoints = min(cfg.materialConfig.maxNumberOfJoints, mesh.skin!!.nodes.size)
+                                if (cfg.materialConfig.maxNumberOfJoints < mesh.skin!!.nodes.size) {
+                                    Log.e("GltfFile") { "\"${model.name}\": Maximum number of joints exceeded (mesh has ${mesh.skin!!.nodes.size}, materialConfig.maxNumberOfJoints is ${cfg.materialConfig.maxNumberOfJoints})" }
+                                }
                             }
                             if (mesh.morphWeights != null) {
                                 morphAttributes += mesh.geometry.getMorphAttributes()

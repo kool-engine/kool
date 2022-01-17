@@ -2,10 +2,10 @@ import org.gradle.internal.os.OperatingSystem
 
 object Versions {
     val kotlinVersion = "1.6.10"
-    val kotlinCorroutinesVersion = "1.5.2"
-    val kotlinSerializationVersion = "1.3.1"
+    val kotlinCorroutinesVersion = "1.6.0"
+    val kotlinSerializationVersion = "1.3.2"
 
-    val lwjglVersion = "3.2.3"
+    val lwjglVersion = "3.3.0"
     val lwjglNatives = OperatingSystem.current().let {
         when {
             it.isLinux -> "natives-linux"

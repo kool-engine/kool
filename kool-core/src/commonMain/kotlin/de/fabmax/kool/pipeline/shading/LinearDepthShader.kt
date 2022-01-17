@@ -23,7 +23,7 @@ class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = default
     }
 
     companion object {
-        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel().apply {
+        fun defaultDepthShaderModel(cfg: DepthShaderConfig) = ShaderModel("linear-depth-shader").apply {
             var ifTexCoords: StageInterfaceNode? = null
 
             vertexStage {
@@ -32,7 +32,7 @@ class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = default
                     mvpMat = multiplyNode(mvpMat, instanceAttrModelMat().output).output
                 }
                 if (cfg.isSkinned) {
-                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output)
+                    val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
                 if (cfg.alphaMode is AlphaModeMask) {

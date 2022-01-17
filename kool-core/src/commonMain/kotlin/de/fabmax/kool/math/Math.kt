@@ -49,6 +49,28 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     else -> this
 }
 
+fun stableAsin(x: Float): Float {
+    val asin = asin(x)
+    return if (!asin.isNaN()) {
+        asin
+    } else if (x > 0f) {
+        (PI * 0.5).toFloat()
+    } else {
+        (PI * -0.5).toFloat()
+    }
+}
+
+fun stableAcos(x: Float): Float {
+    val acos = acos(x)
+    return if (!acos.isNaN()) {
+        acos
+    } else if (x > 0f) {
+        0f
+    } else {
+        PI.toFloat()
+    }
+}
+
 fun Int.wrap(low: Int, high: Int): Int {
     val r = high - low
     var t = (this - low) % r

@@ -156,7 +156,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         }
 
         companion object {
-            fun model() = ShaderModel().apply {
+            fun model() = ShaderModel("sky-cube-shader").apply {
                 val mvp: UniformBufferMvp
                 val ifWorldPos: StageInterfaceNode
 

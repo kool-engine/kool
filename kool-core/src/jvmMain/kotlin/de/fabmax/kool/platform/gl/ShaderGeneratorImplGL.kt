@@ -67,7 +67,7 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
     }
 
     private fun ShaderModel.infoStr(): String {
-        return modelInfo.lines().joinToString { "// $it\n"}
+        return modelName.lines().joinToString { "// $it\n"}
     }
 
     private fun generateDescriptorBindings(pipelineLayout: Pipeline.Layout, stage: ShaderStage): String {

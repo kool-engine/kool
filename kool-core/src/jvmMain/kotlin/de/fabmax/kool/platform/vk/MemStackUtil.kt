@@ -19,178 +19,178 @@ inline fun <T> MemoryStack.allocStruct(block: T.() -> Unit, factory: (MemoryStac
 }
 
 inline fun MemoryStack.callocVkApplicationInfo(block: VkApplicationInfo.() -> Unit): VkApplicationInfo =
-    allocStruct(block) { VkApplicationInfo.callocStack(it) }
+    allocStruct(block) { VkApplicationInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkAttachmentDescriptionN(n: Int, block: VkAttachmentDescription.Buffer.() -> Unit): VkAttachmentDescription.Buffer =
-    allocStruct(block) { VkAttachmentDescription.callocStack(n, it) }
+    allocStruct(block) { VkAttachmentDescription.calloc(n, it) }
 
 inline fun MemoryStack.callocVkAttachmentReferenceN(n: Int, block: VkAttachmentReference.Buffer.() -> Unit): VkAttachmentReference.Buffer =
-    allocStruct(block) { VkAttachmentReference.callocStack(n, it) }
+    allocStruct(block) { VkAttachmentReference.calloc(n, it) }
 
 inline fun MemoryStack.callocVkBufferCopyN(n: Int, block: VkBufferCopy.Buffer.() -> Unit): VkBufferCopy.Buffer =
-    allocStruct(block) { VkBufferCopy.callocStack(n, it) }
+    allocStruct(block) { VkBufferCopy.calloc(n, it) }
 
 inline fun MemoryStack.callocVkBufferCreateInfo(block: VkBufferCreateInfo.() -> Unit): VkBufferCreateInfo =
-    allocStruct(block) { VkBufferCreateInfo.callocStack(it) }
+    allocStruct(block) { VkBufferCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkBufferImageCopyN(n: Int, block: VkBufferImageCopy.Buffer.() -> Unit): VkBufferImageCopy.Buffer =
-    allocStruct(block) { VkBufferImageCopy.callocStack(n, it) }
+    allocStruct(block) { VkBufferImageCopy.calloc(n, it) }
 
 inline fun MemoryStack.callocVkClearValueN(n: Int, block: VkClearValue.Buffer.() -> Unit): VkClearValue.Buffer =
-    allocStruct(block) { VkClearValue.callocStack(n, it) }
+    allocStruct(block) { VkClearValue.calloc(n, it) }
 
 inline fun MemoryStack.callocVkCommandBufferAllocateInfo(block: VkCommandBufferAllocateInfo.() -> Unit): VkCommandBufferAllocateInfo =
-    allocStruct(block) { VkCommandBufferAllocateInfo.callocStack(it) }
+    allocStruct(block) { VkCommandBufferAllocateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkCommandBufferBeginInfo(block: VkCommandBufferBeginInfo.() -> Unit): VkCommandBufferBeginInfo =
-    allocStruct(block) { VkCommandBufferBeginInfo.callocStack(it) }
+    allocStruct(block) { VkCommandBufferBeginInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkCommandPoolCreateInfo(block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPoolCreateInfo =
-    allocStruct(block) { VkCommandPoolCreateInfo.callocStack(it) }
+    allocStruct(block) { VkCommandPoolCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkDebugUtilsMessengerCreateInfoEXT(block: VkDebugUtilsMessengerCreateInfoEXT.() -> Unit): VkDebugUtilsMessengerCreateInfoEXT =
-    allocStruct(block) { VkDebugUtilsMessengerCreateInfoEXT.callocStack(it) }
+    allocStruct(block) { VkDebugUtilsMessengerCreateInfoEXT.calloc(it) }
 
 inline fun MemoryStack.callocVkDescriptorBufferInfoN(n: Int, block: VkDescriptorBufferInfo.Buffer.() -> Unit): VkDescriptorBufferInfo.Buffer =
-    allocStruct(block) { VkDescriptorBufferInfo.callocStack(n, it) }
+    allocStruct(block) { VkDescriptorBufferInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkDescriptorImageInfoN(n: Int, block: VkDescriptorImageInfo.Buffer.() -> Unit): VkDescriptorImageInfo.Buffer =
-    allocStruct(block) { VkDescriptorImageInfo.callocStack(n, it) }
+    allocStruct(block) { VkDescriptorImageInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkDescriptorPoolCreateInfo(block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPoolCreateInfo =
-    allocStruct(block) { VkDescriptorPoolCreateInfo.callocStack(it) }
+    allocStruct(block) { VkDescriptorPoolCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkDescriptorPoolSizeN(n: Int, block: VkDescriptorPoolSize.Buffer.() -> Unit): VkDescriptorPoolSize.Buffer =
-    allocStruct(block) { VkDescriptorPoolSize.callocStack(n, it) }
+    allocStruct(block) { VkDescriptorPoolSize.calloc(n, it) }
 
 inline fun MemoryStack.callocVkDescriptorSetAllocateInfo(block: VkDescriptorSetAllocateInfo.() -> Unit): VkDescriptorSetAllocateInfo =
-    allocStruct(block) { VkDescriptorSetAllocateInfo.callocStack(it) }
+    allocStruct(block) { VkDescriptorSetAllocateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkDescriptorSetLayoutBindingN(n: Int, block: VkDescriptorSetLayoutBinding.Buffer.() -> Unit): VkDescriptorSetLayoutBinding.Buffer =
-    allocStruct(block) { VkDescriptorSetLayoutBinding.callocStack(n, it) }
+    allocStruct(block) { VkDescriptorSetLayoutBinding.calloc(n, it) }
 
 inline fun MemoryStack.callocVkDescriptorSetLayoutCreateInfo(block: VkDescriptorSetLayoutCreateInfo.() -> Unit): VkDescriptorSetLayoutCreateInfo =
-    allocStruct(block) { VkDescriptorSetLayoutCreateInfo.callocStack(it) }
+    allocStruct(block) { VkDescriptorSetLayoutCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkDeviceCreateInfo(block: VkDeviceCreateInfo.() -> Unit): VkDeviceCreateInfo =
-    allocStruct(block) { VkDeviceCreateInfo.callocStack(it) }
+    allocStruct(block) { VkDeviceCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkDeviceQueueCreateInfoN(n: Int, block: VkDeviceQueueCreateInfo.Buffer.() -> Unit): VkDeviceQueueCreateInfo.Buffer =
-    allocStruct(block) { VkDeviceQueueCreateInfo.callocStack(n, it) }
+    allocStruct(block) { VkDeviceQueueCreateInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkFenceCreateInfo(block: VkFenceCreateInfo.() -> Unit): VkFenceCreateInfo =
-    allocStruct(block) { VkFenceCreateInfo.callocStack(it) }
+    allocStruct(block) { VkFenceCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkFramebufferCreateInfo(block: VkFramebufferCreateInfo.() -> Unit): VkFramebufferCreateInfo =
-    allocStruct(block) { VkFramebufferCreateInfo.callocStack(it) }
+    allocStruct(block) { VkFramebufferCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkGraphicsPipelineCreateInfoN(n: Int, block: VkGraphicsPipelineCreateInfo.Buffer.() -> Unit): VkGraphicsPipelineCreateInfo.Buffer =
-    allocStruct(block) { VkGraphicsPipelineCreateInfo.callocStack(n, it) }
+    allocStruct(block) { VkGraphicsPipelineCreateInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkImageBlitN(n: Int, block: VkImageBlit.Buffer.() -> Unit): VkImageBlit.Buffer =
-    allocStruct(block) { VkImageBlit.callocStack(n, it) }
+    allocStruct(block) { VkImageBlit.calloc(n, it) }
 
 inline fun MemoryStack.callocVkImageCreateInfo(block: VkImageCreateInfo.() -> Unit): VkImageCreateInfo =
-    allocStruct(block) { VkImageCreateInfo.callocStack(it) }
+    allocStruct(block) { VkImageCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkImageCopyN(n: Int, block: VkImageCopy.Buffer.() -> Unit): VkImageCopy.Buffer =
-        allocStruct(block) { VkImageCopy.callocStack(n, it) }
+        allocStruct(block) { VkImageCopy.calloc(n, it) }
 
 inline fun MemoryStack.callocVkImageMemoryBarrierN(n: Int, block: VkImageMemoryBarrier.Buffer.() -> Unit): VkImageMemoryBarrier.Buffer =
-    allocStruct(block) { VkImageMemoryBarrier.callocStack(n, it) }
+    allocStruct(block) { VkImageMemoryBarrier.calloc(n, it) }
 
 inline fun MemoryStack.callocVkImageViewCreateInfo(block: VkImageViewCreateInfo.() -> Unit): VkImageViewCreateInfo =
-    allocStruct(block) { VkImageViewCreateInfo.callocStack(it) }
+    allocStruct(block) { VkImageViewCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkInstanceCreateInfo(block: VkInstanceCreateInfo.() -> Unit): VkInstanceCreateInfo =
-    allocStruct(block) { VkInstanceCreateInfo.callocStack(it) }
+    allocStruct(block) { VkInstanceCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkMemoryAllocateInfo(block: VkMemoryAllocateInfo.() -> Unit): VkMemoryAllocateInfo =
-    allocStruct(block) { VkMemoryAllocateInfo.callocStack(it) }
+    allocStruct(block) { VkMemoryAllocateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPhysicalDeviceFeatures(block: VkPhysicalDeviceFeatures.() -> Unit): VkPhysicalDeviceFeatures =
-    allocStruct(block) { VkPhysicalDeviceFeatures.callocStack(it) }
+    allocStruct(block) { VkPhysicalDeviceFeatures.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineColorBlendAttachmentStateN(n: Int, block: VkPipelineColorBlendAttachmentState.Buffer.() -> Unit): VkPipelineColorBlendAttachmentState.Buffer =
-    allocStruct(block) { VkPipelineColorBlendAttachmentState.callocStack(n, it) }
+    allocStruct(block) { VkPipelineColorBlendAttachmentState.calloc(n, it) }
 
 inline fun MemoryStack.callocVkPipelineColorBlendStateCreateInfo(block: VkPipelineColorBlendStateCreateInfo.() -> Unit): VkPipelineColorBlendStateCreateInfo =
-    allocStruct(block) { VkPipelineColorBlendStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineColorBlendStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineDepthStencilStateCreateInfo(block: VkPipelineDepthStencilStateCreateInfo.() -> Unit): VkPipelineDepthStencilStateCreateInfo =
-    allocStruct(block) { VkPipelineDepthStencilStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineDepthStencilStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineDynamicStateCreateInfo(block: VkPipelineDynamicStateCreateInfo.() -> Unit): VkPipelineDynamicStateCreateInfo =
-        allocStruct(block) { VkPipelineDynamicStateCreateInfo.callocStack(it) }
+        allocStruct(block) { VkPipelineDynamicStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineInputAssemblyStateCreateInfo(block: VkPipelineInputAssemblyStateCreateInfo.() -> Unit): VkPipelineInputAssemblyStateCreateInfo =
-    allocStruct(block) { VkPipelineInputAssemblyStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineInputAssemblyStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineLayoutCreateInfo(block: VkPipelineLayoutCreateInfo.() -> Unit): VkPipelineLayoutCreateInfo =
-    allocStruct(block) { VkPipelineLayoutCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineLayoutCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineMultisampleStateCreateInfo(block: VkPipelineMultisampleStateCreateInfo.() -> Unit): VkPipelineMultisampleStateCreateInfo =
-    allocStruct(block) { VkPipelineMultisampleStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineMultisampleStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineRasterizationStateCreateInfo(block: VkPipelineRasterizationStateCreateInfo.() -> Unit): VkPipelineRasterizationStateCreateInfo =
-    allocStruct(block) { VkPipelineRasterizationStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineRasterizationStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineShaderStageCreateInfoN(n: Int, block: VkPipelineShaderStageCreateInfo.Buffer.() -> Unit): VkPipelineShaderStageCreateInfo.Buffer =
-    allocStruct(block) { VkPipelineShaderStageCreateInfo.callocStack(n, it) }
+    allocStruct(block) { VkPipelineShaderStageCreateInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkPipelineVertexInputStateCreateInfo(block: VkPipelineVertexInputStateCreateInfo.() -> Unit): VkPipelineVertexInputStateCreateInfo =
-    allocStruct(block) { VkPipelineVertexInputStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineVertexInputStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPipelineViewportStateCreateInfo(block: VkPipelineViewportStateCreateInfo.() -> Unit): VkPipelineViewportStateCreateInfo =
-    allocStruct(block) { VkPipelineViewportStateCreateInfo.callocStack(it) }
+    allocStruct(block) { VkPipelineViewportStateCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkPresentInfoKHR(block: VkPresentInfoKHR.() -> Unit): VkPresentInfoKHR =
-    allocStruct(block) { VkPresentInfoKHR.callocStack(it) }
+    allocStruct(block) { VkPresentInfoKHR.calloc(it) }
 
 inline fun MemoryStack.callocVkPushConstantRangeN(n: Int, block: VkPushConstantRange.Buffer.() -> Unit): VkPushConstantRange.Buffer =
-        allocStruct(block) { VkPushConstantRange.callocStack(n, it) }
+        allocStruct(block) { VkPushConstantRange.calloc(n, it) }
 
 inline fun MemoryStack.callocVkRect2DN(n: Int, block: VkRect2D.Buffer.() -> Unit): VkRect2D.Buffer =
-    allocStruct(block) { VkRect2D.callocStack(n, it) }
+    allocStruct(block) { VkRect2D.calloc(n, it) }
 
 inline fun MemoryStack.callocVkRenderPassBeginInfo(block: VkRenderPassBeginInfo.() -> Unit): VkRenderPassBeginInfo =
-    allocStruct(block) { VkRenderPassBeginInfo.callocStack(it) }
+    allocStruct(block) { VkRenderPassBeginInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkRenderPassCreateInfo(block: VkRenderPassCreateInfo.() -> Unit): VkRenderPassCreateInfo =
-    allocStruct(block) { VkRenderPassCreateInfo.callocStack(it) }
+    allocStruct(block) { VkRenderPassCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkSamplerCreateInfo(block: VkSamplerCreateInfo.() -> Unit): VkSamplerCreateInfo =
-    allocStruct(block) { VkSamplerCreateInfo.callocStack(it) }
+    allocStruct(block) { VkSamplerCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkSemaphoreCreateInfo(block: VkSemaphoreCreateInfo.() -> Unit): VkSemaphoreCreateInfo =
-    allocStruct(block) { VkSemaphoreCreateInfo.callocStack(it) }
+    allocStruct(block) { VkSemaphoreCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkShaderModuleCreateInfo(block: VkShaderModuleCreateInfo.() -> Unit): VkShaderModuleCreateInfo =
-    allocStruct(block) { VkShaderModuleCreateInfo.callocStack(it) }
+    allocStruct(block) { VkShaderModuleCreateInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkSubmitInfo(block: VkSubmitInfo.() -> Unit): VkSubmitInfo =
-    allocStruct(block) { VkSubmitInfo.callocStack(it) }
+    allocStruct(block) { VkSubmitInfo.calloc(it) }
 
 inline fun MemoryStack.callocVkSubmitInfoN(n: Int, block: VkSubmitInfo.Buffer.() -> Unit): VkSubmitInfo.Buffer =
-    allocStruct(block) { VkSubmitInfo.callocStack(n, it) }
+    allocStruct(block) { VkSubmitInfo.calloc(n, it) }
 
 inline fun MemoryStack.callocVkSubpassDependencyN(n: Int, block: VkSubpassDependency.Buffer.() -> Unit): VkSubpassDependency.Buffer =
-    allocStruct(block) { VkSubpassDependency.callocStack(n, it) }
+    allocStruct(block) { VkSubpassDependency.calloc(n, it) }
 
 inline fun MemoryStack.callocVkSubpassDescriptionN(n: Int, block: VkSubpassDescription.Buffer.() -> Unit): VkSubpassDescription.Buffer =
-    allocStruct(block) { VkSubpassDescription.callocStack(n, it) }
+    allocStruct(block) { VkSubpassDescription.calloc(n, it) }
 
 inline fun MemoryStack.callocVkSwapchainCreateInfoKHR(block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchainCreateInfoKHR =
-    allocStruct(block) { VkSwapchainCreateInfoKHR.callocStack(it) }
+    allocStruct(block) { VkSwapchainCreateInfoKHR.calloc(it) }
 
 inline fun MemoryStack.callocVkVertexInputBindingDescriptionN(n: Int, block: VkVertexInputBindingDescription.Buffer.() -> Unit): VkVertexInputBindingDescription.Buffer =
-    allocStruct(block) { VkVertexInputBindingDescription.callocStack(n, it) }
+    allocStruct(block) { VkVertexInputBindingDescription.calloc(n, it) }
 
 inline fun MemoryStack.callocVkVertexInputAttributeDescriptionN(n: Int, block: VkVertexInputAttributeDescription.Buffer.() -> Unit): VkVertexInputAttributeDescription.Buffer =
-    allocStruct(block) { VkVertexInputAttributeDescription.callocStack(n, it) }
+    allocStruct(block) { VkVertexInputAttributeDescription.calloc(n, it) }
 
 inline fun MemoryStack.callocVkViewportN(n: Int, block: VkViewport.Buffer.() -> Unit): VkViewport.Buffer =
-    allocStruct(block) { VkViewport.callocStack(n, it) }
+    allocStruct(block) { VkViewport.calloc(n, it) }
 
 inline fun MemoryStack.callocVkWriteDescriptorSetN(n: Int, block: VkWriteDescriptorSet.Buffer.() -> Unit): VkWriteDescriptorSet.Buffer =
-    allocStruct(block) { VkWriteDescriptorSet.callocStack(n, it) }
+    allocStruct(block) { VkWriteDescriptorSet.calloc(n, it) }

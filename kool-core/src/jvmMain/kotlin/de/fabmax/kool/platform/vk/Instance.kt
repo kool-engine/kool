@@ -82,7 +82,7 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
         return memStack {
             val ip = mallocInt(1)
             checkVk(vkEnumerateInstanceLayerProperties(ip, null))
-            val availableLayers = VkLayerProperties.mallocStack(ip[0], this)
+            val availableLayers = VkLayerProperties.malloc(ip[0], this)
             checkVk(vkEnumerateInstanceLayerProperties(ip, availableLayers))
             sys.setup.validationLayers.all { layer -> availableLayers.any { it.layerNameString() == layer } }
         }
@@ -99,7 +99,7 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
         // enumerate available extensions. fun fact: not doing this results in a segfault on instance creation...
         val ip = stack.mallocInt(1)
         checkVk(vkEnumerateInstanceExtensionProperties(null as String?, ip, null))
-        val instanceExtensions = VkExtensionProperties.mallocStack(ip[0], stack)
+        val instanceExtensions = VkExtensionProperties.malloc(ip[0], stack)
         checkVk(vkEnumerateInstanceExtensionProperties(null as String?, ip, instanceExtensions))
         if (sys.setup.isValidating && instanceExtensions.any { it.extensionNameString() == EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME }) {
             extensionNames.put(stack.ASCII(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME))

@@ -11,7 +11,7 @@ import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class ShaderModel(val modelInfo: String = "") {
+class ShaderModel(val modelName: String) {
     val stages = mutableMapOf(
             ShaderStage.VERTEX_SHADER to VertexShaderGraph(this),
             ShaderStage.FRAGMENT_SHADER to FragmentShaderGraph(this)
@@ -59,7 +59,7 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     fun setup(mesh: Mesh, builder: Pipeline.Builder) {
-        builder.name = modelInfo
+        builder.name = modelName
         stages.values.forEach { it.clear() }
         stages.values.forEach { it.setup() }
         setupAttributes(mesh, builder)
@@ -461,7 +461,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun mvpNode() = addNode(UniformBufferMvp(stage))
 
-        fun skinTransformNode(inJoints: ShaderNodeIoVar? = null, inWeights: ShaderNodeIoVar? = null, maxJoints: Int = 64): SkinTransformNode {
+        fun skinTransformNode(inJoints: ShaderNodeIoVar? = null, inWeights: ShaderNodeIoVar? = null, maxJoints: Int = 16): SkinTransformNode {
             val skinNd = addNode(SkinTransformNode(stage, maxJoints))
             inJoints?.let { skinNd.inJoints = it }
             inWeights?.let { skinNd.inWeights = it }

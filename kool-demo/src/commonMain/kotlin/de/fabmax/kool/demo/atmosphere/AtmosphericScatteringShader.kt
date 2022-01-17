@@ -117,7 +117,7 @@ class AtmosphericScatteringShader : ModeledShader(atmosphereModel()), DeferredPa
     }
 
     companion object {
-        private fun atmosphereModel() = ShaderModel().apply {
+        private fun atmosphereModel() = ShaderModel("atmo-scattering-shader").apply {
             val mvp: UniformBufferMvp
             val ifQuadPos: StageInterfaceNode
             val ifViewDir: StageInterfaceNode

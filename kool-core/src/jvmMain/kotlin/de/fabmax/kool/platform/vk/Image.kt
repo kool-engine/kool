@@ -63,7 +63,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
             return
         }
 
-        val formatProperties = VkFormatProperties.mallocStack(stack)
+        val formatProperties = VkFormatProperties.malloc(stack)
         vkGetPhysicalDeviceFormatProperties(sys.physicalDevice.vkPhysicalDevice, format, formatProperties)
         if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
             logW { "Texture image format does not support linear blitting!" }
