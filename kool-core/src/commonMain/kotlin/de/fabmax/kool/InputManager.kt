@@ -65,7 +65,7 @@ abstract class InputManager internal constructor() {
                     }
                 }
             }
-            if (evt.localKeyCode.code != 0 && evt.localKeyCode.code != evt.keyCode.code) {
+            if (evt.localKeyCode.code != 0) {
                 keyHandlers[evt.localKeyCode]?.let { listeners ->
                     for (j in listeners.indices) {
                         if (listeners[j].filter(evt)) {
@@ -78,11 +78,6 @@ abstract class InputManager internal constructor() {
     }
 
     fun keyEvent(ev: KeyEvent) {
-//        val ev = KeyEvent()
-//        ev.keyCode = keyCode
-//        ev.event = event
-//        ev.modifiers = modifiers
-
         currentKeyMods = ev.modifiers
         currentKeyRepeated = ev.event and KEY_EV_REPEATED
 

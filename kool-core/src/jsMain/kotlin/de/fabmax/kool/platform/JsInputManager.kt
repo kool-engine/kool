@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.KeyCode
 import de.fabmax.kool.LocalKeyCode
 import de.fabmax.kool.UniversalKeyCode
 import de.fabmax.kool.math.MutableVec2d
@@ -147,14 +146,19 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         }
     }
 
-    private fun KeyboardEvent.toLocalKeyCode(): KeyCode {
-        return KEY_CODE_MAP[code] ?: when (key.length) {
-            1 -> LocalKeyCode(key[0].uppercaseChar().code)
-            else -> LocalKeyCode(0)
+    private fun KeyboardEvent.toLocalKeyCode(): LocalKeyCode {
+        val specialKey = KEY_CODE_MAP[code]
+        return if (specialKey != null) {
+            LocalKeyCode(specialKey.code, specialKey.name)
+        } else {
+            when (key.length) {
+                1 -> LocalKeyCode(key[0].uppercaseChar().code)
+                else -> LocalKeyCode(0)
+            }
         }
     }
 
-    private fun KeyboardEvent.toKeyCode(): KeyCode {
+    private fun KeyboardEvent.toKeyCode(): UniversalKeyCode {
         return KEY_CODE_MAP[code] ?: when (key.length) {
             1 -> UniversalKeyCode(key[0].uppercaseChar().code)
             else -> UniversalKeyCode(0)
@@ -162,7 +166,7 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     }
 
     companion object {
-        val KEY_CODE_MAP: Map<String, KeyCode> = mutableMapOf(
+        val KEY_CODE_MAP: Map<String, UniversalKeyCode> = mutableMapOf(
             "ControlLeft" to KEY_CTRL_LEFT,
             "ControlRight" to KEY_CTRL_RIGHT,
             "ShiftLeft" to KEY_SHIFT_LEFT,
