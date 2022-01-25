@@ -34,6 +34,8 @@ abstract class RenderPass(var drawNode: Node) {
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
     val onAfterCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
+    val onBeforeRenderQueue: MutableList<(KoolContext) -> Unit> = mutableListOf()
+    val onAfterRenderQueue: MutableList<(KoolContext) -> Unit> = mutableListOf()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
     private fun setupUpdateEvent(ctx: KoolContext): UpdateEvent {
@@ -56,6 +58,29 @@ abstract class RenderPass(var drawNode: Node) {
         beforeCollectDrawCommands(ctx)
         drawNode.collectDrawCommands(setupUpdateEvent(ctx))
         afterCollectDrawCommands(ctx)
+    }
+
+    /**
+     * Called on every frame after initial setup (viewport and clear) before any geometry is drawn. Does not work with
+     * Vulkan backend.
+     */
+    open fun onBeforeRenderQueue(ctx: KoolContext) {
+        if (onBeforeRenderQueue.isNotEmpty()) {
+            for (i in onBeforeRenderQueue.indices) {
+                onBeforeRenderQueue[i](ctx)
+            }
+        }
+    }
+
+    /**
+     * Called on every frame after all content of this render pass is drawn. Does not work with Vulkan backend.
+     */
+    open fun onAfterRenderQueue(ctx: KoolContext) {
+        if (onAfterRenderQueue.isNotEmpty()) {
+            for (i in onAfterRenderQueue.indices) {
+                onAfterRenderQueue[i](ctx)
+            }
+        }
     }
 
     open fun addMesh(mesh: Mesh, ctx: KoolContext): DrawCommand? {

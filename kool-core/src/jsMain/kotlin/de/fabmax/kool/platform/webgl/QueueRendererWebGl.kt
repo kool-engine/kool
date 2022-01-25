@@ -60,6 +60,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                     ctx.gl.clear(clearMask)
                 }
             }
+            onBeforeRenderQueue(ctx)
         }
 
         for (cmd in queue.commands) {
@@ -83,6 +84,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                 }
             }
         }
+        queue.renderPass.onAfterRenderQueue(ctx)
     }
 
     private inner class GlAttribs {
