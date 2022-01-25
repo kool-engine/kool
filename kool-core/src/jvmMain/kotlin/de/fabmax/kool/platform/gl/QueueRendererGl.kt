@@ -47,6 +47,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
                     glClear(clearMask)
                 }
             }
+            onBeforeRenderQueue(ctx)
         }
 
         var numPrimitives = 0
@@ -71,6 +72,7 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             }
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)
+        queue.renderPass.onAfterRenderQueue(ctx)
         //println("${queue.renderPass.name}: $numPrimitives triangles")
     }
 

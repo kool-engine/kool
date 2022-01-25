@@ -21,7 +21,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override val assetMgr = JvmAssetManager(props, this)
     override val inputMgr: JvmInputManager
 
-    internal val renderBackend: RenderBackend
+    val renderBackend: RenderBackend
 
     override val shaderGenerator
         get() = renderBackend.shaderGenerator
