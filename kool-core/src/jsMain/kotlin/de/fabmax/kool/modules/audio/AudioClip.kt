@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.audio
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.now
 import org.w3c.dom.Audio
 
@@ -82,11 +83,11 @@ actual class AudioClip(val assetPath: String) {
 
         var volume: Float
             get() = audioElement.volume.toFloat()
-            set(value) { audioElement.volume = value.toDouble() }
+            set(value) { audioElement.volume = value.toDouble().clamp(0.0, 1.0) }
 
         var currentTime: Float
             get() = audioElement.currentTime.toFloat()
-            set(value) { audioElement.currentTime = value.toDouble() }
+            set(value) { audioElement.currentTime = value.toDouble().clamp(0.0, duration.toDouble()) }
 
         val duration: Float
             get() = audioElement.duration.toFloat()

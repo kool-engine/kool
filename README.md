@@ -5,19 +5,17 @@
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
 WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
 
-I finally made my first real game made with this engine: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
-Give it a try!
+I finally made my first actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
+Give it a try (it's free)!
 
-If you are curious you might be able to use this for your own projects
-as well (look below for a very short usage guide - that's all the documentation there is) 
+If you are adventurous, you might be able to use this for your own projects
+as well (look below for a very short usage guide - that's all the documentation there is)
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
-  cursor keys, R to reset) based on the nVidia PhysX vehicles SDK (using 
-  [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) / [physx-jni](https://github.com/fabmax/physx-jni).
-  A few more notes on physics [further below](#physics-simulation)
+  cursor keys, R to reset) based on the nVidia PhysX vehicles SDK.
 - [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with
@@ -27,7 +25,7 @@ hamburger button in the upper left corner):
   deferred pbr shader with extensions for rendering the oceans and night side.
 - [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also some glass
-  shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque)
+  shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is therefore opaque).
 - [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
@@ -55,7 +53,7 @@ Code for all demos is available in kool-demo sub-project.
 
 ## Engine Features / Noticeable Stuff:
 
-- Physics simulation (based on Nvidia PhysX)
+- Physics simulation (based on Nvidia PhysX 4.1, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Node based dynamic shader generation
 - Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
@@ -70,6 +68,7 @@ Code for all demos is available in kool-demo sub-project.
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - A small GUI framework for simple in-game menus / controls
+- Basic audio support
 
 ## A Hello World Example
 
@@ -267,10 +266,10 @@ Gradle setup:
 ```groovy
 // JVM dependencies
 dependencies {
-    implementation "de.fabmax.kool:kool-core-jvm:0.7.0"
+    implementation "de.fabmax.kool:kool-core-jvm:0.8.0"
 
     // On JVM, lwjgl runtime dependencies have to be included as well
-    def lwjglVersion = "3.2.3"
+    def lwjglVersion = "3.3.0"
     def lwjglNatives = "natives-windows"    // alternatively: natives-linux or natives-macos, depending on your OS
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
@@ -282,6 +281,6 @@ dependencies {
 
 // or alternatively for javascript
 dependencies {
-    implementation "de.fabmax.kool:kool-core-js:0.7.0"
+    implementation "de.fabmax.kool:kool-core-js:0.8.0"
 }
 ```

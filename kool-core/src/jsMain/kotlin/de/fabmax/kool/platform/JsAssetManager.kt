@@ -106,7 +106,7 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
 
     override fun deflate(data: Uint8Buffer): Uint8Buffer {
         val uint8Data = (data as Uint8BufferImpl).buffer
-        return Uint8BufferImpl(pako.deflate(uint8Data) as Uint8Array)
+        return Uint8BufferImpl(pako.gzip(uint8Data) as Uint8Array)
     }
 
     override suspend fun loadFileByUser(): Uint8Buffer? {
