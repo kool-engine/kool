@@ -15,7 +15,6 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 

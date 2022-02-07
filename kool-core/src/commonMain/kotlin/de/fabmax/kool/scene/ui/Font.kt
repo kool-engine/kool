@@ -1,4 +1,4 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
@@ -10,15 +10,15 @@ import kotlin.math.round
  */
 
 data class FontProps(
-        val family: String,
-        val sizePts: Float,
-        val style: Int = Font.PLAIN,
-        val chars: String = Font.STD_CHARS,
-        val magFilter: FilterMethod = FilterMethod.LINEAR,
-        val minFilter: FilterMethod = FilterMethod.LINEAR,
-        val mipMapping: Boolean = false,
-        val maxAnisotropy: Int = 0,
-        val isScaledByScreenDpi: Boolean = true
+    val family: String,
+    val sizePts: Float,
+    val style: Int = Font.PLAIN,
+    val chars: String = Font.STD_CHARS,
+    val magFilter: FilterMethod = FilterMethod.LINEAR,
+    val minFilter: FilterMethod = FilterMethod.LINEAR,
+    val mipMapping: Boolean = false,
+    val maxAnisotropy: Int = 0,
+    val isScaledByScreenDpi: Boolean = true
 ) {
 
     override fun toString(): String {

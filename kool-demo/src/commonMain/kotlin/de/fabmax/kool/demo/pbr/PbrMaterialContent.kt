@@ -13,7 +13,6 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR Material") {
     val matCycler = Cycler(materials).apply { index = 3 }

@@ -11,7 +11,6 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 
 class UiShader : ModeledShader(uiShaderModel()) {
     val alpha = FloatInput(U_ALPHA, 1f)

@@ -5,7 +5,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MutableColor
 import kotlin.math.min
 

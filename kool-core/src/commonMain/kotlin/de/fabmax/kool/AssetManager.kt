@@ -2,8 +2,8 @@ package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.scene.ui.CharMap
+import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logD
 import kotlinx.coroutines.CompletableDeferred

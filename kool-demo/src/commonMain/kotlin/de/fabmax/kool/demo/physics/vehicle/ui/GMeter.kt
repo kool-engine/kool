@@ -5,11 +5,10 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.ui.ComponentUi
-import de.fabmax.kool.scene.ui.UiComponent
-import de.fabmax.kool.scene.ui.UiRoot
-import de.fabmax.kool.scene.ui.UiShader
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import kotlin.math.sqrt
 
 

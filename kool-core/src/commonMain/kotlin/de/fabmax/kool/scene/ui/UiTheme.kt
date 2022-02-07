@@ -1,8 +1,6 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.MdColor
 
 /**

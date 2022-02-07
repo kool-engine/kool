@@ -16,9 +16,9 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.UiContainer
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
 
 /**
  * @author fabmax

@@ -7,8 +7,6 @@ import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 
 fun controlUi(block: ControlUiBuilder.() -> Unit) = uiScene {
     val builder = ControlUiBuilder(this)
