@@ -4,6 +4,9 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import kotlin.math.min

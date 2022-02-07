@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.util.PrimitiveType
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.copy
 
 class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType) {

@@ -17,6 +17,8 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.geometry.SphereGeometry
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.Scene
@@ -25,8 +27,6 @@ import de.fabmax.kool.scene.lineMesh
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.WalkAxes
-import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos

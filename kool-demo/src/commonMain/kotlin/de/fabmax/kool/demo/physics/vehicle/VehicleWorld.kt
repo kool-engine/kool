@@ -3,14 +3,14 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.physics.vehicle.VehicleUtils
+import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.deferredPbrShader
 
 class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipeline: DeferredPipeline) {
 

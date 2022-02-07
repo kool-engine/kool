@@ -2,8 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.util.BoundingBox
 
 /**
  * @author fabmax

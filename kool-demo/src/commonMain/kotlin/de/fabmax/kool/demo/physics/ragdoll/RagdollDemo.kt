@@ -5,8 +5,8 @@ import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.articulations.ArticulationJoint
 import de.fabmax.kool.physics.geometry.BoxGeometry
@@ -14,6 +14,9 @@ import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -24,9 +27,6 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ao.AoPipeline
-import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class RagdollDemo : DemoScene("Ragdoll Demo") {
 

@@ -6,9 +6,9 @@ import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.min
 
 class LoadingScreen(ctx: KoolContext) : Scene("Loading Screen") {

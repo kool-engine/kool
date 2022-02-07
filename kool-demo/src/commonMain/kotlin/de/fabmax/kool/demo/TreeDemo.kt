@@ -5,15 +5,19 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Uniform1f
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.AlphaModeMask
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ibl.EnvironmentMaps
-import de.fabmax.kool.util.ibl.SkyCubeIblSystem
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.timedMs
 import kotlin.math.cos
 import kotlin.math.sqrt
 

@@ -2,9 +2,9 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.scene.animation.CosAnimator
+import de.fabmax.kool.scene.animation.InterpolatedFloat
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.animation.CosAnimator
-import de.fabmax.kool.util.animation.InterpolatedFloat
 import kotlin.math.min
 
 class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : UiContainer(name, root) {

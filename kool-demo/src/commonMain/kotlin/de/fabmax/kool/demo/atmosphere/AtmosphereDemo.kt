@@ -10,7 +10,11 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.modules.atmosphere.OpticalDepthLutPass
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.deferred.PbrSceneShader
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.unlitShader
 import de.fabmax.kool.scene.*
@@ -20,10 +24,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.atmosphere.OpticalDepthLutPass
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.deferred.PbrSceneShader
 import kotlin.math.cos
 import kotlin.math.pow
 

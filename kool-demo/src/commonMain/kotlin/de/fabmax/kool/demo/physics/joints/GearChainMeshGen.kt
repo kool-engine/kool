@@ -6,15 +6,21 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.Profile
+import de.fabmax.kool.scene.geometry.SimpleShape
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ibl.EnvironmentMaps
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.ShadowMap
 
 object GearChainMeshGen {
 

@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Releasable
-import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 
 expect class ConvexMesh(points: List<Vec3f>) : Releasable {
     val points: List<Vec3f>

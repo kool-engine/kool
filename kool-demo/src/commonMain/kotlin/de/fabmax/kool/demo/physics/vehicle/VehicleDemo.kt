@@ -8,6 +8,8 @@ import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidStatic
@@ -16,17 +18,15 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.util.ActorTrackingCamRig
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.AlbedoMapMode
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.deferred.deferredPbrShader
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
-import de.fabmax.kool.util.ibl.EnvironmentHelper
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 

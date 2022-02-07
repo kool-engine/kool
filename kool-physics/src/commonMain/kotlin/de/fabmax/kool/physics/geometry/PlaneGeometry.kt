@@ -2,8 +2,8 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.scene.geometry.MeshBuilder
 
 /**
  * Plane collision shape. Plane normal is x-axis, origin is (0, 0, 0).

@@ -1,12 +1,17 @@
 package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.scene.group
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.deferred.deferredPbrShader
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.pow

@@ -3,9 +3,9 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.BoundingBox
 
 /**
  * @author fabmax

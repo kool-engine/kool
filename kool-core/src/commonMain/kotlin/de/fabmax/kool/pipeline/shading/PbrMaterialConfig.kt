@@ -4,9 +4,9 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class PbrMaterialConfig {
     // shader configuration

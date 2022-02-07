@@ -11,14 +11,14 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.ui.UiContainer
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 /**
  * @author fabmax

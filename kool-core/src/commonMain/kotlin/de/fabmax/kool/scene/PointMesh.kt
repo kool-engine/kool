@@ -6,10 +6,10 @@ import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
 import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
 import de.fabmax.kool.pipeline.shading.UnlitShader
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.PrimitiveType
-import de.fabmax.kool.util.VertexView
 
 /**
  * @author fabmax

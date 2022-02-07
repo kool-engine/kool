@@ -4,11 +4,11 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.max
 import kotlin.math.min
 

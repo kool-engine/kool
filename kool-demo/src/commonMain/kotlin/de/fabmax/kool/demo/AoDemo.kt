@@ -5,17 +5,21 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.scale
 import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.ao.AoPipeline
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
-import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.geometry.RectProps
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.math.*
 
 class AoDemo : DemoScene("Ambient Occlusion") {

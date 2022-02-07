@@ -3,6 +3,10 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
+import de.fabmax.kool.pipeline.deferred.DeferredPasses
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -13,13 +17,9 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.deferred.DeferredPassSwapListener
-import de.fabmax.kool.util.deferred.DeferredPasses
-import de.fabmax.kool.util.deferred.deferredPbrShader
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
 

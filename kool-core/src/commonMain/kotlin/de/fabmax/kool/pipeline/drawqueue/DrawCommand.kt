@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 
 class DrawCommand(val renderPass: RenderPass, var mesh: Mesh) {
 

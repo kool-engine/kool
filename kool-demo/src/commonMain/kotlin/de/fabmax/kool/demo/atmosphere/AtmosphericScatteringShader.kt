@@ -2,16 +2,16 @@ package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.atmosphere.AtmosphereNode
+import de.fabmax.kool.modules.atmosphere.RaySphereIntersectionNode
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.UniformMat4f
+import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
+import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.atmosphere.AtmosphereNode
-import de.fabmax.kool.util.atmosphere.RaySphereIntersectionNode
-import de.fabmax.kool.util.deferred.DeferredPassSwapListener
-import de.fabmax.kool.util.deferred.DeferredPasses
 import kotlin.math.pow
 
 class AtmosphericScatteringShader : ModeledShader(atmosphereModel()), DeferredPassSwapListener {

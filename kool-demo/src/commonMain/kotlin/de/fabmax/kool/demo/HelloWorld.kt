@@ -2,6 +2,9 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Scene
@@ -9,9 +12,6 @@ import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.defaultCamTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.ao.AoPipeline
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
 
 class HelloWorldDemo : DemoScene("Hello World") {
     override fun Scene.setupMainScene(ctx: KoolContext) = helloWorldScene()

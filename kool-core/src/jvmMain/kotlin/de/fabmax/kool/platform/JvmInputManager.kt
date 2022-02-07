@@ -13,7 +13,7 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
     override var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
             field = value
-            if (value == CursorMode.NORMAL || ctx.isWindowFocued) {
+            if (value == CursorMode.NORMAL || ctx.isWindowFocused) {
                 glfwSetInputMode(windowHandle, GLFW_CURSOR, value.glfwMode)
             }
         }

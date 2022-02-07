@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -13,7 +14,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("PBR Material") {
     val matCycler = Cycler(materials).apply { index = 3 }

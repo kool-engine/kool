@@ -3,10 +3,10 @@ package de.fabmax.kool.platform.webgl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshInstanceList
-import de.fabmax.kool.util.PrimitiveType
-import de.fabmax.kool.util.Usage
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.scene.geometry.Usage
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext.Companion.ARRAY_BUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
@@ -302,7 +302,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     } else {
                         val stride = md.byteStrideF
                         val offset = md.attributeByteOffsets[vertexAttrib]!! / 4
-                        instanceAttribBinders += attributes.makeAttribBinders(vertexAttrib, dataBufferF!!, stride, offset)
+                        attributeBinders += attributes.makeAttribBinders(vertexAttrib, dataBufferF!!, stride, offset)
                     }
                 }
             }

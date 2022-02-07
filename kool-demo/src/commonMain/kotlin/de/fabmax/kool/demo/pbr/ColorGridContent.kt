@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.pbr
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
@@ -15,8 +16,6 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MeshInstanceList
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color Grid") {
     private val shaders = mutableListOf<PbrShader>()

@@ -3,7 +3,7 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
-import de.fabmax.kool.util.PrimitiveType
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*

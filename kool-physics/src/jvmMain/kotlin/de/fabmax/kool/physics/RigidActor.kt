@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBox
 import org.lwjgl.system.MemoryStack
 import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor

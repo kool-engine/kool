@@ -9,9 +9,9 @@ import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
 import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 import kotlin.math.pow

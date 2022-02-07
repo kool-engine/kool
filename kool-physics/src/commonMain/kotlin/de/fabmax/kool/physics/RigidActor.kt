@@ -1,11 +1,11 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
-import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LazyMat4f
 

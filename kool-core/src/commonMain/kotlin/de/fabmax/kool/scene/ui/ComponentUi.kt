@@ -2,10 +2,10 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Disposable
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
 
 interface ComponentUi : Disposable {
 

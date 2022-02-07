@@ -2,8 +2,8 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect class ConvexMeshGeometry(convexMesh: ConvexMesh, scale: Vec3f = Vec3f.ONES) : CommonConvexMeshGeometry, CollisionGeometry {
     constructor(points: List<Vec3f>)

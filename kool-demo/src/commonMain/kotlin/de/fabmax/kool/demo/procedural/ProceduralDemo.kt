@@ -7,19 +7,19 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.ui.Label
-import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.ibl.EnvironmentHelper
-import de.fabmax.kool.util.ibl.EnvironmentMaps
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
     var autoRotate = true

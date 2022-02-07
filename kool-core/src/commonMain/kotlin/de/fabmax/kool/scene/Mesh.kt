@@ -2,15 +2,14 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Shader
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.MeshInstanceList
-import de.fabmax.kool.util.animation.Skin
+import de.fabmax.kool.scene.animation.Skin
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
 
 
 inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {

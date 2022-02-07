@@ -3,6 +3,8 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
@@ -11,12 +13,15 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.ui.Label
 import de.fabmax.kool.scene.ui.ToggleButton
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfModel
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.logD
 import kotlin.math.cos
 import kotlin.math.sqrt
 

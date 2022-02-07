@@ -6,17 +6,21 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
+import de.fabmax.kool.pipeline.deferred.DeferredPipeline
+import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.deferred.DeferredPointLights
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.deferred.DeferredPbrShader
-import de.fabmax.kool.util.deferred.DeferredPipeline
-import de.fabmax.kool.util.deferred.DeferredPipelineConfig
-import de.fabmax.kool.util.deferred.DeferredPointLights
-import de.fabmax.kool.util.ibl.EnvironmentHelper
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MutableColor
 import kotlin.math.sqrt
 
 class DeferredDemo : DemoScene("Deferred Shading") {

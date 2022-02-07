@@ -6,6 +6,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Shader
 import de.fabmax.kool.pipeline.shadermodel.PbrMaterialNode
@@ -17,8 +19,6 @@ import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfFile
 import kotlin.math.roundToInt
 
 class InstanceDemo : DemoScene("Instanced Drawing") {

@@ -1,9 +1,9 @@
 package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.math.spatial.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.spatial.*
 import kotlin.math.min
 import kotlin.math.sqrt
 

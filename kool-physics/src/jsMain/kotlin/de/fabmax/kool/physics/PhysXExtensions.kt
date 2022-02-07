@@ -3,7 +3,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.math.spatial.BoundingBox
 import physx.*
 import kotlin.contracts.contract
 

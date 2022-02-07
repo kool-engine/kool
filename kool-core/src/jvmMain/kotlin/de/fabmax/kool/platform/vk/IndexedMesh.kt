@@ -1,8 +1,8 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.Uint32BufferImpl
 import org.lwjgl.util.vma.Vma.*
 import org.lwjgl.vulkan.VK10.*

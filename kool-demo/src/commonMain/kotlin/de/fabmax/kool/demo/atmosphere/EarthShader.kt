@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo.atmosphere
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
-import de.fabmax.kool.util.deferred.DeferredPbrShader
 
 class EarthShader(textures: Map<String, Texture2d>, cfg: PbrMaterialConfig = shaderConfig(textures)) : DeferredPbrShader(cfg, model(cfg)) {
 

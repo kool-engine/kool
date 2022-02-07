@@ -1,12 +1,19 @@
 package de.fabmax.kool.demo.physics.collision
 
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Random
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.PolyUtil
 import kotlin.math.*
 
 enum class ShapeType {

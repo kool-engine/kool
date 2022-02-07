@@ -1,11 +1,13 @@
 package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.spatial.OcTree
 
 /**
  * An editable mesh.

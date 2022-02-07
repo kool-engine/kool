@@ -4,7 +4,12 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MutableColor
 import kotlin.math.abs
 import kotlin.math.sign
 

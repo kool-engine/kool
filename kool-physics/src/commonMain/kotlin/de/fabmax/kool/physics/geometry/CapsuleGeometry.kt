@@ -2,9 +2,9 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.simpleShape
+import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 
 expect class CapsuleGeometry(height: Float, radius: Float) : CommonCapsuleGeometry, CollisionGeometry
 

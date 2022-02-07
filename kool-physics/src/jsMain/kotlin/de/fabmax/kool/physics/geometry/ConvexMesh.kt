@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.*
 
 actual class ConvexMesh actual constructor(actual val points: List<Vec3f>) : Releasable {

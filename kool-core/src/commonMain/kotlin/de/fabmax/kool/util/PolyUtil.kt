@@ -1,7 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.util.spatial.*
+import de.fabmax.kool.math.spatial.*
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max

@@ -3,9 +3,13 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.shading.unlitShader
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.LineString
 import kotlin.math.max
 import kotlin.math.min
 

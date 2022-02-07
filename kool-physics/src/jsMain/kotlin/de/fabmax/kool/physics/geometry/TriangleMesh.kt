@@ -4,7 +4,7 @@ import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.physics.toPxVec3
-import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.*
 
 actual class TriangleMesh actual constructor(actual val geometry: IndexedVertexList) : Releasable {

@@ -5,16 +5,16 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.modules.gltf.GltfFile
+import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.SingleColorTexture
+import de.fabmax.kool.pipeline.deferred.*
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.deferred.*
-import de.fabmax.kool.util.gltf.GltfFile
-import de.fabmax.kool.util.gltf.loadGltfFile
-import de.fabmax.kool.util.ibl.EnvironmentHelper
 import kotlin.math.*
 
 class MultiLightDemo : DemoScene("Reflections") {

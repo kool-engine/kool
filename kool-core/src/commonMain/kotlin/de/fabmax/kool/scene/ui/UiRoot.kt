@@ -2,12 +2,12 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.util.BoundingBox
 
 fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 96f, block: UiRoot.() -> Unit): UiRoot {
     val ui = UiRoot(this)

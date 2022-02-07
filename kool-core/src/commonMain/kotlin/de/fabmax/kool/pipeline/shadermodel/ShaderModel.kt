@@ -5,8 +5,8 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.MeshInstanceList
 import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

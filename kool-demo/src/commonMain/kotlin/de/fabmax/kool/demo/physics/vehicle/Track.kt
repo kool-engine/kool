@@ -1,8 +1,13 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.KdTree
+import de.fabmax.kool.math.spatial.NearestTraverser
+import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.deferred.DeferredPbrShader
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
@@ -10,13 +15,15 @@ import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.multiShape
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.util.*
-import de.fabmax.kool.util.deferred.DeferredPbrShader
-import de.fabmax.kool.util.deferred.deferredPbrShader
-import de.fabmax.kool.util.spatial.KdTree
-import de.fabmax.kool.util.spatial.NearestTraverser
-import de.fabmax.kool.util.spatial.pointKdTree
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.TreeMap
+import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.*
 
 class Track(val world: VehicleWorld) : Group() {

@@ -33,7 +33,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override var isFullscreen: Boolean
         get() = renderBackend.isFullscreen
         set(value) { renderBackend.isFullscreen = value }
-    var isWindowFocued: Boolean = false
+    var isWindowFocused: Boolean = false
         private set(value) {
             field = value
             onFocusChanged.forEach { it(value) }
@@ -102,9 +102,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             updateScreenDpi(getResolutionAt(x, y))
         }
         glfwSetWindowFocusCallback(renderBackend.glfwWindowHandle) { _, isFocused ->
-            isWindowFocued = isFocused
+            isWindowFocused = isFocused
         }
-        isWindowFocued = glfwGetWindowAttrib(renderBackend.glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
+        isWindowFocused = glfwGetWindowAttrib(renderBackend.glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
         val monitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
         updateScreenDpi(monitor.dpi)
     }

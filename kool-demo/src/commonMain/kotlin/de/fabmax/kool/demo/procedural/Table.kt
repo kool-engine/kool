@@ -3,11 +3,11 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.deferred.deferredPbrShader
-import de.fabmax.kool.util.simpleShape
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

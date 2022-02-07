@@ -3,12 +3,12 @@ package de.fabmax.kool.demo.physics.vehicle.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.ComponentUi
 import de.fabmax.kool.scene.ui.UiComponent
 import de.fabmax.kool.scene.ui.UiShader
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.cos
 
 open class BarUi(private val component: UiComponent) : ComponentUi {

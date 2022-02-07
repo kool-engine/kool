@@ -5,12 +5,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.scene.animation.Animator
+import de.fabmax.kool.scene.animation.CosAnimator
+import de.fabmax.kool.scene.animation.InterpolatedFloat
+import de.fabmax.kool.scene.animation.LinearAnimator
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.animation.Animator
-import de.fabmax.kool.util.animation.CosAnimator
-import de.fabmax.kool.util.animation.InterpolatedFloat
-import de.fabmax.kool.util.animation.LinearAnimator
 import kotlin.math.max
 import kotlin.math.min
 

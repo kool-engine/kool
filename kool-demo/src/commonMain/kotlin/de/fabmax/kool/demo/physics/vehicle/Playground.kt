@@ -9,12 +9,12 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
+import de.fabmax.kool.pipeline.deferred.deferredPbrShader
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.deferred.deferredPbrShader
-import de.fabmax.kool.util.multiShape
-import de.fabmax.kool.util.simpleShape
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.multiShape
+import de.fabmax.kool.scene.geometry.simpleShape
 
 object Playground {
 
