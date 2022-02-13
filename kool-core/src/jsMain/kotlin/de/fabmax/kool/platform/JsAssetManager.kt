@@ -26,7 +26,6 @@ import kotlin.js.Promise
 
 class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: JsContext) : AssetManager(props.assetsBaseDir) {
 
-    private val pako = js("require('pako')")
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this, ctx)
 
     private var fileLoadDeferred: CompletableDeferred<Uint8Buffer?>? = null
@@ -106,12 +105,12 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
 
     override fun inflate(zipData: Uint8Buffer): Uint8Buffer {
         val uint8Data = (zipData as Uint8BufferImpl).buffer
-        return Uint8BufferImpl(pako.inflate(uint8Data) as Uint8Array)
+        return Uint8BufferImpl(Pako.inflate(uint8Data))
     }
 
     override fun deflate(data: Uint8Buffer): Uint8Buffer {
         val uint8Data = (data as Uint8BufferImpl).buffer
-        return Uint8BufferImpl(pako.gzip(uint8Data) as Uint8Array)
+        return Uint8BufferImpl(Pako.gzip(uint8Data))
     }
 
     override suspend fun loadFileByUser(): Uint8Buffer? {

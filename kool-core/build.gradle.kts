@@ -66,7 +66,7 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("pako", "1.0.11"))
+                implementation(npm("pako", "2.0.4"))
             }
         }
 

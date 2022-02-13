@@ -67,7 +67,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
-        canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
+        canvas = document.getElementById(props.canvasName) as? HTMLCanvasElement ?:
+                throw IllegalStateException("canvas element not found! Add a canvas with id \"${props.canvasName}\" to your html.")
+
         // try to get a WebGL2 context first and use WebGL version 1 as fallback
         var webGlCtx = canvas.getContext("webgl2")
         if (webGlCtx == null) {
