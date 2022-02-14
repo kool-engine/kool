@@ -19,6 +19,10 @@ import kotlin.math.min
  */
 open class UiComponent(name: String, val root: UiRoot) : Group(name) {
 
+    val onHoverEnter: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHover: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHoverExit: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+
     // bounds of this component in local coordinates
     val componentBounds = BoundingBox()
 

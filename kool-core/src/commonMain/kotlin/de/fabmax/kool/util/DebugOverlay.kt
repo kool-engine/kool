@@ -34,6 +34,8 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
     init {
         ui = uiScene("debug-overlay") {
+            isInputEnabled = false
+
             theme = theme(UiTheme.DARK_SIMPLE) {
                 componentUi { BlankComponentUi() }
                 containerUi(::SimpleComponentUi)
@@ -228,7 +230,6 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                 }
             }
         }
-        ui.isPickingEnabled = false
     }
 
     enum class Position {

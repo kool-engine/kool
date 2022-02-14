@@ -8,6 +8,11 @@ class LazyMat4d(val update: (Mat4d) -> Unit) {
 
     private val mat = Mat4d()
 
+    fun clear() {
+        isDirty = false
+        mat.setIdentity()
+    }
+
     fun get(): Mat4d {
         if (isDirty) {
             update(mat)
@@ -21,6 +26,11 @@ class LazyMat4f(val update: (Mat4f) -> Unit) {
     var isDirty = true
 
     private val mat = Mat4f()
+
+    fun clear() {
+        isDirty = false
+        mat.setIdentity()
+    }
 
     fun get(): Mat4f {
         if (isDirty) {

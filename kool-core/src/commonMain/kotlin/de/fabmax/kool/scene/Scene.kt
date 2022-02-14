@@ -3,7 +3,6 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
-import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
@@ -23,6 +22,7 @@ open class Scene(name: String? = null) : Group(name) {
     var camera: Camera = PerspectiveCamera()
 
     val onRenderScene: MutableList<(KoolContext) -> Unit> = mutableListOf()
+    val onProcessInput: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
     val mainRenderPass = ScreenRenderPass(this)
 
@@ -36,10 +36,6 @@ open class Scene(name: String? = null) : Group(name) {
         // frustum check is force disabled for Scenes
         get() = false
         set(_) {}
-
-    var isPickingEnabled = true
-    private val rayTest = RayTest()
-    private var hoverNode: Node? = null
 
     private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
     private val dragHandlers: MutableList<DragHandler> = mutableListOf()
@@ -95,7 +91,10 @@ open class Scene(name: String? = null) : Group(name) {
 
     fun processInput(ctx: KoolContext) {
         if (ctx.inputMgr.cursorMode != InputManager.CursorMode.LOCKED) {
-            handleInput(ctx)
+            for (i in onProcessInput.indices) {
+                onProcessInput[i](ctx)
+            }
+            handleDrag(ctx)
         }
     }
 
@@ -137,44 +136,6 @@ open class Scene(name: String? = null) : Group(name) {
 
     fun computeRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
-    }
-
-    private fun handleInput(ctx: KoolContext) {
-        var hovered: Node? = null
-        val prevHovered = hoverNode
-        val ptr = ctx.inputMgr.pointerState.primaryPointer
-
-        if (!isPickingEnabled || !ptr.isValid || ptr.isConsumed()) {
-            return
-        }
-
-        if (ptr.isInViewport(mainRenderPass.viewport, ctx) && camera.initRayTes(rayTest, ptr, mainRenderPass.viewport, ctx)) {
-            rayTest(rayTest)
-            if (rayTest.isHit) {
-                hovered = rayTest.hitNode
-            }
-        }
-
-        if (prevHovered != hovered) {
-            if (prevHovered != null) {
-                for (i in prevHovered.onHoverExit.indices) {
-                    prevHovered.onHoverExit[i](ptr, rayTest, ctx)
-                }
-            }
-            if (hovered != null) {
-                for (i in hovered.onHoverEnter.indices) {
-                    hovered.onHoverEnter[i](ptr, rayTest, ctx)
-                }
-            }
-            hoverNode = hovered
-        }
-        if (hovered != null && prevHovered == hovered) {
-            for (i in hovered.onHover.indices) {
-                hovered.onHover[i](ptr, rayTest, ctx)
-            }
-        }
-
-        handleDrag(ctx)
     }
 
     private fun handleDrag(ctx: KoolContext) {

@@ -97,10 +97,21 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
         get() = content.bounds
 
     private var isLayoutNeeded = true
+    private val dpiChangeListener: (KoolContext) -> Unit = { uiDpi = it.screenDpi }
+
+    var isInputEnabled = true
+    private val rayTest = RayTest()
+    private var hoveredComponent: UiComponent? = null
 
     init {
         content.parent = this
         content.layoutSpec.setSize(pcs(100f), pcs(100f), pcs(100f))
+
+        scene.onProcessInput += {
+            if (isInputEnabled) {
+                handleInput(it)
+            }
+        }
     }
 
     fun setGlobalSize(width: Float, height: Float, depth: Float) {
@@ -113,8 +124,6 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
     fun requestLayout() {
         isLayoutNeeded = true
     }
-
-    private val dpiChangeListener: (KoolContext) -> Unit = { uiDpi = it.screenDpi }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
         val viewport = scene.mainRenderPass.viewport
@@ -164,6 +173,42 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
         super.dispose(ctx)
         content.dispose(ctx)
         ctx.onScreenDpiChange -= dpiChangeListener
+    }
+
+    private fun handleInput(ctx: KoolContext) {
+        var hovered: UiComponent? = null
+        val prevHovered = hoveredComponent
+        val ptr = ctx.inputMgr.pointerState.primaryPointer
+
+        if (!ptr.isValid || ptr.isConsumed()) {
+            return
+        }
+
+        if (ptr.isInViewport(scene.mainRenderPass.viewport, ctx) && scene.camera.initRayTes(rayTest, ptr, scene.mainRenderPass.viewport, ctx)) {
+            rayTest(rayTest)
+            if (rayTest.isHit && rayTest.hitNode is UiComponent) {
+                hovered = rayTest.hitNode as? UiComponent
+            }
+        }
+
+        if (prevHovered != hovered) {
+            if (prevHovered != null) {
+                for (i in prevHovered.onHoverExit.indices) {
+                    prevHovered.onHoverExit[i](ptr, rayTest, ctx)
+                }
+            }
+            if (hovered != null) {
+                for (i in hovered.onHoverEnter.indices) {
+                    hovered.onHoverEnter[i](ptr, rayTest, ctx)
+                }
+            }
+            hoveredComponent = hovered
+        }
+        if (hovered != null && prevHovered == hovered) {
+            for (i in hovered.onHover.indices) {
+                hovered.onHover[i](ptr, rayTest, ctx)
+            }
+        }
     }
 
     override fun rayTest(test: RayTest) {

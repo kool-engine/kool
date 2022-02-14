@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.LazyMat4d
 
 /**
  * @author fabmax
@@ -23,9 +24,8 @@ open class Group(name: String? = null) : Node(name) {
 
     val transform = Mat4d()
 
-    protected val invTransform = Mat4d()
+    protected val invTransform = LazyMat4d { transform.invert(it) }
     protected var isIdentity = false
-    protected var isDirty = false
 
     private val tmpTransformVec = MutableVec3f()
     private val tmpBounds = BoundingBox()
@@ -34,15 +34,8 @@ open class Group(name: String? = null) : Node(name) {
         setIdentity()
     }
 
-    protected fun checkInverse() {
-        if (isDirty) {
-            transform.invert(invTransform)
-            isDirty = false
-        }
-    }
-
     fun setDirty() {
-        isDirty = true
+        invTransform.isDirty = true
         isIdentity = false
     }
 
@@ -95,8 +88,7 @@ open class Group(name: String? = null) : Node(name) {
     override fun rayTest(test: RayTest) {
         if (!isIdentity) {
             // transform ray to local coordinates
-            checkInverse()
-            test.transformBy(invTransform)
+            test.transformBy(invTransform.get())
         }
 
         for (i in intChildren.indices) {
@@ -118,8 +110,7 @@ open class Group(name: String? = null) : Node(name) {
     fun getTransform(result: Mat4f): Mat4f = result.set(transform)
 
     fun getInverseTransform(result: Mat4f): Mat4f {
-        checkInverse()
-        return result.set(invTransform)
+        return result.set(invTransform.get())
     }
 
     override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
@@ -137,19 +128,6 @@ open class Group(name: String? = null) : Node(name) {
         for (i in intChildren.indices) {
             intChildren[i].dispose(ctx)
         }
-    }
-
-    override operator fun get(name: String): Node? {
-        if (name == this.name) {
-            return this
-        }
-        for (i in intChildren.indices) {
-            val node = intChildren[i][name]
-            if (node != null) {
-                return node
-            }
-        }
-        return null
     }
 
     open fun addNode(node: Node, index: Int = -1) {
@@ -192,6 +170,13 @@ open class Group(name: String? = null) : Node(name) {
             }
         }
         return null
+    }
+
+    override fun collectTag(result: MutableList<Node>, tag: String, value: String?) {
+        super.collectTag(result, tag, value)
+        for (i in children.indices) {
+            children[i].collectTag(result, tag, value)
+        }
     }
 
     open fun containsNode(node: Node): Boolean = intChildren.contains(node)
@@ -274,8 +259,7 @@ open class Group(name: String? = null) : Node(name) {
 
     fun setIdentity(): Group {
         transform.setIdentity()
-        invTransform.setIdentity()
-        isDirty = false
+        invTransform.clear()
         isIdentity = true
         return this
     }

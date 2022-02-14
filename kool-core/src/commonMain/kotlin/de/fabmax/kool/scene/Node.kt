@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -17,10 +16,6 @@ abstract class Node(val name: String? = null) : Disposable {
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
     val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()
-
-    val onHoverEnter: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
-    val onHover: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
-    val onHoverExit: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
 
     val tags = Tags()
 
@@ -91,10 +86,8 @@ abstract class Node(val name: String? = null) : Disposable {
         updateModelMat()
 
         // update global center and radius
-        globalCenterMut.set(bounds.center)
-        globalExtentMut.set(bounds.max)
-        modelMat.transform(globalCenterMut)
-        modelMat.transform(globalExtentMut)
+        toGlobalCoords(globalCenterMut.set(bounds.center))
+        toGlobalCoords(globalExtentMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
@@ -157,16 +150,6 @@ abstract class Node(val name: String? = null) : Disposable {
     open fun rayTest(test: RayTest) { }
 
     /**
-     * Searches for a node with the specified name. Returns null if no such node is found.
-     */
-    open operator fun get(name: String): Node? {
-        if (name == this.name) {
-            return this
-        }
-        return null
-    }
-
-    /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default
      * implementation considers [isVisible] flag and performs a camera frustum check if [isFrustumChecked] is true.
      */
@@ -179,7 +162,16 @@ abstract class Node(val name: String? = null) : Disposable {
         return true
     }
 
+    /**
+     * Searches for a node with the specified name. Returns null if no such node is found.
+     */
     open fun findNode(name: String): Node? = if (name == this.name) { this } else { null }
+
+    open fun collectTag(result: MutableList<Node>, tag: String, value: String? = null) {
+        if (tags.hasTag(tag, value)) {
+            result += this
+        }
+    }
 
     inline fun <reified T> findParentOfType(): T? {
         var p = parent

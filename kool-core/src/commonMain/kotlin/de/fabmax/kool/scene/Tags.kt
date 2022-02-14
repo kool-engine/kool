@@ -1,30 +1,13 @@
 package de.fabmax.kool.scene
 
-class Tags(private val tags: MutableMap<String, String?> = mutableMapOf()) : MutableMap<String, String?> by tags{
-
-    fun addTag(tag: String) {
-        val splitIdx = tag.indexOf('=')
-        if (splitIdx >= 0) {
-            // add key / value tag
-            val key = tag.substring(0..splitIdx-1)
-            val value = tag.substring(splitIdx+1)
-            this[key] = value
-        } else {
-            // add tag without value
-            this[tag] = null
-        }
-    }
+class Tags(private val tags: MutableMap<String, Any?> = mutableMapOf()) : MutableMap<String, Any?> by tags {
 
     operator fun set(key: String, value: Any?) {
-        put(key, value?.toString())
-    }
-
-    operator fun plusAssign(tag: String) {
-        addTag(tag)
+        put(key, value)
     }
 
     fun hasTag(tag: String, value: String? = null): Boolean {
-        return containsKey(tag) && this[tag] == value
+        return containsKey(tag) && (value == null || this[tag] == value)
     }
 
     fun getBoolean(tag: String, default: Boolean): Boolean = getTyped(tag, default) { it.toBoolean() }
@@ -35,15 +18,16 @@ class Tags(private val tags: MutableMap<String, String?> = mutableMapOf()) : Mut
 
     fun getDouble(tag: String, default: Double): Double = getTyped(tag, default) { it.toDouble() }
 
-    inline fun <T> getTyped(tag: String, default: T, mapper: (String) -> T): T {
-        val value = this[tag]
-        return if (value == null) {
-            default
-        } else {
-            try {
-                mapper(value)
-            } catch (e: Exception) {
-                default
+    inline fun <reified T> getTyped(tag: String, default: T, mapper: (String) -> T): T {
+        return when (val value = this[tag]) {
+            null -> default
+            is T -> value
+            else -> {
+                try {
+                    mapper(value.toString())
+                } catch (e: Exception) {
+                    default
+                }
             }
         }
     }
