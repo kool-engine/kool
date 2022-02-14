@@ -82,7 +82,6 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
                         is TextureSampler2d -> srcBuilder.append(generateTextureSampler2d(desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(desc))
                         is TextureSamplerCube -> srcBuilder.append(generateTextureSamplerCube(desc))
-                        else -> TODO("Descriptor type not implemented: $desc")
                     }
                 }
             }

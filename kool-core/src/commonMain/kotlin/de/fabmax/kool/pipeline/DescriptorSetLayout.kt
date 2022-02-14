@@ -73,7 +73,7 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
     }
 }
 
-abstract class Descriptor(builder: Builder<*>, val binding: Int, val type: DescriptorType, hash: ULong) {
+sealed class Descriptor(builder: Builder<*>, val binding: Int, val type: DescriptorType, hash: ULong) {
     val name: String = builder.name
     val stages: Set<ShaderStage> = builder.stages.copy()
 
@@ -108,7 +108,7 @@ class TextureSampler1d private constructor(builder: Builder, binding: Int, hash:
     class Builder : Descriptor.Builder<TextureSampler1d>() {
         var arraySize = 1
         var isDepthSampler = false
-        var onUpdate: ((TextureSampler1d, DrawCommand) -> Unit) ? = null
+        var onUpdate: ((TextureSampler1d, DrawCommand) -> Unit)? = null
         var onCreate: ((TextureSampler1d) -> Unit) ? = null
 
         init {
@@ -129,7 +129,7 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int, hash:
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
 
-    val onUpdate: ((TextureSampler2d, DrawCommand) -> Unit) ? = builder.onUpdate
+    val onUpdate: ((TextureSampler2d, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<Texture2d?>(arraySize) { null }
     var texture: Texture2d?
         get() = textures[0]
@@ -138,7 +138,7 @@ class TextureSampler2d private constructor(builder: Builder, binding: Int, hash:
     class Builder : Descriptor.Builder<TextureSampler2d>() {
         var arraySize = 1
         var isDepthSampler = false
-        var onUpdate: ((TextureSampler2d, DrawCommand) -> Unit) ? = null
+        var onUpdate: ((TextureSampler2d, DrawCommand) -> Unit)? = null
         var onCreate: ((TextureSampler2d) -> Unit) ? = null
 
         init {
@@ -158,7 +158,7 @@ class TextureSampler3d private constructor(builder: Builder, binding: Int, hash:
 
     val arraySize = builder.arraySize
 
-    val onUpdate: ((TextureSampler3d, DrawCommand) -> Unit) ? = builder.onUpdate
+    val onUpdate: ((TextureSampler3d, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<Texture3d?>(arraySize) { null }
     var texture: Texture3d?
         get() = textures[0]
@@ -187,7 +187,7 @@ class TextureSamplerCube private constructor(builder: Builder, binding: Int, has
     val arraySize = builder.arraySize
     val isDepthSampler = builder.isDepthSampler
 
-    val onUpdate: ((TextureSamplerCube, DrawCommand) -> Unit) ? = builder.onUpdate
+    val onUpdate: ((TextureSamplerCube, DrawCommand) -> Unit)? = builder.onUpdate
     val textures = Array<TextureCube?>(arraySize) { null }
     var texture: TextureCube?
         get() = textures[0]
@@ -215,7 +215,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
         Descriptor(builder, binding, DescriptorType.UNIFORM_BUFFER, hash) {
 
     val instanceName = builder.instanceName
-    val onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = builder.onUpdate
+    val onUpdate: ((UniformBuffer, DrawCommand) -> Unit)? = builder.onUpdate
 
     private val layout = Std140Layout(uniforms)
 

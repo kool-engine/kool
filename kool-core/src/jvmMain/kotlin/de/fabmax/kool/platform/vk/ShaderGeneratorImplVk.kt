@@ -108,7 +108,6 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                         is TextureSampler2d -> srcBuilder.append(generateTextureSampler2d(set, desc))
                         is TextureSampler3d -> srcBuilder.append(generateTextureSampler3d(set, desc))
                         is TextureSamplerCube -> srcBuilder.append(generateCubeMapSampler(set, desc))
-                        else -> TODO("Descriptor type not implemented: ${desc::class.java.name}")
                     }
                 }
             }

@@ -57,7 +57,6 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     is TextureSamplerCube -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
-                    else -> throw IllegalStateException("Descriptor type not implemented: $desc")
                 }
             }
         }
@@ -225,6 +224,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             }
 
             // call onUpdate callbacks
+            for (i in pipeline.onUpdate.indices) {
+                pipeline.onUpdate[i].invoke(drawCmd)
+            }
             for (i in pushConstants.indices) {
                 pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
             }
