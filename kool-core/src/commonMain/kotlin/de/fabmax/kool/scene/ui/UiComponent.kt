@@ -65,7 +65,7 @@ open class UiComponent(name: String, val root: UiRoot) : Group(name) {
             val p = parent as? UiComponent
             if (p != null) {
                 for (i in p.onHoverEnter.indices) {
-                    p.onHoverEnter[i].invoke(p, ptr, rt, ctx)
+                    p.onHoverEnter[i].invoke(ptr, rt, ctx)
                 }
             }
         }
@@ -73,7 +73,7 @@ open class UiComponent(name: String, val root: UiRoot) : Group(name) {
             val p = parent as? UiComponent
             if (p != null) {
                 for (i in p.onHoverExit.indices) {
-                    p.onHoverExit[i].invoke(p, ptr, rt, ctx)
+                    p.onHoverExit[i].invoke(ptr, rt, ctx)
                 }
             }
         }
@@ -81,7 +81,7 @@ open class UiComponent(name: String, val root: UiRoot) : Group(name) {
             val p = parent as? UiComponent
             if (p != null) {
                 for (i in p.onHover.indices) {
-                    p.onHover[i].invoke(p, ptr, rt, ctx)
+                    p.onHover[i].invoke(ptr, rt, ctx)
                 }
             }
         }

@@ -15,13 +15,12 @@ import de.fabmax.kool.util.LazyMat4d
  */
 abstract class Node(val name: String? = null) : Disposable {
 
-    val onUpdate: MutableList<Node.(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-    val onCollectDrawCommands: MutableList<Node.(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-    val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
+    val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
-    val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
-    val onHover: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
-    val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHoverEnter: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHover: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHoverExit: MutableList<(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
 
     val tags = Tags()
 
@@ -112,11 +111,6 @@ abstract class Node(val name: String? = null) : Disposable {
      */
     open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
-        if (isRendered) {
-            for (i in onCollectDrawCommands.indices) {
-                onCollectDrawCommands[i](updateEvent)
-            }
-        }
     }
 
     /**

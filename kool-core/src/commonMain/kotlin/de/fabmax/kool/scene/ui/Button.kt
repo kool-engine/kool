@@ -3,7 +3,6 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.animation.InterpolatedFloat
 import de.fabmax.kool.scene.animation.LinearAnimator
 import de.fabmax.kool.util.Color
@@ -75,12 +74,12 @@ open class ButtonUi(val button: Button, baseUi: ComponentUi) : LabelUi(button, b
     protected var colorWeightStd = 1f
     protected var colorWeightHovered = 0f
 
-    protected val hoverEnterListener: Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
+    protected val hoverEnterListener: (InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.1f
         hoverAnimator.speed = 1f
     }
 
-    protected val hoverExitListener: Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
+    protected val hoverExitListener: (InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.2f
         hoverAnimator.speed = -1f
     }
