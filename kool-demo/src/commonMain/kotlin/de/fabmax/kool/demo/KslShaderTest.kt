@@ -1,7 +1,6 @@
-package de.fabmax.kool.demo.demos
+package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.randomF

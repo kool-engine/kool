@@ -42,11 +42,11 @@ class GlslGenerator : KslGenerator() {
     private fun generateVertexSrc(vertexStage: KslVertexStage): String {
         val src = StringBuilder()
         src.appendLine("""
+            #version 300 es
+            
             /* 
              * ${vertexStage.program.name} - generated vertex shader
-             */
-             
-            #version 300 es
+             */ 
         """.trimIndent())
         src.appendLine()
 
@@ -64,11 +64,12 @@ class GlslGenerator : KslGenerator() {
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage): String {
         val src = StringBuilder()
         src.appendLine("""
+            #version 300 es
+            
             /* 
              * ${fragmentStage.program.name} - generated fragment shader
              */
              
-            #version 300 es
             precision highp float;
             precision highp sampler2DShadow;
         """.trimIndent())

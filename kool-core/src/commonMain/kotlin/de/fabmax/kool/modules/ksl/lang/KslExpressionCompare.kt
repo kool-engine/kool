@@ -53,13 +53,11 @@ private fun <T> compareExpression(left: KslExpression<*>, right: KslExpression<*
 
 
 // scalar == scalar
-infix fun <S> KslScalarExpression<S>.`==`(right: KslScalarExpression<S>) where S: KslType, S: KslScalar = eq(right)
 infix fun <S> KslScalarExpression<S>.eq(right: KslScalarExpression<S>): KslExpressionCompareScalar
         where S: KslType, S: KslScalar {
     return KslExpressionCompareScalar(this, right, KslCompareOperator.Equal)
 }
 // vector == vector
-infix fun <V, S> KslVectorExpression<V, S>.`==`(right: KslVectorExpression<V, S>) where V: KslNumericType, V: KslVector<S>, S: KslScalar = eq(right)
 infix fun <V, S> KslVectorExpression<V, S>.eq(right: KslVectorExpression<V, S>): KslExpressionCompareVector<*>
         where V: KslNumericType, V: KslVector<S>, S: KslScalar {
     return compareExpression(this, right, KslCompareOperator.Equal, expressionType)
@@ -67,13 +65,11 @@ infix fun <V, S> KslVectorExpression<V, S>.eq(right: KslVectorExpression<V, S>):
 
 
 // scalar != scalar
-infix fun <S> KslScalarExpression<S>.`!=`(right: KslScalarExpression<S>) where S: KslType, S: KslScalar = ne(right)
 infix fun <S> KslScalarExpression<S>.ne(right: KslScalarExpression<S>): KslExpressionCompareScalar
         where S: KslType, S: KslScalar {
     return KslExpressionCompareScalar(this, right, KslCompareOperator.NotEqual)
 }
 // vector != vector
-infix fun <V, S> KslVectorExpression<V, S>.`!=`(right: KslVectorExpression<V, S>) where V: KslNumericType, V: KslVector<S>, S: KslScalar = ne(right)
 infix fun <V, S> KslVectorExpression<V, S>.ne(right: KslVectorExpression<V, S>): KslExpressionCompareVector<*>
         where V: KslNumericType, V: KslVector<S>, S: KslScalar {
     return compareExpression(this, right, KslCompareOperator.NotEqual, expressionType)

@@ -71,6 +71,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         "hellogltf" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
         "manyvehicles" to DemoEntry("Many Vehicles", true) { ManyVehiclesDemo() },
         "phys-character" to DemoEntry("Physics - Character", true) { CharacterDemo() },
+        "ksl-test" to DemoEntry("Ksl Test", true) { KslShaderTest() }
     )
 
     init {

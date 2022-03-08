@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslScope
 
-class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
+class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
 
     fun nextName(prefix: String): String = parentStage.program.nextName(prefix)
 
