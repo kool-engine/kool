@@ -36,8 +36,8 @@ class EarthCamTransform(val earthRadius: Float) : Group(), Scene.DragHandler {
         planetRot.rotate(40.0, Vec3d.NEG_X_AXIS)
 
         onUpdate += {
-            val localX = invTransform.transform(MutableVec3d(Vec3d.X_AXIS), 0.0)
-            val localY = invTransform.transform(MutableVec3d(Vec3d.Y_AXIS), 0.0)
+            val localX = MutableVec3d(Vec3d.X_AXIS)
+            val localY = MutableVec3d(Vec3d.Y_AXIS)
 
             lookRot.setIdentity()
             lookRot.rotate(lookRotY, Vec3d.Z_AXIS)

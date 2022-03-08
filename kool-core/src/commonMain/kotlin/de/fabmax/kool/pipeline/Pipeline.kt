@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+
 class Pipeline private constructor(builder: Builder) {
 
     val name = builder.name
@@ -20,6 +22,8 @@ class Pipeline private constructor(builder: Builder) {
 
     val layout: Layout
     val shaderCode: ShaderCode
+
+    val onUpdate = mutableListOf<(DrawCommand) -> Unit>()
 
     init {
         val vertexLayout = builder.vertexLayout.create()

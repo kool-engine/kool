@@ -95,7 +95,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
                 isFrustumChecked = false
                 lods[i].mesh = this
-                instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), lods[i].maxInsts)
+                instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), lods[i].maxInsts)
                 lodController.addLod(this, lods[i].maxDist, lods[i].maxInsts)
             }
         }

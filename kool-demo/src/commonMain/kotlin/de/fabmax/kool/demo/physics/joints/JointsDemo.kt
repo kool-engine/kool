@@ -13,6 +13,7 @@ import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -483,7 +484,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         var factory: (RigidActor) -> Mesh = { proto ->
             colorMesh {
                 isFrustumChecked = false
-                instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+                instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
                 generate {
                     color = this@BodyMesh.color
                     proto.shapes.forEach { shape ->

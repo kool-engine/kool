@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.contracts.InvocationKind
@@ -441,7 +440,7 @@ class ShaderModel(val modelName: String) {
         fun attrWeights() = attributeNode(Attribute.WEIGHTS)
         fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
 
-        fun instanceAttrModelMat() = instanceAttributeNode(MeshInstanceList.MODEL_MAT)
+        fun instanceAttrModelMat() = instanceAttributeNode(Attribute.INSTANCE_MODEL_MAT)
         fun instanceAttributeNode(attribute: Attribute) = addNode(InstanceAttributeNode(attribute, stage))
 
         fun pointSize(inPointSize: ShaderNodeIoVar? = null): PointSizeNode {

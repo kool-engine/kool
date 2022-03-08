@@ -43,8 +43,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     private val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
 
     private val numVehicles = 2048
-    private val chassisInstances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), numVehicles)
-    private val wheelInstances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT), numVehicles * 4)
+    private val chassisInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), numVehicles)
+    private val wheelInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT), numVehicles * 4)
     private val vehicleInstances = mutableListOf<VehicleInstance>()
 
     private val vehicleProps = VehicleProperties().apply {

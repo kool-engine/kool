@@ -15,7 +15,7 @@ class DeferredSpotLights(val maxSpotAngle: Float) {
     val lightInstances = mutableListOf<SpotLight>()
     var isDynamic = true
 
-    private val lightInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, DeferredLightShader.LIGHT_POS,
+    private val lightInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, DeferredLightShader.LIGHT_POS,
             DeferredLightShader.LIGHT_DIR, Attribute.COLORS, DeferredLightShader.LIGHT_DATA), 10000)
 
     private val modelMat = Mat4f()

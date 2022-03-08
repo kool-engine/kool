@@ -46,7 +46,6 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                     is TextureSamplerCube -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
                     }
-                    else -> throw IllegalStateException("Descriptor type not implemented: $desc")
                 }
             }
         }
@@ -155,7 +154,6 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                         is TextureSampler2d -> mapTexture2d(desc)
                         is TextureSampler3d -> mapTexture3d(desc)
                         is TextureSamplerCube -> mapTextureCube(desc)
-                        else -> TODO("$desc")
                     }
                 }
             }
@@ -214,6 +212,9 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             }
 
             // call onUpdate callbacks
+            for (i in pipeline.onUpdate.indices) {
+                pipeline.onUpdate[i].invoke(drawCmd)
+            }
             for (i in pushConstants.indices) {
                 pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
             }

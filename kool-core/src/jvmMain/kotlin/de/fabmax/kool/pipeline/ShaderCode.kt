@@ -58,3 +58,7 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
         }
     }
 }
+
+actual fun shaderCodeFromSource(vertexShaderSource: String, fraqmentShaderSource: String): ShaderCode {
+    return ShaderCode(ShaderCode.GlCode(vertexShaderSource, fraqmentShaderSource))
+}

@@ -29,7 +29,7 @@ object GearChainMeshGen {
 
     fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -176,7 +176,7 @@ object GearChainMeshGen {
 
     fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -278,7 +278,7 @@ object GearChainMeshGen {
 
     fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f
@@ -334,7 +334,7 @@ object GearChainMeshGen {
 
     fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = mesh(meshAttribs) {
         isFrustumChecked = false
-        instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT))
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         generate {
             var roughness = 0.3f
             var metal = 1f

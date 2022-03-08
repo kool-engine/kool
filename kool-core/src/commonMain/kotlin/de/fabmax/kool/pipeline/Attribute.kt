@@ -37,6 +37,9 @@ data class Attribute(val name: String, val type: GlslType) {
         val WEIGHTS = Attribute("attrib_weights", GlslType.VEC_4F)
         val EMISSIVE_COLOR = Attribute("attrib_emissive_color", GlslType.VEC_3F)
         val METAL_ROUGH = Attribute("attrib_metal_rough", GlslType.VEC_2F)
+
+        val INSTANCE_MODEL_MAT = Attribute("attrib_model_mat", GlslType.MAT_4F)
+        val INSTANCE_COLOR = Attribute("attrib_instance_color", GlslType.VEC_4F)
     }
 }
 

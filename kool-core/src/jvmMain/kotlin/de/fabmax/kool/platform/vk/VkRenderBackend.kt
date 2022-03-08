@@ -349,6 +349,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             drawQueue.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline
                 if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
+                    pipelineCfg.onUpdate.forEach { it(cmd) }
+
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.renderPass, renderPass, dynVp)
                     }
