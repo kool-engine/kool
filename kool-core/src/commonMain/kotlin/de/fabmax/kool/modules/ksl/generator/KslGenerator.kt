@@ -54,21 +54,12 @@ abstract class KslGenerator {
     abstract fun generateProgram(program: KslProgram): GeneratorOutput
 
     open fun generateScope(scope: KslScope, indent: String): String {
-        val scopeText = StringBuilder()
-        scope.definedStates.forEach { declState ->
-            scopeText.appendLine(declareState(declState, scope.initExpressions[declState]).prependIndent(indent))
-        }
-        if (scopeText.isNotEmpty()) {
-            scopeText.appendLine()
-        }
-        scopeText.append(scope.ops.asSequence().map { generateOp(it).prependIndent(indent) }.joinToString("\n"))
-        return scopeText.toString()
+        return scope.ops.asSequence().map { generateOp(it).prependIndent(indent) }.joinToString("\n")
     }
-
-    abstract fun declareState(state: KslState, initExpression: KslExpression<*>?): String
 
     open fun generateOp(op: KslOp): String {
         return when (op) {
+            is KslDeclareValue -> opDeclare(op)
             is KslAssign<*> -> opAssign(op)
             is KslAugmentedAssign<*> -> opAugmentedAssign(op)
             is KslIf -> opIf(op)
@@ -77,6 +68,7 @@ abstract class KslGenerator {
         }
     }
 
+    abstract fun opDeclare(op: KslDeclareValue): String
     abstract fun opAssign(op: KslAssign<*>): String
     abstract fun opAugmentedAssign(op: KslAugmentedAssign<*>): String
     abstract fun opIf(op: KslIf): String

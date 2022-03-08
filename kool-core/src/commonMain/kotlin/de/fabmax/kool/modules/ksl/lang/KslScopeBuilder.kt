@@ -71,22 +71,56 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun constInt4(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
         KslConstInt4(xyz.x, xyz.y, xyz.z, w)
 
-    fun floatVar(name: String? = null) = KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also { definedStates += it }
-    fun float2Var(name: String? = null) = KslVarVector(name ?: nextName("f2"), KslTypeFloat2, true).also { definedStates += it }
-    fun float3Var(name: String? = null) = KslVarVector(name ?: nextName("f3"), KslTypeFloat3, true).also { definedStates += it }
-    fun float4Var(name: String? = null) = KslVarVector(name ?: nextName("f4"), KslTypeFloat4, true).also { definedStates += it }
+    fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
+        KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun float2Var(initValue: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("f2"), KslTypeFloat2, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun float3Var(initValue: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("f3"), KslTypeFloat3, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun float4Var(initValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("f4"), KslTypeFloat4, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+
     fun floatArray(arraySize: Int, name: String? = null) = floatArray(arraySize.const, name)
     fun floatArray(arraySize: KslExpression<KslTypeInt1>, name: String?) =
         KslArrayScalar(name ?: nextName("floatArray"), KslTypeFloat1, arraySize, true).also { definedStates += it }
 
-    fun intVar(name: String? = null) = KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also { definedStates += it }
-    fun int2Var(name: String? = null) = KslVarVector(name ?: nextName("i2"), KslTypeInt2, true).also { definedStates += it }
-    fun int3Var(name: String? = null) = KslVarVector(name ?: nextName("i3"), KslTypeInt3, true).also { definedStates += it }
-    fun int4Var(name: String? = null) = KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also { definedStates += it }
+    fun intVar(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) =
+        KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun int2Var(initValue: KslVectorExpression<KslTypeInt2, KslTypeInt1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("i2"), KslTypeInt2, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun int3Var(initValue: KslVectorExpression<KslTypeInt3, KslTypeInt1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("i3"), KslTypeInt3, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun int4Var(initValue: KslVectorExpression<KslTypeInt4, KslTypeInt1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
 
-    fun mat2Var(name: String? = null) = KslVarMatrix(name ?: nextName("m2"), KslTypeMat2, true).also { definedStates += it }
-    fun mat3Var(name: String? = null) = KslVarMatrix(name ?: nextName("m3"), KslTypeMat3, true).also { definedStates += it }
-    fun mat4Var(name: String? = null) = KslVarMatrix(name ?: nextName("m4"), KslTypeMat4, true).also { definedStates += it }
+    fun mat2Var(initValue: KslMatrixExpression<KslTypeMat2, KslTypeFloat2>? = null, name: String? = null) =
+        KslVarMatrix(name ?: nextName("m2"), KslTypeMat2, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun mat3Var(initValue: KslMatrixExpression<KslTypeMat3, KslTypeFloat3>? = null, name: String? = null) =
+        KslVarMatrix(name ?: nextName("m3"), KslTypeMat3, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
+    fun mat4Var(initValue: KslMatrixExpression<KslTypeMat4, KslTypeFloat4>? = null, name: String? = null) =
+        KslVarMatrix(name ?: nextName("m4"), KslTypeMat4, true).also {
+            ops += KslDeclareValue(it, initValue, this)
+        }
 
     fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleColorTexture(sampler, coord)

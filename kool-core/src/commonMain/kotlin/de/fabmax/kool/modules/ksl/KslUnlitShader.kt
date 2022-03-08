@@ -14,7 +14,7 @@ fun unlitShader(cfgBlock: KslUnlitShader.Config.() -> Unit): KslUnlitShader {
     return KslUnlitShader(cfg)
 }
 
-class KslUnlitShader(cfg: Config = Config(), model: KslProgram = Model(cfg)) : KslShader(model) {
+class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model) {
     var uniformColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
     var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
 
@@ -33,8 +33,7 @@ class KslUnlitShader(cfg: Config = Config(), model: KslProgram = Model(cfg)) : K
             val uMvp = mvpMatrix()
             vertexStage {
                 main {
-                    val mvp = mat4Var()
-                    mvp set uMvp.outMvp
+                    val mvp = mat4Var(uMvp.matrix)
                     if (cfg.isInstanced) {
                         mvp *= instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                     }

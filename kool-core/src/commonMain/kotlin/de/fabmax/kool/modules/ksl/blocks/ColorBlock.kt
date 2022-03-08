@@ -60,10 +60,13 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                 ?: parentStage.program.vertexStage.findBlock()
                 ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
 
-            outColor set cfg.staticColor.const
+            if (cfg.colorSources.isEmpty() || cfg.colorSources.first().mixMode != ColorBlockConfig.MixMode.Set) {
+                outColor set Color.BLACK.const
+            }
 
             cfg.colorSources.forEach { source ->
                 val colorValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1> = when (source) {
+                    is ColorBlockConfig.StaticColor -> source.staticColor.const
                     is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
                     is ColorBlockConfig.VertexColor -> vertexBlock.vertexColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
@@ -88,8 +91,11 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
 }
 
 class ColorBlockConfig {
-    var staticColor = Color.BLACK
     val colorSources = mutableListOf<ColorSource>()
+
+    fun addStaticColor(staticColor: Color, mixMode: MixMode = MixMode.Set) {
+        colorSources += StaticColor(staticColor, mixMode)
+    }
 
     fun addUniformColor(defaultColor: Color? = null, uniformName: String = "uColor", mixMode: MixMode = MixMode.Set) {
         colorSources += UniformColor(defaultColor, uniformName, mixMode)
@@ -117,6 +123,7 @@ class ColorBlockConfig {
         get() = colorSources.find { it is TextureColor } as? TextureColor
 
     sealed class ColorSource(val mixMode: MixMode)
+    class StaticColor(val staticColor: Color, mixMode: MixMode) : ColorSource(mixMode)
     class UniformColor(val defaultColor: Color?, val uniformName: String, mixMode: MixMode) : ColorSource(mixMode)
     class VertexColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
     class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, mixMode: MixMode) : ColorSource(mixMode)

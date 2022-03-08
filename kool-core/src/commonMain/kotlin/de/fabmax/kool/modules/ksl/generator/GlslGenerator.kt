@@ -141,9 +141,9 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    override fun declareState(state: KslState, initExpression: KslExpression<*>?): String {
-        val initExpr = initExpression?.let { " = ${it.generateExpression(this)}" } ?: ""
-
+    override fun opDeclare(op: KslDeclareValue): String {
+        val initExpr = op.initExpression?.let { " = ${it.generateExpression(this)}" } ?: ""
+        val state = op.declareValue
         return when (state) {
             is KslVar<*> -> "${glslTypeName(state.expressionType)} ${state.name()}${initExpr};"
             is KslArray<*> -> "${glslTypeName(state.expressionType.elemType)} ${state.name()}[${state.arraySize.generateExpression(this)}]${initExpr};"
