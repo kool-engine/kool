@@ -10,7 +10,7 @@ sealed class KslNumericType(typeName: String) : KslType(typeName)
 sealed class KslFloatType(typeName: String) : KslNumericType(typeName)
 sealed class KslIntType(typeName: String) : KslNumericType(typeName)
 sealed class KslBoolType(typeName: String) : KslType(typeName)
-sealed class KslTypeSampler(typeName: String) : KslType(typeName)
+sealed class KslTypeSampler<R: KslNumericType>(typeName: String) : KslType(typeName)
 
 interface KslScalar
 
@@ -56,5 +56,17 @@ object KslTypeMat4 : KslFloatType("mat4"), KslMatrix<KslTypeFloat4>
 
 class KslTypeArray<T: KslType>(val elemType: T) : KslType("array<${elemType.typeName}>")
 
-sealed class KslTypeTexSampler(typeName: String) : KslTypeSampler(typeName)
-sealed class KslTypeDepthSampler(typeName: String) : KslTypeSampler(typeName)
+sealed class KslTypeColorSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat4>(typeName)
+sealed class KslTypeDepthSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat1>(typeName)
+
+object KslTypeColorSampler1d : KslTypeColorSampler<KslTypeFloat1>("sampler1d")
+object KslTypeColorSampler2d : KslTypeColorSampler<KslTypeFloat2>("sampler2d")
+object KslTypeColorSampler3d : KslTypeColorSampler<KslTypeFloat3>("sampler3d")
+object KslTypeColorSamplerCube : KslTypeColorSampler<KslTypeFloat3>("samplerCube")
+object KslTypeColorSampler2dArray : KslTypeColorSampler<KslTypeFloat3>("sampler2dArray")
+object KslTypeColorSamplerCubeArray : KslTypeColorSampler<KslTypeFloat4>("samplerCubeArray")
+
+object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat2>("depthSampler2d")
+object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat3>("depthSamplerCube")
+object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2dArray")
+object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat3>("depthSamplerCubeArray")

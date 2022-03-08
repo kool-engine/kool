@@ -15,16 +15,19 @@ class KslConstFloat1(val value: Float)
 class KslConstFloat2(val x: KslExpression<KslTypeFloat1>, val y: KslExpression<KslTypeFloat1>)
     : KslExpressionConst<KslTypeFloat2>(KslTypeFloat2, "vec2(${x.toPseudoCode()}, ${y.toPseudoCode()})"),
       KslVectorExpression<KslTypeFloat2, KslTypeFloat1> {
+    constructor(x: Float, y: Float) : this(KslConstFloat1(x), KslConstFloat1(y))
     override fun generateExpression(generator: KslGenerator) = generator.constFloatVecExpression(x, y)
 }
 class KslConstFloat3(val x: KslExpression<KslTypeFloat1>, val y: KslExpression<KslTypeFloat1>, val z: KslExpression<KslTypeFloat1>)
     : KslExpressionConst<KslTypeFloat3>(KslTypeFloat3, "vec3(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()})"),
       KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
+    constructor(x: Float, y: Float, z: Float) : this(KslConstFloat1(x), KslConstFloat1(y), KslConstFloat1(z))
     override fun generateExpression(generator: KslGenerator) = generator.constFloatVecExpression(x, y, z)
 }
 class KslConstFloat4(val x: KslExpression<KslTypeFloat1>, val y: KslExpression<KslTypeFloat1>, val z: KslExpression<KslTypeFloat1>, val w: KslExpression<KslTypeFloat1>)
     : KslExpressionConst<KslTypeFloat4>(KslTypeFloat4, "vec4(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()}, ${w.toPseudoCode()})"),
       KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
+    constructor(x: Float, y: Float, z: Float, w: Float) : this(KslConstFloat1(x), KslConstFloat1(y), KslConstFloat1(z), KslConstFloat1(w))
     override fun generateExpression(generator: KslGenerator) = generator.constFloatVecExpression(x, y, z, w)
 }
 
@@ -34,14 +37,17 @@ class KslConstInt1(val value: Int)
 }
 class KslConstInt2(val x: KslExpression<KslTypeInt1>, val y: KslExpression<KslTypeInt1>)
     : KslExpressionConst<KslTypeInt2>(KslTypeInt2, "ivec2(${x.toPseudoCode()}, ${y.toPseudoCode()})"), KslVectorExpression<KslTypeInt2, KslTypeInt1> {
+    constructor(x: Int, y: Int) : this(KslConstInt1(x), KslConstInt1(y))
     override fun generateExpression(generator: KslGenerator) = generator.constIntVecExpression(x, y)
 }
 class KslConstInt3(val x: KslExpression<KslTypeInt1>, val y: KslExpression<KslTypeInt1>, val z: KslExpression<KslTypeInt1>)
     : KslExpressionConst<KslTypeInt3>(KslTypeInt3, "ivec3(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()})"), KslVectorExpression<KslTypeInt3, KslTypeInt1> {
+    constructor(x: Int, y: Int, z: Int) : this(KslConstInt1(x), KslConstInt1(y), KslConstInt1(z))
     override fun generateExpression(generator: KslGenerator) = generator.constIntVecExpression(x, y, z)
 }
 class KslConstInt4(val x: KslExpression<KslTypeInt1>, val y: KslExpression<KslTypeInt1>, val z: KslExpression<KslTypeInt1>, val w: KslExpression<KslTypeInt1>)
     : KslExpressionConst<KslTypeInt4>(KslTypeInt4, "ivec4(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()}, ${w.toPseudoCode()})"), KslVectorExpression<KslTypeInt4, KslTypeInt1> {
+    constructor(x: Int, y: Int, z: Int, w: Int) : this(KslConstInt1(x), KslConstInt1(y), KslConstInt1(z), KslConstInt1(w))
     override fun generateExpression(generator: KslGenerator) = generator.constIntVecExpression(x, y, z, w)
 }
 

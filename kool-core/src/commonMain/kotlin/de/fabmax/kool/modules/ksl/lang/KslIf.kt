@@ -8,13 +8,13 @@ class KslIf(val condition: KslExpression<KslTypeBool1>, parentScope: KslScopeBui
     private val parentBuilder = parentScope
 
     init {
-        addExpression(condition)
+        addExpressionDependencies(condition)
         childScopes += body
         childScopes += elseBody
     }
 
-    fun `else if`(condition: KslExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
-        addExpression(condition)
+    fun elseIf(condition: KslExpression<KslTypeBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
+        addExpressionDependencies(condition)
         val body = KslScopeBuilder(this, parentBuilder, parentBuilder.parentStage).apply {
             scopeName = "elseif"
             block()
@@ -30,7 +30,8 @@ class KslIf(val condition: KslExpression<KslTypeBool1>, parentScope: KslScopeBui
     }
 
     override fun toPseudoCode(): String {
-        val str = StringBuilder("if (${condition.toPseudoCode()}) ${body.toPseudoCode()}")
+        val str = StringBuilder("if (${condition.toPseudoCode()}) // ${dependenciesAndMutationsToString()}\n")
+        str.append(body.toPseudoCode())
         elseIfs.forEach {
             str.append(" else if (${it.first.toPseudoCode()}) ${it.second.toPseudoCode()}")
         }

@@ -26,6 +26,8 @@ class KslProcessorState {
 
     fun applyOp(op: KslOp) = stack.last().applyOp(op)
 
+    fun applyScope(scope: KslScope) = stack.last().applyScope(scope)
+
     fun logStateE() {
         logE { "stack: $stackTrace" }
         logE { "current state:" }
@@ -43,6 +45,15 @@ class KslProcessorState {
         init {
             statesInScope += initialState
             scope.definedStates.forEach { statesInScope[it] = KslMutatedState(it, 0) }
+        }
+
+        fun applyScope(scope: KslScope) {
+            scope.mutations.values.forEach {
+                if (!statesInScope.containsKey(it.state)) {
+                    throw IllegalStateException("Unable to apply scope ${scope.scopeName}: State ${it.state.stateName} not in scope. Current stack: $stackTrace")
+                }
+                statesInScope[it.state] = KslMutatedState(it.state, it.toMutation)
+            }
         }
 
         fun applyOp(op: KslOp) {

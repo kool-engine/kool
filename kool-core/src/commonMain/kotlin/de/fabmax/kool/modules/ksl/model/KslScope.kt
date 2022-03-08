@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.model
 
+import de.fabmax.kool.modules.ksl.lang.KslExpression
 import kotlin.math.max
 import kotlin.math.min
 
@@ -9,12 +10,16 @@ open class KslScope(val parentOp: KslOp?) {
     val mutations = mutableMapOf<KslState, KslStateMutation>()
 
     val definedStates = mutableSetOf<KslState>()
+    val initExpressions = mutableMapOf<KslState, KslExpression<*>>()
     val ops = mutableListOf<KslOp>()
 
     var scopeName = parentOp?.opName ?: "unnamed"
 
     fun isEmpty(): Boolean = ops.isEmpty()
     fun isNotEmpty(): Boolean = ops.isNotEmpty()
+
+    fun dependsOn(state: KslState): Boolean = dependencies.containsKey(state)
+    fun mutates(state: KslState): Boolean = mutations.containsKey(state)
 
     fun updateModel() {
         ops.forEach { it.updateModel() }

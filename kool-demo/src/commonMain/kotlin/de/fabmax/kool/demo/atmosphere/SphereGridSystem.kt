@@ -356,6 +356,6 @@ class SphereGridSystem : Mesh(IndexedVertexList(listOf(
         val ATTRIB_EDGE_MASK = Attribute("aEdgeMask", GlslType.FLOAT)
         val ATTRIB_TILE_NAME = Attribute("aTileName", GlslType.VEC_4F)
 
-        private val INSTANCE_ATTRIBUTES = listOf(MeshInstanceList.MODEL_MAT, ATTRIB_TILE_NAME, ATTRIB_EDGE_MASK, Attribute.COLORS)
+        private val INSTANCE_ATTRIBUTES = listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_TILE_NAME, ATTRIB_EDGE_MASK, Attribute.COLORS)
     }
 }

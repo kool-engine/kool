@@ -5,7 +5,7 @@ object Versions {
     val kotlinCorroutinesVersion = "1.6.0"
     val kotlinSerializationVersion = "1.3.2"
 
-    val lwjglVersion = "3.3.0"
+    val lwjglVersion = "3.3.1"
     val lwjglNatives = OperatingSystem.current().let {
         when {
             it.isLinux -> "natives-linux"

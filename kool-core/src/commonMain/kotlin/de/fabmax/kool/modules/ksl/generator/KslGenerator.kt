@@ -7,6 +7,8 @@ import de.fabmax.kool.modules.ksl.model.KslState
 
 abstract class KslGenerator {
 
+    abstract fun KslState.name(): String
+
     open fun constBoolExpression(value: Boolean) = "$value"
     open fun constIntExpression(value: Int) = "$value"
     open fun constFloatExpression(value: Float): String {
@@ -22,7 +24,7 @@ abstract class KslGenerator {
     abstract fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String
     abstract fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String
 
-    open fun valueExpression(value: KslValue<*>): String = value.stateName
+    open fun valueExpression(value: KslValue<*>): String = value.name()
     open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
     open fun vectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression(this)}.${swizzleExpr.components}"
@@ -38,8 +40,12 @@ abstract class KslGenerator {
         "${expression.op.opString}(${expression.boolVec.generateExpression(this)})"
     open fun boolScalarExpression(expression: KslBoolScalarExpr): String =
         "(${expression.left.generateExpression(this)} ${expression.op.opString} ${expression.right.generateExpression(this)})"
+    open fun boolNotExpression(expression: KslBoolNotExpr): String =
+        "!${expression.expr.generateExpression(this)}"
 
-    open fun varAssignable(assignable: KslVar<*>): String = assignable.stateName
+    abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
+
+    open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
     open fun vectorSwizzleAssignable(swizzleAssignable: KslVectorAccessor<*>): String =
@@ -50,7 +56,7 @@ abstract class KslGenerator {
     open fun generateScope(scope: KslScope, indent: String): String {
         val scopeText = StringBuilder()
         scope.definedStates.forEach { declState ->
-            scopeText.appendLine(declareState(declState).prependIndent(indent))
+            scopeText.appendLine(declareState(declState, scope.initExpressions[declState]).prependIndent(indent))
         }
         if (scopeText.isNotEmpty()) {
             scopeText.appendLine()
@@ -59,18 +65,22 @@ abstract class KslGenerator {
         return scopeText.toString()
     }
 
-    abstract fun declareState(state: KslState): String
+    abstract fun declareState(state: KslState, initExpression: KslExpression<*>?): String
 
     open fun generateOp(op: KslOp): String {
         return when (op) {
             is KslAssign<*> -> opAssign(op)
+            is KslAugmentedAssign<*> -> opAugmentedAssign(op)
             is KslIf -> opIf(op)
+            is KslBlock -> opBlock(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
 
     abstract fun opAssign(op: KslAssign<*>): String
+    abstract fun opAugmentedAssign(op: KslAugmentedAssign<*>): String
     abstract fun opIf(op: KslIf): String
+    abstract fun opBlock(op: KslBlock): String
 
     interface GeneratorOutput
 }

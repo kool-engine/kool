@@ -21,7 +21,10 @@ class KslProcessor {
 
             // reinsert op in correct / safe order
             scope.ops += nextOp
-            nextOp.childScopes.forEach { processScope(it) }
+            nextOp.childScopes.forEach { childScope ->
+                processScope(childScope)
+                processorState.applyScope(childScope)
+            }
             processorState.applyOp(nextOp)
         }
 
@@ -49,7 +52,7 @@ class KslProcessor {
                 "${it.opName} \n" +
                         "        depends on: ${it.dependencies.values.joinToString { it.toString() }}\n" +
                         "        mutates:    ${it.mutations.values.joinToString { it.toString() }}\n" +
-                        "        prevents:   ${findPreventingOp(it, remainingOps)}"
+                        "        prevents:   ${findPreventingOp(it, remainingOps) ?: "none"}"
             }
         }
         logE { "Processor state:" }

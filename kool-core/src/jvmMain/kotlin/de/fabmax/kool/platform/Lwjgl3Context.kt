@@ -222,6 +222,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = -1
         var forceDpi = 0f
         var isFullscreen = false
+        var isWithHttpAssets = true
 
         var renderBackend = Backend.OPEN_GL
 

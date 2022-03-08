@@ -22,6 +22,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, ctx)
     private val imageIoLock = Any()
+    private val isWithHttp = props.isWithHttpAssets
 
     private var fileChooserPath = System.getProperty("user.home")
 
@@ -29,7 +30,9 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     init {
         // inits http cache if not already happened
-        HttpCache.initCache(File(".httpCache"))
+        if (isWithHttp) {
+            HttpCache.initCache(File(".httpCache"))
+        }
         fontGenerator.loadCustomFonts(props, this)
     }
 
@@ -55,10 +58,9 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
 
     private suspend fun loadHttpRaw(httpRawRef: RawAssetRef): LoadedRawAsset {
         var data: Uint8BufferImpl? = null
-
         if (httpRawRef.url.startsWith("data:", true)) {
             data = decodeDataUrl(httpRawRef.url)
-        } else {
+        } else if (isWithHttp) {
             withContext(Dispatchers.IO) {
                 try {
                     val f = HttpCache.loadHttpResource(httpRawRef.url)
@@ -109,6 +111,10 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
     }
 
     private fun loadHttpTexture(httpTextureRef: TextureAssetRef): ImageTextureData {
+        if (!isWithHttp) {
+            throw FileNotFoundException("HTTP loading is disabled")
+        }
+
         val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
         return FileInputStream(f).use {
             // ImageIO.read is not thread safe!

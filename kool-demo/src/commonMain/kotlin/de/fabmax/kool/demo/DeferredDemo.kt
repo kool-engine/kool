@@ -114,8 +114,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
             +lightVolumeMesh
 
-            val lightPosInsts = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
-            val lightVolInsts = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+            val lightPosInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+            val lightVolInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
             lightPositionMesh.instances = lightPosInsts
             lightVolumeMesh.instances = lightVolInsts
 

@@ -6,7 +6,7 @@ class KslAssign<T: KslType>(val assignTarget: KslAssignable<T>, val assignExpres
     init {
         assignTarget.checkIsAssignable(scopeBuilder)
 
-        addExpression(assignExpression)
+        addExpressionDependencies(assignExpression)
         addMutation(assignTarget.mutatingState!!.mutate())
     }
 

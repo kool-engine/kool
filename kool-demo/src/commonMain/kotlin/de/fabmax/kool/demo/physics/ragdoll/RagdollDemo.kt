@@ -37,7 +37,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     private lateinit var ibl: EnvironmentMaps
     private lateinit var ao: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
-    private val bodyInstanceData = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, ATTRIB_COLOR), 1500)
+    private val bodyInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_COLOR), 1500)
     private val bodyInstances = mutableListOf<BodyInstance>()
 
     private val ragdolls = mutableListOf<Articulation>()

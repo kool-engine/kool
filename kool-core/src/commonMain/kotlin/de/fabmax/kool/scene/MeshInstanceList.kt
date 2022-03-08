@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
@@ -94,9 +93,5 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         dataF.position = 0
         dataF.limit = dataF.capacity
         hasChanged = true
-    }
-
-    companion object {
-        val MODEL_MAT = Attribute("attrib_model_mat", GlslType.MAT_4F)
     }
 }

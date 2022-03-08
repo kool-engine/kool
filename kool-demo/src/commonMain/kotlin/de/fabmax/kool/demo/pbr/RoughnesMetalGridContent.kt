@@ -120,7 +120,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
 
-            instances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
+            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
                 val mat = Mat4f()
                 for (y in 0 until nRows) {
                     for (x in 0 until nCols) {

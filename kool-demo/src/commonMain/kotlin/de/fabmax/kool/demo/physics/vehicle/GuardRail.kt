@@ -33,7 +33,7 @@ class GuardRail {
 
     var isReverse = false
 
-    private val signInstances = MeshInstanceList(listOf(MeshInstanceList.MODEL_MAT, INSTANCE_EMISSION))
+    private val signInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, INSTANCE_EMISSION))
 
     init {
         guardRailMesh = makeMesh()
