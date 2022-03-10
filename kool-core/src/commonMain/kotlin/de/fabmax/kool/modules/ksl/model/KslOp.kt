@@ -38,10 +38,10 @@ open class KslOp(val opName: String, val parentScope: KslScope) {
 
     open fun validate() {
         if (mutations.keys.any { it !in dependencies.keys }) {
-            throw IllegalStateException("Op $opName mutates state it does not depend on")
+            throw IllegalStateException("Op $opName mutates state it does not depend on: ${toPseudoCode()} // ${dependenciesAndMutationsToString()}")
         }
         mutations.values.find { mut -> dependencies[mut.state]?.let { it.mutation != mut.fromMutation } == true }?.let {
-            throw IllegalStateException("Op $opName mutation and dependency states do not match")
+            throw IllegalStateException("Op $opName mutation and dependency states do not match: ${toPseudoCode()} // ${dependenciesAndMutationsToString()}")
         }
     }
 

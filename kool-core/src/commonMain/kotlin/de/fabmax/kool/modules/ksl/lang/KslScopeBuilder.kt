@@ -73,19 +73,19 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
     fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun float2Var(initValue: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("f2"), KslTypeFloat2, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun float3Var(initValue: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("f3"), KslTypeFloat3, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun float4Var(initValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("f4"), KslTypeFloat4, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
 
     fun floatArray(arraySize: Int, name: String? = null) = floatArray(arraySize.const, name)
@@ -94,36 +94,33 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
     fun intVar(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun int2Var(initValue: KslVectorExpression<KslTypeInt2, KslTypeInt1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("i2"), KslTypeInt2, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun int3Var(initValue: KslVectorExpression<KslTypeInt3, KslTypeInt1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("i3"), KslTypeInt3, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun int4Var(initValue: KslVectorExpression<KslTypeInt4, KslTypeInt1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
 
     fun mat2Var(initValue: KslMatrixExpression<KslTypeMat2, KslTypeFloat2>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m2"), KslTypeMat2, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun mat3Var(initValue: KslMatrixExpression<KslTypeMat3, KslTypeFloat3>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m3"), KslTypeMat3, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
     fun mat4Var(initValue: KslMatrixExpression<KslTypeMat4, KslTypeFloat4>? = null, name: String? = null) =
         KslVarMatrix(name ?: nextName("m4"), KslTypeMat4, true).also {
-            ops += KslDeclareValue(it, initValue, this)
+            ops += KslDeclareVar(it, initValue, this)
         }
-
-    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
-        KslSampleColorTexture(sampler, coord)
 
     infix fun <T: KslType> KslAssignable<T>.set(expression: KslExpression<T>) {
         ops += KslAssign(this, expression, this@KslScopeBuilder)
@@ -159,4 +156,37 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     operator fun <T: KslType> KslAssignable<T>.remAssign(expr: KslExpression<T>) {
         ops += KslAugmentedAssign(this, KslMathOperator.Remainder, expr, this@KslScopeBuilder)
     }
+
+    // builtin functions
+    fun <S> clamp(value: KslScalarExpression<S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
+        where S: KslNumericType, S: KslScalar = KslBuiltinClampScalar(value, min, max)
+    fun <V, S> clamp(vec: KslVectorExpression<V, S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
+        where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinClampVector(vec, min, max)
+
+    fun <V, S> dot(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinDot(vec1, vec2)
+
+    fun <V, S> length(arg: KslVectorExpression<V, S>) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinLength(arg)
+
+    fun <S> max(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinMaxScalar(a, b)
+    fun <V, S> max(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMaxVector(a, b)
+
+    fun <S> min(a: KslScalarExpression<S>, b: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinMinScalar(a, b)
+    fun <V, S> min(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMinVector(a, b)
+
+    fun <V, S> normalize(arg: KslVectorExpression<V, S>) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinNormalize(arg)
+
+    fun <V, S> reflect(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinReflect(vec1, vec2)
+
+    fun pow(value: KslScalarExpression<KslTypeFloat1>, power: KslScalarExpression<KslTypeFloat1>) = KslBuiltinPowScalar(value, power)
+    fun <V, S> pow(vec: KslVectorExpression<V, S>, power: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinPowVector(vec, power)
+
+    // builtin texture functions
+    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
+        KslSampleColorTexture(sampler, coord)
+
 }

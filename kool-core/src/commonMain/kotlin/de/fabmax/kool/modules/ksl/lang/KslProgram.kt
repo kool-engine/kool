@@ -50,6 +50,15 @@ open class KslProgram(val name: String) {
     fun uniformFloat3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat3, false)) }
     fun uniformFloat4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat4, false)) }
 
+    fun uniformFloat1Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeFloat1, KslConstInt1(arraySize), false), arraySize) }
+    fun uniformFloat2Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat2, KslConstInt1(arraySize), false), arraySize) }
+    fun uniformFloat3Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat3, KslConstInt1(arraySize), false), arraySize) }
+    fun uniformFloat4Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat4, KslConstInt1(arraySize), false), arraySize) }
+
     fun uniformInt1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeInt1, false)) }
     fun uniformInt2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt2, false)) }
     fun uniformInt3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt3, false)) }

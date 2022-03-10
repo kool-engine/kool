@@ -56,7 +56,7 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
         super.validate()
         inputs.forEach {
             if (it.declareOp.initExpression == null) {
-                throw IllegalStateException("Missing input value for input ${it.declareOp.declareValue.stateName} of block $opName")
+                throw IllegalStateException("Missing input value for input ${it.declareOp.declareVar.stateName} of block $opName")
             }
         }
     }
@@ -64,42 +64,42 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
     override fun toPseudoCode() = body.toPseudoCode()
 
     protected abstract class BlockInput {
-        abstract val declareOp: KslDeclareValue
+        abstract val declareOp: KslDeclareVar
     }
 
     protected inner class ScalarInput<S>(val kslVar: KslVarScalar<S>) : BlockInput() where S: KslType, S: KslScalar {
-        override val declareOp = body.ops.first { it is KslDeclareValue && it.declareValue === kslVar } as KslDeclareValue
+        override val declareOp = body.ops.first { it is KslDeclareVar && it.declareVar === kslVar } as KslDeclareVar
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): KslScalarExpression<S> {
             return kslVar
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslScalarExpression<S>) {
-            declareOp.initExpression = value
+            declareOp.changeInitExpression(value)
         }
     }
 
     protected inner class VectorInput<V, S>(val kslVar: KslVarVector<V, S>) : BlockInput() where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
-        override val declareOp = body.ops.first { it is KslDeclareValue && it.declareValue === kslVar } as KslDeclareValue
+        override val declareOp = body.ops.first { it is KslDeclareVar && it.declareVar === kslVar } as KslDeclareVar
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): KslVectorExpression<V, S> {
             return kslVar
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslVectorExpression<V, S>) {
-            declareOp.initExpression = value
+            declareOp.changeInitExpression(value)
         }
     }
 
     protected inner class MatrixInput<M, V>(val kslVar: KslVarMatrix<M, V>) : BlockInput() where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
-        override val declareOp = body.ops.first { it is KslDeclareValue && it.declareValue === kslVar } as KslDeclareValue
+        override val declareOp = body.ops.first { it is KslDeclareVar && it.declareVar === kslVar } as KslDeclareVar
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): KslMatrixExpression<M, V> {
             return kslVar
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslMatrixExpression<M, V>) {
-            declareOp.initExpression = value
+            declareOp.changeInitExpression(value)
         }
     }
 }

@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
@@ -72,7 +73,11 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                     is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor ->  {
                         val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                        sampleTexture(tex, vertexBlock.texCoords[source]?.output ?: Vec2f.ZERO.const)
+                        val texColor = float4Var(sampleTexture(tex, vertexBlock.texCoords[source]?.output ?: Vec2f.ZERO.const))
+                        if (source.gamma != 1f) {
+                            texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
+                        }
+                        texColor
                     }
                 }
                 mixColor(source.mixMode, colorValue)
@@ -108,8 +113,9 @@ class ColorBlockConfig {
     fun addTextureColor(defaultTexture: Texture2d? = null,
                         textureName: String = "tColor",
                         coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+                        gamma: Float = 1f,
                         mixMode: MixMode = MixMode.Set) {
-        colorSources += TextureColor(defaultTexture, textureName, coordAttribute, mixMode)
+        colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
     }
 
     fun addInstanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
@@ -126,7 +132,7 @@ class ColorBlockConfig {
     class StaticColor(val staticColor: Color, mixMode: MixMode) : ColorSource(mixMode)
     class UniformColor(val defaultColor: Color?, val uniformName: String, mixMode: MixMode) : ColorSource(mixMode)
     class VertexColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
-    class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, mixMode: MixMode) : ColorSource(mixMode)
+    class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, mixMode: MixMode) : ColorSource(mixMode)
     class InstanceColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
 
     enum class MixMode {

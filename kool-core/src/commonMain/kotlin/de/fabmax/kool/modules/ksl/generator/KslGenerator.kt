@@ -59,7 +59,7 @@ abstract class KslGenerator {
 
     open fun generateOp(op: KslOp): String {
         return when (op) {
-            is KslDeclareValue -> opDeclare(op)
+            is KslDeclareVar -> opDeclare(op)
             is KslAssign<*> -> opAssign(op)
             is KslAugmentedAssign<*> -> opAugmentedAssign(op)
             is KslIf -> opIf(op)
@@ -68,11 +68,24 @@ abstract class KslGenerator {
         }
     }
 
-    abstract fun opDeclare(op: KslDeclareValue): String
+    abstract fun opDeclare(op: KslDeclareVar): String
     abstract fun opAssign(op: KslAssign<*>): String
     abstract fun opAugmentedAssign(op: KslAugmentedAssign<*>): String
     abstract fun opIf(op: KslIf): String
     abstract fun opBlock(op: KslBlock): String
+
+    abstract fun builtinClamp(func: KslBuiltinClampScalar<*>): String
+    abstract fun builtinClamp(func: KslBuiltinClampVector<*, *>): String
+    abstract fun builtinDot(func: KslBuiltinDot<*, *>): String
+    abstract fun builtinLength(func: KslBuiltinLength<*, *>): String
+    abstract fun builtinMax(func: KslBuiltinMaxScalar<*>): String
+    abstract fun builtinMax(func: KslBuiltinMaxVector<*, *>): String
+    abstract fun builtinMin(func: KslBuiltinMinScalar<*>): String
+    abstract fun builtinMin(func: KslBuiltinMinVector<*, *>): String
+    abstract fun builtinNormalize(func: KslBuiltinNormalize<*, *>): String
+    abstract fun builtinPow(func: KslBuiltinPowScalar): String
+    abstract fun builtinPow(func: KslBuiltinPowVector<*, *>): String
+    abstract fun builtinReflect(func: KslBuiltinReflect<*, *>): String
 
     interface GeneratorOutput
 }

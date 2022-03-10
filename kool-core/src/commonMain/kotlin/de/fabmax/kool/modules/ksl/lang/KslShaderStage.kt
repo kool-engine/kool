@@ -46,7 +46,7 @@ enum class KslShaderStageType {
 
 class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.VertexShader) {
 
-    val attributes = mutableListOf<KslVertexAttribute<*>>()
+    val attributes = mutableMapOf<String, KslVertexAttribute<*>>()
 
     val inVertexIndex = KslStageInputScalar(KslVar(NAME_IN_VERTEX_INDEX, KslTypeInt1, false))
     val inInstanceIndex = KslStageInputScalar(KslVar(NAME_IN_INSTANCE_INDEX, KslTypeInt1, false))
@@ -58,23 +58,25 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
         globalScope.definedStates += outPosition.value
     }
 
-    private fun <S> attribScalar(name: String, value: S, rate: KslInputRate) where S: KslType, S: KslScalar =
-        KslVertexAttributeScalar(KslVarScalar(name, value, false), rate).also {
-            attributes += it
+    private inline fun <reified T: KslVertexAttribute<*>> getOrCreateAttribute(name: String, create: () -> T): T {
+        val attribute = attributes[name] ?: create().also {
+            attributes[name] = it
             globalScope.definedStates += it.value
         }
+        if (attribute !is T) {
+            throw IllegalStateException("Existing attribute with name \"$name\" has not the expected type")
+        }
+        return attribute
+    }
+
+    private fun <S> attribScalar(name: String, value: S, rate: KslInputRate) where S: KslType, S: KslScalar =
+        getOrCreateAttribute(name) { KslVertexAttributeScalar(KslVarScalar(name, value, false), rate) }
 
     private fun <V, S> attribVector(name: String, value: V, rate: KslInputRate) where V: KslType, V: KslVector<S>, S: KslScalar =
-        KslVertexAttributeVector(KslVarVector(name, value, false), rate).also {
-            attributes += it
-            globalScope.definedStates += it.value
-        }
+        getOrCreateAttribute(name) { KslVertexAttributeVector(KslVarVector(name, value, false), rate) }
 
     private fun <M, V> attribMatrix(name: String, value: M, rate: KslInputRate) where M: KslType, M: KslMatrix<V>, V: KslVector<*> =
-        KslVertexAttributeMatrix(KslVarMatrix(name, value, false), rate).also {
-            attributes += it
-            globalScope.definedStates += it.value
-        }
+        getOrCreateAttribute(name) { KslVertexAttributeMatrix(KslVarMatrix(name, value, false), rate) }
 
     // todo: assign attribute locations
 

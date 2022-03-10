@@ -155,8 +155,8 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 2048
         cam.right = shadowCamBounds.max.x
         cam.bottom = shadowCamBounds.min.y
         cam.top = shadowCamBounds.max.y
-        cam.near = -shadowCamBounds.max.z + directionalCamNearOffset
-        cam.far = -shadowCamBounds.min.z
+        cam.clipNear = -shadowCamBounds.max.z + directionalCamNearOffset
+        cam.clipFar = -shadowCamBounds.min.z
     }
 
     private fun Mat4d.transform(plane: FrustumPlane) {

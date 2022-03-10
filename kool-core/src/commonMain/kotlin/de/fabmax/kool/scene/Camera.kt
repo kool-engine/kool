@@ -30,6 +30,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var globalRange = 0f
         protected set
 
+    var clipNear = 0.1f
+    var clipFar = 100f
+
     protected val globalPosMut = MutableVec3f()
     protected val globalLookAtMut = MutableVec3f()
     protected val globalUpMut = MutableVec3f()
@@ -59,7 +62,10 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    abstract fun setClipRange(near: Float, far: Float)
+    fun setClipRange(near: Float, far: Float) {
+        clipNear = near
+        clipFar = far
+    }
 
     open fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
         if (useViewportAspectRatio) {
@@ -183,26 +189,19 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var right = 10.0f
     var bottom = -10.0f
     var top = 10.0f
-    var near = -10.0f
-    var far = 10.0f
 
     var isClipToViewport = false
     var isKeepAspectRatio = true
 
     private val tmpNodeCenter = MutableVec3f()
 
-    override fun setClipRange(near: Float, far: Float) {
-        this.near = near
-        this.far = far
-    }
-
     fun setCentered(height: Float, near: Float, far: Float) {
         top = height * 0.5f
         bottom = -top
         right = aspectRatio * top
         left = -right
-        this.near = near
-        this.far = far
+        this.clipNear = near
+        this.clipFar = far
     }
 
     override fun updateCamera(renderPass: RenderPass, ctx: KoolContext) {
@@ -223,8 +222,8 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
-        if (left != right && bottom != top && near != far) {
-            proj.setOrthographic(left, right, bottom, top, near, far)
+        if (left != right && bottom != top && clipNear != clipFar) {
+            proj.setOrthographic(left, right, bottom, top, clipNear, clipFar)
         }
     }
 
@@ -256,7 +255,7 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         }
 
         val z = tmpNodeCenter.dot(globalLookDir)
-        if (z > far + globalRadius || z < near - globalRadius) {
+        if (z > clipFar + globalRadius || z < clipNear - globalRadius) {
             // node's bounding sphere is either in front of near or behind far plane
             return false
         }
@@ -265,9 +264,6 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 }
 
 open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
-    var clipNear = 0.1f
-    var clipFar = 100.0f
-
     var fovY = 60.0f
     var fovX = 0f
         private set
@@ -278,11 +274,6 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private var tangY = 1f
 
     private val tmpNodeCenter = MutableVec3f()
-
-    override fun setClipRange(near: Float, far: Float) {
-        this.clipNear = near
-        this.clipFar = far
-    }
 
     override fun updateProjectionMatrix(renderPass: RenderPass, ctx: KoolContext) {
         proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)

@@ -5,7 +5,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.MutableColor
 
-abstract class Uniform<T>(var value: T, val name: String) {
+sealed class Uniform<T>(var value: T, val name: String) {
     /**
      * Size of value in bytes including padding.
      */
@@ -146,6 +146,16 @@ class UniformMat3f(name: String) : Uniform<Mat3f>(Mat3f(), name) {
 
     override fun putTo(buffer: MixedBuffer) {
         buffer.putFloat32(value.matrix)
+    }
+}
+
+class UniformMat3fv(name: String, override val length: Int) : Uniform<Array<Mat3f>>(Array(length) { Mat3f() }, name) {
+    override val size: Int = 16 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putFloat32(value[i].matrix)
+        }
     }
 }
 

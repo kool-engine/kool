@@ -21,8 +21,7 @@ class LoadingScreen(ctx: KoolContext) : Scene("Loading Screen") {
     init {
         camera = OrthographicCamera().apply {
             isClipToViewport = true
-            near = -1000f
-            far = 1000f
+            setClipRange(-1000f, 1000f)
         }
 
         +colorMesh {

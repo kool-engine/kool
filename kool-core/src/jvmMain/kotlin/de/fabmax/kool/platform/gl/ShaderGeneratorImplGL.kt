@@ -171,13 +171,17 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
             is Uniform3fv -> "vec3 $name[$length]"
             is Uniform4fv -> "vec4 $name[$length]"
             is UniformMat3f -> "mat3 $name"
+            is UniformMat3fv -> "mat3 $name[$length"
             is UniformMat4f -> "mat4 $name"
             is UniformMat4fv -> "mat4 $name[$length]"
             is Uniform1i -> "int $name"
             is Uniform2i -> "ivec2 $name"
             is Uniform3i -> "ivec3 $name"
             is Uniform4i -> "ivec4 $name"
-            else -> TODO("Uniform type name not implemented: $this")
+            is Uniform1iv -> "int $name[$length]"
+            is Uniform2iv -> "ivec2 $name[$length]"
+            is Uniform3iv -> "ivec3 $name[$length]"
+            is Uniform4iv -> "ivec4 $name[$length]"
         }
     }
 

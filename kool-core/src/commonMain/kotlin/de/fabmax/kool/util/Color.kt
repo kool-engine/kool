@@ -38,13 +38,13 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return MutableColor(r, g, b, alpha)
     }
 
-    fun toLinear(): MutableColor = gamma(2.2f)
+    fun toLinear(): MutableColor = gamma(GAMMA_sRGB_TO_LINEAR)
 
-    fun toLinear(result: MutableColor): MutableColor = gamma(2.2f, result)
+    fun toLinear(result: MutableColor): MutableColor = gamma(GAMMA_sRGB_TO_LINEAR, result)
 
-    fun toSrgb(): MutableColor = gamma(1f / 2.2f)
+    fun toSrgb(): MutableColor = gamma(GAMMA_LINEAR_TO_sRGB)
 
-    fun toSrgb(result: MutableColor): MutableColor = gamma(1f / 2.2f, result)
+    fun toSrgb(result: MutableColor): MutableColor = gamma(GAMMA_LINEAR_TO_sRGB, result)
 
     fun gamma(gamma: Float, result: MutableColor = MutableColor()): MutableColor {
         return result.set(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
@@ -59,6 +59,9 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     }
 
     companion object {
+        const val GAMMA_sRGB_TO_LINEAR = 2.2f
+        const val GAMMA_LINEAR_TO_sRGB = 1f / 2.2f
+
         val BLACK = Color(0.00f, 0.00f, 0.00f, 1.00f)
         val DARK_GRAY = Color(0.25f, 0.25f, 0.25f, 1.00f)
         val GRAY = Color(0.50f, 0.50f, 0.50f, 1.00f)

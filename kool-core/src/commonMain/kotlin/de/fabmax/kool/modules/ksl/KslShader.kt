@@ -78,50 +78,71 @@ open class KslShader(val program: KslProgram) : Shader() {
         val ubo = UniformBuffer.Builder()
         descBuilder.descriptors += ubo
         program.uniforms.values.forEach { uniform ->
-            when (uniform.value.expressionType) {
-                KslTypeFloat1 -> ubo.uniforms += { Uniform1f(uniform.name) }
-                KslTypeFloat2 -> ubo.uniforms += { Uniform2f(uniform.name) }
-                KslTypeFloat3 -> ubo.uniforms += { Uniform3f(uniform.name) }
-                KslTypeFloat4 -> ubo.uniforms += { Uniform4f(uniform.name) }
-                //KslTypeMat2 -> ubo.uniforms += { UniformMat2f(uniform.name) }
-                KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
-                KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
-                KslTypeInt1 -> ubo.uniforms += { Uniform1i(uniform.name) }
-                KslTypeInt2 -> ubo.uniforms += { Uniform2i(uniform.name) }
-                KslTypeInt3 -> ubo.uniforms += { Uniform3i(uniform.name) }
-                KslTypeInt4 -> ubo.uniforms += { Uniform4i(uniform.name) }
+            when(val type = uniform.value.expressionType)  {
+                is KslTypeFloat1 -> ubo.uniforms += { Uniform1f(uniform.name) }
+                is KslTypeFloat2 -> ubo.uniforms += { Uniform2f(uniform.name) }
+                is KslTypeFloat3 -> ubo.uniforms += { Uniform3f(uniform.name) }
+                is KslTypeFloat4 -> ubo.uniforms += { Uniform4f(uniform.name) }
 
-                KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                is KslTypeInt1 -> ubo.uniforms += { Uniform1i(uniform.name) }
+                is KslTypeInt2 -> ubo.uniforms += { Uniform2i(uniform.name) }
+                is KslTypeInt3 -> ubo.uniforms += { Uniform3i(uniform.name) }
+                is KslTypeInt4 -> ubo.uniforms += { Uniform4i(uniform.name) }
+
+                //is KslTypeMat2 -> ubo.uniforms += { UniformMat2f(uniform.name) }
+                is KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
+                is KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
+
+                is KslTypeArray<*> -> {
+                    when (type.elemType) {
+                        is KslTypeFloat1 -> ubo.uniforms += { Uniform1fv(uniform.name, uniform.arraySize) }
+                        is KslTypeFloat2 -> ubo.uniforms += { Uniform2fv(uniform.name, uniform.arraySize) }
+                        is KslTypeFloat3 -> ubo.uniforms += { Uniform3fv(uniform.name, uniform.arraySize) }
+                        is KslTypeFloat4 -> ubo.uniforms += { Uniform4fv(uniform.name, uniform.arraySize) }
+
+                        is KslTypeInt1 -> ubo.uniforms += { Uniform1iv(uniform.name, uniform.arraySize) }
+                        is KslTypeInt2 -> ubo.uniforms += { Uniform2iv(uniform.name, uniform.arraySize) }
+                        is KslTypeInt3 -> ubo.uniforms += { Uniform3iv(uniform.name, uniform.arraySize) }
+                        is KslTypeInt4 -> ubo.uniforms += { Uniform4iv(uniform.name, uniform.arraySize) }
+
+                        is KslTypeMat3 -> ubo.uniforms += { UniformMat3fv(uniform.name, uniform.arraySize) }
+                        is KslTypeMat4 -> ubo.uniforms += { UniformMat4fv(uniform.name, uniform.arraySize) }
+
+                        else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                    }
+                }
+
+                is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
                     name = uniform.name
                     isDepthSampler = true
                 }
-                KslTypeDepthSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                is KslTypeDepthSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
                     name = uniform.name
                     arraySize = uniform.arraySize
                     isDepthSampler = true
                 }
-                KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
                     name = uniform.name
                     isDepthSampler = true
                 }
-                KslTypeDepthSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                is KslTypeDepthSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
                     name = uniform.name
                     arraySize = uniform.arraySize
                     isDepthSampler = true
                 }
-                KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = uniform.name }
-                KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = uniform.name }
-                KslTypeColorSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = uniform.name }
+                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = uniform.name }
+                is KslTypeColorSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
                     name = uniform.name
                     arraySize = uniform.arraySize
                 }
-                KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = uniform.name }
-                KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = uniform.name }
-                KslTypeColorSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = uniform.name }
+                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = uniform.name }
+                is KslTypeColorSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
                     name = uniform.name
                     arraySize = uniform.arraySize
                 }
-                else -> throw IllegalStateException("Unsupported uniform type: ${uniform.expressionType.typeName}")
+                else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
             }
         }
 
@@ -135,7 +156,7 @@ open class KslShader(val program: KslProgram) : Shader() {
         val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
         var iBinding = 0
 
-        program.vertexStage.attributes.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
+        program.vertexStage.attributes.values.asSequence().filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }
                 ?: throw NoSuchElementException("Mesh does not include required vertex attribute: ${vertexAttrib.name}")
             val off = verts.attributeByteOffsets[attrib]!!
@@ -163,7 +184,7 @@ open class KslShader(val program: KslProgram) : Shader() {
             )
         }
 
-        val instanceAttribs = program.vertexStage.attributes.filter { it.inputRate == KslInputRate.Instance }
+        val instanceAttribs = program.vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
         val insts = mesh.instances
         if (insts != null) {
             val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
