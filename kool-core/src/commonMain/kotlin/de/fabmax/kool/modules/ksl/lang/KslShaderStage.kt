@@ -48,9 +48,9 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 
     val attributes = mutableMapOf<String, KslVertexAttribute<*>>()
 
-    val inVertexIndex = KslStageInputScalar(KslVar(NAME_IN_VERTEX_INDEX, KslTypeInt1, false))
-    val inInstanceIndex = KslStageInputScalar(KslVar(NAME_IN_INSTANCE_INDEX, KslTypeInt1, false))
-    val outPosition = KslStageOutputVector(KslVar(NAME_OUT_POSITION, KslTypeFloat4, true))
+    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslTypeInt1, false))
+    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslTypeInt1, false))
+    val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslTypeFloat4, true))
 
     init {
         globalScope.definedStates += inVertexIndex.value
@@ -102,9 +102,9 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.FragmentShader) {
 
     // fixme: in OpenGL frag position is in pixels, other shading languages use normalized coordinates
-    val inFragPosition = KslStageInputVector(KslVar(NAME_IN_FRAG_POSITION, KslTypeFloat4, false))
-    val inIsFrontFacing = KslStageInputScalar(KslVar(NAME_IN_IS_FRONT_FACING, KslTypeBool1, false))
-    val outDepth = KslStageOutputScalar(KslVar(NAME_OUT_DEPTH, KslTypeFloat1, true))
+    val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslTypeFloat4, false))
+    val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslTypeBool1, false))
+    val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslTypeFloat1, true))
     val outColors = mutableListOf<KslStageOutputVector<KslTypeFloat4, KslTypeFloat1>>()
 
     init {
@@ -113,8 +113,8 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
         globalScope.definedStates += outDepth.value
     }
 
-    fun outColor(location: Int = 0) =
-        KslStageOutputVector(KslVar("${NAME_OUT_COLOR_PREFIX}${location}", KslTypeFloat4, true)).also {
+    fun colorOutput(location: Int = 0) =
+        KslStageOutputVector(KslVarVector("${NAME_OUT_COLOR_PREFIX}${location}", KslTypeFloat4, true)).also {
             it.location = location
             globalScope.definedStates += it.value
             outColors += it

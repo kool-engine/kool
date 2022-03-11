@@ -172,6 +172,37 @@ class GlslGenerator : KslGenerator() {
         return txt.toString()
     }
 
+    override fun opFor(op: KslLoopFor<*>): String {
+        return StringBuilder("for (; ")
+            .append(op.whileExpression.generateExpression(this)).append("; ")
+            .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression(this))
+            .appendLine(") {")
+            .appendLine(generateScope(op.body, "    "))
+            .append("}")
+            .toString()
+    }
+
+    override fun opWhile(op: KslLoopWhile): String {
+        return StringBuilder("while (${op.whileExpression.generateExpression(this)}) {\n")
+            .appendLine(generateScope(op.body, "    "))
+            .append("}")
+            .toString()
+    }
+
+    override fun opDoWhile(op: KslLoopDoWhile): String {
+        return StringBuilder("do {\n")
+            .appendLine(generateScope(op.body, "    "))
+            .append("} while (${op.whileExpression.generateExpression(this)});")
+            .toString()
+    }
+
+    override fun opBreak(op: KslLoopBreak) = "break;"
+
+    override fun opContinue(op: KslLoopContinue) = "continue;"
+
+    override fun opDiscard(op: KslDiscard): String = "discard;"
+
+
     override fun opBlock(op: KslBlock): String {
         val txt = StringBuilder("{ // block: ${op.opName}\n")
         txt.appendLine(generateScope(op.body, "    "))

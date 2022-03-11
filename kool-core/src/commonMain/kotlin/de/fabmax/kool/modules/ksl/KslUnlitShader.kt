@@ -44,7 +44,7 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
             fragmentStage {
                 main {
                     val fragmentColor = fragmentColorBlock(cfg.colorCfg)
-                    outColor() set fragmentColor.outColor
+                    colorOutput(fragmentColor.outColor)
                 }
             }
         }

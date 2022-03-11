@@ -63,6 +63,12 @@ abstract class KslGenerator {
             is KslAssign<*> -> opAssign(op)
             is KslAugmentedAssign<*> -> opAugmentedAssign(op)
             is KslIf -> opIf(op)
+            is KslLoopFor<*> -> opFor(op)
+            is KslLoopWhile -> opWhile(op)
+            is KslLoopDoWhile -> opDoWhile(op)
+            is KslLoopBreak -> opBreak(op)
+            is KslLoopContinue -> opContinue(op)
+            is KslDiscard -> opDiscard(op)
             is KslBlock -> opBlock(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
@@ -72,6 +78,12 @@ abstract class KslGenerator {
     abstract fun opAssign(op: KslAssign<*>): String
     abstract fun opAugmentedAssign(op: KslAugmentedAssign<*>): String
     abstract fun opIf(op: KslIf): String
+    abstract fun opFor(op: KslLoopFor<*>): String
+    abstract fun opWhile(op: KslLoopWhile): String
+    abstract fun opDoWhile(op: KslLoopDoWhile): String
+    abstract fun opBreak(op: KslLoopBreak): String
+    abstract fun opContinue(op: KslLoopContinue): String
+    abstract fun opDiscard(op: KslDiscard): String
     abstract fun opBlock(op: KslBlock): String
 
     abstract fun builtinClamp(func: KslBuiltinClampScalar<*>): String

@@ -6,6 +6,17 @@ import de.fabmax.kool.modules.ksl.model.KslScope
 
 class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val parentStage: KslShaderStage) : KslScope(parentOp) {
 
+    inline fun <reified T: Any> findParentOpByType(): T? {
+        var parent = parentOp
+        while (parent !is T && parent != null) {
+            parent = parent.parentScope.parentOp
+        }
+        return parent as? T
+    }
+
+    val isInLoop: Boolean
+        get() = findParentOpByType<KslLoop>() != null
+
     fun nextName(prefix: String): String = parentStage.program.nextName(prefix)
 
     fun getBlocks(name: String?, result: MutableList<KslBlock>): MutableList<KslBlock> {
@@ -130,6 +141,43 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         val stmt = KslIf(condition, this).apply { body.block() }
         ops += stmt
         return stmt
+    }
+
+    fun fori(fromInclusive: KslScalarExpression<KslTypeInt1>, toExclusive: KslScalarExpression<KslTypeInt1>,
+             block: KslScopeBuilder.(KslScalarExpression<KslTypeInt1>) -> Unit) {
+        val i = intVar(fromInclusive)
+        `for`(i, i lt toExclusive, 1.const, block)
+    }
+
+    fun <T> `for`(loopVar: KslVarScalar<T>, whileExpr: KslScalarExpression<KslTypeBool1>,
+                  incExpr: KslScalarExpression<T>, block: KslScopeBuilder.(KslScalarExpression<T>) -> Unit)
+            where T: KslNumericType, T: KslScalar {
+        val loop = KslLoopFor(loopVar, whileExpr, incExpr, this).apply { body.block(loopVar) }
+        ops += loop
+    }
+
+    fun `break`() {
+        ops += KslLoopBreak(this)
+    }
+
+    fun `continue`() {
+        ops += KslLoopContinue(this)
+    }
+
+    fun discard() {
+        ops += KslDiscard(this)
+    }
+
+    fun colorOutput(rgb: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1> = 1f.const, location: Int = 0) {
+        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
+        val outColor = parentStage.colorOutput(location)
+        outColor.value.rgb set rgb
+        outColor.value.a set a
+    }
+
+    fun colorOutput(value: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>, location: Int = 0) {
+        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
+        parentStage.colorOutput(location) set value
     }
 
     fun <T> any(boolVec: KslVectorExpression<T, KslTypeBool1>) where T: KslBoolType, T: KslVector<KslTypeBool1> =
