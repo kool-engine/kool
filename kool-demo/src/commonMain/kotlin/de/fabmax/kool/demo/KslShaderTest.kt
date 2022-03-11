@@ -5,13 +5,10 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.randomF
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.defaultCamTransform
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
@@ -22,9 +19,24 @@ class KslShaderTest : DemoScene("KslShader") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform()
 
-        lighting.singleLight {
-            setPoint(Vec3f(0f, 0f, 3f))
-            setColor(Color.WHITE, 10f)
+        lighting.apply {
+            lights.clear()
+            lights += Light().apply {
+                setPoint(Vec3f(3f, 3f, 3f))
+                setColor(Color.WHITE, 5f)
+            }
+            lights += Light().apply {
+                setPoint(Vec3f(3f, -3f, 3f))
+                setColor(MdColor.RED.toLinear(), 5f)
+            }
+            lights += Light().apply {
+                setPoint(Vec3f(-3f, -3f, 3f))
+                setColor(MdColor.GREEN.toLinear(), 5f)
+            }
+            lights += Light().apply {
+                setPoint(Vec3f(-3f, 3f, 3f))
+                setColor(MdColor.BLUE.toLinear(), 5f)
+            }
         }
 
         +mesh(listOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.NORMALS)) {
@@ -65,15 +77,15 @@ class KslShaderTest : DemoScene("KslShader") {
 //                unlitShader.uniformColor = Vec4f(brightness, brightness, brightness, 1f)
 //            }
 
-            val phongConfig = KslBlinnPhongShader.Config().apply {
+            val phongShader = blinnPhongShader {
                 isInstanced = true
                 color {
                     addTextureColor(makeNoiseTex(), mixMode = ColorBlockConfig.MixMode.Set, gamma = Color.GAMMA_sRGB_TO_LINEAR)
                     addInstanceColor(mixMode = ColorBlockConfig.MixMode.Multiply)
                     addUniformColor(Color.WHITE, mixMode = ColorBlockConfig.MixMode.Multiply)
                 }
+                shininess = 25f
             }
-            val phongShader = KslBlinnPhongShader(phongConfig)
             shader = phongShader
             onUpdate += {
                 val brightness = sin(it.time * 3).toFloat() * 0.5f + 0.5f
