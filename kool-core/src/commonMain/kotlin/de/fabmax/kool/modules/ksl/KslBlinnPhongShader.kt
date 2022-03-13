@@ -31,8 +31,10 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         var isFlipBacksideNormals = true
 
         var specularColor: Color = Color.WHITE
-        var ambientColor: Color = Color(0.1f, 0.1f, 0.1f).toLinear()
+        var ambientColor: Color = Color(0.2f, 0.2f, 0.2f).toLinear()
         var shininess = 16f
+
+        var modelCustomizer: (KslProgram.() -> Unit)? = null
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.apply(block)
@@ -90,7 +92,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     val material = blinnPhongMaterialBlock {
                         inCamPos = camData.position
-                        inNormal = float3Var(normalize(normalWorldSpace.output))
+                        inNormal = normal
                         inFragmentPos = positionWorldSpace.output
                         inFragmentColor = fragmentColorBlock(cfg.colorCfg).outColor.rgb
 
@@ -108,6 +110,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     colorOutput(outColor * fragmentColor.a, fragmentColor.a)
                 }
             }
+
+            cfg.modelCustomizer?.invoke(this)
 
 //            fragmentStage.main.updateModel()
 //            fragmentStage.hierarchy.printHierarchy()

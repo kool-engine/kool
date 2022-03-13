@@ -24,6 +24,8 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
 
         var isInstanced = false
 
+        var modelCustomizer: (KslProgram.() -> Unit)? = null
+
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.apply(block)
         }
@@ -52,6 +54,7 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
                     colorOutput(fragmentColor.outColor)
                 }
             }
+            cfg.modelCustomizer?.invoke(this)
         }
     }
 }

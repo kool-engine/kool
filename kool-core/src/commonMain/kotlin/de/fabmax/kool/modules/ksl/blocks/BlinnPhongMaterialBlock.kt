@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 
 fun KslScopeBuilder.blinnPhongMaterialBlock(block: BlinnPhongMaterialBlock.() -> Unit): BlinnPhongMaterialBlock {
-    val blinnPhongMaterialBlock = BlinnPhongMaterialBlock("blinnPhongMaterialBlock", this)
+    val blinnPhongMaterialBlock = BlinnPhongMaterialBlock(parentStage.program.nextName("blinnPhongMaterialBlock"), this)
     ops += blinnPhongMaterialBlock.apply(block)
     return blinnPhongMaterialBlock
 }
@@ -24,7 +24,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
     var inEncodedLightDirections by inFloat4Array("inEncodedLightDirections")
     var inEncodedLightColors by inFloat4Array("inEncodedLightColors")
 
-    val outColor = outFloat3("blinnPhongOutColor")
+    val outColor = outFloat3("outColor")
 
     init {
         body.apply {

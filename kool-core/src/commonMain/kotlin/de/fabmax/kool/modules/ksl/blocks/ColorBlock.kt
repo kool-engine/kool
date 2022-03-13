@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Color
 
 fun KslScopeBuilder.vertexColorBlock(cfg: ColorBlockConfig): ColorBlockVertexStage {
-    val colorBlock = ColorBlockVertexStage(cfg, "colorBlock", this)
+    val colorBlock = ColorBlockVertexStage(cfg, parentStage.program.nextName("colorBlock"), this)
     ops += colorBlock
     return colorBlock
 }

@@ -5,6 +5,8 @@ import de.fabmax.kool.modules.ksl.model.KslState
 
 class GlslGenerator : KslGenerator() {
 
+    var blockIndent = "  "
+
     override fun generateProgram(program: KslProgram): GlslGeneratorOutput {
         program.prepareGenerate()
         return GlslGeneratorOutput(generateVertexSrc(program.vertexStage), generateFragmentSrc(program.fragmentStage))
@@ -57,7 +59,7 @@ class GlslGenerator : KslGenerator() {
         src.generateFunctions(vertexStage)
 
         src.appendLine("void main() {")
-        src.appendLine(generateScope(vertexStage.main, "    "))
+        src.appendLine(generateScope(vertexStage.main, blockIndent))
         src.appendLine("}")
         return src.toString()
     }
@@ -82,7 +84,7 @@ class GlslGenerator : KslGenerator() {
         src.generateFunctions(fragmentStage)
 
         src.appendLine("void main() {")
-        src.appendLine(generateScope(fragmentStage.main, "    "))
+        src.appendLine(generateScope(fragmentStage.main, blockIndent))
         src.appendLine("}")
         return src.toString()
     }
@@ -147,7 +149,7 @@ class GlslGenerator : KslGenerator() {
         if (stage.functions.isNotEmpty()) {
             stage.functions.values.forEach { func ->
                 appendLine("${glslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${glslTypeName(p.expressionType)} ${p.stateName}" }}) {")
-                appendLine(generateScope(func.body, "    "))
+                appendLine(generateScope(func.body, blockIndent))
                 appendLine("}")
                 appendLine()
             }
@@ -170,16 +172,16 @@ class GlslGenerator : KslGenerator() {
 
     override fun opIf(op: KslIf): String {
         val txt = StringBuilder("if (${op.condition.generateExpression(this)}) {\n")
-        txt.appendLine(generateScope(op.body, "    "))
+        txt.appendLine(generateScope(op.body, blockIndent))
         txt.append("}")
         op.elseIfs.forEach { elseIf ->
             txt.appendLine(" else if (${elseIf.first.generateExpression(this)}) {")
-            txt.appendLine(generateScope(elseIf.second, "    "))
+            txt.appendLine(generateScope(elseIf.second, blockIndent))
             txt.append("}")
         }
         if (op.elseBody.isNotEmpty()) {
             txt.appendLine(" else {")
-            txt.appendLine(generateScope(op.elseBody, "    "))
+            txt.appendLine(generateScope(op.elseBody, blockIndent))
             txt.append("}")
         }
         return txt.toString()
@@ -190,21 +192,21 @@ class GlslGenerator : KslGenerator() {
             .append(op.whileExpression.generateExpression(this)).append("; ")
             .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression(this))
             .appendLine(") {")
-            .appendLine(generateScope(op.body, "    "))
+            .appendLine(generateScope(op.body, blockIndent))
             .append("}")
             .toString()
     }
 
     override fun opWhile(op: KslLoopWhile): String {
         return StringBuilder("while (${op.whileExpression.generateExpression(this)}) {\n")
-            .appendLine(generateScope(op.body, "    "))
+            .appendLine(generateScope(op.body, blockIndent))
             .append("}")
             .toString()
     }
 
     override fun opDoWhile(op: KslLoopDoWhile): String {
         return StringBuilder("do {\n")
-            .appendLine(generateScope(op.body, "    "))
+            .appendLine(generateScope(op.body, blockIndent))
             .append("} while (${op.whileExpression.generateExpression(this)});")
             .toString()
     }
@@ -219,7 +221,7 @@ class GlslGenerator : KslGenerator() {
 
     override fun opBlock(op: KslBlock): String {
         val txt = StringBuilder("{ // block: ${op.opName}\n")
-        txt.appendLine(generateScope(op.body, "    "))
+        txt.appendLine(generateScope(op.body, blockIndent))
         txt.append("}")
         return txt.toString()
     }

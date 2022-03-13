@@ -3,16 +3,20 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.blinnPhongShader
+import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
+import de.fabmax.kool.modules.ksl.lang.plus
+import de.fabmax.kool.modules.ksl.lang.r
+import de.fabmax.kool.modules.ksl.lang.times
+import de.fabmax.kool.modules.ksl.lang.toFloat1
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.createUint8Buffer
-import kotlin.math.sin
+import kotlin.math.PI
 
 class KslShaderTest : DemoScene("KslShader") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -83,23 +87,45 @@ class KslShaderTest : DemoScene("KslShader") {
             val phongShader = blinnPhongShader {
                 isInstanced = true
                 color {
-//                    addTextureColor(makeNoiseTex(), gamma = Color.GAMMA_sRGB_TO_LINEAR)
-//                    addInstanceColor(mixMode = ColorBlockConfig.MixMode.Multiply)
-//                    addUniformColor(Color.WHITE, mixMode = ColorBlockConfig.MixMode.Multiply)
-
                     addInstanceColor()
-//                    addStaticColor(Color.GRAY.toLinear())
                 }
                 pipeline {
                     cullMethod = CullMethod.NO_CULLING
                 }
-                shininess = 25f
-                ambientColor = MdColor.GREY toneLin 850
+
+                modelCustomizer = {
+                    val shininessTex = texture2d("tShininess")
+                    val sparkleOffset = uniformFloat1("uSparkle")
+                    val texCoords = interStageFloat2()
+                    val instanceOffset = interStageFloat1()
+
+                    vertexStage {
+                        main {
+                            texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                            instanceOffset.input set inInstanceIndex.toFloat1() * 1.73f.const
+                        }
+                    }
+
+                    fragmentStage {
+                        main {
+                            findBlock<BlinnPhongMaterialBlock>()!!.apply {
+                                val sparkle = floatVar((sampleTexture(shininessTex, texCoords.output).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
+                                inShininess = 10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const
+                            }
+                        }
+                    }
+                }
             }
+
+            var uSparkle: Uniform1f? = null
+            phongShader.onPipelineCreated += { _, _, _ ->
+                phongShader.texSamplers2d["tShininess"]!!.texture = makeNoiseTex()
+                uSparkle = phongShader.uniforms["uSparkle"] as Uniform1f
+            }
+
             shader = phongShader
-            onUpdate += {
-                val brightness = sin(it.time * 3).toFloat() * 0.5f + 0.5f
-                phongShader.uniformDiffuseColor = Vec4f(brightness, brightness, brightness, 1f)
+            onUpdate += { ev ->
+                uSparkle?.value = (ev.time % 1.0).toFloat()
             }
 
         }
