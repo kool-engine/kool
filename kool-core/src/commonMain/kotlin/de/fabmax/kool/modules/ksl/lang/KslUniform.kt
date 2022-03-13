@@ -14,12 +14,14 @@ class KslUniformScalarArray<S>(value: KslArrayScalar<S>, arraySize: Int) : KslUn
         get() = super.value as KslArrayScalar<S>
 }
 
-class KslUniformVectorArray<V, S>(value: KslArrayVector<V>, arraySize: Int) : KslUniform<KslTypeArray<V>>(value, arraySize) where V: KslType, V: KslVector<S>, S: KslScalar {
-    override val value: KslArrayVector<V>
-        get() = super.value as KslArrayVector<V>
+class KslUniformVectorArray<V, S>(value: KslArrayVector<V, S>, arraySize: Int) : KslUniform<KslTypeArray<V>>(value, arraySize) where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+    @Suppress("UNCHECKED_CAST")
+    override val value: KslArrayVector<V, S>
+        get() = super.value as KslArrayVector<V, S>
 }
 
-class KslUniformMatrixArray<M, V>(value: KslArrayMatrix<M>, arraySize: Int) : KslUniform<KslTypeArray<M>>(value, arraySize) where M: KslType, M: KslMatrix<V>, V: KslVector<*> {
-    override val value: KslArrayMatrix<M>
-        get() = super.value as KslArrayMatrix<M>
+class KslUniformMatrixArray<M, V>(value: KslArrayMatrix<M, V>, arraySize: Int) : KslUniform<KslTypeArray<M>>(value, arraySize) where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
+    @Suppress("UNCHECKED_CAST")
+    override val value: KslArrayMatrix<M, V>
+        get() = super.value as KslArrayMatrix<M, V>
 }

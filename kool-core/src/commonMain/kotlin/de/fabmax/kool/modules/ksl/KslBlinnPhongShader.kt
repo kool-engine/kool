@@ -73,54 +73,44 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     outPosition set mvp * localPos
                 }
             }
+
             fragmentStage {
                 val camData = cameraData()
                 val lightData = sceneLightData()
 
                 main {
-                    val camPos = camData.position
-                    val fragmentPos = positionWorldSpace.output
                     val normal = float3Var(normalize(normalWorldSpace.output))
                     val fragmentColor = fragmentColorBlock(cfg.colorCfg).outColor
 
                     if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.isFlipBacksideNormals) {
                         `if` (!inIsFrontFacing) {
-                            normal *= Vec3f(-1f).const
+                            normal *= (-1f).const3
                         }
                     }
 
-                    val ambientColor = float3Var(fragmentColor.rgb * uAmbientColor.rgb)
-                    val diffuseColor = float3Var()
-                    val specularColor = float3Var()
+                    val material = blinnPhongMaterialBlock {
+                        inCamPos = camData.position
+                        inNormal = float3Var(normalize(normalWorldSpace.output))
+                        inFragmentPos = positionWorldSpace.output
+                        inFragmentColor = fragmentColorBlock(cfg.colorCfg).outColor.rgb
 
-                    fori (0.const, lightData.lightCount) { i ->
-                        val lightDir = float3Var(getLightDirectionFromFragPos(fragmentPos, lightData.encodedPositions[i]))
-                        val lightDistance = floatVar(length(lightDir))
-                        lightDistance *= lightDistance
-                        lightDir set normalize(lightDir)
+                        inAmbientColor = uAmbientColor.rgb
+                        inSpecularColor = uSpecularColor.rgb
+                        inShininess = uShininess
 
-                        val lambertian = floatVar(max(dot(lightDir, normal), 0f.const))
-                        val specular = floatVar(0f.const)
-                        `if` (lambertian gt 0f.const) {
-                            val viewDir = float3Var(normalize(camPos - fragmentPos))
-                            val halfDir = float3Var(normalize(lightDir + viewDir))
-                            val specAngle = floatVar(max(dot(halfDir, normal), 0f.const))
-                            specular set pow(specAngle, uShininess)
-                        }
-
-                        val radiance = getLightRadiance(fragmentPos, lightData.encodedPositions[i],
-                            lightData.encodedDirections[i], lightData.encodedColors[i])
-                        diffuseColor += fragmentColor.rgb * lambertian * radiance
-                        specularColor += mix(fragmentColor.rgb, uSpecularColor.rgb, uSpecularColor.a) * specular * radiance
+                        setLightData(lightData)
                     }
 
-                    val outColor = float3Var(ambientColor + diffuseColor + specularColor)
+                    val outColor = float3Var(material.outColor)
                     if (cfg.isOutputToSrgbColorSpace) {
                         outColor set pow(outColor, Vec3f(Color.GAMMA_LINEAR_TO_sRGB).const)
                     }
                     colorOutput(outColor * fragmentColor.a, fragmentColor.a)
                 }
             }
+
+//            fragmentStage.main.updateModel()
+//            fragmentStage.hierarchy.printHierarchy()
         }
     }
 }

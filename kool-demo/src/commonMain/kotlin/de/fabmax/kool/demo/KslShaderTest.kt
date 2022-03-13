@@ -23,23 +23,23 @@ class KslShaderTest : DemoScene("KslShader") {
             lights += Light().apply {
 //                setPoint(Vec3f(3f, 3f, 3f))
 //                setColor(Color.WHITE, 5f)
-                setSpot(Vec3f(3f, 3f, 3f), Vec3f(-1f, -1f, -1f), 45f)
+                setSpot(Vec3f(5f, 5f, 3f), Vec3f(-1f, -1f, -1f), 45f)
                 setColor(Color.WHITE, 15f)
 //                setDirectional(Vec3f(-1f, -1f, -1f))
 //                setColor(Color.WHITE, 1f)
             }
-//            lights += Light().apply {
-//                setPoint(Vec3f(3f, -3f, 3f))
-//                setColor(MdColor.RED.toLinear(), 5f)
-//            }
-//            lights += Light().apply {
-//                setPoint(Vec3f(-3f, -3f, 3f))
-//                setColor(MdColor.GREEN.toLinear(), 5f)
-//            }
-//            lights += Light().apply {
-//                setPoint(Vec3f(-3f, 3f, 3f))
-//                setColor(MdColor.BLUE.toLinear(), 5f)
-//            }
+            lights += Light().apply {
+                setPoint(Vec3f(3f, -3f, 3f))
+                setColor(MdColor.RED.toLinear(), 5f)
+            }
+            lights += Light().apply {
+                setPoint(Vec3f(-3f, -3f, 3f))
+                setColor(MdColor.GREEN.toLinear(), 5f)
+            }
+            lights += Light().apply {
+                setPoint(Vec3f(-3f, 3f, 3f))
+                setColor(MdColor.BLUE.toLinear(), 5f)
+            }
         }
 
         +mesh(listOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.NORMALS)) {

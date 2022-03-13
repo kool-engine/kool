@@ -11,10 +11,10 @@ open class KslArray<T: KslType>(name: String, type: T, val arraySize: KslExpress
 }
 
 class KslArrayScalar<S>(name: String, type: S, arraySize: KslExpression<KslTypeInt1>, isMutable: Boolean)
-    : KslArray<S>(name, type, arraySize, isMutable) where S: KslType, S: KslScalar
+    : KslArray<S>(name, type, arraySize, isMutable), KslScalarArrayExpression<S> where S: KslType, S: KslScalar
 
-class KslArrayVector<V>(name: String, type: V, arraySize: KslExpression<KslTypeInt1>, isMutable: Boolean)
-    : KslArray<V>(name, type, arraySize, isMutable) where V: KslType, V: KslVector<*>
+class KslArrayVector<V, S>(name: String, type: V, arraySize: KslExpression<KslTypeInt1>, isMutable: Boolean)
+    : KslArray<V>(name, type, arraySize, isMutable), KslVectorArrayExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
 
-class KslArrayMatrix<M>(name: String, type: M, arraySize: KslExpression<KslTypeInt1>, isMutable: Boolean)
-    : KslArray<M>(name, type, arraySize, isMutable) where M: KslType, M: KslMatrix<*>
+class KslArrayMatrix<M, V>(name: String, type: M, arraySize: KslExpression<KslTypeInt1>, isMutable: Boolean)
+    : KslArray<M>(name, type, arraySize, isMutable), KslMatrixArrayExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>

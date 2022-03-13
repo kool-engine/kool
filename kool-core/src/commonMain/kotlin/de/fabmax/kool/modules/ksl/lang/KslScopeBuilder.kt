@@ -36,10 +36,30 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
     val Float.const: KslConstFloat1
         get() = KslConstFloat1(this)
+    val Float.const2: KslConstFloat2
+        get() = KslConstFloat2(this, this)
+    val Float.const3: KslConstFloat3
+        get() = KslConstFloat3(this, this, this)
+    val Float.const4: KslConstFloat4
+        get() = KslConstFloat4(this, this, this, this)
+
     val Int.const: KslConstInt1
         get() = KslConstInt1(this)
+    val Int.const2: KslConstInt2
+        get() = KslConstInt2(this, this)
+    val Int.const3: KslConstInt3
+        get() = KslConstInt3(this, this, this)
+    val Int.const4: KslConstInt4
+        get() = KslConstInt4(this, this, this, this)
+
     val Boolean.const: KslConstBool1
         get() = KslConstBool1(this)
+    val Boolean.const2: KslConstBool2
+        get() = KslConstBool2(this, this)
+    val Boolean.const3: KslConstBool3
+        get() = KslConstBool3(this, this, this)
+    val Boolean.const4: KslConstBool4
+        get() = KslConstBool4(this, this, this, this)
 
     val Vec2f.const: KslConstFloat2
         get() = constFloat2(x, y)
@@ -85,6 +105,17 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun constInt4(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
         KslConstInt4(xyz.x, xyz.y, xyz.z, w)
 
+    fun constBool2(x: Boolean, y: Boolean) = KslConstBool2(x, y)
+    fun constBool2(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>) = KslConstBool2(x, y)
+
+    fun constBool3(x: Boolean, y: Boolean, z: Boolean) = KslConstBool3(x, y, z)
+    fun constBool3(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>) =
+        KslConstBool3(x, y, z)
+
+    fun constBool4(x: Boolean, y: Boolean, z: Boolean, w: Boolean) = KslConstBool4(x, y, z, w)
+    fun constBool4(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>, w: KslExpression<KslTypeBool1>) =
+        KslConstBool4(x, y, z, w)
+    
     fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
             ops += KslDeclareVar(it, initValue, this)
@@ -120,6 +151,23 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         }
     fun int4Var(initValue: KslVectorExpression<KslTypeInt4, KslTypeInt1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+
+    fun boolVar(initValue: KslScalarExpression<KslTypeBool1>? = null, name: String? = null) =
+        KslVarScalar(name ?: nextName("b1"), KslTypeBool1, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun bool2Var(initValue: KslVectorExpression<KslTypeBool2, KslTypeBool1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("b2"), KslTypeInt2, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun bool3Var(initValue: KslVectorExpression<KslTypeBool3, KslTypeBool1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("b3"), KslTypeInt3, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun bool4Var(initValue: KslVectorExpression<KslTypeBool4, KslTypeBool1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("b4"), KslTypeInt4, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
 

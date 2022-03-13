@@ -63,6 +63,17 @@ open class KslScope(val parentOp: KslOp?) {
 
     fun toPseudoCode(): String {
         val str = StringBuilder("{ // scope: $scopeName\n")
+        str.appendLine("    // depends on:")
+        dependencies.values.forEach {
+            str.appendLine("    //   $it")
+        }
+        str.appendLine()
+        str.appendLine("    // mutates:")
+        mutations.values.forEach {
+            str.appendLine("    //   $it")
+        }
+        str.appendLine()
+
         definedStates.forEach { state ->
             str.appendLine("    def ${state.toPseudoCode()}")
         }

@@ -57,13 +57,16 @@ class KslConstBool1(val value: Boolean)
 }
 class KslConstBool2(val x: KslExpression<KslTypeBool1>, val y: KslExpression<KslTypeBool1>)
     : KslExpressionConst<KslTypeBool2>(KslTypeBool2, "bvec2(${x.toPseudoCode()}, ${y.toPseudoCode()})"), KslVectorExpression<KslTypeBool2, KslTypeBool1> {
+    constructor(x: Boolean, y: Boolean) : this(KslConstBool1(x), KslConstBool1(y))
     override fun generateExpression(generator: KslGenerator) = generator.constBoolVecExpression(x, y)
 }
-class KslConstBool3(val x: KslExpression<KslTypeBool1>, val y: KslExpression<KslTypeBool1>)
+class KslConstBool3(val x: KslExpression<KslTypeBool1>, val y: KslExpression<KslTypeBool1>, val z: KslExpression<KslTypeBool1>)
     : KslExpressionConst<KslTypeBool3>(KslTypeBool3, "bvec3(${x.toPseudoCode()}, ${y.toPseudoCode()})"), KslVectorExpression<KslTypeBool3, KslTypeBool1> {
+    constructor(x: Boolean, y: Boolean, z: Boolean) : this(KslConstBool1(x), KslConstBool1(y), KslConstBool1(z))
     override fun generateExpression(generator: KslGenerator) = generator.constBoolVecExpression(x, y, z)
 }
-class KslConstBool4(val x: KslExpression<KslTypeBool1>, val y: KslExpression<KslTypeBool1>)
+class KslConstBool4(val x: KslExpression<KslTypeBool1>, val y: KslExpression<KslTypeBool1>, val z: KslExpression<KslTypeBool1>, val w: KslExpression<KslTypeBool1>)
     : KslExpressionConst<KslTypeBool4>(KslTypeBool4, "bvec4(${x.toPseudoCode()}, ${y.toPseudoCode()})"), KslVectorExpression<KslTypeBool4, KslTypeBool1> {
+    constructor(x: Boolean, y: Boolean, z: Boolean, w: Boolean) : this(KslConstBool1(x), KslConstBool1(y), KslConstBool1(z), KslConstBool1(w))
     override fun generateExpression(generator: KslGenerator) = generator.constBoolVecExpression(x, y, z, w)
 }
