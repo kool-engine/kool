@@ -54,6 +54,7 @@ class GlslGenerator : KslGenerator() {
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
+        src.generateFunctions(vertexStage)
 
         src.appendLine("void main() {")
         src.appendLine(generateScope(vertexStage.main, "    "))
@@ -78,6 +79,7 @@ class GlslGenerator : KslGenerator() {
         src.generateUniforms(fragmentStage.uniforms)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
+        src.generateFunctions(fragmentStage)
 
         src.appendLine("void main() {")
         src.appendLine(generateScope(fragmentStage.main, "    "))
@@ -138,6 +140,17 @@ class GlslGenerator : KslGenerator() {
                 appendLine("${loc}out ${glslTypeName(output.expressionType)} ${output.value.name()};")
             }
             appendLine()
+        }
+    }
+
+    private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
+        if (stage.functions.isNotEmpty()) {
+            stage.functions.values.forEach { func ->
+                appendLine("${glslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${glslTypeName(p.expressionType)} ${p.stateName}" }}) {")
+                appendLine(generateScope(func.body, "    "))
+                appendLine("}")
+                appendLine()
+            }
         }
     }
 
@@ -202,6 +215,7 @@ class GlslGenerator : KslGenerator() {
 
     override fun opDiscard(op: KslDiscard): String = "discard;"
 
+    override fun opReturn(op: KslReturn): String = "return ${op.returnValue.generateExpression(this)};"
 
     override fun opBlock(op: KslBlock): String {
         val txt = StringBuilder("{ // block: ${op.opName}\n")
@@ -210,23 +224,33 @@ class GlslGenerator : KslGenerator() {
         return txt.toString()
     }
 
-    private fun generateArgs(args: List<KslExpression<*>>, expectedCount: Int): String {
-        check(args.size == expectedCount)
+    private fun generateArgs(args: List<KslExpression<*>>, expectedArgs: Int): String {
+        check(args.size == expectedArgs)
         return args.joinToString { it.generateExpression(this) }
     }
 
+    override fun invokeFunction(func: KslInvokeFunction<*>) = "${func.function.name}(${generateArgs(func.args, func.args.size)})"
+
     override fun builtinClamp(func: KslBuiltinClampScalar<*>) = "clamp(${generateArgs(func.args, 3)})"
     override fun builtinClamp(func: KslBuiltinClampVector<*, *>) = "clamp(${generateArgs(func.args, 3)})"
+    override fun builtinCos(func: KslBuiltinCosScalar<*>) = "cos(${generateArgs(func.args, 1)})"
+    override fun builtinCos(func: KslBuiltinCosVector<*, *>) = "cos(${generateArgs(func.args, 1)})"
     override fun builtinDot(func: KslBuiltinDot<*, *>) = "dot(${generateArgs(func.args, 2)})"
     override fun builtinLength(func: KslBuiltinLength<*, *>) = "length(${generateArgs(func.args, 1)})"
     override fun builtinMax(func: KslBuiltinMaxScalar<*>) = "max(${generateArgs(func.args, 2)})"
     override fun builtinMax(func: KslBuiltinMaxVector<*, *>) = "max(${generateArgs(func.args, 2)})"
     override fun builtinMin(func: KslBuiltinMinScalar<*>) = "min(${generateArgs(func.args, 2)})"
     override fun builtinMin(func: KslBuiltinMinVector<*, *>) = "min(${generateArgs(func.args, 2)})"
+    override fun builtinMix(func: KslBuiltinMixScalar) = "mix(${generateArgs(func.args, 3)})"
+    override fun builtinMix(func: KslBuiltinMixVector<*, *>) = "mix(${generateArgs(func.args, 3)})"
     override fun builtinNormalize(func: KslBuiltinNormalize<*, *>) = "normalize(${generateArgs(func.args, 1)})"
     override fun builtinReflect(func: KslBuiltinReflect<*, *>) = "reflect(${generateArgs(func.args, 2)})"
     override fun builtinPow(func: KslBuiltinPowScalar) = "pow(${generateArgs(func.args, 2)})"
     override fun builtinPow(func: KslBuiltinPowVector<*, *>) = "pow(${generateArgs(func.args, 2)})"
+    override fun builtinSin(func: KslBuiltinSinScalar<*>) = "sin(${generateArgs(func.args, 1)})"
+    override fun builtinSin(func: KslBuiltinSinVector<*, *>) = "sin(${generateArgs(func.args, 1)})"
+    override fun builtinSmoothStep(func: KslBuiltinSmoothStepScalar<*>) = "smoothstep(${generateArgs(func.args, 3)})"
+    override fun builtinSmoothStep(func: KslBuiltinSmoothStepVector<*, *>) = "smoothstep(${generateArgs(func.args, 3)})"
 
     private fun KslInterStageInterpolation.glsl(): String {
         return when (this) {

@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.modules.ksl.lang.KslUniformBuffer
@@ -9,16 +8,15 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Uniform1i
 import de.fabmax.kool.pipeline.Uniform4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import kotlin.math.cos
 import kotlin.math.min
 
 fun KslProgram.sceneLightData(maxLights: Int = 4) = SceneLightData(this, maxLights).also { uniformBuffers += it }
 
 class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslUniformBuffer(), KslShader.KslShaderListener {
 
-    val lightPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount).value
-    val lightDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount).value
-    val lightColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount).value
+    val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount).value
+    val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount).value
+    val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount).value
     val lightCount = program.uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
 
     private lateinit var uLightPositions: Uniform4fv
@@ -39,9 +37,10 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslUniformBu
             uLightCount.value = min(lighting.lights.size, maxLightCount)
             for (i in 0 until uLightCount.value) {
                 val light = lighting.lights[i]
-                uLightColors.value[i].set(light.color)
-                uLightPositions.value[i].set(light.position, light.type.encoded)
-                uLightDirections.value[i].set(light.direction, cos((light.spotAngle / 2).toRad()))
+                light.updateEncodedValues()
+                uLightPositions.value[i].set(light.encodedPosition)
+                uLightDirections.value[i].set(light.encodedDirection)
+                uLightColors.value[i].set(light.encodedColor)
             }
         } else {
             uLightCount.value = 0

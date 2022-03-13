@@ -13,7 +13,7 @@ fun blinnPhongShader(cfgBlock: KslBlinnPhongShader.Config.() -> Unit): KslBlinnP
     return KslBlinnPhongShader(cfg)
 }
 
-class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model) {
+class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
 
     var uniformDiffuseColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
     var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
@@ -24,16 +24,22 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
     class Config {
         val colorCfg = ColorBlockConfig()
+        val pipelineCfg = PipelineConfig()
 
         var isInstanced = false
         var isOutputToSrgbColorSpace = true
+        var isFlipBacksideNormals = true
 
-        var specularColor = Color.WHITE
-        var ambientColor = Color(0.1f, 0.1f, 0.1f).toLinear()
+        var specularColor: Color = Color.WHITE
+        var ambientColor: Color = Color(0.1f, 0.1f, 0.1f).toLinear()
         var shininess = 16f
 
-        fun color(colorBlock: ColorBlockConfig.() -> Unit) {
-            colorCfg.apply(colorBlock)
+        fun color(block: ColorBlockConfig.() -> Unit) {
+            colorCfg.apply(block)
+        }
+
+        fun pipeline(block: PipelineConfig.() -> Unit) {
+            pipelineCfg.apply(block)
         }
     }
 
@@ -72,23 +78,29 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                 val lightData = sceneLightData()
 
                 main {
-                    val normal = float3Var(normalize(normalWorldSpace.output), "normal")
-                    val fragmentPos = positionWorldSpace.output
                     val camPos = camData.position
-
+                    val fragmentPos = positionWorldSpace.output
+                    val normal = float3Var(normalize(normalWorldSpace.output))
                     val fragmentColor = fragmentColorBlock(cfg.colorCfg).outColor
+
+                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.isFlipBacksideNormals) {
+                        `if` (!inIsFrontFacing) {
+                            normal *= Vec3f(-1f).const
+                        }
+                    }
+
                     val ambientColor = float3Var(fragmentColor.rgb * uAmbientColor.rgb)
                     val diffuseColor = float3Var()
                     val specularColor = float3Var()
 
                     fori (0.const, lightData.lightCount) { i ->
-                        val lightDir = float3Var(lightData.lightPositions[i].xyz - fragmentPos, "lightDir")
-                        val lightDistance = floatVar(length(lightDir), "lightDistance")
+                        val lightDir = float3Var(getLightDirectionFromFragPos(fragmentPos, lightData.encodedPositions[i]))
+                        val lightDistance = floatVar(length(lightDir))
                         lightDistance *= lightDistance
                         lightDir set normalize(lightDir)
 
-                        val lambertian = floatVar(max(dot(lightDir, normal), 0f.const), "lambertian")
-                        val specular = floatVar(0f.const, "specular")
+                        val lambertian = floatVar(max(dot(lightDir, normal), 0f.const))
+                        val specular = floatVar(0f.const)
                         `if` (lambertian gt 0f.const) {
                             val viewDir = float3Var(normalize(camPos - fragmentPos))
                             val halfDir = float3Var(normalize(lightDir + viewDir))
@@ -96,10 +108,10 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                             specular set pow(specAngle, uShininess)
                         }
 
-                        val lightStrength = floatVar(lightData.lightColors[i].w / (1f.const + lightDistance))
-                        val radiance = float3Var(lightData.lightColors[i].rgb * lightStrength)
+                        val radiance = getLightRadiance(fragmentPos, lightData.encodedPositions[i],
+                            lightData.encodedDirections[i], lightData.encodedColors[i])
                         diffuseColor += fragmentColor.rgb * lambertian * radiance
-                        specularColor += uSpecularColor.rgb * specular * radiance
+                        specularColor += mix(fragmentColor.rgb, uSpecularColor.rgb, uSpecularColor.a) * specular * radiance
                     }
 
                     val outColor = float3Var(ambientColor + diffuseColor + specularColor)
@@ -108,8 +120,6 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     }
                     colorOutput(outColor * fragmentColor.a, fragmentColor.a)
                 }
-
-                hierarchy.printHierarchy()
             }
         }
     }

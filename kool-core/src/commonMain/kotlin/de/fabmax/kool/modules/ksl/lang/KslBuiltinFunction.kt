@@ -2,19 +2,20 @@ package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 
-abstract class KslBuiltinFunction<T: KslType>(override val expressionType: T, vararg args: KslExpression<*>) : KslExpression<T> {
+abstract class KslBuiltinFunction<T: KslType>(returnType: T, vararg args: KslExpression<*>) : KslExpression<T> {
     val args = listOf(*args)
     abstract val name: String
+    override val expressionType: T = returnType
     override fun collectStateDependencies() = args.flatMap { it.collectStateDependencies() }.toSet()
     override fun toPseudoCode() = "${name}(${args.joinToString { it.toPseudoCode() }})"
 }
 
-abstract class KslBuiltinFunctionScalar<S>(expressionType: S, vararg args: KslExpression<*>)
-    : KslBuiltinFunction<S>(expressionType, *args), KslScalarExpression<S> where S: KslType, S: KslScalar
-abstract class KslBuiltinFunctionVector<V, S>(expressionType: V, vararg args: KslExpression<*>)
-    : KslBuiltinFunction<V>(expressionType, *args), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
-abstract class KslBuiltinFunctionMatrix<M, V>(expressionType: M, vararg args: KslExpression<*>)
-    : KslBuiltinFunction<M>(expressionType, *args), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
+abstract class KslBuiltinFunctionScalar<S>(returnType: S, vararg args: KslExpression<*>)
+    : KslBuiltinFunction<S>(returnType, *args), KslScalarExpression<S> where S: KslType, S: KslScalar
+abstract class KslBuiltinFunctionVector<V, S>(returnType: V, vararg args: KslExpression<*>)
+    : KslBuiltinFunction<V>(returnType, *args), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
+abstract class KslBuiltinFunctionMatrix<M, V>(returnType: M, vararg args: KslExpression<*>)
+    : KslBuiltinFunction<M>(returnType, *args), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
 
 class KslBuiltinClampScalar<S>(value: KslScalarExpression<S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
     : KslBuiltinFunctionScalar<S>(value.expressionType, value, min, max) where S: KslNumericType, S: KslScalar {
@@ -22,10 +23,22 @@ class KslBuiltinClampScalar<S>(value: KslScalarExpression<S>, min: KslScalarExpr
     override fun generateExpression(generator: KslGenerator) = generator.builtinClamp(this)
 }
 
-class KslBuiltinClampVector<V, S>(vec: KslVectorExpression<V, S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
+class KslBuiltinClampVector<V, S>(vec: KslVectorExpression<V, S>, min: KslVectorExpression<V, S>, max: KslVectorExpression<V, S>)
     : KslBuiltinFunctionVector<V, S>(vec.expressionType, vec, min, max) where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar {
     override val name = "clamp"
     override fun generateExpression(generator: KslGenerator) = generator.builtinClamp(this)
+}
+
+class KslBuiltinCosScalar<S>(value: KslScalarExpression<S>)
+    : KslBuiltinFunctionScalar<S>(value.expressionType, value) where S: KslFloatType, S: KslScalar {
+    override val name = "cos"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinCos(this)
+}
+
+class KslBuiltinCosVector<V, S>(vec: KslVectorExpression<V, S>)
+    : KslBuiltinFunctionVector<V, S>(vec.expressionType, vec) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+    override val name = "cos"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinCos(this)
 }
 
 class KslBuiltinDot<V, S>(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
@@ -64,6 +77,18 @@ class KslBuiltinMinVector<V, S>(a: KslVectorExpression<V, S>, b: KslVectorExpres
     override fun generateExpression(generator: KslGenerator) = generator.builtinMin(this)
 }
 
+class KslBuiltinMixScalar(x: KslScalarExpression<KslTypeFloat1>, y: KslScalarExpression<KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1>)
+    : KslBuiltinFunctionScalar<KslTypeFloat1>(x.expressionType, x, y, a) {
+    override val name = "mix"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinMix(this)
+}
+
+class KslBuiltinMixVector<V, S>(x: KslVectorExpression<V, S>, y: KslVectorExpression<V, S>, a: KslExpression<*>)
+    : KslBuiltinFunctionVector<V, S>(x.expressionType, x, y, a) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+    override val name = "mix"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinMix(this)
+}
+
 class KslBuiltinNormalize<V, S>(vec: KslVectorExpression<V, S>)
     : KslBuiltinFunctionVector<V, S>(vec.expressionType, vec) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
     override val name = "normalize"
@@ -86,4 +111,28 @@ class KslBuiltinReflect<V, S>(vec1: KslVectorExpression<V, S>, vec2: KslVectorEx
     : KslBuiltinFunctionVector<V, S>(vec1.expressionType, vec1, vec2) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
     override val name = "reflect"
     override fun generateExpression(generator: KslGenerator) = generator.builtinReflect(this)
+}
+
+class KslBuiltinSinScalar<S>(value: KslScalarExpression<S>)
+    : KslBuiltinFunctionScalar<S>(value.expressionType, value) where S: KslFloatType, S: KslScalar {
+    override val name = "sin"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinSin(this)
+}
+
+class KslBuiltinSinVector<V, S>(vec: KslVectorExpression<V, S>)
+    : KslBuiltinFunctionVector<V, S>(vec.expressionType, vec) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+    override val name = "sin"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinSin(this)
+}
+
+class KslBuiltinSmoothStepScalar<S>(low: KslScalarExpression<S>, high: KslScalarExpression<S>, x: KslScalarExpression<S>)
+    : KslBuiltinFunctionScalar<S>(x.expressionType, low, high, x) where S: KslFloatType, S: KslScalar {
+    override val name = "smoothStep"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinSmoothStep(this)
+}
+
+class KslBuiltinSmoothStepVector<V, S>(low: KslVectorExpression<V, S>, high: KslVectorExpression<V, S>, x: KslVectorExpression<V, S>)
+    : KslBuiltinFunctionVector<V, S>(x.expressionType, low, high, x) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+    override val name = "smoothStep"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinSmoothStep(this)
 }

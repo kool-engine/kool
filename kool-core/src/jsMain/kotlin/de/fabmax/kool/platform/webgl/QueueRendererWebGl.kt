@@ -108,10 +108,6 @@ class QueueRendererWebGl(val ctx: JsContext) {
             if (this.cullMethod != cullMethod) {
                 this.cullMethod = cullMethod
                 when (cullMethod) {
-                    CullMethod.DEFAULT -> {
-                        gl.enable(CULL_FACE)
-                        gl.cullFace(BACK)
-                    }
                     CullMethod.CULL_BACK_FACES -> {
                         gl.enable(CULL_FACE)
                         gl.cullFace(BACK)

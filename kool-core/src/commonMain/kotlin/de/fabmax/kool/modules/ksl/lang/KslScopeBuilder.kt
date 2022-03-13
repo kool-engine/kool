@@ -17,6 +17,9 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     val isInLoop: Boolean
         get() = findParentOpByType<KslLoop>() != null
 
+    val isInFunction: Boolean
+        get() = findParentOpByType<KslFunction<*>.BodyOp>() != null
+
     fun nextName(prefix: String): String = parentStage.program.nextName(prefix)
 
     fun getBlocks(name: String?, result: MutableList<KslBlock>): MutableList<KslBlock> {
@@ -168,18 +171,6 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslDiscard(this)
     }
 
-    fun colorOutput(rgb: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1> = 1f.const, location: Int = 0) {
-        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
-        val outColor = parentStage.colorOutput(location)
-        outColor.value.rgb set rgb
-        outColor.value.a set a
-    }
-
-    fun colorOutput(value: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>, location: Int = 0) {
-        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
-        parentStage.colorOutput(location) set value
-    }
-
     fun <T> any(boolVec: KslVectorExpression<T, KslTypeBool1>) where T: KslBoolType, T: KslVector<KslTypeBool1> =
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.Any)
     fun <T> all(boolVec: KslVectorExpression<T, KslTypeBool1>) where T: KslBoolType, T: KslVector<KslTypeBool1> =
@@ -208,8 +199,12 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     // builtin functions
     fun <S> clamp(value: KslScalarExpression<S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
         where S: KslNumericType, S: KslScalar = KslBuiltinClampScalar(value, min, max)
-    fun <V, S> clamp(vec: KslVectorExpression<V, S>, min: KslScalarExpression<S>, max: KslScalarExpression<S>)
+    fun <V, S> clamp(vec: KslVectorExpression<V, S>, min: KslVectorExpression<V, S>, max: KslVectorExpression<V, S>)
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar = KslBuiltinClampVector(vec, min, max)
+
+    fun <S> cos(value: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinCosScalar(value)
+    fun <V, S> cos(vec: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinCosVector(vec)
 
     fun <V, S> dot(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
         where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinDot(vec1, vec2)
@@ -224,6 +219,13 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V, S> min(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
         where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMinVector(a, b)
 
+    fun mix(x: KslScalarExpression<KslTypeFloat1>, y: KslScalarExpression<KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1>) =
+        KslBuiltinMixScalar(x, y, a)
+    fun <V, S> mix(x: KslVectorExpression<V, S>, y: KslVectorExpression<V, S>, a: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMixVector(x, y, a)
+    fun <V, S> mix(x: KslVectorExpression<V, S>, y: KslVectorExpression<V, S>, a: KslScalarExpression<S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinMixVector(x, y, a)
+
     fun <V, S> normalize(arg: KslVectorExpression<V, S>) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinNormalize(arg)
 
     fun <V, S> reflect(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
@@ -232,6 +234,15 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun pow(value: KslScalarExpression<KslTypeFloat1>, power: KslScalarExpression<KslTypeFloat1>) = KslBuiltinPowScalar(value, power)
     fun <V, S> pow(vec: KslVectorExpression<V, S>, power: KslVectorExpression<V, S>)
         where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinPowVector(vec, power)
+
+    fun <S> sin(value: KslScalarExpression<S>) where S: KslFloatType, S: KslScalar = KslBuiltinSinScalar(value)
+    fun <V, S> sin(vec: KslVectorExpression<V, S>)
+            where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinSinVector(vec)
+
+    fun <S> smoothStep(low: KslScalarExpression<S>, high: KslScalarExpression<S>, x: KslScalarExpression<S>)
+            where S: KslFloatType, S: KslScalar = KslBuiltinSmoothStepScalar(low, high, x)
+    fun <V, S> smoothStep(low: KslVectorExpression<V, S>, high: KslVectorExpression<V, S>, x: KslVectorExpression<V, S>)
+            where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinSmoothStepVector(low, high, x)
 
     // builtin texture functions
     fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =

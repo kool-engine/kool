@@ -104,6 +104,34 @@ open class KslProgram(val name: String) {
         return KslInterStageVector(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
+    fun interStageInt1(name: String? = null): KslInterStageScalar<KslTypeInt1> {
+        val varName = name ?: nextName("interStageI1")
+        val input = KslVarScalar(varName, KslTypeInt1, true)
+        val output = KslVarScalar(varName, KslTypeInt1, false)
+        return KslInterStageScalar(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    }
+
+    fun interStageInt2(name: String? = null): KslInterStageVector<KslTypeInt2, KslTypeInt1> {
+        val varName = name ?: nextName("interStageI2")
+        val input = KslVarVector(varName, KslTypeInt2, true)
+        val output = KslVarVector(varName, KslTypeInt2, false)
+        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    }
+
+    fun interStageInt3(name: String? = null): KslInterStageVector<KslTypeInt3, KslTypeInt1> {
+        val varName = name ?: nextName("interStageI3")
+        val input = KslVarVector(varName, KslTypeInt3, true)
+        val output = KslVarVector(varName, KslTypeInt3, false)
+        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    }
+
+    fun interStageInt4(name: String? = null): KslInterStageVector<KslTypeInt4, KslTypeInt1> {
+        val varName = name ?: nextName("interStageI4")
+        val input = KslVarVector(varName, KslTypeInt4, true)
+        val output = KslVarVector(varName, KslTypeInt4, false)
+        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    }
+
     fun prepareGenerate() {
         stages.forEach { it.prepareGenerate() }
     }

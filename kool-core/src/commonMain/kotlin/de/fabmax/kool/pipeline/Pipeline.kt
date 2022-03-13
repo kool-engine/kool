@@ -103,9 +103,8 @@ enum class DepthCompareOp {
     NOT_EQUAL
 }
 
-enum class CullMethod {
-    DEFAULT,
-    CULL_BACK_FACES,
-    CULL_FRONT_FACES,
-    NO_CULLING
+enum class CullMethod(val isFrontVisible: Boolean, val isBackVisible: Boolean) {
+    CULL_BACK_FACES(true, false),
+    CULL_FRONT_FACES(false, true),
+    NO_CULLING(true, true)
 }

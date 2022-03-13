@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.blinnPhongShader
-import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -22,21 +21,25 @@ class KslShaderTest : DemoScene("KslShader") {
         lighting.apply {
             lights.clear()
             lights += Light().apply {
-                setPoint(Vec3f(3f, 3f, 3f))
-                setColor(Color.WHITE, 5f)
+//                setPoint(Vec3f(3f, 3f, 3f))
+//                setColor(Color.WHITE, 5f)
+                setSpot(Vec3f(3f, 3f, 3f), Vec3f(-1f, -1f, -1f), 45f)
+                setColor(Color.WHITE, 15f)
+//                setDirectional(Vec3f(-1f, -1f, -1f))
+//                setColor(Color.WHITE, 1f)
             }
-            lights += Light().apply {
-                setPoint(Vec3f(3f, -3f, 3f))
-                setColor(MdColor.RED.toLinear(), 5f)
-            }
-            lights += Light().apply {
-                setPoint(Vec3f(-3f, -3f, 3f))
-                setColor(MdColor.GREEN.toLinear(), 5f)
-            }
-            lights += Light().apply {
-                setPoint(Vec3f(-3f, 3f, 3f))
-                setColor(MdColor.BLUE.toLinear(), 5f)
-            }
+//            lights += Light().apply {
+//                setPoint(Vec3f(3f, -3f, 3f))
+//                setColor(MdColor.RED.toLinear(), 5f)
+//            }
+//            lights += Light().apply {
+//                setPoint(Vec3f(-3f, -3f, 3f))
+//                setColor(MdColor.GREEN.toLinear(), 5f)
+//            }
+//            lights += Light().apply {
+//                setPoint(Vec3f(-3f, 3f, 3f))
+//                setColor(MdColor.BLUE.toLinear(), 5f)
+//            }
         }
 
         +mesh(listOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.NORMALS)) {
@@ -80,11 +83,18 @@ class KslShaderTest : DemoScene("KslShader") {
             val phongShader = blinnPhongShader {
                 isInstanced = true
                 color {
-                    addTextureColor(makeNoiseTex(), mixMode = ColorBlockConfig.MixMode.Set, gamma = Color.GAMMA_sRGB_TO_LINEAR)
-                    addInstanceColor(mixMode = ColorBlockConfig.MixMode.Multiply)
-                    addUniformColor(Color.WHITE, mixMode = ColorBlockConfig.MixMode.Multiply)
+//                    addTextureColor(makeNoiseTex(), gamma = Color.GAMMA_sRGB_TO_LINEAR)
+//                    addInstanceColor(mixMode = ColorBlockConfig.MixMode.Multiply)
+//                    addUniformColor(Color.WHITE, mixMode = ColorBlockConfig.MixMode.Multiply)
+
+                    addInstanceColor()
+//                    addStaticColor(Color.GRAY.toLinear())
+                }
+                pipeline {
+                    cullMethod = CullMethod.NO_CULLING
                 }
                 shininess = 25f
+                ambientColor = MdColor.GREY toneLin 850
             }
             shader = phongShader
             onUpdate += {

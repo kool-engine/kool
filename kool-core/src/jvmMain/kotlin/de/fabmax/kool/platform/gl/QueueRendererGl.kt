@@ -97,10 +97,6 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             if (this.actCullMethod != cullMethod) {
                 this.actCullMethod = cullMethod
                 when (cullMethod) {
-                    CullMethod.DEFAULT -> {
-                        glEnable(GL_CULL_FACE)
-                        glCullFace(GL_BACK)
-                    }
                     CullMethod.CULL_BACK_FACES -> {
                         glEnable(GL_CULL_FACE)
                         glCullFace(GL_BACK)

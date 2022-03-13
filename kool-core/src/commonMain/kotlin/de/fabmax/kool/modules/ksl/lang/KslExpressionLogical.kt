@@ -38,14 +38,3 @@ infix fun KslScalarExpression<KslTypeBool1>.and(right: KslScalarExpression<KslTy
 
 infix fun KslScalarExpression<KslTypeBool1>.or(right: KslScalarExpression<KslTypeBool1>): KslBoolScalarExpr =
     KslBoolScalarExpr(this, right, KslBoolScalarOperator.Or)
-
-class KslBoolNotExpr(val expr: KslScalarExpression<KslTypeBool1>) : KslScalarExpression<KslTypeBool1> {
-
-    override val expressionType = KslTypeBool1
-    override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.boolNotExpression(this)
-    override fun toPseudoCode(): String = "!${expr.toPseudoCode()}"
-}
-
-operator fun KslScalarExpression<KslTypeBool1>.not() = KslBoolNotExpr(this)

@@ -132,7 +132,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 polygonMode(VK_POLYGON_MODE_FILL)
                 lineWidth(pipeline.lineWidth)
                 cullMode(when (pipeline.cullMethod) {
-                    CullMethod.DEFAULT -> VK_CULL_MODE_BACK_BIT
                     CullMethod.CULL_BACK_FACES -> VK_CULL_MODE_BACK_BIT
                     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
                     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE

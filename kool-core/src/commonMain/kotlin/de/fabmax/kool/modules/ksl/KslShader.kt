@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import kotlin.reflect.KProperty
 
-open class KslShader(val program: KslProgram) : Shader() {
+open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig) : Shader() {
 
     val uniforms = mutableMapOf<String, Uniform<*>>()
     val texSamplers1d = mutableMapOf<String, TextureSampler1d>()
@@ -28,6 +28,12 @@ open class KslShader(val program: KslProgram) : Shader() {
         listeners += program.uniformBuffers.filterIsInstance<KslShaderListener>()
         collectProgramListeners(program.vertexStage.globalScope)
         collectProgramListeners(program.fragmentStage.globalScope)
+
+        builder.blendMode = pipelineConfig.blendMode
+        builder.cullMethod = pipelineConfig.cullMethod
+        builder.depthTest = pipelineConfig.depthTest
+        builder.isWriteDepth = pipelineConfig.isWriteDepth
+        builder.lineWidth = pipelineConfig.lineWidth
 
         builder.name = program.name
         builder.shaderCodeGenerator = {
@@ -205,6 +211,14 @@ open class KslShader(val program: KslProgram) : Shader() {
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
         }
+    }
+
+    class PipelineConfig {
+        var blendMode = BlendMode.BLEND_MULTIPLY_ALPHA
+        var cullMethod = CullMethod.CULL_BACK_FACES
+        var depthTest = DepthCompareOp.LESS_EQUAL
+        var isWriteDepth = true
+        var lineWidth = 1f
     }
 
     interface KslShaderListener {
