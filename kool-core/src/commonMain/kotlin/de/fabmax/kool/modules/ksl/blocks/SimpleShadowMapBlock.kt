@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.util.SimpleShadowMap
+import kotlin.math.abs
 
 fun KslScopeBuilder.vertexSimpleShadowMap(cfg: SimpleShadowMapConfig): SimpleShadowMapBlockVertexStage {
     val shadowBlock = SimpleShadowMapBlockVertexStage(cfg, parentStage.program.nextName("simpleShadowMap"), this)
@@ -39,7 +40,7 @@ class SimpleShadowMapBlockVertexStage(val cfg: SimpleShadowMapConfig, name: Stri
             val normalLightSpace = float3Var((shadowMapData.shadowMapViewProj * constFloat4(inNormalWorldSpace, 0f.const)).xyz)
             normalZLightSpace.input set normalLightSpace.z
             positionLightSpace.input set shadowMapData.shadowMapViewProj * constFloat4(inPositionWorldSpace, 1f.const)
-            positionLightSpace.input.xyz += normalLightSpace * 0.005f.const
+            positionLightSpace.input.xyz += normalLightSpace * abs(cfg.shadowMap.shaderDepthOffset).const
         }
     }
 }
@@ -54,23 +55,15 @@ class SimpleShadowMapBlockFragmentStage(vertexStage: SimpleShadowMapBlockVertexS
 
             val cfg = vertexStage.cfg
             val depthMap = vertexStage.shadowMapData.depthMap
-            val sampleStep = float2Var(1f.const / textureSize2d(depthMap).toFloat2())
+            val posLightSpace = vertexStage.positionLightSpace.output
 
             outLightIndex set cfg.lightIndex.const
-            outShadowFactor set 0f.const
-            `if` (vertexStage.normalZLightSpace.output lt 0f.const) {
-                cfg.samplerPattern.forEach { pos ->
-                    val shadowPos = float3Var(vertexStage.positionLightSpace.output.xyz / vertexStage.positionLightSpace.output.w)
-                    shadowPos.float2("xy") += pos.const * sampleStep
-                    outShadowFactor += sampleDepthTexture(depthMap, shadowPos)
-                }
-                outShadowFactor *= (1f / cfg.samplerPattern.size).const
-            }
+            outShadowFactor set getShadowMapFactor(depthMap, posLightSpace, cfg.samplePattern)
         }
     }
 }
 
-class SimpleShadowMapConfig(val shadowMap: SimpleShadowMap, val lightIndex: Int, val samplerPattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
+class SimpleShadowMapConfig(val shadowMap: SimpleShadowMap, val lightIndex: Int, val samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
 
     companion object {
         val SAMPLE_PATTERN_1x1 = listOf(Vec2f.ZERO)

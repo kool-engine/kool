@@ -39,6 +39,12 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
             functionScope.definedStates += it
         }
 
+    private fun <T: KslType> paramVar(name: String, type: T) =
+        KslVar(name, type, false).also {
+            parameters += it
+            functionScope.definedStates += it
+        }
+
     fun paramFloat1(name: String? = null) = paramScalar(name ?: parentStage.program.nextName("paramF1"), KslTypeFloat1)
     fun paramFloat2(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramF2"), KslTypeFloat2)
     fun paramFloat3(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramF3"), KslTypeFloat3)
@@ -52,6 +58,18 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramMat2(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM2"), KslTypeMat2)
     fun paramMat3(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM3"), KslTypeMat3)
     fun paramMat4(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM4"), KslTypeMat4)
+
+    fun paramColorTex1d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColor1d"), KslTypeColorSampler1d)
+    fun paramColorTex2d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColor2d"), KslTypeColorSampler2d)
+    fun paramColorTex3d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColor3d"), KslTypeColorSampler3d)
+    fun paramColorTexCube(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColorCube"), KslTypeColorSamplerCube)
+    fun paramColorTex2dArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColor2dArray"), KslTypeColorSampler2dArray)
+    fun paramColorTexCubeArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramColorCubeArray"), KslTypeColorSamplerCubeArray)
+
+    fun paramDepthTex2d(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2d"), KslTypeDepthSampler2d)
+    fun paramDepthTexCube(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepthCube"), KslTypeDepthSamplerCube)
+    fun paramDepthTex2dArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepth2dArray"), KslTypeDepthSampler2dArray)
+    fun paramDepthTexCubeArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepthCubeArray"), KslTypeDepthSamplerCubeArray)
 
     fun prepareGenerate() {
         KslProcessor().process(hierarchy)
