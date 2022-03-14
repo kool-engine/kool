@@ -66,7 +66,7 @@ object KslTypeColorSamplerCube : KslTypeColorSampler<KslTypeFloat3>("samplerCube
 object KslTypeColorSampler2dArray : KslTypeColorSampler<KslTypeFloat3>("sampler2dArray")
 object KslTypeColorSamplerCubeArray : KslTypeColorSampler<KslTypeFloat4>("samplerCubeArray")
 
-object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat2>("depthSampler2d")
-object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat3>("depthSamplerCube")
-object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2dArray")
-object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat3>("depthSamplerCubeArray")
+object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2d")
+object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCube")
+object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat4>("depthSampler2dArray")
+object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCubeArray")

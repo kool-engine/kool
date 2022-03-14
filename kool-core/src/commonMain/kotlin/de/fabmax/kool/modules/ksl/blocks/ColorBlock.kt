@@ -15,7 +15,7 @@ fun KslScopeBuilder.vertexColorBlock(cfg: ColorBlockConfig): ColorBlockVertexSta
 }
 
 fun KslScopeBuilder.fragmentColorBlock(cfg: ColorBlockConfig, vertexStage: ColorBlockVertexStage? = null): ColorBlockFragmentStage {
-    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, "colorBlock", this)
+    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, parentStage.program.nextName("colorBlock"), this)
     ops += colorBlock
     return colorBlock
 }

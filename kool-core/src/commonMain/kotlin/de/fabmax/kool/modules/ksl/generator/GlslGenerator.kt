@@ -41,6 +41,10 @@ class GlslGenerator : KslGenerator() {
         return "texture(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)})"
     }
 
+    override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
+        return "texture(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)})"
+    }
+
     private fun generateVertexSrc(vertexStage: KslVertexStage): String {
         val src = StringBuilder()
         src.appendLine("""

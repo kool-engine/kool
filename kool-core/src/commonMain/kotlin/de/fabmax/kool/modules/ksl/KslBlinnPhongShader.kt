@@ -26,6 +26,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         val colorCfg = ColorBlockConfig()
         val pipelineCfg = PipelineConfig()
 
+        var shadowCfg: SimpleShadowMapConfig? = null
+
         var isInstanced = false
         var isOutputToSrgbColorSpace = true
         var isFlipBacksideNormals = true
@@ -57,6 +59,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             val positionWorldSpace = interStageFloat3()
             val normalWorldSpace = interStageFloat3()
 
+            var shadowMapVertexStage: SimpleShadowMapBlockVertexStage? = null
+
             vertexStage {
                 main {
                     val mvp = mat4Var(uMvp.matrix)
@@ -69,10 +73,19 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     val localPos = constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                     val localNormal = constFloat4(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
+                    val worldPos = float3Var((modelMat * localPos).xyz)
+                    val worldNormal = float3Var((modelMat * localNormal).xyz)
 
-                    positionWorldSpace.input set (modelMat * localPos).xyz
-                    normalWorldSpace.input set (modelMat * localNormal).xyz
+                    positionWorldSpace.input set worldPos
+                    normalWorldSpace.input set worldNormal
                     outPosition set mvp * localPos
+
+                    cfg.shadowCfg?.let {
+                        shadowMapVertexStage = vertexSimpleShadowMap(it).apply {
+                            inPositionWorldSpace = worldPos
+                            inNormalWorldSpace = worldNormal
+                        }
+                    }
                 }
             }
 
@@ -101,6 +114,13 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         inShininess = uShininess
 
                         setLightData(lightData)
+                    }
+
+                    shadowMapVertexStage?.let {
+                        fragmentSimpleShadowMap(it).apply {
+                            material.inShadowFac = outShadowFactor
+                            material.inShadowFacLightIdx = outLightIndex
+                        }
                     }
 
                     val outColor = float3Var(material.outColor)

@@ -1,21 +1,20 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
+import de.fabmax.kool.modules.ksl.blocks.SimpleShadowMapConfig
 import de.fabmax.kool.modules.ksl.lang.plus
 import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ksl.lang.times
 import de.fabmax.kool.modules.ksl.lang.toFloat1
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.*
 import kotlin.math.PI
 
 class KslShaderTest : DemoScene("KslShader") {
@@ -43,6 +42,67 @@ class KslShaderTest : DemoScene("KslShader") {
             lights += Light().apply {
                 setPoint(Vec3f(-3f, 3f, 3f))
                 setColor(MdColor.BLUE.toLinear(), 5f)
+            }
+        }
+
+        val simpleShadowMap = SimpleShadowMap(this, 0, 2048)
+
+        +group {
+            +colorMesh {
+                generate {
+                    cube {
+                        colored()
+//                        origin.set(3f, 3f, 1.3f)
+                        size.set(0.5f, 0.5f, 0.5f)
+                        centered()
+                    }
+                    cube {
+                        colored()
+                        origin.set(0.0f, 0.25f, 0.0f)
+                        size.set(0.2f, 0.2f, 0.2f)
+                    }
+
+                    color = MdColor.LIME.toLinear()
+                    icoSphere {
+                        steps = 3
+                        radius = 0.2f
+                        center.set(0f, -0.3f, 0f)
+                    }
+                }
+
+                shader = blinnPhongShader {
+                    color {
+                        addVertexColor()
+                    }
+                    shadowCfg = SimpleShadowMapConfig(simpleShadowMap, 0)
+                }
+            }
+
+            var rotationX = -23f //-46f
+            var rotationY = 52f //40f
+
+            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "rotx") {
+                rotationX += 1f
+                println("x: $rotationX, y: $rotationY")
+            }
+            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "rotx") {
+                rotationX -= 1f
+                println("x: $rotationX, y: $rotationY")
+            }
+            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "roty") {
+                rotationY += 1f
+                println("x: $rotationX, y: $rotationY")
+            }
+            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "roty") {
+                rotationY -= 1f
+                println("x: $rotationX, y: $rotationY")
+            }
+
+            onUpdate += {
+                setIdentity()
+                translate(3.25, 3.25, 1.55)
+                rotate(rotationX, Vec3f.X_AXIS)
+                rotate(rotationY, Vec3f.Y_AXIS)
             }
         }
 
@@ -92,6 +152,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 pipeline {
                     cullMethod = CullMethod.NO_CULLING
                 }
+                shadowCfg = SimpleShadowMapConfig(simpleShadowMap, 0)
 
                 modelCustomizer = {
                     val shininessTex = texture2d("tShininess")

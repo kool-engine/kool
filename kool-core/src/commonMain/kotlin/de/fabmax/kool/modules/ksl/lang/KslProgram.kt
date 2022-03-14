@@ -73,6 +73,9 @@ open class KslProgram(val name: String) {
     fun texture3d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler3d, false)) }
     fun textureCube(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSamplerCube, false)) }
 
+    fun depthTexture2d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSampler2d, false)) }
+    fun depthTextureCube(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSamplerCube, false)) }
+
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
         stages.forEach { it.interStageVars += interStageVar }
         vertexStage.globalScope.definedStates += interStageVar.input
