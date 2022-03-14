@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.util.SimpleShadowMap
 
@@ -51,15 +52,38 @@ class SimpleShadowMapBlockFragmentStage(vertexStage: SimpleShadowMapBlockVertexS
         body.apply {
             check(parentStage is KslFragmentStage) { "SimpleShadowMapBlockFragmentStage can only be added to KslFragmentStage" }
 
-            outLightIndex set vertexStage.cfg.lightIndex.const
+            val cfg = vertexStage.cfg
+            val depthMap = vertexStage.shadowMapData.depthMap
+            val sampleStep = float2Var(1f.const / textureSize2d(depthMap).toFloat2())
 
-            val shadowPos = float3Var(vertexStage.positionLightSpace.output.xyz / vertexStage.positionLightSpace.output.w)
+            outLightIndex set cfg.lightIndex.const
             outShadowFactor set 0f.const
             `if` (vertexStage.normalZLightSpace.output lt 0f.const) {
-                outShadowFactor set sampleDepthTexture(vertexStage.shadowMapData.depthMap, shadowPos)
+                cfg.samplerPattern.forEach { pos ->
+                    val shadowPos = float3Var(vertexStage.positionLightSpace.output.xyz / vertexStage.positionLightSpace.output.w)
+                    shadowPos.float2("xy") += pos.const * sampleStep
+                    outShadowFactor += sampleDepthTexture(depthMap, shadowPos)
+                }
+                outShadowFactor *= (1f / cfg.samplerPattern.size).const
             }
         }
     }
 }
 
-class SimpleShadowMapConfig(val shadowMap: SimpleShadowMap, val lightIndex: Int)
+class SimpleShadowMapConfig(val shadowMap: SimpleShadowMap, val lightIndex: Int, val samplerPattern: List<Vec2f> = SAMPLE_PATTERN_4x4) {
+
+    companion object {
+        val SAMPLE_PATTERN_1x1 = listOf(Vec2f.ZERO)
+        val SAMPLE_PATTERN_4x4: List<Vec2f>
+
+        init {
+            SAMPLE_PATTERN_4x4 = mutableListOf<Vec2f>().apply {
+                for (y in 0..3) {
+                    for (x in 0..3) {
+                        this += Vec2f(-1.5f + x, -1.5f + y)
+                    }
+                }
+            }
+        }
+    }
+}

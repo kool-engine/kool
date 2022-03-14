@@ -49,6 +49,7 @@ abstract class KslGenerator {
 
     abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
     abstract fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String
+    abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
 
     open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =

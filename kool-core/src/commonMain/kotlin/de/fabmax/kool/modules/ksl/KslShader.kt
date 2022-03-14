@@ -38,7 +38,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         builder.name = program.name
         builder.shaderCodeGenerator = {
             val src = GlslGenerator().generateProgram(program)
-            //src.dump()
+            src.dump()
             shaderCodeFromSource(src.vertexSrc, src.fragmentSrc)
         }
         super.onPipelineSetup(builder, mesh, ctx)

@@ -299,4 +299,16 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <T: KslTypeDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)
 
+    fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+        where T: KslTypeSampler<*>, T: KslTypeSampler1d = KslTextureSize1d(sampler, lod)
+    fun <T> textureSize2d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+            where T: KslTypeSampler<*>, T: KslTypeSampler2d = KslTextureSize2d(sampler, lod)
+    fun <T> textureSize3d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+            where T: KslTypeSampler<*>, T: KslTypeSampler3d = KslTextureSize3d(sampler, lod)
+    fun <T> textureSizeCube(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+            where T: KslTypeSampler<*>, T: KslTypeSamplerCube = KslTextureSizeCube(sampler, lod)
+    fun <T> textureSize2dArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+            where T: KslTypeSampler<*>, T: KslTypeSampler2dArray = KslTextureSize2dArray(sampler, lod)
+    fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
+            where T: KslTypeSampler<*>, T: KslTypeSamplerCubeArray = KslTextureSizeCubeArray(sampler, lod)
 }

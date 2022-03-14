@@ -59,14 +59,21 @@ class KslTypeArray<T: KslType>(val elemType: T) : KslType("array<${elemType.type
 sealed class KslTypeColorSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat4>(typeName)
 sealed class KslTypeDepthSampler<C: KslFloatType>(typeName: String) : KslTypeSampler<KslTypeFloat1>(typeName)
 
-object KslTypeColorSampler1d : KslTypeColorSampler<KslTypeFloat1>("sampler1d")
-object KslTypeColorSampler2d : KslTypeColorSampler<KslTypeFloat2>("sampler2d")
-object KslTypeColorSampler3d : KslTypeColorSampler<KslTypeFloat3>("sampler3d")
-object KslTypeColorSamplerCube : KslTypeColorSampler<KslTypeFloat3>("samplerCube")
-object KslTypeColorSampler2dArray : KslTypeColorSampler<KslTypeFloat3>("sampler2dArray")
-object KslTypeColorSamplerCubeArray : KslTypeColorSampler<KslTypeFloat4>("samplerCubeArray")
+interface KslTypeSampler1d
+interface KslTypeSampler2d
+interface KslTypeSampler3d
+interface KslTypeSamplerCube
+interface KslTypeSampler2dArray
+interface KslTypeSamplerCubeArray
 
-object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2d")
-object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCube")
-object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat4>("depthSampler2dArray")
-object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCubeArray")
+object KslTypeColorSampler1d : KslTypeColorSampler<KslTypeFloat1>("sampler1d"), KslTypeSampler1d
+object KslTypeColorSampler2d : KslTypeColorSampler<KslTypeFloat2>("sampler2d"), KslTypeSampler2d
+object KslTypeColorSampler3d : KslTypeColorSampler<KslTypeFloat3>("sampler3d"), KslTypeSampler3d
+object KslTypeColorSamplerCube : KslTypeColorSampler<KslTypeFloat3>("samplerCube"), KslTypeSamplerCube
+object KslTypeColorSampler2dArray : KslTypeColorSampler<KslTypeFloat3>("sampler2dArray"), KslTypeSampler2dArray
+object KslTypeColorSamplerCubeArray : KslTypeColorSampler<KslTypeFloat4>("samplerCubeArray"), KslTypeSamplerCubeArray
+
+object KslTypeDepthSampler2d : KslTypeDepthSampler<KslTypeFloat3>("depthSampler2d"), KslTypeSampler2d
+object KslTypeDepthSamplerCube : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCube"), KslTypeSamplerCube
+object KslTypeDepthSampler2dArray : KslTypeDepthSampler<KslTypeFloat4>("depthSampler2dArray"), KslTypeSampler2dArray
+object KslTypeDepthSamplerCubeArray : KslTypeDepthSampler<KslTypeFloat4>("depthSamplerCubeArray"), KslTypeSamplerCubeArray
