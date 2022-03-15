@@ -24,8 +24,10 @@ class ShadowBlockVertexStage(val cfg: ShadowConfig, name: String, parentScope: K
     var inNormalWorldSpace by inFloat3("inNormalWorldSpace")
 
     val shadowData: ShadowData
-    val positionsLightSpace = mutableListOf<KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
-    val normalZsLightSpace = mutableListOf<KslInterStageScalar<KslTypeFloat1>>()
+    val positionsLightSpace: KslInterStageVectorArray<KslTypeFloat4, KslTypeFloat1>
+    val normalZsLightSpace: KslInterStageScalarArray<KslTypeFloat1>
+//    val positionsLightSpace = mutableListOf<KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
+//    val normalZsLightSpace = mutableListOf<KslInterStageScalar<KslTypeFloat1>>()
 
     init {
         body.apply {
@@ -37,19 +39,22 @@ class ShadowBlockVertexStage(val cfg: ShadowConfig, name: String, parentScope: K
                     uniformBuffers += shadowData
                 }
 
-                repeat(cfg.shadowMaps.size) {
-                    positionsLightSpace += interStageFloat4()
-                    normalZsLightSpace += interStageFloat1()
-                }
+                positionsLightSpace = interStageFloat4Array(cfg.numShadowMaps)
+                normalZsLightSpace = interStageFloat1Array(cfg.numShadowMaps)
+
+//                repeat(cfg.shadowMaps.size) { i ->
+//                    positionsLightSpace += interStageFloat4(name = "positionsLightSpace_$i")
+//                    normalZsLightSpace += interStageFloat1(name = "normalZLightSpace_$i")
+//                }
             }
 
             cfg.shadowMaps.forEachIndexed { i, shadowMapCfg ->
                 val shadowMap = shadowMapCfg.shadowMap as? SimpleShadowMap ?: TODO()
                 val viewProj = shadowData.shadowMapViewProjMats[i]
                 val normalLightSpace = float3Var((viewProj * constFloat4(inNormalWorldSpace, 0f.const)).xyz)
-                normalZsLightSpace[i].input set normalLightSpace.z
-                positionsLightSpace[i].input set viewProj * constFloat4(inPositionWorldSpace, 1f.const)
-                positionsLightSpace[i].input.xyz += normalLightSpace * abs(shadowMap.shaderDepthOffset).const
+                normalZsLightSpace.input[i] set normalLightSpace.z
+                positionsLightSpace.input[i] set viewProj * constFloat4(inPositionWorldSpace, 1f.const)
+                positionsLightSpace.input[i].xyz += normalLightSpace * abs(shadowMap.shaderDepthOffset).const
             }
         }
     }
@@ -69,8 +74,10 @@ class ShadowBlockFragmentStage(
             val depthMap = vertexStage.shadowData.depthMaps
             cfg.shadowMaps.forEachIndexed { i, shadowMapCfg ->
                 val shadowMap = shadowMapCfg.shadowMap as? SimpleShadowMap ?: TODO()
-                val posLightSpace = vertexStage.positionsLightSpace[i].output
-                shadowFactors[shadowMap.lightIndex] set getShadowMapFactor(depthMap.value[i], posLightSpace, shadowMapCfg.samplePattern)
+                `if` (vertexStage.normalZsLightSpace.output[i] lt 0f.const) {
+                    val posLightSpace = vertexStage.positionsLightSpace.output[i]
+                    shadowFactors[shadowMap.lightIndex] set getShadowMapFactor(depthMap.value[i], posLightSpace, shadowMapCfg.samplePattern)
+                }
             }
         }
     }
@@ -94,11 +101,22 @@ class ShadowConfig {
     companion object {
         val SAMPLE_PATTERN_1x1: List<Vec2f> = listOf(Vec2f.ZERO)
         val SAMPLE_PATTERN_4x4: List<Vec2f> = mutableListOf<Vec2f>().apply {
+            // corners are sampled first
+            add(Vec2f(-1.5f, -1.5f))
+            add(Vec2f(-1.5f, 1.5f))
+            add(Vec2f(1.5f, -1.5f))
+            add(Vec2f(1.5f, 1.5f))
+
+            // in between sampler (if corners have diverging shadow factors)
             for (y in 0..3) {
                 for (x in 0..3) {
-                    this += Vec2f(-1.5f + x, -1.5f + y)
+                    val v = Vec2f(-1.5f + x, -1.5f + y)
+                    if (v !in this) {
+                        add(v)
+                    }
                 }
             }
+            check(size == 16)
         }
     }
 }

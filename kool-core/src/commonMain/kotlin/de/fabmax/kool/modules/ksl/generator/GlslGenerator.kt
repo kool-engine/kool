@@ -101,11 +101,7 @@ class GlslGenerator : KslGenerator() {
         if (uniforms.isNotEmpty()) {
             appendLine("// uniforms")
             for (u in uniforms) {
-                val arraySuffix = if (u.value is KslArray<*>) {
-                    "[${u.arraySize}]"
-                } else {
-                    ""
-                }
+                val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
                 appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
             }
             appendLine()
@@ -126,7 +122,9 @@ class GlslGenerator : KslGenerator() {
         if (vertexStage.interStageVars.isNotEmpty()) {
             appendLine("// custom vertex stage outputs")
             vertexStage.interStageVars.forEach { interStage ->
-                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(interStage.input.assignType)} ${interStage.input.name()};")
+                val value = interStage.input
+                val arraySuffix = if (value is KslArray<*>) { "[${value.arraySize}]" } else { "" }
+                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
             }
             appendLine()
         }
@@ -136,7 +134,9 @@ class GlslGenerator : KslGenerator() {
         if (fragmentStage.interStageVars.isNotEmpty()) {
             appendLine("// custom fragment stage inputs")
             fragmentStage.interStageVars.forEach { interStage ->
-                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(interStage.output.expressionType)} ${interStage.output.name()};")
+                val value = interStage.output
+                val arraySuffix = if (value is KslArray<*>) { "[${value.arraySize}]" } else { "" }
+                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()}${arraySuffix};")
             }
             appendLine()
         }

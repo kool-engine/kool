@@ -11,7 +11,7 @@ abstract class KslVectorAccessor<T: KslType>(val vector: KslVectorExpression<*,*
     override val assignType = type
 
     override val mutatingState: KslValue<*>?
-        get() = vector as? KslValue<*>
+        get() = vector as? KslValue<*> ?: (vector as? KslAssignable<*>)?.mutatingState
 
     init {
         if (components.length != expectedLength) {

@@ -110,58 +110,65 @@ open class KslProgram(val name: String) {
         fragmentStage.globalScope.definedStates += interStageVar.output
     }
 
-    fun interStageFloat1(interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth, name: String? = null): KslInterStageScalar<KslTypeFloat1> {
-        val varName = name ?: nextName("interStageF1")
-        val input = KslVarScalar(varName, KslTypeFloat1, true)
-        val output = KslVarScalar(varName, KslTypeFloat1, false)
+    private fun <S> interStageScalar(type: S, interpolation: KslInterStageInterpolation, name: String):
+            KslInterStageScalar<S> where S: KslType, S: KslScalar {
+        val input = KslVarScalar(name, type, true)
+        val output = KslVarScalar(name, type, false)
         return KslInterStageScalar(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
-    fun interStageFloat2(interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth, name: String? = null): KslInterStageVector<KslTypeFloat2, KslTypeFloat1> {
-        val varName = name ?: nextName("interStageF2")
-        val input = KslVarVector(varName, KslTypeFloat2, true)
-        val output = KslVarVector(varName, KslTypeFloat2, false)
-        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
-    }
-    fun interStageFloat3(interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth, name: String? = null): KslInterStageVector<KslTypeFloat3, KslTypeFloat1> {
-        val varName = name ?: nextName("interStageF3")
-        val input = KslVarVector(varName, KslTypeFloat3, true)
-        val output = KslVarVector(varName, KslTypeFloat3, false)
-        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
-    }
-    fun interStageFloat4(interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth, name: String? = null): KslInterStageVector<KslTypeFloat4, KslTypeFloat1> {
-        val varName = name ?: nextName("interStageF4")
-        val input = KslVarVector(varName, KslTypeFloat4, true)
-        val output = KslVarVector(varName, KslTypeFloat4, false)
+
+    private fun <V, S> interStageVector(type: V, interpolation: KslInterStageInterpolation, name: String):
+            KslInterStageVector<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+        val input = KslVarVector(name, type, true)
+        val output = KslVarVector(name, type, false)
         return KslInterStageVector(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    fun interStageInt1(name: String? = null): KslInterStageScalar<KslTypeInt1> {
-        val varName = name ?: nextName("interStageI1")
-        val input = KslVarScalar(varName, KslTypeInt1, true)
-        val output = KslVarScalar(varName, KslTypeInt1, false)
-        return KslInterStageScalar(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    fun interStageFloat1(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageScalar(KslTypeFloat1, interpolation, name ?: nextName("interStageF1"))
+    fun interStageFloat2(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVector(KslTypeFloat2, interpolation, name ?: nextName("interStageF2"))
+    fun interStageFloat3(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVector(KslTypeFloat3, interpolation, name ?: nextName("interStageF3"))
+    fun interStageFloat4(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVector(KslTypeFloat4, interpolation, name ?: nextName("interStageF4"))
+
+    fun interStageInt1(name: String? = null) = interStageScalar(KslTypeInt1, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1"))
+    fun interStageInt2(name: String? = null) = interStageVector(KslTypeInt2, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2"))
+    fun interStageInt3(name: String? = null) = interStageVector(KslTypeInt3, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3"))
+    fun interStageInt4(name: String? = null) = interStageVector(KslTypeInt4, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4"))
+
+    private fun <S> interStageScalarArray(type: S, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
+            KslInterStageScalarArray<S> where S: KslType, S: KslScalar {
+        val input = KslArrayScalar(name, type, arraySize, true)
+        val output = KslArrayScalar(name, type, arraySize, false)
+        return KslInterStageScalarArray(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    fun interStageInt2(name: String? = null): KslInterStageVector<KslTypeInt2, KslTypeInt1> {
-        val varName = name ?: nextName("interStageI2")
-        val input = KslVarVector(varName, KslTypeInt2, true)
-        val output = KslVarVector(varName, KslTypeInt2, false)
-        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
+    private fun <V, S> interStageVectorArray(type: V, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
+            KslInterStageVectorArray<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+        val input = KslArrayVector(name, type, arraySize, true)
+        val output = KslArrayVector(name, type, arraySize, false)
+        return KslInterStageVectorArray(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    fun interStageInt3(name: String? = null): KslInterStageVector<KslTypeInt3, KslTypeInt1> {
-        val varName = name ?: nextName("interStageI3")
-        val input = KslVarVector(varName, KslTypeInt3, true)
-        val output = KslVarVector(varName, KslTypeInt3, false)
-        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
-    }
+    fun interStageFloat1Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageScalarArray(KslTypeFloat1, arraySize, interpolation, name ?: nextName("interStageF1Array"))
+    fun interStageFloat2Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVectorArray(KslTypeFloat2, arraySize, interpolation, name ?: nextName("interStageF2Array"))
+    fun interStageFloat3Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVectorArray(KslTypeFloat3, arraySize, interpolation, name ?: nextName("interStageF3Array"))
+    fun interStageFloat4Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+        interStageVectorArray(KslTypeFloat4, arraySize, interpolation, name ?: nextName("interStageF4Array"))
 
-    fun interStageInt4(name: String? = null): KslInterStageVector<KslTypeInt4, KslTypeInt1> {
-        val varName = name ?: nextName("interStageI4")
-        val input = KslVarVector(varName, KslTypeInt4, true)
-        val output = KslVarVector(varName, KslTypeInt4, false)
-        return KslInterStageVector(input, output, KslShaderStageType.VertexShader, KslInterStageInterpolation.Flat).also { registerInterStageVar(it) }
-    }
+    fun interStageInt1Array(arraySize: Int, name: String? = null) =
+        interStageScalarArray(KslTypeInt1, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1Array"))
+    fun interStageInt2Array(arraySize: Int, name: String? = null) =
+        interStageVectorArray(KslTypeInt2, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2Array"))
+    fun interStageInt3Array(arraySize: Int, name: String? = null) =
+        interStageVectorArray(KslTypeInt3, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3Array"))
+    fun interStageInt4Array(arraySize: Int, name: String? = null) =
+        interStageVectorArray(KslTypeInt4, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4Array"))
 
     fun prepareGenerate() {
         stages.forEach { it.prepareGenerate() }
