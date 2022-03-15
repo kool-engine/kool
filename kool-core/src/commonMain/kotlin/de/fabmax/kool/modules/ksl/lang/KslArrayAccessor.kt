@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-abstract class KslArrayAccessor<T: KslType>(
+open class KslArrayAccessor<T: KslType>(
     val array: KslExpression<KslTypeArray<T>>,
     val index: KslExpression<KslTypeInt1>)
     : KslExpression<T>, KslAssignable<T> {
@@ -28,6 +28,11 @@ class KslArrayVectorAccessor<V, S>(array: KslVectorArrayExpression<V, S>, index:
     KslArrayAccessor<V>(array, index), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslScalar
 class KslArrayMatrixAccessor<M, V>(array: KslMatrixArrayExpression<M, V>, index: KslExpression<KslTypeInt1>) :
     KslArrayAccessor<M>(array, index), KslMatrixExpression<M, V> where M: KslType, M : KslMatrix<V>, V: KslVector<*>
+
+operator fun <T: KslType> KslArrayExpression<T>.get(index: Int) =
+    KslArrayAccessor(this, KslConstInt1(index))
+operator fun <T: KslType> KslArrayExpression<T>.get(index: KslExpression<KslTypeInt1>) =
+    KslArrayAccessor(this, index)
 
 operator fun <S> KslScalarArrayExpression<S>.get(index: Int) where S: KslType, S: KslScalar =
     KslArrayScalarAccessor(this, KslConstInt1(index))

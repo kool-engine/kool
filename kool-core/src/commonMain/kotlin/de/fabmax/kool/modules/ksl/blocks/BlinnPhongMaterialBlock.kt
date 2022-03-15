@@ -24,8 +24,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
     var inEncodedLightDirections by inFloat4Array("inEncodedLightDirections")
     var inEncodedLightColors by inFloat4Array("inEncodedLightColors")
 
-    var inShadowFac by inFloat1("inShadowFac", KslConstFloat1(1f))
-    var inShadowFacLightIdx by inInt1("inShadowFacLightIdx", KslConstInt1(0))
+    var inShadowFactors by inFloat1Array("inShadowFactors")
 
     val outColor = outFloat3("outColor")
 
@@ -50,12 +49,8 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
                     specular set pow(specAngle, inShininess)
                 }
 
-                val radiance = float3Var(getLightRadiance(inFragmentPos, inEncodedLightPositions[i],
-                    inEncodedLightDirections[i], inEncodedLightColors[i]))
-
-                `if` (i eq inShadowFacLightIdx) {
-                    radiance set radiance * inShadowFac
-                }
+                val radiance = float3Var(inShadowFactors[i] * getLightRadiance(inFragmentPos,
+                    inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
 
                 diffuseColor += inFragmentColor * lambertian * radiance
                 specularColor += inSpecularColor * specular * radiance

@@ -65,7 +65,8 @@ abstract class KslGenerator {
 
     open fun generateOp(op: KslOp): String {
         return when (op) {
-            is KslDeclareVar -> opDeclare(op)
+            is KslDeclareVar -> opDeclareVar(op)
+            is KslDeclareArray -> opDeclareArray(op)
             is KslAssign<*> -> opAssign(op)
             is KslAugmentedAssign<*> -> opAugmentedAssign(op)
             is KslIf -> opIf(op)
@@ -81,7 +82,8 @@ abstract class KslGenerator {
         }
     }
 
-    abstract fun opDeclare(op: KslDeclareVar): String
+    abstract fun opDeclareVar(op: KslDeclareVar): String
+    abstract fun opDeclareArray(op: KslDeclareArray): String
     abstract fun opAssign(op: KslAssign<*>): String
     abstract fun opAugmentedAssign(op: KslAugmentedAssign<*>): String
     abstract fun opIf(op: KslIf): String

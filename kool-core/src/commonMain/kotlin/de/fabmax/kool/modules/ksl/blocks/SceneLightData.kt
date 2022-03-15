@@ -10,13 +10,13 @@ import de.fabmax.kool.pipeline.Uniform4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import kotlin.math.min
 
-fun KslProgram.sceneLightData(maxLights: Int = 4) = SceneLightData(this, maxLights).also { uniformBuffers += it }
+fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights).also { uniformBuffers += it }
 
 class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslUniformBuffer(), KslShader.KslShaderListener {
 
-    val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount).value
-    val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount).value
-    val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount).value
+    val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount)
+    val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount)
+    val encodedColors = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_COLORS, maxLightCount)
     val lightCount = program.uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
 
     private lateinit var uLightPositions: Uniform4fv

@@ -25,12 +25,13 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
     class Config {
         val colorCfg = ColorBlockConfig()
         val pipelineCfg = PipelineConfig()
-
-        var shadowCfg: SimpleShadowMapConfig? = null
+        val shadowCfg = ShadowConfig()
 
         var isInstanced = false
         var isOutputToSrgbColorSpace = true
         var isFlipBacksideNormals = true
+
+        var maxNumberOfLights = 4
 
         var specularColor: Color = Color.WHITE
         var ambientColor: Color = Color(0.2f, 0.2f, 0.2f).toLinear()
@@ -44,6 +45,10 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
         fun pipeline(block: PipelineConfig.() -> Unit) {
             pipelineCfg.apply(block)
+        }
+
+        fun shadow(block: ShadowConfig.() -> Unit) {
+            shadowCfg.apply(block)
         }
     }
 
@@ -59,7 +64,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             val positionWorldSpace = interStageFloat3()
             val normalWorldSpace = interStageFloat3()
 
-            var shadowMapVertexStage: SimpleShadowMapBlockVertexStage? = null
+            val shadowMapVertexStage: ShadowBlockVertexStage
 
             vertexStage {
                 main {
@@ -80,18 +85,16 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     normalWorldSpace.input set worldNormal
                     outPosition set mvp * localPos
 
-                    cfg.shadowCfg?.let {
-                        shadowMapVertexStage = vertexSimpleShadowMap(it).apply {
-                            inPositionWorldSpace = worldPos
-                            inNormalWorldSpace = worldNormal
-                        }
+                    shadowMapVertexStage = vertexShadowBlock(cfg.shadowCfg) {
+                        inPositionWorldSpace = worldPos
+                        inNormalWorldSpace = worldNormal
                     }
                 }
             }
 
             fragmentStage {
                 val camData = cameraData()
-                val lightData = sceneLightData()
+                val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
                     val normal = float3Var(normalize(normalWorldSpace.output))
@@ -103,6 +106,9 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         }
                     }
 
+                    val shadowFactors = floatArray(lightData.maxLightCount, 1f.const)
+                    fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
+
                     val material = blinnPhongMaterialBlock {
                         inCamPos = camData.position
                         inNormal = normal
@@ -113,14 +119,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         inSpecularColor = uSpecularColor.rgb
                         inShininess = uShininess
 
+                        inShadowFactors = shadowFactors
                         setLightData(lightData)
-                    }
-
-                    shadowMapVertexStage?.let {
-                        fragmentSimpleShadowMap(it).apply {
-                            material.inShadowFac = outShadowFactor
-                            material.inShadowFacLightIdx = outLightIndex
-                        }
                     }
 
                     val outColor = float3Var(material.outColor)

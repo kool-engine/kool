@@ -5,6 +5,8 @@ import kotlin.contracts.contract
 
 open class KslProgram(val name: String) {
 
+    var dumpCode = false
+
     private var nextNameIdx = 1
     internal fun nextName(prefix: String): String = "${prefix}_${nextNameIdx++}"
 
@@ -51,22 +53,38 @@ open class KslProgram(val name: String) {
     fun uniformFloat4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat4, false)) }
 
     fun uniformFloat1Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeFloat1, KslConstInt1(arraySize), false), arraySize) }
+        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeFloat1, arraySize, false)) }
     fun uniformFloat2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat2, KslConstInt1(arraySize), false), arraySize) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat2, arraySize, false)) }
     fun uniformFloat3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat3, KslConstInt1(arraySize), false), arraySize) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat3, arraySize, false)) }
     fun uniformFloat4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat4, KslConstInt1(arraySize), false), arraySize) }
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat4, arraySize, false)) }
 
     fun uniformInt1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeInt1, false)) }
     fun uniformInt2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt2, false)) }
     fun uniformInt3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt3, false)) }
     fun uniformInt4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt4, false)) }
 
+    fun uniformInt1Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeInt1, arraySize, false)) }
+    fun uniformInt2Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt2, arraySize, false)) }
+    fun uniformInt3Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt3, arraySize, false)) }
+    fun uniformInt4Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt4, arraySize, false)) }
+
     fun uniformMat2(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat2, false)) }
     fun uniformMat3(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat3, false)) }
     fun uniformMat4(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat4, false)) }
+
+    fun uniformMat2Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat2, arraySize, false)) }
+    fun uniformMat3Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat3, arraySize, false)) }
+    fun uniformMat4Array(name: String, arraySize: Int) =
+        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat4, arraySize, false)) }
 
     fun texture1d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler1d, false)) }
     fun texture2d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler2d, false)) }
@@ -75,6 +93,16 @@ open class KslProgram(val name: String) {
 
     fun depthTexture2d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSampler2d, false)) }
     fun depthTextureCube(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSamplerCube, false)) }
+
+    // arrays of textures (this is different to array textures, like, e.g., KslTypeColorSampler2dArray)
+    fun textureArray1d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler1d, arraySize, false)) }
+    fun textureArray2d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler2d, arraySize, false)) }
+    fun textureArray3d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler3d, arraySize, false)) }
+    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSamplerCube, arraySize, false)) }
+
+    // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
+    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSampler2d, arraySize, false)) }
+    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
         stages.forEach { it.interStageVars += interStageVar }

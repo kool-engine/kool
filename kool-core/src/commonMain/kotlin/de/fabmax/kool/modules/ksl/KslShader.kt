@@ -38,7 +38,9 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         builder.name = program.name
         builder.shaderCodeGenerator = {
             val src = GlslGenerator().generateProgram(program)
-            src.dump()
+            if (program.dumpCode) {
+                src.dump()
+            }
             shaderCodeFromSource(src.vertexSrc, src.fragmentSrc)
         }
         super.onPipelineSetup(builder, mesh, ctx)
@@ -99,6 +101,19 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
                 is KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
                 is KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
 
+                is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                    name = uniform.name
+                    isDepthSampler = true
+                }
+                is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                    name = uniform.name
+                    isDepthSampler = true
+                }
+                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = uniform.name }
+                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = uniform.name }
+                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = uniform.name }
+                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = uniform.name }
+
                 is KslTypeArray<*> -> {
                     when (type.elemType) {
                         is KslTypeFloat1 -> ubo.uniforms += { Uniform1fv(uniform.name, uniform.arraySize) }
@@ -114,40 +129,37 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
                         is KslTypeMat3 -> ubo.uniforms += { UniformMat3fv(uniform.name, uniform.arraySize) }
                         is KslTypeMat4 -> ubo.uniforms += { UniformMat4fv(uniform.name, uniform.arraySize) }
 
+                        is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                            name = uniform.name
+                            isDepthSampler = true
+                            arraySize = uniform.arraySize
+                        }
+                        is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                            name = uniform.name
+                            isDepthSampler = true
+                            arraySize = uniform.arraySize
+                        }
+                        is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply {
+                            name = uniform.name
+                            arraySize = uniform.arraySize
+                        }
+                        is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
+                            name = uniform.name
+                            arraySize = uniform.arraySize
+                        }
+                        is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply {
+                            name = uniform.name
+                            arraySize = uniform.arraySize
+                        }
+                        is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
+                            name = uniform.name
+                            arraySize = uniform.arraySize
+                        }
+
                         else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
                     }
                 }
 
-                is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                    name = uniform.name
-                    isDepthSampler = true
-                }
-                is KslTypeDepthSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                    name = uniform.name
-                    arraySize = uniform.arraySize
-                    isDepthSampler = true
-                }
-                is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                    name = uniform.name
-                    isDepthSampler = true
-                }
-                is KslTypeDepthSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                    name = uniform.name
-                    arraySize = uniform.arraySize
-                    isDepthSampler = true
-                }
-                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = uniform.name }
-                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = uniform.name }
-                is KslTypeColorSampler2dArray -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                    name = uniform.name
-                    arraySize = uniform.arraySize
-                }
-                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = uniform.name }
-                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = uniform.name }
-                is KslTypeColorSamplerCubeArray -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                    name = uniform.name
-                    arraySize = uniform.arraySize
-                }
                 else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
             }
         }

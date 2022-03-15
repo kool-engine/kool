@@ -10,7 +10,7 @@ class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?
     init {
         parentScope.definedStates += declareVar
         initExpression?.let { addExpressionDependencies(it) }
-        addMutation(declareVar.mutatingState.mutate())
+        addMutation(declareVar.mutate())
     }
 
     override fun toPseudoCode(): String {

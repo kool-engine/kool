@@ -133,9 +133,22 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareVar(it, initValue, this)
         }
 
-    fun floatArray(arraySize: Int, name: String? = null) = floatArray(arraySize.const, name)
-    fun floatArray(arraySize: KslExpression<KslTypeInt1>, name: String?) =
-        KslArrayScalar(name ?: nextName("floatArray"), KslTypeFloat1, arraySize, true).also { definedStates += it }
+    fun floatArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeFloat1>, name: String? = null) =
+        KslArrayScalar(name ?: nextName("f1Array"), KslTypeFloat1, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun float2Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("f2Array"), KslTypeFloat2, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun float3Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("f3Array"), KslTypeFloat3, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun float4Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("f4Array"), KslTypeFloat4, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
 
     fun intVar(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also {
@@ -152,6 +165,23 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun int4Var(initValue: KslVectorExpression<KslTypeInt4, KslTypeInt1>? = null, name: String? = null) =
         KslVarVector(name ?: nextName("i4"), KslTypeInt4, true).also {
             ops += KslDeclareVar(it, initValue, this)
+        }
+
+    fun intArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeInt1>, name: String? = null) =
+        KslArrayScalar(name ?: nextName("i1Array"), KslTypeInt1, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun int2Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeInt2, KslTypeInt1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("i2Array"), KslTypeInt2, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun int3Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeInt3, KslTypeInt1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("i3Array"), KslTypeInt3, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
+        }
+    fun int4Array(arraySize: Int, initExpr: KslVectorExpression<KslTypeInt4, KslTypeInt1>, name: String? = null) =
+        KslArrayVector(name ?: nextName("i4Array"), KslTypeInt4, arraySize, true).also { definedStates += it }.also {
+            ops += KslDeclareArray(it, initExpr, this)
         }
 
     fun boolVar(initValue: KslScalarExpression<KslTypeBool1>? = null, name: String? = null) =
