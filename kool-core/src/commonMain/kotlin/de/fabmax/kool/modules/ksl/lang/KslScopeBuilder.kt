@@ -17,8 +17,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     val isInLoop: Boolean
         get() = findParentOpByType<KslLoop>() != null
 
+    val parentFunction: KslFunction<*>?
+        get() = findParentOpByType<KslFunction<*>.FunctionRoot>()?.function
+
     val isInFunction: Boolean
-        get() = findParentOpByType<KslFunction<*>.BodyOp>() != null
+        get() = parentFunction != null
 
     fun nextName(prefix: String): String = parentStage.program.nextName(prefix)
 

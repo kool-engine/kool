@@ -37,6 +37,23 @@ class GlslGenerator : KslGenerator() {
         return "${glslTypeName(castExpr.expressionType)}(${castExpr.value.generateExpression(this)})"
     }
 
+    override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
+        val lt = expression.left.generateExpression(this)
+        val rt = expression.right.generateExpression(this)
+        return if (expression.left.expressionType is KslVector<*>) {
+            when (expression.operator) {
+                KslCompareOperator.Equal -> "equal($lt, $rt)"
+                KslCompareOperator.NotEqual -> "notEqual($lt, $rt)"
+                KslCompareOperator.Less -> "lessThan($lt, $rt)"
+                KslCompareOperator.LessEqual -> "lessThanEqual($lt, $rt)"
+                KslCompareOperator.Greater -> "greaterThan($lt, $rt)"
+                KslCompareOperator.GreaterEqual -> "greaterThanEqual($lt, $rt)"
+            }
+        } else {
+            "($lt ${expression.operator.opString} $rt)"
+        }
+    }
+
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         return "texture(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)})"
     }
@@ -155,7 +172,9 @@ class GlslGenerator : KslGenerator() {
 
     private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
         if (stage.functions.isNotEmpty()) {
-            stage.functions.values.forEach { func ->
+            val funcList = stage.functions.values.toMutableList()
+            sortFunctions(funcList)
+            funcList.forEach { func ->
                 appendLine("${glslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${glslTypeName(p.expressionType)} ${p.stateName}" }}) {")
                 appendLine(generateScope(func.body, blockIndent))
                 appendLine("}")

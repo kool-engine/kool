@@ -119,5 +119,20 @@ abstract class KslGenerator {
     abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepScalar<*>): String
     abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepVector<*, *>): String
 
+    protected fun sortFunctions(functions: MutableList<KslFunction<*>>) {
+        val closed = mutableSetOf<KslFunction<*>>()
+        val open = mutableSetOf<KslFunction<*>>()
+        open += functions
+        functions.clear()
+
+        while (open.isNotEmpty()) {
+            val next = open.find { it.functionDependencies.all { dep -> dep in closed } }
+                ?: throw IllegalStateException("Unable to sort functions, circular dependencies?")
+            open -= next
+            closed += next
+            functions += next
+        }
+    }
+
     interface GeneratorOutput
 }

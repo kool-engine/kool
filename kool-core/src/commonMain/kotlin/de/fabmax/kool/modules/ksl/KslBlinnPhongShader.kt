@@ -119,8 +119,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         inSpecularColor = uSpecularColor.rgb
                         inShininess = uShininess
 
-                        inShadowFactors = shadowFactors
-                        setLightData(lightData)
+                        setLightData(lightData, shadowFactors)
                     }
 
                     val outColor = float3Var(material.outColor)

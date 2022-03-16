@@ -49,5 +49,5 @@ fun KslScopeBuilder.getLightRadiance(
     encodedLightColor: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
 ): KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
     val func = parentStage.getOrCreateFunction(GetLightRadiance.FUNC_NAME) { GetLightRadiance(this) }
-    return KslInvokeFunctionVector(func, KslTypeFloat3, fragPos, encodedLightPos, encodedLightDir, encodedLightColor)
+    return KslInvokeFunctionVector(func, this, KslTypeFloat3, fragPos, encodedLightPos, encodedLightDir, encodedLightColor)
 }

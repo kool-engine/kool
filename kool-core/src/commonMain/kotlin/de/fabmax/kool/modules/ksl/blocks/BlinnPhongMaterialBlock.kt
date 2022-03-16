@@ -40,27 +40,30 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
                 lightDistance *= lightDistance
                 lightDir set normalize(lightDir)
 
-                val lambertian = floatVar(max(dot(lightDir, inNormal), 0f.const))
-                val specular = floatVar(0f.const)
-                `if` (lambertian gt 0f.const) {
-                    val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
-                    val halfDir = float3Var(normalize(lightDir + viewDir))
-                    val specAngle = floatVar(max(dot(halfDir, inNormal), 0f.const))
-                    specular set pow(specAngle, inShininess)
+                `if` (inShadowFactors[i] gt 0f.const) {
+                    val lambertian = floatVar(max(dot(lightDir, inNormal), 0f.const))
+                    val specular = floatVar(0f.const)
+                    `if` (lambertian gt 0f.const) {
+                        val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
+                        val halfDir = float3Var(normalize(lightDir + viewDir))
+                        val specAngle = floatVar(max(dot(halfDir, inNormal), 0f.const))
+                        specular set pow(specAngle, inShininess)
+                    }
+
+                    val radiance = float3Var(inShadowFactors[i] *
+                            getLightRadiance(inFragmentPos, inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
+
+                    diffuseColor += inFragmentColor * lambertian * radiance
+                    specularColor += inSpecularColor * specular * radiance
                 }
-
-                val radiance = float3Var(inShadowFactors[i] * getLightRadiance(inFragmentPos,
-                    inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
-
-                diffuseColor += inFragmentColor * lambertian * radiance
-                specularColor += inSpecularColor * specular * radiance
             }
 
             outColor set ambientColor + diffuseColor + specularColor
         }
     }
 
-    fun setLightData(lightData: SceneLightData) {
+    fun setLightData(lightData: SceneLightData, shadowFactors: KslScalarArrayExpression<KslTypeFloat1>) {
+        inShadowFactors = shadowFactors
         inLightCount = lightData.lightCount
         inEncodedLightPositions = lightData.encodedPositions
         inEncodedLightDirections = lightData.encodedDirections

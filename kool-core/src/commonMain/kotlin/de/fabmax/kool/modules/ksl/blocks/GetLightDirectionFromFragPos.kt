@@ -29,5 +29,5 @@ fun KslScopeBuilder.getLightDirectionFromFragPos(
     encodedLightPos: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
 ): KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
     val func = parentStage.getOrCreateFunction(GetLightDirectionFromFragPos.FUNC_NAME) { GetLightDirectionFromFragPos(this) }
-    return KslInvokeFunctionVector(func, KslTypeFloat3, fragPos, encodedLightPos)
+    return KslInvokeFunctionVector(func, this, KslTypeFloat3, fragPos, encodedLightPos)
 }

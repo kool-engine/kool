@@ -22,12 +22,15 @@ class KslShaderTest : DemoScene("KslShader") {
             lights += Light().apply {
 //                setPoint(Vec3f(3f, 3f, 3f))
                 setSpot(Vec3f(5f, 5f, 3f), Vec3f(-1f, -1f, -1f), 60f)
-                setColor(MdColor.AMBER.toLinear(), 20f)
+                setColor(MdColor.RED.toLinear(), 20f)
             }
             lights += Light().apply {
 //                setPoint(Vec3f(3f, -3f, 3f))
-                setSpot(Vec3f(5f, -5f, 3f), Vec3f(-1f, 1f, -1f), 60f)
-                setColor(MdColor.RED.toLinear(), 20f)
+//                setSpot(Vec3f(5f, -5f, 3f), Vec3f(-1f, 1f, -1f), 60f)
+//                setColor(MdColor.AMBER.toLinear(), 20f)
+
+                setDirectional(Vec3f(-1f, 1f, -1f))
+                setColor(Color.WHITE, 0.2f)
             }
             lights += Light().apply {
 //                setPoint(Vec3f(-3f, -3f, 3f))
@@ -41,7 +44,14 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        val shadowMaps = List(4) { SimpleShadowMap(this, it, 2048) }
+        val shadowMaps = List(lighting.lights.size) { i ->
+            if (lighting.lights[i].type == Light.Type.DIRECTIONAL) {
+                CascadedShadowMap(this, i).apply { setMapRanges(0.05f, 0.25f, 1f) }
+            } else {
+                SimpleShadowMap(this, i, 2048)
+            }
+        }
+
 
         +group {
             +colorMesh {

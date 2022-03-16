@@ -8,17 +8,18 @@ import de.fabmax.kool.modules.ksl.model.KslProcessor
 open class KslFunction<T: KslType>(val name: String, val returnType: T, val parentStage: KslShaderStage) {
 
     val parameters = mutableListOf<KslVar<*>>()
+    val functionDependencies = mutableSetOf<KslFunction<*>>()
 
     private val functionScope = KslScopeBuilder(null, parentStage.globalScope, parentStage)
-    private val bodyOp = BodyOp(this)
+    private val functionRoot = FunctionRoot(this)
     val hierarchy = KslHierarchy(functionScope)
 
-    val body = KslScopeBuilder(bodyOp, functionScope, parentStage)
+    val body = KslScopeBuilder(functionRoot, functionScope, parentStage)
 
     init {
         functionScope.scopeName = name
-        functionScope.ops += bodyOp
-        bodyOp.childScopes += body
+        functionScope.ops += functionRoot
+        functionRoot.childScopes += body
     }
 
     private fun <S> paramScalar(name: String, type: S) where S: KslType, S: KslScalar =
@@ -79,20 +80,27 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
         ops += KslReturn(this, returnValue)
     }
 
-    inner class BodyOp(val function: KslFunction<*>) : KslOp("body", functionScope)
+    inner class FunctionRoot(val function: KslFunction<*>) : KslOp("body", functionScope)
 }
 
-abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, returnType: T, vararg args: KslExpression<*>) : KslExpression<T> {
+abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, parentScope: KslScopeBuilder, returnType: T, vararg args: KslExpression<*>) : KslExpression<T> {
     val args = listOf(*args)
+
+    init {
+        parentScope.parentFunction?.let {
+            it.functionDependencies += function
+        }
+    }
+
     override val expressionType: T = returnType
     override fun collectStateDependencies() = args.flatMap { it.collectStateDependencies() }.toSet()
     override fun toPseudoCode() = "${function.name}(${args.joinToString { it.toPseudoCode() }})"
     override fun generateExpression(generator: KslGenerator) = generator.invokeFunction(this)
 }
 
-class KslInvokeFunctionScalar<S>(function: KslFunction<S>, returnType: S, vararg args: KslExpression<*>)
-    : KslInvokeFunction<S>(function, returnType, *args), KslScalarExpression<S> where S: KslType, S: KslScalar
-class KslInvokeFunctionVector<V, S>(function: KslFunction<V>, returnType: V, vararg args: KslExpression<*>)
-    : KslInvokeFunction<V>(function, returnType, *args), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
-class KslInvokeFunctionMatrix<M, V>(function: KslFunction<M>, returnType: M, vararg args: KslExpression<*>)
-    : KslInvokeFunction<M>(function, returnType, *args), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
+class KslInvokeFunctionScalar<S>(function: KslFunction<S>, parentScope: KslScopeBuilder, returnType: S, vararg args: KslExpression<*>)
+    : KslInvokeFunction<S>(function, parentScope, returnType, *args), KslScalarExpression<S> where S: KslType, S: KslScalar
+class KslInvokeFunctionVector<V, S>(function: KslFunction<V>, parentScope: KslScopeBuilder, returnType: V, vararg args: KslExpression<*>)
+    : KslInvokeFunction<V>(function, parentScope, returnType, *args), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
+class KslInvokeFunctionMatrix<M, V>(function: KslFunction<M>, parentScope: KslScopeBuilder, returnType: M, vararg args: KslExpression<*>)
+    : KslInvokeFunction<M>(function, parentScope, returnType, *args), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
