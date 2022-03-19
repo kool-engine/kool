@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.lang.*
@@ -21,7 +20,6 @@ fun KslScopeBuilder.fragmentColorBlock(cfg: ColorBlockConfig, vertexStage: Color
 }
 
 class ColorBlockVertexStage(cfg: ColorBlockConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    val texCoords = mutableMapOf<ColorBlockConfig.TextureColor, KslInterStageVar<KslTypeFloat2>>()
     val vertexColors = mutableMapOf<ColorBlockConfig.VertexColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
     val instanceColors = mutableMapOf<ColorBlockConfig.InstanceColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
 
@@ -29,11 +27,6 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, name: String, parentScope: Ks
         body.apply {
             check(parentStage is KslVertexStage) { "ColorBlockVertexStage can only be added to KslVertexStage" }
 
-            cfg.colorSources.filterIsInstance<ColorBlockConfig.TextureColor>().mapIndexed { i, source ->
-                texCoords[source] = parentStage.program.interStageFloat2(name = nextName("${name}_texUv_$i")).apply {
-                    input set parentStage.vertexAttribFloat2(source.coordAttribute.name)
-                }
-            }
             cfg.colorSources.filterIsInstance<ColorBlockConfig.VertexColor>().mapIndexed { i, source ->
                 vertexColors[source] = parentStage.program.interStageFloat4(name = nextName("${name}_vertexColor_$i")).apply {
                     input set parentStage.vertexAttribFloat4(source.colorAttrib.name)
@@ -57,7 +50,10 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
         body.apply {
             check(parentStage is KslFragmentStage) { "ColorBlockFragmentStage can only be added to KslFragmentStage" }
 
-            val vertexBlock = vertexColorBlock
+            val texCoordBlock: TexCoordAttributeBlock = parentStage.program.vertexStage.findBlock()
+                ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
+
+            val vertexBlock: ColorBlockVertexStage = vertexColorBlock
                 ?: parentStage.program.vertexStage.findBlock()
                 ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
 
@@ -73,7 +69,8 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                     is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor ->  {
                         val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                        val texColor = float4Var(sampleTexture(tex, vertexBlock.texCoords[source]?.output ?: Vec2f.ZERO.const))
+                        val texCoords = texCoordBlock.getAttributeCoords(source.coordAttribute)
+                        val texColor = float4Var(sampleTexture(tex, texCoords))
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
                         }
@@ -117,6 +114,12 @@ class ColorBlockConfig {
                         mixMode: MixMode = MixMode.Set) {
         colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
     }
+
+    fun addTextureColorLinearize(defaultTexture: Texture2d? = null,
+                                 textureName: String = "tColor",
+                                 coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+                                 mixMode: MixMode = MixMode.Set) =
+        addTextureColor(defaultTexture, textureName, coordAttribute, Color.GAMMA_sRGB_TO_LINEAR, mixMode)
 
     fun addInstanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
         colorSources += InstanceColor(attribute, mixMode)

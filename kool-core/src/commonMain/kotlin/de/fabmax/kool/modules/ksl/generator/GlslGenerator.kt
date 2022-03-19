@@ -14,23 +14,30 @@ class GlslGenerator : KslGenerator() {
 
     override fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String {
         if (values.size !in 2..4) {
-            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 1 and 4)")
+            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "vec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
     override fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String {
         if (values.size !in 2..4) {
-            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 1 and 4)")
+            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "ivec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
     override fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String {
         if (values.size !in 2..4) {
-            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 1 and 4)")
+            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
         }
         return "bvec${values.size}(${values.joinToString { it.generateExpression(this) }})"
+    }
+
+    override fun constMatExpression(vararg columns: KslVectorExpression<*, KslTypeFloat1>): String {
+        if (columns.size !in 2..4) {
+            throw IllegalArgumentException("invalid number of columns: ${columns.size} (must be between 2 and 4)")
+        }
+        return "mat${columns.size}(${columns.joinToString { it.generateExpression(this) }})"
     }
 
     override fun castExpression(castExpr: KslExpressionCast<*>): String {
@@ -271,6 +278,7 @@ class GlslGenerator : KslGenerator() {
     override fun builtinClamp(func: KslBuiltinClampVector<*, *>) = "clamp(${generateArgs(func.args, 3)})"
     override fun builtinCos(func: KslBuiltinCosScalar<*>) = "cos(${generateArgs(func.args, 1)})"
     override fun builtinCos(func: KslBuiltinCosVector<*, *>) = "cos(${generateArgs(func.args, 1)})"
+    override fun builtinCross(func: KslBuiltinCross) = "cross(${generateArgs(func.args, 2)})"
     override fun builtinDot(func: KslBuiltinDot<*, *>) = "dot(${generateArgs(func.args, 2)})"
     override fun builtinLength(func: KslBuiltinLength<*, *>) = "length(${generateArgs(func.args, 1)})"
     override fun builtinMax(func: KslBuiltinMaxScalar<*>) = "max(${generateArgs(func.args, 2)})"

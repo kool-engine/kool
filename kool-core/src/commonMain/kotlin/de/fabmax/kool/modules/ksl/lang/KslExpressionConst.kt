@@ -1,5 +1,8 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
@@ -80,4 +83,31 @@ class KslConstBool4(val x: KslExpression<KslTypeBool1>, val y: KslExpression<Ksl
     constructor(x: Boolean, y: Boolean, z: Boolean, w: Boolean) : this(KslConstBool1(x), KslConstBool1(y), KslConstBool1(z), KslConstBool1(w))
     override fun generateExpression(generator: KslGenerator) = generator.constBoolVecExpression(x, y, z, w)
     override fun toPseudoCode() = "bvec4(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()}, ${w.toPseudoCode()})"
+}
+
+class KslConstMat2(val col0: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>,
+                   val col1: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>)
+    : KslExpressionConst<KslTypeMat2>(KslTypeMat2), KslMatrixExpression<KslTypeMat2, KslTypeFloat2> {
+    constructor(col0: Vec2f, col1: Vec2f) : this(KslConstFloat2(col0.x, col0.y), KslConstFloat2(col1.x, col1.y))
+    override fun generateExpression(generator: KslGenerator) = generator.constMatExpression(col0, col1)
+    override fun toPseudoCode() = "mat2(${col0.toPseudoCode()}, ${col1.toPseudoCode()})"
+}
+class KslConstMat3(val col0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
+                   val col1: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
+                   val col2: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>)
+    : KslExpressionConst<KslTypeMat3>(KslTypeMat3), KslMatrixExpression<KslTypeMat3, KslTypeFloat3> {
+    constructor(col0: Vec3f, col1: Vec3f, col2: Vec3f) : this(KslConstFloat3(col0.x, col0.y, col0.z),
+        KslConstFloat3(col1.x, col1.y, col1.z), KslConstFloat3(col2.x, col2.y, col2.z))
+    override fun generateExpression(generator: KslGenerator) = generator.constMatExpression(col0, col1, col2)
+    override fun toPseudoCode() = "mat3(${col0.toPseudoCode()}, ${col1.toPseudoCode()}, ${col2.toPseudoCode()})"
+}
+class KslConstMat4(val col0: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                   val col1: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                   val col2: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                   val col3: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>)
+    : KslExpressionConst<KslTypeMat4>(KslTypeMat4), KslMatrixExpression<KslTypeMat4, KslTypeFloat4> {
+    constructor(col0: Vec4f, col1: Vec4f, col2: Vec4f, col3: Vec4f) : this(KslConstFloat4(col0.x, col0.y, col0.z, col0.w),
+        KslConstFloat4(col1.x, col1.y, col1.z, col1.w), KslConstFloat4(col2.x, col2.y, col2.z, col2.w), KslConstFloat4(col3.x, col3.y, col3.z, col3.w))
+    override fun generateExpression(generator: KslGenerator) = generator.constMatExpression(col0, col1, col2, col3)
+    override fun toPseudoCode() = "mat4(${col0.toPseudoCode()}, ${col1.toPseudoCode()}, ${col2.toPseudoCode()}, ${col3.toPseudoCode()})"
 }

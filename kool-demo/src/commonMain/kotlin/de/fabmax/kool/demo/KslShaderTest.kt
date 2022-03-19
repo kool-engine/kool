@@ -1,12 +1,12 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
+import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
@@ -87,23 +87,22 @@ class KslShaderTest : DemoScene("KslShader") {
 
             var rotationX = -23f
             var rotationY = 52f
-
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "rotx") {
-                rotationX += 1f
-                println("x: $rotationX, y: $rotationY")
-            }
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "rotx") {
-                rotationX -= 1f
-                println("x: $rotationX, y: $rotationY")
-            }
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "roty") {
-                rotationY += 1f
-                println("x: $rotationX, y: $rotationY")
-            }
-            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "roty") {
-                rotationY -= 1f
-                println("x: $rotationX, y: $rotationY")
-            }
+//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "rotx") {
+//                rotationX += 1f
+//                println("x: $rotationX, y: $rotationY")
+//            }
+//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "rotx") {
+//                rotationX -= 1f
+//                println("x: $rotationX, y: $rotationY")
+//            }
+//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "roty") {
+//                rotationY += 1f
+//                println("x: $rotationX, y: $rotationY")
+//            }
+//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "roty") {
+//                rotationY -= 1f
+//                println("x: $rotationX, y: $rotationY")
+//            }
 
             onUpdate += {
                 setIdentity()
@@ -111,16 +110,20 @@ class KslShaderTest : DemoScene("KslShader") {
                 translate(0.0, 0.0, 0.5)
                 rotate(rotationX, Vec3f.X_AXIS)
                 rotate(rotationY, Vec3f.Y_AXIS)
+
+                rotationX += it.deltaT * 10f
+                rotationY += it.deltaT * 13.7f
             }
         }
 
-        +mesh(listOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.NORMALS)) {
+        +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS)) {
             generate {
                 color = MdColor.LIGHT_GREEN
                 rect {
                     origin.set(-0.9f, -0.9f, 0f)
                     size.set(1.8f, 1.8f)
                 }
+                geometry.generateTangents()
             }
 
             instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR)).apply {
@@ -140,9 +143,17 @@ class KslShaderTest : DemoScene("KslShader") {
 
             val phongShader = blinnPhongShader {
                 isInstanced = true
+
+                shininess = 16f
+                specularGain = 0.25f
+
                 color {
                     //addInstanceColor()
-                    addStaticColor(Color.WHITE)
+//                    addStaticColor(Color.WHITE)
+                    addTextureColorLinearize(Texture2d("${Demo.pbrBasePath}/castle_brick/castle_brick_02_red_diff_2k.jpg"))
+                }
+                normalMapping {
+                    setNormalMap(Texture2d("${Demo.pbrBasePath}/castle_brick/castle_brick_02_red_nor_2k.jpg"))
                 }
                 pipeline {
                     cullMethod = CullMethod.NO_CULLING
@@ -173,12 +184,10 @@ class KslShaderTest : DemoScene("KslShader") {
     private fun KslProgram.sparkleMod() {
         val shininessTex = texture2d("tShininess")
         val sparkleOffset = uniformFloat1("uSparkle")
-        val texCoords = interStageFloat2()
         val instanceOffset = interStageFloat1()
 
         vertexStage {
             main {
-                texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                 instanceOffset.input set inInstanceIndex.toFloat1() * 1.73f.const
             }
         }
@@ -186,7 +195,9 @@ class KslShaderTest : DemoScene("KslShader") {
         fragmentStage {
             main {
                 findBlock<BlinnPhongMaterialBlock>()!!.apply {
-                    val sparkle = floatVar((sampleTexture(shininessTex, texCoords.output).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
+                    val texCoordBlock: TexCoordAttributeBlock = vertexStage.findBlock()!!
+                    val texCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
+                    val sparkle = floatVar((sampleTexture(shininessTex, texCoords).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
                     inShininess = 10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const
                 }
             }

@@ -41,8 +41,14 @@ class KslBuiltinCosVector<V, S>(vec: KslVectorExpression<V, S>)
     override fun generateExpression(generator: KslGenerator) = generator.builtinCos(this)
 }
 
-class KslBuiltinDot<V, S>(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
-    : KslBuiltinFunctionScalar<KslTypeFloat1>(KslTypeFloat1, vec1, vec2) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+class KslBuiltinCross(vec1: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, vec2: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>)
+    : KslBuiltinFunctionVector<KslTypeFloat3, KslTypeFloat1>(KslTypeFloat3, vec1, vec2) {
+    override val name = "cross"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinCross(this)
+}
+
+class KslBuiltinDot<V, S>(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+    : KslBuiltinFunctionScalar<KslTypeFloat1>(KslTypeFloat1, a, b) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
     override val name = "dot"
     override fun generateExpression(generator: KslGenerator) = generator.builtinDot(this)
 }
@@ -107,8 +113,8 @@ class KslBuiltinPowVector<V, S>(vec: KslVectorExpression<V, S>, power: KslExpres
     override fun generateExpression(generator: KslGenerator) = generator.builtinPow(this)
 }
 
-class KslBuiltinReflect<V, S>(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
-    : KslBuiltinFunctionVector<V, S>(vec1.expressionType, vec1, vec2) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
+class KslBuiltinReflect<V, S>(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+    : KslBuiltinFunctionVector<V, S>(a.expressionType, a, b) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar {
     override val name = "reflect"
     override fun generateExpression(generator: KslGenerator) = generator.builtinReflect(this)
 }

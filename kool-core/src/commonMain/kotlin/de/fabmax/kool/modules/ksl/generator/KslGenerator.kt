@@ -23,6 +23,7 @@ abstract class KslGenerator {
     abstract fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String
     abstract fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String
     abstract fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String
+    abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslTypeFloat1>): String
 
     open fun valueExpression(value: KslValue<*>): String = value.name()
     open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
@@ -102,6 +103,7 @@ abstract class KslGenerator {
     abstract fun builtinClamp(func: KslBuiltinClampVector<*, *>): String
     abstract fun builtinCos(func: KslBuiltinCosScalar<*>): String
     abstract fun builtinCos(func: KslBuiltinCosVector<*, *>): String
+    abstract fun builtinCross(func: KslBuiltinCross): String
     abstract fun builtinDot(func: KslBuiltinDot<*, *>): String
     abstract fun builtinLength(func: KslBuiltinLength<*, *>): String
     abstract fun builtinMax(func: KslBuiltinMaxScalar<*>): String

@@ -118,7 +118,17 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun constBool4(x: Boolean, y: Boolean, z: Boolean, w: Boolean) = KslConstBool4(x, y, z, w)
     fun constBool4(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>, w: KslExpression<KslTypeBool1>) =
         KslConstBool4(x, y, z, w)
-    
+
+    fun constMat2(col0: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>,
+                  col1: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslConstMat2(col0, col1)
+    fun constMat3(col0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
+                  col1: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
+                  col2: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslConstMat3(col0, col1, col2)
+    fun constMat4(col0: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                  col1: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                  col2: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                  col3: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslConstMat4(col0, col1, col2, col3)
+
     fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
             ops += KslDeclareVar(it, initValue, this)
@@ -287,8 +297,10 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V, S> cos(vec: KslVectorExpression<V, S>)
         where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinCosVector(vec)
 
-    fun <V, S> dot(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
-        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinDot(vec1, vec2)
+    fun cross(a: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, b: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslBuiltinCross(a, b)
+
+    fun <V, S> dot(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinDot(a, b)
 
     fun <V, S> length(arg: KslVectorExpression<V, S>) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinLength(arg)
 
@@ -309,8 +321,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
     fun <V, S> normalize(arg: KslVectorExpression<V, S>) where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinNormalize(arg)
 
-    fun <V, S> reflect(vec1: KslVectorExpression<V, S>, vec2: KslVectorExpression<V, S>)
-        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinReflect(vec1, vec2)
+    fun <V, S> reflect(a: KslVectorExpression<V, S>, b: KslVectorExpression<V, S>)
+        where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinReflect(a, b)
 
     fun pow(value: KslScalarExpression<KslTypeFloat1>, power: KslScalarExpression<KslTypeFloat1>) = KslBuiltinPowScalar(value, power)
     fun <V, S> pow(vec: KslVectorExpression<V, S>, power: KslVectorExpression<V, S>)

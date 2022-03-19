@@ -17,7 +17,8 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
 
     var inAmbientColor by inFloat3("inAmbientColor")
     var inSpecularColor by inFloat3("inSpecularColor")
-    var inShininess by inFloat1("inShininess")
+    var inShininess by inFloat1("inShininess", KslConstFloat1(16f))
+    var inSpecularGain by inFloat1("inSpecularGain", KslConstFloat1(1f))
 
     var inLightCount by inInt1("inLightCount")
     var inEncodedLightPositions by inFloat4Array("inEncodedLightPositions")
@@ -47,7 +48,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
                         val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
                         val halfDir = float3Var(normalize(lightDir + viewDir))
                         val specAngle = floatVar(max(dot(halfDir, inNormal), 0f.const))
-                        specular set pow(specAngle, inShininess)
+                        specular set pow(specAngle, inShininess) * inSpecularGain
                     }
 
                     val radiance = float3Var(inShadowFactors[i] *
