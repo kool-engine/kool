@@ -62,7 +62,13 @@ class GlslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
-        return "texture(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)})"
+        val sampler = sampleTexture.sampler.generateExpression(this)
+        val coord = sampleTexture.coord.generateExpression(this)
+        return if (sampleTexture.lod != null) {
+            "textureLod(${sampler}, ${coord}, ${sampleTexture.lod.generateExpression(this)})"
+        } else {
+            "texture(${sampler}, ${coord})"
+        }
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {

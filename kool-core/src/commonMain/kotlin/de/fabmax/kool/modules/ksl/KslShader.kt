@@ -258,6 +258,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
 
     protected fun texture2d(uniformName: String?, defaultVal: Texture2d? = null): UniformInputTexture2d =
         UniformInputTexture2d(uniformName, defaultVal).also { connectUniformListeners += it }
+    protected fun texture3d(uniformName: String?, defaultVal: Texture3d? = null): UniformInputTexture3d =
+        UniformInputTexture3d(uniformName, defaultVal).also { connectUniformListeners += it }
+    protected fun textureCube(uniformName: String?, defaultVal: TextureCube? = null): UniformInputTextureCube =
+        UniformInputTextureCube(uniformName, defaultVal).also { connectUniformListeners += it }
 
     protected inner class UniformInput1f(val uniformName: String?, defaultVal: Float) : ConnectUniformListener {
         private var uniform: Uniform1f? = null
@@ -315,6 +319,26 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override fun connect() { uniform = texSamplers2d[uniformName]?.apply { texture = buffer } }
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture2d? = uniform?.texture ?: buffer
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture2d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
+    }
+
+    protected inner class UniformInputTexture3d(val uniformName: String?, defaultVal: Texture3d?) : ConnectUniformListener {
+        var uniform: TextureSampler3d? = null
+        private var buffer: Texture3d? = defaultVal
+        override fun connect() { uniform = texSamplers3d[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture3d? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture3d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
+    }
+
+    protected inner class UniformInputTextureCube(val uniformName: String?, defaultVal: TextureCube?) : ConnectUniformListener {
+        var uniform: TextureSamplerCube? = null
+        private var buffer: TextureCube? = defaultVal
+        override fun connect() { uniform = texSamplersCube[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): TextureCube? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: TextureCube?) {
             uniform?.let { it.texture = value } ?: run { buffer = value }
         }
     }

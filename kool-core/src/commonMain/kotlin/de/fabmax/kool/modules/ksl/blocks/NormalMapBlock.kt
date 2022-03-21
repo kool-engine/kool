@@ -19,14 +19,13 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
     var inStrength by inFloat1("inStrength", KslConstFloat1(1f))
 
     val outBumpNormal = outFloat3()
-    val outMapNormal = outFloat3()
 
     init {
         body.apply {
             if (cfg.isNormalMapped) {
                 val normalMap = parentStage.program.texture2d(cfg.normalMapName)
-                outMapNormal set normalize(sampleTexture(normalMap, inTexCoords).xyz * 2f.const - 1f.const)
-                outBumpNormal set calcBumpedNormal(inNormalWorldSpace, inTangentWorldSpace, outMapNormal, inStrength)
+                val mapNormal = normalize(sampleTexture(normalMap, inTexCoords).xyz * 2f.const - 1f.const)
+                outBumpNormal set calcBumpedNormal(inNormalWorldSpace, inTangentWorldSpace, mapNormal, inStrength)
 
             } else {
                 outBumpNormal set inNormalWorldSpace

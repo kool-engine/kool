@@ -26,8 +26,10 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
     var inNormalWorldSpace by inFloat3("inNormalWorldSpace")
 
     val shadowData: ShadowData
-    val positionsLightSpace: KslInterStageVectorArray<KslTypeFloat4, KslTypeFloat1>
-    val normalZsLightSpace: KslInterStageScalarArray<KslTypeFloat1>
+    var positionsLightSpace: KslInterStageVectorArray<KslTypeFloat4, KslTypeFloat1>? = null
+        private set
+    var normalZsLightSpace: KslInterStageScalarArray<KslTypeFloat1>? = null
+        private set
 
     init {
         body.apply {
@@ -37,10 +39,9 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
                 shadowData = ShadowData(cfg, this)
                 if (shadowData.numSubMaps > 0) {
                     uniformBuffers += shadowData
+                    positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
+                    normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
                 }
-
-                positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
-                normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
             }
 
             shadowData.shadowMapInfos.forEach { mapInfo ->
@@ -48,9 +49,9 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
                     val subMapIdx = mapInfo.fromIndexIncl + i
                     val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
                     val normalLightSpace = float3Var(normalize((viewProj * constFloat4(inNormalWorldSpace, 0f.const)).xyz))
-                    normalZsLightSpace.input[subMapIdx] set normalLightSpace.z
-                    positionsLightSpace.input[subMapIdx] set viewProj * constFloat4(inPositionWorldSpace, 1f.const)
-                    positionsLightSpace.input[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
+                    normalZsLightSpace!!.input[subMapIdx] set normalLightSpace.z
+                    positionsLightSpace!!.input[subMapIdx] set viewProj * constFloat4(inPositionWorldSpace, 1f.const)
+                    positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
                 }
             }
         }
@@ -72,23 +73,26 @@ class ShadowBlockFragmentStage(
                 val lightIdx = mapInfo.shadowMap.lightIndex
                 shadowFactors[lightIdx] set 0f.const
 
+                val positionsLightSpace = vertexStage.positionsLightSpace!!
+                val normalZsLightSpace = vertexStage.normalZsLightSpace!!
+
                 when (mapInfo.shadowMap) {
                     is SimpleShadowMap -> {
                         val subMapIdx = mapInfo.fromIndexIncl
-                        val posLightSpace = vertexStage.positionsLightSpace.output[subMapIdx]
+                        val posLightSpace = positionsLightSpace.output[subMapIdx]
 
-                        `if` (vertexStage.normalZsLightSpace.output[subMapIdx] lt 0f.const) {
+                        `if` (normalZsLightSpace.output[subMapIdx] lt 0f.const) {
                             // normal points towards light source, compute shadow factor (otherwise it is definitely shadowed)
                             shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
                         }
                     }
                     is CascadedShadowMap -> {
-                        `if` (vertexStage.normalZsLightSpace.output[mapInfo.fromIndexIncl] lt 0f.const) {
+                        `if` (normalZsLightSpace.output[mapInfo.fromIndexIncl] lt 0f.const) {
                             val isSampled = boolVar(false.const)
                             val projPos = float3Var()
 
                             for (i in mapInfo.fromIndexIncl until mapInfo.toIndexExcl) {
-                                val posLightSpace = vertexStage.positionsLightSpace.output[i]
+                                val posLightSpace = positionsLightSpace.output[i]
                                 projPos set posLightSpace.xyz / posLightSpace.w
                                 `if` (!isSampled and
                                         all(projPos gt Vec3f(0f, 0f, -1f).const) and

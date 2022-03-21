@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.blinnPhongShader
@@ -17,30 +18,33 @@ class KslShaderTest : DemoScene("KslShader") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform()
 
+        val lightPoses = listOf(
+            Vec3f(5f, 5f, 3f) to Vec3f(-1f, -1f, -1f),
+            Vec3f(5f, -5f, 3f) to Vec3f(-1f, 1f, -1f),
+            Vec3f(-5f, 5f, 3f) to Vec3f(1f, -1f, -1f),
+            Vec3f(-5f, -5f, 3f) to Vec3f(1f, 1f, -1f),
+        )
+
         lighting.apply {
             lights.clear()
-            lights += Light().apply {
-//                setPoint(Vec3f(3f, 3f, 3f))
-                setSpot(Vec3f(5f, 5f, 3f), Vec3f(-1f, -1f, -1f), 60f)
-                setColor(MdColor.RED.toLinear(), 20f)
-            }
-            lights += Light().apply {
-//                setPoint(Vec3f(3f, -3f, 3f))
-//                setSpot(Vec3f(5f, -5f, 3f), Vec3f(-1f, 1f, -1f), 60f)
+//            lights += Light().apply {
+//                setSpot(lightPoses[0].first, lightPoses[0].second, 60f)
 //                setColor(MdColor.AMBER.toLinear(), 20f)
-
-                setDirectional(Vec3f(-1f, 1f, -1f))
-                setColor(Color.WHITE, 0.2f)
+//            }
+//            lights += Light().apply {
+//                setSpot(lightPoses[1].first, lightPoses[1].second, 60f)
+//                setColor(MdColor.LIGHT_BLUE.toLinear(), 30f)
+//
+////                setDirectional(Vec3f(-1f, 1f, -1f))
+////                setColor(Color.WHITE, 0.2f)
+//            }
+            lights += Light().apply {
+                setSpot(lightPoses[2].first, lightPoses[2].second, 60f)
+                setColor(MdColor.LIGHT_GREEN.toLinear(), 30f)
             }
             lights += Light().apply {
-//                setPoint(Vec3f(-3f, -3f, 3f))
-                setSpot(Vec3f(-5f, -5f, 3f), Vec3f(1f, 1f, -1f), 60f)
-                setColor(MdColor.LIGHT_GREEN.toLinear(), 20f)
-            }
-            lights += Light().apply {
-//                setPoint(Vec3f(-3f, 3f, 3f))
-                setSpot(Vec3f(-5f, 5f, 3f), Vec3f(1f, -1f, -1f), 60f)
-                setColor(MdColor.LIGHT_BLUE.toLinear(), 20f)
+                setSpot(lightPoses[3].first, lightPoses[3].second, 60f)
+                setColor(MdColor.ORANGE.toLinear(), 30f)
             }
         }
 
@@ -52,6 +56,15 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
+        val lightRotTransform = Mat4f()
+        onUpdate += { ev ->
+            lightRotTransform.rotate(ev.deltaT * 5f, Vec3f.Z_AXIS)
+            lighting.lights.forEachIndexed { i, light ->
+                val pos = lightRotTransform.transform(MutableVec3f(lightPoses[i].first), 1f)
+                val dir = lightRotTransform.transform(MutableVec3f(lightPoses[i].second), 0f)
+                light.setSpot(pos, dir, 60f)
+            }
+        }
 
         +group {
             +colorMesh {
@@ -106,7 +119,7 @@ class KslShaderTest : DemoScene("KslShader") {
 
             onUpdate += {
                 setIdentity()
-                //translate(3.25, 3.25, 1.55)
+                scale(1.5f)
                 translate(0.0, 0.0, 0.5)
                 rotate(rotationX, Vec3f.X_AXIS)
                 rotate(rotationY, Vec3f.Y_AXIS)
@@ -120,8 +133,8 @@ class KslShaderTest : DemoScene("KslShader") {
             generate {
                 color = MdColor.LIGHT_GREEN
                 rect {
-                    origin.set(-0.9f, -0.9f, 0f)
-                    size.set(1.8f, 1.8f)
+                    origin.set(-1.25f, -1.25f, 0f)
+                    size.set(2.4f, 2.4f)
                 }
                 geometry.generateTangents()
             }
@@ -132,7 +145,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 var i = 0
                 for (y in -2 .. 2) {
                     for (x in -2 .. 2) {
-                        mat.setIdentity().translate(x * 2f, y * 2f, 0f)
+                        mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
                         addInstance {
                             put(mat.matrix)
                             put(mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().array)
@@ -145,7 +158,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 isInstanced = true
 
                 shininess = 16f
-                specularGain = 0.25f
+                specularStrength = 0.25f
 
                 color {
                     //addInstanceColor()
@@ -155,11 +168,11 @@ class KslShaderTest : DemoScene("KslShader") {
                 normalMapping {
                     setNormalMap(Texture2d("${Demo.pbrBasePath}/castle_brick/castle_brick_02_red_nor_2k.jpg"))
                 }
-                pipeline {
-                    cullMethod = CullMethod.NO_CULLING
-                }
                 shadow {
                     addShadowMaps(shadowMaps)
+                }
+                pipeline {
+                    cullMethod = CullMethod.NO_CULLING
                 }
 
                 modelCustomizer = {

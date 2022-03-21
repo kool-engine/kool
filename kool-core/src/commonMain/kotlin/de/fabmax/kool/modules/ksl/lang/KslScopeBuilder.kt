@@ -338,8 +338,9 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             where V: KslFloatType, V: KslVector<S>, S: KslFloatType, S: KslScalar = KslBuiltinSmoothStepVector(low, high, x)
 
     // builtin texture functions
-    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
-        KslSampleColorTexture(sampler, coord)
+    fun <T: KslTypeColorSampler<C>, C: KslFloatType> sampleTexture(sampler: KslExpression<T>, coord: KslExpression<C>,
+                                                                   lod: KslScalarExpression<KslTypeFloat1>? = null) =
+        KslSampleColorTexture(sampler, coord, lod)
 
     fun <T: KslTypeDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)

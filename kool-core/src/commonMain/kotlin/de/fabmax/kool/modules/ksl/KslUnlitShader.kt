@@ -1,12 +1,13 @@
 package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
-import de.fabmax.kool.modules.ksl.blocks.fragmentColorBlock
-import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.modules.ksl.lang.a
+import de.fabmax.kool.modules.ksl.lang.rgb
 import de.fabmax.kool.modules.ksl.lang.times
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 
 fun unlitShader(cfgBlock: KslUnlitShader.Config.() -> Unit): KslUnlitShader {
@@ -23,6 +24,7 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
         val pipelineCfg = PipelineConfig()
 
         var isInstanced = false
+        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
@@ -50,8 +52,13 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
             }
             fragmentStage {
                 main {
-                    val fragmentColor = fragmentColorBlock(cfg.colorCfg)
-                    colorOutput(fragmentColor.outColor)
+                    val fragmentColor = fragmentColorBlock(cfg.colorCfg).outColor
+                    val outRgb = float3Var(fragmentColor.rgb)
+                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
+                    if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
+                        outRgb set outRgb * fragmentColor.a
+                    }
+                    colorOutput(outRgb, fragmentColor.a)
                 }
             }
             cfg.modelCustomizer?.invoke(this)

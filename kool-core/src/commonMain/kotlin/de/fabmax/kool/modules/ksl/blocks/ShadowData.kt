@@ -42,7 +42,7 @@ class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslUniformBuffe
         uShadowMapViewProjMats = shader.uniforms[UNIFORM_NAME_SHADOW_VP_MATS] as? UniformMat4fv
 
         shader.texSamplers2d[SAMPLER_NAME_SHADOW_MAPS]?.let {
-            shadowMapInfos.forEachIndexed { n, mapInfo ->
+            shadowMapInfos.forEach { mapInfo ->
                 for (i in mapInfo.subMaps.indices) {
                     val subMapIdx = mapInfo.fromIndexIncl + i
                     it.textures[subMapIdx] = mapInfo.subMaps[i].depthTexture

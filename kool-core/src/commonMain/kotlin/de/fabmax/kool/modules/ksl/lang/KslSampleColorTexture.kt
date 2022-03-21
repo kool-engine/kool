@@ -5,7 +5,8 @@ import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 class KslSampleColorTexture<T: KslTypeSampler<KslTypeFloat4>>(
     val sampler: KslExpression<T>,
-    val coord: KslExpression<*>)
+    val coord: KslExpression<*>,
+    val lod: KslScalarExpression<KslTypeFloat1>?)
     : KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
 
     override val expressionType = KslTypeFloat4
@@ -14,5 +15,5 @@ class KslSampleColorTexture<T: KslTypeSampler<KslTypeFloat4>>(
         sampler.collectStateDependencies() + coord.collectStateDependencies()
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTexture(this)
-    override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sample(${coord.toPseudoCode()})"
+    override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sample(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }

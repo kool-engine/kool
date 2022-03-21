@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -23,7 +22,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
     var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
     var ambientColor: Vec4f by uniform4f("uAmbientColor", cfg.ambientColor)
     var shininess: Float by uniform1f("uShininess", cfg.shininess)
-    var specularGain: Float by uniform1f("uSpecularGain", cfg.specularGain)
+    var specularStrength: Float by uniform1f("uSpecularStrength", cfg.specularStrength)
     var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
 
     class Config {
@@ -33,7 +32,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         val shadowCfg = ShadowConfig()
 
         var isInstanced = false
-        var isOutputToSrgbColorSpace = true
+        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         var isFlipBacksideNormals = true
 
         var maxNumberOfLights = 4
@@ -41,7 +40,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         var specularColor: Color = Color.WHITE
         var ambientColor: Color = Color(0.2f, 0.2f, 0.2f).toLinear()
         var shininess = 16f
-        var specularGain = 1f
+        var specularStrength = 1f
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
@@ -70,7 +69,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             val uSpecularColor = uniformFloat4("uSpecularColor")
             val uAmbientColor = uniformFloat4("uAmbientColor")
             val uShininess = uniformFloat1("uShininess")
-            val uSpecularGain = uniformFloat1("uSpecularGain")
+            val uSpecularStrength = uniformFloat1("uSpecularStrength")
             val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
 
             val positionWorldSpace = interStageFloat3()
@@ -124,8 +123,6 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                 main {
                     val normal = float3Var(normalize(normalWorldSpace.output))
-                    val fragmentColor = fragmentColorBlock(cfg.colorCfg).outColor
-
                     if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.isFlipBacksideNormals) {
                         `if` (!inIsFrontFacing) {
                             normal *= (-1f).const3
@@ -139,18 +136,19 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     // determine main color (albedo)
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
+                    val fragmentColor = colorBlock.outColor
 
                     // main material block
                     val material = blinnPhongMaterialBlock {
                         inCamPos = camData.position
                         inNormal = normal
                         inFragmentPos = positionWorldSpace.output
-                        inFragmentColor = colorBlock.outColor.rgb
+                        inFragmentColor = fragmentColor.rgb
 
                         inAmbientColor = uAmbientColor.rgb
                         inSpecularColor = uSpecularColor.rgb
                         inShininess = uShininess
-                        inSpecularGain = uSpecularGain
+                        inSpecularStrength = uSpecularStrength
 
                         setLightData(lightData, shadowFactors)
                     }
@@ -168,14 +166,12 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     }
 
                     // set fragment stage output color
-                    val outColor = float3Var(material.outColor)
-                    if (cfg.isOutputToSrgbColorSpace) {
-                        outColor set pow(outColor, Vec3f(Color.GAMMA_LINEAR_TO_sRGB).const)
-                    }
+                    val outRgb = float3Var(material.outColor)
+                    outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
-                        outColor set outColor * fragmentColor.a
+                        outRgb set outRgb * fragmentColor.a
                     }
-                    colorOutput(outColor, fragmentColor.a)
+                    colorOutput(outRgb, fragmentColor.a)
                 }
             }
 
