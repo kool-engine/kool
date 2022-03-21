@@ -138,6 +138,11 @@ class JsAssetManager internal constructor(props: JsContext.InitProps, val ctx: J
         }
     }
 
+    override suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
+        val image = (loadTextureData(imagePath, format) as ImageTextureData).image
+        return BufferedImageTextureData(image, format)
+    }
+
     private fun loadSelectedFile() {
         val fileList = fileChooser.asDynamic().files as FileList
         if (fileList.length > 0) {

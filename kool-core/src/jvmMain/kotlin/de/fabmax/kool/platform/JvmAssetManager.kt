@@ -182,6 +182,11 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val c
         }
     }
 
+    override suspend fun loadTextureData2d(imagePath: String, format: TexFormat?): TextureData2d {
+        // JVM implementation always loads images as ImageTextureData, which is a subclass of TextureData2d
+        return loadTextureData(imagePath, format) as ImageTextureData
+    }
+
     override suspend fun createTextureData(texData: Uint8Buffer, mimeType: String): TextureData {
         var img: BufferedImage?
         withContext(Dispatchers.IO) {

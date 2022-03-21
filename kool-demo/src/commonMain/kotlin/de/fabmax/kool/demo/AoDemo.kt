@@ -41,7 +41,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         showLoadText("Loading IBL Maps")
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
 
-        showLoadText("Loading IBL Maps")
+        showLoadText("Loading Model")
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
         val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
         teapotMesh = model.meshes.values.first()

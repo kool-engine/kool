@@ -719,7 +719,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                     position.x += props.xDir.x * px + props.yDir.x * py + gridNormal.x * h
                     position.y += props.xDir.y * px + props.yDir.y * py + gridNormal.y * h
                     position.z += props.xDir.z * px + props.yDir.z * py + gridNormal.z * h
-                    texCoord.set(x / props.stepsX.toFloat() * props.texCoordScale.x, y / props.stepsY.toFloat() * props.texCoordScale.y)
+                    texCoord.set(x / props.stepsX.toFloat() * props.texCoordScale.x, (1f - y / props.stepsY.toFloat()) * props.texCoordScale.y)
                 }
 
                 if (x > 0 && y > 0) {
@@ -896,6 +896,12 @@ class GridProps {
     var stepsX = 10
     var stepsY = 10
     var heightFun: (Int, Int) -> Float = ZERO_HEIGHT
+
+    fun useHeightMap(heightMap: HeightMap) {
+        stepsX = heightMap.width - 1
+        stepsY = heightMap.height - 1
+        heightFun = { x, y -> heightMap.getHeight(x, y) }
+    }
 
     companion object {
         val ZERO_HEIGHT: (Int, Int) -> Float = { _, _ -> 0f }

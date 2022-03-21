@@ -71,7 +71,8 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         "hellogltf" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
         "manyvehicles" to DemoEntry("Many Vehicles", true) { ManyVehiclesDemo() },
         "phys-character" to DemoEntry("Physics - Character", true) { CharacterDemo() },
-        "ksl-test" to DemoEntry("Ksl Test", true) { KslShaderTest() }
+        "ksl-test" to DemoEntry("Ksl Test", true) { KslShaderTest() },
+        "heightmap-test" to DemoEntry("Height Map Test", true) { HeightMapTest() }
     )
 
     init {
@@ -181,6 +182,9 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
 
         val modelBasePath: String
             get() = getProperty("pbrDemo.models", "$awsBaseUrl/models")
+
+        val heightMapPath: String
+            get() = getProperty("assets.heightmaps", "$awsBaseUrl/heightmaps")
 
         val soundsBasePath: String
             get() = getProperty("sounds", "$awsBaseUrl/sounds")

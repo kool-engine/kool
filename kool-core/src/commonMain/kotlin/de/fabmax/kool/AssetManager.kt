@@ -135,6 +135,13 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         return loaded.data ?: throw KoolException("Failed loading texture")
     }
 
+    /**
+     * Similar to [loadTextureData], but returns the image data as [TextureData2d] object, which stores the pixels
+     * in a CPU accessible buffer. This is particular useful to do procedural stuff like building heightmap geometry
+     * from a greyscale image.
+     */
+    abstract suspend fun loadTextureData2d(imagePath: String, format: TexFormat? = null): TextureData2d
+
     suspend fun loadTextureAtlasData(assetPath: String, tilesX: Int, tilesY: Int, format: TexFormat? = null): TextureData {
         val ref = if (isHttpAsset(assetPath)) {
             TextureAssetRef(assetPath, false, format, true, tilesX, tilesY)
