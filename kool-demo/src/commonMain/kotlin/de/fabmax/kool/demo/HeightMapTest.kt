@@ -6,9 +6,12 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.defaultCamTransform
 import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.HeightMap
 
@@ -17,6 +20,7 @@ class HeightMapTest : DemoScene("Height Map Test") {
     private lateinit var heightMap: HeightMap
     private lateinit var colorTex: Texture2d
     private lateinit var normalTex: Texture2d
+    private lateinit var ibl: EnvironmentMaps
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 20f)
@@ -25,6 +29,8 @@ class HeightMapTest : DemoScene("Height Map Test") {
 
         colorTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
         normalTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/blaubeuren_outskirts_1k.rgbe.png", this)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -54,6 +60,10 @@ class HeightMapTest : DemoScene("Height Map Test") {
                 normalMapping {
                     setNormalMap(normalTex)
                 }
+                shadow {
+                    addShadowMap(CascadedShadowMap(this@setupMainScene, 0))
+                }
+                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                 specularStrength = 0.5f
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             }

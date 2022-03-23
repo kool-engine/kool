@@ -1,11 +1,13 @@
 package de.fabmax.kool.modules.ksl
 
+import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.util.Color
 
 fun blinnPhongShader(cfgBlock: KslBlinnPhongShader.Config.() -> Unit): KslBlinnPhongShader {
@@ -20,10 +22,24 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
 
     var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
-    var ambientColor: Vec4f by uniform4f("uAmbientColor", cfg.ambientColor)
     var shininess: Float by uniform1f("uShininess", cfg.shininess)
     var specularStrength: Float by uniform1f("uSpecularStrength", cfg.specularStrength)
     var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
+
+    var ambientColor: Vec4f by uniform4f("uAmbientColor")
+    var ambientTexture: TextureCube? by textureCube("tAmbientTexture")
+    var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
+
+    init {
+        when (val ambient = cfg.ambientColor) {
+            is Config.UniformAmbientColor -> ambientColor = ambient.color
+            is Config.ImageBasedAmbientColor -> {
+                ambientTexture = ambient.ambientTexture
+                ambientColor = ambient.colorFactor
+            }
+        }
+        println("ambient tex: $ambientTexture")
+    }
 
     class Config {
         val colorCfg = ColorBlockConfig()
@@ -38,11 +54,19 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         var maxNumberOfLights = 4
 
         var specularColor: Color = Color.WHITE
-        var ambientColor: Color = Color(0.2f, 0.2f, 0.2f).toLinear()
+        var ambientColor: AmbientColor = UniformAmbientColor(Color(0.2f, 0.2f, 0.2f).toLinear())
         var shininess = 16f
         var specularStrength = 1f
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
+
+        fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
+            ambientColor = UniformAmbientColor(color)
+        }
+
+        fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
+            ambientColor = ImageBasedAmbientColor(ambientTexture, colorFactor)
+        }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.apply(block)
@@ -59,19 +83,14 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         fun shadow(block: ShadowConfig.() -> Unit) {
             shadowCfg.apply(block)
         }
+
+        sealed class AmbientColor
+        class UniformAmbientColor(val color: Color) : AmbientColor()
+        class ImageBasedAmbientColor(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
     }
 
     class Model(cfg: Config) : KslProgram("Blinn-Phong Shader") {
         init {
-            val uMvp = mvpMatrix()
-            val uModelMat = modelMatrix()
-
-            val uSpecularColor = uniformFloat4("uSpecularColor")
-            val uAmbientColor = uniformFloat4("uAmbientColor")
-            val uShininess = uniformFloat1("uShininess")
-            val uSpecularStrength = uniformFloat1("uSpecularStrength")
-            val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
-
             val positionWorldSpace = interStageFloat3()
             val normalWorldSpace = interStageFloat3()
             var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
@@ -80,6 +99,9 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             val shadowMapVertexStage: ShadowBlockVertexStage
 
             vertexStage {
+                val uMvp = mvpMatrix()
+                val uModelMat = modelMatrix()
+
                 main {
                     val mvp = mat4Var(uMvp.matrix)
                     val modelMat = mat4Var(uModelMat.matrix)
@@ -118,6 +140,12 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             }
 
             fragmentStage {
+                val uSpecularColor = uniformFloat4("uSpecularColor")
+                val uShininess = uniformFloat1("uShininess")
+                val uSpecularStrength = uniformFloat1("uSpecularStrength")
+                val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
+                val uAmbientColor = uniformFloat4("uAmbientColor")
+
                 val camData = cameraData()
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
@@ -138,6 +166,15 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
                     val fragmentColor = colorBlock.outColor
 
+                    val ambientColor = when (cfg.ambientColor) {
+                        is Config.UniformAmbientColor -> uAmbientColor
+                        is Config.ImageBasedAmbientColor -> {
+                            val ambientTex = textureCube("tAmbientTexture")
+                            val ambientOri = uniformMat3("uAmbientTextureOri")
+                            sampleTexture(ambientTex, ambientOri * normal) * uAmbientColor
+                        }
+                    }
+
                     // main material block
                     val material = blinnPhongMaterialBlock {
                         inCamPos = camData.position
@@ -145,7 +182,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         inFragmentPos = positionWorldSpace.output
                         inFragmentColor = fragmentColor.rgb
 
-                        inAmbientColor = uAmbientColor.rgb
+                        inAmbientColor = ambientColor.rgb
                         inSpecularColor = uSpecularColor.rgb
                         inShininess = uShininess
                         inSpecularStrength = uSpecularStrength
