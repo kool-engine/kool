@@ -2235,6 +2235,59 @@ val PxPhysics.nbShapes
 val PxPhysics.physicsInsertionCallback
     get() = getPhysicsInsertionCallback()
 
+external interface PxQueryFilterCallback
+
+fun PxQueryFilterCallback.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface SimpleQueryFilterCallback : PxQueryFilterCallback {
+    /**
+     * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * @param shape      WebIDL type: [PxShape] (Const)
+     * @param actor      WebIDL type: [PxRigidActor] (Const)
+     * @param queryFlags WebIDL type: [PxHitFlags] (Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun simplePreFilter(filterData: PxFilterData, shape: PxShape, actor: PxRigidActor, queryFlags: PxHitFlags): Int
+
+    /**
+     * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * @param hit        WebIDL type: [PxQueryHit] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun simplePostFilter(filterData: PxFilterData, hit: PxQueryHit): Int
+
+}
+
+fun SimpleQueryFilterCallback.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface JavaQueryFilterCallback : SimpleQueryFilterCallback {
+    /**
+     * param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * param shape      WebIDL type: [PxShape] (Const)
+     * param actor      WebIDL type: [PxRigidActor] (Const)
+     * param queryFlags WebIDL type: [PxHitFlags] (Ref)
+     * return WebIDL type: unsigned long
+     */
+    var simplePreFilter: (filterData: PxFilterData, shape: PxShape, actor: PxRigidActor, queryFlags: PxHitFlags) -> Int
+
+    /**
+     * param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * param hit        WebIDL type: [PxQueryHit] (Const, Ref)
+     * return WebIDL type: unsigned long
+     */
+    var simplePostFilter: (filterData: PxFilterData, hit: PxQueryHit) -> Int
+
+}
+
+fun JavaQueryFilterCallback(): JavaQueryFilterCallback {
+    fun _JavaQueryFilterCallback(_module: dynamic) = js("new _module.JavaQueryFilterCallback()")
+    return _JavaQueryFilterCallback(PhysXJsLoader.physXJs)
+}
+
 external interface PxQueryFilterData {
     /**
      * Native object address.
@@ -3917,6 +3970,228 @@ fun PxSceneFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxSceneQueryExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param scene    WebIDL type: [PxScene] (Const, Ref)
+     * @param origin   WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir  WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance WebIDL type: float (Const)
+     * @param hit      WebIDL type: [PxQueryHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycastAny(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, hit: PxQueryHit): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param origin     WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float (Const)
+     * @param hit        WebIDL type: [PxQueryHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycastAny(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, hit: PxQueryHit, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param origin     WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float (Const)
+     * @param hit        WebIDL type: [PxQueryHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: boolean
+     */
+    fun raycastAny(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, hit: PxQueryHit, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param origin      WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxRaycastHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycastSingle(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxRaycastHit): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param origin      WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxRaycastHit] (Ref)
+     * @param filterData  WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun raycastSingle(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxRaycastHit, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param origin      WebIDL type: [PxVec3] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxRaycastHit] (Ref)
+     * @param filterData  WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall  WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: boolean
+     */
+    fun raycastSingle(scene: PxScene, origin: PxVec3, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxRaycastHit, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float (Const)
+     * @param queryFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit        WebIDL type: [PxQueryHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweepAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, queryFlags: PxHitFlags, hit: PxQueryHit): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float (Const)
+     * @param queryFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit        WebIDL type: [PxQueryHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweepAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, queryFlags: PxHitFlags, hit: PxQueryHit, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance   WebIDL type: float (Const)
+     * @param queryFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit        WebIDL type: [PxQueryHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: boolean
+     */
+    fun sweepAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, queryFlags: PxHitFlags, hit: PxQueryHit, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose        WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxSweepHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweepSingle(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxSweepHit): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose        WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxSweepHit] (Ref)
+     * @param filterData  WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweepSingle(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxSweepHit, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param scene       WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose        WebIDL type: [PxTransform] (Const, Ref)
+     * @param unitDir     WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance    WebIDL type: float (Const)
+     * @param outputFlags WebIDL type: [PxHitFlags] (Ref)
+     * @param hit         WebIDL type: [PxSweepHit] (Ref)
+     * @param filterData  WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall  WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: boolean
+     */
+    fun sweepSingle(scene: PxScene, geometry: PxGeometry, pose: PxTransform, unitDir: PxVec3, distance: Float, outputFlags: PxHitFlags, hit: PxSweepHit, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Boolean
+
+    /**
+     * @param scene         WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry      WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose          WebIDL type: [PxTransform] (Const, Ref)
+     * @param hitBuffer     WebIDL type: [PxOverlapHit]
+     * @param hitBufferSize WebIDL type: unsigned long
+     * @return WebIDL type: long
+     */
+    fun overlapMultiple(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hitBuffer: PxOverlapHit, hitBufferSize: Int): Int
+
+    /**
+     * @param scene         WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry      WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose          WebIDL type: [PxTransform] (Const, Ref)
+     * @param hitBuffer     WebIDL type: [PxOverlapHit]
+     * @param hitBufferSize WebIDL type: unsigned long
+     * @param filterData    WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: long
+     */
+    fun overlapMultiple(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hitBuffer: PxOverlapHit, hitBufferSize: Int, filterData: PxQueryFilterData): Int
+
+    /**
+     * @param scene         WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry      WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose          WebIDL type: [PxTransform] (Const, Ref)
+     * @param hitBuffer     WebIDL type: [PxOverlapHit]
+     * @param hitBufferSize WebIDL type: unsigned long
+     * @param filterData    WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall    WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: long
+     */
+    fun overlapMultiple(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hitBuffer: PxOverlapHit, hitBufferSize: Int, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Int
+
+    /**
+     * @param scene    WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose     WebIDL type: [PxTransform] (Const, Ref)
+     * @param hit      WebIDL type: [PxOverlapHit] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlapAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hit: PxOverlapHit): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param hit        WebIDL type: [PxOverlapHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlapAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hit: PxOverlapHit, filterData: PxQueryFilterData): Boolean
+
+    /**
+     * @param scene      WebIDL type: [PxScene] (Const, Ref)
+     * @param geometry   WebIDL type: [PxGeometry] (Const, Ref)
+     * @param pose       WebIDL type: [PxTransform] (Const, Ref)
+     * @param hit        WebIDL type: [PxOverlapHit] (Ref)
+     * @param filterData WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param filterCall WebIDL type: [PxQueryFilterCallback]
+     * @return WebIDL type: boolean
+     */
+    fun overlapAny(scene: PxScene, geometry: PxGeometry, pose: PxTransform, hit: PxOverlapHit, filterData: PxQueryFilterData, filterCall: PxQueryFilterCallback): Boolean
+
+}
+
+fun PxSceneQueryExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxSceneLimits {
     /**
      * Native object address.
@@ -4213,6 +4488,75 @@ var PxShape.simulationFilterData
 var PxShape.queryFilterData
     get() = getQueryFilterData()
     set(value) { setQueryFilterData(value) }
+
+external interface PxShapeExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param shape WebIDL type: [PxShape] (Const, Ref)
+     * @param actor WebIDL type: [PxRigidActor] (Const, Ref)
+     * @return WebIDL type: [PxTransform] (Value)
+     */
+    fun getGlobalPose(shape: PxShape, actor: PxRigidActor): PxTransform
+
+    /**
+     * @param shape     WebIDL type: [PxShape] (Const, Ref)
+     * @param actor     WebIDL type: [PxRigidActor] (Const, Ref)
+     * @param rayOrigin WebIDL type: [PxVec3] (Const, Ref)
+     * @param rayDir    WebIDL type: [PxVec3] (Const, Ref)
+     * @param maxDist   WebIDL type: float
+     * @param hitFlags  WebIDL type: [PxHitFlags] (Ref)
+     * @param maxHits   WebIDL type: unsigned long
+     * @param rayHits   WebIDL type: [PxRaycastHit]
+     * @return WebIDL type: unsigned long
+     */
+    fun raycast(shape: PxShape, actor: PxRigidActor, rayOrigin: PxVec3, rayDir: PxVec3, maxDist: Float, hitFlags: PxHitFlags, maxHits: Int, rayHits: PxRaycastHit): Int
+
+    /**
+     * @param shape         WebIDL type: [PxShape] (Const, Ref)
+     * @param actor         WebIDL type: [PxRigidActor] (Const, Ref)
+     * @param otherGeom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param otherGeomPose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun overlap(shape: PxShape, actor: PxRigidActor, otherGeom: PxGeometry, otherGeomPose: PxTransform): Boolean
+
+    /**
+     * @param shape         WebIDL type: [PxShape] (Const, Ref)
+     * @param actor         WebIDL type: [PxRigidActor] (Const, Ref)
+     * @param unitDir       WebIDL type: [PxVec3] (Const, Ref)
+     * @param distance      WebIDL type: float
+     * @param otherGeom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param otherGeomPose WebIDL type: [PxTransform] (Const, Ref)
+     * @param sweepHit      WebIDL type: [PxSweepHit] (Ref)
+     * @param hitFlags      WebIDL type: [PxHitFlags] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun sweep(shape: PxShape, actor: PxRigidActor, unitDir: PxVec3, distance: Float, otherGeom: PxGeometry, otherGeomPose: PxTransform, sweepHit: PxSweepHit, hitFlags: PxHitFlags): Boolean
+
+    /**
+     * @param shape WebIDL type: [PxShape] (Const, Ref)
+     * @param actor WebIDL type: [PxRigidActor] (Const, Ref)
+     * @return WebIDL type: [PxBounds3] (Value)
+     */
+    fun getWorldBounds(shape: PxShape, actor: PxRigidActor): PxBounds3
+
+    /**
+     * @param shape     WebIDL type: [PxShape] (Const, Ref)
+     * @param actor     WebIDL type: [PxRigidActor] (Const, Ref)
+     * @param inflation WebIDL type: float
+     * @return WebIDL type: [PxBounds3] (Value)
+     */
+    fun getWorldBounds(shape: PxShape, actor: PxRigidActor, inflation: Float): PxBounds3
+
+}
+
+fun PxShapeExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
 
 external interface PxShapeFlags {
     /**
@@ -4877,6 +5221,12 @@ object PxQueryFlagEnum {
     val ePOSTFILTER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePOSTFILTER()
     val eANY_HIT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eANY_HIT()
     val eNO_BLOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eNO_BLOCK()
+}
+
+object PxQueryHitType {
+    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eNONE()
+    val eTOUCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eTOUCH()
+    val eBLOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eBLOCK()
 }
 
 object PxRigidBodyFlagEnum {

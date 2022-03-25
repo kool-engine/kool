@@ -2,19 +2,20 @@ package de.fabmax.kool.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.FilterData
+import de.fabmax.kool.physics.FilterDataBuilder
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 
 object VehicleUtils {
 
-    fun setupDrivableSurface(queryFilterData: FilterData): FilterData {
-        queryFilterData.data[3] = SURFACE_FLAG_DRIVABLE
+    fun setupDrivableSurface(queryFilterData: FilterDataBuilder): FilterDataBuilder {
+        queryFilterData.word3 = SURFACE_FLAG_DRIVABLE
         return queryFilterData
     }
 
-    fun setupNonDrivableSurface(queryFilterData: FilterData): FilterData {
-        queryFilterData.data[3] = SURFACE_FLAG_NON_DRIVABLE
+    fun setupNonDrivableSurface(queryFilterData: FilterDataBuilder): FilterDataBuilder {
+        queryFilterData.word3 = SURFACE_FLAG_NON_DRIVABLE
         return queryFilterData
     }
 
@@ -22,7 +23,7 @@ object VehicleUtils {
 
     fun defaultChassisShape(geometry: CollisionGeometry, contactFlags: Int = 0): Shape {
         val simFilterData = FilterData(COLLISION_FLAG_CHASSIS, COLLISION_FLAG_CHASSIS_AGAINST, contactFlags)
-        val qryFilterData = setupNonDrivableSurface(FilterData())
+        val qryFilterData = FilterData { setupNonDrivableSurface(this) }
         return Shape(geometry, defaultChassisMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
     }
 
@@ -30,7 +31,7 @@ object VehicleUtils {
         val mesh = defaultWheelMesh
         val geom = ConvexMeshGeometry(mesh, Vec3f(width, radius, radius))
         val simFilterData = FilterData(COLLISION_FLAG_WHEEL, COLLISION_FLAG_WHEEL_AGAINST)
-        val qryFilterData = setupNonDrivableSurface(FilterData())
+        val qryFilterData = FilterData { setupNonDrivableSurface(this) }
         return Shape(geom, defaultWheelMaterial, simFilterData = simFilterData, queryFilterData = qryFilterData)
     }
 

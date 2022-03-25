@@ -17,13 +17,13 @@ import physx.support.TypeHelpers
 import physx.support.Vector_PxContactPairPoint
 import kotlin.collections.set
 
-actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, val numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
 
     private val cpuDispatcher: PxDefaultCpuDispatcher
 
     private val raycastResult = PxRaycastBuffer10()
-    private val bufPxGravity = gravity.toPxVec3(PxVec3())
+    private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
         get() = pxScene.gravity.toVec3f(bufGravity)
@@ -37,20 +37,21 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
 
     private val pxActors = mutableMapOf<PxRigidActor, RigidActor>()
 
-//    private val filterShader = TestShader()
-
     init {
         Physics.checkIsLoaded()
         cpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(numWorkers)
 
         MemoryStack.stackPush().use { mem ->
+            var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
+            if (isContinuousCollisionDetection) {
+                flags = flags or PxSceneFlagEnum.eENABLE_CCD
+            }
             val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = this.cpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = SimEventCallback()
-            sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
-//            PxTopLevelFunctions.setupPassThroughFilterShader(sceneDesc, filterShader)
+            sceneDesc.flags.set(flags)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
         scene?.let { registerHandlers(it) }
@@ -80,6 +81,16 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, val 
         super.addActor(actor)
         pxScene.addActor(actor.pxRigidActor)
         pxActors[actor.pxRigidActor] = actor
+
+        // set necessary ccd flags in case it is enabled for this scene
+        val pxActor = actor.pxRigidActor
+        if (isContinuousCollisionDetection && pxActor is PxRigidBody) {
+            pxActor.setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+            actor.simulationFilterData = FilterData {
+                set(actor.simulationFilterData)
+                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT
+            }
+        }
     }
 
     override fun removeActor(actor: RigidActor) {

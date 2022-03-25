@@ -213,7 +213,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     private fun Scene.makeGround(ibl: EnvironmentMaps, physicsWorld: PhysicsWorld) {
         val frame = mutableListOf<RigidStatic>()
-        val frameSimFilter = FilterData().apply {
+        val frameSimFilter = FilterData {
             setCollisionGroup(1)
             clearCollidesWith(1)
         }
@@ -223,7 +223,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val ground = RigidStatic().apply {
             attachShape(Shape(groundShape, groundMaterial))
             position = Vec3f(0f, -0.5f, 0f)
-            setSimulationFilterData(frameSimFilter)
+            simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(ground)
 
@@ -231,7 +231,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameLt = RigidStatic().apply {
             attachShape(Shape(frameLtShape, groundMaterial))
             position = Vec3f(-51.5f, 2f, 0f)
-            setSimulationFilterData(frameSimFilter)
+            simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameLt)
         frame += frameLt
@@ -240,7 +240,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameRt = RigidStatic().apply {
             attachShape(Shape(frameRtShape, groundMaterial))
             position = Vec3f(51.5f, 2f, 0f)
-            setSimulationFilterData(frameSimFilter)
+            simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameRt)
         frame += frameRt
@@ -249,7 +249,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameFt = RigidStatic().apply {
             attachShape(Shape(frameFtShape, groundMaterial))
             position = Vec3f(0f, 2f, 51.5f)
-            setSimulationFilterData(frameSimFilter)
+            simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameFt)
         frame += frameFt
@@ -258,7 +258,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameBk = RigidStatic().apply {
             attachShape(Shape(frameBkShape, groundMaterial))
             position = Vec3f(0f, 2f, -51.5f)
-            setSimulationFilterData(frameSimFilter)
+            simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameBk)
         frame += frameBk

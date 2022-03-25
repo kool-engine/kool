@@ -55,7 +55,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private lateinit var groundNormal: Texture2d
 
     private val staticCollGroup = 1
-    private val staticSimFilterData = FilterData().apply {
+    private val staticSimFilterData = FilterData {
         setCollisionGroup(staticCollGroup)
         clearCollidesWith(staticCollGroup)
     }
@@ -165,7 +165,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             clear()
 
             val groundPlane = RigidStatic()
-            groundPlane.setSimulationFilterData(staticSimFilterData)
+            groundPlane.simulationFilterData = staticSimFilterData
             groundPlane.attachShape(Shape(PlaneGeometry(), material))
             groundPlane.position = Vec3f(0f, -20f, 0f)
             groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
@@ -373,7 +373,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         val axleGeom = CylinderGeometry(7f, 1f)
         val axle = RigidStatic()
-        axle.setSimulationFilterData(staticSimFilterData)
+        axle.simulationFilterData = staticSimFilterData
         axle.attachShape(Shape(axleGeom, material))
         axle.setRotation(frame.getRotation(Mat3f()).rotate(0f, -90f, 0f))
         axle.position = frame.transform(MutableVec3f(origin))
@@ -422,12 +422,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
             gearShapes += Shape(toothGeom, material, Mat4f().rotate(0f, 0f, 30f * i))
         }
 
-        val gearFilterData = FilterData().apply {
+        val gearFilterData = FilterData {
             setCollisionGroup(0)
             clearCollidesWith(staticCollGroup)
         }
         val gear = RigidDynamic(mass)
-        gear.setSimulationFilterData(gearFilterData)
+        gear.simulationFilterData = gearFilterData
         gearShapes.forEach { shape ->
             gear.attachShape(shape)
         }

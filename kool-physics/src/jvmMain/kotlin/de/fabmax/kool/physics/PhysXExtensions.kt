@@ -12,9 +12,7 @@ import physx.cooking.PxConvexMeshDesc
 import physx.cooking.PxTriangleMeshDesc
 import physx.extensions.BatchVehicleUpdateDesc
 import physx.extensions.PxRevoluteJointFlags
-import physx.geomutils.PxConvexMeshGeometryFlags
-import physx.geomutils.PxHullPolygon
-import physx.geomutils.PxMeshScale
+import physx.geomutils.*
 import physx.physics.*
 import physx.support.Vector_PxVec3
 import physx.vehicle.*
@@ -76,12 +74,12 @@ fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
 
 fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0): PxFilterData = PxFilterData(w0, w1, w2, 0)
 fun PxFilterData(filterData: FilterData): PxFilterData =
-    PxFilterData(filterData.data[0], filterData.data[1], filterData.data[2], filterData.data[3])
+    PxFilterData(filterData.word0, filterData.word1, filterData.word2, filterData.word3)
 fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
-    target.word0 = data[0]
-    target.word1 = data[1]
-    target.word2 = data[2]
-    target.word3 = data[3]
+    target.word0 = word0
+    target.word1 = word1
+    target.word2 = word2
+    target.word3 = word3
     return target
 }
 
@@ -89,6 +87,7 @@ fun MemoryStack.createPxBoundedData() = PxBoundedData.createAt(this, MemoryStack
 fun MemoryStack.createPxFilterData() = PxFilterData.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) =
     PxFilterData.createAt(this, MemoryStack::nmalloc, w0, w1, w2, w3)
+fun MemoryStack.createPxHeightFieldSample() = PxHeightFieldSample.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxHullPolygon() = PxHullPolygon.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxMeshScale(s: PxVec3, r: PxQuat) = PxMeshScale.createAt(this, MemoryStack::nmalloc, s, r)
 fun MemoryStack.createPxVec3() = PxVec3.createAt(this, MemoryStack::nmalloc)
@@ -105,6 +104,7 @@ fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) =
 fun MemoryStack.createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
     PxBatchQueryDesc.createAt(this, MemoryStack::nmalloc, maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute)
 fun MemoryStack.createPxConvexMeshDesc() = PxConvexMeshDesc.createAt(this, MemoryStack::nmalloc)
+fun MemoryStack.createPxHeightFieldDesc() = PxHeightFieldDesc.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxTriangleMeshDesc() = PxTriangleMeshDesc.createAt(this, MemoryStack::nmalloc)
 
 fun MemoryStack.createPxVehicleAntiRollBarData() = PxVehicleAntiRollBarData.createAt(this, MemoryStack::nmalloc)
@@ -117,6 +117,7 @@ fun MemoryStack.createPxBaseFlags(flags: Int) = PxBaseFlags.createAt(this, Memor
 fun MemoryStack.createPxConvexFlags(flags: Int) = PxConvexFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxConvexMeshGeometryFlags(flags: Int) = PxConvexMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxHitFlags(flags: Int) = PxHitFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
+fun MemoryStack.createPxMeshGeometryFlags(flags: Int) = PxMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxRevoluteJointFlags(flags: Int) = PxRevoluteJointFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())

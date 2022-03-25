@@ -258,8 +258,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         +gndMesh
 
         val ground = RigidStatic().apply {
-            setSimulationFilterData(vehicleWorld.groundSimFilterData)
-            setQueryFilterData(vehicleWorld.groundQryFilterData)
+            simulationFilterData = vehicleWorld.groundSimFilterData
+            queryFilterData = vehicleWorld.groundQryFilterData
             attachShape(Shape(PlaneGeometry(), vehicleWorld.defaultMaterial))
             setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         }

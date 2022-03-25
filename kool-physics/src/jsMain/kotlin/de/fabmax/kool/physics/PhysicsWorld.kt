@@ -9,11 +9,11 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import physx.*
 
-actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
+actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
 
     private val raycastResult = PxRaycastBuffer10()
-    private val bufPxGravity = gravity.toPxVec3(PxVec3())
+    private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
         get() = pxScene.gravity.toVec3f(bufGravity)
@@ -31,13 +31,17 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
         Physics.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
+            var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
+            if (isContinuousCollisionDetection) {
+                flags = flags or PxSceneFlagEnum.eENABLE_CCD
+            }
             val sceneDesc = mem.createPxSceneDesc(Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
             sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
             sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
-            sceneDesc.flags.set(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
+            sceneDesc.flags.set(flags)
             pxScene = Physics.physics.createScene(sceneDesc)
         }
 
@@ -68,6 +72,18 @@ actual class PhysicsWorld actual constructor(scene: Scene?, gravity: Vec3f, numW
         super.addActor(actor)
         pxScene.addActor(actor.pxRigidActor)
         pxActors[actor.pxRigidActor.ptr] = actor
+
+        // set necessary ccd flags in case it is enabled for this scene
+        val pxActor = actor.pxRigidActor
+        if (isContinuousCollisionDetection && actor is RigidBody) {
+            // in javascript we cannot check for pxActor being an instance of PxRigidBody (because it's an external
+            // interface), however if actor is RigidBody pxActor must be PxRigidBody...
+            pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+            actor.simulationFilterData = FilterData {
+                set(actor.simulationFilterData)
+                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT
+            }
+        }
     }
 
     override fun removeActor(actor: RigidActor) {

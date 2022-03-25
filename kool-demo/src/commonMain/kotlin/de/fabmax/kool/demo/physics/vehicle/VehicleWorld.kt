@@ -16,9 +16,9 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
 
     val defaultMaterial = Material(0.5f)
     val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
-    val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+    val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
     val obstacleSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
-    val obstacleQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+    val obstacleQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = group {
         +colorMesh {
@@ -44,8 +44,8 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
 
     fun addStaticCollisionBody(mesh: IndexedVertexList): RigidStatic {
         val body = RigidStatic().apply {
-            setSimulationFilterData(obstacleSimFilterData)
-            setQueryFilterData(obstacleQryFilterData)
+            simulationFilterData = obstacleSimFilterData
+            queryFilterData = obstacleQryFilterData
             attachShape(Shape(TriangleMeshGeometry(mesh), defaultMaterial))
         }
         physics.addActor(body)

@@ -38,7 +38,6 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                 ambientColor = ambient.colorFactor
             }
         }
-        println("ambient tex: $ambientTexture")
     }
 
     class Config {

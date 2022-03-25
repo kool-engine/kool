@@ -11,10 +11,8 @@ import de.fabmax.kool.util.LazyMat4f
 
 expect open class RigidActor : CommonRigidActor {
     val worldBounds: BoundingBox
-
-    fun setSimulationFilterData(simulationFilterData: FilterData)
-
-    fun setQueryFilterData(queryFilterData: FilterData)
+    var simulationFilterData: FilterData
+    var queryFilterData: FilterData
 }
 
 abstract class CommonRigidActor : Releasable {

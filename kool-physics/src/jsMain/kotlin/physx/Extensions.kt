@@ -825,6 +825,47 @@ fun PxJointLinearLimitPair.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxMeshOverlapUtil {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param geomPose WebIDL type: [PxTransform] (Const, Ref)
+     * @param meshGeom WebIDL type: [PxTriangleMeshGeometry] (Const, Ref)
+     * @param meshPose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun findOverlap(geom: PxGeometry, geomPose: PxTransform, meshGeom: PxTriangleMeshGeometry, meshPose: PxTransform): Int
+
+    /**
+     * @return WebIDL type: [PxU32ConstPtr] (Value)
+     */
+    fun getResults(): PxU32ConstPtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbResults(): Int
+
+}
+
+fun PxMeshOverlapUtil(): PxMeshOverlapUtil {
+    fun _PxMeshOverlapUtil(_module: dynamic) = js("new _module.PxMeshOverlapUtil()")
+    return _PxMeshOverlapUtil(PhysXJsLoader.physXJs)
+}
+
+fun PxMeshOverlapUtil.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxMeshOverlapUtil.results
+    get() = getResults()
+val PxMeshOverlapUtil.nbResults
+    get() = getNbResults()
+
 external interface PxPrismaticJoint : PxJoint {
     /**
      * @return WebIDL type: float

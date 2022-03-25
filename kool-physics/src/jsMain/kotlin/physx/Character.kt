@@ -591,9 +591,17 @@ external interface PxControllerFilters {
      */
     var mFilterData: PxFilterData
     /**
+     * WebIDL type: [PxQueryFilterCallback]
+     */
+    var mFilterCallback: PxQueryFilterCallback
+    /**
      * WebIDL type: [PxQueryFlags] (Value)
      */
     var mFilterFlags: PxQueryFlags
+    /**
+     * WebIDL type: [PxControllerFilterCallback]
+     */
+    var mCCTFilterCallback: PxControllerFilterCallback
 }
 
 fun PxControllerFilters(): PxControllerFilters {
@@ -611,6 +619,35 @@ fun PxControllerFilters(filterData: PxFilterData): PxControllerFilters {
 
 fun PxControllerFilters.destroy() {
     PhysXJsLoader.destroy(this)
+}
+
+external interface PxControllerFilterCallback {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param a WebIDL type: [PxController] (Const, Ref)
+     * @param b WebIDL type: [PxController] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun filter(a: PxController, b: PxController): Boolean
+
+}
+
+fun PxControllerFilterCallback.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface JavaControllerFilterCallback : PxControllerFilterCallback {
+    /**
+     * param a WebIDL type: [PxController] (Const, Ref)
+     * param b WebIDL type: [PxController] (Const, Ref)
+     * return WebIDL type: boolean
+     */
+    var filter: (a: PxController, b: PxController) -> Boolean
+
 }
 
 external interface PxControllerHit {

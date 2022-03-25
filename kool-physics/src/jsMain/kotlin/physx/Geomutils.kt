@@ -636,6 +636,21 @@ external interface PxHeightFieldSample {
      * WebIDL type: octet
      */
     var materialIndex1: Byte
+
+    /**
+     * @return WebIDL type: octet
+     */
+    fun tessFlag(): Byte
+
+    fun clearTessFlag()
+
+    fun setTessFlag()
+
+}
+
+fun PxHeightFieldSample(): PxHeightFieldSample {
+    fun _PxHeightFieldSample(_module: dynamic) = js("new _module.PxHeightFieldSample()")
+    return _PxHeightFieldSample(PhysXJsLoader.physXJs)
 }
 
 fun PxHeightFieldSample.destroy() {

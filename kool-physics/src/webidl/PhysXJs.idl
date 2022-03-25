@@ -757,6 +757,22 @@ enum PxPruningStructureTypeEnum {
 };
 
 [Prefix="physx::"]
+interface PxQueryFilterCallback { };
+
+interface SimpleQueryFilterCallback {
+    unsigned long simplePreFilter([Const, Ref] PxFilterData filterData, [Const] PxShape shape, [Const] PxRigidActor actor, [Ref] PxHitFlags queryFlags);
+    unsigned long simplePostFilter([Const, Ref] PxFilterData filterData, [Const, Ref] PxQueryHit hit);
+};
+SimpleQueryFilterCallback implements PxQueryFilterCallback;
+
+[JSImplementation="SimpleQueryFilterCallback"]
+interface JavaQueryFilterCallback {
+    void JavaQueryFilterCallback();
+    unsigned long simplePreFilter([Const, Ref] PxFilterData filterData, [Const] PxShape shape, [Const] PxRigidActor actor, [Ref] PxHitFlags queryFlags);
+    unsigned long simplePostFilter([Const, Ref] PxFilterData filterData, [Const, Ref] PxQueryHit hit);
+};
+
+[Prefix="physx::"]
 interface PxQueryFilterData {
     void PxQueryFilterData();
     void PxQueryFilterData([Const, Ref] PxFilterData fd, [Ref] PxQueryFlags f);
@@ -787,6 +803,12 @@ interface PxQueryHit {
     attribute unsigned long faceIndex;
 };
 PxQueryHit implements PxActorShape;
+
+enum PxQueryHitType {
+    "PxQueryHitType::eNONE",
+    "PxQueryHitType::eTOUCH",
+    "PxQueryHitType::eBLOCK"
+};
 
 interface PxRaycastBuffer10 {
     void PxRaycastBuffer10();
@@ -1157,6 +1179,19 @@ interface PxSceneFlags {
     void clear(PxSceneFlagEnum flag);
 };
 
+[Prefix="physx::"]
+interface PxSceneQueryExt {
+    // raycastMultiple and sweepMultiple do not work because of bool& parameter
+    static boolean raycastAny([Const, Ref] PxScene scene, [Const, Ref] PxVec3 origin, [Const, Ref] PxVec3 unitDir, [Const] float distance, [Ref] PxQueryHit hit, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+    static boolean raycastSingle([Const, Ref] PxScene scene, [Const, Ref] PxVec3 origin, [Const, Ref] PxVec3 unitDir, [Const] float distance, [Ref] PxHitFlags outputFlags, [Ref] PxRaycastHit hit, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+
+    static boolean sweepAny([Const, Ref] PxScene scene, [Const, Ref] PxGeometry geometry, [Const, Ref] PxTransform pose, [Const, Ref] PxVec3 unitDir, [Const] float distance, [Ref] PxHitFlags queryFlags, [Ref] PxQueryHit hit, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+    static boolean sweepSingle([Const, Ref] PxScene scene, [Const, Ref] PxGeometry geometry, [Const, Ref] PxTransform pose, [Const, Ref] PxVec3 unitDir, [Const] float distance, [Ref] PxHitFlags outputFlags, [Ref] PxSweepHit hit, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+
+    static long overlapMultiple([Const, Ref] PxScene scene, [Const, Ref] PxGeometry geometry, [Const, Ref] PxTransform pose, PxOverlapHit hitBuffer, unsigned long hitBufferSize, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+    static boolean overlapAny([Const, Ref] PxScene scene, [Const, Ref] PxGeometry geometry, [Const, Ref] PxTransform pose, [Ref] PxOverlapHit hit, [Const, Ref] optional PxQueryFilterData filterData, optional PxQueryFilterCallback filterCall);
+};
+
 enum PxSceneQueryUpdateModeEnum {
     "PxSceneQueryUpdateModeEnum::eBUILD_ENABLED_COMMIT_ENABLED",
     "PxSceneQueryUpdateModeEnum::eBUILD_ENABLED_COMMIT_DISABLED",
@@ -1222,6 +1257,15 @@ interface PxShape {
     attribute VoidPtr userData;
 };
 PxShape implements PxBase;
+
+[Prefix="physx::"]
+interface PxShapeExt {
+    [Value] static PxTransform getGlobalPose([Const, Ref] PxShape shape, [Const, Ref] PxRigidActor actor);
+    static unsigned long raycast([Const, Ref] PxShape shape, [Const, Ref] PxRigidActor actor, [Const, Ref] PxVec3 rayOrigin, [Const, Ref] PxVec3 rayDir, float maxDist, [Ref] PxHitFlags hitFlags, unsigned long maxHits, PxRaycastHit rayHits);
+    static boolean overlap([Const, Ref] PxShape shape, [Const, Ref] PxRigidActor actor, [Const, Ref] PxGeometry otherGeom, [Const, Ref] PxTransform otherGeomPose);
+    static boolean sweep([Const, Ref] PxShape shape, [Const, Ref] PxRigidActor actor, [Const, Ref] PxVec3 unitDir, float distance, [Const, Ref] PxGeometry otherGeom, [Const, Ref] PxTransform otherGeomPose, [Ref] PxSweepHit sweepHit, [Ref] PxHitFlags hitFlags);
+    [Value] static PxBounds3 getWorldBounds([Const, Ref] PxShape shape, [Const, Ref] PxRigidActor actor, optional float inflation);
+};
 
 enum PxShapeFlagEnum {
     "PxShapeFlagEnum::eSIMULATION_SHAPE",
@@ -2061,6 +2105,10 @@ PxHeightFieldGeometry implements PxGeometry;
 
 [Prefix="physx::"]
 interface PxHeightFieldSample {
+    void PxHeightFieldSample();
+    octet tessFlag();
+    void clearTessFlag();
+    void setTessFlag();
     attribute short height;
     attribute octet materialIndex0;
     attribute octet materialIndex1;
@@ -3135,9 +3183,19 @@ interface PxControllerDesc {
 interface PxControllerFilters {
     void PxControllerFilters([Const] optional PxFilterData filterData);
     [Const] attribute PxFilterData mFilterData;
-    // PxQueryFilterCallback mFilterCallback;
+    attribute PxQueryFilterCallback mFilterCallback;
     [Value] attribute PxQueryFlags mFilterFlags;
-    // PxControllerFilterCallback mCCTFilterCallback;
+    attribute PxControllerFilterCallback mCCTFilterCallback;
+};
+
+[Prefix="physx::"]
+interface PxControllerFilterCallback {
+    boolean filter([Const, Ref] PxController a, [Const, Ref] PxController b);
+};
+
+[JSImplementation="PxControllerFilterCallback"]
+interface JavaControllerFilterCallback {
+    boolean filter([Const, Ref] PxController a, [Const, Ref] PxController b);
 };
 
 [Prefix="physx::"]
@@ -3307,6 +3365,7 @@ interface TypeHelpers {
     static float getRealAt([Ref] PxRealPtr base, long index);
 
     static PxActor getActorAt(PxActor base, long index);
+    static PxBounds3 getBounds3At(PxBounds3 base, long index);
     static PxContactPair getContactPairAt(PxContactPair base, long index);
     static PxContactPairHeader getContactPairHeaderAt(PxContactPairHeader base, long index);
     static PxController getControllerAt(PxController base, long index);
@@ -3321,6 +3380,7 @@ interface TypeHelpers {
     [Value] static PxRealPtr voidToRealPtr(VoidPtr voidPtr);
 
     static PxArticulationJoint articulationBaseJointToJoint(PxArticulationJointBase baseJoint);
+    static PxArticulationJointReducedCoordinate articulationBaseJointToJointReducedCoordinate(PxArticulationJointBase baseJoint);
 
     static any voidToAny(VoidPtr voidPtr);
 };

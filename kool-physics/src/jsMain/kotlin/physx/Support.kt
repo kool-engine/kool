@@ -145,6 +145,13 @@ external interface TypeHelpers {
     fun getActorAt(base: PxActor, index: Int): PxActor
 
     /**
+     * @param base  WebIDL type: [PxBounds3]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxBounds3]
+     */
+    fun getBounds3At(base: PxBounds3, index: Int): PxBounds3
+
+    /**
      * @param base  WebIDL type: [PxContactPair]
      * @param index WebIDL type: long
      * @return WebIDL type: [PxContactPair]
@@ -222,6 +229,12 @@ external interface TypeHelpers {
      * @return WebIDL type: [PxArticulationJoint]
      */
     fun articulationBaseJointToJoint(baseJoint: PxArticulationJointBase): PxArticulationJoint
+
+    /**
+     * @param baseJoint WebIDL type: [PxArticulationJointBase]
+     * @return WebIDL type: [PxArticulationJointReducedCoordinate]
+     */
+    fun articulationBaseJointToJointReducedCoordinate(baseJoint: PxArticulationJointBase): PxArticulationJointReducedCoordinate
 
     /**
      * @param voidPtr WebIDL type: VoidPtr

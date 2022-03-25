@@ -8,23 +8,21 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class HeightMap(heightData: Float32Buffer, heightScale: Float, heightOffset: Float, val width: Int, val height: Int) {
+class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
 
-    val heightMap = FloatArray(width * height)
     val minHeight: Float
     val maxHeight: Float
 
     init {
-        check(heightData.capacity == width * height) {
-            "Supplied height data has not the correct size: ${heightData.capacity} elements != $width x $height"
+        check(heightData.size == width * height) {
+            "Supplied height data has not the correct size: ${heightData.size} elements != $width x $height"
         }
 
         var min = Float.POSITIVE_INFINITY
         var max = Float.NEGATIVE_INFINITY
-        for (i in heightMap.indices) {
-            heightMap[i] = heightData[i] * heightScale + heightOffset
-            min = min(min, heightMap[i])
-            max = max(max, heightMap[i])
+        for (i in heightData.indices) {
+            min = min(min, heightData[i])
+            max = max(max, heightData[i])
         }
         minHeight = min
         maxHeight = max
@@ -51,7 +49,7 @@ class HeightMap(heightData: Float32Buffer, heightScale: Float, heightOffset: Flo
     fun getHeight(x: Int, y: Int): Float {
         val cx = x.clamp(0, width - 1)
         val cy = y.clamp(0, height - 1)
-        return heightMap[cy * width + cx]
+        return heightData[cy * width + cx]
     }
 
     companion object {
@@ -64,17 +62,20 @@ class HeightMap(heightData: Float32Buffer, heightScale: Float, heightOffset: Flo
                 "Texture format must be either TexFormat.R_F16 or TexFormat.R"
             }
 
-            val buf: Float32Buffer = if (textureData2d.data is Float32Buffer) {
-                textureData2d.data as Float32Buffer
-            } else {
-                val uint8Buf = textureData2d.data as Uint8Buffer
-                val floatBuf = createFloat32Buffer(textureData2d.width * textureData2d.height)
+            val heightData = FloatArray(textureData2d.width * textureData2d.height)
+            if (textureData2d.data is Float32Buffer) {
+                val float32Buf = textureData2d.data as Float32Buffer
                 for (i in 0 until textureData2d.width * textureData2d.height) {
-                    floatBuf[i] = (uint8Buf[i].toInt() and 0xff) / 255f
+                    heightData[i] = float32Buf[i] * heightScale + heightOffset
                 }
-                floatBuf
+            } else {
+                logW { "Constructing height map from 8-bit texture data, consider using raw data for higher height resolution" }
+                val uint8Buf = textureData2d.data as Uint8Buffer
+                for (i in 0 until textureData2d.width * textureData2d.height) {
+                    heightData[i] = ((uint8Buf[i].toInt() and 0xff) / 255f) * heightScale + heightOffset
+                }
             }
-            return HeightMap(buf, heightScale, heightOffset, textureData2d.width, textureData2d.height)
+            return HeightMap(heightData, textureData2d.width, textureData2d.height)
         }
 
         /**
@@ -92,13 +93,13 @@ class HeightMap(heightData: Float32Buffer, heightScale: Float, heightOffset: Flo
                 throw IllegalArgumentException("Raw data size ($elems) does not match supplied size: $width x $height")
             }
 
-            val floatBuf = createFloat32Buffer(elems)
+            val heightData = FloatArray(elems)
             for (i in 0 until elems) {
                 val ia = rawData[i*2].toInt() and 0xff
                 val ib = rawData[i*2+1].toInt() and 0xff
-                floatBuf[i] = (ia or (ib shl 8)) / 65535f
+                heightData[i] = ((ia or (ib shl 8)) / 65535f) * heightScale + heightOffset
             }
-            return HeightMap(floatBuf, heightScale, heightOffset, w, h)
+            return HeightMap(heightData, w, h)
         }
     }
 }

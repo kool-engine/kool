@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
 
-expect class PhysicsWorld(scene: Scene? = null, gravity: Vec3f = Vec3f(0f, -9.81f, 0f), numWorkers: Int = 4) : CommonPhysicsWorld {
+expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: Boolean = false, numWorkers: Int = 4) : CommonPhysicsWorld {
     var gravity: Vec3f
     val activeActors: Int
 

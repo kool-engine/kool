@@ -48,8 +48,8 @@ object Playground {
                 val boxShape = BoxGeometry(Vec3f(size))
                 val body = RigidDynamic(250f)
                 body.attachShape(Shape(boxShape, world.defaultMaterial))
-                body.setSimulationFilterData(world.obstacleSimFilterData)
-                body.setQueryFilterData(world.obstacleQryFilterData)
+                body.simulationFilterData = world.obstacleSimFilterData
+                body.queryFilterData = world.obstacleQryFilterData
                 val pos = MutableVec3f(x + i * stepX, size * 0.5f + r * size, 0f)
                 frame.transform(pos)
                 body.position = pos
@@ -63,14 +63,14 @@ object Playground {
 
     private fun makeRocker(frame: Mat4f, world: VehicleWorld) {
         val anchor = RigidStatic().apply {
-            setSimulationFilterData(world.obstacleSimFilterData)
-            setQueryFilterData(world.obstacleQryFilterData)
+            simulationFilterData = world.obstacleSimFilterData
+            queryFilterData = world.obstacleQryFilterData
             attachShape(Shape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), world.defaultMaterial))
             position = frame.transform(MutableVec3f(0f, 0.75f, 0f))
         }
         val rocker = RigidDynamic(500f).apply {
-            setSimulationFilterData(world.obstacleSimFilterData)
-            setQueryFilterData(world.obstacleQryFilterData)
+            simulationFilterData = world.obstacleSimFilterData
+            queryFilterData = world.obstacleQryFilterData
             attachShape(Shape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), world.defaultMaterial))
             position = frame.transform(MutableVec3f(0f, 1.7f, 0f))
         }

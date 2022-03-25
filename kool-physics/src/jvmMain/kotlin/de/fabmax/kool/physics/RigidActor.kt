@@ -18,8 +18,17 @@ actual open class RigidActor : CommonRigidActor() {
 
     internal lateinit var pxRigidActor: PxRigidActor
 
-    private val simFilterData = FilterData()
-    private val qryFilterData = FilterData()
+    actual var simulationFilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() }
+        set(value) {
+            field = value
+            updateFilterData()
+        }
+
+    actual var queryFilterData = FilterData()
+        set(value) {
+            field = value
+            updateFilterData()
+        }
 
     private val bufBounds = BoundingBox()
     private val bufPosition = MutableVec3f()
@@ -59,26 +68,16 @@ actual open class RigidActor : CommonRigidActor() {
     actual val worldBounds: BoundingBox
         get() = pxRigidActor.worldBounds.toBoundingBox(bufBounds)
 
-    init {
-        simFilterData.apply {
-            setCollisionGroup(0)
-            setCollidesWithEverything()
-        }
-    }
-
-    actual fun setSimulationFilterData(simulationFilterData: FilterData) {
+    private fun updateFilterData() {
         MemoryStack.stackPush().use { mem ->
-            simFilterData.set(simulationFilterData)
-            val fd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
-            shapes.forEach { it.pxShape?.simulationFilterData = fd }
-        }
-    }
-
-    actual fun setQueryFilterData(queryFilterData: FilterData) {
-        MemoryStack.stackPush().use { mem ->
-            qryFilterData.set(queryFilterData)
-            val fd = queryFilterData.toPxFilterData(mem.createPxFilterData())
-            shapes.forEach { it.pxShape?.queryFilterData = fd }
+            val sfd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
+            val qfd = queryFilterData.toPxFilterData(mem.createPxFilterData())
+            shapes.forEach { shape ->
+                shape.pxShape?.let {
+                    it.simulationFilterData = sfd
+                    it.queryFilterData = qfd
+                }
+            }
         }
     }
 
@@ -91,9 +90,9 @@ actual open class RigidActor : CommonRigidActor() {
             val pxShape = PxRigidActorExt.createExclusiveShape(pxRigidActor, shape.geometry.pxGeometry, shape.material.pxMaterial, shapeFlags)
             pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
 
-            val simFd = if (shape.simFilterData !== null) shape.simFilterData else simFilterData
+            val simFd = if (shape.simFilterData !== null) shape.simFilterData else simulationFilterData
             pxShape.simulationFilterData = simFd.toPxFilterData(mem.createPxFilterData())
-            val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else qryFilterData
+            val qryFd = if (shape.queryFilterData !== null) shape.queryFilterData else queryFilterData
             pxShape.queryFilterData = qryFd.toPxFilterData(mem.createPxFilterData())
             shape.pxShape = pxShape
         }

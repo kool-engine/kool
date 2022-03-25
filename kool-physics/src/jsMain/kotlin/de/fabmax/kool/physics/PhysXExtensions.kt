@@ -64,12 +64,12 @@ fun List<Vec3f>.toVector_PxVec3(): Vector_PxVec3 {
 
 fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0): PxFilterData = PxFilterData(w0, w1, w2, 0)
 fun PxFilterData(filterData: FilterData): PxFilterData =
-    PxFilterData(filterData.data[0], filterData.data[1], filterData.data[2], filterData.data[3])
+    PxFilterData(filterData.word0, filterData.word1, filterData.word2, filterData.word3)
 fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
-    target.word0 = data[0]
-    target.word1 = data[1]
-    target.word2 = data[2]
-    target.word3 = data[3]
+    target.word0 = word0
+    target.word1 = word1
+    target.word2 = word2
+    target.word3 = word3
     return target
 }
 
@@ -107,6 +107,7 @@ class MemoryStack private constructor() {
     fun createPxBoundedData() = autoDelete(PxBoundedData())
     fun createPxFilterData() = autoDelete(PxFilterData())
     fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3))
+    fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample())
     fun createPxHullPolygon() = autoDelete(PxHullPolygon())
     fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r))
     fun createPxVec3() = autoDelete(PxVec3())
@@ -122,6 +123,7 @@ class MemoryStack private constructor() {
     fun createPxBatchQueryDesc(maxRaycastsPerExecute: Int, maxSweepsPerExecute: Int, maxOverlapsPerExecute: Int) =
         autoDelete(PxBatchQueryDesc(maxRaycastsPerExecute, maxSweepsPerExecute, maxOverlapsPerExecute))
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())
+    fun createPxHeightFieldDesc() = autoDelete(PxHeightFieldDesc())
     fun createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc())
 
     fun createPxVehicleAntiRollBarData() = autoDelete(PxVehicleAntiRollBarData())
@@ -134,6 +136,7 @@ class MemoryStack private constructor() {
     fun createPxConvexFlags(flags: Int) = autoDelete(PxConvexFlags(flags.toShort()))
     fun createPxConvexMeshGeometryFlags(flags: Int) = autoDelete(PxConvexMeshGeometryFlags(flags.toByte()))
     fun createPxHitFlags(flags: Int) = autoDelete(PxHitFlags(flags.toShort()))
+    fun createPxMeshGeometryFlags(flags: Int) = autoDelete(PxMeshGeometryFlags(flags.toByte()))
     fun createPxRevoluteJointFlags(flags: Int) = autoDelete(PxRevoluteJointFlags(flags.toShort()))
     fun createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toByte()))
     fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()))

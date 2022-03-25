@@ -40,7 +40,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     private lateinit var batchUpdater: BatchVehicleUpdater
 
     private val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
-    private val groundQryFilterData = FilterData().apply { VehicleUtils.setupDrivableSurface(this) }
+    private val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     private val numVehicles = 2048
     private val chassisInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), numVehicles)
@@ -182,8 +182,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         +gndMesh
 
         val ground = RigidStatic().apply {
-            setSimulationFilterData(groundSimFilterData)
-            setQueryFilterData(groundQryFilterData)
+            simulationFilterData = groundSimFilterData
+            queryFilterData = groundQryFilterData
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
             setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         }
