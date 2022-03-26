@@ -13,6 +13,7 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
+- [Physics - Terrain](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Work-in-progress: Height-map based terrain.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
   cursor keys, R to reset) based on the nVidia PhysX vehicles SDK.
@@ -198,53 +199,18 @@ The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?dem
 respository is loaded.
 
 
-## A Simple Custom Shader
+## Kool Shader Language
 
-Shaders are composed of nodes quite similar to Unity's Shader Graph (however it's completely
-code-based, no fancy editor). Shader code is then generated and compiled from the node-based model
-on-the-fly for each backend (OpenGL / WebGL / Vulkan).
+I'm currently working on my own shader language (called ksl), which is implemented as a
+[Kotlin Type-safe builder / DSL](https://kotlinlang.org/docs/type-safe-builders.html). The ksl shader code you write is
+used to generate the actual GLSL shader code. The benefit with this approach is that there is no hard-coded GLSL
+code in common code, and it should be easy to add different generators which generate shader code for different
+backends in the future (e.g. WebGPU, or maybe even metal). 
 
-A very simple shader model could look like this:
-```kotlin
-val superSimpleModel = ShaderModel().apply {
-    val ifColors: StageInterfaceNode
-    vertexStage {
-        val mvpMat = mvpNode().outMvpMat
-        val vertexPos = attrPositions().output
-        val vertexColor = attrColors().output
-
-        ifColors = stageInterfaceNode("ifColors", vertexColor)
-
-        positionOutput = vec4TransformNode(vertexPos, mvpMat).outVec4
-    }
-    fragmentStage {
-        colorOutput(unlitMaterialNode(ifColors.output).outColor)
-    }
-}
-mesh.shader = ModeledShader(superSimpleModel)
-```
-The shader model includes the definitions for the vertex and fragment shaders.
-
-The vertex shader uses a MVP matrix (provided by the `mvpNode()`) and the position and color
-attributes of the input vertices (provided by `attrPositions()` and `attrColors()`). The
-vertex color is forwarded to the fragment shader via a `StageInterfaceNode` named ifColors.
-Then the vertex position and MVP matrix are used to compute the output position of the vertex shader.
-
-The fragment shader simply takes the forwarded vertex color and plugs it into an `unlitMaterialNode()`
-which more or less directly feeds that color into the fragment shader output.
-
-Finally, the shader model can be used to create a `ModeledShader` which is then assigned to a mesh.
-
-This example is obviously very simple, but it shows the working principle: Nodes contain basic building blocks
-which can be composed to complete shaders. Nodes have inputs and outputs which are used to connect them.
-The shader generator uses the connectivity information to build a dependency graph and call the code generator
-functions of the individual nodes in the correct order.
-
-More complex shaders can be defined in the same fashion. E.g. `PhongShader` and
-`PbrShader` use exactly the same mechanism. Moreover, it's possible to take a predefined `ShaderModel`, as, e.g.,
-`PbrShader.defaultPbrModel()` and add additional nodes to it or even change existing nodes. For instance, the
-[InstanceDemo](https://fabmax.github.io/kool/kool-js/?demo=instance) takes the default PBR shader model and adds
-an instance color attribute to draw individual mesh instances in different colors.
+This is still work in progress and most shaders in this project still use my old approach, which used blocks of
+pre-defined GLSL code. However, in case you are curious, you can take a look at
+[KslBlinnPhongShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslBlinnPhongShader.kt), which already
+uses the new ksl approach (the interesting stuff happens in the `Model` inner class).
 
 ## Physics Simulation
 

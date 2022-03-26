@@ -1,7 +1,9 @@
-package de.fabmax.kool.demo
+package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.Demo
+import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
@@ -23,7 +25,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.HeightMap
 import de.fabmax.kool.util.MdColor
 
-class HeightMapTest : DemoScene("Height Map Test") {
+class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var heightMap: HeightMap
     private lateinit var colorTex: Texture2d
@@ -77,7 +79,10 @@ class HeightMapTest : DemoScene("Height Map Test") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        defaultCamTransform().apply { maxZoom = 50.0 }
+        defaultCamTransform().apply {
+            zoom = 30.0
+            maxZoom = 50.0
+        }
 
         lighting.apply {
             singleLight {

@@ -10,6 +10,7 @@ import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
 import de.fabmax.kool.demo.physics.manyvehicles.ManyVehiclesDemo
 import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
+import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.physics.Physics
@@ -52,6 +53,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() }
 
     private val demos = mutableMapOf(
+        "phys-terrain" to DemoEntry("Physics - Terrain") { TerrainDemo() },
         "phys-ragdoll" to DemoEntry("Physics - Ragdoll") { RagdollDemo() },
         "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() },
         "phys-joints" to DemoEntry("Physics - Joints") { JointsDemo() },
@@ -72,7 +74,6 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         "manyvehicles" to DemoEntry("Many Vehicles", true) { ManyVehiclesDemo() },
         "phys-character" to DemoEntry("Physics - Character", true) { CharacterDemo() },
         "ksl-test" to DemoEntry("Ksl Test", true) { KslShaderTest() },
-        "heightmap-test" to DemoEntry("Height Map Test", true) { HeightMapTest() }
     )
 
     init {
