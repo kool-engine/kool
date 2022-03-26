@@ -114,15 +114,15 @@ class CharacterDemo : DemoScene("Character Demo") {
 
         mainScene.onUpdate += {
             val speedMod = when {
-                walkAxes.run -> 10f
-                walkAxes.crouch -> 1.5f
+                walkAxes.isRun -> 10f
+                walkAxes.isCrouch -> 1.5f
                 else -> 4f
             }
 
             val heading = atan2(characterCam.lookDirection.x, -characterCam.lookDirection.z).toDeg()
             egoCharacter.moveVelocity.set(walkAxes.leftRight * speedMod, 0f, walkAxes.forwardBackward * -speedMod)
             egoCharacter.moveVelocity.rotate(heading, Vec3f.Y_AXIS)
-            egoCharacter.jump = walkAxes.jump
+            egoCharacter.jump = walkAxes.isJump
         }
     }
 

@@ -71,7 +71,7 @@ class ShadowBlockFragmentStage(
             val depthMaps = vertexStage.shadowData.depthMaps
             vertexStage.shadowData.shadowMapInfos.forEach { mapInfo ->
                 val lightIdx = mapInfo.shadowMap.lightIndex
-                shadowFactors[lightIdx] set 0f.const
+                shadowFactors[lightIdx] set 1f.const
 
                 val positionsLightSpace = vertexStage.positionsLightSpace!!
                 val normalZsLightSpace = vertexStage.normalZsLightSpace!!

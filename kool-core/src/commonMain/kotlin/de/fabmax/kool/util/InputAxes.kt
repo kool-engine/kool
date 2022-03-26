@@ -165,12 +165,17 @@ class WalkAxes(ctx: KoolContext) : InputAxes(ctx) {
     val right: Float
         get() = max(0f, leftRightAx.analog)
 
-    val jump: Boolean
+    val isJump: Boolean
         get() = jumpAx.digital
-    val run: Boolean
+    val isRun: Boolean
         get() = runAx.digital
-    val crouch: Boolean
+    val isCrouch: Boolean
         get() = crouchAx.digital
+
+    val runFactor: Float
+        get() = runAx.analog
+    val crouchFactor: Float
+        get() = crouchAx.analog
 
     init {
         forwardBackwardAx = registerAxis("forward / backward",
@@ -183,7 +188,7 @@ class WalkAxes(ctx: KoolContext) : InputAxes(ctx) {
         ).apply { setRiseFallTime(0.15f) }
 
         jumpAx = registerAxis("jump", UniversalKeyCode(' ')).apply { setRiseFallTime(0.01f) }
-        runAx = registerAxis("run", InputManager.KEY_SHIFT_LEFT, InputManager.KEY_SHIFT_RIGHT).apply { setRiseFallTime(0.01f) }
-        crouchAx = registerAxis("crouch", InputManager.KEY_CTRL_LEFT, InputManager.KEY_CTRL_RIGHT).apply { setRiseFallTime(0.01f) }
+        runAx = registerAxis("run", InputManager.KEY_SHIFT_LEFT, InputManager.KEY_SHIFT_RIGHT).apply { setRiseFallTime(0.5f) }
+        crouchAx = registerAxis("crouch", InputManager.KEY_CTRL_LEFT, InputManager.KEY_CTRL_RIGHT).apply { setRiseFallTime(0.5f) }
     }
 }

@@ -7,7 +7,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.Releasable
 import de.fabmax.kool.physics.RigidDynamic
-import kotlin.math.min
 
 abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : Releasable {
 
@@ -35,17 +34,18 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     open fun onAdvancePhysics(timeStep: Float) {
         displacement.set(Vec3f.ZERO)
         if (gravity != Vec3f.ZERO) {
-            gravityVelocity.set(gravity).norm()
-            val gravSpeed = min(gravityVelocity * totalVelocity, maxFallSpeed)
-            gravityVelocity.scale(gravSpeed + gravity.length() * timeStep)
-            displacement.set(gravityVelocity).scale(timeStep)
+//            gravityVelocity.set(gravity).norm()
+//            val gravSpeed = min(gravityVelocity * totalVelocity, maxFallSpeed)
+//            gravityVelocity.scale(gravSpeed + gravity.length() * timeStep)
+//            displacement.set(gravityVelocity).scale(timeStep)
+            displacement.set(0f, -3f, 0f).scale(timeStep)
         }
         moveDisp.set(moveVelocity).scale(timeStep)
         displacement.add(moveDisp)
 
         if (jump && !wasJump) {
             // todo: check if character has contact to ground / is able to jump
-            displacement.y += jumpSpeed * timeStep
+            //displacement.y += jumpSpeed * timeStep
         }
         wasJump = jump
 

@@ -26,6 +26,8 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
                 if (samplePattern.size > 1) {
                     shadowFactor *= (1f / samplePattern.size).const
                 }
+            }.`else` {
+                shadowFactor set 1f.const
             }
             `return`(shadowFactor)
         }

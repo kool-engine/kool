@@ -56,6 +56,11 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("vma"))
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
                 runtimeOnly(DepsJvm.lwjglNatives("nfd"))
+
+                implementation("de.fabmax:physx-jni:1.0.0")
+                runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-windows")
+                runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-linux")
+                runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-macos")
             }
         }
 
@@ -78,7 +83,7 @@ tasks["clean"].doLast {
 
 tasks.register<JavaExec>("run") {
     group = "application"
-    main = "de.fabmax.kool.demo.MainKt"
+    mainClass.set("de.fabmax.kool.demo.MainKt")
 
     kotlin {
         val main = targets["jvm"].compilations["main"]

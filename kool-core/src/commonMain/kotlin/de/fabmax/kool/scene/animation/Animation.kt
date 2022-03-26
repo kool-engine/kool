@@ -25,7 +25,8 @@ class Animation(val name: String?) {
     }
 
     fun apply(deltaT: Float, firstWeightedTransform: Boolean = true) {
-        progress = (progress + deltaT * speed) % duration
+        progress = (progress + duration + deltaT * speed) % duration
+
         for (i in animationNodes.indices) {
             animationNodes[i].initTransform()
         }
