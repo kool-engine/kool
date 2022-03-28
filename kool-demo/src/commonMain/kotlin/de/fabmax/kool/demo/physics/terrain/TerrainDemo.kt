@@ -6,15 +6,15 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.character.CharacterController
-import de.fabmax.kool.physics.character.CharacterControllerManager
-import de.fabmax.kool.physics.character.CharacterProperties
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
@@ -25,10 +25,16 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.unlitShader
-import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
-import kotlin.math.*
+import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.HeightMap
+import de.fabmax.kool.util.MdColor
 
 class TerrainDemo : DemoScene("Terrain Demo") {
 
@@ -44,13 +50,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private val bodySize = 2f
 
     private lateinit var world: PhysicsWorld
-
-    private lateinit var player: Model
-    private lateinit var charManager: CharacterControllerManager
-    private lateinit var egoCharacter: CharacterController
+    private lateinit var player: Player
     private lateinit var escKeyListener: InputManager.KeyEventListener
-    private lateinit var characterCam: CharacterTrackingCamRig
-    private lateinit var walkAxes: WalkAxes
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 200f)
@@ -61,12 +62,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         normalTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
 
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/blaubeuren_outskirts_1k.rgbe.png", this)
-        player = loadGltfModel("models/player.glb") ?: throw IllegalStateException("Failed loading model")
+        val playerModel = loadGltfModel("${Demo.modelBasePath}/player.glb") ?: throw IllegalStateException("Failed loading model")
 
         Physics.awaitLoaded()
         world = PhysicsWorld(isContinuousCollisionDetection = true)
         world.registerHandlers(mainScene)
         world.gravity = Vec3f(0f, -10f, 0f)
+
+        player = Player(playerModel, world, ctx)
+        player.controller.position = Vec3d(-146.5, 47.8, -89.0)
 
         val heightField = HeightField(heightMap, 1f, 1f)
         val hfGeom = HeightFieldGeometry(heightField)
@@ -96,8 +100,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        walkAxes = WalkAxes(ctx)
-        charManager = CharacterControllerManager(world)
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
         }
@@ -107,10 +109,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         colorTex.dispose()
         normalTex.dispose()
 
-        charManager.release()
+        player.dispose(ctx)
         world.release()
 
-        walkAxes.dispose(ctx)
         ctx.inputMgr.removeKeyListener(escKeyListener)
         ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
     }
@@ -124,9 +125,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         button("Lock Cursor") {
-            characterCam.isCursorLocked = true
-            println("pos: ${egoCharacter.position}")
-            println("dir: ${characterCam.lookDirection}")
+            player.camRig?.isCursorLocked = true
         }
     }
 
@@ -209,136 +208,33 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        spawnCharacter()
-        // camera needs spawned character
-        setupCamera(ctx)
-    }
+        player.isDrawShapeOutline = false
+        player.playerModel.meshes.values.forEach {
+            it.shader = pbrShader {
+                albedoSource = Albedo.STATIC_ALBEDO
+                isSkinned = true
+                shadowMaps += shadowMap
+                albedo = MdColor.LIGHT_BLUE.toLinear()
+                maxJoints = 40
+            }
+        }
 
-    private fun Scene.setupCamera(ctx: KoolContext) {
-//        defaultCamTransform().apply {
-//            zoom = 30.0
-//            maxZoom = 50.0
-//        }
+        // setup camera (also controlled by Player)
+        player.camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
+            camera.setClipRange(0.5f, 750f)
+            trackedPose = player.controller.actor.transform
 
-        characterCam = CharacterTrackingCamRig(ctx.inputMgr).apply {
             +camera
-            camera.setClipRange(0.5f, 1000f)
-            pivotPoint.set(0.8f, 0f, 0f)
-            trackedPose = egoCharacter.actor.transform
-
-            //lookDirection.set(0.8f, 0.5f, 0.3f).norm()
-            lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
-
-            // 1st person
-            //camera.lookAt.set(Vec3f.NEG_Z_AXIS)
-            //camera.position.set(Vec3f.ZERO)
-
-            // 3rd person
+            // 3rd person view: camera is moved behind and slightly to the right of the character
             camera.lookAt.set(0.2f, 0.0f, 0f)
             camera.position.set(0.2f, 0.5f, 5f)
 
+            lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
         }
-        +characterCam
-    }
 
-    private fun spawnCharacter() {
-        val charProps = CharacterProperties()
-        egoCharacter = charManager.createController(charProps)
-        //egoCharacter.position = Vec3d(123.0, 71.0, 74.0)
-        //egoCharacter.position = Vec3d(86.2, 87.8, -56.9)
-        egoCharacter.position = Vec3d(-146.5, 47.8, -89.0)
-
-        mainScene += makeCharModel(charProps)
-    }
-
-    private fun makeCharModel(charProps: CharacterProperties) = group {
+        // add camera rig to scene
+        +player.camRig!!
+        // add player (model) to scene
         +player
-
-        // player model has origin below the model, but we need it centered
-        player.translate(0f, -0.9f, 0f)
-        player.rotate(180f, Vec3f.Y_AXIS)
-
-        val idleAnimation = 0
-        val runAnimation = 1
-        val walkAnimation = 2
-        player.enableAnimation(walkAnimation)
-
-        +lineMesh {
-            isCastingShadow = false
-            val cr = MdColor.RED
-            val cg = MdColor.GREEN
-            val cb = MdColor.BLUE
-            val r = charProps.radius + charProps.contactOffset
-            val h = charProps.height / 2
-            for (i in 0 until 40) {
-                val a0 = (i / 40f) * 2 * PI.toFloat()
-                val a1 = ((i + 1) / 40f) * 2 * PI.toFloat()
-                addLine(Vec3f(cos(a0) * r, h, sin(a0) * r), Vec3f(cos(a1) * r, h, sin(a1) * r), cg)
-                addLine(Vec3f(cos(a0) * r, -h, sin(a0) * r), Vec3f(cos(a1) * r, -h, sin(a1) * r), cg)
-            }
-
-            for (i in 0 until 20) {
-                val a0 = (i / 40f) * 2 * PI.toFloat()
-                val a1 = ((i + 1) / 40f) * 2 * PI.toFloat()
-                addLine(Vec3f(cos(a0) * r, sin(a0) * r + h, 0f), Vec3f(cos(a1) * r, sin(a1) * r + h, 0f), cr)
-                addLine(Vec3f(cos(a0) * r, -sin(a0) * r - h, 0f), Vec3f(cos(a1) * r, -sin(a1) * r - h, 0f), cr)
-
-                addLine(Vec3f(0f, sin(a0) * r + h, cos(a0) * r), Vec3f(0f, sin(a1) * r + h, cos(a1) * r), cb)
-                addLine(Vec3f(0f, -sin(a0) * r - h, cos(a0) * r), Vec3f(0f, -sin(a1) * r - h, cos(a1) * r), cb)
-            }
-
-            addLine(Vec3f(-r, h, 0f), Vec3f(-r, -h, 0f), cr)
-            addLine(Vec3f(r, h, 0f), Vec3f(r, -h, 0f), cr)
-            addLine(Vec3f(0f, h, -r), Vec3f(0f, -h, -r), cb)
-            addLine(Vec3f(0f, h, r), Vec3f(0f, -h, r), cb)
-
-            shader = unlitShader {
-                lineWidth = 2f
-            }
-        }
-
-        onUpdate += { ev ->
-            var heading = atan2(characterCam.lookDirection.x, -characterCam.lookDirection.z).toDeg()
-            val walkDir = Vec2f(-walkAxes.leftRight, walkAxes.forwardBackward)
-            if (walkDir.length() > 0f) {
-                heading += atan2(walkDir.x, walkDir.y).toDeg()
-            }
-
-            setIdentity()
-            translate(egoCharacter.position)
-            rotate(heading, Vec3f.Y_AXIS)
-
-            val walkSpeed = 1.3f
-            val crouchSpeed = 0.5f
-            val runSpeed = 5f
-
-            val speedFactor = max(abs(walkAxes.forwardBackward), abs(walkAxes.leftRight))
-            var speed = walkSpeed * speedFactor
-            if (walkAxes.runFactor > 0f) {
-                speed = speed * (1f - walkAxes.runFactor) + runSpeed * speedFactor * walkAxes.runFactor
-            }
-            if (walkAxes.crouchFactor > 0f) {
-                speed = speed * (1f - walkAxes.crouchFactor) + crouchSpeed * speedFactor * walkAxes.crouchFactor
-            }
-
-            egoCharacter.moveVelocity.set(0f, 0f, -speed)
-            egoCharacter.moveVelocity.rotate(heading, Vec3f.Y_AXIS)
-            egoCharacter.jump = walkAxes.isJump
-
-            // determine which animation to use based on speed
-            if (abs(speed) <= walkSpeed) {
-                val w = (abs(speed) / walkSpeed).clamp(0f, 1f)
-                player.setAnimationWeight(walkAnimation, w)
-                player.setAnimationWeight(idleAnimation, 1f - w)
-                player.setAnimationWeight(runAnimation, 0f)
-
-            } else {
-                val w = ((abs(speed) - walkSpeed) / (runSpeed - walkSpeed)).clamp(0f, 1f)
-                player.setAnimationWeight(runAnimation, w)
-                player.setAnimationWeight(walkAnimation, 1f - w)
-                player.setAnimationWeight(idleAnimation, 0f)
-            }
-            player.applyAnimation(ev.deltaT * sign(speed))
-        }
     }
 }

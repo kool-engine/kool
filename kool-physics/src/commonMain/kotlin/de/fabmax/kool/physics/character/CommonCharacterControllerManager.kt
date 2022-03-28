@@ -26,8 +26,8 @@ abstract class CommonCharacterControllerManager(protected val world: PhysicsWorl
         world.onPhysicsUpdate += onUpdateListener
     }
 
-    fun createController(props: CharacterProperties): CharacterController {
-        val ctrl = doCreateController(props)
+    fun createController(): CharacterController {
+        val ctrl = doCreateController()
         mutControllers += ctrl
         return ctrl
     }
@@ -36,7 +36,7 @@ abstract class CommonCharacterControllerManager(protected val world: PhysicsWorl
         mutControllers -= charController
     }
 
-    protected abstract fun doCreateController(props: CharacterProperties): CharacterController
+    protected abstract fun doCreateController(): CharacterController
 
     override fun release() {
         val copyControllers = mutableListOf<CharacterController>()

@@ -13,7 +13,8 @@ as well (look below for a very short usage guide - that's all the documentation 
 
 I also have a few demos in place (roughly in order of creation; once loaded, you can also switch between them via the
 hamburger button in the upper left corner):
-- [Physics - Terrain](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Work-in-progress: Height-map based terrain.
+- [Physics - Terrain](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Work-in-progress: Height-map based
+  terrain + a controllable character (still quite basic and animations are awful).
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
   cursor keys, R to reset) based on the nVidia PhysX vehicles SDK.

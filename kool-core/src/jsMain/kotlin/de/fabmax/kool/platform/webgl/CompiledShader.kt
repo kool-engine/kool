@@ -165,7 +165,6 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                         is TextureSampler2d -> mapTexture2d(desc)
                         is TextureSampler3d -> mapTexture3d(desc)
                         is TextureSamplerCube -> mapTextureCube(desc)
-                        else -> TODO("$desc")
                     }
                 }
             }

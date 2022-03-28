@@ -19,18 +19,21 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
         pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
     }
 
-    override fun doCreateController(props: CharacterProperties): CharacterController {
+    override fun doCreateController(): JvmCharacterController {
+        // create controller with default configuration
+        val hitCallback = ControllerHitCallback(world)
         val desc = PxCapsuleControllerDesc()
-        desc.height = props.height
-        desc.radius = props.radius
+        desc.height = 1f
+        desc.radius = 0.3f
         desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
         desc.nonWalkableMode = PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
         desc.slopeLimit = cos(50f.toRad())
-        desc.material = props.material.pxMaterial
-        desc.contactOffset = props.contactOffset
+        desc.material = Physics.defaultMaterial.pxMaterial
+        desc.contactOffset = 0.1f
+        desc.reportCallback = hitCallback
         val pxCharacter = pxManager.createController(desc)
         desc.destroy()
-        return JvmCharacterController(pxCharacter, this, world)
+        return JvmCharacterController(pxCharacter, hitCallback, this, world)
     }
 
     override fun release() {

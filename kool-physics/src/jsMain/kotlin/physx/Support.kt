@@ -173,6 +173,27 @@ external interface TypeHelpers {
     fun getControllerAt(base: PxController, index: Int): PxController
 
     /**
+     * @param base  WebIDL type: [PxControllerShapeHit]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxControllerShapeHit]
+     */
+    fun getControllerShapeHitAt(base: PxControllerShapeHit, index: Int): PxControllerShapeHit
+
+    /**
+     * @param base  WebIDL type: [PxControllersHit]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxControllersHit]
+     */
+    fun getControllersHitAt(base: PxControllersHit, index: Int): PxControllersHit
+
+    /**
+     * @param base  WebIDL type: [PxControllerObstacleHit]
+     * @param index WebIDL type: long
+     * @return WebIDL type: [PxControllerObstacleHit]
+     */
+    fun getControllerObstacleHitAt(base: PxControllerObstacleHit, index: Int): PxControllerObstacleHit
+
+    /**
      * @param base  WebIDL type: [PxObstacle]
      * @param index WebIDL type: long
      * @return WebIDL type: [PxObstacle]

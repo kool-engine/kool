@@ -12,7 +12,7 @@ import de.fabmax.kool.util.LazyMat4d
  *
  * @author fabmax
  */
-abstract class Node(val name: String? = null) : Disposable {
+abstract class Node(var name: String? = null) : Disposable {
 
     val onUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
     val onDispose: MutableList<(KoolContext) -> Unit> = mutableListOf()

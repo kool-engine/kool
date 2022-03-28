@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.atmosphere.AtmosphereDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
-import de.fabmax.kool.demo.physics.character.CharacterDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
 import de.fabmax.kool.demo.physics.manyvehicles.ManyVehiclesDemo
@@ -72,7 +71,6 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
         "helloworld" to DemoEntry("Hello World", true) { HelloWorldDemo() },
         "hellogltf" to DemoEntry("Hello glTF", true) { HelloGltfDemo() },
         "manyvehicles" to DemoEntry("Many Vehicles", true) { ManyVehiclesDemo() },
-        "phys-character" to DemoEntry("Physics - Character", true) { CharacterDemo() },
         "ksl-test" to DemoEntry("Ksl Test", true) { KslShaderTest() },
     )
 
