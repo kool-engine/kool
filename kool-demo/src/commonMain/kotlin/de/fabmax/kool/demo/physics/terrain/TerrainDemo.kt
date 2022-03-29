@@ -115,6 +115,18 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi {
+        button("ESC to unlock Cursor") {
+            player.camRig?.isCursorLocked = true
+        }.apply {
+            onUpdate += {
+                text = if (player.camRig?.isCursorLocked == true) {
+                    "ESC to unlock Cursor"
+                } else {
+                    "Click here to lock Cursor"
+                }
+            }
+        }
+        gap(8f)
         button("Respawn Boxes") {
             dynBodies.forEachIndexed { i, body ->
                 body.setTransform(startTransforms[i])
@@ -122,8 +134,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 body.angularVelocity = Vec3f.ZERO
             }
         }
-        button("Lock Cursor") {
-            player.camRig?.isCursorLocked = true
+        sliderWithValue("Push Force", player.pushForceFac, 0.1f, 10f) {
+            player.pushForceFac = value
+        }
+        toggleButton("Draw Debug Info", player.isDrawShapeOutline) {
+            player.isDrawShapeOutline = isEnabled
+            player.debugLineMesh.isVisible = isEnabled
         }
     }
 
@@ -205,7 +221,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         player.isDrawShapeOutline = false
         player.playerModel.meshes.values.forEach {
             it.shader = blinnPhongShader {
-                color { addUniformColor(MdColor.LIGHT_BLUE.toLinear()) }
+                color { addUniformColor(MdColor.PINK.toLinear()) }
                 shadow { addShadowMap(shadowMap) }
                 imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                 enableArmature(40)
@@ -218,12 +234,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         player.camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
             camera.setClipRange(0.5f, 750f)
             trackedPose = player.controller.actor.transform
-
             +camera
-            // 3rd person view: camera is moved behind and slightly to the right of the character
-            camera.lookAt.set(0.2f, 0.0f, 0f)
-            camera.position.set(0.2f, 0.5f, 5f)
-
+            minZoom = 0.75f
+            pivotPoint.set(0.17f, 0.75f, 0f)
             lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
         }
 
@@ -231,5 +244,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +player.camRig!!
         // add player (model) to scene
         +player
+        +player.debugLineMesh
     }
 }

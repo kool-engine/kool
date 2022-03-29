@@ -21,13 +21,20 @@ class Player(val playerModel: Model, world: PhysicsWorld, ctx: KoolContext) : Gr
     val controller: CharacterController
     private val charManager: CharacterControllerManager
 
+    var camRig: CharacterTrackingCamRig? = null
+    val debugLineMesh = LineMesh().apply {
+        isVisible = false
+        shader = unlitShader {
+            lineWidth = 2f
+        }
+    }
     private val controllerShapeOutline: LineMesh
     var isDrawShapeOutline: Boolean
         get() = controllerShapeOutline.isVisible
         set(value) { controllerShapeOutline.isVisible = value }
 
-    var camRig: CharacterTrackingCamRig? = null
 
+    var pushForceFac = 1f
     private val axes: WalkAxes
     private var moveHeading = 0f
     private var moveSpeed = 0f
@@ -157,8 +164,25 @@ class Player(val playerModel: Model, world: PhysicsWorld, ctx: KoolContext) : Gr
         if (actor is RigidDynamic) {
             // apply some fixed force to the hit actor
             val force = if (axes.isRun) -8000f else -2000f
-            tmpForce.set(hitWorldNormal).scale(force)
+            tmpForce.set(hitWorldNormal).scale(force * pushForceFac)
             actor.addForceAtPos(tmpForce, hitWorldPos, isLocalForce = false, isLocalPos = false)
+
+            if (debugLineMesh.isVisible) {
+                debugLineMesh.clear()
+                val p0 = MutableVec3f(hitWorldPos).apply { x -= 0.25f }
+                val p1 = MutableVec3f(hitWorldPos).apply { x += 0.25f }
+                debugLineMesh.addLine(p0, p1, MdColor.RED)
+                p0.set(hitWorldPos).apply { y -= 0.25f }
+                p1.set(hitWorldPos).apply { y += 0.25f }
+                debugLineMesh.addLine(p0, p1, MdColor.GREEN)
+                p0.set(hitWorldPos).apply { z -= 0.25f }
+                p1.set(hitWorldPos).apply { z += 0.25f }
+                debugLineMesh.addLine(p0, p1, MdColor.BLUE)
+
+                p0.set(hitWorldPos)
+                p1.set(hitWorldPos).add(hitWorldNormal)
+                debugLineMesh.addLine(p0, p1, MdColor.AMBER)
+            }
         }
     }
 }

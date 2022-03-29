@@ -17,13 +17,16 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         }
 
     var sensitivity = 1f
+    var zoom = 4f
+    var minZoom = 0.5f
+    var maxZoom = 25f
 
     var trackedPose = Mat4f()
     val pivotPoint = MutableVec3f()
 
     val lookDirection = MutableVec3f(Vec3f.NEG_Z_AXIS)
 
-    private val globalPivot = MutableVec3f()
+    private val poseOrigin = MutableVec3f()
     private var lookPhi = 0f
     private var lookTheta = PI.toFloat() / 2f
 
@@ -50,15 +53,19 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         lookDirection.x = sin(lookTheta) * cos(lookPhi)
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
+
+        zoom *= 1f - inputManager.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
+        zoom = zoom.clamp(minZoom, maxZoom)
     }
 
     private fun updateTracking() {
-        globalPivot.set(pivotPoint)
-        trackedPose.transform(globalPivot)
+        trackedPose.transform(poseOrigin.set(Vec3f.ZERO))
 
         setIdentity()
-        translate(globalPivot)
-
-        rotate(lookTheta.toDeg() - 90f, lookPhi.toDeg() + 90f, 0f)
+        translate(poseOrigin)
+        rotate(lookPhi.toDeg() + 90f, Vec3f.Y_AXIS)
+        translate(pivotPoint)
+        rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
+        scale(zoom)
     }
 }
