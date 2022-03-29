@@ -25,8 +25,6 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
@@ -183,12 +181,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 }
             }
             shader = blinnPhongShader {
-                color {
-                    addVertexColor()
-                }
-                shadow {
-                    addShadowMap(shadowMap)
-                }
+                color { addVertexColor() }
+                shadow { addShadowMap(shadowMap) }
                 imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                 isInstanced = true
                 specularStrength = 0.5f
@@ -210,12 +204,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         player.isDrawShapeOutline = false
         player.playerModel.meshes.values.forEach {
-            it.shader = pbrShader {
-                albedoSource = Albedo.STATIC_ALBEDO
-                isSkinned = true
-                shadowMaps += shadowMap
-                albedo = MdColor.LIGHT_BLUE.toLinear()
-                maxJoints = 40
+            it.shader = blinnPhongShader {
+                color { addUniformColor(MdColor.LIGHT_BLUE.toLinear()) }
+                shadow { addShadowMap(shadowMap) }
+                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+                enableArmature(40)
+                specularStrength = 0.5f
+                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             }
         }
 

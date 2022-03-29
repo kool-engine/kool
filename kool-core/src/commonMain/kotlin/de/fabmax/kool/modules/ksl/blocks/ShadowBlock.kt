@@ -16,9 +16,9 @@ fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVerte
 }
 
 fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, shadowFactors: KslArrayScalar<KslTypeFloat1>): ShadowBlockFragmentStage {
-    val colorBlock = ShadowBlockFragmentStage(vertexStage, shadowFactors, parentStage.program.nextName("shadowBlock"), this)
-    ops += colorBlock
-    return colorBlock
+    val shadowBlock = ShadowBlockFragmentStage(vertexStage, shadowFactors, parentStage.program.nextName("shadowBlock"), this)
+    ops += shadowBlock
+    return shadowBlock
 }
 
 class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {

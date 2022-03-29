@@ -46,10 +46,12 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
 
+        val isArmature: Boolean
+            get() = maxNumberOfBones > 0
         var isInstanced = false
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         var isFlipBacksideNormals = true
-
+        var maxNumberOfBones = 0
         var maxNumberOfLights = 4
 
         var specularColor: Color = Color.WHITE
@@ -73,6 +75,10 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
         fun normalMapping(block: NormalMapConfig.() -> Unit) {
             normalMapCfg.apply(block)
+        }
+
+        fun enableArmature(maxNumberOfBones: Int = 32) {
+            this.maxNumberOfBones = maxNumberOfBones
         }
 
         fun pipeline(block: PipelineConfig.() -> Unit) {
@@ -108,6 +114,13 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                         mvp *= instanceModelMat
                         modelMat *= instanceModelMat
+                    }
+                    if (cfg.isArmature) {
+                        val armatureBlock = armatureBlock(cfg.maxNumberOfBones)
+                        armatureBlock.inBoneWeights = vertexAttribFloat4(Attribute.WEIGHTS.name)
+                        armatureBlock.inBoneIndices = vertexAttribInt4(Attribute.JOINTS.name)
+                        mvp *= armatureBlock.outBoneTransform
+                        modelMat *= armatureBlock.outBoneTransform
                     }
 
                     // transform vertex attributes into world space and forward them to fragment stage
