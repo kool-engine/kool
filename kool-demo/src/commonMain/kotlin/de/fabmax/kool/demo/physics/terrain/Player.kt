@@ -110,8 +110,12 @@ class Player(val playerModel: Model, world: PhysicsWorld, ctx: KoolContext) : Gr
 
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
-        charManager.release()
         axes.dispose(ctx)
+    }
+
+    fun releasePhysicsObjects() {
+        controller.release()
+        charManager.release()
     }
 
     private fun makeShapeOutline() = LineMesh().apply {

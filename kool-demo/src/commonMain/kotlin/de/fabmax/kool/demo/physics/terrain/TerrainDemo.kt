@@ -107,7 +107,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         colorTex.dispose()
         normalTex.dispose()
 
-        player.dispose(ctx)
+        player.releasePhysicsObjects()
         world.release()
 
         ctx.inputMgr.removeKeyListener(escKeyListener)
