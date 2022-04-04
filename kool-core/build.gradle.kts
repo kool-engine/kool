@@ -14,6 +14,7 @@ kotlin {
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
+                freeCompilerArgs = freeCompilerArgs + "-Xbackend-threads=0"
             }
         }
     }
@@ -23,7 +24,7 @@ kotlin {
     targets.all {
         compilations.all {
             kotlinOptions {
-                freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+                freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
             }
         }
     }
@@ -92,8 +93,8 @@ tasks.register<VersionNameUpdate>("updateVersion") {
             ?.find { it.exists() }?.absolutePath ?: ""
     )
 }
-tasks["compileKotlinJs"].dependsOn("updateVersion")
-tasks["compileKotlinJvm"].dependsOn("updateVersion")
+//tasks["compileKotlinJs"].dependsOn("updateVersion")
+//tasks["compileKotlinJvm"].dependsOn("updateVersion")
 
 publishing {
     publications {

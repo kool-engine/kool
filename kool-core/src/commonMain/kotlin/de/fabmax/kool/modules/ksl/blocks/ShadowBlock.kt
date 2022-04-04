@@ -84,6 +84,8 @@ class ShadowBlockFragmentStage(
                         `if` (normalZsLightSpace.output[subMapIdx] lt 0f.const) {
                             // normal points towards light source, compute shadow factor (otherwise it is definitely shadowed)
                             shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
+                        }.`else` {
+                            shadowFactors[lightIdx] set 0f.const
                         }
                     }
                     is CascadedShadowMap -> {
@@ -102,6 +104,8 @@ class ShadowBlockFragmentStage(
                                     isSampled set true.const
                                 }
                             }
+                        }.`else` {
+                            shadowFactors[lightIdx] set 0f.const
                         }
                     }
                     else -> throw IllegalArgumentException("Unsupported ShadowMap type: ${mapInfo.shadowMap}")
