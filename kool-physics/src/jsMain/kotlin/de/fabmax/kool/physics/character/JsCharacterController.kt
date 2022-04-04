@@ -7,8 +7,11 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import physx.*
 
-class JsCharacterController(private val pxController: PxController, hitCallback: ControllerHitCallback,
-                            manager: CharacterControllerManager, world: PhysicsWorld) : CharacterController(manager, world) {
+class JsCharacterController(private val pxController: PxController,
+                            private val hitListener: ControllerHitListener,
+                            private val behaviorCallback: ControllerBahaviorCallback,
+                            manager: CharacterControllerManager,
+                            world: PhysicsWorld) : CharacterController(manager, world) {
 
     private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
@@ -16,7 +19,8 @@ class JsCharacterController(private val pxController: PxController, hitCallback:
     private val pxControllerFilters = PxControllerFilters()
 
     init {
-        hitCallback.controller = this
+        hitListener.controller = this
+        behaviorCallback.controller = this
     }
 
     override var position: Vec3d
@@ -42,5 +46,6 @@ class JsCharacterController(private val pxController: PxController, hitCallback:
         bufPxPosition.destroy()
         bufPxVec3.destroy()
         pxControllerFilters.destroy()
+        behaviorCallback.callback.destroy()
     }
 }

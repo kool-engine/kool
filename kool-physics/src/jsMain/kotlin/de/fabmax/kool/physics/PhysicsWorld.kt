@@ -68,7 +68,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         super.fetchAsyncStepResults()
     }
 
-    fun getActor(pxActor: PxRigidActor): RigidActor? {
+    fun getActor(pxActor: PxActor): RigidActor? {
         return pxActors[pxActor.ptr]
     }
 

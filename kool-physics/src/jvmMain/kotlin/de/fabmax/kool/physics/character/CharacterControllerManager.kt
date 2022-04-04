@@ -21,7 +21,8 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
 
     override fun doCreateController(): JvmCharacterController {
         // create controller with default configuration
-        val hitCallback = ControllerHitCallback(world)
+        val hitCallback = ControllerHitListener(world)
+        val behaviorCallback = ControllerBahaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
         desc.height = 1f
         desc.radius = 0.3f
@@ -31,9 +32,10 @@ actual class CharacterControllerManager actual constructor(world: PhysicsWorld) 
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = 0.1f
         desc.reportCallback = hitCallback
+        desc.behaviorCallback = behaviorCallback
         val pxCharacter = pxManager.createController(desc)
         desc.destroy()
-        return JvmCharacterController(pxCharacter, hitCallback, this, world)
+        return JvmCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 
     override fun release() {

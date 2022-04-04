@@ -7,11 +7,9 @@ import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.toVec3d
 import de.fabmax.kool.physics.toVec3f
 import physx.JavaUserControllerHitReport
-import physx.PxControllerObstacleHit
 import physx.PxControllerShapeHit
-import physx.PxControllersHit
 
-class ControllerHitCallback(val world: PhysicsWorld) {
+class ControllerHitListener(val world: PhysicsWorld) {
 
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()
@@ -25,15 +23,11 @@ class ControllerHitCallback(val world: PhysicsWorld) {
             hit.worldNormal.toVec3f(hitNormal)
             hit.worldPos.toVec3d(hitPosD)
             hitPos.set(hitPosD.x.toFloat(), hitPosD.y.toFloat(), hitPosD.z.toFloat())
-            world.getActor(hit.actor)?.let { controller.hitActor(it, hitPos, hitNormal) }
+            world.getActor(hit.actor)?.let { controller.onHitActor(it, hitPos, hitNormal) }
         }
 
-        onControllerHit = { _: PxControllersHit ->
-            // not used
-        }
-
-        onObstacleHit = { _: PxControllerObstacleHit ->
-            // not used
-        }
+        // not used
+        onControllerHit = { _ -> }
+        onObstacleHit = { _ -> }
     }
 }

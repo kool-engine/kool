@@ -42,7 +42,8 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     private var lastGroundTuch = 0f
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
-    val onHitActorListeners = mutableListOf<OnHitActor>()
+    val onHitActorListeners = mutableListOf<OnHitActorListener>()
+    var hitActorBehaviorCallback: HitActorBehaviorCallback? = null
 
     open fun onAdvancePhysics(timeStep: Float) {
         if (!isDownCollision) {
@@ -81,7 +82,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         }
     }
 
-    internal fun hitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
+    internal fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         for (i in onHitActorListeners.indices) {
             onHitActorListeners[i].onHitActor(actor, hitWorldPos, hitWorldNormal)
         }
@@ -91,9 +92,5 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     override fun release() {
         manager.removeController(this)
-    }
-
-    interface OnHitActor {
-        fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f)
     }
 }

@@ -6,19 +6,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
-import de.fabmax.kool.math.Mat3f
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.physics.*
-import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.physics.geometry.HeightField
-import de.fabmax.kool.physics.geometry.HeightFieldGeometry
-import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
@@ -29,30 +22,23 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.HeightMap
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.*
+import kotlin.math.atan2
 
 class TerrainDemo : DemoScene("Terrain Demo") {
 
-    private lateinit var heightMap: HeightMap
     private lateinit var colorTex: Texture2d
     private lateinit var normalTex: Texture2d
     private lateinit var ibl: EnvironmentMaps
+    private lateinit var playerModel: PlayerModel
+    private lateinit var camRig: CharacterTrackingCamRig
 
-    private lateinit var heightFieldBody: RigidStatic
-    private val dynBodies = mutableListOf<RigidDynamic>()
-    private val startTransforms = mutableListOf<Mat4f>()
+    private lateinit var physicsObjects: PhysicsObjects
 
-    private val bodySize = 2f
-
-    private lateinit var world: PhysicsWorld
-    private lateinit var player: Player
     private lateinit var escKeyListener: InputManager.KeyEventListener
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 200f)
+        val heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 200f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 20f)
 
@@ -60,43 +46,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         normalTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
 
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/blaubeuren_outskirts_1k.rgbe.png", this)
-        val playerModel = loadGltfModel("${Demo.modelBasePath}/player.glb") ?: throw IllegalStateException("Failed loading model")
 
         Physics.awaitLoaded()
-        world = PhysicsWorld(isContinuousCollisionDetection = true)
-        world.registerHandlers(mainScene)
-        world.gravity = Vec3f(0f, -10f, 0f)
+        physicsObjects = PhysicsObjects(mainScene, heightMap, ctx)
 
-        player = Player(playerModel, world, ctx)
-        player.controller.position = Vec3d(-146.5, 47.8, -89.0)
-
-        val heightField = HeightField(heightMap, 1f, 1f)
-        val hfGeom = HeightFieldGeometry(heightField)
-        val hfBounds = hfGeom.getBounds(BoundingBox())
-        heightFieldBody = RigidStatic()
-        heightFieldBody.attachShape(Shape(hfGeom, Physics.defaultMaterial))
-        heightFieldBody.position = Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f)
-        world.addActor(heightFieldBody)
-
-        val groundPlane = RigidStatic()
-        groundPlane.attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-        groundPlane.position = Vec3f(0f, -5f, 0f)
-        groundPlane.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
-        world.addActor(groundPlane)
-
-        val n = 15
-        for (x in -n..n) {
-            for (z in -n..n) {
-                val shape = BoxGeometry(Vec3f(bodySize))
-                val body = RigidDynamic(100f)
-                body.attachShape(Shape(shape, Physics.defaultMaterial))
-                body.position = Vec3f(x * 5.5f, 100f, z * 5.5f)
-                world.addActor(body)
-                dynBodies += body
-
-                startTransforms += Mat4f().set(body.transform)
-            }
-        }
+        val playerGltf = loadGltfModel("${Demo.modelBasePath}/player.glb") ?: throw IllegalStateException("Failed loading model")
+        playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
@@ -106,9 +61,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     override fun dispose(ctx: KoolContext) {
         colorTex.dispose()
         normalTex.dispose()
-
-        player.releasePhysicsObjects()
-        world.release()
+        physicsObjects.release(ctx)
 
         ctx.inputMgr.removeKeyListener(escKeyListener)
         ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
@@ -116,10 +69,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     override fun setupMenu(ctx: KoolContext) = controlUi {
         button("ESC to unlock Cursor") {
-            player.camRig?.isCursorLocked = true
+            camRig.isCursorLocked = true
         }.apply {
             onUpdate += {
-                text = if (player.camRig?.isCursorLocked == true) {
+                text = if (camRig.isCursorLocked) {
                     "ESC to unlock Cursor"
                 } else {
                     "Click here to lock Cursor"
@@ -128,22 +81,18 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         gap(8f)
         button("Respawn Boxes") {
-            dynBodies.forEachIndexed { i, body ->
-                body.setTransform(startTransforms[i])
-                body.linearVelocity = Vec3f.ZERO
-                body.angularVelocity = Vec3f.ZERO
-            }
+            physicsObjects.respawnBoxes()
         }
-        sliderWithValue("Push Force", player.pushForceFac, 0.1f, 10f) {
-            player.pushForceFac = value
+        sliderWithValue("Push Force", physicsObjects.playerController.pushForceFac, 0.1f, 10f) {
+            physicsObjects.playerController.pushForceFac = value
         }
-        toggleButton("Draw Debug Info", player.isDrawShapeOutline) {
-            player.isDrawShapeOutline = isEnabled
-            player.debugLineMesh.isVisible = isEnabled
+        toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
+            playerModel.isDrawShapeOutline = isEnabled
         }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        // lighting
         lighting.apply {
             singleLight {
                 setDirectional(Vec3f(-1f, -1f, -1f))
@@ -155,71 +104,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             cascades.forEach { it.directionalCamNearOffset = -200f }
         }
 
-        // height map / ground mesh
-        +textureMesh(isNormalMapped = true) {
-            generate {
-                vertexModFun = {
-                    texCoord.set(texCoord.x * 100f, texCoord.y * 100f)
-                }
-                val shape = heightFieldBody.shapes[0]
-                withTransform {
-                    transform.set(heightFieldBody.transform).mul(shape.localPose)
-                    shape.geometry.generateMesh(this)
-                }
-            }
+        +makeTerrainMesh(shadowMap)
+        +makeBoxMesh(shadowMap)
+        +makeBridgeMesh(shadowMap)
 
-            shader = blinnPhongShader {
-                color {
-                    addTextureColor(colorTex)
-                }
-                normalMapping {
-                    setNormalMap(normalTex)
-                }
-                shadow {
-                    addShadowMap(shadowMap)
-                }
-                pipeline {
-                    cullMethod = CullMethod.NO_CULLING
-                }
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                specularStrength = 0.5f
-                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            }
-        }
-
-        // dynamic bodies
-        +colorMesh {
-            generate {
-                color = MdColor.LIGHT_BLUE.toLinear()
-                cube {
-                    size.set(Vec3f(bodySize))
-                    centered()
-                }
-            }
-            shader = blinnPhongShader {
-                color { addVertexColor() }
-                shadow { addShadowMap(shadowMap) }
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                isInstanced = true
-                specularStrength = 0.5f
-                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            }
-
-            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
-            onUpdate += {
-                instances!!.apply {
-                    clear()
-                    addInstances(dynBodies.size) { buf ->
-                        dynBodies.forEach { body ->
-                            buf.put(body.transform.matrix)
-                        }
-                    }
-                }
-            }
-        }
-
-        player.isDrawShapeOutline = false
-        player.playerModel.meshes.values.forEach {
+        // change player model shader
+        playerModel.model.meshes.values.forEach {
             it.shader = blinnPhongShader {
                 color { addUniformColor(MdColor.PINK.toLinear()) }
                 shadow { addShadowMap(shadowMap) }
@@ -229,21 +119,111 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             }
         }
+        +playerModel
 
-        // setup camera (also controlled by Player)
-        player.camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
+        // setup camera tracking player
+        camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
             camera.setClipRange(0.5f, 750f)
-            trackedPose = player.controller.actor.transform
+            trackedPose = physicsObjects.playerController.controller.actor.transform
             +camera
             minZoom = 0.75f
             pivotPoint.set(0.17f, 0.75f, 0f)
+
+            // hardcoded start look direction
             lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
+
+            onUpdate += {
+                // use camera look direction to control player move direction
+                physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
+            }
+        }
+        // don't forget to add the cam rig to the scene
+        +camRig
+    }
+
+    private fun makeTerrainMesh(shadowMap: ShadowMap) = textureMesh(isNormalMapped = true) {
+        generate {
+            vertexModFun = {
+                texCoord.set(texCoord.x * 100f, texCoord.y * 100f)
+            }
+            withTransform {
+                val shape = physicsObjects.terrain.shapes[0]
+                transform.set(physicsObjects.terrain.transform).mul(shape.localPose)
+                shape.geometry.generateMesh(this)
+            }
         }
 
-        // add camera rig to scene
-        +player.camRig!!
-        // add player (model) to scene
-        +player
-        +player.debugLineMesh
+        shader = blinnPhongShader {
+            color {
+                addTextureColor(colorTex)
+            }
+            normalMapping {
+                setNormalMap(normalTex)
+            }
+            shadow {
+                addShadowMap(shadowMap)
+            }
+            pipeline {
+                cullMethod = CullMethod.NO_CULLING
+            }
+            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+            specularStrength = 0.5f
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        }
+    }
+
+    private fun makeBoxMesh(shadowMap: ShadowMap) = colorMesh {
+        generate {
+            color = MdColor.LIGHT_BLUE.toLinear()
+            physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
+        }
+        shader = blinnPhongShader {
+            color { addVertexColor() }
+            shadow { addShadowMap(shadowMap) }
+            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+            isInstanced = true
+            specularStrength = 0.5f
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        }
+
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        onUpdate += {
+            instances!!.apply {
+                clear()
+                addInstances(physicsObjects.boxes.size) { buf ->
+                    physicsObjects.boxes.forEach { box ->
+                        buf.put(box.transform.matrix)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun makeBridgeMesh(shadowMap: ShadowMap) = colorMesh {
+        generate {
+            color = MdColor.BROWN toneLin 700
+            cube {
+                size.set(2f, 0.2f, 1.1f)
+                centered()
+            }
+        }
+        shader = blinnPhongShader {
+            color { addVertexColor() }
+            shadow { addShadowMap(shadowMap) }
+            imageBasedAmbientColor(ibl.irradianceMap)
+            isInstanced = true
+            specularStrength = 0.2f
+        }
+        instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        onUpdate += {
+            instances?.let { insts ->
+                insts.clear()
+                insts.addInstances(physicsObjects.chainBridge.segments.size) { buf ->
+                    physicsObjects.chainBridge.segments.forEach { seg ->
+                        buf.put(seg.transform.matrix)
+                    }
+                }
+            }
+        }
     }
 }

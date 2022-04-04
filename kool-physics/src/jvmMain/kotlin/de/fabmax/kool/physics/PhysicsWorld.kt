@@ -35,7 +35,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
     actual val activeActors: Int
         get() = mutActiveActors
 
-    private val pxActors = mutableMapOf<PxRigidActor, RigidActor>()
+    private val pxActors = mutableMapOf<PxActor, RigidActor>()
 
     init {
         Physics.checkIsLoaded()
@@ -77,7 +77,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         super.fetchAsyncStepResults()
     }
 
-    fun getActor(pxActor: PxRigidActor): RigidActor? {
+    fun getActor(pxActor: PxActor): RigidActor? {
         return pxActors[pxActor]
     }
 

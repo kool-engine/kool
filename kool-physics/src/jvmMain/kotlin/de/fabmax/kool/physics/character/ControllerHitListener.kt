@@ -10,7 +10,7 @@ import physx.character.PxControllerObstacleHit
 import physx.character.PxControllerShapeHit
 import physx.character.PxControllersHit
 
-class ControllerHitCallback(val world: PhysicsWorld) : JavaUserControllerHitReport() {
+class ControllerHitListener(private val world: PhysicsWorld) : JavaUserControllerHitReport() {
 
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()
@@ -22,7 +22,7 @@ class ControllerHitCallback(val world: PhysicsWorld) : JavaUserControllerHitRepo
         hit.worldNormal.toVec3f(hitNormal)
         hit.worldPos.toVec3d(hitPosD)
         hitPos.set(hitPosD.x.toFloat(), hitPosD.y.toFloat(), hitPosD.z.toFloat())
-        world.getActor(hit.actor)?.let { controller.hitActor(it, hitPos, hitNormal) }
+        world.getActor(hit.actor)?.let { controller.onHitActor(it, hitPos, hitNormal) }
     }
 
     override fun onControllerHit(hit: PxControllersHit) {

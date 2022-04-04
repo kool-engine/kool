@@ -82,29 +82,34 @@ class ShadowBlockFragmentStage(
                         val posLightSpace = positionsLightSpace.output[subMapIdx]
 
                         `if` (normalZsLightSpace.output[subMapIdx] lt 0f.const) {
-                            // normal points towards light source, compute shadow factor (otherwise it is definitely shadowed)
+                            // normal points towards light source, compute shadow factor
                             shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[subMapIdx], posLightSpace, mapInfo.samplePattern)
                         }.`else` {
+                            // normal points away from light source, set shadow factor to 0 (shadowed)
                             shadowFactors[lightIdx] set 0f.const
                         }
                     }
                     is CascadedShadowMap -> {
                         `if` (normalZsLightSpace.output[mapInfo.fromIndexIncl] lt 0f.const) {
+                            // normal points towards light source, compute shadow factor
                             val isSampled = boolVar(false.const)
                             val projPos = float3Var()
 
                             for (i in mapInfo.fromIndexIncl until mapInfo.toIndexExcl) {
+                                // check for each shadow map (sorted from high detail to low detail) if projected
+                                // position is inside map bounds, if so sample it and stop
                                 val posLightSpace = positionsLightSpace.output[i]
                                 projPos set posLightSpace.xyz / posLightSpace.w
                                 `if` (!isSampled and
                                         all(projPos gt Vec3f(0f, 0f, -1f).const) and
                                         all(projPos lt Vec3f(1f, 1f, 1f).const)) {
-                                    // normal points towards light source, compute shadow factor (otherwise it is definitely shadowed)
+                                    // projected position is inside shadow map bounds, sample shadow map
                                     shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[i], posLightSpace, mapInfo.samplePattern)
                                     isSampled set true.const
                                 }
                             }
                         }.`else` {
+                            // normal points away from light source, set shadow factor to 0 (shadowed)
                             shadowFactors[lightIdx] set 0f.const
                         }
                     }

@@ -22,6 +22,7 @@ actual open class RigidDynamic internal constructor(mass: Float, pose: Mat4f, px
         } else {
             pxRigidActor = pxActor
         }
+        transform.set(pose)
     }
 
     actual fun wakeUp() {
