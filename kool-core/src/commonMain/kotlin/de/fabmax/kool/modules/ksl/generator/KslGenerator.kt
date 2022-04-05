@@ -99,27 +99,68 @@ abstract class KslGenerator {
 
     abstract fun invokeFunction(func: KslInvokeFunction<*>): String
 
+    abstract fun builtinAbs(func: KslBuiltinAbsScalar<*>): String
+    abstract fun builtinAbs(func: KslBuiltinAbsVector<*, *>): String
+    abstract fun builtinAtan2(func: KslBuiltinAtan2Scalar): String
+    abstract fun builtinAtan2(func: KslBuiltinAtan2Vector<*>): String
+    abstract fun builtinCeil(func: KslBuiltinCeilScalar): String
+    abstract fun builtinCeil(func: KslBuiltinCeilVector<*>): String
     abstract fun builtinClamp(func: KslBuiltinClampScalar<*>): String
     abstract fun builtinClamp(func: KslBuiltinClampVector<*, *>): String
-    abstract fun builtinCos(func: KslBuiltinCosScalar<*>): String
-    abstract fun builtinCos(func: KslBuiltinCosVector<*, *>): String
     abstract fun builtinCross(func: KslBuiltinCross): String
-    abstract fun builtinDot(func: KslBuiltinDot<*, *>): String
-    abstract fun builtinLength(func: KslBuiltinLength<*, *>): String
+    abstract fun builtinDegrees(func: KslBuiltinDegreesScalar): String
+    abstract fun builtinDegrees(func: KslBuiltinDegreesVector<*>): String
+    abstract fun builtinDistance(func: KslBuiltinDistanceScalar): String
+    abstract fun builtinDistance(func: KslBuiltinDistanceVector<*>): String
+    abstract fun builtinDot(func: KslBuiltinDot<*>): String
+    abstract fun builtinExp(func: KslBuiltinExpScalar): String
+    abstract fun builtinExp(func: KslBuiltinExpVector<*>): String
+    abstract fun builtinExp2(func: KslBuiltinExp2Scalar): String
+    abstract fun builtinExp2(func: KslBuiltinExp2Vector<*>): String
+    abstract fun builtinFaceForward(func: KslBuiltinFaceForward<*>): String
+    abstract fun builtinFloor(func: KslBuiltinFloorScalar): String
+    abstract fun builtinFloor(func: KslBuiltinFloorVector<*>): String
+    abstract fun builtinFma(func: KslBuiltinFmaScalar): String
+    abstract fun builtinFma(func: KslBuiltinFmaVector<*>): String
+    abstract fun builtinFract(func: KslBuiltinFractScalar): String
+    abstract fun builtinFract(func: KslBuiltinFractVector<*>): String
+    abstract fun builtinInverseSqrt(func: KslBuiltinInverseSqrtScalar): String
+    abstract fun builtinInverseSqrt(func: KslBuiltinInverseSqrtVector<*>): String
+    abstract fun builtinLength(func: KslBuiltinLength<*>): String
+    abstract fun builtinLog(func: KslBuiltinLogScalar): String
+    abstract fun builtinLog(func: KslBuiltinLogVector<*>): String
+    abstract fun builtinLog2(func: KslBuiltinLog2Scalar): String
+    abstract fun builtinLog2(func: KslBuiltinLog2Vector<*>): String
     abstract fun builtinMax(func: KslBuiltinMaxScalar<*>): String
     abstract fun builtinMax(func: KslBuiltinMaxVector<*, *>): String
     abstract fun builtinMin(func: KslBuiltinMinScalar<*>): String
     abstract fun builtinMin(func: KslBuiltinMinVector<*, *>): String
     abstract fun builtinMix(func: KslBuiltinMixScalar): String
-    abstract fun builtinMix(func: KslBuiltinMixVector<*, *>): String
-    abstract fun builtinNormalize(func: KslBuiltinNormalize<*, *>): String
+    abstract fun builtinMix(func: KslBuiltinMixVector<*>): String
+    abstract fun builtinNormalize(func: KslBuiltinNormalize<*>): String
     abstract fun builtinPow(func: KslBuiltinPowScalar): String
-    abstract fun builtinPow(func: KslBuiltinPowVector<*, *>): String
-    abstract fun builtinReflect(func: KslBuiltinReflect<*, *>): String
-    abstract fun builtinSin(func: KslBuiltinSinScalar<*>): String
-    abstract fun builtinSin(func: KslBuiltinSinVector<*, *>): String
-    abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepScalar<*>): String
-    abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepVector<*, *>): String
+    abstract fun builtinPow(func: KslBuiltinPowVector<*>): String
+    abstract fun builtinRadians(func: KslBuiltinRadiansScalar): String
+    abstract fun builtinRadians(func: KslBuiltinRadiansVector<*>): String
+    abstract fun builtinReflect(func: KslBuiltinReflect<*>): String
+    abstract fun builtinRefract(func: KslBuiltinRefract<*>): String
+    abstract fun builtinRound(func: KslBuiltinRoundScalar): String
+    abstract fun builtinRound(func: KslBuiltinRoundVector<*>): String
+    abstract fun builtinSign(func: KslBuiltinSignScalar<*>): String
+    abstract fun builtinSign(func: KslBuiltinSignVector<*, *>): String
+    abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepScalar): String
+    abstract fun builtinSmoothStep(func: KslBuiltinSmoothStepVector<*>): String
+    abstract fun builtinSqrt(func: KslBuiltinSqrtScalar): String
+    abstract fun builtinSqrt(func: KslBuiltinSqrtVector<*>): String
+    abstract fun builtinStep(func: KslBuiltinStepScalar): String
+    abstract fun builtinStep(func: KslBuiltinStepVector<*>): String
+    abstract fun builtinTrigonometry(func: KslBuiltinTrigonometryScalar): String
+    abstract fun builtinTrigonometry(func: KslBuiltinTrigonometryVector<*>): String
+    abstract fun builtinTrunc(func: KslBuiltinTruncScalar): String
+    abstract fun builtinTrunc(func: KslBuiltinTruncVector<*>): String
+
+    abstract fun builtinDeterminant(func: KslBuiltinDeterminant<*, *>): String
+    abstract fun builtinTranspose(func: KslBuiltinTranspose<*, *>): String
 
     protected fun sortFunctions(functions: MutableList<KslFunction<*>>) {
         val closed = mutableSetOf<KslFunction<*>>()
