@@ -11,6 +11,8 @@ class MonitorSpec(val monitor: Long) {
     val heightPx: Int
     val posX: Int
     val posY: Int
+    val contentScaleX: Float
+    val contentScaleY: Float
     val dpi: Float
 
     val vidmode: GLFWVidMode = GLFW.glfwGetVideoMode(monitor)!!
@@ -18,7 +20,12 @@ class MonitorSpec(val monitor: Long) {
     init {
         val x = IntArray(1)
         val y = IntArray(1)
+        val fx = FloatArray(1)
+        val fy = FloatArray(1)
 
+        GLFW.glfwGetMonitorContentScale(monitor, fx, fy)
+        contentScaleX = fx[0]
+        contentScaleY = fy[0]
         GLFW.glfwGetMonitorPhysicalSize(monitor, x, y)
         widthMm = x[0]
         heightMm = y[0]
@@ -29,7 +36,7 @@ class MonitorSpec(val monitor: Long) {
         widthPx = vidmode.width()
         heightPx = vidmode.height()
 
-        dpi = widthPx.toFloat() / (widthMm / 25.4f)
+        dpi = 96f * contentScaleX
     }
 
     fun isOnMonitor(x: Int, y: Int): Boolean = (x >= posX && x < posX + widthPx && y >= posY && y < posY + heightPx)

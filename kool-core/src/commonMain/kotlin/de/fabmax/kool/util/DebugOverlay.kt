@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * @author fabmax
@@ -115,7 +116,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                         if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
                             lastWndW = ctx.windowWidth
                             lastWndH = ctx.windowHeight
-                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight}"
+                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight} / ${(ctx.screenDpi / 0.96f).roundToInt()} %"
                         }
                     }
                 }

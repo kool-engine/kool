@@ -18,10 +18,6 @@
     </style>
 </head>
 <body>
-    <!-- Hidden div is needed to get the physical screen resolution, i.e. how many pixels fit into 1 inch -->
-    <!-- Apparently this always results in 96 dpi anyway... :/ -->
-    <div id="dpiMeasure" style="height: 1in; width: 1in; position: fixed; left: 100%; top: 100%;"></div>
-
     <!-- tabindex is required to make canvas focusable, needed to get per-canvas key events -->
     <canvas id="glCanvas" tabindex="1">
         Your browser doesn't appear to support the

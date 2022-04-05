@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.OffscreenRenderPass
@@ -70,6 +69,11 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         canvas = document.getElementById(props.canvasName) as? HTMLCanvasElement ?:
                 throw IllegalStateException("canvas element not found! Add a canvas with id \"${props.canvasName}\" to your html.")
 
+        canvas.style.width = "100%"
+        canvas.style.height = "100%"
+        canvas.width = (window.innerWidth * window.devicePixelRatio).toInt()
+        canvas.height = (window.innerHeight * window.devicePixelRatio).toInt()
+
         // try to get a WebGL2 context first and use WebGL version 1 as fallback
         var webGlCtx = canvas.getContext("webgl2")
         if (webGlCtx == null) {
@@ -101,9 +105,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             null
         }
 
-        screenDpi = JsImpl.dpi
-        windowWidth = canvas.clientWidth
-        windowHeight = canvas.clientHeight
+        screenDpi = 96f * window.devicePixelRatio.toFloat()
+        windowWidth = canvas.width
+        windowHeight = canvas.height
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
@@ -117,8 +121,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         animationMillis = time
 
         // update viewport size
-        windowWidth = canvas.clientWidth
-        windowHeight = canvas.clientHeight
+        screenDpi = 96f * window.devicePixelRatio.toFloat()
+        windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
+        windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
         if (windowWidth != canvas.width || windowHeight!= canvas.height) {
             // resize canvas to viewport
             canvas.width = windowWidth
