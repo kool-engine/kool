@@ -14,7 +14,6 @@ import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -101,7 +100,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         val shadowMap = CascadedShadowMap(this@setupMainScene, 0, 200f).apply {
             setMapRanges(0.05f, 0.25f, 1f)
-            cascades.forEach { it.directionalCamNearOffset = -200f }
+            cascades.forEach {
+                it.directionalCamNearOffset = -200f
+                it.setDefaultDepthOffset(true)
+            }
         }
 
         +makeTerrainMesh(shadowMap)
@@ -154,18 +156,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
 
         shader = blinnPhongShader {
-            color {
-                addTextureColor(colorTex)
-            }
-            normalMapping {
-                setNormalMap(normalTex)
-            }
-            shadow {
-                addShadowMap(shadowMap)
-            }
-            pipeline {
-                cullMethod = CullMethod.NO_CULLING
-            }
+            color { addTextureColor(colorTex) }
+            normalMapping { setNormalMap(normalTex) }
+            shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
             specularStrength = 0.5f
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR

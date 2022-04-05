@@ -92,7 +92,8 @@ class ShadowBlockFragmentStage(
                     is CascadedShadowMap -> {
                         `if` (normalZsLightSpace.output[mapInfo.fromIndexIncl] lt 0f.const) {
                             // normal points towards light source, compute shadow factor
-                            val isSampled = boolVar(false.const)
+                            val sampleW = floatVar(0f.const)
+                            val sampleSum = floatVar(0f.const)
                             val projPos = float3Var()
 
                             for (i in mapInfo.fromIndexIncl until mapInfo.toIndexExcl) {
@@ -100,14 +101,25 @@ class ShadowBlockFragmentStage(
                                 // position is inside map bounds, if so sample it and stop
                                 val posLightSpace = positionsLightSpace.output[i]
                                 projPos set posLightSpace.xyz / posLightSpace.w
-                                `if` (!isSampled and
+                                `if` (sampleW lt 0.999f.const and
                                         all(projPos gt Vec3f(0f, 0f, -1f).const) and
                                         all(projPos lt Vec3f(1f, 1f, 1f).const)) {
+
+                                    // determine how close proj pos is to shadow map border and use that to blend
+                                    // between cascades
+                                    val p = float2Var(abs((projPos.float2("xy") - 0.5f.const) * 2f.const))
+                                    val c = 1f.const - clamp(max(p.x, p.y) - 0.9f.const, 0f.const, 0.05f.const) * 10f.const
+                                    val w = floatVar(c * (1f.const - sampleW))
+
                                     // projected position is inside shadow map bounds, sample shadow map
-                                    shadowFactors[lightIdx] set getShadowMapFactor(depthMaps.value[i], posLightSpace, mapInfo.samplePattern)
-                                    isSampled set true.const
+                                    sampleSum += getShadowMapFactor(depthMaps.value[i], posLightSpace, mapInfo.samplePattern) * w
+                                    sampleW += w
                                 }
                             }
+                            `if` (sampleW gt 0f.const) {
+                                shadowFactors[lightIdx] set sampleSum / sampleW
+                            }
+
                         }.`else` {
                             // normal points away from light source, set shadow factor to 0 (shadowed)
                             shadowFactors[lightIdx] set 0f.const
