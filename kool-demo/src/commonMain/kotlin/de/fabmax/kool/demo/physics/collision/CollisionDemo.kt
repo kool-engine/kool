@@ -47,10 +47,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val shapeGenCtx = ShapeType.ShapeGeneratorContext()
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/colorful_studio_1k.rgbe.png", this)
 
-        groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-        groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+        groundAlbedo = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
+        groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         Physics.awaitLoaded()
         val physicsWorld = PhysicsWorld()

@@ -22,7 +22,7 @@ import de.fabmax.kool.util.DebugOverlay
  */
 
 fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), extraScenes: List<DemoEntry>? = null) {
-    val assetsBaseDir = Demo.getProperty("assetsBaseDir", "")
+    val assetsBaseDir = Demo.getProperty("assets.base", "")
     if (assetsBaseDir.isNotEmpty()) {
         ctx.assetMgr.assetsBaseDir = assetsBaseDir
     }
@@ -170,23 +170,23 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     companion object {
         val demoProps = mutableMapOf<String, Any>()
 
-        val awsBaseUrl: String
-            get() = getProperty("awsBaseUrl", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com")
+        val assetStorageBase: String
+            get() = getProperty("assets.base", "https://kool.blob.core.windows.net/kool-demo")
 
-        val envMapBasePath: String
-            get() = getProperty("pbrDemo.envMaps", "$awsBaseUrl/hdri")
+        val hdriPath: String
+            get() = getProperty("assets.hdri", "$assetStorageBase/hdri")
 
-        val pbrBasePath: String
-            get() = getProperty("pbrDemo.materials", "$awsBaseUrl/materials")
+        val materialPath: String
+            get() = getProperty("assets.materials", "$assetStorageBase/materials")
 
-        val modelBasePath: String
-            get() = getProperty("pbrDemo.models", "$awsBaseUrl/models")
+        val modelPath: String
+            get() = getProperty("assets.models", "$assetStorageBase/models")
 
         val heightMapPath: String
-            get() = getProperty("assets.heightmaps", "$awsBaseUrl/heightmaps")
+            get() = getProperty("assets.heightmaps", "$assetStorageBase/heightmaps")
 
-        val soundsBasePath: String
-            get() = getProperty("sounds", "$awsBaseUrl/sounds")
+        val soundPath: String
+            get() = getProperty("sounds", "$assetStorageBase/sounds")
 
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value

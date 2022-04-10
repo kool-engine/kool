@@ -60,7 +60,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 10f, 20f))
         }
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/colorful_studio_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/colorful_studio_1k.rgbe.png", this)
         mainScene += Skybox.cube(ibl.reflectionMap, 1f)
 
         Physics.awaitLoaded()
@@ -92,8 +92,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         ground.setRotation(0f, 0f, 90f)
         physicsWorld.addActor(ground)
 
-        val groundAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+        val groundAlbedo = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         mainScene += textureMesh(isNormalMapped = true) {
             isCastingShadow = false

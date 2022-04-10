@@ -42,7 +42,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL maps")
-        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        val ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
         val shadows = CascadedShadowMap(mainScene, 0, maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
@@ -55,7 +55,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         showLoadText("Loading Vehicle Model")
         val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = GltfFile.ModelMaterialConfig(isDeferredShading = true))
-        vehicleModel = loadGltfModel("${Demo.modelBasePath}/kool-car.glb", modelCfg)!!
+        vehicleModel = loadGltfModel("${Demo.modelPath}/kool-car.glb", modelCfg)!!
 
         showLoadText("Loading Physics")
         Physics.awaitLoaded()
@@ -229,8 +229,8 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     private fun Group.makeGround() {
-        val groundAlbedo = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-        val groundNormal = Texture2d("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+        val groundAlbedo = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
+        val groundNormal = Texture2d("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         onDispose += {
             groundAlbedo.dispose()
             groundNormal.dispose()

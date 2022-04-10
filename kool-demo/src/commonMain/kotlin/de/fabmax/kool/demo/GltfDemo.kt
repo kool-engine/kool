@@ -29,22 +29,22 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private val foxAnimator = FoxAnimator()
     private val models = Cycler(
-            GltfModel("Flight Helmet", "${Demo.modelBasePath}/flight_helmet/FlightHelmet.gltf",
+            GltfModel("Flight Helmet", "${Demo.modelPath}/flight_helmet/FlightHelmet.gltf",
                     4f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
-            GltfModel("Polly", "${Demo.modelBasePath}/project_polly_jpg.glb",
+            GltfModel("Polly", "${Demo.modelPath}/project_polly_jpg.glb",
                     3f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), false, 3.5),
-            GltfModel("Coffee Cart", "${Demo.modelBasePath}/CoffeeCart_01.glb",
+            GltfModel("Coffee Cart", "${Demo.modelPath}/CoffeeCart_01.glb",
                     2f, Vec3f(0f, -0.01f, 0f), false, Vec3d(0.0, 1.75, 0.0), false, 3.5),
-            GltfModel("Camera", "${Demo.modelBasePath}/camera.glb",
+            GltfModel("Camera", "${Demo.modelPath}/camera.glb",
                     20f, Vec3f.ZERO, true, Vec3d(0.0, 0.5, 0.0), false, 5.0),
-            GltfModel("Fox", "${Demo.modelBasePath}/fox.glb",
+            GltfModel("Fox", "${Demo.modelPath}/fox.glb",
                     0.01f, Vec3f.ZERO, false, Vec3d(0.0, 1.25, 0.0), true, 3.5)
                     .apply { animate = { _, ctx -> foxAnimator.animate(this, ctx) } },
-            GltfModel("Animated Box", "${Demo.modelBasePath}/BoxAnimated.gltf",
+            GltfModel("Animated Box", "${Demo.modelPath}/BoxAnimated.gltf",
                     1f, Vec3f(0f, 0.5f, 0f), false, Vec3d(0.0, 1.5, 0.0), false, 5.0),
-            GltfModel("Morph Cube", "${Demo.modelBasePath}/AnimatedMorphCube.glb",
+            GltfModel("Morph Cube", "${Demo.modelPath}/AnimatedMorphCube.glb",
                     1f, Vec3f(0f, 1f, 0f), false, Vec3d(0.0, 1.0, 0.0), false, 3.5),
-            GltfModel("Alpha Mode Test", "${Demo.modelBasePath}/AlphaBlendModeTest.glb",
+            GltfModel("Alpha Mode Test", "${Demo.modelPath}/AlphaBlendModeTest.glb",
                     0.5f, Vec3f(0f, 0.06f, 0f), false, Vec3d(0.0, 0.75, 0.0), false, 3.5)
     )
 
@@ -78,7 +78,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL Maps")
-        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", this)
+        envMaps = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/shanghai_bund_1k.rgbe.png", this)
 
         mainScene.setupLighting()
 
@@ -225,10 +225,10 @@ class GltfDemo : DemoScene("glTF Models") {
                     useImageBasedLighting(envMaps)
                 }
 
-                useAlbedoMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Color2.jpg")
-                useNormalMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Normal.jpg")
-                useAmbientOcclusionMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/Fabric030/Fabric030_1K_Roughness.jpg")
+                useAlbedoMap("${Demo.materialPath}/Fabric030/Fabric030_1K_Color2.jpg")
+                useNormalMap("${Demo.materialPath}/Fabric030/Fabric030_1K_Normal.jpg")
+                useAmbientOcclusionMap("${Demo.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
+                useRoughnessMap("${Demo.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
 
                 onDispose += {
                     albedoMap?.dispose()

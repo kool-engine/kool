@@ -179,7 +179,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
-        private val assetPath = Demo.pbrBasePath
+        private val assetPath = Demo.materialPath
         
         private val materials = mutableListOf(
                 MaterialMaps(

@@ -28,7 +28,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
     lateinit var ibl: EnvironmentMaps
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", this)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

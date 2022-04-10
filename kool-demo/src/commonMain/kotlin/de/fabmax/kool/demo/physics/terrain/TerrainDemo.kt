@@ -41,15 +41,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 20f)
 
-        colorTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine.png")
-        normalTex = loadAndPrepareTexture("${Demo.pbrBasePath}/tile_flat/tiles_flat_fine_normal.png")
+        colorTex = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
+        normalTex = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/blaubeuren_outskirts_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
 
         Physics.awaitLoaded()
         physicsObjects = PhysicsObjects(mainScene, heightMap, ctx)
 
-        val playerGltf = loadGltfModel("${Demo.modelBasePath}/player.glb") ?: throw IllegalStateException("Failed loading model")
+        val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {

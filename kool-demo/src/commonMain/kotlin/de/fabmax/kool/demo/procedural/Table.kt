@@ -24,9 +24,9 @@ class Table : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Att
         }
 
         shader = deferredPbrShader {
-            useAlbedoMap("${Demo.pbrBasePath}/granitesmooth1/granitesmooth1-albedo4.jpg")
-            useNormalMap("${Demo.pbrBasePath}/granitesmooth1/granitesmooth1-normal2.jpg")
-            useRoughnessMap("${Demo.pbrBasePath}/granitesmooth1/granitesmooth1-roughness3.jpg")
+            useAlbedoMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-albedo4.jpg")
+            useNormalMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-normal2.jpg")
+            useRoughnessMap("${Demo.materialPath}/granitesmooth1/granitesmooth1-roughness3.jpg")
         }
     }
 

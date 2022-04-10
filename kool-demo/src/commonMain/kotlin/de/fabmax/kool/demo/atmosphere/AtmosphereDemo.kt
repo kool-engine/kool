@@ -60,17 +60,17 @@ class AtmosphereDemo : DemoScene("Atmosphere") {
         }
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
-        loadTex(texMilkyway, "${Demo.awsBaseUrl}/solarsystem/stars_bg.jpg")
-        loadTex(texSun, "${Demo.awsBaseUrl}/solarsystem/sun.png")
-        loadTex(texSunBg, "${Demo.awsBaseUrl}/solarsystem/sun_bg.png")
-        loadTex(texMoon, "${Demo.awsBaseUrl}/solarsystem/moon.jpg")
+        loadTex(texMilkyway, "${Demo.assetStorageBase}/solarsystem/stars_bg.jpg")
+        loadTex(texSun, "${Demo.assetStorageBase}/solarsystem/sun.png")
+        loadTex(texSunBg, "${Demo.assetStorageBase}/solarsystem/sun_bg.png")
+        loadTex(texMoon, "${Demo.assetStorageBase}/solarsystem/moon.jpg")
 
-        loadTex(EarthShader.texEarthDay, "${Demo.awsBaseUrl}/solarsystem/earth_day.jpg")
-        loadTex(EarthShader.texEarthNight, "${Demo.awsBaseUrl}/solarsystem/earth_night.jpg")
-        loadTex(EarthShader.texEarthNrm, "${Demo.awsBaseUrl}/solarsystem/earth_nrm.jpg")
-        loadTex(EarthShader.texOceanNrm, "${Demo.awsBaseUrl}/solarsystem/oceanNrm.jpg")
+        loadTex(EarthShader.texEarthDay, "${Demo.assetStorageBase}/solarsystem/earth_day.jpg")
+        loadTex(EarthShader.texEarthNight, "${Demo.assetStorageBase}/solarsystem/earth_night.jpg")
+        loadTex(EarthShader.texEarthNrm, "${Demo.assetStorageBase}/solarsystem/earth_nrm.jpg")
+        loadTex(EarthShader.texOceanNrm, "${Demo.assetStorageBase}/solarsystem/oceanNrm.jpg")
         val heightMapProps = TextureProps(TexFormat.R, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE)
-        loadTex(EarthShader.texEarthHeight, "${Demo.awsBaseUrl}/solarsystem/earth_height_8k.png", heightMapProps)
+        loadTex(EarthShader.texEarthHeight, "${Demo.assetStorageBase}/solarsystem/earth_height_8k.png", heightMapProps)
     }
 
     override fun lateInit(ctx: KoolContext) {

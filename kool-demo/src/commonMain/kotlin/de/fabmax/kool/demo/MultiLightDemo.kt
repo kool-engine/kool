@@ -93,9 +93,9 @@ class MultiLightDemo : DemoScene("Reflections") {
 
         deferredPipeline.sceneContent.apply {
             ctx.assetMgr.launch {
-                val floorAlbedo = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
-                val floorNormal = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
-                val floorRoughness = loadAndPrepareTexture("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
+                val floorAlbedo = loadAndPrepareTexture("${Demo.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
+                val floorNormal = loadAndPrepareTexture("${Demo.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg")
+                val floorRoughness = loadAndPrepareTexture("${Demo.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg")
                 onDispose += {
                     floorAlbedo.dispose()
                     floorNormal.dispose()
@@ -123,7 +123,7 @@ class MultiLightDemo : DemoScene("Reflections") {
                     }
                 }
 
-                loadGltfFile("${Demo.modelBasePath}/bunny.gltf.gz")?.let {
+                loadGltfFile("${Demo.modelPath}/bunny.gltf.gz")?.let {
                     val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
                     val model = it.makeModel(modelCfg)
                     bunnyMesh = model.meshes.values.first()

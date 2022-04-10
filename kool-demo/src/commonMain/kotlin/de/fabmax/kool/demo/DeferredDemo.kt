@@ -218,11 +218,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
             }
             val pbrCfg = PbrMaterialConfig().apply {
-                useAlbedoMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
-                useNormalMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-normal.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
-                useMetallicMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
-                useAmbientOcclusionMap("${Demo.pbrBasePath}/futuristic-panels1/futuristic-panels1-ao.jpg")
+                useAlbedoMap("${Demo.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
+                useNormalMap("${Demo.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
+                useRoughnessMap("${Demo.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
+                useMetallicMap("${Demo.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
+                useAmbientOcclusionMap("${Demo.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
             }
             val groundShader = DeferredPbrShader(pbrCfg)
             shader = groundShader

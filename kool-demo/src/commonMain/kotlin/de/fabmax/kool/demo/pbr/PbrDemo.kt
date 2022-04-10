@@ -203,11 +203,11 @@ class PbrDemo : DemoScene("PBR Materials") {
                 maxAnisotropy = 1)
 
         private val hdriTextures = listOf(
-                Hdri("${Demo.envMapBasePath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
-                Hdri("${Demo.envMapBasePath}/circus_arena_1k.rgbe.png", "Circus"),
-                Hdri("${Demo.envMapBasePath}/newport_loft.rgbe.png", "Loft"),
-                Hdri("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
-                Hdri("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
+                Hdri("${Demo.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
+                Hdri("${Demo.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
+                Hdri("${Demo.hdriPath}/newport_loft.rgbe.png", "Loft"),
+                Hdri("${Demo.hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
+                Hdri("${Demo.hdriPath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
         )
 
         private const val lightStrength = 250f

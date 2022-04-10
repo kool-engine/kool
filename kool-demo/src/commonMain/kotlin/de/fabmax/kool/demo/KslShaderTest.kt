@@ -163,10 +163,10 @@ class KslShaderTest : DemoScene("KslShader") {
                 color {
                     //addInstanceColor()
 //                    addStaticColor(Color.WHITE)
-                    addTextureColorLinearize(Texture2d("${Demo.pbrBasePath}/castle_brick/castle_brick_02_red_diff_2k.jpg"))
+                    addTextureColorLinearize(Texture2d("${Demo.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg"))
                 }
                 normalMapping {
-                    setNormalMap(Texture2d("${Demo.pbrBasePath}/castle_brick/castle_brick_02_red_nor_2k.jpg"))
+                    setNormalMap(Texture2d("${Demo.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg"))
                 }
                 shadow {
                     addShadowMaps(shadowMaps)

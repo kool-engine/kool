@@ -39,11 +39,11 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading IBL Maps")
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", this)
+        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/mossy_forest_1k.rgbe.png", this)
 
         showLoadText("Loading Model")
         val modelCfg = GltfFile.ModelGenerateConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel("${Demo.modelBasePath}/teapot.gltf.gz", modelCfg)!!
+        val model = loadGltfModel("${Demo.modelPath}/teapot.gltf.gz", modelCfg)!!
         teapotMesh = model.meshes.values.first()
     }
 
@@ -167,10 +167,10 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
 
             val shader = pbrShader {
-                useAlbedoMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
-                useAmbientOcclusionMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
-                useNormalMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
+                useAlbedoMap("${Demo.materialPath}/brown_planks_03/brown_planks_03_diff_2k.jpg")
+                useAmbientOcclusionMap("${Demo.materialPath}/brown_planks_03/brown_planks_03_AO_2k.jpg")
+                useNormalMap("${Demo.materialPath}/brown_planks_03/brown_planks_03_Nor_2k.jpg")
+                useRoughnessMap("${Demo.materialPath}/brown_planks_03/brown_planks_03_rough_2k.jpg")
 
                 useScreenSpaceAmbientOcclusion(aoPipeline.aoMap)
                 useImageBasedLighting(ibl)

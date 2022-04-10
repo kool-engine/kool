@@ -87,10 +87,10 @@ class TreeDemo : DemoScene("Procedural Tree") {
             var uWindSpeed: Uniform1f? = null
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrMaterialConfig().apply {
-                useAlbedoMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg")
-                useAmbientOcclusionMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
-                useNormalMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg")
+                useAlbedoMap("${Demo.materialPath}/bark_pine/Bark_Pine_baseColor.jpg")
+                useAmbientOcclusionMap("${Demo.materialPath}/bark_pine/Bark_Pine_ambientOcclusion.jpg")
+                useNormalMap("${Demo.materialPath}/bark_pine/Bark_Pine_normal.jpg")
+                useRoughnessMap("${Demo.materialPath}/bark_pine/Bark_Pine_roughness.jpg")
                 useImageBasedLighting(envMaps)
                 this.shadowMaps.addAll(shadowMaps)
                 roughness = 1f
@@ -126,7 +126,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
             var uWindSpeed: Uniform1f? = null
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrMaterialConfig().apply {
-                useAlbedoMap("${Demo.pbrBasePath}/leaf.png")
+                useAlbedoMap("${Demo.materialPath}/leaf.png")
                 useImageBasedLighting(envMaps)
                 roughness = 1f
                 alphaMode = AlphaModeMask(0.5f)
@@ -290,11 +290,11 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 geometry.generateTangents()
             }
             shader = pbrShader {
-                useAlbedoMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
-                useNormalMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg")
-                useRoughnessMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")
-                useAmbientOcclusionMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
-                useDisplacementMap("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
+                useAlbedoMap("${Demo.materialPath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
+                useNormalMap("${Demo.materialPath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg")
+                useRoughnessMap("${Demo.materialPath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg")
+                useAmbientOcclusionMap("${Demo.materialPath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg")
+                useDisplacementMap("${Demo.materialPath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
                 useImageBasedLighting(envMaps)
                 this.shadowMaps.addAll(shadowMaps)
 
