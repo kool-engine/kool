@@ -7,8 +7,10 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.Usage
-import org.lwjgl.opengl.GL20.*
-import org.lwjgl.opengl.GL33.glVertexAttribDivisor
+import de.fabmax.kool.util.logE
+import org.lwjgl.opengl.GL33.*
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryUtil
 
 class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
@@ -17,6 +19,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, List<Int>>()
+    private val uboLayouts = mutableMapOf<String, UboBufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
@@ -32,7 +35,14 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             set.descriptors.forEach { desc ->
                 when (desc) {
                     is UniformBuffer -> {
-                        desc.uniforms.forEach { uniformLocations[it.name] = listOf(glGetUniformLocation(prog, it.name)) }
+                        val blockIndex = glGetUniformBlockIndex(prog, desc.name)
+                        if (blockIndex == GL_INVALID_INDEX) {
+                            // descriptor does not describe an actual UBO but plain old uniforms...
+                            desc.uniforms.forEach { uniformLocations[it.name] = listOf(glGetUniformLocation(prog, it.name)) }
+                        } else {
+                            setupUboLayout(desc, blockIndex)
+                        }
+
                     }
                     is TextureSampler1d -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
@@ -55,6 +65,27 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                 uniformLocations[pc.name] = listOf(glGetUniformLocation(prog, pc.name))
             }
         }
+    }
+
+    private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
+        val blockSize = glGetActiveUniformBlocki(prog, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE)
+        val indices = IntArray(desc.uniforms.size)
+        val offsets = IntArray(desc.uniforms.size)
+
+        MemoryStack.stackPush().use { stack ->
+            val uniformNames = desc.uniforms.map { MemoryUtil.memASCII(it.name) }.toTypedArray()
+            val namePointers = stack.pointers(*uniformNames)
+            glGetUniformIndices(prog, namePointers, indices)
+            glGetActiveUniformsiv(prog, indices, GL_UNIFORM_OFFSET, offsets)
+        }
+        glUniformBlockBinding(prog, blockIndex, desc.binding)
+
+        uboLayouts[desc.name] = UboBufferLayout(desc.uniforms, offsets, blockSize)
+
+//        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
+//        desc.uniforms.forEachIndexed { i, u ->
+//            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
+//        }
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): List<Int> {
@@ -137,6 +168,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
         private var dataBufferI: BufferResource? = null
         private var indexBuffer: BufferResource? = null
         private var instanceBuffer: BufferResource? = null
+        private var uboBuffers = mutableListOf<BufferResource>()
         private var buffersSet = false
 
         private var nextTexUnit = GL_TEXTURE0
@@ -170,7 +202,20 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
 
         private fun mapUbo(ubo: UniformBuffer) {
             ubos.add(ubo)
-            ubo.uniforms.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]!![0]) }
+            val uboLayout = uboLayouts[ubo.name]
+            if (uboLayout != null) {
+                mappings += MappedUbo(ubo, uboLayout)
+
+            } else {
+                ubo.uniforms.forEach {
+                    val location = uniformLocations[it.name]
+                    if (location != null) {
+                        mappings += MappedUniform.mappedUniform(it, location[0])
+                    } else {
+                        logE { "Uniform location not present for uniform ${ubo.name}.${it.name}" }
+                    }
+                }
+            }
         }
 
         private fun mapTexture1d(tex: TextureSampler1d) {
@@ -259,11 +304,13 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             dataBufferI?.delete(ctx)
             indexBuffer?.delete(ctx)
             instanceBuffer?.delete(ctx)
+            uboBuffers.forEach { it.delete(ctx) }
             dataBufferF = null
             dataBufferI = null
             indexBuffer = null
             instanceBuffer = null
             buffersSet = false
+            uboBuffers.clear()
         }
 
         fun destroyInstance() {
@@ -282,6 +329,12 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             val md = geometry
             if (indexBuffer == null) {
                 indexBuffer = BufferResource(GL_ELEMENT_ARRAY_BUFFER)
+
+                mappings.filterIsInstance<MappedUbo>().forEach { mappedUbo ->
+                    val uboBuffer = BufferResource(GL_UNIFORM_BUFFER)
+                    uboBuffers += uboBuffer
+                    mappedUbo.uboBuffer = uboBuffer
+                }
             }
             var hasIntData = false
             if (dataBufferF == null) {

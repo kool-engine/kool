@@ -310,8 +310,12 @@ class MixedBufferImpl(buffer: ByteBuffer) : MixedBuffer, GenericBuffer<ByteBuffe
         return this
     }
 
+    override fun padding(nBytes: Int): MixedBuffer {
+        position += nBytes
+        return this
+    }
+
     companion object {
-        // todo: find a good value / always / never convert buffer type
         private const val BUFFER_CONV_THRESH = 4
     }
 }

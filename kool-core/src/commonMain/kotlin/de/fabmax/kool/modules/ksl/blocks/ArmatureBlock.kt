@@ -18,12 +18,7 @@ class ArmatureBlock(maxBones: Int, name: String, parentScope: KslScopeBuilder) :
 
     init {
         body.apply {
-            parentScope.parentStage.program.apply {
-                armatureData = ArmatureData(maxBones, this)
-                if (maxBones > 0) {
-                    uniformBuffers += armatureData
-                }
-            }
+            armatureData = ArmatureData(maxBones, parentScope.parentStage.program)
 
             outBoneTransform set armatureData.boneTransforms[inBoneIndices.x] * inBoneWeights.x
             outBoneTransform += armatureData.boneTransforms[inBoneIndices.y] * inBoneWeights.y

@@ -90,7 +90,8 @@ class GlslGenerator : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        src.generateUniforms(vertexStage.uniforms)
+        src.generateUbos(vertexStage)
+        src.generateUniformSamplers(vertexStage)
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
@@ -116,7 +117,8 @@ class GlslGenerator : KslGenerator() {
         """.trimIndent())
         src.appendLine()
 
-        src.generateUniforms(fragmentStage.uniforms)
+        src.generateUbos(fragmentStage)
+        src.generateUniformSamplers(fragmentStage)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
@@ -127,12 +129,40 @@ class GlslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private fun StringBuilder.generateUniforms(uniforms: List<KslUniform<*>>) {
-        if (uniforms.isNotEmpty()) {
-            appendLine("// uniforms")
-            for (u in uniforms) {
+    private fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
+        val samplers = stage.program.uniformSamplers.values.filter { it.value in stage.main.dependencies }
+        if (samplers.isNotEmpty()) {
+            appendLine("// texture samplers")
+            for (u in samplers) {
                 val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
                 appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+            }
+            appendLine()
+        }
+    }
+
+    private fun StringBuilder.generateUbos(stage: KslShaderStage) {
+        val ubos = stage.program.uniformBuffers.filter { it.uniforms.values.any { u -> u.value in stage.main.dependencies } }
+        if (ubos.isNotEmpty()) {
+            appendLine("// uniform buffer objects")
+            for (ubo in ubos) {
+                val layout = if (ubo.isShared) {
+                    // if isShared is true, the underlying buffer is externally provided without the buffer layout
+                    // being queried via OpenGL API -> use standardized std140 layout
+                    "std140"
+
+                } else {
+                    // glsl layout "shared" means that the ubo can be shared between vertex and fragment shader
+                    // programs (because no members are optimized away), which we need (even if ubo.isShared == false)
+                    "shared"
+                }
+
+                appendLine("layout($layout) uniform ${ubo.name} {")
+                for (u in ubo.uniforms.values) {
+                    val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
+                    appendLine("    ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                }
+                appendLine("};")
             }
             appendLine()
         }

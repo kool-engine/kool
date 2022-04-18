@@ -22,7 +22,7 @@ import de.fabmax.kool.util.DebugOverlay
  */
 
 fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), extraScenes: List<DemoEntry>? = null) {
-    val assetsBaseDir = Demo.getProperty("assets.base", "")
+    val assetsBaseDir = Demo.getProperty("assetsBaseDir", "")
     if (assetsBaseDir.isNotEmpty()) {
         ctx.assetMgr.assetsBaseDir = assetsBaseDir
     }

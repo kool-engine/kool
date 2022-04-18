@@ -331,6 +331,15 @@ class Mat3f {
         return buffer
     }
 
+    fun dump() {
+        for (r in 0..2) {
+            for (c in 0..2) {
+                print("${this[r, c]} ")
+            }
+            println()
+        }
+    }
+
     companion object {
         private val tmpMatLock = Any()
         private val tmpMatA = Mat3f()

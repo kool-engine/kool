@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.MixedBufferImpl
+import de.fabmax.kool.util.createMixedBuffer
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
@@ -24,11 +25,13 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
 
 class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBuffer) : DescriptorObject(binding, ubo) {
     private val buffer: Buffer
+    private val layout = Std140Layout(ubo.uniforms)
+    private val hostBuffer = createMixedBuffer(layout.size) as MixedBufferImpl
 
     init {
         val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
-        buffer = Buffer(graphicsPipeline.sys, ubo.size.toLong(), usage, allocUsage).also {
+        buffer = Buffer(graphicsPipeline.sys, layout.size.toLong(), usage, allocUsage).also {
             graphicsPipeline.addDependingResource(it)
         }
     }
@@ -38,7 +41,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
             val buffereInfo = callocVkDescriptorBufferInfoN(1) {
                 buffer(buffer.vkBuffer)
                 offset(0L)
-                range(ubo.size.toLong())
+                range(layout.size.toLong())
             }
             vkWriteDescriptorSet
                     .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
@@ -53,7 +56,8 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
-        buffer.mapped { ubo.putTo(MixedBufferImpl(this)) }
+        layout.putTo(hostBuffer)
+        buffer.mapped { put(hostBuffer.buffer) }
     }
 
     override fun destroy(graphicsPipeline: GraphicsPipeline) {

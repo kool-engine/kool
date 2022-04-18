@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.UniformMat4fv
@@ -11,7 +12,7 @@ import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
-class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslUniformBuffer(), KslShader.KslShaderListener {
+class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslShaderListener {
 
     val shadowMapInfos: List<ShadowMapInfo>
     val numSubMaps: Int
@@ -36,6 +37,10 @@ class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslUniformBuffe
         // also not referenced later on and therefore removed before shader is generated (again because shadowCfg is empty)
         shadowMapViewProjMats = program.uniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS, numSubMaps)
         depthMaps = program.depthTextureArray2d(SAMPLER_NAME_SHADOW_MAPS, numSubMaps)
+
+        if (numSubMaps > 0) {
+            program.shaderListeners += this
+        }
     }
 
     override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) {

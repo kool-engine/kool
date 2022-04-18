@@ -145,7 +145,13 @@ class UniformMat3f(name: String) : Uniform<Mat3f>(Mat3f(), name) {
     override val size: Int = 9 * 4
 
     override fun putTo(buffer: MixedBuffer) {
-        buffer.putFloat32(value.matrix)
+        for (m in 0..2) {
+            buffer.putFloat32(value.matrix[m * 3 + 0])
+            buffer.putFloat32(value.matrix[m * 3 + 1])
+            buffer.putFloat32(value.matrix[m * 3 + 2])
+            // Mat3f requires adding a fourth padding value (hopefully always)
+            buffer.putFloat32(0f)
+        }
     }
 }
 

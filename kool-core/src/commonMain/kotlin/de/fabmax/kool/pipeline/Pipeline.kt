@@ -58,7 +58,17 @@ class Pipeline private constructor(builder: Builder) {
         val vertices: VertexLayout,
         val descriptorSets: List<DescriptorSetLayout>,
         val pushConstantRanges: List<PushConstantRange>
-    )
+    ) {
+        fun findDescriptorByName(name: String): Descriptor? {
+            for (descLayout in descriptorSets) {
+                val desc = descLayout.findDescriptorByName(name)
+                if (desc != null) {
+                    return desc
+                }
+            }
+            return null
+        }
+    }
 
     class Builder {
         var name = "pipeline"

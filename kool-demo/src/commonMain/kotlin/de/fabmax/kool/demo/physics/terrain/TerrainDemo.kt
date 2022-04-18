@@ -203,9 +203,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         shader = blinnPhongShader {
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap)
+            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
             isInstanced = true
             specularStrength = 0.2f
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         onUpdate += {

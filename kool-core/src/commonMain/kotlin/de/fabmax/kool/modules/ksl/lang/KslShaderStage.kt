@@ -8,7 +8,6 @@ import kotlin.contracts.contract
 
 abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageType) {
 
-    val uniforms = mutableListOf<KslUniform<*>>()
     val interStageVars = mutableListOf<KslInterStageVar<*>>()
 
     val globalScope = KslScopeBuilder(null, null, this)
@@ -41,7 +40,6 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
 
     open fun prepareGenerate() {
         KslProcessor().process(hierarchy)
-        uniforms.removeAll { uniform -> uniform.value !in main.dependencies }
     }
 }
 

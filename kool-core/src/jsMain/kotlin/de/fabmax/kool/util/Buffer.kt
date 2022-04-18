@@ -260,6 +260,11 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
         }
         return this
     }
+
+    override fun padding(nBytes: Int): MixedBuffer {
+        position += nBytes
+        return this
+    }
 }
 
 actual fun createUint8Buffer(capacity: Int): Uint8Buffer {

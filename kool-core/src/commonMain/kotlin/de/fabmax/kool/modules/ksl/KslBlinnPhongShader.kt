@@ -127,7 +127,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     val localPos = constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                     val localNormal = constFloat4(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
                     val worldPos = float3Var((modelMat * localPos).xyz)
-                    val worldNormal = float3Var((modelMat * localNormal).xyz)
+                    val worldNormal = float3Var(normalize((modelMat * localNormal).xyz))
                     positionWorldSpace.input set worldPos
                     normalWorldSpace.input set worldNormal
                     outPosition set mvp * localPos

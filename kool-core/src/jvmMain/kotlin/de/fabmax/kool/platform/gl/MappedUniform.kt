@@ -4,6 +4,8 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.*
 import org.lwjgl.opengl.GL20.*
+import org.lwjgl.opengl.GL30.glBindBufferBase
+import org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER
 
 interface MappedUniform {
     fun setUniform(ctx: Lwjgl3Context): Boolean
@@ -34,6 +36,26 @@ interface MappedUniform {
                 is Uniform3iv -> MappedUniform3iv(uniform, location)
                 is Uniform4iv -> MappedUniform4iv(uniform, location)
             }
+        }
+    }
+}
+
+class MappedUbo(val uboDesc: UniformBuffer, val layout: UboBufferLayout) : MappedUniform {
+    var uboBuffer: BufferResource? = null
+    val hostBuffer = createMixedBuffer(layout.bufferSize)
+
+    override fun setUniform(ctx: Lwjgl3Context): Boolean {
+        val gpuBuf = uboBuffer
+        return if (gpuBuf != null) {
+            for (i in uboDesc.uniforms.indices) {
+                hostBuffer.position = layout.offsets[i]
+                uboDesc.uniforms[i].putTo(hostBuffer)
+            }
+            gpuBuf.setData(hostBuffer, GL_DYNAMIC_DRAW, ctx)
+            glBindBufferBase(GL_UNIFORM_BUFFER, uboDesc.binding, gpuBuf.buffer)
+            true
+        } else {
+            false
         }
     }
 }

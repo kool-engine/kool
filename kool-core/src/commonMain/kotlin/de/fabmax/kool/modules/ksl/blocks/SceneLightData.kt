@@ -2,17 +2,17 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.modules.ksl.lang.KslUniformBuffer
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Uniform1i
 import de.fabmax.kool.pipeline.Uniform4fv
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import kotlin.math.min
 
-fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights).also { uniformBuffers += it }
+fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 
-class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslUniformBuffer(), KslShader.KslShaderListener {
+class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslShaderListener {
 
     val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount)
     val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount)
@@ -23,6 +23,10 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslUniformBu
     private lateinit var uLightDirections: Uniform4fv
     private lateinit var uLightColors: Uniform4fv
     private lateinit var uLightCount: Uniform1i
+
+    init {
+        program.shaderListeners += this
+    }
 
     override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) {
         uLightPositions = shader.uniforms[UNIFORM_NAME_LIGHT_POSITIONS] as Uniform4fv

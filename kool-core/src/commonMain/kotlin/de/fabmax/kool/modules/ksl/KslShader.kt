@@ -4,9 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.modules.ksl.model.KslScope
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.scene.Mesh
 import kotlin.reflect.KProperty
 
@@ -19,15 +17,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     val texSamplersCube = mutableMapOf<String, TextureSamplerCube>()
 
     private val connectUniformListeners = mutableListOf<ConnectUniformListener>()
-    private val listeners = mutableListOf<KslShaderListener>()
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         setupAttributes(mesh, builder)
         setupUniforms(builder)
-
-        listeners += program.uniformBuffers.filterIsInstance<KslShaderListener>()
-        collectProgramListeners(program.vertexStage.globalScope)
-        collectProgramListeners(program.fragmentStage.globalScope)
 
         builder.blendMode = pipelineConfig.blendMode
         builder.cullMethod = pipelineConfig.cullMethod
@@ -60,107 +53,115 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         }
 
         pipeline.onUpdate += { cmd ->
-            for (i in listeners.indices) {
-                listeners[i].onUpdate(cmd)
+            for (i in program.shaderListeners.indices) {
+                program.shaderListeners[i].onUpdate(cmd)
             }
         }
-        listeners.forEach { it.onShaderCreated(this, pipeline, ctx) }
+        program.shaderListeners.forEach { it.onShaderCreated(this, pipeline, ctx) }
         connectUniformListeners.forEach { it.connect() }
 
         super.onPipelineCreated(pipeline, mesh, ctx)
-    }
-
-    private fun collectProgramListeners(scope: KslScope) {
-        scope.ops.forEach {
-            if (it is KslShaderListener) {
-                listeners += it
-            }
-            it.childScopes.forEach { cs -> collectProgramListeners(cs) }
-        }
     }
 
     private fun setupUniforms(builder: Pipeline.Builder) {
         val descBuilder = DescriptorSetLayout.Builder()
         builder.descriptorSetLayouts += descBuilder
 
-        val ubo = UniformBuffer.Builder()
-        descBuilder.descriptors += ubo
-        program.uniforms.values.forEach { uniform ->
-            when(val type = uniform.value.expressionType)  {
-                is KslTypeFloat1 -> ubo.uniforms += { Uniform1f(uniform.name) }
-                is KslTypeFloat2 -> ubo.uniforms += { Uniform2f(uniform.name) }
-                is KslTypeFloat3 -> ubo.uniforms += { Uniform3f(uniform.name) }
-                is KslTypeFloat4 -> ubo.uniforms += { Uniform4f(uniform.name) }
+        program.uniformBuffers.forEach { kslUbo ->
+            val ubo = UniformBuffer.Builder()
+            ubo.name = kslUbo.name
+            descBuilder.descriptors += ubo
 
-                is KslTypeInt1 -> ubo.uniforms += { Uniform1i(uniform.name) }
-                is KslTypeInt2 -> ubo.uniforms += { Uniform2i(uniform.name) }
-                is KslTypeInt3 -> ubo.uniforms += { Uniform3i(uniform.name) }
-                is KslTypeInt4 -> ubo.uniforms += { Uniform4i(uniform.name) }
+            kslUbo.uniforms.values.forEach { uniform ->
+                when(val type = uniform.value.expressionType)  {
+                    is KslTypeFloat1 -> ubo.uniforms += { Uniform1f(uniform.name) }
+                    is KslTypeFloat2 -> ubo.uniforms += { Uniform2f(uniform.name) }
+                    is KslTypeFloat3 -> ubo.uniforms += { Uniform3f(uniform.name) }
+                    is KslTypeFloat4 -> ubo.uniforms += { Uniform4f(uniform.name) }
 
-                //is KslTypeMat2 -> ubo.uniforms += { UniformMat2f(uniform.name) }
-                is KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
-                is KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
+                    is KslTypeInt1 -> ubo.uniforms += { Uniform1i(uniform.name) }
+                    is KslTypeInt2 -> ubo.uniforms += { Uniform2i(uniform.name) }
+                    is KslTypeInt3 -> ubo.uniforms += { Uniform3i(uniform.name) }
+                    is KslTypeInt4 -> ubo.uniforms += { Uniform4i(uniform.name) }
 
+                    //is KslTypeMat2 -> ubo.uniforms += { UniformMat2f(uniform.name) }
+                    is KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
+                    is KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
+
+                    is KslTypeArray<*> -> {
+                        when (type.elemType) {
+                            is KslTypeFloat1 -> ubo.uniforms += { Uniform1fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat2 -> ubo.uniforms += { Uniform2fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat3 -> ubo.uniforms += { Uniform3fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat4 -> ubo.uniforms += { Uniform4fv(uniform.name, uniform.arraySize) }
+
+                            is KslTypeInt1 -> ubo.uniforms += { Uniform1iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt2 -> ubo.uniforms += { Uniform2iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt3 -> ubo.uniforms += { Uniform3iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt4 -> ubo.uniforms += { Uniform4iv(uniform.name, uniform.arraySize) }
+
+                            is KslTypeMat3 -> ubo.uniforms += { UniformMat3fv(uniform.name, uniform.arraySize) }
+                            is KslTypeMat4 -> ubo.uniforms += { UniformMat4fv(uniform.name, uniform.arraySize) }
+
+                            else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                        }
+                    }
+
+                    else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
+                }
+            }
+        }
+
+        val samplerUbo = UniformBuffer.Builder()
+        samplerUbo.name = "samplers"
+        descBuilder.descriptors += samplerUbo
+        program.uniformSamplers.values.forEach { sampler ->
+            when(val type = sampler.value.expressionType)  {
                 is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                    name = uniform.name
+                    name = sampler.name
                     isDepthSampler = true
                 }
                 is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                    name = uniform.name
+                    name = sampler.name
                     isDepthSampler = true
                 }
-                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = uniform.name }
-                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = uniform.name }
-                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = uniform.name }
-                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = uniform.name }
+                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = sampler.name }
+                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = sampler.name }
+                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = sampler.name }
+                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = sampler.name }
 
                 is KslTypeArray<*> -> {
                     when (type.elemType) {
-                        is KslTypeFloat1 -> ubo.uniforms += { Uniform1fv(uniform.name, uniform.arraySize) }
-                        is KslTypeFloat2 -> ubo.uniforms += { Uniform2fv(uniform.name, uniform.arraySize) }
-                        is KslTypeFloat3 -> ubo.uniforms += { Uniform3fv(uniform.name, uniform.arraySize) }
-                        is KslTypeFloat4 -> ubo.uniforms += { Uniform4fv(uniform.name, uniform.arraySize) }
-
-                        is KslTypeInt1 -> ubo.uniforms += { Uniform1iv(uniform.name, uniform.arraySize) }
-                        is KslTypeInt2 -> ubo.uniforms += { Uniform2iv(uniform.name, uniform.arraySize) }
-                        is KslTypeInt3 -> ubo.uniforms += { Uniform3iv(uniform.name, uniform.arraySize) }
-                        is KslTypeInt4 -> ubo.uniforms += { Uniform4iv(uniform.name, uniform.arraySize) }
-
-                        is KslTypeMat3 -> ubo.uniforms += { UniformMat3fv(uniform.name, uniform.arraySize) }
-                        is KslTypeMat4 -> ubo.uniforms += { UniformMat4fv(uniform.name, uniform.arraySize) }
-
                         is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                            name = uniform.name
+                            name = sampler.name
                             isDepthSampler = true
-                            arraySize = uniform.arraySize
+                            arraySize = sampler.arraySize
                         }
                         is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                            name = uniform.name
+                            name = sampler.name
                             isDepthSampler = true
-                            arraySize = uniform.arraySize
+                            arraySize = sampler.arraySize
                         }
                         is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply {
-                            name = uniform.name
-                            arraySize = uniform.arraySize
+                            name = sampler.name
+                            arraySize = sampler.arraySize
                         }
                         is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                            name = uniform.name
-                            arraySize = uniform.arraySize
+                            name = sampler.name
+                            arraySize = sampler.arraySize
                         }
                         is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply {
-                            name = uniform.name
-                            arraySize = uniform.arraySize
+                            name = sampler.name
+                            arraySize = sampler.arraySize
                         }
                         is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                            name = uniform.name
-                            arraySize = uniform.arraySize
+                            name = sampler.name
+                            arraySize = sampler.arraySize
                         }
-
-                        else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                        else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                     }
                 }
-
-                else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
+                else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
             }
         }
 
@@ -231,11 +232,6 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         var depthTest = DepthCompareOp.LESS_EQUAL
         var isWriteDepth = true
         var lineWidth = 1f
-    }
-
-    interface KslShaderListener {
-        fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) { }
-        fun onUpdate(cmd: DrawCommand) { }
     }
 
     protected interface ConnectUniformListener {

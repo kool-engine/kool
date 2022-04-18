@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.KslShaderListener
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -10,12 +11,15 @@ open class KslProgram(val name: String) {
     private var nextNameIdx = 1
     internal fun nextName(prefix: String): String = "${prefix}_${nextNameIdx++}"
 
-    val uniforms = mutableMapOf<String, KslUniform<*>>()
-    val uniformBuffers = mutableListOf<KslUniformBuffer>()
+    val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this)
+    val uniformBuffers = mutableListOf(commonUniformBuffer)
+    val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
 
     val vertexStage = KslVertexStage(this)
     val fragmentStage = KslFragmentStage(this)
     val stages = listOf(vertexStage, fragmentStage)
+
+    val shaderListeners = mutableListOf<KslShaderListener>()
 
     fun vertexStage(block: KslVertexStage.() -> Unit) {
         contract {
@@ -31,78 +35,66 @@ open class KslProgram(val name: String) {
         fragmentStage.apply(block)
     }
 
-    private fun registerUniform(uniform: KslUniform<*>) {
-        uniforms[uniform.name] = uniform
+    private fun registerSampler(uniform: KslUniform<*>) {
+        uniformSamplers[uniform.name] = uniform
         stages.forEach {
-            it.uniforms += uniform
             it.globalScope.definedStates += uniform.value
         }
     }
 
-    private inline fun <reified T: KslUniform<*>> getOrCreateUniform(name: String, create: () -> T): T {
-        val uniform = uniforms[name] ?: create().also { registerUniform(it) }
+    private inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, create: () -> T): T {
+        val uniform = uniformSamplers[name] ?: create().also { registerSampler(it) }
         if (uniform !is T) {
             throw IllegalStateException("Existing uniform with name \"$name\" has not the expected type")
         }
         return uniform
     }
 
-    fun uniformFloat1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeFloat1, false)) }
-    fun uniformFloat2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat2, false)) }
-    fun uniformFloat3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat3, false)) }
-    fun uniformFloat4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeFloat4, false)) }
+    fun uniformFloat1(name: String) = commonUniformBuffer.uniformFloat1(name)
+    fun uniformFloat2(name: String) = commonUniformBuffer.uniformFloat2(name)
+    fun uniformFloat3(name: String) = commonUniformBuffer.uniformFloat3(name)
+    fun uniformFloat4(name: String) = commonUniformBuffer.uniformFloat4(name)
 
-    fun uniformFloat1Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeFloat1, arraySize, false)) }
-    fun uniformFloat2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat2, arraySize, false)) }
-    fun uniformFloat3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat3, arraySize, false)) }
-    fun uniformFloat4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeFloat4, arraySize, false)) }
+    fun uniformFloat1Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat1Array(name, arraySize)
+    fun uniformFloat2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat2Array(name, arraySize)
+    fun uniformFloat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat3Array(name, arraySize)
+    fun uniformFloat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat4Array(name, arraySize)
 
-    fun uniformInt1(name: String) = getOrCreateUniform(name) { KslUniformScalar(KslVarScalar(name, KslTypeInt1, false)) }
-    fun uniformInt2(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt2, false)) }
-    fun uniformInt3(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt3, false)) }
-    fun uniformInt4(name: String) = getOrCreateUniform(name) { KslUniformVector(KslVarVector(name, KslTypeInt4, false)) }
+    fun uniformInt1(name: String) = commonUniformBuffer.uniformInt1(name)
+    fun uniformInt2(name: String) = commonUniformBuffer.uniformInt2(name)
+    fun uniformInt3(name: String) = commonUniformBuffer.uniformInt3(name)
+    fun uniformInt4(name: String) = commonUniformBuffer.uniformInt4(name)
 
-    fun uniformInt1Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformScalarArray(KslArrayScalar(name, KslTypeInt1, arraySize, false)) }
-    fun uniformInt2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt2, arraySize, false)) }
-    fun uniformInt3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt3, arraySize, false)) }
-    fun uniformInt4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformVectorArray(KslArrayVector(name, KslTypeInt4, arraySize, false)) }
+    fun uniformInt1Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt1Array(name, arraySize)
+    fun uniformInt2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt2Array(name, arraySize)
+    fun uniformInt3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt3Array(name, arraySize)
+    fun uniformInt4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt4Array(name, arraySize)
 
-    fun uniformMat2(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat2, false)) }
-    fun uniformMat3(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat3, false)) }
-    fun uniformMat4(name: String) = getOrCreateUniform(name) { KslUniformMatrix(KslVarMatrix(name, KslTypeMat4, false)) }
+    fun uniformMat2(name: String) = commonUniformBuffer.uniformMat2(name)
+    fun uniformMat3(name: String) = commonUniformBuffer.uniformMat3(name)
+    fun uniformMat4(name: String) = commonUniformBuffer.uniformMat4(name)
 
-    fun uniformMat2Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat2, arraySize, false)) }
-    fun uniformMat3Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat3, arraySize, false)) }
-    fun uniformMat4Array(name: String, arraySize: Int) =
-        getOrCreateUniform(name) { KslUniformMatrixArray(KslArrayMatrix(name, KslTypeMat4, arraySize, false)) }
+    fun uniformMat2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat2Array(name, arraySize)
+    fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
+    fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
 
-    fun texture1d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler1d, false)) }
-    fun texture2d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler2d, false)) }
-    fun texture3d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSampler3d, false)) }
-    fun textureCube(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeColorSamplerCube, false)) }
+    fun texture1d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler1d, false)) }
+    fun texture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler2d, false)) }
+    fun texture3d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSampler3d, false)) }
+    fun textureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeColorSamplerCube, false)) }
 
-    fun depthTexture2d(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSampler2d, false)) }
-    fun depthTextureCube(name: String) = getOrCreateUniform(name) { KslUniform(KslVar(name, KslTypeDepthSamplerCube, false)) }
+    fun depthTexture2d(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeDepthSampler2d, false)) }
+    fun depthTextureCube(name: String) = getOrCreateSampler(name) { KslUniform(KslVar(name, KslTypeDepthSamplerCube, false)) }
 
     // arrays of textures (this is different to array textures, like, e.g., KslTypeColorSampler2dArray)
-    fun textureArray1d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler1d, arraySize, false)) }
-    fun textureArray2d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler2d, arraySize, false)) }
-    fun textureArray3d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler3d, arraySize, false)) }
-    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSamplerCube, arraySize, false)) }
+    fun textureArray1d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler1d, arraySize, false)) }
+    fun textureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler2d, arraySize, false)) }
+    fun textureArray3d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSampler3d, arraySize, false)) }
+    fun textureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeColorSamplerCube, arraySize, false)) }
 
     // arrays of depth textures (this is different to array textures, like, e.g., KslTypeDepthSampler2dArray)
-    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSampler2d, arraySize, false)) }
-    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateUniform(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }
+    fun depthTextureArray2d(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSampler2d, arraySize, false)) }
+    fun depthTextureArrayCube(name: String, arraySize: Int) = getOrCreateSampler(name) { KslUniformArray(KslArrayGeneric(name, KslTypeDepthSamplerCube, arraySize, false)) }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
         stages.forEach { it.interStageVars += interStageVar }

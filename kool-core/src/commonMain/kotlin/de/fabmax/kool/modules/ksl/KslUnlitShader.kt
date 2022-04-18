@@ -39,10 +39,9 @@ class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mo
 
     class Model(cfg: Config) : KslProgram("Unlit Shader") {
         init {
-            val uMvp = mvpMatrix()
             vertexStage {
                 main {
-                    val mvp = mat4Var(uMvp.matrix)
+                    val mvp = mat4Var(mvpMatrix().matrix)
                     if (cfg.isInstanced) {
                         mvp *= instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                     }

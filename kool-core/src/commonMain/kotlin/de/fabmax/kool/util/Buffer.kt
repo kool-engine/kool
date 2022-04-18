@@ -170,6 +170,8 @@ interface MixedBuffer : Buffer {
     fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer
     fun putFloat32(data: Float32Buffer): MixedBuffer
 
+    fun padding(nBytes: Int): MixedBuffer
+
     override fun removeAt(index: Int) {
         throw KoolException("MixedBuffer does not support element removal")
     }

@@ -38,7 +38,6 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
             parentScope.parentStage.program.apply {
                 shadowData = ShadowData(cfg, this)
                 if (shadowData.numSubMaps > 0) {
-                    uniformBuffers += shadowData
                     positionsLightSpace = interStageFloat4Array(shadowData.numSubMaps)
                     normalZsLightSpace = interStageFloat1Array(shadowData.numSubMaps)
                 }

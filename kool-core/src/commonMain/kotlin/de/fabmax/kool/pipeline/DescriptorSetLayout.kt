@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.copy
 
 class DescriptorSetLayout private constructor(val set: Int, val descriptors: List<Descriptor>) {
@@ -14,6 +13,10 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
             hash = (hash * 71023UL) + it.longHash
         }
         longHash = hash
+    }
+
+    fun findDescriptorByName(name: String): Descriptor? {
+        return descriptors.find { it.name == name }
     }
 
     class Builder {
@@ -216,18 +219,6 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
     val instanceName = builder.instanceName
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit)? = builder.onUpdate
-
-    private val layout = Std140Layout(uniforms)
-
-    /**
-     * Overall size of buffer in bytes (i.e. all containing uniforms, including padding)
-     */
-    val size = layout.size
-
-    fun putTo(buffer: MixedBuffer) {
-        layout.putTo(buffer)
-        buffer.flip()
-    }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> uniform(index: Int): T = uniforms[index] as T
