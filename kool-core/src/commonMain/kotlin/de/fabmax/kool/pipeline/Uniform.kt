@@ -62,8 +62,10 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
 
     override fun putTo(buffer: MixedBuffer) {
         buffer.putFloat32(value.array)
-        // padding (std140 layout)
-        buffer.putUint32(0)
+        // add padding (std140 layout) if we did not reach the end of the buffer
+        if (buffer.position < buffer.capacity - 1) {
+            buffer.putFloat32(0f)
+        }
     }
 }
 
@@ -98,10 +100,12 @@ class Uniform1fv(name: String, override val length: Int) : Uniform<FloatArray>(F
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putFloat32(value[i])
-            // padding (std140 layout)
-            buffer.putUint32(0)
-            buffer.putUint32(0)
-            buffer.putUint32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putUint32(0)
+                buffer.putUint32(0)
+                buffer.putUint32(0)
+            }
         }
     }
 }
@@ -112,9 +116,11 @@ class Uniform2fv(name: String, override val length: Int) : Uniform<Array<Mutable
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putFloat32(value[i].array)
-            // padding (std140 layout)
-            buffer.putUint32(0)
-            buffer.putUint32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putUint32(0)
+                buffer.putUint32(0)
+            }
         }
     }
 }
@@ -125,8 +131,10 @@ class Uniform3fv(name: String, override val length: Int) : Uniform<Array<Mutable
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putFloat32(value[i].array)
-            // padding (std140 layout)
-            buffer.putUint32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putUint32(0)
+            }
         }
     }
 }
@@ -149,8 +157,11 @@ class UniformMat3f(name: String) : Uniform<Mat3f>(Mat3f(), name) {
             buffer.putFloat32(value.matrix[m * 3 + 0])
             buffer.putFloat32(value.matrix[m * 3 + 1])
             buffer.putFloat32(value.matrix[m * 3 + 2])
-            // Mat3f requires adding a fourth padding value (hopefully always)
-            buffer.putFloat32(0f)
+
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putFloat32(0f)
+            }
         }
     }
 }
@@ -238,10 +249,12 @@ class Uniform1iv(name: String, override val length: Int) : Uniform<IntArray>(Int
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putInt32(value[i])
-            // padding (std140 layout)
-            buffer.putInt32(0)
-            buffer.putInt32(0)
-            buffer.putInt32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putInt32(0)
+                buffer.putInt32(0)
+                buffer.putInt32(0)
+            }
         }
     }
 }
@@ -252,9 +265,11 @@ class Uniform2iv(name: String, override val length: Int) : Uniform<Array<Mutable
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putInt32(value[i].array)
-            // padding (std140 layout)
-            buffer.putInt32(0)
-            buffer.putInt32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putInt32(0)
+                buffer.putInt32(0)
+            }
         }
     }
 }
@@ -265,8 +280,10 @@ class Uniform3iv(name: String, override val length: Int) : Uniform<Array<Mutable
     override fun putTo(buffer: MixedBuffer) {
         for (i in 0 until length) {
             buffer.putInt32(value[i].array)
-            // padding (std140 layout)
-            buffer.putInt32(0)
+            // add padding (std140 layout) if we did not reach the end of the buffer
+            if (buffer.position < buffer.capacity - 1) {
+                buffer.putInt32(0)
+            }
         }
     }
 }

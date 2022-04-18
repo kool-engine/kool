@@ -107,13 +107,12 @@ class GlslGenerator : KslGenerator() {
         val src = StringBuilder()
         src.appendLine("""
             #version 300 es
+            precision highp float;
+            precision highp sampler2DShadow;
             
             /* 
              * ${fragmentStage.program.name} - generated fragment shader
              */
-             
-            precision highp float;
-            precision highp sampler2DShadow;
         """.trimIndent())
         src.appendLine()
 
@@ -146,21 +145,14 @@ class GlslGenerator : KslGenerator() {
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                val layout = if (ubo.isShared) {
-                    // if isShared is true, the underlying buffer is externally provided without the buffer layout
-                    // being queried via OpenGL API -> use standardized std140 layout
-                    "std140"
+                // if isShared is true, the underlying buffer is externally provided without the buffer layout
+                // being queried via OpenGL API -> use standardized std140 layout
+                val layoutPrefix = if (ubo.isShared) { "layout(std140) " } else { "" }
 
-                } else {
-                    // glsl layout "shared" means that the ubo can be shared between vertex and fragment shader
-                    // programs (because no members are optimized away), which we need (even if ubo.isShared == false)
-                    "shared"
-                }
-
-                appendLine("layout($layout) uniform ${ubo.name} {")
+                appendLine("${layoutPrefix}uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
-                    appendLine("    ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
+                    appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")
                 }
                 appendLine("};")
             }

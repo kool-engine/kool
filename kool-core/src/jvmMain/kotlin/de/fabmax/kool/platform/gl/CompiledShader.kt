@@ -42,7 +42,6 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
                         } else {
                             setupUboLayout(desc, blockIndex)
                         }
-
                     }
                     is TextureSampler1d -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)

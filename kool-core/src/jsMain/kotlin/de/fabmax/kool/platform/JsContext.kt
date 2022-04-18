@@ -14,9 +14,7 @@ import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
-import org.khronos.webgl.ArrayBufferView
-import org.khronos.webgl.Float32Array
-import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.*
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
@@ -302,10 +300,15 @@ external class Touch {
 }
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
+    fun bindBufferBase(target: Int, index: Int, buffer: WebGLBuffer?)
     fun bufferData(target: Int, srcData: ArrayBufferView, usage: Int, srcOffset: Int, length: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Array)
     fun drawBuffers(buffers: IntArray)
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
+    fun getActiveUniformBlockParameter(program: WebGLProgram?, uniformBlockIndex: Int, pname: Int): Int
+    fun getActiveUniforms(program: WebGLProgram?, uniformIndices: IntArray, pname: Int): IntArray
+    fun getUniformBlockIndex(program: WebGLProgram?, uniformBlockName: String): Int
+    fun getUniformIndices(program: WebGLProgram?, uniformNames: Array<String>): IntArray
     fun readBuffer(src: Int)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun texImage3D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, depth: Int, border: Int, format: Int, type: Int, srcData: ArrayBufferView?)
@@ -313,6 +316,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun texSubImage3D(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData?)
     fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun texStorage3D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int)
+    fun uniformBlockBinding(program: WebGLProgram?, uniformBlockIndex: Int, uniformBlockBinding: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 
@@ -329,6 +333,12 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val TEXTURE_COMPARE_MODE: Int
         val COMPARE_REF_TO_TEXTURE: Int
         val TEXTURE_COMPARE_FUNC: Int
+
+        val UNIFORM_BLOCK_DATA_SIZE: Int
+        val UNIFORM_BUFFER: Int
+        val UNIFORM_OFFSET: Int
+
+        val INVALID_INDEX: Int
 
         val RED: Int
         val RG: Int

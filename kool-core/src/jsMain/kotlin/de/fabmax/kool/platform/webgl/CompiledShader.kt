@@ -3,10 +3,15 @@ package de.fabmax.kool.platform.webgl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.INVALID_INDEX
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_BLOCK_DATA_SIZE
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_BUFFER
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.UNIFORM_OFFSET
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.util.logE
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext.Companion.ARRAY_BUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
@@ -28,6 +33,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, List<WebGLUniformLocation?>>()
+    private val uboLayouts = mutableMapOf<String, UboBufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
@@ -43,7 +49,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             set.descriptors.forEach { desc ->
                 when (desc) {
                     is UniformBuffer -> {
-                        desc.uniforms.forEach { uniformLocations[it.name] = listOf(ctx.gl.getUniformLocation(prog, it.name)) }
+                        val blockIndex = ctx.gl.getUniformBlockIndex(prog, desc.name)
+                        if (blockIndex == INVALID_INDEX) {
+                            // descriptor does not describe an actual UBO but plain old uniforms...
+                            desc.uniforms.forEach { uniformLocations[it.name] = listOf(ctx.gl.getUniformLocation(prog, it.name)) }
+                        } else {
+                            setupUboLayout(desc, blockIndex)
+                        }
                     }
                     is TextureSampler1d -> {
                         uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
@@ -65,6 +77,30 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 // in WebGL push constants are mapped to regular uniforms
                 uniformLocations[pc.name] = listOf(ctx.gl.getUniformLocation(prog, pc.name))
             }
+        }
+    }
+
+    private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
+        val blockSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
+        val uniformNames = desc.uniforms.map { it.name }.toTypedArray()
+        val indices = ctx.gl.getUniformIndices(prog, uniformNames)
+        desc.uniforms.forEachIndexed { i, u ->
+            println("${uniformNames[i]} -> idx: ${indices[i]}")
+        }
+        for (i in uniformNames.indices) {
+            if (indices[i] == INVALID_INDEX) {
+                logE { "Failed to get index of ${uniformNames[i]}" }
+                indices[i] = 0
+            }
+        }
+
+        val offsets = ctx.gl.getActiveUniforms(prog, indices, UNIFORM_OFFSET)
+        ctx.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
+        uboLayouts[desc.name] = UboBufferLayout(desc.uniforms, offsets, blockSize)
+
+        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
+        desc.uniforms.forEachIndexed { i, u ->
+            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
         }
     }
 
@@ -148,6 +184,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private var dataBufferI: BufferResource? = null
         private var indexBuffer: BufferResource? = null
         private var instanceBuffer: BufferResource? = null
+        private var uboBuffers = mutableListOf<BufferResource>()
         private var buffersSet = false
 
         private var nextTexUnit = TEXTURE0
@@ -181,7 +218,20 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
         private fun mapUbo(ubo: UniformBuffer) {
             ubos.add(ubo)
-            ubo.uniforms.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]?.get(0)) }
+            val uboLayout = uboLayouts[ubo.name]
+            if (uboLayout != null) {
+                mappings += MappedUbo(ubo, uboLayout)
+
+            } else {
+                ubo.uniforms.forEach {
+                    val location = uniformLocations[it.name]
+                    if (location != null) {
+                        mappings += MappedUniform.mappedUniform(it, location[0])
+                    } else {
+                        logE { "Uniform location not present for uniform ${ubo.name}.${it.name}" }
+                    }
+                }
+            }
         }
 
         private fun mapTexture1d(tex: TextureSampler1d) {
@@ -270,11 +320,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             dataBufferI?.delete(ctx)
             indexBuffer?.delete(ctx)
             instanceBuffer?.delete(ctx)
+            uboBuffers.forEach { it.delete(ctx) }
             dataBufferF = null
             dataBufferI = null
             indexBuffer = null
             instanceBuffer = null
             buffersSet = false
+            uboBuffers.clear()
         }
 
         fun destroyInstance() {
@@ -293,6 +345,12 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             val md = geometry
             if (indexBuffer == null) {
                 indexBuffer = BufferResource(ELEMENT_ARRAY_BUFFER, ctx)
+
+                mappings.filterIsInstance<MappedUbo>().forEach { mappedUbo ->
+                    val uboBuffer = BufferResource(UNIFORM_BUFFER, ctx)
+                    uboBuffers += uboBuffer
+                    mappedUbo.uboBuffer = uboBuffer
+                }
             }
             var hasIntData = false
             if (dataBufferF == null) {

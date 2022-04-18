@@ -196,14 +196,14 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
     }
 
     override fun putUint16(value: Short): MixedBuffer {
-        buffer.setUint16(position, value)
+        buffer.setUint16(position, value, true)
         position += 2
         return this
     }
 
     override fun putUint16(data: ShortArray, offset: Int, len: Int): MixedBuffer {
         for (i in offset until offset + len) {
-            buffer.setUint16(position, data[i])
+            buffer.setUint16(position, data[i], true)
             position += 2
         }
         return this
@@ -211,21 +211,21 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
 
     override fun putUint16(data: Uint16Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
-            buffer.setUint16(position, data[i])
+            buffer.setUint16(position, data[i], true)
             position += 2
         }
         return this
     }
 
     override fun putUint32(value: Int): MixedBuffer {
-        buffer.setUint32(position, value)
+        buffer.setUint32(position, value, true)
         position += 4
         return this
     }
 
     override fun putUint32(data: IntArray, offset: Int, len: Int): MixedBuffer {
         for (i in offset until offset + len) {
-            buffer.setUint32(position, data[i])
+            buffer.setUint32(position, data[i], true)
             position += 4
         }
         return this
@@ -233,21 +233,21 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
 
     override fun putUint32(data: Uint32Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
-            buffer.setUint32(position, data[i])
+            buffer.setUint32(position, data[i], true)
             position += 4
         }
         return this
     }
 
     override fun putFloat32(value: Float): MixedBuffer {
-        buffer.setFloat32(position, value)
+        buffer.setFloat32(position, value, true)
         position += 4
         return this
     }
 
     override fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer {
         for (i in offset until offset + len) {
-            buffer.setFloat32(position, data[i])
+            buffer.setFloat32(position, data[i], true)
             position += 4
         }
         return this
@@ -255,7 +255,7 @@ class MixedBufferImpl(capacity: Int) : MixedBuffer, GenericBuffer<DataView>(capa
 
     override fun putFloat32(data: Float32Buffer): MixedBuffer {
         for (i in data.position until data.limit) {
-            buffer.setFloat32(position, data[i])
+            buffer.setFloat32(position, data[i], true)
             position += 4
         }
         return this
