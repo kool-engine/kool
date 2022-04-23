@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -107,6 +108,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
         return VkOffscreenPassCube(parentPass)
+    }
+
+    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
+        return shaderGenerator.generateKslShader(shader, pipelineLayout)
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {

@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
 
 fun KslScopeBuilder.blinnPhongMaterialBlock(block: BlinnPhongMaterialBlock.() -> Unit): BlinnPhongMaterialBlock {
@@ -32,8 +33,8 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
     init {
         body.apply {
             val ambientColor = float3Var(inFragmentColor * inAmbientColor)
-            val diffuseColor = float3Var()
-            val specularColor = float3Var()
+            val diffuseColor = float3Var(Vec3f.ZERO.const)
+            val specularColor = float3Var(Vec3f.ZERO.const)
 
             fori (0.const, inLightCount) { i ->
                 val lightDir = float3Var(getLightDirectionFromFragPos(inFragmentPos, inEncodedLightPositions[i]))

@@ -1,8 +1,10 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
@@ -88,6 +90,8 @@ abstract class KoolContext {
     abstract fun run()
 
     abstract fun destroy()
+
+    abstract fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 
     abstract fun getSysInfos(): List<String>
 

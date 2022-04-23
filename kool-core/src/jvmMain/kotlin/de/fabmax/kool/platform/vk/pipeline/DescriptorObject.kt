@@ -25,7 +25,7 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
 
 class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBuffer) : DescriptorObject(binding, ubo) {
     private val buffer: Buffer
-    private val layout = Std140Layout(ubo.uniforms)
+    private val layout = Std140BufferLayout(ubo.uniforms)
     private val hostBuffer = createMixedBuffer(layout.size) as MixedBufferImpl
 
     init {
@@ -56,7 +56,8 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
-        layout.putTo(hostBuffer)
+        layout.putToBuffer(ubo.uniforms, hostBuffer)
+        hostBuffer.flip()
         buffer.mapped { put(hostBuffer.buffer) }
     }
 

@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
@@ -19,6 +18,10 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     private val connectUniformListeners = mutableListOf<ConnectUniformListener>()
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        // prepare shader model for generating source code, also updates program dependencies (e.g. which
+        // uniform is used by which shader stage)
+        program.prepareGenerate()
+
         setupAttributes(mesh, builder)
         setupUniforms(builder)
 
@@ -29,13 +32,7 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         builder.lineWidth = pipelineConfig.lineWidth
 
         builder.name = program.name
-        builder.shaderCodeGenerator = {
-            val src = GlslGenerator().generateProgram(program)
-            if (program.dumpCode) {
-                src.dump()
-            }
-            shaderCodeFromSource(src.vertexSrc, src.fragmentSrc)
-        }
+        builder.shaderCodeGenerator = { ctx.generateKslShader(this, it) }
         super.onPipelineSetup(builder, mesh, ctx)
     }
 
@@ -67,10 +64,17 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         val descBuilder = DescriptorSetLayout.Builder()
         builder.descriptorSetLayouts += descBuilder
 
-        program.uniformBuffers.forEach { kslUbo ->
+        program.uniformBuffers.filter { it.uniforms.isNotEmpty() }.forEach { kslUbo ->
             val ubo = UniformBuffer.Builder()
-            ubo.name = kslUbo.name
             descBuilder.descriptors += ubo
+
+            ubo.name = kslUbo.name
+            if (kslUbo.uniforms.values.any { u -> u.value in program.vertexStage.main.dependencies.keys }) {
+                ubo.stages += ShaderStage.VERTEX_SHADER
+            }
+            if (kslUbo.uniforms.values.any { u -> u.value in program.fragmentStage.main.dependencies.keys }) {
+                ubo.stages += ShaderStage.FRAGMENT_SHADER
+            }
 
             kslUbo.uniforms.values.forEach { uniform ->
                 when(val type = uniform.value.expressionType)  {
@@ -112,56 +116,43 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
             }
         }
 
-        val samplerUbo = UniformBuffer.Builder()
-        samplerUbo.name = "samplers"
-        descBuilder.descriptors += samplerUbo
-        program.uniformSamplers.values.forEach { sampler ->
-            when(val type = sampler.value.expressionType)  {
-                is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                    name = sampler.name
-                    isDepthSampler = true
-                }
-                is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                    name = sampler.name
-                    isDepthSampler = true
-                }
-                is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply { name = sampler.name }
-                is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply { name = sampler.name }
-                is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply { name = sampler.name }
-                is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply { name = sampler.name }
+        if (program.uniformSamplers.isNotEmpty()) {
+            program.uniformSamplers.values.forEach { sampler ->
+                val desc = when(val type = sampler.value.expressionType)  {
+                    is KslTypeDepthSampler2d -> TextureSampler2d.Builder().apply { isDepthSampler = true }
+                    is KslTypeDepthSamplerCube -> TextureSamplerCube.Builder().apply { isDepthSampler = true }
+                    is KslTypeColorSampler1d -> TextureSampler1d.Builder()
+                    is KslTypeColorSampler2d -> TextureSampler2d.Builder()
+                    is KslTypeColorSampler3d -> TextureSampler3d.Builder()
+                    is KslTypeColorSamplerCube -> TextureSamplerCube.Builder()
 
-                is KslTypeArray<*> -> {
-                    when (type.elemType) {
-                        is KslTypeDepthSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                            name = sampler.name
-                            isDepthSampler = true
-                            arraySize = sampler.arraySize
+                    is KslTypeArray<*> -> {
+                        when (type.elemType) {
+                            is KslTypeDepthSampler2d -> TextureSampler2d.Builder().apply {
+                                isDepthSampler = true
+                                arraySize = sampler.arraySize
+                            }
+                            is KslTypeDepthSamplerCube -> TextureSamplerCube.Builder().apply {
+                                isDepthSampler = true
+                                arraySize = sampler.arraySize
+                            }
+                            is KslTypeColorSampler1d -> TextureSampler1d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslTypeColorSampler2d -> TextureSampler2d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslTypeColorSampler3d -> TextureSampler3d.Builder().apply { arraySize = sampler.arraySize }
+                            is KslTypeColorSamplerCube -> TextureSamplerCube.Builder().apply { arraySize = sampler.arraySize }
+                            else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                         }
-                        is KslTypeDepthSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                            name = sampler.name
-                            isDepthSampler = true
-                            arraySize = sampler.arraySize
-                        }
-                        is KslTypeColorSampler1d -> descBuilder.descriptors += TextureSampler1d.Builder().apply {
-                            name = sampler.name
-                            arraySize = sampler.arraySize
-                        }
-                        is KslTypeColorSampler2d -> descBuilder.descriptors += TextureSampler2d.Builder().apply {
-                            name = sampler.name
-                            arraySize = sampler.arraySize
-                        }
-                        is KslTypeColorSampler3d -> descBuilder.descriptors += TextureSampler3d.Builder().apply {
-                            name = sampler.name
-                            arraySize = sampler.arraySize
-                        }
-                        is KslTypeColorSamplerCube -> descBuilder.descriptors += TextureSamplerCube.Builder().apply {
-                            name = sampler.name
-                            arraySize = sampler.arraySize
-                        }
-                        else -> throw IllegalStateException("Unsupported sampler array type: ${type.elemType.typeName}")
                     }
+                    else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
                 }
-                else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
+                desc.name = sampler.name
+                if (sampler.value in program.vertexStage.main.dependencies.keys) {
+                    desc.stages += ShaderStage.VERTEX_SHADER
+                }
+                if (sampler.value in program.fragmentStage.main.dependencies.keys) {
+                    desc.stages += ShaderStage.FRAGMENT_SHADER
+                }
+                descBuilder.descriptors += desc
             }
         }
 

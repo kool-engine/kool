@@ -33,7 +33,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, List<WebGLUniformLocation?>>()
-    private val uboLayouts = mutableMapOf<String, UboBufferLayout>()
+    private val uboLayouts = mutableMapOf<String, BufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
@@ -82,26 +82,19 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
     private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
         val blockSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
-        val uniformNames = desc.uniforms.map { it.name }.toTypedArray()
-        val indices = ctx.gl.getUniformIndices(prog, uniformNames)
-        desc.uniforms.forEachIndexed { i, u ->
-            println("${uniformNames[i]} -> idx: ${indices[i]}")
-        }
-        for (i in uniformNames.indices) {
-            if (indices[i] == INVALID_INDEX) {
-                logE { "Failed to get index of ${uniformNames[i]}" }
-                indices[i] = 0
-            }
-        }
+        val uniformNames = desc.uniforms.map {
+            if (it.length > 1) { "${it.name}[0]" } else { it.name }
+        }.toTypedArray()
 
+        val indices = ctx.gl.getUniformIndices(prog, uniformNames)
         val offsets = ctx.gl.getActiveUniforms(prog, indices, UNIFORM_OFFSET)
         ctx.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
-        uboLayouts[desc.name] = UboBufferLayout(desc.uniforms, offsets, blockSize)
+        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, offsets, blockSize)
 
-        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
-        desc.uniforms.forEachIndexed { i, u ->
-            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
-        }
+//        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
+//        desc.uniforms.forEachIndexed { i, u ->
+//            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
+//        }
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): List<WebGLUniformLocation?> {

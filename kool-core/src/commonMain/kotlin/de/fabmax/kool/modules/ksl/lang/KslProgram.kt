@@ -6,6 +6,9 @@ import kotlin.contracts.contract
 
 open class KslProgram(val name: String) {
 
+    /**
+     * Debug property: if true generated shader code is dumped to console
+     */
     var dumpCode = false
 
     private var nextNameIdx = 1
@@ -164,6 +167,15 @@ open class KslProgram(val name: String) {
 
     fun prepareGenerate() {
         stages.forEach { it.prepareGenerate() }
+
+        // remove unused uniforms
+        uniformBuffers.filter { !it.isShared }.forEach {
+            it.uniforms.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
+        }
+        uniformBuffers.removeAll { it.uniforms.isEmpty() }
+
+        // remove unused texture samplers
+        uniformSamplers.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
     }
 
 }

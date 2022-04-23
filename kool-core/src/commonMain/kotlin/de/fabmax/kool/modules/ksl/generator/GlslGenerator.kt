@@ -3,12 +3,16 @@ package de.fabmax.kool.modules.ksl.generator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 
-class GlslGenerator : KslGenerator() {
+/**
+ * Default GLSL shader code generator, generates glsl in version 300 es, which works for WebGL and OpenGL 3.3+
+ */
+open class GlslGenerator : KslGenerator() {
+
+    protected var glslVersionStr = "#version 300 es"
 
     var blockIndent = "  "
 
     override fun generateProgram(program: KslProgram): GlslGeneratorOutput {
-        program.prepareGenerate()
         return GlslGeneratorOutput(generateVertexSrc(program.vertexStage), generateFragmentSrc(program.fragmentStage))
     }
 
@@ -82,7 +86,7 @@ class GlslGenerator : KslGenerator() {
     private fun generateVertexSrc(vertexStage: KslVertexStage): String {
         val src = StringBuilder()
         src.appendLine("""
-            #version 300 es
+            $glslVersionStr
             
             /* 
              * ${vertexStage.program.name} - generated vertex shader
@@ -106,7 +110,7 @@ class GlslGenerator : KslGenerator() {
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage): String {
         val src = StringBuilder()
         src.appendLine("""
-            #version 300 es
+            $glslVersionStr
             precision highp float;
             precision highp sampler2DShadow;
             
@@ -128,7 +132,7 @@ class GlslGenerator : KslGenerator() {
         return src.toString()
     }
 
-    private fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
+    protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
         val samplers = stage.program.uniformSamplers.values.filter { it.value in stage.main.dependencies }
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
@@ -140,7 +144,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateUbos(stage: KslShaderStage) {
+    protected open fun StringBuilder.generateUbos(stage: KslShaderStage) {
         val ubos = stage.program.uniformBuffers.filter { it.uniforms.values.any { u -> u.value in stage.main.dependencies } }
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
@@ -160,7 +164,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateAttributes(attribs: List<KslVertexAttribute<*>>, info: String) {
+    protected open fun StringBuilder.generateAttributes(attribs: List<KslVertexAttribute<*>>, info: String) {
         if (attribs.isNotEmpty()) {
             appendLine("// $info")
             attribs.forEach { a ->
@@ -170,7 +174,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateInterStageOutputs(vertexStage: KslVertexStage) {
+    protected open fun StringBuilder.generateInterStageOutputs(vertexStage: KslVertexStage) {
         if (vertexStage.interStageVars.isNotEmpty()) {
             appendLine("// custom vertex stage outputs")
             vertexStage.interStageVars.forEach { interStage ->
@@ -182,7 +186,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateInterStageInputs(fragmentStage: KslFragmentStage) {
+    protected open fun StringBuilder.generateInterStageInputs(fragmentStage: KslFragmentStage) {
         if (fragmentStage.interStageVars.isNotEmpty()) {
             appendLine("// custom fragment stage inputs")
             fragmentStage.interStageVars.forEach { interStage ->
@@ -194,7 +198,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateOutputs(outputs: List<KslStageOutput<*>>) {
+    protected open fun StringBuilder.generateOutputs(outputs: List<KslStageOutput<*>>) {
         if (outputs.isNotEmpty()) {
             appendLine("// stage outputs")
             outputs.forEach { output ->
@@ -365,7 +369,7 @@ class GlslGenerator : KslGenerator() {
     override fun builtinDeterminant(func: KslBuiltinDeterminant<*, *>) = "determinant(${generateArgs(func.args, 1)})"
     override fun builtinTranspose(func: KslBuiltinTranspose<*, *>) = "transpose(${generateArgs(func.args, 1)})"
 
-    private fun KslInterStageInterpolation.glsl(): String {
+    protected fun KslInterStageInterpolation.glsl(): String {
         return when (this) {
             KslInterStageInterpolation.Smooth -> "smooth"
             KslInterStageInterpolation.Flat -> "flat"
@@ -387,7 +391,7 @@ class GlslGenerator : KslGenerator() {
         }
     }
 
-    private fun glslTypeName(type: KslType): String {
+    protected fun glslTypeName(type: KslType): String {
         return when (type) {
             KslTypeVoid -> "void"
             KslTypeBool1 -> "bool"

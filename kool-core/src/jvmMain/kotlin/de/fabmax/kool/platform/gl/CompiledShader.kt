@@ -19,7 +19,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
     private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, List<Int>>()
-    private val uboLayouts = mutableMapOf<String, UboBufferLayout>()
+    private val uboLayouts = mutableMapOf<String, ExternalBufferLayout>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
@@ -72,14 +72,15 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
         val offsets = IntArray(desc.uniforms.size)
 
         MemoryStack.stackPush().use { stack ->
-            val uniformNames = desc.uniforms.map { MemoryUtil.memASCII(it.name) }.toTypedArray()
+            val uniformNames = desc.uniforms.map {
+                if (it.length > 1) { MemoryUtil.memASCII("${it.name}[0]") } else { MemoryUtil.memASCII(it.name) }
+            }.toTypedArray()
             val namePointers = stack.pointers(*uniformNames)
             glGetUniformIndices(prog, namePointers, indices)
             glGetActiveUniformsiv(prog, indices, GL_UNIFORM_OFFSET, offsets)
         }
         glUniformBlockBinding(prog, blockIndex, desc.binding)
-
-        uboLayouts[desc.name] = UboBufferLayout(desc.uniforms, offsets, blockSize)
+        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, offsets, blockSize)
 
 //        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
 //        desc.uniforms.forEachIndexed { i, u ->

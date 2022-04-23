@@ -59,11 +59,11 @@ class Pipeline private constructor(builder: Builder) {
         val descriptorSets: List<DescriptorSetLayout>,
         val pushConstantRanges: List<PushConstantRange>
     ) {
-        fun findDescriptorByName(name: String): Descriptor? {
-            for (descLayout in descriptorSets) {
-                val desc = descLayout.findDescriptorByName(name)
+        fun findDescriptorByName(name: String): Pair<DescriptorSetLayout, Descriptor>? {
+            for (set in descriptorSets) {
+                val desc = set.findDescriptorByName(name)
                 if (desc != null) {
-                    return desc
+                    return set to desc
                 }
             }
             return null

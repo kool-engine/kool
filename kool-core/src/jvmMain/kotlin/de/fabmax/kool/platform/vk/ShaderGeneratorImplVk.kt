@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.CodeGenerator
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
@@ -12,28 +13,37 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
-    override fun generateShader(model: ShaderModel, pipelineLayout: Pipeline.Layout, ctx: KoolContext): ShaderCode {
-        val (vertShader, fragShader) = generateCode(model, pipelineLayout)
-        //return shaderCodes.computeIfAbsent(vertShader + fragShader) {  }
-
-        val codeKey = vertShader + fragShader
+    private fun compile(vertexShaderSrc: String, fragmentShaderSrc: String): ShaderCode {
+        val codeKey = vertexShaderSrc + fragmentShaderSrc
         var code = shaderCodes[codeKey]
         if (code == null) {
             try {
-                code = ShaderCode.codeFromSource(vertShader, fragShader)
+                code = ShaderCode.vkCodeFromSource(vertexShaderSrc, fragmentShaderSrc)
                 shaderCodes[codeKey] = code
-
-                if (model.dumpCode) {
-                    printCode(vertShader, fragShader)
-                }
 
             } catch (e: Exception) {
                 logE { "Compilation failed: $e" }
-                printCode(vertShader, fragShader)
+                printCode(vertexShaderSrc, fragmentShaderSrc)
                 throw RuntimeException(e)
             }
         }
         return code
+    }
+
+    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
+        val src = KslGlslGeneratorVk(pipelineLayout).generateProgram(shader.program)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        return compile(src.vertexSrc, src.fragmentSrc)
+    }
+
+    override fun generateShader(model: ShaderModel, pipelineLayout: Pipeline.Layout, ctx: KoolContext): ShaderCode {
+        val (vertShader, fragShader) = generateCode(model, pipelineLayout)
+        if (model.dumpCode) {
+            printCode(vertShader, fragShader)
+        }
+        return compile(vertShader, fragShader)
     }
 
     private fun printCode(vertShader: String, fragShader: String) {

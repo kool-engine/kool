@@ -4,6 +4,8 @@ import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
@@ -216,6 +218,14 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
         return OffscreenPassCubeGl(parentPass)
+    }
+
+    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
+        val src = GlslGenerator().generateProgram(shader.program)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        return ShaderCode.glCodeFromSource(src.vertexSrc, src.fragmentSrc)
     }
 
     class GlCapabilities {

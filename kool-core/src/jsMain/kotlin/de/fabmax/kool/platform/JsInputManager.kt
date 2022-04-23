@@ -6,7 +6,6 @@ import de.fabmax.kool.UniversalKeyCode
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.util.logI
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
@@ -25,10 +24,10 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun pointerMovementX(ev: MouseEvent) = js("ev.movementX") as Double * window.devicePixelRatio
+    private fun pointerMovementX(ev: MouseEvent) = js("ev.movementX") as Double
 
     @Suppress("UNUSED_PARAMETER")
-    private fun pointerMovementY(ev: MouseEvent) = js("ev.movementY") as Double * window.devicePixelRatio
+    private fun pointerMovementY(ev: MouseEvent) = js("ev.movementY") as Double
 
     private fun installInputHandlers() {
         // install mouse handlers
@@ -40,8 +39,8 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
                 virtualPointerPos.x += pointerMovementX(ev)
                 virtualPointerPos.y += pointerMovementY(ev)
             } else {
-                virtualPointerPos.x = (ev.clientX * window.devicePixelRatio - bounds.left)
-                virtualPointerPos.y = (ev.clientY * window.devicePixelRatio - bounds.top)
+                virtualPointerPos.x = (ev.clientX - bounds.left)
+                virtualPointerPos.y = (ev.clientY - bounds.top)
             }
             handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
         }

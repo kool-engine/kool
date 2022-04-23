@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.util.Viewport
@@ -31,4 +32,6 @@ interface RenderBackend {
 
     fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl
     fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl
+
+    fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 }

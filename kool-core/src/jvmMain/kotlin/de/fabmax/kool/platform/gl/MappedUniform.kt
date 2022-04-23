@@ -40,17 +40,14 @@ interface MappedUniform {
     }
 }
 
-class MappedUbo(val uboDesc: UniformBuffer, val layout: UboBufferLayout) : MappedUniform {
+class MappedUbo(val uboDesc: UniformBuffer, val layout: ExternalBufferLayout) : MappedUniform {
     var uboBuffer: BufferResource? = null
-    val hostBuffer = createMixedBuffer(layout.bufferSize)
+    val hostBuffer = createMixedBuffer(layout.size)
 
     override fun setUniform(ctx: Lwjgl3Context): Boolean {
         val gpuBuf = uboBuffer
         return if (gpuBuf != null) {
-            for (i in uboDesc.uniforms.indices) {
-                hostBuffer.position = layout.offsets[i]
-                uboDesc.uniforms[i].putTo(hostBuffer)
-            }
+            layout.putToBuffer(uboDesc.uniforms, hostBuffer)
             gpuBuf.setData(hostBuffer, GL_DYNAMIC_DRAW, ctx)
             glBindBufferBase(GL_UNIFORM_BUFFER, uboDesc.binding, gpuBuf.buffer)
             true

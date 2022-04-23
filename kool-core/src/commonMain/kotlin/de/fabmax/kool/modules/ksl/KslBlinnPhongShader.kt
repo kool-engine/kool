@@ -225,9 +225,6 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             }
 
             cfg.modelCustomizer?.invoke(this)
-
-//            fragmentStage.main.updateModel()
-//            fragmentStage.hierarchy.printHierarchy()
         }
     }
 }

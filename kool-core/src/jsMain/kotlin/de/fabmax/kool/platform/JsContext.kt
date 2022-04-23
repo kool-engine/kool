@@ -2,10 +2,9 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.generator.GlslGenerator
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
@@ -32,6 +31,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     override val inputMgr: JsInputManager
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
+
     internal val queueRenderer = QueueRendererWebGl(this)
     internal val afterRenderActions = mutableListOf<() -> Unit>()
 
@@ -239,6 +239,14 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     override fun destroy() {
         // nothing to do here...
+    }
+
+    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode {
+        val src = GlslGenerator().generateProgram(shader.program)
+        if (shader.program.dumpCode) {
+            src.dump()
+        }
+        return ShaderCode(src.vertexSrc, src.fragmentSrc)
     }
 
     override fun getSysInfos(): List<String> {

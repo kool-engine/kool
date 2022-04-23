@@ -35,25 +35,25 @@ class CameraData(program: KslProgram) : KslShaderListener {
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
     }
 
-    private lateinit var uPosition: Uniform3f
-    private lateinit var uDirection: Uniform3f
-    private lateinit var uClip: Uniform2f
+    private var uPosition: Uniform3f? = null
+    private var uDirection: Uniform3f? = null
+    private var uClip: Uniform2f? = null
 
     init {
         program.shaderListeners += this
     }
 
     override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) {
-        uPosition = shader.uniforms[UNIFORM_NAME_CAM_POSITION] as Uniform3f
-        uDirection = shader.uniforms[UNIFORM_NAME_CAM_DIRECTION] as Uniform3f
-        uClip = shader.uniforms[UNIFORM_NAME_CAM_CLIP] as Uniform2f
+        uPosition = shader.uniforms[UNIFORM_NAME_CAM_POSITION] as Uniform3f?
+        uDirection = shader.uniforms[UNIFORM_NAME_CAM_DIRECTION] as Uniform3f?
+        uClip = shader.uniforms[UNIFORM_NAME_CAM_CLIP] as Uniform2f?
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         val cam = cmd.renderPass.camera
-        uPosition.value.set(cam.globalPos)
-        uDirection.value.set(cam.globalLookDir)
-        uClip.value.set(cam.clipNear, cam.clipFar)
+        uPosition?.value?.set(cam.globalPos)
+        uDirection?.value?.set(cam.globalLookDir)
+        uClip?.value?.set(cam.clipNear, cam.clipFar)
     }
 
     companion object {

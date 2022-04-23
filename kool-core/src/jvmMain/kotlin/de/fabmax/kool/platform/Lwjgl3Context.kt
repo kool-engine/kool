@@ -5,6 +5,8 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.gl.GlRenderBackend
 import de.fabmax.kool.platform.vk.VkRenderBackend
 import de.fabmax.kool.util.Viewport
@@ -151,6 +153,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override fun destroy() {
         renderBackend.destroy(this)
     }
+
+    override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout) = renderBackend.generateKslShader(shader, pipelineLayout)
 
     override fun getSysInfos(): List<String> = SysInfo
 

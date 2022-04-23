@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
 import de.fabmax.kool.util.Log
 import org.lwjgl.vulkan.VK10
-import java.io.FileNotFoundException
 
 actual class ShaderCode private constructor(private val vkCode: VkCode?, private val glCode: GlCode?) {
 
@@ -35,7 +34,7 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
     }
 
     companion object {
-        fun codeFromSource(vertShaderSrc: String, fragShaderSrc: String): ShaderCode {
+        fun vkCodeFromSource(vertShaderSrc: String, fragShaderSrc: String): ShaderCode {
             val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
             val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
 
@@ -43,22 +42,8 @@ actual class ShaderCode private constructor(private val vkCode: VkCode?, private
             return ShaderCode(vertShaderCode, fragShaderCode)
         }
 
-        fun codeFromResources(vertShaderName: String, fragShaderName: String): ShaderCode {
-            val vertShaderCode = this::class.java.classLoader.getResourceAsStream(vertShaderName)?.use {
-                ShaderStage.fromSource(vertShaderName, it, VK10.VK_SHADER_STAGE_VERTEX_BIT)
-            } ?: throw FileNotFoundException("vertex shader resource not found: $vertShaderName")
-
-            val fragShaderCode = this::class.java.classLoader.getResourceAsStream(fragShaderName)?.use {
-                ShaderStage.fromSource(fragShaderName, it, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
-            } ?: throw FileNotFoundException("fragment shader resource not found: $vertShaderName")
-
-            Log.d("ShaderCode") { "Successfully compiled shader: $vertShaderName: ${vertShaderCode.code.size} bytes, $fragShaderName: ${fragShaderCode.code.size} bytes" }
-
-            return ShaderCode(vertShaderCode, fragShaderCode)
+        fun glCodeFromSource(vertexShaderSource: String, fraqmentShaderSource: String): ShaderCode {
+            return ShaderCode(GlCode(vertexShaderSource, fraqmentShaderSource))
         }
     }
-}
-
-actual fun shaderCodeFromSource(vertexShaderSource: String, fraqmentShaderSource: String): ShaderCode {
-    return ShaderCode(ShaderCode.GlCode(vertexShaderSource, fraqmentShaderSource))
 }

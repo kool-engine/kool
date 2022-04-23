@@ -11,7 +11,7 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
     val instanceName = builder.instanceName
     val stages = builder.stages.copy()
 
-    private val layout = Std140Layout(pushConstants)
+    private val layout = Std140BufferLayout(pushConstants)
 
     /**
      * Overall size of buffer in bytes (i.e. all containing uniforms)
@@ -23,7 +23,7 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
     val onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = builder.onUpdate
 
     fun toBuffer(): MixedBuffer {
-        layout.putTo(buffer)
+        layout.putToBuffer(pushConstants, buffer)
         buffer.flip()
         return buffer
     }
