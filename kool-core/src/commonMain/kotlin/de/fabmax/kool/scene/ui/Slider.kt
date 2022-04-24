@@ -140,7 +140,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-        shader.alpha(slider.alpha)
+        shader.alpha = slider.alpha
     }
 
     override fun createUi(ctx: KoolContext) {

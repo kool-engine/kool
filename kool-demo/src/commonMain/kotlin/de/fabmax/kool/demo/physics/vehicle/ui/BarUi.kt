@@ -28,8 +28,8 @@ open class BarUi(private val component: UiComponent) : ComponentUi {
     protected var numIntervals = 20
 
     override fun updateComponentAlpha() {
-        (mesh.shader as UiShader).apply { alpha(component.alpha) }
-        (track.shader as UiShader).apply { alpha(component.alpha) }
+        (mesh.shader as UiShader).apply { alpha = component.alpha }
+        (track.shader as UiShader).apply { alpha = component.alpha }
     }
 
     override fun createUi(ctx: KoolContext) {

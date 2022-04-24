@@ -63,7 +63,7 @@ open class LabelUi(val label: Label, val baseUi: ComponentUi) : ComponentUi by b
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-        shader.alpha(label.alpha)
+        shader.alpha = label.alpha
     }
 
     override fun createUi(ctx: KoolContext) {

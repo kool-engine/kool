@@ -10,7 +10,9 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.MdColor
 import kotlin.math.cos
 import kotlin.math.round
 
@@ -317,7 +319,7 @@ class VehicleUi(val vehicle: DemoVehicle) {
         val mesh = Mesh(meshBuilder.geometry)
 
         override fun updateComponentAlpha() {
-            (mesh.shader as UiShader).apply { alpha(component.alpha) }
+            (mesh.shader as UiShader).apply { alpha = component.alpha }
         }
 
         override fun createUi(ctx: KoolContext) {
@@ -359,7 +361,7 @@ class VehicleUi(val vehicle: DemoVehicle) {
         val mesh = Mesh(meshBuilder.geometry)
 
         override fun updateComponentAlpha() {
-            (mesh.shader as UiShader).apply { alpha(component.alpha) }
+            (mesh.shader as UiShader).apply { alpha = component.alpha }
         }
 
         override fun createUi(ctx: KoolContext) {

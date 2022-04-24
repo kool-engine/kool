@@ -102,8 +102,8 @@ class RpmScaleUi(private val rpmScale: RpmScale) : BarUi(rpmScale) {
 
     override fun updateComponentAlpha() {
         super.updateComponentAlpha()
-        (largeFontMesh.shader as UiShader).apply { alpha(rpmScale.alpha) }
-        (smallFontMesh.shader as UiShader).apply { alpha(rpmScale.alpha) }
+        (largeFontMesh.shader as UiShader).apply { alpha = rpmScale.alpha }
+        (smallFontMesh.shader as UiShader).apply { alpha = rpmScale.alpha }
     }
 
     override fun createUi(ctx: KoolContext) {

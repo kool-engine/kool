@@ -32,7 +32,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
     val color: ThemeOrCustomProp<Color> = ThemeOrCustomProp(Color.BLACK.withAlpha(0.5f))
 
     override fun updateComponentAlpha() {
-        shader.alpha(component.alpha)
+        shader.alpha = component.alpha
     }
 
     override fun createUi(ctx: KoolContext) {

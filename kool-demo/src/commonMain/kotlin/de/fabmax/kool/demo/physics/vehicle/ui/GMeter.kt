@@ -56,7 +56,7 @@ class GMeterUi(private val gMeter: GMeter) : ComponentUi {
     private lateinit var font: Font
 
     override fun updateComponentAlpha() {
-        (mesh.shader as UiShader).apply { alpha(gMeter.alpha) }
+        (mesh.shader as UiShader).apply { alpha = gMeter.alpha }
     }
 
     override fun createUi(ctx: KoolContext) {
