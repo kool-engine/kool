@@ -2,11 +2,10 @@ package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
-import kotlin.reflect.KProperty
 
 abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslStatement(blockName, parentScope) {
 
-    private val inputDependencies = mutableMapOf<BlockInput<*>, Set<KslMutatedState>>()
+    private val inputDependencies = mutableMapOf<BlockInput<*, *>, Set<KslMutatedState>>()
     private val outputs = mutableListOf<KslValue<*>>()
 
     val body = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = blockName }
@@ -95,7 +94,7 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
     protected fun outMat3(name: String? = null): KslVarMatrix<KslTypeMat3, KslTypeFloat3> = parentScopeBuilder.mat3Var(name = nextName(name ?: "outM3")).also { outputs += it }
     protected fun outMat4(name: String? = null): KslVarMatrix<KslTypeMat4, KslTypeFloat4> = parentScopeBuilder.mat4Var(name = nextName(name ?: "outM4")).also { outputs += it }
 
-    private fun updateDependencies(input: BlockInput<*>, newExpression: KslExpression<*>?) {
+    private fun updateDependencies(input: BlockInput<*, *>, newExpression: KslExpression<*>?) {
         // collect dependencies of new input expression
         inputDependencies[input] = newExpression?.collectStateDependencies() ?: emptySet()
 
@@ -111,95 +110,68 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
     override fun validate() {
         super.validate()
         inputDependencies.keys.forEach {
-            if (it.inputExpression == null) {
+            if (it.input == null) {
                 throw IllegalStateException("Missing input value for input ${it.name} of block $opName")
             }
         }
     }
 
-//    override fun toPseudoCode() = body.toPseudoCode()
+    abstract class Testo<T: KslType, E: KslExpression<T>>
 
-    protected abstract inner class BlockInput<T: KslType>(
+    class TestoImpl<S> : Testo<S, KslScalarExpression<S>>() where S: KslType, S: KslScalar
+
+    abstract inner class BlockInput<T: KslType, E: KslExpression<T>>(
         val name: String,
         override val expressionType: T,
-        inputExpression: KslExpression<T>?)
+        defaultValue: E?)
         : KslExpression<T> {
 
-        var inputExpression: KslExpression<T>? = inputExpression
+        var input: E? = defaultValue
             set(value) {
                 updateDependencies(this, value)
                 field = value
             }
 
+        operator fun invoke(assignExpression: E) {
+            input = assignExpression
+        }
+
         // return empty dependencies here - actual dependencies to input expression are managed by outer block statement
         override fun collectStateDependencies(): Set<KslMutatedState> = emptySet()
 
         override fun generateExpression(generator: KslGenerator): String {
-            return inputExpression?.generateExpression(generator)
+            return input?.generateExpression(generator)
                 ?: throw IllegalStateException("Missing input value for input $name of block $opName")
         }
 
         override fun toPseudoCode(): String {
-            return inputExpression?.toPseudoCode()
+            return input?.toPseudoCode()
                 ?: throw IllegalStateException("Missing input value for input $name of block $opName")
         }
-
     }
 
-    protected inner class ScalarInput<S>(name: String, expressionType: S, defaultValue: KslScalarExpression<S>?)
-        : BlockInput<S>(name, expressionType, defaultValue), KslScalarExpression<S> where S: KslType, S: KslScalar {
+    inner class ScalarInput<S>(name: String, expressionType: S, defaultValue: KslScalarExpression<S>?)
+        : BlockInput<S, KslScalarExpression<S>>(name, expressionType, defaultValue), KslScalarExpression<S>
+            where S: KslType, S: KslScalar
 
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslScalarExpression<S> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslScalarExpression<S>) {
-            inputExpression = value
-        }
-    }
+    inner class VectorInput<V, S>(name: String, expressionType: V, defaultValue: KslVectorExpression<V, S>?)
+        : BlockInput<V, KslVectorExpression<V, S>>(name, expressionType, defaultValue), KslVectorExpression<V, S>
+            where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
 
-    protected inner class VectorInput<V, S>(name: String, expressionType: V, defaultValue: KslVectorExpression<V, S>?)
-        : BlockInput<V>(name, expressionType, defaultValue), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+    inner class MatrixInput<M, V>(name: String, expressionType: M, defaultValue: KslMatrixExpression<M, V>?)
+        : BlockInput<M, KslMatrixExpression<M, V>>(name, expressionType, defaultValue), KslMatrixExpression<M, V>
+            where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
 
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslVectorExpression<V, S> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslVectorExpression<V, S>) {
-            inputExpression = value
-        }
-    }
+    inner class ScalarArrayInput<S>(name: String, expressionType: S)
+        : BlockInput<KslTypeArray<S>, KslScalarArrayExpression<S>>(name, KslTypeArray(expressionType), null), KslScalarArrayExpression<S>
+            where S: KslType, S: KslScalar
 
-    protected inner class MatrixInput<M, V>(name: String, expressionType: M, defaultValue: KslMatrixExpression<M, V>?)
-        : BlockInput<M>(name, expressionType, defaultValue), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
+    inner class VectorArrayInput<V, S>(name: String, expressionType: V)
+        : BlockInput<KslTypeArray<V>, KslVectorArrayExpression<V, S>>(name, KslTypeArray(expressionType), null), KslVectorArrayExpression<V, S>
+            where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
 
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslMatrixExpression<M, V> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslMatrixExpression<M, V>) {
-            inputExpression = value
-        }
-    }
-
-    protected inner class ScalarArrayInput<S>(name: String, expressionType: S)
-        : BlockInput<KslTypeArray<S>>(name, KslTypeArray(expressionType), null), KslScalarArrayExpression<S> where S: KslType, S: KslScalar {
-
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslScalarArrayExpression<S> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslScalarArrayExpression<S>) {
-            inputExpression = value
-        }
-    }
-
-    protected inner class VectorArrayInput<V, S>(name: String, expressionType: V)
-        : BlockInput<KslTypeArray<V>>(name, KslTypeArray(expressionType), null), KslVectorArrayExpression<V, S>
-            where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
-
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslVectorArrayExpression<V, S> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslVectorArrayExpression<V, S>) {
-            inputExpression = value
-        }
-    }
-
-    protected inner class MatrixArrayInput<M, V>(name: String, expressionType: M)
-        : BlockInput<KslTypeArray<M>>(name, KslTypeArray(expressionType), null), KslMatrixArrayExpression<M, V>
-            where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
-
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): KslMatrixArrayExpression<M, V> = this
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: KslMatrixArrayExpression<M, V>) {
-            inputExpression = value
-        }
-    }
+    inner class MatrixArrayInput<M, V>(name: String, expressionType: M)
+        : BlockInput<KslTypeArray<M>, KslMatrixArrayExpression<M, V>>(name, KslTypeArray(expressionType), null), KslMatrixArrayExpression<M, V>
+            where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
 
 }

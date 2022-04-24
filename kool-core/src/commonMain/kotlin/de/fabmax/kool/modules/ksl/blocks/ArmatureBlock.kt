@@ -11,8 +11,8 @@ fun KslScopeBuilder.armatureBlock(maxNumberOfBones: Int): ArmatureBlock {
 class ArmatureBlock(maxBones: Int, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     val armatureData: ArmatureData
 
-    var inBoneIndices by inInt4("inBoneIndices")
-    var inBoneWeights by inFloat4("inBoneWeights")
+    val inBoneIndices = inInt4("inBoneIndices")
+    val inBoneWeights = inFloat4("inBoneWeights")
 
     val outBoneTransform = outMat4("outBoneTransform")
 

@@ -17,38 +17,46 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
-import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 
 class TerrainDemo : DemoScene("Terrain Demo") {
 
-    private lateinit var colorTex: Texture2d
-    private lateinit var normalTex: Texture2d
+    private lateinit var colorMap: Texture2d
+    private lateinit var normalMap: Texture2d
+    private lateinit var splatMap: Texture2d
     private lateinit var ibl: EnvironmentMaps
+
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
-
+    private lateinit var terrainMesh: Mesh
     private lateinit var physicsObjects: PhysicsObjects
 
     private lateinit var escKeyListener: InputManager.KeyEventListener
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        showLoadText("Loading height map...")
         val heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 200f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
-        //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 20f)
+        //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
-        colorTex = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
-        normalTex = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        showLoadText("Loading textures...")
+        colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
+        normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
 
+        showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         physicsObjects = PhysicsObjects(mainScene, heightMap, ctx)
+        terrainMesh = TerrainMesh.generateTerrainMesh(physicsObjects.terrain.shapes[0], physicsObjects.terrain.transform)
+        splatMap = TerrainMesh.generateSplatMap(heightMap, 2)
 
+        showLoadText("Loading player model...")
         val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
@@ -58,8 +66,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun dispose(ctx: KoolContext) {
-        colorTex.dispose()
-        normalTex.dispose()
+        colorMap.dispose()
+        normalMap.dispose()
         physicsObjects.release(ctx)
 
         ctx.inputMgr.removeKeyListener(escKeyListener)
@@ -106,7 +114,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        +makeTerrainMesh(shadowMap)
+        terrainMesh.shader = TerrainMesh.makeTerrainShader(colorMap, normalMap, splatMap, shadowMap, ibl)
+
+        +terrainMesh
         +makeBoxMesh(shadowMap)
         +makeBridgeMesh(shadowMap)
 
@@ -141,28 +151,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         // don't forget to add the cam rig to the scene
         +camRig
-    }
-
-    private fun makeTerrainMesh(shadowMap: ShadowMap) = textureMesh(isNormalMapped = true) {
-        generate {
-            vertexModFun = {
-                texCoord.set(texCoord.x * 100f, texCoord.y * 100f)
-            }
-            withTransform {
-                val shape = physicsObjects.terrain.shapes[0]
-                transform.set(physicsObjects.terrain.transform).mul(shape.localPose)
-                shape.geometry.generateMesh(this)
-            }
-        }
-
-        shader = blinnPhongShader {
-            color { addTextureColor(colorTex) }
-            normalMapping { setNormalMap(normalTex) }
-            shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength = 0.5f
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-        }
     }
 
     private fun makeBoxMesh(shadowMap: ShadowMap) = colorMesh {

@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
@@ -15,6 +16,20 @@ import de.fabmax.kool.util.*
 import kotlin.math.PI
 
 class KslShaderTest : DemoScene("KslShader") {
+
+    private lateinit var colorMap: Texture2d
+    private lateinit var normalMap: Texture2d
+
+    override suspend fun AssetManager.loadResources(ctx: KoolContext) {
+        colorMap = loadAndPrepareTexture("${Demo.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
+        normalMap = loadAndPrepareTexture("${Demo.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
+
+        mainScene.onDispose += {
+            colorMap.dispose()
+            normalMap.dispose()
+        }
+    }
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultCamTransform()
 
@@ -162,11 +177,11 @@ class KslShaderTest : DemoScene("KslShader") {
 
                 color {
                     //addInstanceColor()
-//                    addStaticColor(Color.WHITE)
-                    addTextureColorLinearize(Texture2d("${Demo.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg"))
+                    //addStaticColor(Color.WHITE)
+                    addTextureColorLinearize(colorMap)
                 }
                 normalMapping {
-                    setNormalMap(Texture2d("${Demo.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg"))
+                    setNormalMap(normalMap)
                 }
                 shadow {
                     addShadowMaps(shadowMaps)
@@ -211,7 +226,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     val texCoordBlock: TexCoordAttributeBlock = vertexStage.findBlock()!!
                     val texCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
                     val sparkle = floatVar((sampleTexture(shininessTex, texCoords).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
-                    inShininess = 10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const
+                    inShininess(10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const)
                 }
             }
         }

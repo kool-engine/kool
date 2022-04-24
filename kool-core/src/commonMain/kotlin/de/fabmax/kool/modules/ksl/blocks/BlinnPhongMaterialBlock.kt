@@ -11,22 +11,22 @@ fun KslScopeBuilder.blinnPhongMaterialBlock(block: BlinnPhongMaterialBlock.() ->
 
 class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
 
-    var inCamPos by inFloat3("inCamPos")
-    var inNormal by inFloat3("inNormal")
-    var inFragmentPos by inFloat3("inFragmentPos")
-    var inFragmentColor by inFloat3("inFragmentColor")
+    val inCamPos = inFloat3("inCamPos")
+    val inNormal = inFloat3("inNormal")
+    val inFragmentPos = inFloat3("inFragmentPos")
+    val inFragmentColor = inFloat3("inFragmentColor")
 
-    var inAmbientColor by inFloat3("inAmbientColor")
-    var inSpecularColor by inFloat3("inSpecularColor")
-    var inShininess by inFloat1("inShininess", KslConstFloat1(16f))
-    var inSpecularStrength by inFloat1("inSpecularStrength", KslConstFloat1(1f))
+    val inAmbientColor = inFloat3("inAmbientColor")
+    val inSpecularColor = inFloat3("inSpecularColor")
+    val inShininess = inFloat1("inShininess", KslConstFloat1(16f))
+    val inSpecularStrength = inFloat1("inSpecularStrength", KslConstFloat1(0f))
 
-    var inLightCount by inInt1("inLightCount")
-    var inEncodedLightPositions by inFloat4Array("inEncodedLightPositions")
-    var inEncodedLightDirections by inFloat4Array("inEncodedLightDirections")
-    var inEncodedLightColors by inFloat4Array("inEncodedLightColors")
+    val inLightCount = inInt1("inLightCount")
+    val inEncodedLightPositions = inFloat4Array("inEncodedLightPositions")
+    val inEncodedLightDirections = inFloat4Array("inEncodedLightDirections")
+    val inEncodedLightColors = inFloat4Array("inEncodedLightColors")
 
-    var inShadowFactors by inFloat1Array("inShadowFactors")
+    var inShadowFactors = inFloat1Array("inShadowFactors")
 
     val outColor = outFloat3("outColor")
 
@@ -65,10 +65,10 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
     }
 
     fun setLightData(lightData: SceneLightData, shadowFactors: KslScalarArrayExpression<KslTypeFloat1>) {
-        inShadowFactors = shadowFactors
-        inLightCount = lightData.lightCount
-        inEncodedLightPositions = lightData.encodedPositions
-        inEncodedLightDirections = lightData.encodedDirections
-        inEncodedLightColors = lightData.encodedColors
+        inShadowFactors(shadowFactors)
+        inLightCount(lightData.lightCount)
+        inEncodedLightPositions(lightData.encodedPositions)
+        inEncodedLightDirections(lightData.encodedDirections)
+        inEncodedLightColors(lightData.encodedColors)
     }
 }

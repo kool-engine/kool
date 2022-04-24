@@ -22,8 +22,8 @@ fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, sha
 }
 
 class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    var inPositionWorldSpace by inFloat3("inPositionWorldSpace")
-    var inNormalWorldSpace by inFloat3("inNormalWorldSpace")
+    var inPositionWorldSpace = inFloat3("inPositionWorldSpace")
+    var inNormalWorldSpace = inFloat3("inNormalWorldSpace")
 
     val shadowData: ShadowData
     var positionsLightSpace: KslInterStageVectorArray<KslTypeFloat4, KslTypeFloat1>? = null

@@ -117,8 +117,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     }
                     if (cfg.isArmature) {
                         val armatureBlock = armatureBlock(cfg.maxNumberOfBones)
-                        armatureBlock.inBoneWeights = vertexAttribFloat4(Attribute.WEIGHTS.name)
-                        armatureBlock.inBoneIndices = vertexAttribInt4(Attribute.JOINTS.name)
+                        armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
+                        armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))
                         mvp *= armatureBlock.outBoneTransform
                         modelMat *= armatureBlock.outBoneTransform
                     }
@@ -145,8 +145,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     // project coordinates into shadow map / light space
                     shadowMapVertexStage = vertexShadowBlock(cfg.shadowCfg) {
-                        inPositionWorldSpace = worldPos
-                        inNormalWorldSpace = worldNormal
+                        inPositionWorldSpace(worldPos)
+                        inNormalWorldSpace(worldNormal)
                     }
                 }
             }
@@ -189,15 +189,15 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     // main material block
                     val material = blinnPhongMaterialBlock {
-                        inCamPos = camData.position
-                        inNormal = normal
-                        inFragmentPos = positionWorldSpace.output
-                        inFragmentColor = fragmentColor.rgb
+                        inCamPos(camData.position)
+                        inNormal(normal)
+                        inFragmentPos(positionWorldSpace.output)
+                        inFragmentColor(fragmentColor.rgb)
 
-                        inAmbientColor = ambientColor.rgb
-                        inSpecularColor = uSpecularColor.rgb
-                        inShininess = uShininess
-                        inSpecularStrength = uSpecularStrength
+                        inAmbientColor(ambientColor.rgb)
+                        inSpecularColor(uSpecularColor.rgb)
+                        inShininess(uShininess)
+                        inSpecularStrength(uSpecularStrength)
 
                         setLightData(lightData, shadowFactors)
                     }
@@ -205,12 +205,12 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                     // do normal map computations (if enabled) and adjust material block input normal accordingly
                     if (cfg.normalMapCfg.isNormalMapped) {
                         normalMapBlock(cfg.normalMapCfg) {
-                            inTangentWorldSpace = normalize(tangentWorldSpace!!.output)
-                            inNormalWorldSpace = normal
-                            inStrength = uNormalMapStrength
-                            inTexCoords = texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute)
+                            inTangentWorldSpace(normalize(tangentWorldSpace!!.output))
+                            inNormalWorldSpace(normal)
+                            inStrength(uNormalMapStrength)
+                            inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
 
-                            material.inNormal = outBumpNormal
+                            material.inNormal(outBumpNormal)
                         }
                     }
 

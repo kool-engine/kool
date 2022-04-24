@@ -13,10 +13,10 @@ fun KslScopeBuilder.normalMapBlock(cfg: NormalMapConfig, block: NormalMapBlock.(
 class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBuilder)
     : KslBlock(name, parentScope) {
 
-    var inNormalWorldSpace by inFloat3("inNormalWorldSpace")
-    var inTangentWorldSpace by inFloat4("inTangentWorldSpace")
-    var inTexCoords by inFloat2("inTexCoords")
-    var inStrength by inFloat1("inStrength", KslConstFloat1(1f))
+    val inNormalWorldSpace = inFloat3("inNormalWorldSpace")
+    val inTangentWorldSpace = inFloat4("inTangentWorldSpace")
+    val inTexCoords = inFloat2("inTexCoords")
+    val inStrength = inFloat1("inStrength", KslConstFloat1(1f))
 
     val outBumpNormal = outFloat3()
 
