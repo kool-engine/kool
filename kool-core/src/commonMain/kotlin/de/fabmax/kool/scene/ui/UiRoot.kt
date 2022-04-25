@@ -96,7 +96,7 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
         get() = content.bounds
 
     private var isLayoutNeeded = true
-    private val dpiChangeListener: (KoolContext) -> Unit = { uiDpi = it.screenDpi }
+    private val dpiChangeListener: (KoolContext) -> Unit = { uiDpi = it.windowScale * 96f }
 
     var isInputEnabled = true
     private val rayTest = RayTest()
@@ -134,9 +134,9 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
         }
 
         if (uiDpi == 0f) {
-            uiDpi = updateEvent.ctx.screenDpi
-            if (dpiChangeListener !in updateEvent.ctx.onScreenDpiChange) {
-                updateEvent.ctx.onScreenDpiChange += dpiChangeListener
+            uiDpi = updateEvent.ctx.windowScale * 96f
+            if (dpiChangeListener !in updateEvent.ctx.onWindowScaleChanged) {
+                updateEvent.ctx.onWindowScaleChanged += dpiChangeListener
             }
         }
 
@@ -171,7 +171,7 @@ class UiRoot(val scene: Scene, name: String = "UiRoot") : Node(name) {
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         content.dispose(ctx)
-        ctx.onScreenDpiChange -= dpiChangeListener
+        ctx.onWindowScaleChanged -= dpiChangeListener
     }
 
     private fun handleInput(ctx: KoolContext) {

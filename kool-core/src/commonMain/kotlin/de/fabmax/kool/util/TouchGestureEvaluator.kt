@@ -22,7 +22,7 @@ open class TouchGestureEvaluator {
     protected var screenDpi = 96f
 
     fun evaluate(pointerState: InputManager.PointerState, ctx: KoolContext) {
-        screenDpi = ctx.screenDpi
+        screenDpi = ctx.windowScale * 96f
         pointerState.getActivePointers(activePointers)
 
         if (activePointers.size > 1) {

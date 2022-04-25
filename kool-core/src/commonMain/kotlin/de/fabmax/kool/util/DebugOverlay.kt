@@ -116,7 +116,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                         if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
                             lastWndW = ctx.windowWidth
                             lastWndH = ctx.windowHeight
-                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight} / ${(ctx.screenDpi / 0.96f).roundToInt()} %"
+                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight} / ${(ctx.windowScale * 100f).roundToInt()} %"
                         }
                     }
                 }

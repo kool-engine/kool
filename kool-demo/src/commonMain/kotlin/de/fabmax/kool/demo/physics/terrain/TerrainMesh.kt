@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.*
+import kotlin.math.roundToInt
 
 object TerrainMesh {
 
@@ -39,23 +40,24 @@ object TerrainMesh {
         // beach weight - height based
         val wBeach = SplatWeightFunc(1.5f, 2.5f, 5f, 8f)
         // grass weight - height based
-        val wGrass = SplatWeightFunc(5f, 8f, 30f, 60f)
+        val wGrass = SplatWeightFunc(5f, 8f, 50f, 60f)
         // rock weight - height based
-        val wRockHeight = SplatWeightFunc(30f, 60f, 500f, 501f)
+        val wRockHeight = SplatWeightFunc(50f, 60f, 500f, 501f)
         // rock weight - slope based
-        val wRockSlope = SplatWeightFunc(0.5f, 1.5f, 500f, 501f)
+        val wRockSlope = SplatWeightFunc(0.75f, 2f, 500f, 501f)
 
         // generate splat map based on terrain height and slope
         for (y in 0 until height) {
             for (x in 0 until width) {
-                val sx = x * sampleStep
-                val sy = heightMap.height - 1 - y * sampleStep
+                val sx = ((x + 0.5f) * sampleStep).roundToInt()
+                val sy = (heightMap.height - 1 - (y + 0.5f) * sampleStep).roundToInt()
                 val h = heightMap.getHeight(sx, sy)
 
-                val ha = heightMap.getHeightLinear(sx.toFloat() - 0.75f, sy.toFloat() - 0.75f)
-                val hb = heightMap.getHeightLinear(sx.toFloat() - 0.75f, sy.toFloat() + 0.75f)
-                val hc = heightMap.getHeightLinear(sx.toFloat() + 0.75f, sy.toFloat() - 0.75f)
-                val hd = heightMap.getHeightLinear(sx.toFloat() + 0.75f, sy.toFloat() + 0.75f)
+                val sr = 0.75f
+                val ha = heightMap.getHeightLinear(sx.toFloat() - sr, sy.toFloat() - sr) / sr
+                val hb = heightMap.getHeightLinear(sx.toFloat() - sr, sy.toFloat() + sr) / sr
+                val hc = heightMap.getHeightLinear(sx.toFloat() + sr, sy.toFloat() - sr) / sr
+                val hd = heightMap.getHeightLinear(sx.toFloat() + sr, sy.toFloat() + sr) / sr
                 val slope = maxOf(ha, hb, hc, hd) - minOf(ha, hb, hc, hd)
 
                 val ws = wRockSlope.weight(slope)
@@ -103,7 +105,7 @@ object TerrainMesh {
             // splat map is sampled and rgba channels are multiplied with some hard coded colors (we could as well use
             // more textures here)
             modelCustomizer = {
-                dumpCode = true
+                //dumpCode = true
 
                 fragmentStage {
                     main {

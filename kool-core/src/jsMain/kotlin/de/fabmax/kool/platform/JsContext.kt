@@ -102,8 +102,26 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             isFullscreenEnabled = document.fullscreenElement != null
             null
         }
+        window.onbeforeunload = { e ->
+            if (applicationCallbacks.onWindowCloseRequest(this)) {
+                // proceed with closing page, delete return value to prevent unwanted popups
+                js("delete e['returnValue'];")
+            } else {
+                e.preventDefault()
+                e.returnValue = "Are you sure you want to exit?"
+            }
+            null
+        }
+        window.onfocus = {
+            isWindowFocused = true
+            null
+        }
+        window.onblur = {
+            isWindowFocused = false
+            null
+        }
 
-        screenDpi = 96f * window.devicePixelRatio.toFloat()
+        windowScale = window.devicePixelRatio.toFloat()
         windowWidth = canvas.width
         windowHeight = canvas.height
 
@@ -119,7 +137,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         animationMillis = time
 
         // update viewport size
-        screenDpi = 96f * window.devicePixelRatio.toFloat()
+        windowScale = window.devicePixelRatio.toFloat()
         windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
         windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
         if (windowWidth != canvas.width || windowHeight!= canvas.height) {
@@ -237,7 +255,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         window.requestAnimationFrame { t -> renderFrame(t) }
     }
 
-    override fun destroy() {
+    override fun close() {
         // nothing to do here...
     }
 

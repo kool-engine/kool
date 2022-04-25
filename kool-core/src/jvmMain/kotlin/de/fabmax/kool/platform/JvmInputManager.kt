@@ -20,9 +20,10 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
 
     init {
         installInputHandlers()
-        ctx.onFocusChanged += { isFocused ->
+
+        ctx.onWindowFocusChanged += {
             if (cursorMode == CursorMode.LOCKED) {
-                if (!isFocused) {
+                if (!it.isWindowFocused) {
                     logD { "Switching to normal cursor mode because of focus loss" }
                     glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
                 } else {

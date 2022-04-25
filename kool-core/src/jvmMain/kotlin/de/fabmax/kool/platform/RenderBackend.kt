@@ -25,7 +25,8 @@ interface RenderBackend {
     fun getWindowViewport(result: Viewport)
 
     fun drawFrame(ctx: Lwjgl3Context)
-    fun destroy(ctx: Lwjgl3Context)
+    fun close(ctx: Lwjgl3Context)
+    fun cleanup(ctx: Lwjgl3Context)
 
     fun loadTex2d(tex: Texture2d, data: TextureData)
     fun loadTexCube(tex: TextureCube, data: TextureDataCube)

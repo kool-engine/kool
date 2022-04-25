@@ -39,9 +39,9 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
             loadFont(family, assetManager.makeAssetRef(url).url)
         }
 
-        ctx.onScreenDpiChange += {
+        ctx.onWindowScaleChanged += {
             charMaps.values.forEach {
-                if (it.fontProps.isScaledByScreenDpi) {
+                if (it.fontProps.isScaledByWindowScale) {
                     updateCharMap(it, 0f)
                 }
             }
@@ -64,8 +64,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: JsContext.I
         val fontProps = charMap.fontProps
 
         val scale = when {
-            fontProps.isScaledByScreenDpi && fontScale == 0f -> ctx.screenDpi / 96f
-            fontProps.isScaledByScreenDpi && fontScale != 0f -> ctx.screenDpi / 96f * fontScale
+            fontProps.isScaledByWindowScale && fontScale == 0f -> ctx.windowScale
+            fontProps.isScaledByWindowScale && fontScale != 0f -> ctx.windowScale * fontScale
             fontScale != 0f -> fontScale
             else -> 1f
         }

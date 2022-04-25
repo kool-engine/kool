@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
-import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -20,16 +19,25 @@ expect fun createDefaultContext(): KoolContext
 
 abstract class KoolContext {
 
-    var minScreenDpi = 96f
-    var screenDpi = 96f
+    var windowScale = 1f
         set(value) {
-            val chgVal = max(value, minScreenDpi)
-            if (chgVal != field) {
-                logD { "Screen DPI changed: $chgVal (${(chgVal * 100f / 96f).roundToInt()} %)" }
-                field = chgVal
-                onScreenDpiChange.forEach { it(this) }
+            val userValue = applicationCallbacks.onWindowScaleChange(value, this)
+            if (userValue != field) {
+                logD { "Window scale changed: (${(userValue * 100f).roundToInt()} %)" }
+                field = userValue
+                onWindowScaleChanged.forEach { it(this) }
             }
         }
+
+    var isWindowFocused = true
+        internal set(value) {
+            field = value
+            onWindowFocusChanged.forEach { it(this) }
+        }
+
+    @Deprecated("Use windowScale instead", replaceWith = ReplaceWith("windowScale * 96f"))
+    val screenDpi: Float
+        get() = windowScale * 96f
 
     abstract val assetMgr: AssetManager
 
@@ -43,7 +51,9 @@ abstract class KoolContext {
     val projCorrectionMatrixOffscreen = Mat4d()
     val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
-    val onScreenDpiChange = mutableListOf<(KoolContext) -> Unit>()
+    var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
+    val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()
+    val onWindowFocusChanged = mutableListOf<(KoolContext) -> Unit>()
     val onRender = mutableListOf<(KoolContext) -> Unit>()
 
     /**
@@ -89,7 +99,7 @@ abstract class KoolContext {
 
     abstract fun run()
 
-    abstract fun destroy()
+    abstract fun close()
 
     abstract fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout): ShaderCode
 

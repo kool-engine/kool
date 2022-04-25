@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.pipeline.PipelineManager
 import de.fabmax.kool.util.logD
@@ -25,7 +26,8 @@ class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(
     var swapChain: SwapChain? = null
 
     init {
-        window = GlfwVkWindow(this, props.width, props.height, props.title)
+        val fsMonitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
+        window = GlfwVkWindow(this, props.width, props.height, props.title, fsMonitor, ctx)
         window.isFullscreen = props.isFullscreen
         instance = Instance(this, props.title)
         window.createSurface()

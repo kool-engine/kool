@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KeyCode
 import de.fabmax.kool.KoolContext
@@ -35,14 +34,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override var isFullscreen: Boolean
         get() = renderBackend.isFullscreen
         set(value) { renderBackend.isFullscreen = value }
-    var isWindowFocused: Boolean = false
-        private set(value) {
-            field = value
-            onFocusChanged.forEach { it(value) }
-        }
-    private val forceDpi = props.forceDpi
-
-    val onFocusChanged = mutableListOf<(Boolean) -> Unit>()
 
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
@@ -81,10 +72,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     init {
-        if (forceDpi > 0f) {
-            screenDpi = forceDpi
-        }
-
         renderBackend = if (props.renderBackend == Backend.VULKAN) {
             VkRenderBackend(props, this)
         } else {
@@ -98,23 +85,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
         inputMgr = JvmInputManager(renderBackend.glfwWindowHandle, this)
-
-        // install window callbacks
-        glfwSetWindowPosCallback(renderBackend.glfwWindowHandle) { _, x, y ->
-            updateScreenDpi(getResolutionAt(x, y))
-        }
-        glfwSetWindowFocusCallback(renderBackend.glfwWindowHandle) { _, isFocused ->
-            isWindowFocused = isFocused
-        }
-        isWindowFocused = glfwGetWindowAttrib(renderBackend.glfwWindowHandle, GLFW_FOCUSED) == GLFW_TRUE
-        val monitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        updateScreenDpi(monitor.dpi)
-    }
-
-    private fun updateScreenDpi(monitorDpi: Float) {
-        if (forceDpi <= 0) {
-            screenDpi = monitorDpi
-        }
     }
 
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
@@ -147,11 +117,11 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             engineStats.resetPerFrameCounts()
             renderBackend.drawFrame(this)
         }
-        destroy()
+        renderBackend.cleanup(this)
     }
 
-    override fun destroy() {
-        renderBackend.destroy(this)
+    override fun close() {
+        renderBackend.close(this)
     }
 
     override fun generateKslShader(shader: KslShader, pipelineLayout: Pipeline.Layout) = renderBackend.generateKslShader(shader, pipelineLayout)
@@ -224,7 +194,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var height = 900
         var title = "Kool"
         var monitor = -1
-        var forceDpi = 0f
         var isFullscreen = false
         var isWithHttpAssets = true
 

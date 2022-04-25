@@ -56,11 +56,12 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         glfwDefaultWindowHints()
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
 
         // create window
         val fsMonitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        glfwWindow = GlfwGlWindow(props.width, props.height, props.title, fsMonitor)
+        glfwWindow = GlfwGlWindow(props.width, props.height, props.title, fsMonitor, ctx)
         glfwWindow.isFullscreen = props.isFullscreen
 
         // make the OpenGL context current
@@ -198,8 +199,12 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
     }
 
-    override fun destroy(ctx: Lwjgl3Context) {
-        // for now we leave the cleanup to the system...
+    override fun close(ctx: Lwjgl3Context) {
+        glfwSetWindowShouldClose(glfwWindow.windowPtr, true)
+    }
+
+    override fun cleanup(ctx: Lwjgl3Context) {
+        // for now, we leave the cleanup to the system...
     }
 
     override fun loadTex2d(tex: Texture2d, data: TextureData) {

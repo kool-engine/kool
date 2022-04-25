@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
@@ -11,7 +12,7 @@ import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.KHRSurface
 
-class GlfwVkWindow(val sys: VkSystem, width: Int, height: Int, title: String, fullscreenMonitor: MonitorSpec? = null) :
+class GlfwVkWindow(val sys: VkSystem, width: Int, height: Int, title: String, fullscreenMonitor: MonitorSpec?, ctx: Lwjgl3Context) :
     VkResource()
 {
 
@@ -58,11 +59,26 @@ class GlfwVkWindow(val sys: VkSystem, width: Int, height: Int, title: String, fu
         check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
+        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
 
         glfwWindow = glfwCreateWindow(width, height, title, 0L, 0L)
         if (glfwWindow == MemoryUtil.NULL) {
             throw KoolException("Failed to create the GLFW window")
         }
+
+        val outInt1 = IntArray(1)
+        val outInt2 = IntArray(1)
+        val outFloat1 = FloatArray(1)
+        val outFloat2 = FloatArray(1)
+        glfwGetWindowPos(glfwWindow, outInt1, outInt2)
+        windowPosX = outInt1[0]
+        windowPosY = outInt2[0]
+        glfwGetFramebufferSize(glfwWindow, outInt1, outInt2)
+        framebufferWidth = outInt1[0]
+        framebufferHeight = outInt2[0]
+        glfwGetWindowContentScale(glfwWindow, outFloat1, outFloat2)
+        ctx.windowScale = outFloat1[0]
+        ctx.isWindowFocused = glfwGetWindowAttrib(glfwWindow, GLFW_FOCUSED) == GLFW_TRUE
 
         glfwSetWindowSizeCallback(glfwWindow) { _, w, h ->
             windowWidth = w
@@ -82,17 +98,18 @@ class GlfwVkWindow(val sys: VkSystem, width: Int, height: Int, title: String, fu
             windowPosY = y
             logI { "GLFW window position changed: $x, $y" }
         }
-
-        val outInt1 = IntArray(1)
-        val outInt2 = IntArray(1)
-
-        glfwGetWindowPos(glfwWindow, outInt1, outInt2)
-        windowPosX = outInt1[0]
-        windowPosY = outInt2[0]
-
-        glfwGetFramebufferSize(glfwWindow, outInt1, outInt2)
-        framebufferWidth = outInt1[0]
-        framebufferHeight = outInt2[0]
+        glfwSetWindowCloseCallback(glfwWindow) {
+            if (!ctx.applicationCallbacks.onWindowCloseRequest(ctx)) {
+                logD { "Window close request was suppressed by application callback" }
+                glfwSetWindowShouldClose(glfwWindow, false)
+            }
+        }
+        glfwSetWindowFocusCallback(glfwWindow) { _, isFocused ->
+            ctx.isWindowFocused = isFocused
+        }
+        glfwSetWindowContentScaleCallback(glfwWindow) { _, scale, _ ->
+            ctx.windowScale = scale
+        }
 
         fsMonitor = fullscreenMonitor?.monitor ?: DesktopImpl.primaryMonitor.monitor
         windowedWidth = windowWidth

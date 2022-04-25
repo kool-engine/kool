@@ -1,5 +1,6 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 kotlin {
@@ -13,13 +14,14 @@ kotlin {
     }
     js(IR) {
         browser {
-            @Suppress("EXPERIMENTAL_API_USAGE")
+            @Suppress("OPT_IN_IS_NOT_ENABLED")
+            @OptIn(ExperimentalDistributionDsl::class)
             distribution {
                 directory = File("${rootDir}/dist/kool-demo")
             }
             commonWebpackConfig {
                 // small js code
-//                mode = KotlinWebpackConfig.Mode.PRODUCTION
+                //mode = KotlinWebpackConfig.Mode.PRODUCTION
                 // readable js code but ~twice the file size
                 mode = KotlinWebpackConfig.Mode.DEVELOPMENT
             }

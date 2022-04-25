@@ -18,7 +18,7 @@ data class FontProps(
     val minFilter: FilterMethod = FilterMethod.LINEAR,
     val mipMapping: Boolean = false,
     val maxAnisotropy: Int = 0,
-    val isScaledByScreenDpi: Boolean = true
+    val isScaledByWindowScale: Boolean = true
 ) {
 
     override fun toString(): String {

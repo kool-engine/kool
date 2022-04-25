@@ -33,7 +33,7 @@ class LoadingScreen(ctx: KoolContext) : Scene("Loading Screen") {
             }
         }
 
-        +embeddedUi(1f, 1f, null, ctx.screenDpi) {
+        +embeddedUi(1f, 1f, null, ctx.windowScale * 96f) {
             isFillViewport = true
 
             theme = theme {

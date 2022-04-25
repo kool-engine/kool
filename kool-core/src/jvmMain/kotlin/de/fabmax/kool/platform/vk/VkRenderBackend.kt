@@ -12,6 +12,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.Viewport
 import org.lwjgl.PointerBuffer
+import org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
@@ -118,7 +119,11 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         vkSystem.renderLoop.drawFrame()
     }
 
-    override fun destroy(ctx: Lwjgl3Context) {
+    override fun close(ctx: Lwjgl3Context) {
+        glfwSetWindowShouldClose(vkSystem.window.glfwWindow, true)
+    }
+
+    override fun cleanup(ctx: Lwjgl3Context) {
         vkDeviceWaitIdle(vkSystem.device.vkDevice)
         vkSystem.destroy()
     }

@@ -155,7 +155,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun makeBoxMesh(shadowMap: ShadowMap) = colorMesh {
         generate {
-            color = MdColor.LIGHT_BLUE.toLinear()
+            color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
         shader = blinnPhongShader {
