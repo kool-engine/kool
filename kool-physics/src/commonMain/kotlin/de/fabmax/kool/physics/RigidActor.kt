@@ -4,6 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.pbrShader
+import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.util.Color
@@ -34,6 +35,7 @@ abstract class CommonRigidActor : Releasable {
     val shapes: List<Shape>
         get() = mutShapes
 
+    val tags = Tags()
 
     fun setRotation(eulerX: Float, eulerY: Float, eulerZ: Float) {
         setRotation(Mat3f().setRotate(eulerX, eulerY, eulerZ))

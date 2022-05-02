@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
 import physx.extensions.PxRigidBodyExt
+import physx.physics.PxForceModeEnum
 import physx.physics.PxRigidBody
 
 actual abstract class RigidBody : RigidActor() {
@@ -51,6 +52,7 @@ actual abstract class RigidBody : RigidActor() {
     private val bufInertia = MutableVec3f()
     private val bufLinVelocity = MutableVec3f()
     private val bufAngVelocity = MutableVec3f()
+    private val tmpVec = MutableVec3f()
     private val pxTmpVec = PxVec3()
 
     override fun attachShape(shape: Shape) {
@@ -77,8 +79,29 @@ actual abstract class RigidBody : RigidActor() {
                 isLocalForce && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxForce, pxPos)
                 isLocalForce && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxForce, pxPos)
                 !isLocalForce && isLocalPos -> PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxForce, pxPos)
-                !isLocalForce && !isLocalPos -> PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
+                else -> PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
             }
         }
+    }
+
+    actual fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean, isLocalPos: Boolean) {
+        MemoryStack.stackPush().use { mem ->
+            val pxImpulse = impulse.toPxVec3(mem.createPxVec3())
+            val pxPos = pos.toPxVec3(mem.createPxVec3())
+            when {
+                isLocalImpulse && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                isLocalImpulse && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                !isLocalImpulse && isLocalPos -> PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                else -> PxRigidBodyExt.addForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+            }
+        }
+    }
+
+    actual fun addTorque(torque: Vec3f, isLocalTorque: Boolean) {
+        tmpVec.set(torque)
+        if (isLocalTorque) {
+            transform.transform(tmpVec, 0f)
+        }
+        pxRigidBody.addTorque(tmpVec.toPxVec3(pxTmpVec))
     }
 }

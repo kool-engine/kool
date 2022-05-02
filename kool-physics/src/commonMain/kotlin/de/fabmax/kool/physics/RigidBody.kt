@@ -19,4 +19,6 @@ expect abstract class RigidBody : RigidActor {
     fun updateInertiaFromShapesAndMass()
 
     fun addForceAtPos(force: Vec3f, pos: Vec3f, isLocalForce: Boolean = false, isLocalPos: Boolean = false)
+    fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean = false, isLocalPos: Boolean = false)
+    fun addTorque(torque: Vec3f, isLocalTorque: Boolean = false)
 }

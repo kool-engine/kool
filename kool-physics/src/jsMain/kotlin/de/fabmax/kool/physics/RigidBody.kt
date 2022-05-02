@@ -49,6 +49,7 @@ actual abstract class RigidBody : RigidActor() {
     private val bufInertia = MutableVec3f()
     private val bufLinVelocity = MutableVec3f()
     private val bufAngVelocity = MutableVec3f()
+    private val tmpVec = MutableVec3f()
     private val pxTmpVec = PxVec3()
 
     override fun attachShape(shape: Shape) {
@@ -75,8 +76,29 @@ actual abstract class RigidBody : RigidActor() {
                 isLocalForce && isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxForce, pxPos)
                 isLocalForce && !isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxForce, pxPos)
                 !isLocalForce && isLocalPos -> Physics.PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxForce, pxPos)
-                !isLocalForce && !isLocalPos -> Physics.PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
+                else -> Physics.PxRigidBodyExt.addForceAtPos(pxRigidBody, pxForce, pxPos)
             }
         }
+    }
+
+    actual fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean, isLocalPos: Boolean) {
+        MemoryStack.stackPush().use { mem ->
+            val pxImpulse = impulse.toPxVec3(mem.createPxVec3())
+            val pxPos = pos.toPxVec3(mem.createPxVec3())
+            when {
+                isLocalImpulse && isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                isLocalImpulse && !isLocalPos -> Physics.PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                !isLocalImpulse && isLocalPos -> Physics.PxRigidBodyExt.addForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+                else -> Physics.PxRigidBodyExt.addForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
+            }
+        }
+    }
+
+    actual fun addTorque(torque: Vec3f, isLocalTorque: Boolean) {
+        tmpVec.set(torque)
+        if (isLocalTorque) {
+            transform.transform(tmpVec, 0f)
+        }
+        pxRigidBody.addTorque(tmpVec.toPxVec3(pxTmpVec))
     }
 }

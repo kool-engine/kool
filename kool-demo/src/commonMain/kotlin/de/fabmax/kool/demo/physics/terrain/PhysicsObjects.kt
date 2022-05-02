@@ -11,6 +11,7 @@ import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.HeightMap
 
@@ -24,6 +25,8 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
     val chainBridge: ChainBridge
     val boxes = mutableListOf<RigidDynamic>()
     private val boxInitPoses = mutableListOf<Mat4f>()
+
+    val debugLines = LineMesh().apply { isVisible = false }
 
     init {
         // create a new physics world
@@ -56,7 +59,7 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
         spawnBoxes()
 
         // spawn player
-        playerController = PlayerController(this, ctx).apply {
+        playerController = PlayerController(this, mainScene, ctx).apply {
             // set spawn position
             controller.position = Vec3d(-146.5, 47.8, -89.0)
         }
@@ -73,6 +76,7 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
             for (z in -n..n) {
                 val shape = BoxGeometry(Vec3f(boxSize))
                 val body = RigidDynamic(100f)
+                body.tags["isBox"] = true
                 body.attachShape(Shape(shape, Physics.defaultMaterial))
                 body.position = Vec3f(x * 5.5f, 100f, z * 5.5f)
                 world.addActor(body)

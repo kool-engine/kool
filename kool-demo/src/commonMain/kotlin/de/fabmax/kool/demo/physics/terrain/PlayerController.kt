@@ -5,12 +5,13 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.WalkAxes
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
 
-class PlayerController(private val physicsObjects: PhysicsObjects, ctx: KoolContext) : OnHitActorListener, HitActorBehaviorCallback {
+class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Scene, ctx: KoolContext) : OnHitActorListener, HitActorBehaviorCallback {
 
     val controller: CharacterController
     private val charManager: CharacterControllerManager
@@ -23,15 +24,19 @@ class PlayerController(private val physicsObjects: PhysicsObjects, ctx: KoolCont
     var moveSpeed = 0f
         private set
 
+    val playerTransform = Mat4d()
+
     private val axes: WalkAxes
 
-    var pushForceFac = 1f
+    var pushForceFac = 0.75f
     private val tmpForce = MutableVec3f()
 
     private var bridgeSegment: RigidDynamic? = null
     private val bridgeHitPt = MutableVec3f()
     private val bridgeHitForce = MutableVec3f()
     private var bridgeHitTime = 0.0f
+
+    val tractorGun = TractorGun(physicsObjects, mainScene)
 
     init {
         // create character controller
@@ -52,6 +57,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, ctx: KoolCont
 
     fun onPhysicsUpdate(timeStep: Float) {
         updateMovement()
+        tractorGun.onPhysicsUpdate(timeStep)
 
         bridgeSegment?.let {
             it.addForceAtPos(bridgeHitForce, bridgeHitPt, isLocalForce = false, isLocalPos = true)
@@ -85,6 +91,11 @@ class PlayerController(private val physicsObjects: PhysicsObjects, ctx: KoolCont
         controller.movement.set(0f, 0f, -moveSpeed)
         controller.movement.rotate(moveHeading, Vec3f.Y_AXIS)
         controller.jump = axes.isJump
+
+        playerTransform
+            .setIdentity()
+            .translate(position)
+            .rotate(moveHeading.toDouble(), Vec3d.Y_AXIS)
     }
 
     override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {
@@ -121,7 +132,7 @@ class PlayerController(private val physicsObjects: PhysicsObjects, ctx: KoolCont
 
     private fun applyBoxForce(actor: RigidDynamic, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         // apply some fixed force to the hit actor
-        val force = if (axes.isRun) -8000f else -2000f
+        val force = if (axes.isRun) -4000f else -2000f
         tmpForce.set(hitWorldNormal).scale(force * pushForceFac)
         actor.addForceAtPos(tmpForce, hitWorldPos, isLocalForce = false, isLocalPos = false)
     }

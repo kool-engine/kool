@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.joints.RevoluteJoint
 
 class ChainBridge(val world: PhysicsWorld) {
 
-    val segments = mutableSetOf<RigidActor>()
+    val segments = mutableListOf<RigidActor>()
     private val joints = mutableListOf<RevoluteJoint>()
 
     init {
@@ -18,12 +18,13 @@ class ChainBridge(val world: PhysicsWorld) {
         for (i in 0..n) {
             val seg = makeSegment(pose, prevSeg, i in 1 until n)
             segments += seg
+            seg.tags["isBridge"] = true
             prevSeg = seg
             pose.translate(0f, 0f, 1.21f)
         }
     }
 
-    fun isBridge(actor: RigidActor): Boolean = actor in segments
+    fun isBridge(actor: RigidActor): Boolean = actor.tags.hasTag("isBridge")
 
     private fun makeSegment(pose: Mat4f, prevSegment: RigidActor?, isDynamic: Boolean): RigidActor {
         val body = if (isDynamic) {

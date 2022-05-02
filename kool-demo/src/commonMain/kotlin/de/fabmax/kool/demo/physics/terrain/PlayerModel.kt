@@ -69,9 +69,10 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : Gr
 
     private fun updateAnimation(timeStep: Float) {
         // set transform group / model transform according to character position
-        setIdentity()
-        translate(playerController.position)
-        rotate(playerController.moveHeading, Vec3f.Y_AXIS)
+        set(playerController.playerTransform)
+//        setIdentity()
+//        translate(playerController.position)
+//        rotate(playerController.moveHeading, Vec3f.Y_AXIS)
 
         // determine which animation to use based on speed
         if (abs(playerController.moveSpeed) <= PlayerController.walkSpeed) {

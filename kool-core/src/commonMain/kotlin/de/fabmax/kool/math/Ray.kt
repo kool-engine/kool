@@ -7,9 +7,14 @@ import kotlin.math.sqrt
  * @author fabmax
  */
 
-class Ray {
+class Ray() {
     val origin = MutableVec3f()
     val direction = MutableVec3f()
+
+    constructor(origin: Vec3f, direction: Vec3f) : this() {
+        this.origin.set(origin)
+        this.direction.set(direction)
+    }
 
     fun set(other: Ray) {
         origin.set(other.origin)

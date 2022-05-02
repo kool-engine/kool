@@ -46,16 +46,19 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         lookTheta = acos(lookDirection.y)
 
         val div = 1000f / sensitivity
+        val ptr = inputManager.pointerState.primaryPointer
 
-        lookPhi -= inputManager.pointerState.primaryPointer.deltaX.toFloat() / div
-        lookTheta = (lookTheta - inputManager.pointerState.primaryPointer.deltaY.toFloat() / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
+        lookPhi -= ptr.deltaX.toFloat() / div
+        lookTheta = (lookTheta - ptr.deltaY.toFloat() / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
 
         lookDirection.x = sin(lookTheta) * cos(lookPhi)
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
-        zoom *= 1f - inputManager.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
-        zoom = zoom.clamp(minZoom, maxZoom)
+        if (!ptr.isConsumed(InputManager.CONSUMED_SCROLL)) {
+            zoom *= 1f - inputManager.pointerState.primaryPointer.deltaScroll.toFloat() / 10f
+            zoom = zoom.clamp(minZoom, maxZoom)
+        }
     }
 
     private fun updateTracking() {

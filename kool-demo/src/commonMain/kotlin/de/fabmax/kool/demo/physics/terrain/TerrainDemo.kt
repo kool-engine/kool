@@ -21,6 +21,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 
@@ -90,11 +91,35 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         button("Respawn Boxes") {
             physicsObjects.respawnBoxes()
         }
-        sliderWithValue("Push Force", physicsObjects.playerController.pushForceFac, 0.1f, 10f) {
-            physicsObjects.playerController.pushForceFac = value
-        }
+//        sliderWithValue("Push Force", physicsObjects.playerController.pushForceFac, 0.1f, 10f) {
+//            physicsObjects.playerController.pushForceFac = value
+//        }
         toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
             playerModel.isDrawShapeOutline = isEnabled
+            physicsObjects.debugLines.isVisible = isEnabled
+        }
+
+        uiRoot.apply {
+            +container("x1") {
+                layoutSpec.setOrigin(pcs(50f) - dps(13f), pcs(50f) - dps(1f), zero())
+                layoutSpec.setSize(dps(10f), dps(2f), full())
+                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
+            }
+            +container("x2") {
+                layoutSpec.setOrigin(pcs(50f) + dps(3f), pcs(50f) - dps(1f), zero())
+                layoutSpec.setSize(dps(10f), dps(2f), full())
+                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
+            }
+            +container("x3") {
+                layoutSpec.setOrigin(pcs(50f) - dps(1f), pcs(50f) - dps(13f), zero())
+                layoutSpec.setSize(dps(2f), dps(10f), full())
+                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
+            }
+            +container("x4") {
+                layoutSpec.setOrigin(pcs(50f) - dps(1f), pcs(50f) + dps(3f), zero())
+                layoutSpec.setSize(dps(2f), dps(10f), full())
+                ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.WHITE) })
+            }
         }
     }
 
@@ -120,6 +145,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +makeBoxMesh(shadowMap)
         +makeBridgeMesh(shadowMap)
 
+        +physicsObjects.debugLines
+
         // change player model shader
         playerModel.model.meshes.values.forEach {
             it.shader = blinnPhongShader {
@@ -139,18 +166,32 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             trackedPose = physicsObjects.playerController.controller.actor.transform
             +camera
             minZoom = 0.75f
-            pivotPoint.set(0.17f, 0.75f, 0f)
+            pivotPoint.set(0.25f, 0.75f, 0f)
 
             // hardcoded start look direction
             lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
 
-            onUpdate += {
+            // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
+            // consume the scroll event
+            onUpdate.add(0) { ev ->
                 // use camera look direction to control player move direction
                 physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
+
+                val gun = physicsObjects.playerController.tractorGun
+                val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
+                if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
+                    ptr.consume(InputManager.CONSUMED_SCROLL)
+                    if (ctx.inputMgr.isShiftDown) {
+                        gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
+                    } else {
+                        gun.rotationTorque += ptr.deltaScroll.toFloat()
+                    }
+                }
             }
         }
         // don't forget to add the cam rig to the scene
         +camRig
+        physicsObjects.playerController.tractorGun.camRig = camRig
     }
 
     private fun makeBoxMesh(shadowMap: ShadowMap) = colorMesh {
