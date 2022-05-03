@@ -2,15 +2,23 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.physics.Releasable
 import physx.extensions.PxJoint
+import physx.physics.PxConstraintFlagEnum
 
-actual interface Joint : Releasable {
+actual abstract class Joint : Releasable {
 
-    val pxJoint: PxJoint
+    abstract val pxJoint: PxJoint
 
     actual val isBroken: Boolean
+        get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
 
-    actual fun setBreakForce(force: Float, torque: Float)
+    actual var debugVisualize: Boolean = false
+        set(value) = if ( value ) {
+            pxJoint.constraintFlags.set(PxConstraintFlagEnum.eVISUALIZATION)
+        } else {
+            pxJoint.constraintFlags.clear(PxConstraintFlagEnum.eVISUALIZATION)
+        }
 
+    actual fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
     override fun release() {
         pxJoint.release()
     }

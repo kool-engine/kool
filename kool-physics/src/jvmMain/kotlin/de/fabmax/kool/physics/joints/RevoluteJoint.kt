@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
+import de.fabmax.kool.physics.joints.CommonRevoluteJoint.Companion.computeFrame
 import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
@@ -14,7 +15,7 @@ import physx.physics.PxConstraintFlagEnum
 
 @Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
-                                              frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint(), Joint {
+                                              frameA: Mat4f, frameB: Mat4f) : Joint() {
 
     actual val frameA = Mat4f().set(frameA)
     actual val frameB = Mat4f().set(frameB)
@@ -26,9 +27,6 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
 
     override val pxJoint: PxRevoluteJoint
 
-    override val isBroken: Boolean
-        get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
-
     init {
         Physics.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
@@ -37,8 +35,6 @@ actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actu
             pxJoint = PxTopLevelFunctions.RevoluteJointCreate(Physics.physics, bodyA.pxRigidActor, frmA, bodyB.pxRigidActor, frmB)
         }
     }
-
-    override fun setBreakForce(force: Float, torque: Float) = pxJoint.setBreakForce(force, torque)
 
     actual fun disableAngularMotor() {
         pxJoint.driveVelocity = 0f

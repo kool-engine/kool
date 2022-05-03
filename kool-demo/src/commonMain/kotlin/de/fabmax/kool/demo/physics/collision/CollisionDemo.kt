@@ -53,9 +53,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         groundNormal = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
         Physics.awaitLoaded()
-        val physicsWorld = PhysicsWorld()
-        this@CollisionDemo.physicsWorld = physicsWorld
-        physicsWorld.simStepper = physicsStepper
+        this@CollisionDemo.physicsWorld = PhysicsWorld().apply {
+            simStepper = physicsStepper
+        }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
