@@ -29,7 +29,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
-    private lateinit var splatMap: Texture2d
+    private lateinit var terrain: Terrain
+    private lateinit var trees: Trees
     private lateinit var ibl: EnvironmentMaps
 
     private lateinit var playerModel: PlayerModel
@@ -53,9 +54,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
-        physicsObjects = PhysicsObjects(mainScene, heightMap, ctx)
-        terrainMesh = TerrainMesh.generateTerrainMesh(physicsObjects.terrain.shapes[0], physicsObjects.terrain.transform)
-        splatMap = TerrainMesh.generateSplatMap(heightMap, 2)
+        terrain = Terrain(heightMap)
+        trees = Trees(terrain, 150)
+        physicsObjects = PhysicsObjects(mainScene, terrain, ctx)
+        terrainMesh = terrain.generateTerrainMesh()
 
         showLoadText("Loading player model...")
         val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
@@ -124,6 +126,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        mainRenderPass.clearColor = MdColor.LIGHT_BLUE
+
         // lighting
         lighting.apply {
             singleLight {
@@ -139,11 +143,16 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        terrainMesh.shader = TerrainMesh.makeTerrainShader(colorMap, normalMap, splatMap, shadowMap, ibl)
+        terrainMesh.shader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl)
 
         +terrainMesh
-        +makeBoxMesh(shadowMap)
+        if (physicsObjects.boxes.isNotEmpty()) {
+            +makeBoxMesh(shadowMap)
+        }
         +makeBridgeMesh(shadowMap)
+
+        trees.setupTreeShaders(ibl, shadowMap)
+        +trees.treeGroup
 
         +physicsObjects.debugLines
 
@@ -160,12 +169,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         +playerModel
 
+        //defaultCamTransform()
+
         // setup camera tracking player
         camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
             camera.setClipRange(0.5f, 750f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             +camera
             minZoom = 0.75f
+            maxZoom = 100f
             pivotPoint.set(0.25f, 0.75f, 0f)
 
             // hardcoded start look direction

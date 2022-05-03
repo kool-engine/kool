@@ -5,21 +5,16 @@ import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.physics.geometry.HeightField
-import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.HeightMap
 
-class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
+class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
 
     val world: PhysicsWorld
 
-    val terrain: RigidStatic
     val ground: RigidStatic
     val playerController: PlayerController
     val chainBridge: ChainBridge
@@ -36,14 +31,7 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
         // use constant time step for more stable bridge behavior
         world.simStepper = ConstantPhysicsStepper()
 
-        // create a static actor from provided height field, which will serve as terrain / ground
-        val heightField = HeightField(heightMap, 1f, 1f)
-        val hfGeom = HeightFieldGeometry(heightField)
-        val hfBounds = hfGeom.getBounds(BoundingBox())
-        terrain = RigidStatic()
-        terrain.attachShape(Shape(hfGeom, Physics.defaultMaterial))
-        terrain.position = Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f)
-        world.addActor(terrain)
+        world.addActor(terrain.terrainBody)
 
         // put another infinitely large ground plane below terrain to catch stuff which falls of the edge of the world
         ground = RigidStatic()
@@ -56,7 +44,7 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
         chainBridge = ChainBridge(world)
 
         // spawn a few dynamic boxes, the player can interact with
-        spawnBoxes()
+//        spawnBoxes()
 
         // spawn player
         playerController = PlayerController(this, mainScene, ctx).apply {
@@ -70,7 +58,7 @@ class PhysicsObjects(mainScene: Scene, heightMap: HeightMap, ctx: KoolContext) {
     }
 
     private fun spawnBoxes() {
-        val n = 15
+        val n = 0
         val boxSize = 2f
         for (x in -n..n) {
             for (z in -n..n) {

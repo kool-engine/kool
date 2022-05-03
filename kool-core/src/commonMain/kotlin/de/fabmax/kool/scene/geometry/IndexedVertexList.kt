@@ -3,6 +3,8 @@ package de.fabmax.kool.scene.geometry
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.math.spatial.InRadiusTraverser
+import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.util.*
@@ -348,6 +350,75 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         }
     }
 
+    fun mergeCloseVertices(epsilon: Float = 0.001f) {
+        val positions = mutableListOf<PointAndIndex>()
+        forEach {
+            positions += PointAndIndex(it, it.index)
+        }
+
+        val mergeMap = mutableMapOf<Int, Int>()
+
+        val tree = pointKdTree(positions)
+        val trav = InRadiusTraverser<PointAndIndex>()
+        positions.forEach { pt ->
+            trav.setup(pt, epsilon).traverse(tree)
+            trav.result.removeAll { it.index in mergeMap.keys }
+            trav.result.forEach { mergeMap[it.index] = pt.index }
+        }
+
+        val mergeDataF = createFloat32Buffer(dataF.capacity)
+        val mergeDataI = createUint32Buffer(dataI.capacity)
+        val indexMap = mutableMapOf<Int, Int>()
+        var j = 0
+        for (i in 0 until numVertices) {
+            val mergedI = mergeMap[i] ?: i
+            if (mergedI == i) {
+                indexMap[mergedI] = j
+                for (fi in 0 until vertexSizeF) {
+                    mergeDataF.put(dataF[i * vertexSizeF + fi])
+                }
+                for (ii in 0 until vertexSizeI) {
+                    mergeDataI.put(dataI[i * vertexSizeI + ii])
+                }
+                j++
+            }
+        }
+        logD { "Removed ${numVertices - j} vertices" }
+        numVertices = j
+        dataF = mergeDataF
+        dataI = mergeDataI
+
+        val mergeIndices = createUint32Buffer(indices.capacity)
+        for (i in 0 until numIndices) {
+            val ind = indices[i]
+            mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
+        }
+        indices = mergeIndices
+    }
+
+    fun splitVertices() {
+        val splitDataF = createFloat32Buffer(numIndices * vertexSizeF)
+        val splitDataI = createUint32Buffer(numIndices * vertexSizeI)
+        for (i in 0 until numIndices) {
+            val ind = indices[i]
+            for (fi in 0 until vertexSizeF) {
+                splitDataF.put(dataF[ind * vertexSizeF + fi])
+            }
+            for (ii in 0 until vertexSizeI) {
+                splitDataI.put(dataI[ind * vertexSizeI + ii])
+            }
+        }
+        dataF = splitDataF
+        dataI = splitDataI
+
+        val n = numIndices
+        indices.clear()
+        for (i in 0 until n) {
+            indices.put(i)
+        }
+        numVertices = numIndices
+    }
+
     fun generateNormals() {
         if (!vertexAttributes.contains(Attribute.NORMALS)) {
             return
@@ -464,6 +535,7 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
         private const val GROW_FACTOR = 2.0f
     }
 
+    private class PointAndIndex(pos: Vec3f, val index: Int) : Vec3f(pos)
 }
 
 enum class PrimitiveType(val nVertices: Int) {
