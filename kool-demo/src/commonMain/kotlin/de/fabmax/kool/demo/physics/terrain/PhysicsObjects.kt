@@ -11,7 +11,7 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Scene
 
-class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
+class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: KoolContext) {
 
     val world: PhysicsWorld
 
@@ -33,6 +33,10 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
 
         world.addActor(terrain.terrainBody)
 
+        trees.trees.asSequence().flatMap { it.instances }.forEach {
+            world.addActor(it.physicsBody)
+        }
+
         // put another infinitely large ground plane below terrain to catch stuff which falls of the edge of the world
         ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
@@ -44,7 +48,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
         chainBridge = ChainBridge(world)
 
         // spawn a few dynamic boxes, the player can interact with
-//        spawnBoxes()
+        spawnBoxes()
 
         // spawn player
         playerController = PlayerController(this, mainScene, ctx).apply {
@@ -58,7 +62,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
     }
 
     private fun spawnBoxes() {
-        val n = 0
+        val n = 10
         val boxSize = 2f
         for (x in -n..n) {
             for (z in -n..n) {
@@ -84,7 +88,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, ctx: KoolContext) {
     }
 
     fun release(ctx: KoolContext) {
-        playerController.release(ctx)
         world.release()
+        playerController.release(ctx)
     }
 }

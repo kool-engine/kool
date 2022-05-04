@@ -50,8 +50,9 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
     }
 
     fun release(ctx: KoolContext) {
-        controller.release()
-        charManager.release()
+        // apparently character controller is released automatically when the scene is destroyed
+        //controller.release()
+        //charManager.release()
         axes.dispose(ctx)
     }
 

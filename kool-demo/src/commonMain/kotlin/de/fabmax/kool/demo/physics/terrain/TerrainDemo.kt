@@ -56,7 +56,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
         trees = Trees(terrain, 150)
-        physicsObjects = PhysicsObjects(mainScene, terrain, ctx)
+        physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         terrainMesh = terrain.generateTerrainMesh()
 
         showLoadText("Loading player model...")

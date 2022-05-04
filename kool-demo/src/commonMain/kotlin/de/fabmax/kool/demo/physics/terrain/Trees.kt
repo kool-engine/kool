@@ -7,6 +7,11 @@ import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.math.spatial.Vec3fAdapter
 import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.RigidStatic
+import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.geometry.TriangleMesh
+import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Group
@@ -30,68 +35,54 @@ class Trees(val terrain: Terrain, nTrees: Int) {
     )
 
     private val random = Random(17)
-
     private val treeTree = OcTree(Vec3fAdapter, bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
+
+    val trees = mutableListOf<Tree>()
 
     init {
         instancedTrees(20, nTrees)
-        //singleMeshTrees(nTrees)
     }
 
     private fun instancedTrees(nMeshes: Int, nInstances: Int) {
         val treeGenerator = LowPolyTree(0x1deadb0b)
-        val meshes = mutableListOf<Mesh>()
 
         for (i in 0 until nMeshes) {
+            val root = treeGenerator.generateNodes(Mat4f())
+
             val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, LowPolyTree.WIND_SENSITIVITY)
             val meshBuilder = MeshBuilder(treeData)
-
-            val root = treeGenerator.generateNodes(Mat4f())
             treeGenerator.trunkMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
             treeGenerator.leafMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
 
+            val collisionData = IndexedVertexList(Attribute.POSITIONS)
+            val collisionBuilder = MeshBuilder(collisionData)
+            treeGenerator.trunkMesh(root, 0f, collisionBuilder)
+
             treeData.splitVertices()
             treeData.generateNormals()
-            meshes += Mesh(treeData).apply {
-                isFrustumChecked = false
-                instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
-            }
+            trees += Tree(
+                Mesh(treeData).apply {
+                    isFrustumChecked = false
+                    instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+                },
+                collisionData
+            )
         }
-        meshes.forEach { treeGroup += it }
+        trees.forEach { treeGroup += it.drawMesh }
         for (i in 0 until nInstances) {
             val (pos, likelihood) = pickTreePosition()
             if (likelihood > 0f) {
                 treeTree.add(pos)
-                val mesh = meshes[random.randomI(meshes.indices)]
+                val tree = trees[random.randomI(trees.indices)]
+                val mesh = tree.drawMesh
                 val size = 0.6f + likelihood.clamp(0f, 0.4f)
-                val pose = Mat4f().translate(pos).rotate(random.randomF(0f, 360f), Vec3f.Y_AXIS).scale(size)
+                val pose = Mat4f().translate(pos).rotate(random.randomF(0f, 360f), Vec3f.Y_AXIS)
+                tree.instances += TreeInstance(Mat4f().set(pose), size, tree)
                 mesh.instances!!.addInstance {
-                    put(pose.matrix)
+                    put(pose.scale(size).matrix)
                 }
             }
         }
-    }
-
-    private fun singleMeshTrees(nTrees: Int) {
-        val treeGenerator = LowPolyTree(0x1deadb0b)
-        val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, LowPolyTree.WIND_SENSITIVITY)
-        val meshBuilder = MeshBuilder(treeData)
-
-        val pose = Mat4f()
-        for (i in 0 until nTrees) {
-            val (pos, likelihood) = pickTreePosition()
-            if (likelihood > 0f) {
-                treeTree.add(pos)
-                pose.setIdentity().translate(pos)
-                val root = treeGenerator.generateNodes(pose)
-                treeGenerator.trunkMesh(root, likelihood, meshBuilder)
-                treeGenerator.leafMesh(root, likelihood, meshBuilder)
-            }
-        }
-
-        treeData.splitVertices()
-        treeData.generateNormals()
-        treeGroup += Mesh(treeData)
     }
 
     private fun pickTreePosition(): Pair<Vec3f, Float> {
@@ -151,4 +142,17 @@ class Trees(val terrain: Terrain, nTrees: Int) {
         }
     }
 
+    class Tree(val drawMesh: Mesh, collisionMesh: IndexedVertexList) {
+        val instances = mutableListOf<TreeInstance>()
+        val physicsMesh = TriangleMesh(collisionMesh)
+    }
+
+    class TreeInstance(val pose: Mat4f, val scale: Float, tree: Tree) {
+        val physicsGeometry = TriangleMeshGeometry(tree.physicsMesh, Vec3f(scale))
+        val physicsBody: RigidStatic = RigidStatic().apply {
+            attachShape(Shape(physicsGeometry, Physics.defaultMaterial))
+            position = pose.transform(MutableVec3f())
+            rotation = pose.getRotation(MutableVec4f())
+        }
+    }
 }
