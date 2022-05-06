@@ -207,7 +207,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             } else {
                 val fbWidth = stack.mallocInt(1)
                 val fbHeight = stack.mallocInt(1)
-                GLFW.glfwGetFramebufferSize(sys.window.glfwWindow, fbWidth, fbHeight)
+                GLFW.glfwGetFramebufferSize(sys.window.windowPtr, fbWidth, fbHeight)
                 VkExtent2D.malloc(stack)
                     .width(max(capabilities.minImageExtent().width(), max(capabilities.maxImageExtent().width(), fbWidth[0])))
                     .height(max(capabilities.minImageExtent().height(), max(capabilities.maxImageExtent().height(), fbHeight[0])))

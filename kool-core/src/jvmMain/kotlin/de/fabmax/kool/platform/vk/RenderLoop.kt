@@ -43,7 +43,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
 
     fun run() {
         logI { "Entering render loop" }
-        while (!glfwWindowShouldClose(sys.window.glfwWindow)) {
+        while (!glfwWindowShouldClose(sys.window.windowPtr)) {
             glfwPollEvents()
             drawFrame()
         }

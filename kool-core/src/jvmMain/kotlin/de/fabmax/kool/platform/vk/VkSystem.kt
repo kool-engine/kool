@@ -1,11 +1,12 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.pipeline.PipelineManager
 import de.fabmax.kool.util.logD
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
+import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VK10.vkDeviceWaitIdle
 
 class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjgl3Context) : VkResource() {
@@ -26,8 +27,11 @@ class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(
     var swapChain: SwapChain? = null
 
     init {
-        val fsMonitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        window = GlfwVkWindow(this, props.width, props.height, props.title, fsMonitor, ctx)
+        check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
+        // tell GLFW to not initialize default OpenGL API before we create the window
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
+
+        window = GlfwVkWindow(this, props, ctx)
         window.isFullscreen = props.isFullscreen
         instance = Instance(this, props.title)
         window.createSurface()
@@ -55,7 +59,7 @@ class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(
             val height = mallocInt(1)
             while (width[0] == 0 || height[0] == 0) {
                 // wait while window is minimized
-                glfwGetFramebufferSize(window.glfwWindow, width, height)
+                glfwGetFramebufferSize(window.windowPtr, width, height)
                 glfwWaitEvents()
             }
         }

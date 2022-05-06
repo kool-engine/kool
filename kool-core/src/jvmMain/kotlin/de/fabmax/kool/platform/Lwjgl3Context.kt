@@ -11,9 +11,11 @@ import de.fabmax.kool.platform.vk.VkRenderBackend
 import de.fabmax.kool.util.Viewport
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
+import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import javax.imageio.ImageIO
 
 /**
  * @author fabmax
@@ -28,12 +30,12 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.shaderGenerator
 
     override val windowWidth: Int
-        get() = renderBackend.windowWidth
+        get() = renderBackend.glfwWindow.framebufferWidth
     override val windowHeight: Int
-        get() = renderBackend.windowHeight
+        get() = renderBackend.glfwWindow.framebufferHeight
     override var isFullscreen: Boolean
-        get() = renderBackend.isFullscreen
-        set(value) { renderBackend.isFullscreen = value }
+        get() = renderBackend.glfwWindow.isFullscreen
+        set(value) { renderBackend.glfwWindow.isFullscreen = value }
 
     private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
@@ -84,14 +86,18 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         SysInfo.set(renderBackend.apiName, renderBackend.deviceName)
 
-        inputMgr = JvmInputManager(renderBackend.glfwWindowHandle, this)
+        inputMgr = JvmInputManager(renderBackend.glfwWindow.windowPtr, this)
     }
+
+    fun setWindowTitle(windowTitle: String) = renderBackend.glfwWindow.setWindowTitle(windowTitle)
+
+    fun setWindowIcon(icon: List<BufferedImage>) = renderBackend.glfwWindow.setWindowIcon(icon)
 
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 
     override fun run() {
         var prevTime = System.nanoTime()
-        while (!glfwWindowShouldClose(renderBackend.glfwWindowHandle)) {
+        while (!glfwWindowShouldClose(renderBackend.glfwWindow.windowPtr)) {
             SysInfo.update()
             glfwPollEvents()
 
@@ -189,10 +195,11 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         )
     }
 
-    class InitProps(init: InitProps.() -> Unit = {}) {
+    class InitProps(block: InitProps.() -> Unit = {}) {
         var width = 1600
         var height = 900
         var title = "Kool"
+        var icon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList()
         var monitor = -1
         var isFullscreen = false
         var isWithHttpAssets = true
@@ -207,8 +214,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         val customFonts = mutableMapOf<String, String>()
 
         init {
-            init()
             setWindowed(1600, 900)
+            this.block()
         }
 
         fun setWindowed(width: Int, height: Int) {
@@ -223,6 +230,19 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
             this.height = 900
             this.monitor = monitor
             this.isFullscreen = true
+        }
+
+        companion object {
+            val DEFAULT_ICON: BufferedImage?
+
+            init {
+                DEFAULT_ICON = try {
+                    ImageIO.read(ClassLoader.getSystemResourceAsStream("icon.png"))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
         }
     }
 

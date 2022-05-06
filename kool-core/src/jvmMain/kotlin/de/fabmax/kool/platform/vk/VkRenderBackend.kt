@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
+import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue
@@ -25,15 +26,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override val apiName: String
     override val deviceName: String
 
-    override val windowWidth: Int
-        get() = vkSystem.window.framebufferWidth
-    override val windowHeight: Int
-        get() = vkSystem.window.framebufferHeight
-    override val glfwWindowHandle: Long
-        get() = vkSystem.window.glfwWindow
-    override var isFullscreen: Boolean
-        get() = vkSystem.window.isFullscreen
-        set(value) { vkSystem.window.isFullscreen = value }
+    override val glfwWindow: GlfwWindow
+        get() = vkSystem.window
 
     override val projCorrectionMatrixScreen = Mat4d()
     override val projCorrectionMatrixOffscreen = Mat4d()
@@ -56,13 +50,6 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         vkSystem.addDependingResource(semaPool)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
-
-//        vkSystem.window.onResize += object : GlfwVkWindow.OnWindowResizeListener {
-//            override fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int) {
-//                windowWidth = newWidth
-//                windowHeight = newHeight
-//            }
-//        }
 
         // maps camera projection matrices to Vulkan screen coordinates
         projCorrectionMatrixScreen.apply {
@@ -88,7 +75,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun getWindowViewport(result: Viewport) {
-        result.set(0, windowHeight, windowWidth, -windowHeight)
+        result.set(0, glfwWindow.framebufferHeight, glfwWindow.framebufferWidth, -glfwWindow.framebufferHeight)
     }
 
     override fun loadTex2d(tex: Texture2d, data: TextureData) {
@@ -120,7 +107,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun close(ctx: Lwjgl3Context) {
-        glfwSetWindowShouldClose(vkSystem.window.glfwWindow, true)
+        glfwSetWindowShouldClose(vkSystem.window.windowPtr, true)
     }
 
     override fun cleanup(ctx: Lwjgl3Context) {

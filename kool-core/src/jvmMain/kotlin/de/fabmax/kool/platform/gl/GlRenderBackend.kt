@@ -1,12 +1,12 @@
 package de.fabmax.kool.platform.gl
 
-import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.GlslGenerator
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.scene.Scene
@@ -25,16 +25,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override val apiName: String
     override val deviceName: String
 
-    private val glfwWindow: GlfwGlWindow
-    override val windowWidth: Int
-        get() = glfwWindow.framebufferWidth
-    override val windowHeight: Int
-        get() = glfwWindow.framebufferHeight
-    override val glfwWindowHandle: Long
-        get() = glfwWindow.windowPtr
-    override var isFullscreen: Boolean
-        get() = glfwWindow.isFullscreen
-        set(value) { glfwWindow.isFullscreen = value }
+    override val glfwWindow: GlfwWindow
 
     override val shaderGenerator = ShaderGeneratorImplGL()
 
@@ -52,24 +43,20 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     private val doneRenderPasses = mutableSetOf<OffscreenRenderPass>()
 
     init {
-        // configure GLFW
+        // do basic GLFW configuration before we create the window
         glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_SAMPLES, props.msaaSamples)
 
         // create window
-        val fsMonitor = if (props.monitor < 0) DesktopImpl.primaryMonitor else DesktopImpl.monitors[props.monitor]
-        glfwWindow = GlfwGlWindow(props.width, props.height, props.title, fsMonitor, ctx)
+        glfwWindow = GlfwWindow(props, ctx)
         glfwWindow.isFullscreen = props.isFullscreen
 
         // make the OpenGL context current
-        glfwMakeContextCurrent(glfwWindowHandle)
+        glfwMakeContextCurrent(glfwWindow.windowPtr)
         // enable v-sync
         glfwSwapInterval(1)
         // make the window visible
-        glfwShowWindow(glfwWindowHandle)
+        glfwShowWindow(glfwWindow.windowPtr)
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
@@ -104,7 +91,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun getWindowViewport(result: Viewport) {
-        result.set(0, 0, windowWidth, windowHeight)
+        result.set(0, 0, glfwWindow.framebufferWidth, glfwWindow.framebufferHeight)
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {
@@ -134,7 +121,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
             afterRenderActions.clear()
         }
         // swap the color buffers
-        glfwSwapBuffers(glfwWindowHandle)
+        glfwSwapBuffers(glfwWindow.windowPtr)
     }
 
     private fun doOffscreenPasses(scene: Scene, ctx: KoolContext) {
