@@ -5,27 +5,38 @@ import de.fabmax.kool.math.spatial.BoundingBox
 import de.fabmax.kool.math.spatial.NearestTraverser
 import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.math.spatial.Vec3fAdapter
-import de.fabmax.kool.modules.ksl.blinnPhongShader
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.TriangleMesh
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import kotlin.math.sqrt
 
-class Trees(val terrain: Terrain, nTrees: Int) {
+class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
 
-    val treeGroup = Group().apply { isFrustumChecked = false }
+    val windOffset = MutableVec3f()
+    val windSpeed = MutableVec3f(8f, 0.4f, 5.4f)
+    var windStrength = 1f
+    var windScale = 100f
+
+    val treeGroup = Group().apply {
+        isFrustumChecked = false
+
+        onUpdate += {
+            windOffset.x += windSpeed.x * it.deltaT
+            windOffset.y += windSpeed.y * it.deltaT
+            windOffset.z += windSpeed.z * it.deltaT
+        }
+    }
 
     private val treeAreas = listOf(
         Vec3f(-32f, 0f, 64f) to 50f,
@@ -49,7 +60,7 @@ class Trees(val terrain: Terrain, nTrees: Int) {
         for (i in 0 until nMeshes) {
             val root = treeGenerator.generateNodes(Mat4f())
 
-            val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, LowPolyTree.WIND_SENSITIVITY)
+            val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, TreeShader.WIND_SENSITIVITY)
             val meshBuilder = MeshBuilder(treeData)
             treeGenerator.trunkMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
             treeGenerator.leafMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
@@ -130,15 +141,22 @@ class Trees(val terrain: Terrain, nTrees: Int) {
     }
 
     fun setupTreeShaders(ibl: EnvironmentMaps, shadowMap: ShadowMap) {
+        val treeShader = TreeShader(ibl, shadowMap, windDensity)
+        val shadowShader = TreeShader.Shadow(windDensity)
+
+        treeGroup.onUpdate += {
+            treeShader.windOffset = windOffset
+            treeShader.windStrength = windStrength
+            treeShader.windScale = 1f / windScale
+
+            shadowShader.windOffset = windOffset
+            shadowShader.windStrength = windStrength
+            shadowShader.windScale = 1f / windScale
+        }
+
         treeGroup.children.filterIsInstance<Mesh>().forEach {
-            it.shader = blinnPhongShader {
-                color { addVertexColor() }
-                shadow { addShadowMap(shadowMap) }
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                specularStrength = 0.05f
-                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-                isInstanced = it.instances != null
-            }
+            it.shader = treeShader
+            it.depthShader = shadowShader
         }
     }
 

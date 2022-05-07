@@ -6,8 +6,6 @@ import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.ColorGradient
@@ -48,7 +46,10 @@ class LowPolyTree(seed: Int = 1337) {
                 fun sampleNode(node: Node, connect: Boolean) {
                     val r = max(node.strength / 2000f, 0.002f).pow(0.5f)
                     vertexModFun = {
-                        getFloatAttribute(WIND_SENSITIVITY)?.f = (1f - node.relStrength).pow(2)
+                        val nodeHeight = (node.y - root.y)
+                        val senseByHeight = nodeHeight / 50f
+                        val senseByStrength = (1f - node.relStrength).pow(2) * (nodeHeight / 5f).clamp(0f, 1f)
+                        getFloatAttribute(TreeShader.WIND_SENSITIVITY)?.f = (senseByStrength + senseByHeight).clamp(0f, 1f)
                     }
                     withTransform {
                         transform.set(node.pose)
@@ -94,7 +95,7 @@ class LowPolyTree(seed: Int = 1337) {
         val leafColorRange = ColorGradient(0f to (MdColor.LIGHT_GREEN tone 900), 0.8f to MdColor.LIGHT_GREEN, 1f to MdColor.LIME)
         target.apply {
             vertexModFun = {
-                getFloatAttribute(WIND_SENSITIVITY)?.f = 1f
+                getFloatAttribute(TreeShader.WIND_SENSITIVITY)?.f = 1f
             }
             nodes.forEach {
                 trav.setup(it, 3f).traverse(tree)
@@ -196,10 +197,6 @@ class LowPolyTree(seed: Int = 1337) {
 
         val thresh = min(0.9f - noFork / 4f, node.relStrength.pow(2))
         return rand.randomF() > thresh
-    }
-
-    companion object {
-        val WIND_SENSITIVITY = Attribute("aWindSense", GlslType.FLOAT)
     }
 
     class Node(val parent: Node?, val depth: Int) : MutableVec3f() {

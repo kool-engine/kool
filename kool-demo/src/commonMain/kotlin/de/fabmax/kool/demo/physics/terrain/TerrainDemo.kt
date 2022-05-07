@@ -50,12 +50,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
         normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
+        showLoadText("Generating wind density texture...")
+        val windDensity = TreeShader.generateWindDensityTex()
+
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
 
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
-        trees = Trees(terrain, 150)
+        trees = Trees(terrain, 150, windDensity)
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         terrainMesh = terrain.generateTerrainMesh()
 
@@ -93,9 +96,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         button("Respawn Boxes") {
             physicsObjects.respawnBoxes()
         }
-//        sliderWithValue("Push Force", physicsObjects.playerController.pushForceFac, 0.1f, 10f) {
-//            physicsObjects.playerController.pushForceFac = value
-//        }
+        sliderWithValue("Wind Speed", 2f, 0.1f, 20f) {
+            trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
+        }
+        sliderWithValue("Wind Strength", trees.windStrength, 0f, 2f) {
+            trees.windStrength = value
+        }
+        sliderWithValue("Wind Scale", trees.windScale, 10f, 500f) {
+            trees.windScale = value
+        }
         toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
             playerModel.isDrawShapeOutline = isEnabled
             physicsObjects.debugLines.isVisible = isEnabled
