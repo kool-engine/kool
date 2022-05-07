@@ -20,10 +20,11 @@ kotlin {
                 directory = File("${rootDir}/dist/kool-demo")
             }
             commonWebpackConfig {
-                // small js code
-                //mode = KotlinWebpackConfig.Mode.PRODUCTION
-                // readable js code but ~twice the file size
-                mode = KotlinWebpackConfig.Mode.DEVELOPMENT
+                mode = if (KoolBuildSettings.isRelease) {
+                    KotlinWebpackConfig.Mode.PRODUCTION
+                } else {
+                    KotlinWebpackConfig.Mode.DEVELOPMENT
+                }
             }
             binaries.executable()
         }

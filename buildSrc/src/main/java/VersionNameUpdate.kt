@@ -22,7 +22,7 @@ open class VersionNameUpdate : DefaultTask() {
             val text = mutableListOf<String>()
             var updated = false
 
-            if (System.currentTimeMillis() - File(file).lastModified() > TimeUnit.DAYS.toMillis(1)) {
+            if (KoolBuildSettings.isRelease) {
                 FileReader(file).use {
                     text += it.readLines()
                     for (i in text.indices) {

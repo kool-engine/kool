@@ -93,8 +93,8 @@ tasks.register<VersionNameUpdate>("updateVersion") {
             ?.find { it.exists() }?.absolutePath ?: ""
     )
 }
-//tasks["compileKotlinJs"].dependsOn("updateVersion")
-//tasks["compileKotlinJvm"].dependsOn("updateVersion")
+tasks["compileKotlinJs"].dependsOn("updateVersion")
+tasks["compileKotlinJvm"].dependsOn("updateVersion")
 
 publishing {
     publications {
