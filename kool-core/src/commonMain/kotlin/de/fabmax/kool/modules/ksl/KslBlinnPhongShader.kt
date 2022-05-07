@@ -15,7 +15,7 @@ fun blinnPhongShader(cfgBlock: KslBlinnPhongShader.Config.() -> Unit): KslBlinnP
     return KslBlinnPhongShader(cfg)
 }
 
-class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
+open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
 
     var uniformDiffuseColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
     var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
@@ -96,6 +96,7 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
     class Model(cfg: Config) : KslProgram("Blinn-Phong Shader") {
         init {
+            val camData = cameraData()
             val positionWorldSpace = interStageFloat3()
             val normalWorldSpace = interStageFloat3()
             var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
@@ -104,33 +105,32 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
             val shadowMapVertexStage: ShadowBlockVertexStage
 
             vertexStage {
-                val uMvp = mvpMatrix()
-                val uModelMat = modelMatrix()
-
                 main {
-                    val mvp = mat4Var(uMvp.matrix)
+                    val uModelMat = modelMatrix()
+                    val viewProj = mat4Var(camData.viewProjMat)
                     val modelMat = mat4Var(uModelMat.matrix)
                     if (cfg.isInstanced) {
                         val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
-                        mvp *= instanceModelMat
                         modelMat *= instanceModelMat
                     }
                     if (cfg.isArmature) {
                         val armatureBlock = armatureBlock(cfg.maxNumberOfBones)
                         armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
                         armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))
-                        mvp *= armatureBlock.outBoneTransform
                         modelMat *= armatureBlock.outBoneTransform
                     }
 
                     // transform vertex attributes into world space and forward them to fragment stage
                     val localPos = constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                     val localNormal = constFloat4(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
-                    val worldPos = float3Var((modelMat * localPos).xyz)
-                    val worldNormal = float3Var(normalize((modelMat * localNormal).xyz))
-                    positionWorldSpace.input set worldPos
-                    normalWorldSpace.input set worldNormal
-                    outPosition set mvp * localPos
+
+                    // world position and normal are made available via ports for custom models to modify them
+                    val worldPos = float3Port("worldPos", float3Var((modelMat * localPos).xyz))
+                    val worldNormal = float3Port("worldNormal", float3Var(normalize((modelMat * localNormal).xyz)))
+
+                    positionWorldSpace.input set worldPos.output
+                    normalWorldSpace.input set worldNormal.output
+                    outPosition set (viewProj * constFloat4(worldPos.output, 1f))
 
                     // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
@@ -145,8 +145,8 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
 
                     // project coordinates into shadow map / light space
                     shadowMapVertexStage = vertexShadowBlock(cfg.shadowCfg) {
-                        inPositionWorldSpace(worldPos)
-                        inNormalWorldSpace(worldNormal)
+                        inPositionWorldSpace(worldPos.output)
+                        inNormalWorldSpace(worldNormal.output)
                     }
                 }
             }
@@ -158,7 +158,6 @@ class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                 val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
                 val uAmbientColor = uniformFloat4("uAmbientColor")
 
-                val camData = cameraData()
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {

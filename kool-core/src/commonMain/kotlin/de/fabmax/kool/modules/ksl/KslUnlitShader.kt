@@ -15,7 +15,7 @@ fun unlitShader(cfgBlock: KslUnlitShader.Config.() -> Unit): KslUnlitShader {
     return KslUnlitShader(cfg)
 }
 
-class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
+open class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
     var uniformColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
     var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
 

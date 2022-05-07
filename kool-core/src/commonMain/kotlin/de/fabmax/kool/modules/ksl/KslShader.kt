@@ -21,6 +21,9 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         // prepare shader model for generating source code, also updates program dependencies (e.g. which
         // uniform is used by which shader stage)
         program.prepareGenerate()
+        if (program.dumpCode) {
+            program.vertexStage.hierarchy.printHierarchy()
+        }
 
         setupAttributes(mesh, builder)
         setupUniforms(builder)
@@ -77,42 +80,44 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
             }
 
             kslUbo.uniforms.values.forEach { uniform ->
-                when(val type = uniform.value.expressionType)  {
-                    is KslTypeFloat1 -> ubo.uniforms += { Uniform1f(uniform.name) }
-                    is KslTypeFloat2 -> ubo.uniforms += { Uniform2f(uniform.name) }
-                    is KslTypeFloat3 -> ubo.uniforms += { Uniform3f(uniform.name) }
-                    is KslTypeFloat4 -> ubo.uniforms += { Uniform4f(uniform.name) }
+                // make sure to reuse the existing Uniform<*> object in case multiple pipeline instances are
+                // created from this KslShader instance
+                val createdUniform: Uniform<*> = uniforms[uniform.name] ?: when(val type = uniform.value.expressionType)  {
+                    is KslTypeFloat1 -> { Uniform1f(uniform.name) }
+                    is KslTypeFloat2 -> { Uniform2f(uniform.name) }
+                    is KslTypeFloat3 -> { Uniform3f(uniform.name) }
+                    is KslTypeFloat4 -> { Uniform4f(uniform.name) }
 
-                    is KslTypeInt1 -> ubo.uniforms += { Uniform1i(uniform.name) }
-                    is KslTypeInt2 -> ubo.uniforms += { Uniform2i(uniform.name) }
-                    is KslTypeInt3 -> ubo.uniforms += { Uniform3i(uniform.name) }
-                    is KslTypeInt4 -> ubo.uniforms += { Uniform4i(uniform.name) }
+                    is KslTypeInt1 -> { Uniform1i(uniform.name) }
+                    is KslTypeInt2 -> { Uniform2i(uniform.name) }
+                    is KslTypeInt3 -> { Uniform3i(uniform.name) }
+                    is KslTypeInt4 -> { Uniform4i(uniform.name) }
 
-                    //is KslTypeMat2 -> ubo.uniforms += { UniformMat2f(uniform.name) }
-                    is KslTypeMat3 -> ubo.uniforms += { UniformMat3f(uniform.name) }
-                    is KslTypeMat4 -> ubo.uniforms += { UniformMat4f(uniform.name) }
+                    //is KslTypeMat2 -> { UniformMat2f(uniform.name) }
+                    is KslTypeMat3 -> { UniformMat3f(uniform.name) }
+                    is KslTypeMat4 -> { UniformMat4f(uniform.name) }
 
                     is KslTypeArray<*> -> {
                         when (type.elemType) {
-                            is KslTypeFloat1 -> ubo.uniforms += { Uniform1fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat2 -> ubo.uniforms += { Uniform2fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat3 -> ubo.uniforms += { Uniform3fv(uniform.name, uniform.arraySize) }
-                            is KslTypeFloat4 -> ubo.uniforms += { Uniform4fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat1 -> { Uniform1fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat2 -> { Uniform2fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat3 -> { Uniform3fv(uniform.name, uniform.arraySize) }
+                            is KslTypeFloat4 -> { Uniform4fv(uniform.name, uniform.arraySize) }
 
-                            is KslTypeInt1 -> ubo.uniforms += { Uniform1iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt2 -> ubo.uniforms += { Uniform2iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt3 -> ubo.uniforms += { Uniform3iv(uniform.name, uniform.arraySize) }
-                            is KslTypeInt4 -> ubo.uniforms += { Uniform4iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt1 -> { Uniform1iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt2 -> { Uniform2iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt3 -> { Uniform3iv(uniform.name, uniform.arraySize) }
+                            is KslTypeInt4 -> { Uniform4iv(uniform.name, uniform.arraySize) }
 
-                            is KslTypeMat3 -> ubo.uniforms += { UniformMat3fv(uniform.name, uniform.arraySize) }
-                            is KslTypeMat4 -> ubo.uniforms += { UniformMat4fv(uniform.name, uniform.arraySize) }
+                            is KslTypeMat3 -> { UniformMat3fv(uniform.name, uniform.arraySize) }
+                            is KslTypeMat4 -> { UniformMat4fv(uniform.name, uniform.arraySize) }
 
                             else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
                         }
                     }
-
                     else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
                 }
+                ubo.uniforms += { createdUniform }
             }
         }
 

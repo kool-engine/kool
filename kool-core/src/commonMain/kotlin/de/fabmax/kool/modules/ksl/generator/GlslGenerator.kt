@@ -87,6 +87,7 @@ open class GlslGenerator : KslGenerator() {
         val src = StringBuilder()
         src.appendLine("""
             $glslVersionStr
+            precision highp sampler3D;
             
             /* 
              * ${vertexStage.program.name} - generated vertex shader
@@ -113,6 +114,7 @@ open class GlslGenerator : KslGenerator() {
             $glslVersionStr
             precision highp float;
             precision highp sampler2DShadow;
+            precision highp sampler3D;
             
             /* 
              * ${fragmentStage.program.name} - generated fragment shader

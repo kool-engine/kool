@@ -81,11 +81,6 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
         }
         glUniformBlockBinding(prog, blockIndex, desc.binding)
         uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, offsets, blockSize)
-
-//        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
-//        desc.uniforms.forEachIndexed { i, u ->
-//            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
-//        }
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): List<Int> {

@@ -239,7 +239,6 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 DEFAULT_ICON = try {
                     ImageIO.read(ClassLoader.getSystemResourceAsStream("icon.png"))
                 } catch (e: Exception) {
-                    e.printStackTrace()
                     null
                 }
             }

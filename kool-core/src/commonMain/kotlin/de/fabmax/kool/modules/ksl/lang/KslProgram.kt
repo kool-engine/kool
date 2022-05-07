@@ -11,6 +11,9 @@ open class KslProgram(val name: String) {
      */
     var dumpCode = false
 
+    var isPrepared = false
+        private set
+
     private var nextNameIdx = 1
     internal fun nextName(prefix: String): String = "${prefix}_${nextNameIdx++}"
 
@@ -166,16 +169,20 @@ open class KslProgram(val name: String) {
         interStageVectorArray(KslTypeInt4, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4Array"))
 
     fun prepareGenerate() {
-        stages.forEach { it.prepareGenerate() }
+        if (!isPrepared) {
+            isPrepared = true
 
-        // remove unused uniforms
-        uniformBuffers.filter { !it.isShared }.forEach {
-            it.uniforms.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
+            stages.forEach { it.prepareGenerate() }
+
+            // remove unused uniforms
+            uniformBuffers.filter { !it.isShared }.forEach {
+                it.uniforms.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
+            }
+            uniformBuffers.removeAll { it.uniforms.isEmpty() }
+
+            // remove unused texture samplers
+            uniformSamplers.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
         }
-        uniformBuffers.removeAll { it.uniforms.isEmpty() }
-
-        // remove unused texture samplers
-        uniformSamplers.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
     }
 
 }
