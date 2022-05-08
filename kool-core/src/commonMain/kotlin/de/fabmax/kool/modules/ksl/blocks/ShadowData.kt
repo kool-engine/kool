@@ -12,7 +12,8 @@ import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
-class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslShaderListener {
+class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
+    override val name = NAME
 
     val shadowMapInfos: List<ShadowMapInfo>
     val numSubMaps: Int
@@ -78,6 +79,8 @@ class ShadowData(shadowCfg: ShadowConfig, program: KslProgram) : KslShaderListen
     }
 
     companion object {
+        const val NAME = "ShadowData"
+
         const val UNIFORM_NAME_SHADOW_VP_MATS = "uShadowMapViewProjMats"
         const val SAMPLER_NAME_SHADOW_MAPS = "tDepthMaps"
     }

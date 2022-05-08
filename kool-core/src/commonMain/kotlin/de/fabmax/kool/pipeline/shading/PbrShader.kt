@@ -20,7 +20,7 @@ fun pbrShader(cfgBlock: PbrMaterialConfig.() -> Unit): PbrShader {
 open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
-    private val isBlending = cfg.alphaMode is AlphaModeBlend
+    private val isBlending = cfg.alphaMode is AlphaMode.Blend
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
@@ -251,10 +251,10 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
-                (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+                (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
                     discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
                 }
-                if (cfg.alphaMode !is AlphaModeBlend) {
+                if (cfg.alphaMode !is AlphaMode.Blend) {
                     albedo = combineXyzWNode(albedo, constFloat(1f)).output
                 }
 
@@ -407,9 +407,9 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
                     outColor = hdrToLdrNode(outColor).outColor
                 }
                 when (cfg.alphaMode) {
-                    is AlphaModeBlend -> colorOutput(outColor)
-                    is AlphaModeMask -> colorOutput(outColor, alpha = constFloat(1f))
-                    is AlphaModeOpaque -> colorOutput(outColor, alpha = constFloat(1f))
+                    is AlphaMode.Blend -> colorOutput(outColor)
+                    is AlphaMode.Mask -> colorOutput(outColor, alpha = constFloat(1f))
+                    is AlphaMode.Opaque -> colorOutput(outColor, alpha = constFloat(1f))
                 }
             }
         }

@@ -309,9 +309,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun degrees(value: KslScalarExpression<KslTypeFloat1>) = KslBuiltinDegreesScalar(value)
     fun <V> degrees(vec: KslVectorExpression<V, KslTypeFloat1>) where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinDegreesVector(vec)
 
-    fun distance(a: KslScalarExpression<KslTypeFloat1>, b: KslScalarExpression<KslTypeFloat1>) = KslBuiltinDistanceScalar(a, b)
-    fun <V> distance(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>)
-        where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinDistanceVector(a, b)
+    fun <T: KslFloatType> distance(a: KslExpression<T>, b: KslExpression<T>) = KslBuiltinDistanceScalar(a, b)
 
     fun <V> dot(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>)
         where V: KslFloatType, V: KslVector<KslTypeFloat1> = KslBuiltinDot(a, b)

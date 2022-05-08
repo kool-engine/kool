@@ -59,7 +59,7 @@ class PbrMaterialConfig {
         }
 
     var cullMethod = CullMethod.CULL_BACK_FACES
-    var alphaMode: AlphaMode = AlphaModeOpaque()
+    var alphaMode: AlphaMode = AlphaMode.Opaque()
     var isHdrOutput = false
 
     var roughnessChannel = "r"

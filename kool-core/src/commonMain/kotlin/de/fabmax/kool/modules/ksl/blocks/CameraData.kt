@@ -10,9 +10,11 @@ import de.fabmax.kool.pipeline.Uniform3f
 import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
-fun KslProgram.cameraData() = CameraData(this).also { uniformBuffers += it.camUbo }
+fun KslProgram.cameraData() = CameraData(this)
 
-class CameraData(program: KslProgram) : KslShaderListener {
+class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
+
+    override val name = NAME
 
     val position: KslUniformVector<KslTypeFloat3, KslTypeFloat1>
     val direction: KslUniformVector<KslTypeFloat3, KslTypeFloat1>
@@ -48,6 +50,8 @@ class CameraData(program: KslProgram) : KslShaderListener {
 
     init {
         program.shaderListeners += this
+        program.dataBlocks += this
+        program.uniformBuffers += camUbo
     }
 
     override fun onShaderCreated(shader: KslShader, pipeline: Pipeline, ctx: KoolContext) {
@@ -70,6 +74,8 @@ class CameraData(program: KslProgram) : KslShaderListener {
     }
 
     companion object {
+        const val NAME = "CameraData"
+
         const val UNIFORM_NAME_CAM_POSITION = "uCamPos"
         const val UNIFORM_NAME_CAM_DIRECTION = "uCamDir"
         const val UNIFORM_NAME_CAM_CLIP = "uCamClip"

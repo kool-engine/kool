@@ -21,6 +21,7 @@ open class KslProgram(val name: String) {
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, KslUniform<*>>()
 
+    val dataBlocks = mutableListOf<KslDataBlock>()
     val vertexStage = KslVertexStage(this)
     val fragmentStage = KslFragmentStage(this)
     val stages = listOf(vertexStage, fragmentStage)

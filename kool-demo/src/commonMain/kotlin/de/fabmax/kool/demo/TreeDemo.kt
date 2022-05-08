@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.AlphaModeMask
+import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -129,7 +129,7 @@ class TreeDemo : DemoScene("Procedural Tree") {
                 useAlbedoMap("${Demo.materialPath}/leaf.png")
                 useImageBasedLighting(envMaps)
                 roughness = 1f
-                alphaMode = AlphaModeMask(0.5f)
+                alphaMode = AlphaMode.Mask(0.5f)
                 cullMethod = CullMethod.NO_CULLING
                 isAlwaysLit = true
                 this.shadowMaps.addAll(shadowMaps)

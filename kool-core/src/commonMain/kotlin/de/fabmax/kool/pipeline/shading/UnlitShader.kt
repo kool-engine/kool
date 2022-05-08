@@ -15,7 +15,7 @@ inline fun unlitShader(block: UnlitMaterialConfig.() -> Unit): UnlitShader {
 open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnlitModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
-    private val isBlending = cfg.alphaMode is AlphaModeBlend
+    private val isBlending = cfg.alphaMode is AlphaMode.Blend
     private val lineWidth = cfg.lineWidth
 
     val color = ColorInput("uColor", cfg.color)
@@ -124,10 +124,10 @@ open class UnlitShader(cfg: UnlitMaterialConfig, model: ShaderModel = defaultUnl
                     }
                 }
 
-                (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+                (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
                     discardAlpha(splitNode(color, "a").output, constFloat(mask.cutOff))
                 }
-                if (cfg.alphaMode !is AlphaModeBlend) {
+                if (cfg.alphaMode !is AlphaMode.Blend) {
                     color = combineXyzWNode(color, constFloat(1f)).output
                 }
 
@@ -147,7 +147,7 @@ class UnlitMaterialConfig {
     val morphAttributes = mutableListOf<Attribute>()
 
     var cullMethod = CullMethod.CULL_BACK_FACES
-    var alphaMode: AlphaMode = AlphaModeOpaque()
+    var alphaMode: AlphaMode = AlphaMode.Opaque()
     var lineWidth = 1f
 
     var color = Color.GRAY

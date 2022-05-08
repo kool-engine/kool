@@ -2,7 +2,10 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.shading.*
+import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.AlbedoMapMode
+import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
 
@@ -44,9 +47,9 @@ data class GltfMaterial(
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
         cfg.alphaMode = when (alphaMode) {
-            ALPHA_MODE_BLEND -> AlphaModeBlend()
-            ALPHA_MODE_MASK -> AlphaModeMask(alphaCutoff)
-            else -> AlphaModeOpaque()
+            ALPHA_MODE_BLEND -> AlphaMode.Blend()
+            ALPHA_MODE_MASK -> AlphaMode.Mask(alphaCutoff)
+            else -> AlphaMode.Opaque()
         }
 
         cfg.cullMethod = if (doubleSided) {

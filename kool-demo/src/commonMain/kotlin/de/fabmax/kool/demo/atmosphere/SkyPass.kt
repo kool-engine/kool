@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.AlphaModeBlend
+import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.UnlitMaterialConfig
 import de.fabmax.kool.pipeline.shading.UnlitShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -176,7 +176,7 @@ class SkyPass(val atmosphereDemo: AtmosphereDemo) :
 
     private fun skyboxShader(texture: Texture2d?): UnlitShader {
         val unlitCfg = UnlitMaterialConfig().apply {
-            alphaMode = AlphaModeBlend()
+            alphaMode = AlphaMode.Blend()
             useColorMap(texture, true)
             color = Color.WHITE
         }

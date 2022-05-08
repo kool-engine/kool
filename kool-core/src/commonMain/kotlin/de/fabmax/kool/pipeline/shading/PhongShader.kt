@@ -18,7 +18,7 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
 open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
     private val cullMethod = cfg.cullMethod
-    private val isBlending = cfg.alphaMode is AlphaModeBlend
+    private val isBlending = cfg.alphaMode is AlphaMode.Blend
     private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
     private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
@@ -177,7 +177,7 @@ open class PhongShader(cfg: PhongConfig, model: ShaderModel = defaultPhongModel(
         var lightBacksides = false
 
         var cullMethod = CullMethod.CULL_BACK_FACES
-        var alphaMode: AlphaMode = AlphaModeOpaque()
+        var alphaMode: AlphaMode = AlphaMode.Opaque()
 
         var isInstanced = false
 

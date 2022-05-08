@@ -579,7 +579,7 @@ data class GltfFile(
                             }
                             cfg.pbrBlock?.invoke(this, prim)
 
-                            if (alphaMode is AlphaModeBlend) {
+                            if (alphaMode is AlphaMode.Blend) {
                                 mesh.isOpaque = false
                                 // transparent / blended meshes must be rendered in forward pass
                                 renderDeferred = false
@@ -601,7 +601,7 @@ data class GltfFile(
                             pbrConfig.isHdrOutput = false
                             mesh.shader = PbrShader(pbrConfig)
                         }
-                        if (pbrConfig.alphaMode is AlphaModeMask) {
+                        if (pbrConfig.alphaMode is AlphaMode.Mask) {
                             val depthShaderCfg = DepthShaderConfig().apply {
                                 isInstanced = pbrConfig.isInstanced
                                 isSkinned = pbrConfig.isSkinned

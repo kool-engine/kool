@@ -11,7 +11,7 @@ import de.fabmax.kool.pipeline.shadermodel.RefractionSamplerNode
 import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
 import de.fabmax.kool.pipeline.shadermodel.fragmentStage
 import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.AlphaModeBlend
+import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.PbrMaterialConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -50,7 +50,7 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
         shader = pbrShader {
             useImageBasedLighting(ibl)
             roughness = 0f
-            alphaMode = AlphaModeBlend()
+            alphaMode = AlphaMode.Blend()
             reflectionStrength = 0.3f
         }
     }
@@ -201,7 +201,7 @@ class Glas(val ibl: EnvironmentMaps) : Group(), DeferredPassSwapListener {
         val glasCfg = PbrMaterialConfig().apply {
             useImageBasedLighting(ibl)
             roughness = 0f
-            alphaMode = AlphaModeBlend()
+            alphaMode = AlphaMode.Blend()
             isRefraction = true
         }
         val glasModel = PbrShader.defaultPbrModel(glasCfg).apply {

@@ -37,7 +37,7 @@ class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthS
                     val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
-                if (cfg.alphaMode is AlphaModeMask) {
+                if (cfg.alphaMode is AlphaMode.Mask) {
                     ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 }
                 var localPos = attrPositions().output
@@ -55,7 +55,7 @@ class DepthShader(val cfg: DepthShaderConfig, model: ShaderModel = defaultDepthS
             }
             fragmentStage {
                 val alphaMode = cfg.alphaMode
-                if (alphaMode is AlphaModeMask) {
+                if (alphaMode is AlphaMode.Mask) {
                     val color = texture2dSamplerNode(texture2dNode("tAlphaMask"), ifTexCoords!!.output).outColor
                     discardAlpha(splitNode(color, "a").output, constFloat(alphaMode.cutOff))
                 }
@@ -71,7 +71,7 @@ class DepthShaderConfig {
     var isSkinned = false
     var maxJoints = 16
 
-    var alphaMode: AlphaMode = AlphaModeOpaque()
+    var alphaMode: AlphaMode = AlphaMode.Opaque()
     var alphaMask: Texture2d? = null
 
     var nMorphWeights = 0
@@ -79,6 +79,6 @@ class DepthShaderConfig {
 
     fun useAlphaMask(alphaMask: Texture2d, alphaCutOff: Float) {
         this.alphaMask = alphaMask
-        alphaMode = AlphaModeMask(alphaCutOff)
+        alphaMode = AlphaMode.Mask(alphaCutOff)
     }
 }

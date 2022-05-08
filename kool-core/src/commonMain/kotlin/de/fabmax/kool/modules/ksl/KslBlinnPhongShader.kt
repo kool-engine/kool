@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.util.Color
 
 fun blinnPhongShader(cfgBlock: KslBlinnPhongShader.Config.() -> Unit): KslBlinnPhongShader {
@@ -53,6 +54,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
         var isFlipBacksideNormals = true
         var maxNumberOfBones = 0
         var maxNumberOfLights = 4
+        var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var specularColor: Color = Color.WHITE
         var ambientColor: AmbientColor = UniformAmbientColor(Color(0.2f, 0.2f, 0.2f).toLinear())
@@ -97,8 +99,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     class Model(cfg: Config) : KslProgram("Blinn-Phong Shader") {
         init {
             val camData = cameraData()
-            val positionWorldSpace = interStageFloat3()
-            val normalWorldSpace = interStageFloat3()
+            val positionWorldSpace = interStageFloat3("positionWorldSpace")
+            val normalWorldSpace = interStageFloat3("normalWorldSpace")
             var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
@@ -128,9 +130,9 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     val worldPos = float3Port("worldPos", float3Var((modelMat * localPos).xyz))
                     val worldNormal = float3Port("worldNormal", float3Var(normalize((modelMat * localNormal).xyz)))
 
-                    positionWorldSpace.input set worldPos.output
-                    normalWorldSpace.input set worldNormal.output
-                    outPosition set (viewProj * constFloat4(worldPos.output, 1f))
+                    positionWorldSpace.input set worldPos
+                    normalWorldSpace.input set worldNormal
+                    outPosition set (viewProj * constFloat4(worldPos, 1f))
 
                     // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
@@ -145,8 +147,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
                     // project coordinates into shadow map / light space
                     shadowMapVertexStage = vertexShadowBlock(cfg.shadowCfg) {
-                        inPositionWorldSpace(worldPos.output)
-                        inNormalWorldSpace(worldNormal.output)
+                        inPositionWorldSpace(worldPos)
+                        inNormalWorldSpace(worldNormal)
                     }
                 }
             }
@@ -161,10 +163,21 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
-                    val normal = float3Var(normalize(normalWorldSpace.output))
+                    val tmpNormal = float3Var(normalize(normalWorldSpace.output))
                     if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.isFlipBacksideNormals) {
                         `if` (!inIsFrontFacing) {
-                            normal *= (-1f).const3
+                            tmpNormal *= (-1f).const3
+                        }
+                    }
+                    val normal = float3Port("normal", tmpNormal)
+
+                    // determine main color (albedo)
+                    val colorBlock = fragmentColorBlock(cfg.colorCfg)
+                    val fragmentColor = float4Port("fragmentColor", colorBlock.outColor)
+
+                    (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
+                        `if` (fragmentColor.a lt mask.cutOff.const) {
+                            discard()
                         }
                     }
 
@@ -172,10 +185,6 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     val shadowFactors = floatArray(lightData.maxLightCount, 1f.const)
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
-
-                    // determine main color (albedo)
-                    val colorBlock = fragmentColorBlock(cfg.colorCfg)
-                    val fragmentColor = colorBlock.outColor
 
                     val ambientColor = when (cfg.ambientColor) {
                         is Config.UniformAmbientColor -> uAmbientColor
@@ -219,7 +228,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
                         outRgb set outRgb * fragmentColor.a
                     }
-                    colorOutput(outRgb, fragmentColor.a)
+
+                    when (cfg.alphaMode) {
+                        is AlphaMode.Blend -> colorOutput(outRgb, fragmentColor.a)
+                        is AlphaMode.Mask -> colorOutput(outRgb, 1f.const)
+                        is AlphaMode.Opaque -> colorOutput(outRgb, 1f.const)
+                    }
                 }
             }
 

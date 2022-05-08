@@ -83,14 +83,8 @@ class KslBuiltinDegreesVector<V>(vec: KslVectorExpression<V, KslTypeFloat1>)
     override fun generateExpression(generator: KslGenerator) = generator.builtinDegrees(this)
 }
 
-class KslBuiltinDistanceScalar(a: KslScalarExpression<KslTypeFloat1>, b: KslScalarExpression<KslTypeFloat1>)
-    : KslBuiltinFunctionScalar<KslTypeFloat1>(a.expressionType, a, b) {
-    override val name = "distance"
-    override fun generateExpression(generator: KslGenerator) = generator.builtinDistance(this)
-}
-
-class KslBuiltinDistanceVector<V>(a: KslVectorExpression<V, KslTypeFloat1>, b: KslVectorExpression<V, KslTypeFloat1>)
-    : KslBuiltinFunctionVector<V, KslTypeFloat1>(a.expressionType, a, b) where V: KslFloatType, V: KslVector<KslTypeFloat1> {
+class KslBuiltinDistanceScalar<T: KslFloatType>(a: KslExpression<T>, b: KslExpression<T>)
+    : KslBuiltinFunctionScalar<KslTypeFloat1>(KslTypeFloat1, a, b) {
     override val name = "distance"
     override fun generateExpression(generator: KslGenerator) = generator.builtinDistance(this)
 }

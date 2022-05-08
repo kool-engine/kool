@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
+import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Uniform1i
@@ -12,7 +13,8 @@ import kotlin.math.min
 
 fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 
-class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslShaderListener {
+class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock, KslShaderListener {
+    override val name = NAME
 
     val encodedPositions = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_POSITIONS, maxLightCount)
     val encodedDirections = program.uniformFloat4Array(UNIFORM_NAME_LIGHT_DIRECTIONS, maxLightCount)
@@ -25,6 +27,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslShaderLis
     private lateinit var uLightCount: Uniform1i
 
     init {
+        program.dataBlocks += this
         program.shaderListeners += this
     }
 
@@ -52,6 +55,8 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslShaderLis
     }
 
     companion object {
+        const val NAME = "SceneLightData"
+
         const val UNIFORM_NAME_LIGHT_POSITIONS = "uLightPositions"
         const val UNIFORM_NAME_LIGHT_DIRECTIONS = "uLightDirections"
         const val UNIFORM_NAME_LIGHT_COLORS = "uLightColors"

@@ -2,9 +2,9 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.modules.ksl.blocks.armatureBlock
 import de.fabmax.kool.modules.ksl.blocks.cameraData
-import de.fabmax.kool.modules.ksl.blocks.float3Port
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.modules.ksl.lang.float3Port
 import de.fabmax.kool.modules.ksl.lang.times
 import de.fabmax.kool.modules.ksl.lang.xyz
 import de.fabmax.kool.pipeline.Attribute

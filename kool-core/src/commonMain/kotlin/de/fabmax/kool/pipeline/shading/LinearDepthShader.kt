@@ -35,7 +35,7 @@ class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = default
                     val skinNd = skinTransformNode(attrJoints().output, attrWeights().output, cfg.maxJoints)
                     mvpMat = multiplyNode(mvpMat, skinNd.outJointMat).output
                 }
-                if (cfg.alphaMode is AlphaModeMask) {
+                if (cfg.alphaMode is AlphaMode.Mask) {
                     ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 }
                 var localPos = attrPositions().output
@@ -53,7 +53,7 @@ class LinearDepthShader(val cfg: DepthShaderConfig, model: ShaderModel = default
             }
             fragmentStage {
                 val alphaMode = cfg.alphaMode
-                if (alphaMode is AlphaModeMask) {
+                if (alphaMode is AlphaMode.Mask) {
                     val color = texture2dSamplerNode(texture2dNode("tAlphaMask"), ifTexCoords!!.output).outColor
                     discardAlpha(splitNode(color, "a").output, constFloat(alphaMode.cutOff))
                 }

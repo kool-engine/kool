@@ -110,8 +110,7 @@ abstract class KslGenerator {
     abstract fun builtinCross(func: KslBuiltinCross): String
     abstract fun builtinDegrees(func: KslBuiltinDegreesScalar): String
     abstract fun builtinDegrees(func: KslBuiltinDegreesVector<*>): String
-    abstract fun builtinDistance(func: KslBuiltinDistanceScalar): String
-    abstract fun builtinDistance(func: KslBuiltinDistanceVector<*>): String
+    abstract fun builtinDistance(func: KslBuiltinDistanceScalar<*>): String
     abstract fun builtinDot(func: KslBuiltinDot<*>): String
     abstract fun builtinExp(func: KslBuiltinExpScalar): String
     abstract fun builtinExp(func: KslBuiltinExpVector<*>): String

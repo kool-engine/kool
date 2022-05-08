@@ -203,10 +203,10 @@ open class DeferredPbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaul
                     Albedo.CUBE_MAP_ALBEDO -> throw IllegalStateException("CUBE_MAP_ALBEDO is not allowed for PbrShader")
                 }
 
-                (cfg.alphaMode as? AlphaModeMask)?.let { mask ->
+                (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
                     discardAlpha(splitNode(albedo, "a").output, constFloat(mask.cutOff))
                 }
-                if (cfg.alphaMode !is AlphaModeBlend) {
+                if (cfg.alphaMode !is AlphaMode.Blend) {
                     albedo = combineXyzWNode(albedo, constFloat(1f)).output
                 }
 

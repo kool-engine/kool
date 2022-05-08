@@ -1,6 +1,15 @@
-package de.fabmax.kool.modules.ksl.blocks
+package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ksl.generator.KslGenerator
+
+abstract class KslPort<T: KslType>(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope), KslExpression<T> {
+    abstract val output: KslValue<T>
+
+    override val expressionType get() = output.expressionType
+    override fun collectStateDependencies() = output.collectStateDependencies()
+    override fun generateExpression(generator: KslGenerator) = output.generateExpression(generator)
+    override fun toPseudoCode() = output.toPseudoCode()
+}
 
 fun KslScopeBuilder.float1Port(name: String, input: KslScalarExpression<KslTypeFloat1>? = null): PortFloat1 =
     PortFloat1(name, this).also { port ->
@@ -31,27 +40,31 @@ fun KslScopeBuilder.getFloat2Port(name: String) = getBlocks(name, mutableListOf(
 fun KslScopeBuilder.getFloat3Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat3
 fun KslScopeBuilder.getFloat4Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat4
 
-class PortFloat1(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortFloat1(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeFloat1>(name, parentScope), KslScalarExpression<KslTypeFloat1> {
     val input = inFloat1("input")
-    val output = outFloat1("output")
+    override val output = outFloat1("output")
     init { body.apply { output set input } }
 }
 
-class PortFloat2(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortFloat2(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeFloat2>(name, parentScope), KslVectorExpression<KslTypeFloat2, KslTypeFloat1> {
     val input = inFloat2("input")
-    val output = outFloat2("output")
+    override val output = outFloat2("output")
     init { body.apply { output set input } }
 }
 
-class PortFloat3(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortFloat3(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeFloat3>(name, parentScope), KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
     val input = inFloat3("input")
-    val output = outFloat3("output")
+    override val output = outFloat3("output")
     init { body.apply { output set input } }
 }
 
-class PortFloat4(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortFloat4(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeFloat4>(name, parentScope), KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
     val input = inFloat4("input")
-    val output = outFloat4("output")
+    override val output = outFloat4("output")
     init { body.apply { output set input } }
 }
 
@@ -85,27 +98,31 @@ fun KslScopeBuilder.getInt2Port(name: String) = getBlocks(name, mutableListOf())
 fun KslScopeBuilder.getInt3Port(name: String) = getBlocks(name, mutableListOf())[0] as PortInt3
 fun KslScopeBuilder.getInt4Port(name: String) = getBlocks(name, mutableListOf())[0] as PortInt4
 
-class PortInt1(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortInt1(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeInt1>(name, parentScope), KslScalarExpression<KslTypeInt1> {
     val input = inInt1("input")
-    val output = outInt1("output")
+    override val output = outInt1("output")
     init { body.apply { output set input } }
 }
 
-class PortInt2(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortInt2(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeInt2>(name, parentScope), KslVectorExpression<KslTypeInt2, KslTypeInt1> {
     val input = inInt2("input")
-    val output = outInt2("output")
+    override val output = outInt2("output")
     init { body.apply { output set input } }
 }
 
-class PortInt3(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortInt3(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeInt3>(name, parentScope), KslVectorExpression<KslTypeInt3, KslTypeInt1> {
     val input = inInt3("input")
-    val output = outInt3("output")
+    override val output = outInt3("output")
     init { body.apply { output set input } }
 }
 
-class PortInt4(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortInt4(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeInt4>(name, parentScope), KslVectorExpression<KslTypeInt4, KslTypeInt1> {
     val input = inInt4("input")
-    val output = outInt4("output")
+    override val output = outInt4("output")
     init { body.apply { output set input } }
 }
 
@@ -132,20 +149,23 @@ fun KslScopeBuilder.getMat2Port(name: String) = getBlocks(name, mutableListOf())
 fun KslScopeBuilder.getMat3Port(name: String) = getBlocks(name, mutableListOf())[0] as PortMat3
 fun KslScopeBuilder.getMat4Port(name: String) = getBlocks(name, mutableListOf())[0] as PortMat4
 
-class PortMat2(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortMat2(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeMat2>(name, parentScope), KslMatrixExpression<KslTypeMat2, KslTypeFloat2> {
     val input = inMat2("input")
-    val output = outMat2("output")
+    override val output = outMat2("output")
     init { body.apply { output set input } }
 }
 
-class PortMat3(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortMat3(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeMat3>(name, parentScope), KslMatrixExpression<KslTypeMat3, KslTypeFloat3> {
     val input = inMat3("input")
-    val output = outMat3("output")
+    override val output = outMat3("output")
     init { body.apply { output set input } }
 }
 
-class PortMat4(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PortMat4(name: String, parentScope: KslScopeBuilder) :
+    KslPort<KslTypeMat4>(name, parentScope), KslMatrixExpression<KslTypeMat4, KslTypeFloat4> {
     val input = inMat4("input")
-    val output = outMat4("output")
+    override val output = outMat4("output")
     init { body.apply { output set input } }
 }
