@@ -24,7 +24,7 @@ import kotlin.math.sqrt
 class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
 
     val windOffset = MutableVec3f()
-    val windSpeed = MutableVec3f(8f, 0.4f, 5.4f)
+    val windSpeed = MutableVec3f(10f, 0.5f, 6.7f)
     var windStrength = 1f
     var windScale = 100f
 
@@ -51,13 +51,10 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
     val trees = mutableListOf<Tree>()
 
     init {
-        instancedTrees(20, nTrees)
-    }
-
-    private fun instancedTrees(nMeshes: Int, nInstances: Int) {
         val treeGenerator = LowPolyTree(0x1deadb0b)
 
-        for (i in 0 until nMeshes) {
+        // generate 20 different tree models
+        for (i in 0 until 20) {
             val root = treeGenerator.generateNodes(Mat4f())
 
             val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, TreeShader.WIND_SENSITIVITY)
@@ -80,7 +77,9 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
             )
         }
         trees.forEach { treeGroup += it.drawMesh }
-        for (i in 0 until nInstances) {
+
+        // randomly distribute tree instances
+        for (i in 0 until nTrees) {
             val (pos, likelihood) = pickTreePosition()
             if (likelihood > 0f) {
                 treeTree.add(pos)

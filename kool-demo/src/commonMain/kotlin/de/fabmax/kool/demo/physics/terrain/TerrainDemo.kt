@@ -13,8 +13,10 @@ import de.fabmax.kool.modules.ksl.blinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
+import de.fabmax.kool.pipeline.AddressMode
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
@@ -29,8 +31,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
+    private lateinit var grassColor: Texture2d
     private lateinit var terrain: Terrain
     private lateinit var trees: Trees
+    private lateinit var grass: Grass
     private lateinit var ibl: EnvironmentMaps
 
     private lateinit var playerModel: PlayerModel
@@ -50,6 +54,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
         normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
 
+        val grassProps = TextureProps(
+            addressModeU = AddressMode.CLAMP_TO_EDGE,
+            addressModeV = AddressMode.CLAMP_TO_EDGE
+        )
+        grassColor = loadAndPrepareTexture("reserve/vegetation/grass_64.png", grassProps)
+
         showLoadText("Generating wind density texture...")
         val windDensity = TreeShader.generateWindDensityTex()
 
@@ -59,6 +69,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
         trees = Trees(terrain, 150, windDensity)
+        grass = Grass(terrain, trees)
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         terrainMesh = terrain.generateTerrainMesh()
 
@@ -96,7 +107,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         button("Respawn Boxes") {
             physicsObjects.respawnBoxes()
         }
-        sliderWithValue("Wind Speed", 2f, 0.1f, 20f) {
+        sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
             trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
         }
         sliderWithValue("Wind Strength", trees.windStrength, 0f, 2f) {
@@ -162,6 +173,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         trees.setupTreeShaders(ibl, shadowMap)
         +trees.treeGroup
+
+        //+grass.grassLines
+        grass.setupShader(grassColor, ibl, shadowMap)
+        +grass.grassQuads
 
         +physicsObjects.debugLines
 

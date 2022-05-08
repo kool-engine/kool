@@ -5,7 +5,6 @@ import de.fabmax.kool.math.noise.MultiPerlin3d
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslDepthShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.blocks.getFloat3Port
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -40,7 +39,7 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
     }
 
     companion object {
-        private fun KslProgram.windMod() {
+        fun KslProgram.windMod() {
             vertexStage {
                 main {
                     val worldPosPort = getFloat3Port("worldPos")
@@ -52,7 +51,7 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
                     val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
                     val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - constFloat3(0.5f, 0.5f, 0.5f), "windValue")
                     windValue.y *= 0.5f.const
-                    val displacement = windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windStrength
+                    val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windStrength)
                     worldPosPort.input(worldPos + displacement)
                 }
             }
@@ -119,7 +118,8 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
                 addressModeU = AddressMode.REPEAT,
                 addressModeV = AddressMode.REPEAT,
                 addressModeW = AddressMode.REPEAT,
-                maxAnisotropy = 1
+                maxAnisotropy = 1,
+                mipMapping = false
             )
             return Texture3d(props) { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
         }

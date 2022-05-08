@@ -41,8 +41,8 @@ class Terrain(val heightMap: HeightMap) {
 
     fun getSplatWeightsAt(x: Float, z: Float): Vec4f {
         val pos = terrainTransformInv.transform(MutableVec3f(x, 0f, z))
-        val ix = (pos.x * 0.5f).roundToInt().clamp(0, splatMapData.width - 1)
-        val iy = (pos.z * 0.5f).roundToInt().clamp(0, splatMapData.height - 1)
+        val ix = ((pos.x - 1f) * 0.5f).roundToInt().clamp(0, splatMapData.width - 1)
+        val iy = ((pos.z - 1f) * 0.5f).roundToInt().clamp(0, splatMapData.height - 1)
 
         val u8Buffer = splatMapData.data as Uint8Buffer
         val r = (u8Buffer[(iy * splatMapData.width + ix) * 4 + 0].toInt() and 0xff) / 255f
@@ -169,7 +169,8 @@ class Terrain(val heightMap: HeightMap) {
 
                             val waterColor = MdColor.CYAN.toLinear().const
                             val beachColor = (MdColor.AMBER toneLin 300).const
-                            val grassColor = (MdColor.LIGHT_GREEN toneLin 600).const
+                            //val grassColor = (MdColor.LIGHT_GREEN toneLin 600).const
+                            val grassColor = (MdColor.BROWN toneLin 600).const
                             val rockColor = (MdColor.GREY toneLin 500).const * (1f.const - material.inFragmentPos.y / 150f.const) * material.inNormal.y
 
                             val terrainColor = float4Var(
@@ -181,7 +182,7 @@ class Terrain(val heightMap: HeightMap) {
 
                             val specularStrength = floatVar(
                                 splatWeights.r * 0.3f.const +
-                                        splatWeights.g * 0.4f.const +
+                                        splatWeights.g * 0.0f.const +
                                         splatWeights.b * 1.0f.const +
                                         splatWeights.a * 0.2f.const
                             )
