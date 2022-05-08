@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.MdColor
 import kotlin.math.min
 
-class LoadingScreen(ctx: KoolContext) : Scene("Loading Screen") {
+class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
 
     lateinit var loadingText1: Label
         private set

@@ -35,6 +35,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var terrain: Terrain
     private lateinit var trees: Trees
     private lateinit var grass: Grass
+    private lateinit var camLocalGrass: CamLocalGrass
     private lateinit var ibl: EnvironmentMaps
 
     private lateinit var playerModel: PlayerModel
@@ -58,7 +59,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             addressModeU = AddressMode.CLAMP_TO_EDGE,
             addressModeV = AddressMode.CLAMP_TO_EDGE
         )
-        grassColor = loadAndPrepareTexture("reserve/vegetation/grass_64.png", grassProps)
+        grassColor = loadAndPrepareTexture("${Demo.materialPath}/grass_64.png", grassProps)
 
         showLoadText("Generating wind density texture...")
         val windDensity = TreeShader.generateWindDensityTex()
@@ -68,8 +69,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
+        showLoadText("Creating trees...")
         trees = Trees(terrain, 150, windDensity)
+        showLoadText("Creating grass (1/2, may take a bit)...")
         grass = Grass(terrain, trees)
+        showLoadText("Creating grass (2/2, may take a bit)...")
+        camLocalGrass = CamLocalGrass(terrain, trees)
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         terrainMesh = terrain.generateTerrainMesh()
 
@@ -115,6 +120,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         sliderWithValue("Wind Scale", trees.windScale, 10f, 500f) {
             trees.windScale = value
+        }
+        toggleButton("Grass", grass.grassQuads.isVisible) {
+            grass.grassQuads.isVisible = isEnabled
+        }
+        toggleButton("Cam Local Grass", camLocalGrass.grassQuads.isVisible) {
+            camLocalGrass.grassQuads.isVisible = isEnabled
         }
         toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
             playerModel.isDrawShapeOutline = isEnabled
@@ -172,11 +183,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +makeBridgeMesh(shadowMap)
 
         trees.setupTreeShaders(ibl, shadowMap)
-        +trees.treeGroup
-
-        //+grass.grassLines
         grass.setupShader(grassColor, ibl, shadowMap)
+        camLocalGrass.setupShader(grassColor, ibl, shadowMap)
+
+        +trees.treeGroup
         +grass.grassQuads
+        +camLocalGrass.grassQuads
 
         +physicsObjects.debugLines
 

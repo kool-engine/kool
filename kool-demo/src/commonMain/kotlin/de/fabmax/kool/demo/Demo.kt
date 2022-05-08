@@ -16,6 +16,7 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.DebugOverlay
+import kotlinx.coroutines.CompletableDeferred
 
 /**
  * @author fabmax
@@ -236,8 +237,15 @@ abstract class DemoScene(val name: String) {
             value?.loadingText2?.text = ""
         }
 
-    protected fun showLoadText(text: String) {
-        loadingScreen?.loadingText2?.text = text
+    protected suspend fun showLoadText(text: String) {
+        loadingScreen?.let { ls ->
+            ls.loadingText2.text = text
+            val def = CompletableDeferred<Boolean>()
+            ls.ctx.runDelayed(1) {
+                def.complete(true)
+            }
+            def.await()
+        }
     }
 
     fun checkDemoState(ctx: KoolContext) {
