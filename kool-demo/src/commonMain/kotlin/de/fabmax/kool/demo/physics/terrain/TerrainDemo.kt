@@ -112,24 +112,32 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         button("Respawn Boxes") {
             physicsObjects.respawnBoxes()
         }
-        sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
-            trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
-        }
-        sliderWithValue("Wind Strength", trees.windStrength, 0f, 2f) {
-            trees.windStrength = value
-        }
-        sliderWithValue("Wind Scale", trees.windScale, 10f, 500f) {
-            trees.windScale = value
-        }
-        toggleButton("Grass", grass.grassQuads.isVisible) {
-            grass.grassQuads.isVisible = isEnabled
-        }
-        toggleButton("Cam Local Grass", camLocalGrass.grassQuads.isVisible) {
-            camLocalGrass.grassQuads.isVisible = isEnabled
-        }
         toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
             playerModel.isDrawShapeOutline = isEnabled
             physicsObjects.debugLines.isVisible = isEnabled
+        }
+        section("Wind") {
+            sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
+                trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
+            }
+            sliderWithValue("Wind Strength", trees.windStrength, 0f, 2f) {
+                trees.windStrength = value
+            }
+            sliderWithValue("Wind Scale", trees.windScale, 10f, 500f) {
+                trees.windScale = value
+            }
+        }
+        section("Grass") {
+            toggleButton("Grass", grass.grassQuads.isVisible) {
+                grass.grassQuads.isVisible = isEnabled
+            }
+            toggleButton("Cam Local Grass", camLocalGrass.grassQuads.isVisible) {
+                camLocalGrass.grassQuads.isVisible = isEnabled
+            }
+            toggleButton("Grass Shadow Casting", camLocalGrass.grassQuads.isCastingShadow) {
+                grass.setIsCastingShadow(isEnabled)
+                camLocalGrass.setIsCastingShadow(isEnabled)
+            }
         }
 
         uiRoot.apply {

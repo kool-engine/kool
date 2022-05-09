@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -15,53 +16,84 @@ import de.fabmax.kool.util.logD
 
 class Grass(val terrain: Terrain, val trees: Trees) {
 
-    val grassQuads: Mesh
+    val grassQuads = Group()
 
     init {
-        grassQuads = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, TreeShader.WIND_SENSITIVITY)).apply {
-            generate {
-                val pos = MutableVec3f()
-                val step = MutableVec3f()
-                val topOffset = MutableVec3f()
-                val midOffset = MutableVec3f()
+        val gridSz = 8
+        val meshDatas = MutableList(gridSz * gridSz) {
+            val data = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, TreeShader.WIND_SENSITIVITY)
+            val builder = MeshBuilder(data)
+            builder to data
+        }
 
-                val pt = PerfTimer()
-                var genCnt = 0
+        val pos = MutableVec3f()
+        val step = MutableVec3f()
+        val topOffset = MutableVec3f()
+        val midOffset = MutableVec3f()
 
-                val rand = Random(1337)
-                for (i in 0..750_000) {
-                    val x = rand.randomF(-250f, 250f)
-                    val z = rand.randomF(-250f, 250f)
+        val pt = PerfTimer()
+        var genCnt = 0
 
-                    val weights = terrain.getSplatWeightsAt(x, z)
-                    if (weights.y > 0.5f && rand.randomF() < weights.y) {
-                        genCnt++
+        val rand = Random(1337)
+        for (i in 0..750_000) {
+            val x = rand.randomF(-250f, 250f)
+            val z = rand.randomF(-250f, 250f)
 
-                        pos.set(x, terrain.getTerrainHeightAt(x, z), z)
-                        step.set(rand.randomF(-1f, 1f), 0f, rand.randomF(-1f, 1f)).norm().add(pos)
-                        step.y = terrain.getTerrainHeightAt(step.x, step.z)
-                        step.subtract(pos).scale(0.333f)
-                        midOffset.set(step).rotate(90f, Vec3f.Y_AXIS)
-                        topOffset.set(rand.randomF(-0.25f, 0.25f), rand.randomF(0.75f, 1.25f) * weights.y, rand.randomF(-0.25f, 0.25f))
-                        grassSprite(pos, step, topOffset, midOffset)
-                    }
-                }
-                geometry.generateNormals()
+            val weights = terrain.getSplatWeightsAt(x, z)
+            if (weights.y > 0.5f && rand.randomF() < weights.y) {
+                genCnt++
 
-                logD { "Generated $genCnt grass patches in ${pt.takeMs()} ms" }
+                val gridX = ((x + 250f) / 500f * gridSz).toInt()
+                val gridY = ((z + 250f) / 500f * gridSz).toInt()
+                val (builder, _) = meshDatas[gridY * gridSz + gridX]
+
+                pos.set(x, terrain.getTerrainHeightAt(x, z), z)
+                step.set(rand.randomF(-1f, 1f), 0f, rand.randomF(-1f, 1f)).norm().add(pos)
+                step.y = terrain.getTerrainHeightAt(step.x, step.z)
+                step.subtract(pos).scale(0.333f)
+                midOffset.set(step).rotate(90f, Vec3f.Y_AXIS)
+                topOffset.set(rand.randomF(-0.25f, 0.25f), rand.randomF(0.75f, 1.25f) * weights.y, rand.randomF(-0.25f, 0.25f))
+                builder.grassSprite(pos, step, topOffset, midOffset)
             }
-            isCastingShadow = false
+        }
+        logD { "Generated $genCnt grass patches in ${pt.takeMs()} ms" }
+
+        meshDatas.forEach { (_, data) ->
+            data.generateNormals()
+            grassQuads += Mesh(data)
+        }
+        setIsCastingShadow(true)
+    }
+
+    fun setIsCastingShadow(enabled: Boolean) {
+        grassQuads.children.forEach {
+            it as Mesh
+            it.isCastingShadow = false
+            if (enabled) {
+                it.setIsCastingShadow(0, true)
+                it.setIsCastingShadow(1, true)
+                it.setIsCastingShadow(2, false)
+            }
         }
     }
 
     fun setupShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap) {
         val grassShader = GrassShader(grassColor, ibl, shadowMap, trees.windDensity, false)
-        grassQuads.shader = grassShader
+        val grassShadowShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
+        grassQuads.children.forEach {
+            it as Mesh
+            it.shader = grassShader
+            it.depthShader = grassShadowShader
+        }
 
         grassQuads.onUpdate += {
             grassShader.windOffset = trees.windOffset
             grassShader.windStrength = trees.windStrength
             grassShader.windScale = 1f / trees.windScale
+
+            grassShadowShader.windOffset = trees.windOffset
+            grassShadowShader.windStrength = trees.windStrength
+            grassShadowShader.windScale = 1f / trees.windScale
         }
     }
 

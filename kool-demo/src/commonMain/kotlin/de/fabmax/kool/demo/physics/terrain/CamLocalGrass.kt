@@ -39,9 +39,9 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
                 geometry.generateNormals()
             }
             isFrustumChecked = false
-            isCastingShadow = false
             instances = grassInstances
         }
+        setIsCastingShadow(true)
 
         val pt = PerfTimer()
         val rand = Random(1337)
@@ -64,15 +64,30 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
         logD { "Generated ${grassPositions.size} grass patches in ${pt.takeMs()} ms" }
     }
 
+    fun setIsCastingShadow(enabled: Boolean) {
+        grassQuads.isCastingShadow = false
+        if (enabled) {
+            grassQuads.setIsCastingShadow(0, true)
+            grassQuads.setIsCastingShadow(1, true)
+            grassQuads.setIsCastingShadow(2, false)
+        }
+    }
+
     fun setupShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap) {
         val grassShader = GrassShader(grassColor, ibl, shadowMap, trees.windDensity, true)
+        val grassShadowShader = GrassShader.Shadow(grassColor, trees.windDensity, true)
         grassQuads.shader = grassShader
+        grassQuads.depthShader = grassShadowShader
 
         grassQuads.onUpdate += { ev ->
             if (grassQuads.isVisible) {
                 grassShader.windOffset = trees.windOffset
                 grassShader.windStrength = trees.windStrength
                 grassShader.windScale = 1f / trees.windScale
+
+                grassShadowShader.windOffset = trees.windOffset
+                grassShadowShader.windStrength = trees.windStrength
+                grassShadowShader.windScale = 1f / trees.windScale
 
                 val cam = ev.camera
                 val radius = 50f
@@ -112,7 +127,7 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
 
                 override fun itemSqrDistanceToPoint(tree: SpatialTree<GrassInstance>, item: GrassInstance, point: Vec3f): Float {
                     val dSqr = super.itemSqrDistanceToPoint(tree, item, point)
-                    if (dSqr < radiusSqr && !camera.isInFrustum(item, 1.5f)) {
+                    if (dSqr < radiusSqr && !camera.isInFrustum(item, 2f)) {
                         return Float.MAX_VALUE
                     }
                     val relDist = sqrt(dSqr) / radius

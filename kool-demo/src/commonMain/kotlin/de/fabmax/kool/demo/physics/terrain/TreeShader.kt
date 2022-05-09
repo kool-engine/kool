@@ -30,10 +30,7 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
         companion object {
             private fun treeShadowConfig() = Config().apply {
                 isInstanced = true
-                modelCustomizer = {
-                    //dumpCode = true
-                    windMod()
-                }
+                modelCustomizer = { windMod() }
             }
         }
     }
