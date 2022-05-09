@@ -16,7 +16,7 @@ import de.fabmax.kool.util.logD
 
 class Grass(val terrain: Terrain, val trees: Trees) {
 
-    val grassQuads = Group()
+    val grassQuads = Group().apply { isFrustumChecked = false }
 
     init {
         val gridSz = 8
@@ -60,7 +60,14 @@ class Grass(val terrain: Terrain, val trees: Trees) {
 
         meshDatas.forEach { (_, data) ->
             data.generateNormals()
-            grassQuads += Mesh(data)
+
+            // fixme: for some reason disabling specific shadow lods sometimes results in weird flickering artifacts
+            //  as a workaround we specify an empty geometry for largest lod
+            grassQuads += Mesh(data).apply {
+                shadowGeometry += geometry
+                shadowGeometry += geometry
+                shadowGeometry += IndexedVertexList(Attribute.POSITIONS)
+            }
         }
         setIsCastingShadow(true)
     }
@@ -68,12 +75,16 @@ class Grass(val terrain: Terrain, val trees: Trees) {
     fun setIsCastingShadow(enabled: Boolean) {
         grassQuads.children.forEach {
             it as Mesh
-            it.isCastingShadow = false
-            if (enabled) {
-                it.setIsCastingShadow(0, true)
-                it.setIsCastingShadow(1, true)
-                it.setIsCastingShadow(2, false)
-            }
+            it.isCastingShadow = enabled
+
+            // fixme: for some reason disabling specific shadow lods sometimes results in weird flickering artifacts
+            //  as a workaround we specify an empty geometry for largest lod
+//            it.isCastingShadow = false
+//            if (enabled) {
+//                it.setIsCastingShadow(0, true)
+//                it.setIsCastingShadow(1, true)
+//                it.setIsCastingShadow(2, false)
+//            }
         }
     }
 

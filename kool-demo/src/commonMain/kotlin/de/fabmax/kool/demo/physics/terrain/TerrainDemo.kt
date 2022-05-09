@@ -19,10 +19,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.colorMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
@@ -40,7 +37,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
-    private lateinit var terrainMesh: Mesh
+    private lateinit var terrainMeshes: Group
     private lateinit var physicsObjects: PhysicsObjects
 
     private lateinit var escKeyListener: InputManager.KeyEventListener
@@ -76,7 +73,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Creating grass (2/2, may take a bit)...")
         camLocalGrass = CamLocalGrass(terrain, trees)
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
-        terrainMesh = terrain.generateTerrainMesh()
+        terrainMeshes = terrain.generateTerrainMeshes()
 
         showLoadText("Loading player model...")
         val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
@@ -182,9 +179,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        terrainMesh.shader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl)
+        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl)
+        terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
+        +terrainMeshes
 
-        +terrainMesh
         if (physicsObjects.boxes.isNotEmpty()) {
             +makeBoxMesh(shadowMap)
         }

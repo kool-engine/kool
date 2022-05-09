@@ -719,7 +719,8 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
                     position.x += props.xDir.x * px + props.yDir.x * py + gridNormal.x * h
                     position.y += props.xDir.y * px + props.yDir.y * py + gridNormal.y * h
                     position.z += props.xDir.z * px + props.yDir.z * py + gridNormal.z * h
-                    texCoord.set(x / props.stepsX.toFloat() * props.texCoordScale.x, (1f - y / props.stepsY.toFloat()) * props.texCoordScale.y)
+                    texCoord.set(x / props.stepsX.toFloat() * props.texCoordScale.x + props.texCoordOffset.x,
+                        (1f - y / props.stepsY.toFloat()) * props.texCoordScale.y + props.texCoordOffset.y)
                 }
 
                 if (x > 0 && y > 0) {
@@ -890,6 +891,7 @@ class GridProps {
     val center = MutableVec3f()
     val xDir = MutableVec3f(Vec3f.X_AXIS)
     val yDir = MutableVec3f(Vec3f.NEG_Z_AXIS)
+    val texCoordOffset = MutableVec2f(0f, 0f)
     val texCoordScale = MutableVec2f(1f, 1f)
     var sizeX = 10f
     var sizeY = 10f

@@ -65,12 +65,7 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
     }
 
     fun setIsCastingShadow(enabled: Boolean) {
-        grassQuads.isCastingShadow = false
-        if (enabled) {
-            grassQuads.setIsCastingShadow(0, true)
-            grassQuads.setIsCastingShadow(1, true)
-            grassQuads.setIsCastingShadow(2, false)
-        }
+        grassQuads.isCastingShadow = enabled
     }
 
     fun setupShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap) {

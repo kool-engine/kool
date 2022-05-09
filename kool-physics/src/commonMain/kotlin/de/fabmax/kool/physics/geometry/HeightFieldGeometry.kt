@@ -7,6 +7,36 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 expect class HeightFieldGeometry(heightField: HeightField) : CommonHeightFieldGeometry
 
 abstract class CommonHeightFieldGeometry(val heightField: HeightField) : CollisionGeometry {
+
+    fun generateTiledMesh(target: MeshBuilder, gridX: Int, gridY: Int, gridSizeX: Int, gridSizeY: Int) {
+        target.apply {
+            withTransform {
+                val stepsX = heightField.heightMap.width / gridSizeX
+                val stepsY = heightField.heightMap.height / gridSizeY
+                val szX = stepsX * heightField.rowScale
+                val szY = stepsY * heightField.columnScale
+
+                val tx = gridX * stepsX * heightField.rowScale + szX * 0.5f
+                val tz = (heightField.heightMap.height - 1) * heightField.columnScale - ((gridY + 0.5f) * stepsY * heightField.columnScale)
+                translate(tx, 0f, tz)
+
+                grid {
+                    sizeX = szX
+                    sizeY = szY
+
+                    this.stepsX = stepsX
+                    this.stepsY = stepsY
+                    val tst = 0f/512f
+                    texCoordScale.set(1f / gridSizeX + tst, 1f / gridSizeY + tst)
+                    texCoordOffset.set(gridX.toFloat() / gridSizeX, (gridSizeY - 1f - gridY) / gridSizeY)
+                    heightFun = { hx, hy ->
+                        heightField.heightMap.getHeight(hx + gridX * stepsX, hy + gridY * stepsY)
+                    }
+                }
+            }
+        }
+    }
+
     override fun generateMesh(target: MeshBuilder) {
         target.apply {
             withTransform {
