@@ -47,9 +47,9 @@ class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslSc
                 mapInfo.subMaps.forEachIndexed { i, subMap ->
                     val subMapIdx = mapInfo.fromIndexIncl + i
                     val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
-                    val normalLightSpace = float3Var(normalize((viewProj * constFloat4(inNormalWorldSpace, 0f.const)).xyz))
+                    val normalLightSpace = float3Var(normalize((viewProj * float4Value(inNormalWorldSpace, 0f.const)).xyz))
                     normalZsLightSpace!!.input[subMapIdx] set normalLightSpace.z
-                    positionsLightSpace!!.input[subMapIdx] set viewProj * constFloat4(inPositionWorldSpace, 1f.const)
+                    positionsLightSpace!!.input[subMapIdx] set viewProj * float4Value(inPositionWorldSpace, 1f.const)
                     positionsLightSpace!!.input[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
                 }
             }

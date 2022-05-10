@@ -107,19 +107,42 @@ class ColorBlockConfig {
         colorSources += VertexColor(attribute, mixMode)
     }
 
+    /**
+     * Adds texture based color information. By default, texture color space is converted from sRGB to linear color
+     * space (this is typically what you want). In case you don't want color space conversion, specify a gamma value
+     * of 1.0 or use [addTextureData] instead.
+     *
+     * @param defaultTexture Texture to bind to this attribute
+     * @param textureName Name of the texture used in the generated shader code
+     * @param coordAttribute Vertex attribute to use for the texture coordinates
+     * @param gamma Color space conversion gama value. Default is 2.2 (sRGB -> linear), use a value of 1.0 to disable
+     *              color space conversion
+     * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
+     *                texture color and an instance color based color tint)
+     */
     fun addTextureColor(defaultTexture: Texture2d? = null,
                         textureName: String = "tColor",
                         coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                        gamma: Float = 1f,
+                        gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
                         mixMode: MixMode = MixMode.Set) {
         colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
     }
 
-    fun addTextureColorLinearize(defaultTexture: Texture2d? = null,
-                                 textureName: String = "tColor",
-                                 coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                                 mixMode: MixMode = MixMode.Set) =
-        addTextureColor(defaultTexture, textureName, coordAttribute, Color.GAMMA_sRGB_TO_LINEAR, mixMode)
+    /**
+     * Adds texture based color information without applying any color space conversion. This is equivalent to calling
+     * [addTextureColor] with a gamma value of 1.0.
+     *
+     * @param defaultTexture Texture to bind to this attribute
+     * @param textureName Name of the texture used in the generated shader code
+     * @param coordAttribute Vertex attribute to use for the texture coordinates
+     * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
+     *                texture color and an instance color based color tint)
+     */
+    fun addTextureData(defaultTexture: Texture2d? = null,
+                       textureName: String = "tColor",
+                       coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+                       mixMode: MixMode = MixMode.Set) =
+        addTextureColor(defaultTexture, textureName, coordAttribute, 1f, mixMode)
 
     fun addInstanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
         colorSources += InstanceColor(attribute, mixMode)

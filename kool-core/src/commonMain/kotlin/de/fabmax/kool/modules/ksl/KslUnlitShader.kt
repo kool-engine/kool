@@ -46,7 +46,7 @@ open class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         mvp *= instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                     }
 
-                    outPosition set mvp * constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                    outPosition set mvp * float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                 }
             }
             fragmentStage {

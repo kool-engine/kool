@@ -20,7 +20,7 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
                     all(projPos lt Vec3f(1f, 1f, 1f).const)) {
                 // projected position is inside shadow map bounds
                 samplePattern.forEach { pos ->
-                    val shadowPos = constFloat3(projPos.x + pos.x.const * sampleStep.x, projPos.y + pos.y.const * sampleStep.y, projPos.z)
+                    val shadowPos = float3Value(projPos.x + pos.x.const * sampleStep.x, projPos.y + pos.y.const * sampleStep.y, projPos.z)
                     shadowFactor += sampleDepthTexture(depthMap, shadowPos)
                 }
                 if (samplePattern.size > 1) {

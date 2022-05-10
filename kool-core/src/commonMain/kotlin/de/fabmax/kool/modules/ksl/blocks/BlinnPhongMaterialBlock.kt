@@ -18,8 +18,8 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslB
 
     val inAmbientColor = inFloat3("inAmbientColor")
     val inSpecularColor = inFloat3("inSpecularColor")
-    val inShininess = inFloat1("inShininess", KslConstFloat1(16f))
-    val inSpecularStrength = inFloat1("inSpecularStrength", KslConstFloat1(0f))
+    val inShininess = inFloat1("inShininess", KslValueFloat1(16f))
+    val inSpecularStrength = inFloat1("inSpecularStrength", KslValueFloat1(0f))
 
     val inLightCount = inInt1("inLightCount")
     val inEncodedLightPositions = inFloat4Array("inEncodedLightPositions")

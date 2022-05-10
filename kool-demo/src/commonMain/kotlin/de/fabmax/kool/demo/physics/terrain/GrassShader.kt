@@ -44,7 +44,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
                             val tex = texture2d("grassAlpha")
                             val uv = texCoords.getAttributeCoords(Attribute.TEXTURE_COORDS)
                             val texAlpha = floatVar(sampleTexture(tex, uv).a)
-                            `if` (texAlpha lt 0.5f.const) {
+                            `if` (texAlpha lt 0.35f.const) {
                                 discard()
                             }
                         }
@@ -75,13 +75,16 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
 
         private fun grassShaderConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = Config().apply {
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { addTextureColorLinearize(grassColor) }
+            color { addTextureColor(grassColor) }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            this.isInstanced = isInstanced
+            vertices {
+                this.isInstanced = isInstanced
+                isFlipBacksideNormals = false
+            }
+
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             alphaMode = AlphaMode.Opaque()
-            isFlipBacksideNormals = false
             specularStrength = 0.15f
 
             modelCustomizer = {
@@ -105,7 +108,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
                         val positionTint = sampleTexture(windTex, worldPos * 0.05f.const).y * 0.5f.const
 
                         // forward tint values to fragment stage
-                        tint.input set constFloat2(windTint, positionTint)
+                        tint.input set float2Value(windTint, positionTint)
 
                         // adjust vertex normals to always point in light direction
                         val normalPort = getFloat3Port("worldNormal")

@@ -14,7 +14,7 @@ class CalcBumpedNormal(parentScope: KslScopeBuilder) :
         body.apply {
             val tang = float3Var(normalize(tangent.xyz - dot(tangent.xyz, normal) * normal))
             val bitangent = cross(normal, tang)
-            val tbn = mat3Var(constMat3(tang, bitangent, normal))
+            val tbn = mat3Var(mat3Value(tang, bitangent, normal))
             `return`(normalize(mix(normal, tbn * bumpNormal, strength)))
         }
     }

@@ -51,14 +51,14 @@ open class KslDepthShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
                         modelMat *= armatureBlock.outBoneTransform
                     }
 
-                    val localPos = constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                    val localPos = float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                     val worldPos = float3Port("worldPos", float3Var((modelMat * localPos).xyz))
-                    outPosition set (viewProj * constFloat4(worldPos.output, 1f))
+                    outPosition set (viewProj * float4Value(worldPos.output, 1f))
                 }
             }
             fragmentStage {
                 main {
-                    colorOutput(constFloat4(1f, 1f, 1f, 1f))
+                    colorOutput(float4Value(1f, 1f, 1f, 1f))
                 }
             }
             cfg.modelCustomizer?.invoke(this)

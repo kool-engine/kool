@@ -170,25 +170,18 @@ class KslShaderTest : DemoScene("KslShader") {
             }
 
             val phongShader = blinnPhongShader {
-                isInstanced = true
-
                 shininess = 16f
                 specularStrength = 0.25f
 
+                vertices { isInstanced = true }
                 color {
                     //addInstanceColor()
                     //addStaticColor(Color.WHITE)
-                    addTextureColorLinearize(colorMap)
+                    addTextureColor(colorMap)
                 }
-                normalMapping {
-                    setNormalMap(normalMap)
-                }
-                shadow {
-                    addShadowMaps(shadowMaps)
-                }
-                pipeline {
-                    cullMethod = CullMethod.NO_CULLING
-                }
+                normalMapping { setNormalMap(normalMap) }
+                shadow { addShadowMaps(shadowMaps) }
+                pipeline { cullMethod = CullMethod.NO_CULLING }
 
                 modelCustomizer = {
                     dumpCode = true

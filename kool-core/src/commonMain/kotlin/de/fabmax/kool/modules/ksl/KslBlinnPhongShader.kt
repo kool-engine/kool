@@ -33,8 +33,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
     init {
         when (val ambient = cfg.ambientColor) {
-            is Config.UniformAmbientColor -> ambientColor = ambient.color
-            is Config.ImageBasedAmbientColor -> {
+            is Config.AmbientColor.Uniform -> ambientColor = ambient.color
+            is Config.AmbientColor.ImageBased -> {
                 ambientTexture = ambient.ambientTexture
                 ambientColor = ambient.colorFactor
             }
@@ -42,33 +42,29 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     }
 
     class Config {
+        val vertexConfig = BasicVertexConfig()
         val colorCfg = ColorBlockConfig()
         val normalMapCfg = NormalMapConfig()
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
 
-        val isArmature: Boolean
-            get() = maxNumberOfBones > 0
-        var isInstanced = false
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
-        var isFlipBacksideNormals = true
-        var maxNumberOfBones = 0
         var maxNumberOfLights = 4
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var specularColor: Color = Color.WHITE
-        var ambientColor: AmbientColor = UniformAmbientColor(Color(0.2f, 0.2f, 0.2f).toLinear())
+        var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var shininess = 16f
         var specularStrength = 1f
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
         fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
-            ambientColor = UniformAmbientColor(color)
+            ambientColor = AmbientColor.Uniform(color)
         }
 
         fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
-            ambientColor = ImageBasedAmbientColor(ambientTexture, colorFactor)
+            ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
         }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
@@ -79,10 +75,6 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             normalMapCfg.apply(block)
         }
 
-        fun enableArmature(maxNumberOfBones: Int = 32) {
-            this.maxNumberOfBones = maxNumberOfBones
-        }
-
         fun pipeline(block: PipelineConfig.() -> Unit) {
             pipelineCfg.apply(block)
         }
@@ -91,9 +83,14 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             shadowCfg.apply(block)
         }
 
-        sealed class AmbientColor
-        class UniformAmbientColor(val color: Color) : AmbientColor()
-        class ImageBasedAmbientColor(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
+        fun vertices(block: BasicVertexConfig.() -> Unit) {
+            vertexConfig.apply(block)
+        }
+
+        sealed class AmbientColor {
+            class Uniform(val color: Color) : AmbientColor()
+            class ImageBased(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
+        }
     }
 
     class Model(cfg: Config) : KslProgram("Blinn-Phong Shader") {
@@ -111,20 +108,20 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     val uModelMat = modelMatrix()
                     val viewProj = mat4Var(camData.viewProjMat)
                     val modelMat = mat4Var(uModelMat.matrix)
-                    if (cfg.isInstanced) {
+                    if (cfg.vertexConfig.isInstanced) {
                         val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                         modelMat *= instanceModelMat
                     }
-                    if (cfg.isArmature) {
-                        val armatureBlock = armatureBlock(cfg.maxNumberOfBones)
+                    if (cfg.vertexConfig.isArmature) {
+                        val armatureBlock = armatureBlock(cfg.vertexConfig.maxNumberOfBones)
                         armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
                         armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))
                         modelMat *= armatureBlock.outBoneTransform
                     }
 
                     // transform vertex attributes into world space and forward them to fragment stage
-                    val localPos = constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
-                    val localNormal = constFloat4(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
+                    val localPos = float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                    val localNormal = float4Value(vertexAttribFloat3(Attribute.NORMALS.name), 0f)
 
                     // world position and normal are made available via ports for custom models to modify them
                     val worldPos = float3Port("worldPos", float3Var((modelMat * localPos).xyz))
@@ -132,12 +129,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
                     positionWorldSpace.input set worldPos
                     normalWorldSpace.input set worldNormal
-                    outPosition set (viewProj * constFloat4(worldPos, 1f))
+                    outPosition set (viewProj * float4Value(worldPos, 1f))
 
                     // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
                         tangentWorldSpace = interStageFloat4().apply {
-                            input set modelMat * constFloat4(vertexAttribFloat4(Attribute.TANGENTS.name).xyz, 0f)
+                            input set modelMat * float4Value(vertexAttribFloat4(Attribute.TANGENTS.name).xyz, 0f)
                         }
                     }
 
@@ -163,23 +160,38 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
-                    val tmpNormal = float3Var(normalize(normalWorldSpace.output))
-                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.isFlipBacksideNormals) {
-                        `if` (!inIsFrontFacing) {
-                            tmpNormal *= (-1f).const3
-                        }
-                    }
-                    val normal = float3Port("normal", tmpNormal)
-
                     // determine main color (albedo)
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
                     val fragmentColor = float4Port("fragmentColor", colorBlock.outColor)
 
+                    // discard fragment output if alpha mode is mask and fragment alpha value is below cutoff value
                     (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
                         `if` (fragmentColor.a lt mask.cutOff.const) {
                             discard()
                         }
                     }
+
+                    val vertexNormal = float3Var(normalize(normalWorldSpace.output))
+                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexConfig.isFlipBacksideNormals) {
+                        `if` (!inIsFrontFacing) {
+                            vertexNormal *= (-1f).const3
+                        }
+                    }
+
+                    // do normal map computations (if enabled) and adjust material block input normal accordingly
+                    val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
+                        normalMapBlock(cfg.normalMapCfg) {
+                            inTangentWorldSpace(normalize(tangentWorldSpace!!.output))
+                            inNormalWorldSpace(vertexNormal)
+                            inStrength(uNormalMapStrength)
+                            inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
+                        }.outBumpNormal
+                    } else {
+                        vertexNormal
+                    }
+
+                    // make final normal value available to model customizer
+                    val normal = float3Port("normal", bumpedNormal)
 
                     // create an array with light strength values per light source (1.0 = full strength)
                     val shadowFactors = floatArray(lightData.maxLightCount, 1f.const)
@@ -187,8 +199,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
                     val ambientColor = when (cfg.ambientColor) {
-                        is Config.UniformAmbientColor -> uAmbientColor
-                        is Config.ImageBasedAmbientColor -> {
+                        is Config.AmbientColor.Uniform -> uAmbientColor
+                        is Config.AmbientColor.ImageBased -> {
                             val ambientTex = textureCube("tAmbientTexture")
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             sampleTexture(ambientTex, ambientOri * normal) * uAmbientColor
@@ -208,18 +220,6 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                         inSpecularStrength(uSpecularStrength)
 
                         setLightData(lightData, shadowFactors)
-                    }
-
-                    // do normal map computations (if enabled) and adjust material block input normal accordingly
-                    if (cfg.normalMapCfg.isNormalMapped) {
-                        normalMapBlock(cfg.normalMapCfg) {
-                            inTangentWorldSpace(normalize(tangentWorldSpace!!.output))
-                            inNormalWorldSpace(normal)
-                            inStrength(uNormalMapStrength)
-                            inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
-
-                            material.inNormal(outBumpNormal)
-                        }
                     }
 
                     // set fragment stage output color

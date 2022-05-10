@@ -201,10 +201,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         // change player model shader
         playerModel.model.meshes.values.forEach {
             it.shader = blinnPhongShader {
+                vertices { enableArmature(40) }
                 color { addUniformColor(MdColor.PINK.toLinear()) }
                 shadow { addShadowMap(shadowMap) }
                 imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                enableArmature(40)
                 specularStrength = 0.5f
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             }
@@ -254,10 +254,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
         shader = blinnPhongShader {
+            vertices { isInstanced = true }
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            isInstanced = true
             specularStrength = 0.5f
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
@@ -284,10 +284,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         shader = blinnPhongShader {
+            vertices { isInstanced = true }
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            isInstanced = true
             specularStrength = 0.2f
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }

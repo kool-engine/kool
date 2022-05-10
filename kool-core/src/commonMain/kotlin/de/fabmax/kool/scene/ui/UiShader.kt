@@ -24,7 +24,7 @@ class UiShader : KslShader(Model(), pipelineConfig) {
                 main {
                     texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                     color.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    outPosition set mvpMatrix().matrix * constFloat4(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                    outPosition set mvpMatrix().matrix * float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
                 }
             }
             fragmentStage {

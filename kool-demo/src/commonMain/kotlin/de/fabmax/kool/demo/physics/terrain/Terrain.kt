@@ -186,7 +186,7 @@ class Terrain(val heightMap: HeightMap) {
 
         fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps) =
             blinnPhongShader {
-                color { addTextureColorLinearize(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
+                color { addTextureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
                 imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)

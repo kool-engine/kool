@@ -16,7 +16,7 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
     val inNormalWorldSpace = inFloat3("inNormalWorldSpace")
     val inTangentWorldSpace = inFloat4("inTangentWorldSpace")
     val inTexCoords = inFloat2("inTexCoords")
-    val inStrength = inFloat1("inStrength", KslConstFloat1(1f))
+    val inStrength = inFloat1("inStrength", KslValueFloat1(1f))
 
     val outBumpNormal = outFloat3()
 

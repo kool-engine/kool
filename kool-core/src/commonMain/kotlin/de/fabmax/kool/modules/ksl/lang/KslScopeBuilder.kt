@@ -37,97 +37,97 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         return result
     }
 
-    val Float.const: KslConstFloat1
-        get() = KslConstFloat1(this)
-    val Float.const2: KslConstFloat2
-        get() = KslConstFloat2(this, this)
-    val Float.const3: KslConstFloat3
-        get() = KslConstFloat3(this, this, this)
-    val Float.const4: KslConstFloat4
-        get() = KslConstFloat4(this, this, this, this)
+    val Float.const: KslValueFloat1
+        get() = KslValueFloat1(this)
+    val Float.const2: KslValueFloat2
+        get() = KslValueFloat2(this, this)
+    val Float.const3: KslValueFloat3
+        get() = KslValueFloat3(this, this, this)
+    val Float.const4: KslValueFloat4
+        get() = KslValueFloat4(this, this, this, this)
 
-    val Int.const: KslConstInt1
-        get() = KslConstInt1(this)
-    val Int.const2: KslConstInt2
-        get() = KslConstInt2(this, this)
-    val Int.const3: KslConstInt3
-        get() = KslConstInt3(this, this, this)
-    val Int.const4: KslConstInt4
-        get() = KslConstInt4(this, this, this, this)
+    val Int.const: KslValueInt1
+        get() = KslValueInt1(this)
+    val Int.const2: KslValueInt2
+        get() = KslValueInt2(this, this)
+    val Int.const3: KslValueInt3
+        get() = KslValueInt3(this, this, this)
+    val Int.const4: KslValueInt4
+        get() = KslValueInt4(this, this, this, this)
 
-    val Boolean.const: KslConstBool1
-        get() = KslConstBool1(this)
-    val Boolean.const2: KslConstBool2
-        get() = KslConstBool2(this, this)
-    val Boolean.const3: KslConstBool3
-        get() = KslConstBool3(this, this, this)
-    val Boolean.const4: KslConstBool4
-        get() = KslConstBool4(this, this, this, this)
+    val Boolean.const: KslValueBool1
+        get() = KslValueBool1(this)
+    val Boolean.const2: KslValueBool2
+        get() = KslValueBool2(this, this)
+    val Boolean.const3: KslValueBool3
+        get() = KslValueBool3(this, this, this)
+    val Boolean.const4: KslValueBool4
+        get() = KslValueBool4(this, this, this, this)
 
-    val Vec2f.const: KslConstFloat2
-        get() = constFloat2(x, y)
-    val Vec3f.const: KslConstFloat3
-        get() = constFloat3(x, y, z)
-    val Vec4f.const: KslConstFloat4
-        get() = constFloat4(x, y, z, w)
+    val Vec2f.const: KslValueFloat2
+        get() = float2Value(x, y)
+    val Vec3f.const: KslValueFloat3
+        get() = float3Value(x, y, z)
+    val Vec4f.const: KslValueFloat4
+        get() = float4Value(x, y, z, w)
 
-    val Vec2i.const: KslConstInt2
-        get() = constInt2(x, y)
-    val Vec3i.const: KslConstInt3
-        get() = constInt3(x, y, z)
-    val Vec4i.const: KslConstInt4
-        get() = constInt4(x, y, z, w)
+    val Vec2i.const: KslValueInt2
+        get() = int2Value(x, y)
+    val Vec3i.const: KslValueInt3
+        get() = int3Value(x, y, z)
+    val Vec4i.const: KslValueInt4
+        get() = int4Value(x, y, z, w)
 
-    fun constFloat2(x: Float, y: Float) = KslConstFloat2(x, y)
-    fun constFloat2(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>) = KslConstFloat2(x, y)
+    fun float2Value(x: Float, y: Float) = KslValueFloat2(x, y)
+    fun float2Value(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>) = KslValueFloat2(x, y)
 
-    fun constFloat3(x: Float, y: Float, z: Float) = KslConstFloat3(x, y, z)
-    fun constFloat3(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>) =
-        KslConstFloat3(x, y, z)
+    fun float3Value(x: Float, y: Float, z: Float) = KslValueFloat3(x, y, z)
+    fun float3Value(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>) =
+        KslValueFloat3(x, y, z)
 
-    fun constFloat4(x: Float, y: Float, z: Float, w: Float) = KslConstFloat4(x, y, z, w)
-    fun constFloat4(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
-        KslConstFloat4(x, y, z, w)
-    fun constFloat4(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: Float) =
-        constFloat4(xyz, w.const)
-    fun constFloat4(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
-        KslConstFloat4(xyz.x, xyz.y, xyz.z, w)
+    fun float4Value(x: Float, y: Float, z: Float, w: Float) = KslValueFloat4(x, y, z, w)
+    fun float4Value(x: KslExpression<KslTypeFloat1>, y: KslExpression<KslTypeFloat1>, z: KslExpression<KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
+        KslValueFloat4(x, y, z, w)
+    fun float4Value(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: Float) =
+        float4Value(xyz, w.const)
+    fun float4Value(xyz: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, w: KslExpression<KslTypeFloat1>) =
+        KslValueFloat4(xyz.x, xyz.y, xyz.z, w)
 
-    fun constInt2(x: Int, y: Int) = KslConstInt2(x, y)
-    fun constInt2(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>) = KslConstInt2(x, y)
+    fun int2Value(x: Int, y: Int) = KslValueInt2(x, y)
+    fun int2Value(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>) = KslValueInt2(x, y)
 
-    fun constInt3(x: Int, y: Int, z: Int) = KslConstInt3(x, y, z)
-    fun constInt3(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>) =
-        KslConstInt3(x, y, z)
+    fun int3Value(x: Int, y: Int, z: Int) = KslValueInt3(x, y, z)
+    fun int3Value(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>) =
+        KslValueInt3(x, y, z)
 
-    fun constInt4(x: Int, y: Int, z: Int, w: Int) = KslConstInt4(x, y, z, w)
-    fun constInt4(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
-        KslConstInt4(x, y, z, w)
-    fun constInt4(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: Int) =
-        constInt4(xyz, w.const)
-    fun constInt4(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
-        KslConstInt4(xyz.x, xyz.y, xyz.z, w)
+    fun int4Value(x: Int, y: Int, z: Int, w: Int) = KslValueInt4(x, y, z, w)
+    fun int4Value(x: KslExpression<KslTypeInt1>, y: KslExpression<KslTypeInt1>, z: KslExpression<KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
+        KslValueInt4(x, y, z, w)
+    fun int4Value(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: Int) =
+        int4Value(xyz, w.const)
+    fun int4Value(xyz: KslVectorExpression<KslTypeInt3, KslTypeInt1>, w: KslExpression<KslTypeInt1>) =
+        KslValueInt4(xyz.x, xyz.y, xyz.z, w)
 
-    fun constBool2(x: Boolean, y: Boolean) = KslConstBool2(x, y)
-    fun constBool2(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>) = KslConstBool2(x, y)
+    fun bool2Value(x: Boolean, y: Boolean) = KslValueBool2(x, y)
+    fun bool2Value(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>) = KslValueBool2(x, y)
 
-    fun constBool3(x: Boolean, y: Boolean, z: Boolean) = KslConstBool3(x, y, z)
-    fun constBool3(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>) =
-        KslConstBool3(x, y, z)
+    fun bool3Value(x: Boolean, y: Boolean, z: Boolean) = KslValueBool3(x, y, z)
+    fun bool3Value(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>) =
+        KslValueBool3(x, y, z)
 
-    fun constBool4(x: Boolean, y: Boolean, z: Boolean, w: Boolean) = KslConstBool4(x, y, z, w)
-    fun constBool4(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>, w: KslExpression<KslTypeBool1>) =
-        KslConstBool4(x, y, z, w)
+    fun bool4Value(x: Boolean, y: Boolean, z: Boolean, w: Boolean) = KslValueBool4(x, y, z, w)
+    fun bool4Value(x: KslExpression<KslTypeBool1>, y: KslExpression<KslTypeBool1>, z: KslExpression<KslTypeBool1>, w: KslExpression<KslTypeBool1>) =
+        KslValueBool4(x, y, z, w)
 
-    fun constMat2(col0: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>,
-                  col1: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslConstMat2(col0, col1)
-    fun constMat3(col0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
+    fun mat2Value(col0: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>,
+                  col1: KslVectorExpression<KslTypeFloat2, KslTypeFloat1>) = KslValueMat2(col0, col1)
+    fun mat3Value(col0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
                   col1: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-                  col2: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslConstMat3(col0, col1, col2)
-    fun constMat4(col0: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+                  col2: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>) = KslValueMat3(col0, col1, col2)
+    fun mat4Value(col0: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
                   col1: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
                   col2: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
-                  col3: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslConstMat4(col0, col1, col2, col3)
+                  col3: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslValueMat4(col0, col1, col2, col3)
 
     fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {

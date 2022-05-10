@@ -46,7 +46,7 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
                     val windStrength = uniformFloat1("uWindStrength")
                     val worldPos = worldPosPort.input.input!!
                     val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
-                    val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - constFloat3(0.5f, 0.5f, 0.5f), "windValue")
+                    val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
                     windValue.y *= 0.5f.const
                     val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windStrength)
                     worldPosPort.input(worldPos + displacement)
@@ -55,12 +55,12 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
         }
 
         private fun treeShaderConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = Config().apply {
+            vertices { isInstanced = true }
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
             specularStrength = 0.05f
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            isInstanced = true
             modelCustomizer = { windMod() }
         }
 
