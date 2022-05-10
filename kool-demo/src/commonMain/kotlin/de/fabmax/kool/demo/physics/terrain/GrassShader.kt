@@ -132,23 +132,23 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
                     val camData = dataBlocks.first { it is CameraData } as CameraData
 
                     main {
-                        val fragColorPort = getFloat4Port("fragmentColor")
-                        val fragColor = fragColorPort.input.input!!
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val baseColor = baseColorPort.input.input!!
 
                         val distToCam = distance(worldPos.output, camData.position)
                         val cutOff = (1f.const - clamp(distToCam / 30f.const, 0f.const, 1f.const)) * 0.4f.const + 0.1f.const
-                        `if` (fragColor.a lt cutOff) {
+                        `if` (baseColor.a lt cutOff) {
                             discard()
                         }
 
-                        val fragColorMod = float4Var(fragColor)
+                        val baseColorMod = float4Var(baseColor)
                         // boost brightness of distant grass sprites (otherwise they appear too dark because of mipmapping / alpha issues)
-                        fragColorMod.rgb set fragColorMod.rgb / pow(fragColorPort.input.a, 1.5f.const)
+                        baseColorMod.rgb set baseColorMod.rgb / pow(baseColorPort.input.a, 1.5f.const)
                         // make some yellowish patches
-                        fragColorMod.rgb set mix(fragColorMod.rgb, (MdColor.YELLOW toneLin 600).const.rgb, tint.output.y)
+                        baseColorMod.rgb set mix(baseColorMod.rgb, (MdColor.YELLOW toneLin 600).const.rgb, tint.output.y)
                         // apply some fake cloud shadow
-                        fragColorMod.rgb set fragColorMod.rgb * tint.output.x
-                        fragColorPort.input(fragColorMod)
+                        baseColorMod.rgb set baseColorMod.rgb * tint.output.x
+                        baseColorPort.input(baseColorMod)
                     }
                 }
             }

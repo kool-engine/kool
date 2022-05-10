@@ -37,6 +37,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         return result
     }
 
+    val Double.const: KslValueFloat1
+        get() = KslValueFloat1(this.toFloat())
     val Float.const: KslValueFloat1
         get() = KslValueFloat1(this)
     val Float.const2: KslValueFloat2

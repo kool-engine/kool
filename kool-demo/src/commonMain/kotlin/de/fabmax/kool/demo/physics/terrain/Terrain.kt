@@ -205,7 +205,7 @@ class Terrain(val heightMap: HeightMap) {
                             val splatCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
 
                             val material = findBlock<BlinnPhongMaterialBlock>()!!
-                            val baseColor = material.inFragmentColor.input!!
+                            val baseColor = material.inBaseColor.input!!
 
                             val splatMapSampler = texture2d("tSplatMap")
                             val splatWeights = float4Var(sampleTexture(splatMapSampler, splatCoords))
@@ -230,7 +230,7 @@ class Terrain(val heightMap: HeightMap) {
                                         splatWeights.a * 0.2f.const
                             )
 
-                            material.inFragmentColor(baseColor * terrainColor.rgb)
+                            material.inBaseColor(baseColor * terrainColor.rgb)
                             material.inSpecularStrength(specularStrength)
                         }
                     }

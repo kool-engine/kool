@@ -1,45 +1,26 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.util.Color
 
-fun blinnPhongShader(cfgBlock: KslBlinnPhongShader.Config.() -> Unit): KslBlinnPhongShader {
-    val cfg = KslBlinnPhongShader.Config().apply(cfgBlock)
-    return KslBlinnPhongShader(cfg)
+fun pbrShaderKsl(cfgBlock: KslPbrShader.Config.() -> Unit): KslPbrShader {
+    val cfg = KslPbrShader.Config().apply(cfgBlock)
+    return KslPbrShader(cfg)
 }
 
-open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
+class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
 
     var uniformDiffuseColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
     var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
 
-    var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
-    var shininess: Float by uniform1f("uShininess", cfg.shininess)
-    var specularStrength: Float by uniform1f("uSpecularStrength", cfg.specularStrength)
-    var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
-
-    var ambientColor: Vec4f by uniform4f("uAmbientColor")
-    var ambientTexture: TextureCube? by textureCube("tAmbientTexture")
-    var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
-
-    init {
-        when (val ambient = cfg.ambientColor) {
-            is Config.AmbientColor.Uniform -> ambientColor = ambient.color
-            is Config.AmbientColor.ImageBased -> {
-                ambientTexture = ambient.ambientTexture
-                ambientColor = ambient.colorFactor
-            }
-        }
-    }
+    var roughness: Float by uniform1f("uRoughness", cfg.roughness)
+    var metallic: Float by uniform1f("uMetallic", cfg.metallic)
 
     class Config {
         val vertexConfig = BasicVertexConfig()
@@ -48,24 +29,14 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
 
-        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+        var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         var maxNumberOfLights = 4
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
-        var specularColor: Color = Color.WHITE
-        var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
-        var shininess = 16f
-        var specularStrength = 1f
+        var metallic = 0f
+        var roughness = 0.5f
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
-
-        fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
-            ambientColor = AmbientColor.Uniform(color)
-        }
-
-        fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
-            ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
-        }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.apply(block)
@@ -86,15 +57,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
         fun vertices(block: BasicVertexConfig.() -> Unit) {
             vertexConfig.apply(block)
         }
-
-        sealed class AmbientColor {
-            class Uniform(val color: Color) : AmbientColor()
-            class ImageBased(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
-        }
     }
 
-    class Model(cfg: Config) : KslProgram("Blinn-Phong Shader") {
+    class Model(cfg: Config) : KslProgram("PBR Shader") {
         init {
+            dumpCode = true
+
             val camData = cameraData()
             val positionWorldSpace = interStageFloat3("positionWorldSpace")
             val normalWorldSpace = interStageFloat3("normalWorldSpace")
@@ -151,22 +119,20 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             }
 
             fragmentStage {
-                val uSpecularColor = uniformFloat4("uSpecularColor")
-                val uShininess = uniformFloat1("uShininess")
-                val uSpecularStrength = uniformFloat1("uSpecularStrength")
+                val uRoughness = uniformFloat1("uRoughness")
+                val uMetallic = uniformFloat1("uMetallic")
                 val uNormalMapStrength = uniformFloat1("uNormalMapStrength")
-                val uAmbientColor = uniformFloat4("uAmbientColor")
 
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
                     // determine main color (albedo)
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
-                    val baseColor = float4Port("baseColor", colorBlock.outColor)
+                    val fragmentColor = float4Port("fragmentColor", colorBlock.outColor)
 
                     // discard fragment output if alpha mode is mask and fragment alpha value is below cutoff value
                     (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                        `if` (baseColor.a lt mask.cutOff.const) {
+                        `if` (fragmentColor.a lt mask.cutOff.const) {
                             discard()
                         }
                     }
@@ -198,26 +164,15 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
-                    val ambientColor = when (cfg.ambientColor) {
-                        is Config.AmbientColor.Uniform -> uAmbientColor
-                        is Config.AmbientColor.ImageBased -> {
-                            val ambientTex = textureCube("tAmbientTexture")
-                            val ambientOri = uniformMat3("uAmbientTextureOri")
-                            sampleTexture(ambientTex, ambientOri * normal) * uAmbientColor
-                        }
-                    }
-
                     // main material block
-                    val material = blinnPhongMaterialBlock {
+                    val material = pbrMaterialBlock {
                         inCamPos(camData.position)
                         inNormal(normal)
                         inFragmentPos(positionWorldSpace.output)
-                        inBaseColor(baseColor.rgb)
+                        inBaseColor(fragmentColor.rgb)
 
-                        inAmbientColor(ambientColor.rgb)
-                        inSpecularColor(uSpecularColor.rgb)
-                        inShininess(uShininess)
-                        inSpecularStrength(uSpecularStrength)
+                        inRoughness(uRoughness)
+                        inMetallic(uMetallic)
 
                         setLightData(lightData, shadowFactors)
                     }
@@ -226,11 +181,11 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                     val outRgb = float3Var(material.outColor)
                     outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
-                        outRgb set outRgb * baseColor.a
+                        outRgb set outRgb * fragmentColor.a
                     }
 
                     when (cfg.alphaMode) {
-                        is AlphaMode.Blend -> colorOutput(outRgb, baseColor.a)
+                        is AlphaMode.Blend -> colorOutput(outRgb, fragmentColor.a)
                         is AlphaMode.Mask -> colorOutput(outRgb, 1f.const)
                         is AlphaMode.Opaque -> colorOutput(outRgb, 1f.const)
                     }
