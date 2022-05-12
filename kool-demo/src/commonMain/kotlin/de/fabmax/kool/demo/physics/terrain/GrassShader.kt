@@ -73,7 +73,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
 
         private fun grassShaderConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = Config().apply {
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { addTextureColor(grassColor) }
+            color { textureColor(grassColor) }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
             vertices {
@@ -83,7 +83,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
 
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             alphaMode = AlphaMode.Opaque()
-            specularStrength = 0.15f
+            specularStrength(0.15f)
 
             modelCustomizer = {
                 //dumpCode = true

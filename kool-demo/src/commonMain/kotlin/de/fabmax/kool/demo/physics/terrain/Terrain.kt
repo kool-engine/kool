@@ -186,11 +186,11 @@ class Terrain(val heightMap: HeightMap) {
 
         fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps) =
             KslBlinnPhongShader {
-                color { addTextureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
+                color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
                 imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                specularStrength = 0.25f
+                specularStrength(0.25f)
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
 
                 // customize blinn-phong shader to consider the splat map:

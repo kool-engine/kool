@@ -1,20 +1,21 @@
 package de.fabmax.kool.modules.ksl
 
-import de.fabmax.kool.modules.ksl.blocks.CameraData
-import de.fabmax.kool.modules.ksl.blocks.SceneLightData
-import de.fabmax.kool.modules.ksl.blocks.pbrMaterialBlock
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.Texture2d
 
 class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
 
     constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
-    var roughness: Float by uniform1f("uRoughness", cfg.roughness)
-    var metallic: Float by uniform1f("uMetallic", cfg.metallic)
+    var roughness: Float by uniform1f(cfg.roughnessCfg.primaryUniform?.uniformName, cfg.roughnessCfg.primaryUniform?.defaultValue)
+    var roughnessMap: Texture2d? by texture2d(cfg.roughnessCfg.primaryTexture?.textureName, cfg.roughnessCfg.primaryTexture?.defaultTexture)
+    var metallic: Float by uniform1f(cfg.metallicCfg.primaryUniform?.uniformName, cfg.metallicCfg.primaryUniform?.defaultValue)
+    var metallicMap: Texture2d? by texture2d(cfg.metallicCfg.primaryTexture?.textureName, cfg.metallicCfg.primaryTexture?.defaultTexture)
 
     class Config : LitShaderConfig() {
-        var metallic = 0f
-        var roughness = 0.5f
+        val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
+        val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
     }
 
     class Model(cfg: Config) : LitShaderModel<Config>("PBR Shader") {
@@ -32,8 +33,8 @@ class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(c
             baseColor: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
         ): KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
 
-            val uRoughness = uniformFloat1("uRoughness")
-            val uMetallic = uniformFloat1("uMetallic")
+            val uRoughness = fragmentPropertyBlock(cfg.roughnessCfg).outProperty
+            val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
 
             val material = pbrMaterialBlock {
                 inCamPos(camData.position)

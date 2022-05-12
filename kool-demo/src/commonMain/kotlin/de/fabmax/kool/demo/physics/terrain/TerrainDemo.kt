@@ -212,7 +212,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
             it.shader = KslPbrShader {
                 vertices { enableArmature(40) }
-                color { addUniformColor(MdColor.PINK.toLinear()) }
+                color { uniformColor(MdColor.PINK.toLinear()) }
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             }
@@ -270,10 +270,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         shader = KslBlinnPhongShader {
             vertices { isInstanced = true }
-            color { addVertexColor() }
+            color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength = 0.5f
+            specularStrength(0.5f)
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
 
@@ -300,10 +300,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
         shader = KslBlinnPhongShader {
             vertices { isInstanced = true }
-            color { addVertexColor() }
+            color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength = 0.2f
+            specularStrength(0.2f)
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))

@@ -63,7 +63,7 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
 
             cfg.colorSources.forEach { source ->
                 val colorValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1> = when (source) {
-                    is ColorBlockConfig.StaticColor -> source.staticColor.const
+                    is ColorBlockConfig.ConstColor -> source.staticColor.const
                     is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
                     is ColorBlockConfig.VertexColor -> vertexBlock.vertexColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
@@ -95,22 +95,22 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
 class ColorBlockConfig {
     val colorSources = mutableListOf<ColorSource>()
 
-    fun addStaticColor(staticColor: Color, mixMode: MixMode = MixMode.Set) {
-        colorSources += StaticColor(staticColor, mixMode)
+    fun constColor(staticColor: Color, mixMode: MixMode = MixMode.Set) {
+        colorSources += ConstColor(staticColor, mixMode)
     }
 
-    fun addUniformColor(defaultColor: Color? = null, uniformName: String = "uColor", mixMode: MixMode = MixMode.Set) {
+    fun uniformColor(defaultColor: Color? = null, uniformName: String = "uColor", mixMode: MixMode = MixMode.Set) {
         colorSources += UniformColor(defaultColor, uniformName, mixMode)
     }
 
-    fun addVertexColor(attribute: Attribute = Attribute.COLORS, mixMode: MixMode = MixMode.Set) {
+    fun vertexColor(attribute: Attribute = Attribute.COLORS, mixMode: MixMode = MixMode.Set) {
         colorSources += VertexColor(attribute, mixMode)
     }
 
     /**
      * Adds texture based color information. By default, texture color space is converted from sRGB to linear color
      * space (this is typically what you want). In case you don't want color space conversion, specify a gamma value
-     * of 1.0 or use [addTextureData] instead.
+     * of 1.0 or use [textureData] instead.
      *
      * @param defaultTexture Texture to bind to this attribute
      * @param textureName Name of the texture used in the generated shader code
@@ -120,17 +120,17 @@ class ColorBlockConfig {
      * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
      *                texture color and an instance color based color tint)
      */
-    fun addTextureColor(defaultTexture: Texture2d? = null,
-                        textureName: String = "tColor",
-                        coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                        gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
-                        mixMode: MixMode = MixMode.Set) {
+    fun textureColor(defaultTexture: Texture2d? = null,
+                     textureName: String = "tColor",
+                     coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+                     gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
+                     mixMode: MixMode = MixMode.Set) {
         colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, mixMode)
     }
 
     /**
      * Adds texture based color information without applying any color space conversion. This is equivalent to calling
-     * [addTextureColor] with a gamma value of 1.0.
+     * [textureColor] with a gamma value of 1.0.
      *
      * @param defaultTexture Texture to bind to this attribute
      * @param textureName Name of the texture used in the generated shader code
@@ -138,24 +138,24 @@ class ColorBlockConfig {
      * @param mixMode Mix mode for this color value. This is useful to combine multiple color sources (e.g.
      *                texture color and an instance color based color tint)
      */
-    fun addTextureData(defaultTexture: Texture2d? = null,
-                       textureName: String = "tColor",
-                       coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
-                       mixMode: MixMode = MixMode.Set) =
-        addTextureColor(defaultTexture, textureName, coordAttribute, 1f, mixMode)
+    fun textureData(defaultTexture: Texture2d? = null,
+                    textureName: String = "tColor",
+                    coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
+                    mixMode: MixMode = MixMode.Set) =
+        textureColor(defaultTexture, textureName, coordAttribute, 1f, mixMode)
 
-    fun addInstanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
+    fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, mixMode: MixMode = MixMode.Set) {
         colorSources += InstanceColor(attribute, mixMode)
     }
 
-    val primaryUniformColor: UniformColor?
+    val primaryUniform: UniformColor?
         get() = colorSources.find { it is UniformColor } as? UniformColor
 
-    val primaryTextureColor: TextureColor?
+    val primaryTexture: TextureColor?
         get() = colorSources.find { it is TextureColor } as? TextureColor
 
     sealed class ColorSource(val mixMode: MixMode)
-    class StaticColor(val staticColor: Color, mixMode: MixMode) : ColorSource(mixMode)
+    class ConstColor(val staticColor: Color, mixMode: MixMode) : ColorSource(mixMode)
     class UniformColor(val defaultColor: Color?, val uniformName: String, mixMode: MixMode) : ColorSource(mixMode)
     class VertexColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
     class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, mixMode: MixMode) : ColorSource(mixMode)

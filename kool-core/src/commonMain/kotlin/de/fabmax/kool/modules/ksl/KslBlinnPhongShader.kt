@@ -2,10 +2,9 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.modules.ksl.blocks.CameraData
-import de.fabmax.kool.modules.ksl.blocks.SceneLightData
-import de.fabmax.kool.modules.ksl.blocks.blinnPhongMaterialBlock
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.util.Color
 
@@ -13,11 +12,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
     constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
-    var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
-    var shininess: Float by uniform1f("uShininess", cfg.shininess)
-    var specularStrength: Float by uniform1f("uSpecularStrength", cfg.specularStrength)
-    var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
+    var shininess: Float by uniform1f(cfg.shininessCfg.primaryUniform?.uniformName, cfg.shininessCfg.primaryUniform?.defaultValue)
+    var shininessMap: Texture2d? by texture2d(cfg.shininessCfg.primaryTexture?.textureName, cfg.shininessCfg.primaryTexture?.defaultTexture)
+    var specularStrength: Float by uniform1f(cfg.shininessCfg.primaryUniform?.uniformName, cfg.shininessCfg.primaryUniform?.defaultValue)
+    var specularStrengthMap: Texture2d? by texture2d(cfg.specularStrengthCfg.primaryTexture?.textureName, cfg.specularStrengthCfg.primaryTexture?.defaultTexture)
 
+    var specularColor: Vec4f by uniform4f("uSpecularColor", cfg.specularColor)
     var ambientColor: Vec4f by uniform4f("uAmbientColor")
     var ambientTexture: TextureCube? by textureCube("tAmbientTexture")
     var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
@@ -35,8 +35,8 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     class Config : LitShaderConfig() {
         var specularColor: Color = Color.WHITE
         var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
-        var shininess = 16f
-        var specularStrength = 1f
+        val shininessCfg = PropertyBlockConfig("shininess").apply { constProperty(16f) }
+        val specularStrengthCfg = PropertyBlockConfig("specularStrength").apply { constProperty(1f) }
 
         fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
             ambientColor = AmbientColor.Uniform(color)
@@ -45,6 +45,20 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
         fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
             ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
         }
+
+        fun shininess(block: PropertyBlockConfig.() -> Unit) {
+            shininessCfg.propertySources.clear()
+            shininessCfg.block()
+        }
+
+        fun shininess(value: Float) = shininess { constProperty(value) }
+
+        fun specularStrength(block: PropertyBlockConfig.() -> Unit) {
+            specularStrengthCfg.propertySources.clear()
+            specularStrengthCfg.block()
+        }
+
+        fun specularStrength(value: Float) = specularStrength { constProperty(value) }
 
         sealed class AmbientColor {
             class Uniform(val color: Color) : AmbientColor()
@@ -68,16 +82,15 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
         ): KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
 
             val uSpecularColor = uniformFloat4("uSpecularColor")
-            val uShininess = uniformFloat1("uShininess")
-            val uSpecularStrength = uniformFloat1("uSpecularStrength")
-            val uAmbientColor = uniformFloat4("uAmbientColor")
+            val uShininess = fragmentPropertyBlock(cfg.shininessCfg).outProperty
+            val uSpecularStrength = fragmentPropertyBlock(cfg.specularStrengthCfg).outProperty
 
             val ambientColor = when (cfg.ambientColor) {
-                is Config.AmbientColor.Uniform -> uAmbientColor
+                is Config.AmbientColor.Uniform -> uniformFloat4("uAmbientColor")
                 is Config.AmbientColor.ImageBased -> {
                     val ambientTex = textureCube("tAmbientTexture")
                     val ambientOri = uniformMat3("uAmbientTextureOri")
-                    sampleTexture(ambientTex, ambientOri * normal) * uAmbientColor
+                    sampleTexture(ambientTex, ambientOri * normal) * uniformFloat4("uAmbientColor")
                 }
             }
 

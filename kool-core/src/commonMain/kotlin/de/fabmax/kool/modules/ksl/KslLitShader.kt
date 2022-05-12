@@ -10,12 +10,14 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
-    var uniformDiffuseColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
-    var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
+    var color: Vec4f by uniform4f(cfg.colorCfg.primaryUniform?.uniformName, cfg.colorCfg.primaryUniform?.defaultColor)
+    var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
+
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
+    var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
 
     open class LitShaderConfig {
-        val vertexConfig = BasicVertexConfig()
+        val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig()
         val normalMapCfg = NormalMapConfig()
         val pipelineCfg = PipelineConfig()
@@ -28,23 +30,23 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 
         fun color(block: ColorBlockConfig.() -> Unit) {
-            colorCfg.apply(block)
+            colorCfg.block()
         }
 
         fun normalMapping(block: NormalMapConfig.() -> Unit) {
-            normalMapCfg.apply(block)
+            normalMapCfg.block()
         }
 
         fun pipeline(block: PipelineConfig.() -> Unit) {
-            pipelineCfg.apply(block)
+            pipelineCfg.block()
         }
 
         fun shadow(block: ShadowConfig.() -> Unit) {
-            shadowCfg.apply(block)
+            shadowCfg.block()
         }
 
         fun vertices(block: BasicVertexConfig.() -> Unit) {
-            vertexConfig.apply(block)
+            vertexCfg.block()
         }
     }
 
@@ -64,12 +66,12 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     val uModelMat = modelMatrix()
                     val viewProj = mat4Var(camData.viewProjMat)
                     val modelMat = mat4Var(uModelMat.matrix)
-                    if (cfg.vertexConfig.isInstanced) {
+                    if (cfg.vertexCfg.isInstanced) {
                         val instanceModelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
                         modelMat *= instanceModelMat
                     }
-                    if (cfg.vertexConfig.isArmature) {
-                        val armatureBlock = armatureBlock(cfg.vertexConfig.maxNumberOfBones)
+                    if (cfg.vertexCfg.isArmature) {
+                        val armatureBlock = armatureBlock(cfg.vertexCfg.maxNumberOfBones)
                         armatureBlock.inBoneWeights(vertexAttribFloat4(Attribute.WEIGHTS.name))
                         armatureBlock.inBoneIndices(vertexAttribInt4(Attribute.JOINTS.name))
                         modelMat *= armatureBlock.outBoneTransform
@@ -123,7 +125,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     }
 
                     val vertexNormal = float3Var(normalize(normalWorldSpace.output))
-                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexConfig.isFlipBacksideNormals) {
+                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexCfg.isFlipBacksideNormals) {
                         `if` (!inIsFrontFacing) {
                             vertexNormal *= (-1f).const3
                         }

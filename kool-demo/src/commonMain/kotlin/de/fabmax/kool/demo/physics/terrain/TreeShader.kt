@@ -53,10 +53,10 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
 
         private fun treeShaderConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = Config().apply {
             vertices { isInstanced = true }
-            color { addVertexColor() }
+            color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
             imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength = 0.05f
+            specularStrength(0.05f)
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
             modelCustomizer = { windMod() }
         }

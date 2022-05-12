@@ -10,14 +10,12 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 
-fun unlitShader(cfgBlock: KslUnlitShader.Config.() -> Unit): KslUnlitShader {
-    val cfg = KslUnlitShader.Config().apply(cfgBlock)
-    return KslUnlitShader(cfg)
-}
-
 open class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(model, cfg.pipelineCfg) {
-    var uniformColor: Vec4f by uniform4f(cfg.colorCfg.primaryUniformColor?.uniformName, cfg.colorCfg.primaryUniformColor?.defaultColor)
-    var colorTexture: Texture2d? by texture2d(cfg.colorCfg.primaryTextureColor?.textureName, cfg.colorCfg.primaryTextureColor?.defaultTexture)
+
+    constructor(block: Config.() -> Unit) : this(Config().apply(block))
+
+    var color: Vec4f by uniform4f(cfg.colorCfg.primaryUniform?.uniformName, cfg.colorCfg.primaryUniform?.defaultColor)
+    var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
 
     class Config {
         val colorCfg = ColorBlockConfig()

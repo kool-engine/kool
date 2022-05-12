@@ -105,7 +105,7 @@ class KslShaderTest : DemoScene("KslShader") {
 
                 shader = KslBlinnPhongShader {
                     color {
-                        addVertexColor()
+                        vertexColor()
                     }
                     shadow {
                         addShadowMaps(shadowMaps)
@@ -170,14 +170,14 @@ class KslShaderTest : DemoScene("KslShader") {
             }
 
             val phongShader = KslBlinnPhongShader {
-                shininess = 16f
-                specularStrength = 0.25f
+                shininess(16f)
+                specularStrength(0.25f)
 
                 vertices { isInstanced = true }
                 color {
                     //addInstanceColor()
                     //addStaticColor(Color.WHITE)
-                    addTextureColor(colorMap)
+                    textureColor(colorMap)
                 }
                 normalMapping { setNormalMap(normalMap) }
                 shadow { addShadowMaps(shadowMaps) }
