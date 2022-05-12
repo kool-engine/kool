@@ -76,12 +76,10 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
 
         grassQuads.onUpdate += { ev ->
             if (grassQuads.isVisible) {
-                grassShader.windOffset = trees.windOffset
-                grassShader.windStrength = trees.windStrength
+                grassShader.windOffsetStrength = trees.windOffsetStrength
                 grassShader.windScale = 1f / trees.windScale
 
-                grassShadowShader.windOffset = trees.windOffset
-                grassShadowShader.windStrength = trees.windStrength
+                grassShadowShader.windOffsetStrength = trees.windOffsetStrength
                 grassShadowShader.windScale = 1f / trees.windScale
 
                 val cam = ev.camera

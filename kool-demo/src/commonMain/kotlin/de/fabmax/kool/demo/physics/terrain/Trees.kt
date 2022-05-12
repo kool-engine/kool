@@ -23,18 +23,17 @@ import kotlin.math.sqrt
 
 class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
 
-    val windOffset = MutableVec3f()
+    val windOffsetStrength = MutableVec4f(0f, 0f, 0f, 1f)
     val windSpeed = MutableVec3f(10f, 0.5f, 6.7f)
-    var windStrength = 1f
     var windScale = 100f
 
     val treeGroup = Group().apply {
         isFrustumChecked = false
 
         onUpdate += {
-            windOffset.x += windSpeed.x * it.deltaT
-            windOffset.y += windSpeed.y * it.deltaT
-            windOffset.z += windSpeed.z * it.deltaT
+            windOffsetStrength.x += windSpeed.x * it.deltaT
+            windOffsetStrength.y += windSpeed.y * it.deltaT
+            windOffsetStrength.z += windSpeed.z * it.deltaT
         }
     }
 
@@ -144,12 +143,10 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
         val shadowShader = TreeShader.Shadow(windDensity)
 
         treeGroup.onUpdate += {
-            treeShader.windOffset = windOffset
-            treeShader.windStrength = windStrength
+            treeShader.windOffsetStrength = windOffsetStrength
             treeShader.windScale = 1f / windScale
 
-            shadowShader.windOffset = windOffset
-            shadowShader.windStrength = windStrength
+            shadowShader.windOffsetStrength = windOffsetStrength
             shadowShader.windScale = 1f / windScale
         }
 

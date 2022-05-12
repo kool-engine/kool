@@ -14,14 +14,12 @@ import de.fabmax.kool.util.ShadowMap
 class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean) :
     KslBlinnPhongShader(grassShaderConfig(grassColor, ibl, shadowMap, isInstanced)) {
 
-    var windOffset by uniform3f("uWindOffset")
-    var windStrength by uniform1f("uWindStrength", 1f)
+    var windOffsetStrength by uniform4f("uWindOffsetStrength")
     var windScale by uniform1f("uWindScale", 0.01f)
     var windDensity by texture3d("tWindTex", windTex)
 
     class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean) : KslDepthShader(grassShadowConfig(isInstanced)) {
-        var windOffset by uniform3f("uWindOffset")
-        var windStrength by uniform1f("uWindStrength", 1f)
+        var windOffsetStrength by uniform4f("uWindOffsetStrength")
         var windScale by uniform1f("uWindScale", 0.01f)
         var windDensity by texture3d("tWindTex", windTex)
         var grassAlpha by texture2d("grassAlpha", grassColor)
@@ -88,6 +86,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
             specularStrength = 0.15f
 
             modelCustomizer = {
+                //dumpCode = true
                 grassWindMod(isInstanced)
 
                 val tint = interStageFloat2("windTint")
@@ -99,7 +98,7 @@ class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: Shadow
                         val windTex = texture3d("tWindTex")
 
                         // wind based tint (moving darker patches)
-                        val windOffset = uniformFloat3("uWindOffset") * 0.5f.const
+                        val windOffset = uniformFloat4("uWindOffsetStrength").xyz * 0.5f.const
                         val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
                         val slowWind = float3Var(sampleTexture(windTex, windSamplePos).xyz)
                         val windTint = clamp(slowWind.x + 0.3f.const, 0.2f.const, 1f.const)

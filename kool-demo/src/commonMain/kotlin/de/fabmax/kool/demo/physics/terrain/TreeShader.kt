@@ -16,14 +16,12 @@ import kotlin.math.roundToInt
 
 class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d) : KslBlinnPhongShader(treeShaderConfig(ibl, shadowMap)) {
 
-    var windOffset by uniform3f("uWindOffset")
-    var windStrength by uniform1f("uWindStrength", 1f)
+    var windOffsetStrength by uniform4f("uWindOffsetStrength")
     var windScale by uniform1f("uWindScale", 0.01f)
     var windDensity by texture3d("tWindTex", windTex)
 
     class Shadow(windTex: Texture3d) : KslDepthShader(treeShadowConfig()) {
-        var windOffset by uniform3f("uWindOffset")
-        var windStrength by uniform1f("uWindStrength", 1f)
+        var windOffsetStrength by uniform4f("uWindOffsetStrength")
         var windScale by uniform1f("uWindScale", 0.01f)
         var windDensity by texture3d("tWindTex", windTex)
 
@@ -42,13 +40,12 @@ class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
                     val worldPosPort = getFloat3Port("worldPos")
 
                     val windTex = texture3d("tWindTex")
-                    val windOffset = uniformFloat3("uWindOffset")
-                    val windStrength = uniformFloat1("uWindStrength")
+                    val windOffset = uniformFloat4("uWindOffsetStrength")
                     val worldPos = worldPosPort.input.input!!
-                    val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
+                    val windSamplePos = (windOffset.xyz + worldPos) * uniformFloat1("uWindScale")
                     val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
                     windValue.y *= 0.5f.const
-                    val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windStrength)
+                    val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windOffset.w)
                     worldPosPort.input(worldPos + displacement)
                 }
             }
