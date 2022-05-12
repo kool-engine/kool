@@ -32,12 +32,7 @@ class KslGlslGeneratorVk(private val pipelineLayout: Pipeline.Layout) : GlslGene
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
                 val (set, desc) = pipelineLayout.findDescriptorByName(ubo.name)!!
-
-                // if isShared is true, the underlying buffer is externally provided without the buffer layout
-                // being queried via OpenGL API -> use standardized std140 layout
-                val std140Setting = if (ubo.isShared) { ", std140 " } else { "" }
-
-                appendLine("layout(set=${set.set}, binding=${desc.binding}${std140Setting}) uniform ${ubo.name} {")
+                appendLine("layout(std140, set=${set.set}, binding=${desc.binding}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     val arraySuffix = if (u.value is KslArray<*>) { "[${u.arraySize}]" } else { "" }
                     appendLine("    highp ${glslTypeName(u.expressionType)} ${u.value.name()}${arraySuffix};")

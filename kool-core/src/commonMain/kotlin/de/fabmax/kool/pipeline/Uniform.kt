@@ -56,7 +56,7 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(MutableVec2f(), name, 8) {
     }
 }
 
-class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name, 16) {
+class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name, 12) {
     constructor(initValue: Vec3f, name: String) : this(name) {
         value.set(initValue)
     }

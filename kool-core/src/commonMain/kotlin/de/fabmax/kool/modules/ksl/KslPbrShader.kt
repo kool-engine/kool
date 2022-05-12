@@ -61,8 +61,6 @@ class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShader(mode
 
     class Model(cfg: Config) : KslProgram("PBR Shader") {
         init {
-            dumpCode = true
-
             val camData = cameraData()
             val positionWorldSpace = interStageFloat3("positionWorldSpace")
             val normalWorldSpace = interStageFloat3("normalWorldSpace")
