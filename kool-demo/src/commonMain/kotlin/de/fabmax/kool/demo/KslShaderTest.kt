@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
-import de.fabmax.kool.modules.ksl.blinnPhongShader
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
@@ -103,7 +103,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     }
                 }
 
-                shader = blinnPhongShader {
+                shader = KslBlinnPhongShader {
                     color {
                         addVertexColor()
                     }
@@ -169,7 +169,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 }
             }
 
-            val phongShader = blinnPhongShader {
+            val phongShader = KslBlinnPhongShader {
                 shininess = 16f
                 specularStrength = 0.25f
 

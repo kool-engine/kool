@@ -9,9 +9,9 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
-import de.fabmax.kool.modules.ksl.blinnPhongShader
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.pbrShaderKsl
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.AddressMode
@@ -210,7 +210,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 //                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
 //            }
 
-            it.shader = pbrShaderKsl {
+            it.shader = KslPbrShader {
                 vertices { enableArmature(40) }
                 color { addUniformColor(MdColor.PINK.toLinear()) }
                 shadow { addShadowMap(shadowMap) }
@@ -268,7 +268,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
-        shader = blinnPhongShader {
+        shader = KslBlinnPhongShader {
             vertices { isInstanced = true }
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }
@@ -298,7 +298,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 centered()
             }
         }
-        shader = blinnPhongShader {
+        shader = KslBlinnPhongShader {
             vertices { isInstanced = true }
             color { addVertexColor() }
             shadow { addShadowMap(shadowMap) }

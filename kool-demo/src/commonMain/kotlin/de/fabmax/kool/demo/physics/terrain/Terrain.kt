@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
-import de.fabmax.kool.modules.ksl.blinnPhongShader
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
@@ -185,7 +185,7 @@ class Terrain(val heightMap: HeightMap) {
         val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
 
         fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps) =
-            blinnPhongShader {
+            KslBlinnPhongShader {
                 color { addTextureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
