@@ -105,7 +105,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                 inShininess(uShininess)
                 inSpecularStrength(uSpecularStrength)
 
-                setLightData(lightData, shadowFactors)
+                setLightData(lightData, shadowFactors, cfg.lightStrength.const)
             }
             return float4Value(material.outColor, baseColor.a)
         }

@@ -1,9 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.modules.ksl.lang.KslBlock
-import de.fabmax.kool.modules.ksl.lang.KslScalarArrayExpression
-import de.fabmax.kool.modules.ksl.lang.KslScopeBuilder
-import de.fabmax.kool.modules.ksl.lang.KslTypeFloat1
+import de.fabmax.kool.modules.ksl.lang.*
 
 abstract class LitMaterialBlock(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     val inCamPos = inFloat3("inCamPos")
@@ -15,16 +12,22 @@ abstract class LitMaterialBlock(name: String, parentScope: KslScopeBuilder) : Ks
     val inEncodedLightPositions = inFloat4Array("inEncodedLightPositions")
     val inEncodedLightDirections = inFloat4Array("inEncodedLightDirections")
     val inEncodedLightColors = inFloat4Array("inEncodedLightColors")
+    val inLightStrength = inFloat1("inLightStrength")
 
     var inShadowFactors = inFloat1Array("inShadowFactors")
 
     val outColor = outFloat3("outColor")
 
-    fun setLightData(lightData: SceneLightData, shadowFactors: KslScalarArrayExpression<KslTypeFloat1>) {
+    fun setLightData(
+        lightData: SceneLightData,
+        shadowFactors: KslScalarArrayExpression<KslTypeFloat1>,
+        lightStrength: KslScalarExpression<KslTypeFloat1> = KslValueFloat1(1f)
+    ) {
         inShadowFactors(shadowFactors)
         inLightCount(lightData.lightCount)
         inEncodedLightPositions(lightData.encodedPositions)
         inEncodedLightDirections(lightData.encodedDirections)
         inEncodedLightColors(lightData.encodedColors)
+        inLightStrength(lightStrength)
     }
 }

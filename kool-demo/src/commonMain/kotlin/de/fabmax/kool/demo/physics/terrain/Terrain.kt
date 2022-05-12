@@ -2,9 +2,9 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
-import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.PbrMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.physics.Physics
@@ -185,13 +185,20 @@ class Terrain(val heightMap: HeightMap) {
         val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
 
         fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps) =
-            KslBlinnPhongShader {
+            KslPbrShader {
                 color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-                specularStrength(0.25f)
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+
+//                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+//                specularStrength(0.25f)
+
+                irradianceMap = ibl.irradianceMap
+                reflectionMap = ibl.reflectionMap
+                brdfLut = ibl.brdfLut
+                lightStrength = 3f
+                ambientStrength = Color.LIGHT_GRAY.toLinear()
 
                 // customize blinn-phong shader to consider the splat map:
                 // splat map is sampled and rgba channels are multiplied with some hard coded colors (we could as
@@ -204,7 +211,8 @@ class Terrain(val heightMap: HeightMap) {
                             val texCoordBlock = vertexStage.findBlock<TexCoordAttributeBlock>()!!
                             val splatCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
 
-                            val material = findBlock<BlinnPhongMaterialBlock>()!!
+                            //val material = findBlock<BlinnPhongMaterialBlock>()!!
+                            val material = findBlock<PbrMaterialBlock>()!!
                             val baseColor = material.inBaseColor.input!!
 
                             val splatMapSampler = texture2d("tSplatMap")
@@ -217,21 +225,28 @@ class Terrain(val heightMap: HeightMap) {
                             val rockColor = (MdColor.GREY toneLin 500).const * (1f.const - material.inFragmentPos.y / 150f.const) * material.inNormal.y
 
                             val terrainColor = float4Var(
-                                splatWeights.r * beachColor +
-                                        splatWeights.g * grassColor +
-                                        splatWeights.b * waterColor +
-                                        splatWeights.a * rockColor
+                                splatWeights.r * beachColor +   // beach
+                                        splatWeights.g * grassColor +   // grass
+                                        splatWeights.b * waterColor +   // water
+                                        splatWeights.a * rockColor      // rock
                             )
-
-                            val specularStrength = floatVar(
-                                splatWeights.r * 0.3f.const +
-                                        splatWeights.g * 0.0f.const +
-                                        splatWeights.b * 1.0f.const +
-                                        splatWeights.a * 0.2f.const
-                            )
-
                             material.inBaseColor(baseColor * terrainColor.rgb)
-                            material.inSpecularStrength(specularStrength)
+
+//                            val specularStrength = floatVar(
+//                                        splatWeights.r * 0.3f.const +
+//                                        splatWeights.g * 0.0f.const +
+//                                        splatWeights.b * 1.0f.const +
+//                                        splatWeights.a * 0.2f.const
+//                            )
+//                            material.inSpecularStrength(specularStrength)
+
+                            val roughness = floatVar(
+                                splatWeights.r * 0.6f.const +
+                                        splatWeights.g * 0.8f.const +
+                                        splatWeights.b * 0.2f.const +
+                                        splatWeights.a * 0.7f.const
+                            )
+                            material.inRoughness(roughness)
                         }
                     }
                 }

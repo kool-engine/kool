@@ -25,6 +25,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         var maxNumberOfLights = 4
+        var lightStrength = 1f
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null

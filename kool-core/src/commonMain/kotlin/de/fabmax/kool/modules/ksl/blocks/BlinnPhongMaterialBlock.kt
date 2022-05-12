@@ -34,7 +34,7 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : LitM
                         specular set pow(specAngle, inShininess) * inSpecularStrength
                     }
 
-                    val radiance = float3Var(inShadowFactors[i] *
+                    val radiance = float3Var(inShadowFactors[i] * inLightStrength *
                             getLightRadiance(inFragmentPos, inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
 
                     diffuseColor += inBaseColor * lambertian * radiance
