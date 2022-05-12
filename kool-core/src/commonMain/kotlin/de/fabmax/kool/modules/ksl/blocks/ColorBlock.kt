@@ -8,18 +8,18 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Color
 
 fun KslScopeBuilder.vertexColorBlock(cfg: ColorBlockConfig): ColorBlockVertexStage {
-    val colorBlock = ColorBlockVertexStage(cfg, parentStage.program.nextName("colorBlock"), this)
+    val colorBlock = ColorBlockVertexStage(cfg, this)
     ops += colorBlock
     return colorBlock
 }
 
 fun KslScopeBuilder.fragmentColorBlock(cfg: ColorBlockConfig, vertexStage: ColorBlockVertexStage? = null): ColorBlockFragmentStage {
-    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, parentStage.program.nextName("colorBlock"), this)
+    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, this)
     ops += colorBlock
     return colorBlock
 }
 
-class ColorBlockVertexStage(cfg: ColorBlockConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder) : KslBlock(cfg.colorName, parentScope) {
     val vertexColors = mutableMapOf<ColorBlockConfig.VertexColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
     val instanceColors = mutableMapOf<ColorBlockConfig.InstanceColor, KslInterStageVector<KslTypeFloat4, KslTypeFloat1>>()
 
@@ -28,12 +28,12 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, name: String, parentScope: Ks
             check(parentStage is KslVertexStage) { "ColorBlockVertexStage can only be added to KslVertexStage" }
 
             cfg.colorSources.filterIsInstance<ColorBlockConfig.VertexColor>().mapIndexed { i, source ->
-                vertexColors[source] = parentStage.program.interStageFloat4(name = nextName("${name}_vertexColor_$i")).apply {
+                vertexColors[source] = parentStage.program.interStageFloat4(name = nextName("${opName}_vertexColor_$i")).apply {
                     input set parentStage.vertexAttribFloat4(source.colorAttrib.name)
                 }
             }
             cfg.colorSources.filterIsInstance<ColorBlockConfig.InstanceColor>().mapIndexed { i, source ->
-                instanceColors[source] = parentStage.program.interStageFloat4(name = nextName("${name}_instanceColor_$i")).apply {
+                instanceColors[source] = parentStage.program.interStageFloat4(name = nextName("${opName}_instanceColor_$i")).apply {
                     input set parentStage.instanceAttribFloat4(source.colorAttrib.name)
                 }
             }
@@ -41,8 +41,8 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, name: String, parentScope: Ks
     }
 }
 
-class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBlockVertexStage?, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    val outColor = outFloat4(parentScope.nextName("${name}_outColor"))
+class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBlockVertexStage?, parentScope: KslScopeBuilder) : KslBlock(cfg.colorName, parentScope) {
+    val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
 
     val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslTypeColorSampler2d>>()
 
@@ -54,7 +54,7 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
                 ?: parentStage.program.vertexStage.main.run { texCoordAttributeBlock() }
 
             val vertexBlock: ColorBlockVertexStage = vertexColorBlock
-                ?: parentStage.program.vertexStage.findBlock()
+                ?: parentStage.program.vertexStage.findBlock(cfg.colorName)
                 ?: parentStage.program.vertexStage.main.run { vertexColorBlock(cfg) }
 
             if (cfg.colorSources.isEmpty() || cfg.colorSources.first().mixMode != ColorBlockConfig.MixMode.Set) {
@@ -92,14 +92,14 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
     }
 }
 
-class ColorBlockConfig {
+class ColorBlockConfig(val colorName: String) {
     val colorSources = mutableListOf<ColorSource>()
 
     fun constColor(staticColor: Color, mixMode: MixMode = MixMode.Set) {
         colorSources += ConstColor(staticColor, mixMode)
     }
 
-    fun uniformColor(defaultColor: Color? = null, uniformName: String = "uColor", mixMode: MixMode = MixMode.Set) {
+    fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", mixMode: MixMode = MixMode.Set) {
         colorSources += UniformColor(defaultColor, uniformName, mixMode)
     }
 
@@ -121,7 +121,7 @@ class ColorBlockConfig {
      *                texture color and an instance color based color tint)
      */
     fun textureColor(defaultTexture: Texture2d? = null,
-                     textureName: String = "tColor",
+                     textureName: String = "t${colorName}",
                      coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
                      gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
                      mixMode: MixMode = MixMode.Set) {

@@ -18,7 +18,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
     open class LitShaderConfig {
         val vertexCfg = BasicVertexConfig()
-        val colorCfg = ColorBlockConfig()
+        val colorCfg = ColorBlockConfig("baseColor")
         val normalMapCfg = NormalMapConfig()
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()

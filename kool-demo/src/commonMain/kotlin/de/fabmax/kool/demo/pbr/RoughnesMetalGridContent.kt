@@ -106,7 +106,6 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
             val pbrShader = it.shader as PbrShader
             pbrShader.irradianceMap(envMaps.irradianceMap)
             pbrShader.reflectionMap(envMaps.reflectionMap)
-            pbrShader.brdfLut(envMaps.brdfLut)
         }
     }
 

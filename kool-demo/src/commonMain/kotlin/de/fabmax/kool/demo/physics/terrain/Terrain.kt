@@ -196,9 +196,8 @@ class Terrain(val heightMap: HeightMap) {
 
                 irradianceMap = ibl.irradianceMap
                 reflectionMap = ibl.reflectionMap
-                brdfLut = ibl.brdfLut
                 lightStrength = 3f
-                ambientStrength = Color.LIGHT_GRAY.toLinear()
+                irradianceStrength = Color.LIGHT_GRAY.toLinear()
 
                 // customize blinn-phong shader to consider the splat map:
                 // splat map is sampled and rgba channels are multiplied with some hard coded colors (we could as
@@ -220,8 +219,7 @@ class Terrain(val heightMap: HeightMap) {
 
                             val waterColor = MdColor.CYAN.toLinear().const
                             val beachColor = (MdColor.AMBER toneLin 300).const
-                            //val grassColor = (MdColor.LIGHT_GREEN toneLin 600).const
-                            val grassColor = (MdColor.BROWN toneLin 600).const
+                            val grassColor = (MdColor.BROWN toneLin 800).const
                             val rockColor = (MdColor.GREY toneLin 500).const * (1f.const - material.inFragmentPos.y / 150f.const) * material.inNormal.y
 
                             val terrainColor = float4Var(

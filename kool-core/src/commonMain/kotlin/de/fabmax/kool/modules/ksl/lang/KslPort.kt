@@ -35,10 +35,10 @@ fun KslScopeBuilder.float4Port(name: String, input: KslVectorExpression<KslTypeF
         ops += port
     }
 
-fun KslScopeBuilder.getFloat1Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat1
-fun KslScopeBuilder.getFloat2Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat2
-fun KslScopeBuilder.getFloat3Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat3
-fun KslScopeBuilder.getFloat4Port(name: String) = getBlocks(name, mutableListOf())[0] as PortFloat4
+fun KslScopeBuilder.getFloat1Port(name: String) = getBlocks(name, mutableListOf()).filterIsInstance<PortFloat1>()[0]
+fun KslScopeBuilder.getFloat2Port(name: String) = getBlocks(name, mutableListOf()).filterIsInstance<PortFloat2>()[0]
+fun KslScopeBuilder.getFloat3Port(name: String) = getBlocks(name, mutableListOf()).filterIsInstance<PortFloat3>()[0]
+fun KslScopeBuilder.getFloat4Port(name: String) = getBlocks(name, mutableListOf()).filterIsInstance<PortFloat4>()[0]
 
 class PortFloat1(name: String, parentScope: KslScopeBuilder) :
     KslPort<KslTypeFloat1>(name, parentScope), KslScalarExpression<KslTypeFloat1> {

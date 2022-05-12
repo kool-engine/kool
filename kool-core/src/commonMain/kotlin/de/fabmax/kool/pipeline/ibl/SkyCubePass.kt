@@ -193,16 +193,14 @@ class SkyCubeIblSystem(val parentScene: Scene) {
     val opticalDepthLutPass = OpticalDepthLutPass()
     val skyPass = SkyCubePass(opticalDepthLutPass.colorTexture!!)
 
-    val brdfLutPass = BrdfLutPass(parentScene)
     val irradianceMapPass = IrradianceMapPass.irradianceMap(parentScene, skyPass.colorTexture!!, 8)
     val reflectionMapPass = ReflectionMapPass.reflectionMap(parentScene, skyPass.colorTexture!!, 128)
 
-    val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!, brdfLutPass.colorTexture!!)
+    val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!)
 
     var isAutoUpdateIblMaps = true
 
     init {
-        brdfLutPass.isAutoRemove = false
         irradianceMapPass.isAutoRemove = false
         reflectionMapPass.isAutoRemove = false
 
@@ -220,7 +218,6 @@ class SkyCubeIblSystem(val parentScene: Scene) {
 
     fun setupOffscreenPasses() {
         parentScene.addOffscreenPass(opticalDepthLutPass)
-        parentScene.addOffscreenPass(brdfLutPass)
 
         parentScene.addOffscreenPass(skyPass)
         parentScene.addOffscreenPass(irradianceMapPass)

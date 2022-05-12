@@ -18,7 +18,7 @@ open class KslUnlitShader(cfg: Config, model: KslProgram = Model(cfg)) : KslShad
     var colorMap: Texture2d? by texture2d(cfg.colorCfg.primaryTexture?.textureName, cfg.colorCfg.primaryTexture?.defaultTexture)
 
     class Config {
-        val colorCfg = ColorBlockConfig()
+        val colorCfg = ColorBlockConfig("baseColor")
         val pipelineCfg = PipelineConfig()
 
         var isInstanced = false

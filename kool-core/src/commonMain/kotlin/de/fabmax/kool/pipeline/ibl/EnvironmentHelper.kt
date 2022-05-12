@@ -20,19 +20,12 @@ object EnvironmentHelper {
             TextureDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
         }
 
-        val brdfLutPass = BrdfLutPass(scene)
-        val brdfLut = Texture2d(brdfLutPass.config.colorAttachments[0].getTextureProps(false), "singleColorEnv-brdf")
-        brdfLutPass.copyTargetsColor += brdfLut
-
-        val maps = EnvironmentMaps(cubeTex, cubeTex, brdfLut)
+        val maps = EnvironmentMaps(cubeTex, cubeTex)
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
             }
         }
-
-        scene.addOffscreenPass(brdfLutPass)
-
         return maps
     }
 
@@ -71,12 +64,11 @@ object EnvironmentHelper {
         }
         val irrMapPass = IrradianceMapPass.irradianceMap(scene, tex)
         val reflMapPass = ReflectionMapPass.reflectionMap(scene, tex)
-        val brdfLutPass = BrdfLutPass(scene)
 
         irrMapPass.dependsOn(renderPass)
         reflMapPass.dependsOn(renderPass)
 
-        val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor(), brdfLutPass.copyColor())
+        val maps = EnvironmentMaps(irrMapPass.copyColor(), reflMapPass.copyColor())
         if (autoDispose) {
             scene.onDispose += {
                 maps.dispose()
@@ -86,15 +78,13 @@ object EnvironmentHelper {
         scene.addOffscreenPass(renderPass)
         scene.addOffscreenPass(irrMapPass)
         scene.addOffscreenPass(reflMapPass)
-        scene.addOffscreenPass(brdfLutPass)
         return maps
     }
 }
 
-class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube, val brdfLut: Texture2d) {
+class EnvironmentMaps(val irradianceMap: TextureCube, val reflectionMap: TextureCube) {
     fun dispose() {
         irradianceMap.dispose()
         reflectionMap.dispose()
-        brdfLut.dispose()
     }
 }

@@ -47,7 +47,7 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
     // Image based lighting maps
     val irradianceMap = TextureCubeInput("irradianceMap", cfg.environmentMaps?.irradianceMap)
     val reflectionMap = TextureCubeInput("reflectionMap", cfg.environmentMaps?.reflectionMap)
-    val brdfLut = Texture2dInput("brdfLut", cfg.environmentMaps?.brdfLut)
+    val brdfLut = Texture2dInput("brdfLut")
 
     // Screen space ambient occlusion map
     val scrSpcAmbientOcclusionMap = Texture2dInput("ssaoMap", cfg.scrSpcAmbientOcclusionMap)
@@ -69,6 +69,7 @@ open class PbrShader(cfg: PbrMaterialConfig, model: ShaderModel = defaultPbrMode
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        brdfLut(ctx.defaultPbrBrdfLut)
         builder.cullMethod = cullMethod
         builder.blendMode = if (isBlending) BlendMode.BLEND_PREMULTIPLIED_ALPHA else BlendMode.DISABLED
         super.onPipelineSetup(builder, mesh, ctx)

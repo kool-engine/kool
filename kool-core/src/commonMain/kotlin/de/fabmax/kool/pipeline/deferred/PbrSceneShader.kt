@@ -42,7 +42,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
     val environmentMapOrientation = Mat3fInput("uEnvMapOri")
     val irradianceMap = TextureCubeInput("irradianceMap", cfg.environmentMaps?.irradianceMap)
     val reflectionMap = TextureCubeInput("reflectionMap", cfg.environmentMaps?.reflectionMap)
-    val brdfLut = Texture2dInput("brdfLut", cfg.environmentMaps?.brdfLut)
+    val brdfLut = Texture2dInput("brdfLut")
 
     // Screen space AO and Reflection maps
     val scrSpcAmbientOcclusionMap = Texture2dInput("ssaoMap")
@@ -63,6 +63,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: ShaderModel = defaultDe
     }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        brdfLut(ctx.defaultPbrBrdfLut)
         builder.depthTest = DepthCompareOp.ALWAYS
         builder.blendMode = BlendMode.DISABLED
         super.onPipelineSetup(builder, mesh, ctx)

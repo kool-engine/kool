@@ -22,12 +22,12 @@ class PbrMaterialBlock(
     val inRoughness = inFloat1("inRoughness")
     val inMetallic = inFloat1("inRoughness")
 
-    val inOcclusion = inFloat1("inOcclusion", KslValueFloat1(1f))
-    val inReflectionStrength = inFloat1("inReflectionStrength", KslValueFloat1(1f))
-
-    val inAmbientStrength = inFloat3("inAmbientStrength", KslValueFloat3(1f, 1f, 1f))
-    val inIrradiance = inFloat3("inIrradiance")
     val inAmbientOrientation = inMat3("inAmbientOrientation")
+    val inIrradiance = inFloat3("inIrradiance")
+
+    val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
+
+    val inOcclusion = inFloat1("inOcclusion", KslValueFloat1(1f))
 
     init {
         body.apply {
@@ -73,44 +73,13 @@ class PbrMaterialBlock(
             val diffuse = float3Var(inIrradiance * inBaseColor)
 
             val r = inAmbientOrientation * reflect(-viewDir, inNormal)
-            val prefilteredColor = float3Var(sampleTexture(reflectionMap, r, roughness * 6f.const).rgb * inAmbientStrength)
+            val prefilteredColor = float3Var(sampleTexture(reflectionMap, r, roughness * 6f.const).rgb * inReflectionStrength)
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).float2("rg"))
             val specular = float3Var(prefilteredColor * (f * brdf.r + brdf.g))
             val ambient = float3Var(kD * diffuse * inOcclusion)
-            val reflection = float3Var(specular * inOcclusion * inReflectionStrength)
+            val reflection = float3Var(specular * inOcclusion)
             outColor set ambient + lo + reflection
-
-            //outColor set specular
         }
     }
-
-
-    /*
-    var orientedR = ""
-        inReflectionMapOrientation?.let {
-            orientedR = "R = $inReflectionMapOrientation * R;"
-        }
-        generator.appendMain("""
-            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
-            vec3 kS = F;
-            vec3 kD = 1.0 - kS;
-            kD *= 1.0 - metal;
-            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
-
-            // sample reflection map
-            vec3 R = reflect(-V, N);
-            $orientedR
-            const float MAX_REFLECTION_LOD = 6.0;
-            vec3 prefilteredColor = ${generator.sampleTextureCube(reflectionMap.name, "R", "rough * MAX_REFLECTION_LOD")}.rgb;
-            prefilteredColor = mix(prefilteredColor, clamp(${inReflectionColor.ref3f()}, 0.0, 5.0), ${inReflectionWeight.ref1f()});
-
-            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
-            vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
-            vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-            vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
-            vec3 reflection = specular * ${inAmbientOccl.ref1f()} * ${inReflectionStrength.ref1f()};
-            vec3 color = (ambient + Lo + ${inEmissive.ref3f()}) * ${inAlbedo.ref4f()}.a + reflection;
-            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);;
-     */
 }

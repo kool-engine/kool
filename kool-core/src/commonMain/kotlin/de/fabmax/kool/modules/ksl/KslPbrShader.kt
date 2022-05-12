@@ -22,26 +22,30 @@ class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(c
     var metallicMap: Texture2d? by texture2d(cfg.metallicCfg.primaryTexture?.textureName, cfg.metallicCfg.primaryTexture?.defaultTexture)
 
     // image based lighting maps
-    var ambientStrength: Vec4f by uniform4f("uAmbientStrength", cfg.ambientStrength)
     var irradianceMap: TextureCube? by textureCube("tIrradianceMap", cfg.irradianceMap)
     var reflectionMap: TextureCube? by textureCube("tReflectionMap", cfg.reflectionMap)
-    var brdfLut: Texture2d? by texture2d("tBrdfLut", cfg.brdfLut)
+    var brdfLut: Texture2d? by texture2d("tBrdfLut")
+    var irradianceStrength: Vec4f by uniform4f("uIrradianceStrength", cfg.irradianceStrength)
+    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
 
     var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
 
-    override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
-        super.onPipelineCreated(pipeline, mesh, ctx)
-        // todo: set brdfLut
+    override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
+        super.onPipelineSetup(builder, mesh, ctx)
+        if (brdfLut == null) {
+            brdfLut = ctx.defaultPbrBrdfLut
+        }
     }
 
     class Config : LitShaderConfig() {
         val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
         val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
 
-        var ambientStrength = Color.WHITE
         var irradianceMap: TextureCube? = null
         var reflectionMap: TextureCube? = null
-        var brdfLut: Texture2d? = null
+
+        var irradianceStrength = Color.WHITE
+        var reflectionStrength = Color.WHITE
 
         fun metallic(block: PropertyBlockConfig.() -> Unit) {
             metallicCfg.propertySources.clear()
@@ -77,12 +81,13 @@ class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(c
             val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
-            val ambientStrength = uniformFloat4("uAmbientStrength").rgb
             val irradianceMap = textureCube("tIrradianceMap")
             val reflectionMap = textureCube("tReflectionMap")
             val brdfLut = texture2d("tBrdfLut")
+            val irradianceStrength = uniformFloat4("uIrradianceStrength").rgb
+            val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
 
-            val irradiance = float3Var(sampleTexture(irradianceMap, ambientOri * normal).rgb) * ambientStrength
+            val irradiance = float3Var(sampleTexture(irradianceMap, ambientOri * normal).rgb) * irradianceStrength
 
             val material = pbrMaterialBlock(reflectionMap, brdfLut) {
                 inCamPos(camData.position)
@@ -93,9 +98,10 @@ class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(c
                 inRoughness(uRoughness)
                 inMetallic(uMetallic)
 
-                inAmbientStrength(ambientStrength)
                 inIrradiance(irradiance)
                 inAmbientOrientation(ambientOri)
+
+                inReflectionStrength(reflectionStrength)
 
                 setLightData(lightData, shadowFactors, cfg.lightStrength.const)
             }

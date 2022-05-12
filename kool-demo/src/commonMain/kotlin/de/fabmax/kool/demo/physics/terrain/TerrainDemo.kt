@@ -216,14 +216,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
                 lightStrength = 3f
-                ambientStrength = Color.LIGHT_GRAY.toLinear()
+                irradianceStrength = Color.LIGHT_GRAY.toLinear()
 
                 roughness(0.2f)
                 metallic(0f)
 
                 reflectionMap = ibl.reflectionMap
                 irradianceMap = ibl.irradianceMap
-                brdfLut = ibl.brdfLut
             }
         }
         +playerModel

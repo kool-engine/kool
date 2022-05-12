@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Viewport
@@ -85,6 +86,8 @@ abstract class KoolContext {
     private val backgroundScene = Scene("backgroundScene")
     val backgroundPasses: List<OffscreenRenderPass>
         get() = backgroundScene.offscreenPasses
+
+    val defaultPbrBrdfLut by lazy { BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor() }
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
     internal val disposablePipelines = mutableListOf<Pipeline>()

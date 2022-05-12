@@ -132,7 +132,6 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrCont
             val pbrShader = it.shader as PbrShader
             pbrShader.irradianceMap(envMaps.irradianceMap)
             pbrShader.reflectionMap(envMaps.reflectionMap)
-            pbrShader.brdfLut(envMaps.brdfLut)
         }
     }
 
