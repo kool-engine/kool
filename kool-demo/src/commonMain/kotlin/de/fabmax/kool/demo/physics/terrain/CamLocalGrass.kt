@@ -7,13 +7,11 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.spatial.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.logD
 import kotlin.math.sqrt
 
@@ -25,6 +23,12 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
     private val instanceTrav = GrassTraverser()
 
     val grassQuads: Mesh
+
+    var grassShader: WindAffectedShader? = null
+        set(value) {
+            field = value
+            grassQuads.shader = value?.shader
+        }
 
     init {
         grassQuads = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, TreeShader.WIND_SENSITIVITY)).apply {
@@ -68,19 +72,19 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
         grassQuads.isCastingShadow = enabled
     }
 
-    fun setupShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap) {
-        val grassShader = GrassShader(grassColor, ibl, shadowMap, trees.windDensity, true)
-        val grassShadowShader = GrassShader.Shadow(grassColor, trees.windDensity, true)
-        grassQuads.shader = grassShader
-        grassQuads.depthShader = grassShadowShader
+    fun setupGrass(grassColor: Texture2d) {
+        val shadowShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
+        grassQuads.depthShader = shadowShader
 
         grassQuads.onUpdate += { ev ->
             if (grassQuads.isVisible) {
-                grassShader.windOffsetStrength = trees.windOffsetStrength
-                grassShader.windScale = 1f / trees.windScale
+                grassShader?.let {
+                    it.windOffsetStrength = trees.windOffsetStrength
+                    it.windScale = 1f / trees.windScale
+                }
 
-                grassShadowShader.windOffsetStrength = trees.windOffsetStrength
-                grassShadowShader.windScale = 1f / trees.windScale
+                shadowShader.windOffsetStrength = trees.windOffsetStrength
+                shadowShader.windScale = 1f / trees.windScale
 
                 val cam = ev.camera
                 val radius = 50f

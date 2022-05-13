@@ -5,13 +5,11 @@ import de.fabmax.kool.math.Random
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.logD
 
 class Grass(val terrain: Terrain, val trees: Trees) {
@@ -61,13 +59,7 @@ class Grass(val terrain: Terrain, val trees: Trees) {
         meshDatas.forEach { (_, data) ->
             data.generateNormals()
 
-            // fixme: for some reason disabling specific shadow lods sometimes results in weird flickering artifacts
-            //  as a workaround we specify an empty geometry for largest lod
-            grassQuads += Mesh(data).apply {
-                shadowGeometry += geometry
-                shadowGeometry += geometry
-                shadowGeometry += IndexedVertexList(Attribute.POSITIONS)
-            }
+            grassQuads += Mesh(data)
         }
         setIsCastingShadow(true)
     }
@@ -75,34 +67,35 @@ class Grass(val terrain: Terrain, val trees: Trees) {
     fun setIsCastingShadow(enabled: Boolean) {
         grassQuads.children.forEach {
             it as Mesh
-            it.isCastingShadow = enabled
-
-            // fixme: for some reason disabling specific shadow lods sometimes results in weird flickering artifacts
-            //  as a workaround we specify an empty geometry for largest lod
-//            it.isCastingShadow = false
-//            if (enabled) {
-//                it.setIsCastingShadow(0, true)
-//                it.setIsCastingShadow(1, true)
-//                it.setIsCastingShadow(2, false)
-//            }
+            it.isCastingShadow = false
+            if (enabled) {
+                it.setIsCastingShadow(0, true)
+                it.setIsCastingShadow(1, true)
+                it.setIsCastingShadow(2, false)
+            }
         }
     }
 
-    fun setupShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap) {
-        val grassShader = GrassShader(grassColor, ibl, shadowMap, trees.windDensity, false)
-        val grassShadowShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
-        grassQuads.children.forEach {
-            it as Mesh
-            it.shader = grassShader
-            it.depthShader = grassShadowShader
+    fun setupGrass(grassColor: Texture2d) {
+        val childMeshes = grassQuads.children.filterIsInstance<Mesh>()
+        childMeshes.forEach {
+            it.depthShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
         }
 
         grassQuads.onUpdate += {
-            grassShader.windOffsetStrength = trees.windOffsetStrength
-            grassShader.windScale = 1f / trees.windScale
-
-            grassShadowShader.windOffsetStrength = trees.windOffsetStrength
-            grassShadowShader.windScale = 1f / trees.windScale
+            // fixme: for some reason a shared shader instance results in flickering whenever a mesh is rendered
+            //  for the first time -> as a workaround we don't use a shared shader instance but an exclusive one
+            //  for each child mesh
+            childMeshes.forEach { child ->
+                (child.shader as WindAffectedShader).let {
+                    it.windOffsetStrength = trees.windOffsetStrength
+                    it.windScale = 1f / trees.windScale
+                }
+                (child.depthShader as WindAffectedShader).let {
+                    it.windOffsetStrength = trees.windOffsetStrength
+                    it.windScale = 1f / trees.windScale
+                }
+            }
         }
     }
 

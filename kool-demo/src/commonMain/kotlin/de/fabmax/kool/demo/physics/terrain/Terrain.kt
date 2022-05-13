@@ -2,7 +2,11 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBox
+import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.PbrMaterialBlock
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
@@ -184,22 +188,23 @@ class Terrain(val heightMap: HeightMap) {
     companion object {
         val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
 
-        fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps) =
-            KslPbrShader {
+        fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps, isPbr: Boolean): KslShader {
+            fun KslLitShader.LitShaderConfig.terrainConfig() {
                 color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
 
-//                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-//                specularStrength(0.25f)
+                if (this is KslPbrShader.Config) {
+                    with (TerrainDemo) {
+                        iblConfig(ibl)
+                    }
+                } else if (this is KslBlinnPhongShader.Config) {
+                    imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+                    specularStrength(0.25f)
+                }
 
-                irradianceMap = ibl.irradianceMap
-                reflectionMap = ibl.reflectionMap
-                lightStrength = 3f
-                irradianceStrength = Color.LIGHT_GRAY.toLinear()
-
-                // customize blinn-phong shader to consider the splat map:
+                // customize to consider the splat map:
                 // splat map is sampled and rgba channels are multiplied with some hard coded colors (we could as
                 // well use more textures here)
                 modelCustomizer = {
@@ -210,8 +215,7 @@ class Terrain(val heightMap: HeightMap) {
                             val texCoordBlock = vertexStage.findBlock<TexCoordAttributeBlock>()!!
                             val splatCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
 
-                            //val material = findBlock<BlinnPhongMaterialBlock>()!!
-                            val material = findBlock<PbrMaterialBlock>()!!
+                            val material = findBlock<PbrMaterialBlock>() ?: findBlock<BlinnPhongMaterialBlock>()!!
                             val baseColor = material.inBaseColor.input!!
 
                             val splatMapSampler = texture2d("tSplatMap")
@@ -230,28 +234,39 @@ class Terrain(val heightMap: HeightMap) {
                             )
                             material.inBaseColor(baseColor * terrainColor.rgb)
 
-//                            val specularStrength = floatVar(
-//                                        splatWeights.r * 0.3f.const +
-//                                        splatWeights.g * 0.0f.const +
-//                                        splatWeights.b * 1.0f.const +
-//                                        splatWeights.a * 0.2f.const
-//                            )
-//                            material.inSpecularStrength(specularStrength)
-
-                            val roughness = floatVar(
-                                splatWeights.r * 0.6f.const +
-                                        splatWeights.g * 0.8f.const +
-                                        splatWeights.b * 0.2f.const +
-                                        splatWeights.a * 0.7f.const
-                            )
-                            material.inRoughness(roughness)
+                            if (material is BlinnPhongMaterialBlock) {
+                                val specularStrength = floatVar(
+                                            splatWeights.r * 0.3f.const +
+                                            splatWeights.g * 0.0f.const +
+                                            splatWeights.b * 1.0f.const +
+                                            splatWeights.a * 0.2f.const
+                                )
+                                material.inSpecularStrength(specularStrength)
+                            } else if (material is PbrMaterialBlock) {
+                                val roughness = floatVar(
+                                    splatWeights.r * 0.6f.const +
+                                            splatWeights.g * 0.8f.const +
+                                            splatWeights.b * 0.2f.const +
+                                            splatWeights.a * 0.7f.const
+                                )
+                                material.inRoughness(roughness)
+                            }
                         }
                     }
                 }
+            }
 
-            }.apply {
+            val shader = if (isPbr) {
+                KslPbrShader { terrainConfig() }
+            } else {
+                KslBlinnPhongShader { terrainConfig() }
+            }
+            shader.apply {
                 // do not forget to assign the splat map to the corresponding sampler after the shader is created
                 onPipelineCreated += { _, _, _ -> texSamplers2d["tSplatMap"]?.texture = splatMap }
             }
+
+            return shader
+        }
     }
 }

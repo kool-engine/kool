@@ -2,6 +2,8 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslDepthShader
+import de.fabmax.kool.modules.ksl.KslLitShader
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -11,144 +13,185 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
 
-class GrassShader(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean) :
-    KslBlinnPhongShader(grassShaderConfig(grassColor, ibl, shadowMap, isInstanced)) {
+object GrassShader {
 
-    var windOffsetStrength by uniform4f("uWindOffsetStrength")
-    var windScale by uniform1f("uWindScale", 0.01f)
-    var windDensity by texture3d("tWindTex", windTex)
+    class Pbr(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean)
+        : KslPbrShader(pbrConfig(grassColor, ibl, shadowMap, isInstanced)), WindAffectedShader {
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
 
-    class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean) : KslDepthShader(grassShadowConfig(isInstanced)) {
-        var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        var windScale by uniform1f("uWindScale", 0.01f)
-        var windDensity by texture3d("tWindTex", windTex)
+        override val shader = this
+    }
+
+    class BlinnPhong(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean)
+        : KslBlinnPhongShader(blinnPhongConfig(grassColor, ibl, shadowMap, isInstanced)), WindAffectedShader {
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
+
+        override val shader = this
+    }
+
+    class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean)
+        : KslDepthShader(shadowConfig(isInstanced)), WindAffectedShader {
         var grassAlpha by texture2d("grassAlpha", grassColor)
 
-        companion object {
-            private fun grassShadowConfig(isInstanced: Boolean) = Config().apply {
-                pipeline { cullMethod = CullMethod.NO_CULLING }
-                this.isInstanced = isInstanced
-                modelCustomizer = {
-                    grassWindMod(isInstanced)
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
 
-                    val texCoords: TexCoordAttributeBlock
-                    vertexStage {
-                        main {
-                            texCoords = texCoordAttributeBlock()
-                        }
-                    }
-                    fragmentStage {
-                        main {
-                            val tex = texture2d("grassAlpha")
-                            val uv = texCoords.getAttributeCoords(Attribute.TEXTURE_COORDS)
-                            val texAlpha = floatVar(sampleTexture(tex, uv).a)
-                            `if` (texAlpha lt 0.35f.const) {
-                                discard()
-                            }
-                        }
+        override val shader = this
+    }
+
+    val DISTANCE_SCALE = Attribute("aDistScale", GlslType.FLOAT)
+
+    fun makeGrassShader(
+        grassColor: Texture2d,
+        ibl: EnvironmentMaps,
+        shadowMap: ShadowMap,
+        windTex: Texture3d,
+        isInstanced: Boolean,
+        isPbr: Boolean
+    ): WindAffectedShader {
+        return if (isPbr) {
+            Pbr(grassColor, ibl, shadowMap, windTex, isInstanced)
+        } else {
+            BlinnPhong(grassColor, ibl, shadowMap, windTex, isInstanced)
+        }
+    }
+
+    private fun KslProgram.grassWindMod(isInstanced: Boolean) {
+        vertexStage {
+            main {
+                val worldPos = getFloat3Port("worldPos")
+                with (TreeShader) {
+                    windMod()
+                }
+                if (isInstanced) {
+                    val pos = float3Var(worldPos.input.input)
+                    pos.y -= instanceAttribFloat1(DISTANCE_SCALE.name) * 1.3f.const
+                    worldPos.input(pos)
+                }
+            }
+        }
+    }
+
+    private fun pbrConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = KslPbrShader.Config().apply {
+        with(TerrainDemo) {
+            iblConfig(ibl)
+        }
+        roughness(1f)
+        grassShaderConfig(grassColor, shadowMap, isInstanced)
+    }
+
+    private fun blinnPhongConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
+        imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+        specularStrength(0.15f)
+
+        grassShaderConfig(grassColor, shadowMap, isInstanced)
+    }
+
+    private fun shadowConfig(isInstanced: Boolean) = KslDepthShader.Config().apply {
+        pipeline { cullMethod = CullMethod.NO_CULLING }
+        this.isInstanced = isInstanced
+        modelCustomizer = {
+            grassWindMod(isInstanced)
+
+            val texCoords: TexCoordAttributeBlock
+            vertexStage {
+                main {
+                    texCoords = texCoordAttributeBlock()
+                }
+            }
+            fragmentStage {
+                main {
+                    val tex = texture2d("grassAlpha")
+                    val uv = texCoords.getAttributeCoords(Attribute.TEXTURE_COORDS)
+                    val texAlpha = floatVar(sampleTexture(tex, uv).a)
+                    `if` (texAlpha lt 0.35f.const) {
+                        discard()
                     }
                 }
             }
         }
     }
 
-    companion object {
-        val DISTANCE_SCALE = Attribute("aDistScale", GlslType.FLOAT)
-
-        private fun KslProgram.grassWindMod(isInstanced: Boolean) {
-            vertexStage {
-                main {
-                    val worldPos = getFloat3Port("worldPos")
-                    with (TreeShader) {
-                        windMod()
-                    }
-                    if (isInstanced) {
-                        val pos = float3Var(worldPos.input.input)
-                        pos.y -= instanceAttribFloat1(DISTANCE_SCALE.name) * 1.3f.const
-                        worldPos.input(pos)
-                    }
-                }
-            }
+    private fun KslLitShader.LitShaderConfig.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, isInstanced: Boolean) {
+        pipeline { cullMethod = CullMethod.NO_CULLING }
+        color { textureColor(grassColor) }
+        shadow { addShadowMap(shadowMap) }
+        vertices {
+            this.isInstanced = isInstanced
+            isFlipBacksideNormals = false
         }
 
-        private fun grassShaderConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = Config().apply {
-            pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { textureColor(grassColor) }
-            shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            vertices {
-                this.isInstanced = isInstanced
-                isFlipBacksideNormals = false
-            }
+        colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        alphaMode = AlphaMode.Opaque()
 
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            alphaMode = AlphaMode.Opaque()
-            specularStrength(0.15f)
+        modelCustomizer = {
+            //dumpCode = true
+            grassWindMod(isInstanced)
 
-            modelCustomizer = {
-                //dumpCode = true
-                grassWindMod(isInstanced)
+            val tint = interStageFloat2("windTint")
+            vertexStage {
+                val lightData = dataBlocks.first { it is SceneLightData } as SceneLightData
 
-                val tint = interStageFloat2("windTint")
-                vertexStage {
-                    val lightData = dataBlocks.first { it is SceneLightData } as SceneLightData
+                main {
+                    val worldPos = getFloat3Port("worldPos")
+                    val windTex = texture3d("tWindTex")
 
-                    main {
-                        val worldPos = getFloat3Port("worldPos")
-                        val windTex = texture3d("tWindTex")
+                    // wind based tint (moving darker patches)
+                    val windOffset = uniformFloat4("uWindOffsetStrength").xyz * 0.5f.const
+                    val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
+                    val slowWind = float3Var(sampleTexture(windTex, windSamplePos).xyz)
+                    val windTint = clamp(slowWind.x + 0.3f.const, 0.2f.const, 1f.const)
 
-                        // wind based tint (moving darker patches)
-                        val windOffset = uniformFloat4("uWindOffsetStrength").xyz * 0.5f.const
-                        val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
-                        val slowWind = float3Var(sampleTexture(windTex, windSamplePos).xyz)
-                        val windTint = clamp(slowWind.x + 0.3f.const, 0.2f.const, 1f.const)
+                    // position based tint (fixed position yellowish patches)
+                    val positionTint = sampleTexture(windTex, worldPos * 0.05f.const).y * 0.5f.const
 
-                        // position based tint (fixed position yellowish patches)
-                        val positionTint = sampleTexture(windTex, worldPos * 0.05f.const).y * 0.5f.const
+                    // forward tint values to fragment stage
+                    tint.input set float2Value(windTint, positionTint)
 
-                        // forward tint values to fragment stage
-                        tint.input set float2Value(windTint, positionTint)
-
-                        // adjust vertex normals to always point in light direction
-                        val normalPort = getFloat3Port("worldNormal")
-                        val normal = float3Var(normalPort.input.input!!)
-                        val dotNormal = floatVar(dot(normal, lightData.encodedPositions[0].xyz))
-                        `if` (abs(dotNormal) lt 0.1f.const) {
-                            normal -= normalize(lightData.encodedPositions[0].xyz)
-                        }.elseIf(dotNormal gt 0f.const) {
-                            normal set normal * (-1f).const
-                        }
-
-                        // modify normal y-component by the same input as wind tint to magnify wind based
-                        // darkening / brightening effect
-                        normal.y -= 0.5f.const - slowWind.x * 0.5f.const
-                        normalPort.input(normal)
+                    // adjust vertex normals to always point in light direction
+                    val normalPort = getFloat3Port("worldNormal")
+                    val normal = float3Var(normalPort.input.input!!)
+                    val dotNormal = floatVar(dot(normal, lightData.encodedPositions[0].xyz))
+                    `if` (abs(dotNormal) lt 0.1f.const) {
+                        normal -= normalize(lightData.encodedPositions[0].xyz)
+                    }.elseIf(dotNormal gt 0f.const) {
+                        normal set normal * (-1f).const
                     }
+
+                    // modify normal y-component by the same input as wind tint to magnify wind based
+                    // darkening / brightening effect
+                    normal.y -= 0.5f.const - slowWind.x * 0.5f.const
+                    normalPort.input(normal)
                 }
-                fragmentStage {
-                    @Suppress("UNCHECKED_CAST")
-                    val worldPos = interStageVars.first { it.output.stateName == "positionWorldSpace" } as KslInterStageVector<KslTypeFloat3, KslTypeFloat1>
-                    val camData = dataBlocks.first { it is CameraData } as CameraData
+            }
+            fragmentStage {
+                @Suppress("UNCHECKED_CAST")
+                val worldPos = interStageVars.first { it.output.stateName == "positionWorldSpace" } as KslInterStageVector<KslTypeFloat3, KslTypeFloat1>
+                val camData = dataBlocks.first { it is CameraData } as CameraData
 
-                    main {
-                        val baseColorPort = getFloat4Port("baseColor")
-                        val baseColor = baseColorPort.input.input!!
+                main {
+                    val baseColorPort = getFloat4Port("baseColor")
+                    val baseColor = baseColorPort.input.input!!
 
-                        val distToCam = distance(worldPos.output, camData.position)
-                        val cutOff = (1f.const - clamp(distToCam / 30f.const, 0f.const, 1f.const)) * 0.4f.const + 0.1f.const
-                        `if` (baseColor.a lt cutOff) {
-                            discard()
-                        }
-
-                        val baseColorMod = float4Var(baseColor)
-                        // boost brightness of distant grass sprites (otherwise they appear too dark because of mipmapping / alpha issues)
-                        baseColorMod.rgb set baseColorMod.rgb / pow(baseColorPort.input.a, 1.5f.const)
-                        // make some yellowish patches
-                        baseColorMod.rgb set mix(baseColorMod.rgb, (MdColor.YELLOW toneLin 600).const.rgb, tint.output.y)
-                        // apply some fake cloud shadow
-                        baseColorMod.rgb set baseColorMod.rgb * tint.output.x
-                        baseColorPort.input(baseColorMod)
+                    val distToCam = distance(worldPos.output, camData.position)
+                    val cutOff = (1f.const - clamp(distToCam / 30f.const, 0f.const, 1f.const)) * 0.4f.const + 0.1f.const
+                    `if` (baseColor.a lt cutOff) {
+                        discard()
                     }
+
+                    val baseColorMod = float4Var(baseColor)
+                    // boost brightness of distant grass sprites (otherwise they appear too dark because of mipmapping / alpha issues)
+                    baseColorMod.rgb set baseColorMod.rgb / pow(baseColorPort.input.a, 1.5f.const)
+                    // make some yellowish patches
+                    baseColorMod.rgb set mix(baseColorMod.rgb, (MdColor.YELLOW toneLin 600).const.rgb, tint.output.y)
+                    // apply some fake cloud shadow
+                    baseColorMod.rgb set baseColorMod.rgb * tint.output.x
+                    baseColorPort.input(baseColorMod)
                 }
             }
         }

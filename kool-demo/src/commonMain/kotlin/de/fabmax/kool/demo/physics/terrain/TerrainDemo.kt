@@ -10,7 +10,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
+import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
@@ -20,6 +22,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
@@ -35,13 +38,25 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var grass: Grass
     private lateinit var camLocalGrass: CamLocalGrass
     private lateinit var ibl: EnvironmentMaps
+    private lateinit var shadowMap: ShadowMap
 
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
     private lateinit var terrainMeshes: Group
     private lateinit var physicsObjects: PhysicsObjects
 
+    private var boxMesh: Mesh? = null
+    private var bridgeMesh: Mesh? = null
+
     private lateinit var escKeyListener: InputManager.KeyEventListener
+
+    private var isPlayerPbr = true
+    private var isGroundPbr = true
+    private var isBridgePbr = true
+    // boxes and especially trees and grass actually look better with cheap blinn-phong shading
+    private var isBoxesPbr = false
+    private var isTreesPbr = false
+    private var isGrassPbr = false
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
@@ -80,6 +95,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
+        boxMesh = if (physicsObjects.boxes.isNotEmpty()) makeBoxMesh() else null
+        bridgeMesh = makeBridgeMesh()
+
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
         }
@@ -95,25 +113,33 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi {
-        button("ESC to unlock Cursor") {
-            camRig.isCursorLocked = true
-        }.apply {
-            onUpdate += {
-                text = if (camRig.isCursorLocked) {
-                    "ESC to unlock Cursor"
-                } else {
-                    "Click here to lock Cursor"
+        section("Terrain Demo") {
+            button("ESC to unlock Cursor") {
+                camRig.isCursorLocked = true
+            }.apply {
+                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+                textColorHovered.setCustom(MdColor.DEEP_ORANGE)
+                onUpdate += {
+                    text = if (camRig.isCursorLocked) {
+                        textColor.setCustom(MdColor.DEEP_ORANGE)
+                        "ESC to unlock Cursor"
+                    } else {
+                        textColor.setCustom(Color.WHITE)
+                        "Click here to lock Cursor"
+                    }
                 }
             }
+            text("[WASD / Cursor Keys]: Move").apply { font.setCustom(smallFont); menuY += 10f }
+            text("[Shift]: Run").apply { font.setCustom(smallFont); menuY += 10f }
+            text("[Space]: Jump").apply { font.setCustom(smallFont); menuY += 10f }
         }
-        gap(8f)
-        button("Respawn Boxes") {
-            physicsObjects.respawnBoxes()
-        }
-        toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
-            playerModel.isDrawShapeOutline = isEnabled
-            physicsObjects.debugLines.isVisible = isEnabled
-        }
+//        button("Respawn Boxes") {
+//            physicsObjects.respawnBoxes()
+//        }
+//        toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
+//            playerModel.isDrawShapeOutline = isEnabled
+//            physicsObjects.debugLines.isVisible = isEnabled
+//        }
         section("Wind") {
             sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
                 trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
@@ -135,6 +161,26 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             toggleButton("Grass Shadow Casting", camLocalGrass.grassQuads.isCastingShadow) {
                 grass.setIsCastingShadow(isEnabled)
                 camLocalGrass.setIsCastingShadow(isEnabled)
+            }
+        }
+        section("PBR Shading") {
+            toggleButton("Player", isPlayerPbr) {
+                isPlayerPbr = isEnabled
+                setupShaders()
+            }
+            toggleButton("Ground", isGroundPbr) {
+                isGroundPbr = isEnabled
+                isBridgePbr = isEnabled
+                setupShaders()
+            }
+            toggleButton("Boxes", isBoxesPbr) {
+                isBoxesPbr = isEnabled
+                setupShaders()
+            }
+            toggleButton("Vegetation", isTreesPbr) {
+                isTreesPbr = isEnabled
+                isGrassPbr = isEnabled
+                setupShaders()
             }
         }
 
@@ -172,7 +218,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 setColor(Color.WHITE, 1f)
             }
         }
-        val shadowMap = CascadedShadowMap(this@setupMainScene, 0, 200f).apply {
+        shadowMap = CascadedShadowMap(this@setupMainScene, 0, 200f).apply {
             setMapRanges(0.05f, 0.25f, 1f)
             cascades.forEach {
                 it.directionalCamNearOffset = -200f
@@ -180,52 +226,20 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl)
-        terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
-        +terrainMeshes
+        camLocalGrass.setupGrass(grassColor)
+        grass.setupGrass(grassColor)
+        trees.setupTrees()
 
-        if (physicsObjects.boxes.isNotEmpty()) {
-            +makeBoxMesh(shadowMap)
-        }
-        +makeBridgeMesh(shadowMap)
-
-        trees.setupTreeShaders(ibl, shadowMap)
-        grass.setupShader(grassColor, ibl, shadowMap)
-        camLocalGrass.setupShader(grassColor, ibl, shadowMap)
+        boxMesh?.let { +it }
+        bridgeMesh?.let { +it }
 
         +trees.treeGroup
         +grass.grassQuads
         +camLocalGrass.grassQuads
+        +playerModel
+        +terrainMeshes
 
         +physicsObjects.debugLines
-
-        // change player model shader
-        playerModel.model.meshes.values.forEach {
-//            it.shader = blinnPhongShader {
-//                vertices { enableArmature(40) }
-//                color { addUniformColor(MdColor.PINK.toLinear()) }
-//                shadow { addShadowMap(shadowMap) }
-//                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-//                specularStrength = 0.5f
-//                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-//            }
-
-            it.shader = KslPbrShader {
-                vertices { enableArmature(40) }
-                color { uniformColor(MdColor.PINK.toLinear()) }
-                shadow { addShadowMap(shadowMap) }
-                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-                lightStrength = 3f
-                irradianceStrength = Color.LIGHT_GRAY.toLinear()
-
-                roughness(0.2f)
-                metallic(0f)
-
-                reflectionMap = ibl.reflectionMap
-                irradianceMap = ibl.irradianceMap
-            }
-        }
-        +playerModel
 
         //defaultCamTransform()
 
@@ -262,22 +276,99 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         // don't forget to add the cam rig to the scene
         +camRig
         physicsObjects.playerController.tractorGun.camRig = camRig
+
+        setupShaders()
     }
 
-    private fun makeBoxMesh(shadowMap: ShadowMap) = colorMesh {
+    private fun setupShaders() {
+        setupPlayerShader(isPlayerPbr)
+
+        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl, isGroundPbr)
+        terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
+
+        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, trees.windDensity, isTreesPbr)
+        //grass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, false, isGrassPbr)
+
+        grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
+            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, false, isGrassPbr).shader
+        }
+
+        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, true, isGrassPbr)
+
+        boxMesh?.shader = instancedObjectShader(0.2f, 0.25f, isBoxesPbr)
+        bridgeMesh?.shader = instancedObjectShader(0.8f, 0f, isBridgePbr)
+    }
+
+    private fun setupPlayerShader(isPbr: Boolean) {
+        fun KslLitShader.LitShaderConfig.baseConfig() {
+            vertices { enableArmature(40) }
+            color { constColor(MdColor.PINK.toLinear()) }
+            shadow { addShadowMap(shadowMap) }
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        }
+
+        val shader = if (isPbr) {
+            val isKsl = true
+
+            if (isKsl) {
+                KslPbrShader {
+                    baseConfig()
+                    iblConfig(ibl)
+                    roughness(0.2f)
+                }
+            } else {
+                pbrShader {
+                    isSkinned = true
+                    maxJoints = 40
+                    useStaticAlbedo(MdColor.PINK.toLinear())
+                    shadowMaps += shadowMap
+                    useImageBasedLighting(ibl)
+                    metallic = 0.7f
+                    roughness = 0.2f
+                }
+            }
+
+        } else {
+            KslBlinnPhongShader {
+                baseConfig()
+                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+                specularStrength(0.5f)
+            }
+        }
+
+        playerModel.model.meshes.values.forEach {
+            it.shader = shader
+        }
+    }
+
+    private fun instancedObjectShader(roughness: Float, metallic: Float, isPbr: Boolean): KslShader {
+        fun KslLitShader.LitShaderConfig.baseConfig() {
+            vertices { isInstanced = true }
+            color { vertexColor() }
+            shadow { addShadowMap(shadowMap) }
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        }
+        return if (isPbr) {
+            KslPbrShader {
+                baseConfig()
+                iblConfig(ibl)
+                roughness(roughness)
+                metallic(metallic)
+            }
+        } else {
+            KslBlinnPhongShader {
+                baseConfig()
+                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+                specularStrength(1f - roughness)
+            }
+        }
+    }
+
+    private fun makeBoxMesh() = colorMesh {
         generate {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
-        shader = KslBlinnPhongShader {
-            vertices { isInstanced = true }
-            color { vertexColor() }
-            shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength(0.5f)
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-        }
-
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         onUpdate += {
             instances!!.apply {
@@ -291,21 +382,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBridgeMesh(shadowMap: ShadowMap) = colorMesh {
+    private fun makeBridgeMesh() = colorMesh {
         generate {
             color = MdColor.BROWN toneLin 700
             cube {
                 size.set(2f, 0.2f, 1.1f)
                 centered()
             }
-        }
-        shader = KslBlinnPhongShader {
-            vertices { isInstanced = true }
-            color { vertexColor() }
-            shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength(0.2f)
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
         instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
         onUpdate += {
@@ -317,6 +400,15 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                     }
                 }
             }
+        }
+    }
+
+    companion object {
+        fun KslPbrShader.Config.iblConfig(ibl: EnvironmentMaps) {
+            reflectionMap = ibl.reflectionMap
+            irradianceMap = ibl.irradianceMap
+            lightStrength = 3f
+            irradianceStrength = Color.LIGHT_GRAY.toLinear()
         }
     }
 }

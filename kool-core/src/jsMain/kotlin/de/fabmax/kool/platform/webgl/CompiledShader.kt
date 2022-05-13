@@ -374,16 +374,18 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             val instanceList = instances
             if (instanceList != null) {
                 var instBuf = instanceBuffer
+                var isNewlyCreated = false
                 if (instBuf == null) {
                     instBuf = BufferResource(ARRAY_BUFFER, ctx)
                     instanceBuffer = instBuf
+                    isNewlyCreated = true
                     for (instanceAttrib in instanceList.instanceAttributes) {
                         val stride = instanceList.strideBytesF
                         val offset = instanceList.attributeOffsets[instanceAttrib]!! / 4
                         instanceAttribBinders += instanceAttributes.makeAttribBinders(instanceAttrib, instanceBuffer!!, stride, offset)
                     }
                 }
-                if (instanceList.hasChanged) {
+                if (instanceList.hasChanged || isNewlyCreated) {
                     val len = instanceList.numInstances * instanceList.instanceSizeF
                     instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), len, ctx)
                     ctx.afterRenderActions += { instanceList.hasChanged = false }

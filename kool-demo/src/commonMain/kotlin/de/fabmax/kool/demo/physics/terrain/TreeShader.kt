@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo.physics.terrain
 
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.noise.MultiPerlin3d
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
-import de.fabmax.kool.modules.ksl.KslDepthShader
+import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -14,108 +14,147 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-class TreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d) : KslBlinnPhongShader(treeShaderConfig(ibl, shadowMap)) {
+interface WindAffectedShader {
+    var windOffsetStrength: Vec4f
+    var windScale: Float
+    var windDensity: Texture3d?
 
-    var windOffsetStrength by uniform4f("uWindOffsetStrength")
-    var windScale by uniform1f("uWindScale", 0.01f)
-    var windDensity by texture3d("tWindTex", windTex)
+    val shader: KslShader
+}
 
-    class Shadow(windTex: Texture3d) : KslDepthShader(treeShadowConfig()) {
-        var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        var windScale by uniform1f("uWindScale", 0.01f)
-        var windDensity by texture3d("tWindTex", windTex)
+object TreeShader {
+    class Pbr(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
+        : KslPbrShader(pbrConfig(ibl, shadowMap)), WindAffectedShader {
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
 
-        companion object {
-            private fun treeShadowConfig() = Config().apply {
-                isInstanced = true
-                modelCustomizer = { windMod() }
+        override val shader = this
+    }
+
+    class BlinnPhong(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
+        : KslBlinnPhongShader(blinnPhongConfig(ibl, shadowMap)), WindAffectedShader {
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
+
+        override val shader = this
+    }
+
+    class Shadow(windTex: Texture3d) : KslDepthShader(shadowConfig()), WindAffectedShader {
+        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
+        override var windScale by uniform1f("uWindScale", 0.01f)
+        override var windDensity by texture3d("tWindTex", windTex)
+
+        override val shader = this
+    }
+
+    fun makeTreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isPbr: Boolean): WindAffectedShader {
+        return if (isPbr) {
+            Pbr(ibl, shadowMap, windTex)
+        } else {
+            BlinnPhong(ibl, shadowMap, windTex)
+        }
+    }
+
+    private fun KslLitShader.LitShaderConfig.baseConfig(shadowMap: ShadowMap) {
+        vertices { isInstanced = true }
+        color { vertexColor() }
+        shadow { addShadowMap(shadowMap) }
+        colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+        modelCustomizer = { windMod() }
+    }
+
+    private fun pbrConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslPbrShader.Config().apply {
+        baseConfig(shadowMap)
+        roughness(1f)
+        with (TerrainDemo) {
+            iblConfig(ibl)
+        }
+    }
+
+    private fun blinnPhongConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslBlinnPhongShader.Config().apply {
+        baseConfig(shadowMap)
+        imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+        specularStrength(0.05f)
+    }
+
+    private fun shadowConfig() = KslDepthShader.Config().apply {
+        isInstanced = true
+        modelCustomizer = { windMod() }
+    }
+
+    fun KslProgram.windMod() {
+        vertexStage {
+            main {
+                val worldPosPort = getFloat3Port("worldPos")
+
+                val windTex = texture3d("tWindTex")
+                val windOffset = uniformFloat4("uWindOffsetStrength")
+                val worldPos = worldPosPort.input.input!!
+                val windSamplePos = (windOffset.xyz + worldPos) * uniformFloat1("uWindScale")
+                val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
+                windValue.y *= 0.5f.const
+                val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windOffset.w)
+                worldPosPort.input(worldPos + displacement)
             }
         }
     }
 
-    companion object {
-        fun KslProgram.windMod() {
-            vertexStage {
-                main {
-                    val worldPosPort = getFloat3Port("worldPos")
+    val WIND_SENSITIVITY = Attribute("aWindSense", GlslType.FLOAT)
 
-                    val windTex = texture3d("tWindTex")
-                    val windOffset = uniformFloat4("uWindOffsetStrength")
-                    val worldPos = worldPosPort.input.input!!
-                    val windSamplePos = (windOffset.xyz + worldPos) * uniformFloat1("uWindScale")
-                    val windValue = float3Var(sampleTexture(windTex, windSamplePos).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
-                    windValue.y *= 0.5f.const
-                    val displacement = float3Port("windDisplacement", windValue * vertexAttribFloat1(WIND_SENSITIVITY.name) * windOffset.w)
-                    worldPosPort.input(worldPos + displacement)
+    fun generateWindDensityTex(): Texture3d {
+        val pt = PerfTimer()
+        var min = 10f
+        var max = -10f
+
+        val perlin = MultiPerlin3d(3, 3)
+        val nMinP = -0.7f
+        val nMaxP = 0.7f
+
+        val sz = 96
+        val buf = createUint8Buffer(sz*sz*sz*4)
+        for (z in 0 until sz) {
+            for (y in 0 until sz) {
+                for (x in 0 until sz) {
+                    val nx = x / sz.toFloat()
+                    val ny = y / sz.toFloat()
+                    val nz = z / sz.toFloat()
+
+                    val fp = perlin.eval(nx, ny, nz)
+                    val n = (fp - nMinP) / (nMaxP - nMinP) * 0.9f + 0.06f
+                    val c = (n * 255).roundToInt().clamp(0, 255)
+                    min = min(min, n)
+                    max = max(max, n)
+
+                    buf.put(c.toByte())
+                    buf.put(0.toByte())
+                    buf.put(0.toByte())
+                    buf.put(255.toByte())
+                }
+            }
+        }
+        buf.flip()
+
+        for (z in 0 until sz) {
+            for (y in 0 until sz) {
+                for (x in 0 until sz) {
+                    val i = z * sz * sz + y * sz + x
+                    buf[i * 4 + 1] = buf[((sz-1-z) * sz * sz + y * sz + x) * 4]
+                    buf[i * 4 + 2] = buf[(z * sz * sz + (sz-1-y) * sz + x) * 4]
                 }
             }
         }
 
-        private fun treeShaderConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = Config().apply {
-            vertices { isInstanced = true }
-            color { vertexColor() }
-            shadow { addShadowMap(shadowMap) }
-            imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
-            specularStrength(0.05f)
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            modelCustomizer = { windMod() }
-        }
+        logD { "Generated wind density in ${pt.takeSecs().toString(3)} s, tex saturation: min = $min, max = $max" }
 
-        val WIND_SENSITIVITY = Attribute("aWindSense", GlslType.FLOAT)
-
-        fun generateWindDensityTex(): Texture3d {
-            val pt = PerfTimer()
-            var min = 10f
-            var max = -10f
-
-            val perlin = MultiPerlin3d(3, 3)
-            val nMinP = -0.7f
-            val nMaxP = 0.7f
-
-            val sz = 96
-            val buf = createUint8Buffer(sz*sz*sz*4)
-            for (z in 0 until sz) {
-                for (y in 0 until sz) {
-                    for (x in 0 until sz) {
-                        val nx = x / sz.toFloat()
-                        val ny = y / sz.toFloat()
-                        val nz = z / sz.toFloat()
-
-                        val fp = perlin.eval(nx, ny, nz)
-                        val n = (fp - nMinP) / (nMaxP - nMinP) * 0.9f + 0.06f
-                        val c = (n * 255).roundToInt().clamp(0, 255)
-                        min = min(min, n)
-                        max = max(max, n)
-
-                        buf.put(c.toByte())
-                        buf.put(0.toByte())
-                        buf.put(0.toByte())
-                        buf.put(255.toByte())
-                    }
-                }
-            }
-            buf.flip()
-
-            for (z in 0 until sz) {
-                for (y in 0 until sz) {
-                    for (x in 0 until sz) {
-                        val i = z * sz * sz + y * sz + x
-                        buf[i * 4 + 1] = buf[((sz-1-z) * sz * sz + y * sz + x) * 4]
-                        buf[i * 4 + 2] = buf[(z * sz * sz + (sz-1-y) * sz + x) * 4]
-                    }
-                }
-            }
-
-            logD { "Generated wind density in ${pt.takeSecs().toString(3)} s, tex saturation: min = $min, max = $max" }
-
-            val props = TextureProps(
-                addressModeU = AddressMode.REPEAT,
-                addressModeV = AddressMode.REPEAT,
-                addressModeW = AddressMode.REPEAT,
-                maxAnisotropy = 1,
-                mipMapping = false
-            )
-            return Texture3d(props) { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
-        }
+        val props = TextureProps(
+            addressModeU = AddressMode.REPEAT,
+            addressModeV = AddressMode.REPEAT,
+            addressModeW = AddressMode.REPEAT,
+            maxAnisotropy = 1,
+            mipMapping = false
+        )
+        return Texture3d(props) { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
     }
 }

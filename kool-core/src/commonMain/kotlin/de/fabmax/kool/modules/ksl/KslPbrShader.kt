@@ -11,7 +11,7 @@ import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
-class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
+open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitShader(cfg, model) {
 
     constructor(block: Config.() -> Unit) : this(Config().apply(block))
 

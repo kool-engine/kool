@@ -360,16 +360,18 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             val instanceList = instances
             if (instanceList != null) {
                 var instBuf = instanceBuffer
+                var isNewlyCreated = false
                 if (instBuf == null) {
                     instBuf = BufferResource(GL_ARRAY_BUFFER)
                     instanceBuffer = instBuf
+                    isNewlyCreated = true
                     for (instanceAttrib in instanceList.instanceAttributes) {
                         val stride = instanceList.strideBytesF
                         val offset = instanceList.attributeOffsets[instanceAttrib]!! / 4
                         instanceAttribBinders += instanceAttributes.makeAttribBinders(instanceAttrib, instanceBuffer!!, stride, offset)
                     }
                 }
-                if (instanceList.hasChanged) {
+                if (instanceList.hasChanged || isNewlyCreated) {
                     instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), ctx)
                     renderBackend.afterRenderActions += { instanceList.hasChanged = false }
                 }

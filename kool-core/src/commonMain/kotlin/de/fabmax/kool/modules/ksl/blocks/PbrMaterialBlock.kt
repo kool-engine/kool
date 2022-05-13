@@ -48,15 +48,15 @@ class PbrMaterialBlock(
                 val g = floatVar(geometrySmith(inNormal, viewDir, lightDir, roughness))
                 val f = float3Var(fresnelSchlick(max(dot(h, viewDir), 0f.const), f0))
 
-                val kD = float3Var(1f.const - f)
-                kD set kD * 1f.const - inMetallic
+                val kD = float3Var(1f.const - f) * (1f.const - inMetallic)
 
+                val nDotL = floatVar(max(normalDotLight, 0f.const))
                 val num = ndf * g * f
-                val denom = 4f.const * max(dot(inNormal, viewDir), 0f.const) * max(normalDotLight, 0f.const)
+                val denom = 4f.const * max(dot(inNormal, viewDir), 0f.const) * nDotL
                 val specular = float3Var(num / max(denom, 0.001f.const))
 
                 // add to outgoing radiance
-                lo set lo + (kD * inBaseColor / PI.const + specular) * radiance * max(normalDotLight, 0f.const)
+                lo += (kD * inBaseColor / PI.const + specular) * radiance * nDotL
             }
 
             val normalDotView = floatVar(max(dot(inNormal, viewDir), 0f.const))

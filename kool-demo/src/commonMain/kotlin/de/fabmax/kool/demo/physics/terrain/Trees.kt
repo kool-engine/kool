@@ -12,13 +12,11 @@ import de.fabmax.kool.physics.geometry.TriangleMesh
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.ShadowMap
 import kotlin.math.sqrt
 
 class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
@@ -48,6 +46,12 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
     private val treeTree = OcTree(Vec3fAdapter, bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
 
     val trees = mutableListOf<Tree>()
+
+    var treeShader: WindAffectedShader? = null
+        set(value) {
+            field = value
+            treeGroup.children.filterIsInstance<Mesh>().forEach { it.shader = value?.shader }
+        }
 
     init {
         val treeGenerator = LowPolyTree(0x1deadb0b)
@@ -138,21 +142,18 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
         return Vec3f.ZERO to 0f
     }
 
-    fun setupTreeShaders(ibl: EnvironmentMaps, shadowMap: ShadowMap) {
-        val treeShader = TreeShader(ibl, shadowMap, windDensity)
+    fun setupTrees() {
         val shadowShader = TreeShader.Shadow(windDensity)
+        treeGroup.children.filterIsInstance<Mesh>().forEach { it.depthShader = shadowShader }
 
         treeGroup.onUpdate += {
-            treeShader.windOffsetStrength = windOffsetStrength
-            treeShader.windScale = 1f / windScale
+            treeShader?.let {
+                it.windOffsetStrength = windOffsetStrength
+                it.windScale = 1f / windScale
+            }
 
             shadowShader.windOffsetStrength = windOffsetStrength
             shadowShader.windScale = 1f / windScale
-        }
-
-        treeGroup.children.filterIsInstance<Mesh>().forEach {
-            it.shader = treeShader
-            it.depthShader = shadowShader
         }
     }
 
