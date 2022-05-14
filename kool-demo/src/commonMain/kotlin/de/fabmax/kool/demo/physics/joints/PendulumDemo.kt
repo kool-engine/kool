@@ -7,6 +7,7 @@ import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.geometry.SphereGeometry
 import de.fabmax.kool.physics.joints.*
@@ -15,6 +16,7 @@ import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import kotlin.math.PI
 
 class PendulumDemo : DemoScene("Physics - Pendulum") {
     private val physicsWorld by lazy { PhysicsWorld().also {
@@ -50,16 +52,17 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
         physicsWorld.registerHandlers(mainScene)
     }
 
-    private var pendulums = mutableListOf<Pendulum>()
+    private val pendulums = mutableListOf<Pendulum>()
+    private val springs by lazy {
+        Springs(world = physicsWorld)
+    }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
 
         setupCamera()
         setupLighting()
 
-        physicsWorld.apply {
-            addActor(ground)
-        }
+        physicsWorld.addActor(ground)
 
         // ground plane
         mainScene += textureMesh(isNormalMapped = true) {
@@ -89,20 +92,18 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
         val dy = 1.5f
         var y = dy
         val radius = 0.3f
-        val segmentLength = 2f
+        val segmentLength = 2 * radius
 
         pendulums.add( Pendulum(physicsWorld,
-            bodies = 4,
             bodyMaterial = Material(0.5f),
-            translate = Vec3f(0f, 2f, 6f),
+            translate = Vec3f(y, 0f, 0f),
             segmentLength = segmentLength,
             makeEdge = { prevNode, node ->
-                //SphericalJoint(prevNode, node,
-                FixedJoint(prevNode, node,
-                    Mat4f().translate(0f, -segmentLength/2,  0f, /*  + segmentLength/2f*/),
-                    Mat4f().translate( 0f, segmentLength/2, 0f, /* - segmentLength/2f*/)
+                SphericalJoint(prevNode, node,
+                    Mat4f(),
+                    Mat4f(),
                 ).also {
-                    //it.setSoftLimitCone((PI/4f).toFloat(), (PI/4f).toFloat(), 100f, 100f)
+                    it.setSoftLimitCone((PI/4f).toFloat(), (PI/4f).toFloat(), 100f, 100f)
                 }
             }
         ).also {
@@ -113,13 +114,17 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
 
         pendulums.add( Pendulum(physicsWorld,
             translate = Vec3f(y, 0f, 0f),
+            segmentLength = segmentLength,
             makeEdge = { p, n ->
                 D6Joint(p, n,
-                    Mat4f().translate(0f, -0.21f, 0f),
-                    Mat4f().translate(0f, 0.21f, 0f)).also {
+                    Mat4f(),
+                    Mat4f(),
+                ).also {
                     it.motionX = D6JointMotion.Locked
                     it.motionY = D6JointMotion.Locked
                     it.motionZ = D6JointMotion.Locked
+                    it.setDistanceLimit(1f, 100f, 100f)
+                    it.projectionLinearTolerance = 5f
                 }
             }
         ).also {
@@ -130,22 +135,16 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
 
         pendulums.add( Pendulum(physicsWorld,
             translate = Vec3f(y, 0f, 0f),
-            segmentLength = 1f,
+            segmentLength = 1.98f * radius,
             makeEdge = { p, n ->
-                val minBounds = MutableVec3f(p.worldBounds.min).also {
-                    it -=p.worldBounds.center
-                }
-
-                val maxBounds = MutableVec3f(p.worldBounds.max).also {
-                    it -= p.worldBounds.center
-                }
                 D6Joint(p, n,
-                    Mat4f().translate(0f, minBounds.y, 0f),
-                    Mat4f().translate(0f, maxBounds.y, 0f)).also {
-                    it.motionX = D6JointMotion.Free
-                    it.motionY = D6JointMotion.Limited
-                    it.motionZ = D6JointMotion.Limited
-                    it.setDistanceLimit(0.5f, 10f, 10f)
+                    Mat4f(),
+                    Mat4f(),
+                ).also {
+                    it.motionX = D6JointMotion.Locked
+                    it.motionY = D6JointMotion.Locked
+                    it.motionZ = D6JointMotion.Locked
+                    it.setDistanceLimit(1f, 1f, 1f)
                 }
             }
         ).also {
@@ -154,7 +153,10 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
         })
         y += dy
 
-        //ctx.inputMgr.registerKeyListener()
+        //ctx.inputMgr.registerKeyListener(left, selectedIdx ++ % n)
+
+        mainScene += springs
+        springs.start()
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -183,7 +185,7 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
     class Pendulum(val world: PhysicsWorld,
                    private val bodies: Int = 10,
                    private val bodyRadius: Float = 0.2f,
-                   private val bodyMaterial: Material = Material(0f, 0f, 0f),
+                   private val bodyMaterial: Material = Material(0f, 0f, 0.9f),
                    private val segmentLength: Float = 1.9f,
                    private val translate: Vec3f = Vec3f.ZERO,
                    val makeEdge: Pendulum.(prevNode: RigidActor, node: RigidActor) -> Joint = { prevNode, node ->
@@ -219,7 +221,7 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
             var prevNode: RigidActor = pin
 
             for ( i in 0 until bodies) {
-                val mass = (i + 1) * 5f
+                val mass = (i + 1) / bodies.toFloat()
                 val pos = MutableVec3f(0f, segmentLength, 0f)
 
                 pos.rotate(nextRandomAngle, Vec3f.X_AXIS)
@@ -255,6 +257,61 @@ class PendulumDemo : DemoScene("Physics - Pendulum") {
             actors.clear()
             joints.clear()
         }
+    }
+
+    class Springs(val world: PhysicsWorld,
+                  private val dy: Float = 1.5f,
+                  private val totalHeight: Float = 20f,
+                  private val pinHeight: Float = 5f,
+                  private val pinRadius: Float = 0.2f,
+                  private val pinMass: Float = 0.2f,
+                  private val bodyMaterial: Material = Material(0.5f),
+                  val n: Int = 10) : Group("springs") {
+        private val actors = mutableListOf<RigidActor>()
+        private val joints = mutableListOf<Joint>()
+
+        init {
+            for ( st in 0 until n) {
+                val realStiff = st / n.toFloat()
+
+                for ( dm in 0 until n ) {
+                    val realDamp = dm / n.toFloat()
+                    val initPos = Mat4f().translate(- dy * (st+1), totalHeight, - dy * (dm + 1))
+                    val basement = RigidStatic(initPos.rotate(90f, Vec3f.X_AXIS)).apply {
+                        attachShape(Shape(BoxGeometry(Vec3f(0.5f, 0.5f, 0.2f)), bodyMaterial))
+                    }
+                    actors.add(basement)
+                    +basement.toMesh(Color(0f, realStiff, realDamp))
+
+                    val pinPos = Mat4f().set(initPos).translate(0f, 0f, pinHeight)
+
+                    val pin = RigidDynamic(mass = pinMass, pose = pinPos).apply {
+                        attachShape(Shape(SphereGeometry(pinRadius), bodyMaterial))
+                    }
+
+                    actors.add(pin)
+                    +pin.toMesh(Color.GREEN)
+
+                    joints.add( PrismaticJoint(basement, pin,
+                        Mat4f().rotate(90f, Vec3f.Y_AXIS),
+                        Mat4f().translate(0f, 0f, pinHeight).rotate(-90f, Vec3f.Y_AXIS)).apply {
+                        setLimit(0f, totalHeight - 2f, realStiff, realDamp)
+                    })
+                }
+            }
+        }
+
+        fun start() {
+            actors.forEach { world.addActor(it) }
+        }
+
+        override fun dispose(ctx: KoolContext) {
+            actors.forEach { world.removeActor(it) }
+            actors.clear()
+            joints.forEach { it.dispose(ctx) }
+            joints.clear()
+        }
+
     }
 }
 

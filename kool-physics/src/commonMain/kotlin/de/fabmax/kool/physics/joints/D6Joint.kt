@@ -17,7 +17,6 @@ expect class D6Joint(bodyA: RigidActor, bodyB: RigidActor, posA: Mat4f, posB: Ma
     val frameA: Mat4f
     val frameB: Mat4f
 
-
     var projectionLinearTolerance: Float?
 
     var motionX: D6JointMotion
