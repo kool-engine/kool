@@ -25,11 +25,11 @@ class CalcBumpedNormal(parentScope: KslScopeBuilder) :
 }
 
 fun KslScopeBuilder.calcBumpedNormal(
-    normal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    tangent: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
-    bumpNormal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    strength: KslScalarExpression<KslTypeFloat1>
-): KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
+    normal: KslExprFloat3,
+    tangent: KslExprFloat4,
+    bumpNormal: KslExprFloat3,
+    strength: KslExprFloat1
+): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(CalcBumpedNormal.FUNC_NAME) { CalcBumpedNormal(this) }
     return KslInvokeFunctionVector(func, this, KslTypeFloat3, normal, tangent, bumpNormal, strength)
 }

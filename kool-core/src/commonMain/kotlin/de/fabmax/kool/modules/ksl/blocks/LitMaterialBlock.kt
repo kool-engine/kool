@@ -20,8 +20,8 @@ abstract class LitMaterialBlock(name: String, parentScope: KslScopeBuilder) : Ks
 
     fun setLightData(
         lightData: SceneLightData,
-        shadowFactors: KslScalarArrayExpression<KslTypeFloat1>,
-        lightStrength: KslScalarExpression<KslTypeFloat1> = KslValueFloat1(1f)
+        shadowFactors: KslExprFloat1Array,
+        lightStrength: KslExprFloat1 = KslValueFloat1(1f)
     ) {
         inShadowFactors(shadowFactors)
         inLightCount(lightData.lightCount)

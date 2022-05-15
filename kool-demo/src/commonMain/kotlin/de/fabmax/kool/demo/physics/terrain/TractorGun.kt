@@ -30,13 +30,13 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
     init {
         mainScene.onUpdate += { ev ->
             val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
-            if (!ptr.isConsumed() && ptr.isLeftButtonClicked) {
+            if (!ptr.isConsumed() && ptr.isLeftButtonEvent && ptr.isLeftButtonReleased) {
                 tractorState = if (tractorState == TractorState.TRACTOR) {
                     TractorState.DROP
                 } else {
                     TractorState.PICK_UP
                 }
-            } else if (!ptr.isConsumed() && ptr.isRightButtonClicked) {
+            } else if (!ptr.isConsumed() && ptr.isRightButtonEvent && ptr.isRightButtonReleased) {
                 tractorState = TractorState.SHOOT
             }
         }

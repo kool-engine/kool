@@ -157,6 +157,14 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
                 }
             }
 
+            +toggleButton("toggleFullscreen") {
+                layoutSpec.setOrigin(zero(), dps(40f, true), zero())
+                layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
+                text = "Fullscreen"
+                isEnabled = ctx.isFullscreen
+
+                onStateChange += { ctx.isFullscreen = isEnabled }
+            }
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())

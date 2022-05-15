@@ -73,8 +73,10 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
     }
 
     fun setupGrass(grassColor: Texture2d) {
-        val shadowShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
+        val shadowShader = GrassShader.Shadow(grassColor, trees.windDensity, true, false)
+        val aoShader = GrassShader.Shadow(grassColor, trees.windDensity, true, true)
         grassQuads.depthShader = shadowShader
+        grassQuads.normalLinearDepthShader = aoShader
 
         grassQuads.onUpdate += { ev ->
             if (grassQuads.isVisible) {
@@ -85,6 +87,8 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
 
                 shadowShader.windOffsetStrength = trees.windOffsetStrength
                 shadowShader.windScale = 1f / trees.windScale
+                aoShader.windOffsetStrength = trees.windOffsetStrength
+                aoShader.windScale = 1f / trees.windScale
 
                 val cam = ev.camera
                 val radius = 50f

@@ -112,45 +112,45 @@ class GeometrySchlickGgx(parentScope: KslScopeBuilder) :
 }
 
 fun KslScopeBuilder.distributionGgx(
-    n: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    h: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    roughness: KslScalarExpression<KslTypeFloat1>
-): KslScalarExpression<KslTypeFloat1> {
+    n: KslExprFloat3,
+    h: KslExprFloat3,
+    roughness: KslExprFloat1
+): KslExprFloat1 {
     val func = parentStage.getOrCreateFunction(DistributionGgx.FUNC_NAME) { DistributionGgx(this) }
     return KslInvokeFunctionScalar(func, this, KslTypeFloat1, n, h, roughness)
 }
 
 fun KslScopeBuilder.fresnelSchlick(
-    cosTheta: KslScalarExpression<KslTypeFloat1>,
-    f0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>
-): KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
+    cosTheta: KslExprFloat1,
+    f0: KslExprFloat3
+): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(FresnelSchlick.FUNC_NAME) { FresnelSchlick(this) }
     return KslInvokeFunctionVector(func, this, KslTypeFloat3, cosTheta, f0)
 }
 
 fun KslScopeBuilder.fresnelSchlickRoughness(
-    cosTheta: KslScalarExpression<KslTypeFloat1>,
-    f0: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    roughness: KslScalarExpression<KslTypeFloat1>
-): KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
+    cosTheta: KslExprFloat1,
+    f0: KslExprFloat3,
+    roughness: KslExprFloat1
+): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(FresnelSchlickRoughness.FUNC_NAME) { FresnelSchlickRoughness(this) }
     return KslInvokeFunctionVector(func, this, KslTypeFloat3, cosTheta, f0, roughness)
 }
 
 fun KslScopeBuilder.geometrySchlickGgx(
-    nDotX: KslScalarExpression<KslTypeFloat1>,
-    roughness: KslScalarExpression<KslTypeFloat1>
-): KslScalarExpression<KslTypeFloat1> {
+    nDotX: KslExprFloat1,
+    roughness: KslExprFloat1
+): KslExprFloat1 {
     val func = parentStage.getOrCreateFunction(GeometrySchlickGgx.FUNC_NAME) { GeometrySchlickGgx(this) }
     return KslInvokeFunctionScalar(func, this, KslTypeFloat1, nDotX, roughness)
 }
 
 fun KslScopeBuilder.geometrySmith(
-    n: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    v: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    l: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-    roughness: KslScalarExpression<KslTypeFloat1>
-): KslScalarExpression<KslTypeFloat1> {
+    n: KslExprFloat3,
+    v: KslExprFloat3,
+    l: KslExprFloat3,
+    roughness: KslExprFloat1
+): KslExprFloat1 {
     val func = parentStage.getOrCreateFunction(GeometrySmith.FUNC_NAME) { GeometrySmith(this) }
     return KslInvokeFunctionScalar(func, this, KslTypeFloat1, n, v, l, roughness)
 }

@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.pipeline.shading.DepthShaderConfig
-import de.fabmax.kool.pipeline.shading.LinearDepthShader
 import de.fabmax.kool.pipeline.shading.NormalLinearDepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -13,7 +12,7 @@ import kotlin.math.max
 
 
 open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(drawNode, config) {
-    private val shadowPipelines = mutableMapOf<Long, Pipeline?>()
+    protected val shadowPipelines = mutableMapOf<Long, Pipeline?>()
 
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, defaultSetup(width, height))
 
@@ -45,7 +44,7 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
         return this.cullMethod ?: mesh.getPipeline(ctx)?.cullMethod ?: CullMethod.CULL_BACK_FACES
     }
 
-    protected open fun createPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+    private fun createPipeline(mesh: Mesh, ctx: KoolContext): Pipeline {
         val depthCfg = DepthShaderConfig().apply {
             cullMethod = getMeshCullMethod(mesh, ctx)
             isInstanced = mesh.instances != null
@@ -78,42 +77,6 @@ open class DepthMapPass(drawNode: Node, config: Config) : OffscreenRenderPass2d(
     }
 }
 
-class LinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode, config) {
-
-    constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, linearDepthSetup(width, height))
-
-    init {
-        onAfterCollectDrawCommands += {
-            clearColor = Color(1f, 0f, 0f, 1f)
-        }
-    }
-
-    override fun createPipeline(mesh: Mesh, ctx: KoolContext): Pipeline {
-        val depthCfg = DepthShaderConfig().apply {
-            cullMethod = getMeshCullMethod(mesh, ctx)
-            isInstanced = mesh.instances != null
-            mesh.skin?.let {
-                isSkinned = true
-                maxJoints = max(defaultMaxNumberOfJoints, it.nodes.size)
-            }
-
-            nMorphWeights = mesh.morphWeights?.size ?: 0
-            morphAttributes += mesh.geometry.getMorphAttributes()
-        }
-        val depthShader = LinearDepthShader(depthCfg)
-        return depthShader.createPipeline(mesh, ctx)
-    }
-
-    companion object {
-        fun linearDepthSetup(width: Int, height: Int) = renderPassConfig {
-            name = "LinearDepthMapPass"
-            setSize(width, height)
-            clearDepthTexture()
-            addColorTexture(TexFormat.R_F16)
-        }
-    }
-}
-
 class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(drawNode, config) {
 
     constructor(drawNode: Node, width: Int, height: Int = width) : this(drawNode, normalLinearDepthSetup(width, height))
@@ -126,7 +89,13 @@ class NormalLinearDepthMapPass(drawNode: Node, config: Config) : DepthMapPass(dr
         }
     }
 
-    override fun createPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+    override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
+        return shadowPipelines.getOrPut(mesh.id) {
+            mesh.normalLinearDepthShader?.createPipeline(mesh, ctx) ?: createNormalLinearPipeline(mesh, ctx)
+        }
+    }
+
+    private fun createNormalLinearPipeline(mesh: Mesh, ctx: KoolContext): Pipeline? {
         if (!mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }

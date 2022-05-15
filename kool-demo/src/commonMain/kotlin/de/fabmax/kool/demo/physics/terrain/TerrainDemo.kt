@@ -9,10 +9,7 @@ import de.fabmax.kool.demo.controlUi
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
-import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
-import de.fabmax.kool.modules.ksl.KslLitShader
-import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.*
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
@@ -20,6 +17,7 @@ import de.fabmax.kool.pipeline.AddressMode
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.pbrShader
@@ -39,6 +37,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var camLocalGrass: CamLocalGrass
     private lateinit var ibl: EnvironmentMaps
     private lateinit var shadowMap: ShadowMap
+    private lateinit var ssao: AoPipeline.ForwardAoPipeline
 
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
@@ -50,11 +49,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var escKeyListener: InputManager.KeyEventListener
 
+    private var isSsao = false
+
     private var isPlayerPbr = true
     private var isGroundPbr = true
     private var isBridgePbr = true
-    // boxes and especially trees and grass actually look better with cheap blinn-phong shading
-    private var isBoxesPbr = false
+    private var isBoxesPbr = true
+    // trees and grass actually look better with cheap blinn-phong shading
     private var isTreesPbr = false
     private var isGrassPbr = false
 
@@ -113,6 +114,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi {
+        //image(imageShader = ModeledShader.TextureColor(ssao.aoMap, model = AoDemo.aoMapColorModel()))
+
         section("Terrain Demo") {
             button("ESC to unlock Cursor") {
                 camRig.isCursorLocked = true
@@ -163,24 +166,30 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 camLocalGrass.setIsCastingShadow(isEnabled)
             }
         }
-        section("PBR Shading") {
-            toggleButton("Player", isPlayerPbr) {
-                isPlayerPbr = isEnabled
-                setupShaders()
+        section("Shading") {
+            toggleButton("Ambient Occlusion", isSsao) {
+                isSsao = isEnabled
+                updateSsaoEnabled()
             }
-            toggleButton("Ground", isGroundPbr) {
+            toggleButton("Player PBR Shading", isPlayerPbr) {
+                isPlayerPbr = isEnabled
+                updatePlayerShader()
+            }
+            toggleButton("Ground PBR Shading", isGroundPbr) {
                 isGroundPbr = isEnabled
                 isBridgePbr = isEnabled
-                setupShaders()
+                updateTerrainShader()
+                updateBridgeShader()
             }
-            toggleButton("Boxes", isBoxesPbr) {
+            toggleButton("Boxes PBR Shading", isBoxesPbr) {
                 isBoxesPbr = isEnabled
-                setupShaders()
+                updateBoxShader()
             }
-            toggleButton("Vegetation", isTreesPbr) {
+            toggleButton("Vegetation PBR Shading", isTreesPbr) {
                 isTreesPbr = isEnabled
                 isGrassPbr = isEnabled
-                setupShaders()
+                updateGrassShader()
+                updateTreeShader()
             }
         }
 
@@ -224,6 +233,12 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 it.directionalCamNearOffset = -200f
                 it.setDefaultDepthOffset(true)
             }
+        }
+
+        ssao = AoPipeline.createForward(this).apply {
+            // negative radius is used to set radius relative to camera distance
+            radius = -0.05f
+            isEnabled = false
         }
 
         camLocalGrass.setupGrass(grassColor)
@@ -277,37 +292,52 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +camRig
         physicsObjects.playerController.tractorGun.camRig = camRig
 
-        setupShaders()
+        updateTerrainShader()
+        updateGrassShader()
+        updateTreeShader()
+        updatePlayerShader()
+        updateBoxShader()
+        updateBridgeShader()
     }
 
-    private fun setupShaders() {
-        setupPlayerShader(isPlayerPbr)
+    private fun updateSsaoEnabled() {
+        ssao.isEnabled = isSsao
+    }
 
-        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ibl, isGroundPbr)
+    private fun updateTerrainShader() {
+        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, ibl, isGroundPbr)
         terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
+    }
 
-        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, trees.windDensity, isTreesPbr)
-        //grass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, false, isGrassPbr)
+    private fun updateTreeShader() {
+        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, ssao.aoMap, trees.windDensity, isTreesPbr)
+    }
 
+    private fun updateGrassShader() {
+        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, trees.windDensity, true, isGrassPbr)
         grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
-            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, false, isGrassPbr).shader
+            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, trees.windDensity, false, isGrassPbr).shader
         }
+    }
 
-        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, trees.windDensity, true, isGrassPbr)
-
+    private fun updateBoxShader() {
         boxMesh?.shader = instancedObjectShader(0.2f, 0.25f, isBoxesPbr)
+    }
+
+    private fun updateBridgeShader() {
         bridgeMesh?.shader = instancedObjectShader(0.8f, 0f, isBridgePbr)
     }
 
-    private fun setupPlayerShader(isPbr: Boolean) {
+    private fun updatePlayerShader() {
         fun KslLitShader.LitShaderConfig.baseConfig() {
             vertices { enableArmature(40) }
             color { constColor(MdColor.PINK.toLinear()) }
             shadow { addShadowMap(shadowMap) }
+            enableSsao(ssao.aoMap)
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
 
-        val shader = if (isPbr) {
+        val shader = if (isPlayerPbr) {
             val isKsl = true
 
             if (isKsl) {
@@ -338,6 +368,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         playerModel.model.meshes.values.forEach {
             it.shader = shader
+
+            it.normalLinearDepthShader = KslDepthShader(KslDepthShader.Config().apply {
+                outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+                vertices { enableArmature(40) }
+            })
         }
     }
 
@@ -346,6 +381,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             vertices { isInstanced = true }
             color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
+            enableSsao(ssao.aoMap)
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
         return if (isPbr) {
@@ -409,6 +445,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             irradianceMap = ibl.irradianceMap
             lightStrength = 3f
             irradianceStrength = Color.LIGHT_GRAY.toLinear()
+            reflectionStrength = Color.LIGHT_GRAY.toLinear()
         }
     }
 }

@@ -23,8 +23,8 @@ interface WindAffectedShader {
 }
 
 object TreeShader {
-    class Pbr(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
-        : KslPbrShader(pbrConfig(ibl, shadowMap)), WindAffectedShader {
+    class Pbr(ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d)
+        : KslPbrShader(pbrConfig(ibl, shadowMap, ssaoMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -32,8 +32,8 @@ object TreeShader {
         override val shader = this
     }
 
-    class BlinnPhong(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d)
-        : KslBlinnPhongShader(blinnPhongConfig(ibl, shadowMap)), WindAffectedShader {
+    class BlinnPhong(ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d)
+        : KslBlinnPhongShader(blinnPhongConfig(ibl, shadowMap, ssaoMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -41,7 +41,7 @@ object TreeShader {
         override val shader = this
     }
 
-    class Shadow(windTex: Texture3d) : KslDepthShader(shadowConfig()), WindAffectedShader {
+    class Shadow(windTex: Texture3d, isAoDepth: Boolean) : KslDepthShader(shadowConfig(isAoDepth)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -49,38 +49,42 @@ object TreeShader {
         override val shader = this
     }
 
-    fun makeTreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isPbr: Boolean): WindAffectedShader {
+    fun makeTreeShader(ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isPbr: Boolean): WindAffectedShader {
         return if (isPbr) {
-            Pbr(ibl, shadowMap, windTex)
+            Pbr(ibl, shadowMap, ssaoMap, windTex)
         } else {
-            BlinnPhong(ibl, shadowMap, windTex)
+            BlinnPhong(ibl, shadowMap, ssaoMap, windTex)
         }
     }
 
-    private fun KslLitShader.LitShaderConfig.baseConfig(shadowMap: ShadowMap) {
+    private fun KslLitShader.LitShaderConfig.baseConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) {
         vertices { isInstanced = true }
         color { vertexColor() }
         shadow { addShadowMap(shadowMap) }
+        enableSsao(ssaoMap)
         colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         modelCustomizer = { windMod() }
     }
 
-    private fun pbrConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslPbrShader.Config().apply {
-        baseConfig(shadowMap)
+    private fun pbrConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d) = KslPbrShader.Config().apply {
+        baseConfig(shadowMap, ssaoMap)
         roughness(1f)
         with (TerrainDemo) {
             iblConfig(ibl)
         }
     }
 
-    private fun blinnPhongConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslBlinnPhongShader.Config().apply {
-        baseConfig(shadowMap)
+    private fun blinnPhongConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d) = KslBlinnPhongShader.Config().apply {
+        baseConfig(shadowMap, ssaoMap)
         imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
         specularStrength(0.05f)
     }
 
-    private fun shadowConfig() = KslDepthShader.Config().apply {
-        isInstanced = true
+    private fun shadowConfig(isAoDepth: Boolean) = KslDepthShader.Config().apply {
+        vertices { isInstanced = true }
+        if (isAoDepth) {
+            outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+        }
         modelCustomizer = { windMod() }
     }
 

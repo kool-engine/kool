@@ -40,9 +40,9 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
 
 fun KslScopeBuilder.getShadowMapFactor(
     depthMap: KslExpression<KslTypeDepthSampler2d>,
-    positionLightSpace: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
+    positionLightSpace: KslExprFloat4,
     samplePattern: List<Vec2f>
-): KslScalarExpression<KslTypeFloat1> {
+): KslExprFloat1 {
     val funcName = "${GetShadowMapFactor.FUNC_NAME_PREFIX}_${samplePattern.size}"
     val func = parentStage.getOrCreateFunction(funcName) { GetShadowMapFactor(funcName, this, samplePattern) }
     return KslInvokeFunctionScalar(func, this, KslTypeFloat1, depthMap, positionLightSpace)

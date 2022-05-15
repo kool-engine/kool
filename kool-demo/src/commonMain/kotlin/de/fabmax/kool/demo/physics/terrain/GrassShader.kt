@@ -15,8 +15,8 @@ import de.fabmax.kool.util.ShadowMap
 
 object GrassShader {
 
-    class Pbr(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean)
-        : KslPbrShader(pbrConfig(grassColor, ibl, shadowMap, isInstanced)), WindAffectedShader {
+    class Pbr(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
+        : KslPbrShader(pbrConfig(grassColor, ibl, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -24,8 +24,8 @@ object GrassShader {
         override val shader = this
     }
 
-    class BlinnPhong(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, isInstanced: Boolean)
-        : KslBlinnPhongShader(blinnPhongConfig(grassColor, ibl, shadowMap, isInstanced)), WindAffectedShader {
+    class BlinnPhong(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
+        : KslBlinnPhongShader(blinnPhongConfig(grassColor, ibl, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -33,8 +33,8 @@ object GrassShader {
         override val shader = this
     }
 
-    class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean)
-        : KslDepthShader(shadowConfig(isInstanced)), WindAffectedShader {
+    class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean, isAoDepth: Boolean)
+        : KslDepthShader(shadowConfig(isInstanced, isAoDepth)), WindAffectedShader {
         var grassAlpha by texture2d("grassAlpha", grassColor)
 
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
@@ -50,14 +50,15 @@ object GrassShader {
         grassColor: Texture2d,
         ibl: EnvironmentMaps,
         shadowMap: ShadowMap,
+        ssaoMap: Texture2d,
         windTex: Texture3d,
         isInstanced: Boolean,
         isPbr: Boolean
     ): WindAffectedShader {
         return if (isPbr) {
-            Pbr(grassColor, ibl, shadowMap, windTex, isInstanced)
+            Pbr(grassColor, ibl, shadowMap, ssaoMap, windTex, isInstanced)
         } else {
-            BlinnPhong(grassColor, ibl, shadowMap, windTex, isInstanced)
+            BlinnPhong(grassColor, ibl, shadowMap, ssaoMap, windTex, isInstanced)
         }
     }
 
@@ -77,24 +78,27 @@ object GrassShader {
         }
     }
 
-    private fun pbrConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = KslPbrShader.Config().apply {
+    private fun pbrConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslPbrShader.Config().apply {
         with(TerrainDemo) {
             iblConfig(ibl)
         }
         roughness(1f)
-        grassShaderConfig(grassColor, shadowMap, isInstanced)
+        grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }
 
-    private fun blinnPhongConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
+    private fun blinnPhongConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
         imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
         specularStrength(0.15f)
 
-        grassShaderConfig(grassColor, shadowMap, isInstanced)
+        grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }
 
-    private fun shadowConfig(isInstanced: Boolean) = KslDepthShader.Config().apply {
+    private fun shadowConfig(isInstanced: Boolean, isAoDepth: Boolean) = KslDepthShader.Config().apply {
         pipeline { cullMethod = CullMethod.NO_CULLING }
-        this.isInstanced = isInstanced
+        vertexCfg.isInstanced = isInstanced
+        if (isAoDepth) {
+            outputMode = KslDepthShader.OutputMode.NORMAL_LINEAR
+        }
         modelCustomizer = {
             grassWindMod(isInstanced)
 
@@ -117,10 +121,11 @@ object GrassShader {
         }
     }
 
-    private fun KslLitShader.LitShaderConfig.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, isInstanced: Boolean) {
+    private fun KslLitShader.LitShaderConfig.grassShaderConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) {
         pipeline { cullMethod = CullMethod.NO_CULLING }
         color { textureColor(grassColor) }
         shadow { addShadowMap(shadowMap) }
+        enableSsao(ssaoMap)
         vertices {
             this.isInstanced = isInstanced
             isFlipBacksideNormals = false

@@ -188,12 +188,22 @@ class Terrain(val heightMap: HeightMap) {
     companion object {
         val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
 
-        fun makeTerrainShader(colorMap: Texture2d, normalMap: Texture2d, splatMap: Texture2d, shadowMap: ShadowMap, ibl: EnvironmentMaps, isPbr: Boolean): KslShader {
+        fun makeTerrainShader(
+            colorMap: Texture2d,
+            normalMap: Texture2d,
+            splatMap: Texture2d,
+            shadowMap: ShadowMap,
+            ssaoMap: Texture2d,
+            ibl: EnvironmentMaps,
+            isPbr: Boolean
+        ): KslShader {
+
             fun KslLitShader.LitShaderConfig.terrainConfig() {
                 color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+                enableSsao(ssaoMap)
 
                 if (this is KslPbrShader.Config) {
                     with (TerrainDemo) {

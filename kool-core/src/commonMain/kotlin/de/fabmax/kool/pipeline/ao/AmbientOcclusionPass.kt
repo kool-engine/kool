@@ -29,10 +29,13 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     var strength = 1.25f
     var power = 1.5f
     var bias = 0.05f
-    var kernelSz: Int
+    var kernelSz = 16
         get() = aoUniforms?.let { it.uKernelRange.value.y - it.uKernelRange.value.x } ?: 16
         set(value) {
-            setKernelRange(0, value)
+            if (value != field) {
+                field = value
+                setKernelSize(value)
+            }
         }
 
     private var aoUniforms: AoUniforms? = null
@@ -105,31 +108,30 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         noiseTex.connect(model)
                         aoUniforms = model.findNode("aoUniforms")
                         aoNode = model.findNode("aoNode")
-                        generateKernels()
-                        setKernelRange(0, 16)
+                        setKernelSize(16)
                     }
                 }
             }
         }
     }
 
-    fun setKernelRange(start: Int, n: Int) {
-        val from = max(0, start)
-        val to = min(MAX_KERNEL_SIZE, from + n)
+    fun setKernelSize(n: Int) {
+        generateKernels(n)
         aoUniforms?.uKernelRange?.value?.let {
-            it.x = from
-            it.y = to
+            it.x = 0
+            it.y = min(n, MAX_KERNEL_SIZE)
         }
     }
 
-    private fun generateKernels() {
+    private fun generateKernels(nKernels: Int) {
+        val n = min(nKernels, MAX_KERNEL_SIZE)
         aoNode?.apply {
-            val scales = (0 until MAX_KERNEL_SIZE)
-                .map { lerp(0.1f, 1f, (it.toFloat() / MAX_KERNEL_SIZE).pow(2)) }
+            val scales = (0 until n)
+                .map { lerp(0.1f, 1f, (it.toFloat() / n).pow(2)) }
                 .shuffled(Random(17))
 
-            for (i in 0 until MAX_KERNEL_SIZE) {
-                val xi = hammersley(i, MAX_KERNEL_SIZE)
+            for (i in 0 until n) {
+                val xi = hammersley(i, n)
                 val phi = 2f * PI.toFloat() * xi.x
                 val cosTheta = sqrt((1f - xi.y))
                 val sinTheta = sqrt(1f - cosTheta * cosTheta)

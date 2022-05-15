@@ -71,11 +71,12 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             cfg: Config,
             camData: CameraData,
             lightData: SceneLightData,
-            shadowFactors: KslScalarArrayExpression<KslTypeFloat1>,
-            normal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            fragmentWorldPos: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            baseColor: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
-        ): KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
+            shadowFactors: KslExprFloat1Array,
+            aoFactor: KslExprFloat1,
+            normal: KslExprFloat3,
+            fragmentWorldPos: KslExprFloat3,
+            baseColor: KslExprFloat4
+        ): KslExprFloat4 {
 
             val uRoughness = fragmentPropertyBlock(cfg.roughnessCfg).outProperty
             val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
@@ -99,8 +100,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 inMetallic(uMetallic)
 
                 inIrradiance(irradiance)
+                inAoFactor(aoFactor)
                 inAmbientOrientation(ambientOri)
-
                 inReflectionStrength(reflectionStrength)
 
                 setLightData(lightData, shadowFactors, cfg.lightStrength.const)

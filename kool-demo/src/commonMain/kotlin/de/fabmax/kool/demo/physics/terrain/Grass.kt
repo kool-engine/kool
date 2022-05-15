@@ -79,7 +79,8 @@ class Grass(val terrain: Terrain, val trees: Trees) {
     fun setupGrass(grassColor: Texture2d) {
         val childMeshes = grassQuads.children.filterIsInstance<Mesh>()
         childMeshes.forEach {
-            it.depthShader = GrassShader.Shadow(grassColor, trees.windDensity, false)
+            it.depthShader = GrassShader.Shadow(grassColor, trees.windDensity, false, false)
+            it.normalLinearDepthShader = GrassShader.Shadow(grassColor, trees.windDensity, false, true)
         }
 
         grassQuads.onUpdate += {
@@ -87,11 +88,15 @@ class Grass(val terrain: Terrain, val trees: Trees) {
             //  for the first time -> as a workaround we don't use a shared shader instance but an exclusive one
             //  for each child mesh
             childMeshes.forEach { child ->
-                (child.shader as WindAffectedShader).let {
+                (child.shader as? WindAffectedShader)?.let {
                     it.windOffsetStrength = trees.windOffsetStrength
                     it.windScale = 1f / trees.windScale
                 }
-                (child.depthShader as WindAffectedShader).let {
+                (child.depthShader as? WindAffectedShader)?.let {
+                    it.windOffsetStrength = trees.windOffsetStrength
+                    it.windScale = 1f / trees.windScale
+                }
+                (child.normalLinearDepthShader as? WindAffectedShader)?.let {
                     it.windOffsetStrength = trees.windOffsetStrength
                     it.windScale = 1f / trees.windScale
                 }

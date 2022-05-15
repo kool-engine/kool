@@ -75,11 +75,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             cfg: Config,
             camData: CameraData,
             lightData: SceneLightData,
-            shadowFactors: KslScalarArrayExpression<KslTypeFloat1>,
-            normal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            fragmentWorldPos: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            baseColor: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
-        ): KslVectorExpression<KslTypeFloat4, KslTypeFloat1> {
+            shadowFactors: KslExprFloat1Array,
+            aoFactor: KslExprFloat1,
+            normal: KslExprFloat3,
+            fragmentWorldPos: KslExprFloat3,
+            baseColor: KslExprFloat4
+        ): KslExprFloat4 {
 
             val uSpecularColor = uniformFloat4("uSpecularColor")
             val uShininess = fragmentPropertyBlock(cfg.shininessCfg).outProperty
@@ -100,7 +101,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
                 inFragmentPos(fragmentWorldPos)
                 inBaseColor(baseColor.rgb)
 
-                inAmbientColor(ambientColor.rgb)
+                inAmbientColor(ambientColor.rgb * aoFactor)
                 inSpecularColor(uSpecularColor.rgb)
                 inShininess(uShininess)
                 inSpecularStrength(uSpecularStrength)

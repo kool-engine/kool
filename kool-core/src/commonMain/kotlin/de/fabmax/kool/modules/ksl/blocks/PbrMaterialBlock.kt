@@ -24,10 +24,8 @@ class PbrMaterialBlock(
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
-
+    val inAoFactor = inFloat1("inAoFactor", KslValueFloat1(1f))
     val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
-
-    val inOcclusion = inFloat1("inOcclusion", KslValueFloat1(1f))
 
     init {
         body.apply {
@@ -59,15 +57,8 @@ class PbrMaterialBlock(
                 lo += (kD * inBaseColor / PI.const + specular) * radiance * nDotL
             }
 
+            // image based (ambient) lighting and reflection
             val normalDotView = floatVar(max(dot(inNormal, viewDir), 0f.const))
-
-            // simple version without ibl
-//            val kS = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
-//            val kD = float3Var(1f.const - kS)
-//            val diffuse = float3Var(Color.DARK_GRAY.toLinear().const.rgb * inBaseColor)
-//            val ambient = float3Var(kD * diffuse)
-//            outColor set ambient + lo
-
             val f = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
             val kD = float3Var((1f.const - f) * (1f.const - inMetallic))
             val diffuse = float3Var(inIrradiance * inBaseColor)
@@ -77,8 +68,8 @@ class PbrMaterialBlock(
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).float2("rg"))
             val specular = float3Var(prefilteredColor * (f * brdf.r + brdf.g))
-            val ambient = float3Var(kD * diffuse * inOcclusion)
-            val reflection = float3Var(specular * inOcclusion)
+            val ambient = float3Var(kD * diffuse * inAoFactor)
+            val reflection = float3Var(specular * inAoFactor)
             outColor set ambient + lo + reflection
         }
     }

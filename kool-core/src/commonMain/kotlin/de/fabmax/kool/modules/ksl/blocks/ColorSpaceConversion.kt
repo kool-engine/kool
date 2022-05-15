@@ -55,7 +55,7 @@ class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
     }
 }
 
-fun KslScopeBuilder.convertColorSpace(inputColor: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, conversion: ColorSpaceConversion):
+fun KslScopeBuilder.convertColorSpace(inputColor: KslExprFloat3, conversion: ColorSpaceConversion):
         KslVectorExpression<KslTypeFloat3, KslTypeFloat1> {
     return when(conversion) {
         ColorSpaceConversion.AS_IS -> inputColor

@@ -82,7 +82,7 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
         }
     }
 
-    private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.MixMode, value: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) {
+    private fun KslScopeBuilder.mixColor(mixMode: ColorBlockConfig.MixMode, value: KslExprFloat4) {
         when (mixMode) {
             ColorBlockConfig.MixMode.Set -> outColor set value
             ColorBlockConfig.MixMode.Multiply -> outColor *= value

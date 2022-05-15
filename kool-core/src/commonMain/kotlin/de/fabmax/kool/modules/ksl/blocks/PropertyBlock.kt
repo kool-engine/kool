@@ -88,14 +88,14 @@ class PropertyBlockFragmentStage(cfg: PropertyBlockConfig, vertexPropertyBlock: 
         }
     }
 
-    private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslFragmentStage): KslVectorExpression<KslTypeFloat4, KslTypeFloat1>? {
+    private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslFragmentStage): KslExprFloat4? {
         return parentStage.main.getBlocks(null, mutableListOf())
             .filterIsInstance<PropertyBlockFragmentStage>()
             .map { it.outSamplerValues[texName to attrib] }
             .find { it != null }
     }
 
-    private fun KslScopeBuilder.mixValue(mixMode: PropertyBlockConfig.MixMode, value: KslScalarExpression<KslTypeFloat1>) {
+    private fun KslScopeBuilder.mixValue(mixMode: PropertyBlockConfig.MixMode, value: KslExprFloat1) {
         when (mixMode) {
             PropertyBlockConfig.MixMode.Set -> outProperty set value
             PropertyBlockConfig.MixMode.Multiply -> outProperty *= value

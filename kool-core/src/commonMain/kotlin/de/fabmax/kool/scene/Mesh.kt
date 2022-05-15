@@ -66,6 +66,7 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
      * geometry based default shader.
      */
     var depthShader: Shader? = null
+    var normalLinearDepthShader: Shader? = null
 
     /**
      * Optional list with lod geometry used by shadow passes. Shadow passes will use the geometry at index

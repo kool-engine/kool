@@ -16,6 +16,8 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
     var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
     var normalMapStrength: Float by uniform1f("uNormalMapStrength", cfg.normalMapCfg.defaultStrength)
 
+    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.defaultSsaoMap)
+
     open class LitShaderConfig {
         val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig("baseColor")
@@ -26,9 +28,16 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         var maxNumberOfLights = 4
         var lightStrength = 1f
+        var isSsao = false
+        var defaultSsaoMap: Texture2d? = null
         var alphaMode: AlphaMode = AlphaMode.Blend()
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
+
+        fun enableSsao(ssaoMap: Texture2d? = null) {
+            isSsao = true
+            defaultSsaoMap = ssaoMap
+        }
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.block()
@@ -57,6 +66,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             val camData = cameraData()
             val positionWorldSpace = interStageFloat3("positionWorldSpace")
             val normalWorldSpace = interStageFloat3("normalWorldSpace")
+            val projPosition = interStageFloat4("screenUv")
             var tangentWorldSpace: KslInterStageVector<KslTypeFloat4, KslTypeFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
@@ -88,7 +98,8 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
                     positionWorldSpace.input set worldPos
                     normalWorldSpace.input set worldNormal
-                    outPosition set (viewProj * float4Value(worldPos, 1f))
+                    projPosition.input set (viewProj * float4Value(worldPos, 1f))
+                    outPosition set projPosition.input
 
                     // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
                     if (cfg.normalMapCfg.isNormalMapped) {
@@ -152,8 +163,15 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
+                    val aoFactor = floatVar(1f.const)
+                    if (cfg.isSsao) {
+                        val aoMap = texture2d("tSsaoMap")
+                        val aoUv = float2Var(projPosition.output.float2("xy") / projPosition.output.w * 0.5f.const + 0.5f.const)
+                        aoFactor set sampleTexture(aoMap, aoUv).x
+                    }
+
                     // main material block
-                    val materialColor = createMaterial(cfg, camData, lightData, shadowFactors, normal, positionWorldSpace.output, baseColor)
+                    val materialColor = createMaterial(cfg, camData, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColor)
 
                     // set fragment stage output color
                     val outRgb = float3Var(materialColor.rgb)
@@ -177,10 +195,11 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
             cfg: T,
             camData: CameraData,
             lightData: SceneLightData,
-            shadowFactors: KslScalarArrayExpression<KslTypeFloat1>,
-            normal: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            fragmentWorldPos: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>,
-            baseColor: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
-        ): KslVectorExpression<KslTypeFloat4, KslTypeFloat1>
+            shadowFactors: KslExprFloat1Array,
+            aoFactor: KslExprFloat1,
+            normal: KslExprFloat3,
+            fragmentWorldPos: KslExprFloat3,
+            baseColor: KslExprFloat4,
+        ): KslExprFloat4
     }
 }

@@ -24,9 +24,9 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val projMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
     val viewProjMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
 
-    val clipNear: KslScalarExpression<KslTypeFloat1>
+    val clipNear: KslExprFloat1
         get() = clip.x
-    val clipFar: KslScalarExpression<KslTypeFloat1>
+    val clipFar: KslExprFloat1
         get() = clip.y
 
     // todo: implement shared ubos
