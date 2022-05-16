@@ -11,7 +11,6 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.TriangleMesh
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
@@ -19,20 +18,10 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.sqrt
 
-class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
-
-    val windOffsetStrength = MutableVec4f(0f, 0f, 0f, 1f)
-    val windSpeed = MutableVec3f(10f, 0.5f, 6.7f)
-    var windScale = 100f
+class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind) {
 
     val treeGroup = Group().apply {
         isFrustumChecked = false
-
-        onUpdate += {
-            windOffsetStrength.x += windSpeed.x * it.deltaT
-            windOffsetStrength.y += windSpeed.y * it.deltaT
-            windOffsetStrength.z += windSpeed.z * it.deltaT
-        }
     }
 
     private val treeAreas = listOf(
@@ -60,7 +49,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
         for (i in 0 until 20) {
             val root = treeGenerator.generateNodes(Mat4f())
 
-            val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, TreeShader.WIND_SENSITIVITY)
+            val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Wind.WIND_SENSITIVITY)
             val meshBuilder = MeshBuilder(treeData)
             treeGenerator.trunkMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
             treeGenerator.leafMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
@@ -143,8 +132,8 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
     }
 
     fun setupTrees() {
-        val shadowShader = TreeShader.Shadow(windDensity, false)
-        val aoShader = TreeShader.Shadow(windDensity, true)
+        val shadowShader = TreeShader.Shadow(wind.density, false)
+        val aoShader = TreeShader.Shadow(wind.density, true)
         treeGroup.children.filterIsInstance<Mesh>().forEach {
             it.depthShader = shadowShader
             it.normalLinearDepthShader = aoShader
@@ -152,14 +141,14 @@ class Trees(val terrain: Terrain, nTrees: Int, val windDensity: Texture3d) {
 
         treeGroup.onUpdate += {
             treeShader?.let {
-                it.windOffsetStrength = windOffsetStrength
-                it.windScale = 1f / windScale
+                it.windOffsetStrength = wind.offsetStrength
+                it.windScale = 1f / wind.scale
             }
 
-            shadowShader.windOffsetStrength = windOffsetStrength
-            shadowShader.windScale = 1f / windScale
-            aoShader.windOffsetStrength = windOffsetStrength
-            aoShader.windScale = 1f / windScale
+            shadowShader.windOffsetStrength = wind.offsetStrength
+            shadowShader.windScale = 1f / wind.scale
+            aoShader.windOffsetStrength = wind.offsetStrength
+            aoShader.windScale = 1f / wind.scale
         }
     }
 

@@ -31,13 +31,16 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
     private lateinit var grassColor: Texture2d
+    private lateinit var ibl: EnvironmentMaps
+    private lateinit var shadowMap: ShadowMap
+    private lateinit var ssao: AoPipeline.ForwardAoPipeline
+
+    private lateinit var wind: Wind
     private lateinit var terrain: Terrain
     private lateinit var trees: Trees
     private lateinit var grass: Grass
     private lateinit var camLocalGrass: CamLocalGrass
-    private lateinit var ibl: EnvironmentMaps
-    private lateinit var shadowMap: ShadowMap
-    private lateinit var ssao: AoPipeline.ForwardAoPipeline
+    private lateinit var ocean: Ocean
 
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
@@ -61,7 +64,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     override suspend fun AssetManager.loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
-        val heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain.raw")!!, 200f)
+        val heightMap = HeightMap.fromRawData(loadAsset("${Demo.heightMapPath}/terrain_ocean.raw")!!, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
@@ -76,28 +79,31 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         grassColor = loadAndPrepareTexture("${Demo.materialPath}/grass_64.png", grassProps)
 
         showLoadText("Generating wind density texture...")
-        val windDensity = TreeShader.generateWindDensityTex()
+        wind = Wind()
 
         ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
 
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
-        showLoadText("Creating trees...")
-        trees = Trees(terrain, 150, windDensity)
-        showLoadText("Creating grass (1/2, may take a bit)...")
-        grass = Grass(terrain, trees)
-        showLoadText("Creating grass (2/2, may take a bit)...")
-        camLocalGrass = CamLocalGrass(terrain, trees)
-        physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         terrainMeshes = terrain.generateTerrainMeshes()
+        showLoadText("Creating trees...")
+        trees = Trees(terrain, 150, wind)
+        showLoadText("Creating ocean...")
+        ocean = Ocean(mainScene.camera, wind)
+        showLoadText("Creating grass (1/2, may take a bit)...")
+        grass = Grass(terrain, wind)
+        showLoadText("Creating grass (2/2, may take a bit)...")
+        camLocalGrass = CamLocalGrass(mainScene.camera, terrain, wind)
+
+        showLoadText("Creating physics...")
+        physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
+        boxMesh = if (physicsObjects.boxes.isNotEmpty()) makeBoxMesh() else null
+        bridgeMesh = makeBridgeMesh()
 
         showLoadText("Loading player model...")
         val playerGltf = loadGltfModel("${Demo.modelPath}/player.glb") ?: throw IllegalStateException("Failed loading model")
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
-
-        boxMesh = if (physicsObjects.boxes.isNotEmpty()) makeBoxMesh() else null
-        bridgeMesh = makeBridgeMesh()
 
         escKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_ESC, "Exit cursor lock") {
             ctx.inputMgr.cursorMode = InputManager.CursorMode.NORMAL
@@ -145,13 +151,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 //        }
         section("Wind") {
             sliderWithValue("Wind Speed", 2.5f, 0.1f, 20f) {
-                trees.windSpeed.set(4f * value, 0.2f * value, 2.7f * value)
+                wind.speed.set(4f * value, 0.2f * value, 2.7f * value)
             }
-            sliderWithValue("Wind Strength", trees.windOffsetStrength.w, 0f, 2f) {
-                trees.windOffsetStrength.w = value
+            sliderWithValue("Wind Strength", wind.offsetStrength.w, 0f, 2f) {
+                wind.offsetStrength.w = value
             }
-            sliderWithValue("Wind Scale", trees.windScale, 10f, 500f) {
-                trees.windScale = value
+            sliderWithValue("Wind Scale", wind.scale, 10f, 500f) {
+                wind.scale = value
             }
         }
         section("Grass") {
@@ -179,6 +185,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 isGroundPbr = isEnabled
                 isBridgePbr = isEnabled
                 updateTerrainShader()
+                updateOceanShader()
                 updateBridgeShader()
             }
             toggleButton("Boxes PBR Shading", isBoxesPbr) {
@@ -253,6 +260,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +camLocalGrass.grassQuads
         +playerModel
         +terrainMeshes
+        +ocean.oceanMesh
 
         +physicsObjects.debugLines
 
@@ -293,11 +301,16 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         physicsObjects.playerController.tractorGun.camRig = camRig
 
         updateTerrainShader()
+        updateOceanShader()
         updateGrassShader()
         updateTreeShader()
         updatePlayerShader()
         updateBoxShader()
         updateBridgeShader()
+
+        onUpdate += {
+            wind.updateWind(it.deltaT)
+        }
     }
 
     private fun updateSsaoEnabled() {
@@ -309,14 +322,18 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
     }
 
+    private fun updateOceanShader() {
+        ocean.oceanShader = OceanShader.makeOceanShader(ibl, shadowMap, wind.density, isGroundPbr)
+    }
+
     private fun updateTreeShader() {
-        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, ssao.aoMap, trees.windDensity, isTreesPbr)
+        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, ssao.aoMap, wind.density, isTreesPbr)
     }
 
     private fun updateGrassShader() {
-        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, trees.windDensity, true, isGrassPbr)
+        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, wind.density, true, isGrassPbr)
         grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
-            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, trees.windDensity, false, isGrassPbr).shader
+            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, wind.density, false, isGrassPbr).shader
         }
     }
 

@@ -170,7 +170,7 @@ object GrassShader {
 
                     // modify normal y-component by the same input as wind tint to magnify wind based
                     // darkening / brightening effect
-                    normal.y -= 0.5f.const - slowWind.x * 0.5f.const
+                    normal.y -= 0.25f.const - slowWind.x * 0.25f.const
                     normalPort.input(normal)
                 }
             }
@@ -193,7 +193,7 @@ object GrassShader {
                     // boost brightness of distant grass sprites (otherwise they appear too dark because of mipmapping / alpha issues)
                     baseColorMod.rgb set baseColorMod.rgb / pow(baseColorPort.input.a, 1.5f.const)
                     // make some yellowish patches
-                    baseColorMod.rgb set mix(baseColorMod.rgb, (MdColor.YELLOW toneLin 600).const.rgb, tint.output.y)
+                    baseColorMod.rgb set mix(baseColorMod.rgb, (MdColor.YELLOW toneLin 500).const.rgb, tint.output.y)
                     // apply some fake cloud shadow
                     baseColorMod.rgb set baseColorMod.rgb * tint.output.x
                     baseColorPort.input(baseColorMod)

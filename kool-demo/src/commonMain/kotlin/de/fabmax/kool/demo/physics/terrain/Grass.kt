@@ -12,14 +12,14 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
 
-class Grass(val terrain: Terrain, val trees: Trees) {
+class Grass(val terrain: Terrain, val wind: Wind) {
 
     val grassQuads = Group().apply { isFrustumChecked = false }
 
     init {
         val gridSz = 8
         val meshDatas = MutableList(gridSz * gridSz) {
-            val data = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, TreeShader.WIND_SENSITIVITY)
+            val data = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY)
             val builder = MeshBuilder(data)
             builder to data
         }
@@ -79,8 +79,8 @@ class Grass(val terrain: Terrain, val trees: Trees) {
     fun setupGrass(grassColor: Texture2d) {
         val childMeshes = grassQuads.children.filterIsInstance<Mesh>()
         childMeshes.forEach {
-            it.depthShader = GrassShader.Shadow(grassColor, trees.windDensity, false, false)
-            it.normalLinearDepthShader = GrassShader.Shadow(grassColor, trees.windDensity, false, true)
+            it.depthShader = GrassShader.Shadow(grassColor, wind.density, false, false)
+            it.normalLinearDepthShader = GrassShader.Shadow(grassColor, wind.density, false, true)
         }
 
         grassQuads.onUpdate += {
@@ -89,16 +89,16 @@ class Grass(val terrain: Terrain, val trees: Trees) {
             //  for each child mesh
             childMeshes.forEach { child ->
                 (child.shader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = trees.windOffsetStrength
-                    it.windScale = 1f / trees.windScale
+                    it.windOffsetStrength = wind.offsetStrength
+                    it.windScale = 1f / wind.scale
                 }
                 (child.depthShader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = trees.windOffsetStrength
-                    it.windScale = 1f / trees.windScale
+                    it.windOffsetStrength = wind.offsetStrength
+                    it.windScale = 1f / wind.scale
                 }
                 (child.normalLinearDepthShader as? WindAffectedShader)?.let {
-                    it.windOffsetStrength = trees.windOffsetStrength
-                    it.windScale = 1f / trees.windScale
+                    it.windOffsetStrength = wind.offsetStrength
+                    it.windScale = 1f / wind.scale
                 }
             }
         }
@@ -108,7 +108,7 @@ class Grass(val terrain: Terrain, val trees: Trees) {
         private fun MeshBuilder.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
             set(pos)
             texCoord.set(u, v)
-            getFloatAttribute(TreeShader.WIND_SENSITIVITY)?.f = wind
+            getFloatAttribute(Wind.WIND_SENSITIVITY)?.f = wind
         }
 
         fun MeshBuilder.grassSprite(pos: Vec3f, step: Vec3f, topOffset: Vec3f, midOffset: Vec3f) {

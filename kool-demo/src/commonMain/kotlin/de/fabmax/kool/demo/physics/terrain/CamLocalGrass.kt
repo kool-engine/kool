@@ -15,7 +15,7 @@ import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
 import kotlin.math.sqrt
 
-class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
+class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
 
     private val grassInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, GrassShader.DISTANCE_SCALE))
     private val grassPositions = mutableListOf<GrassInstance>()
@@ -31,7 +31,7 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
         }
 
     init {
-        grassQuads = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, TreeShader.WIND_SENSITIVITY)).apply {
+        grassQuads = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY)).apply {
             generate {
                 with(Grass) {
                     val pos = Vec3f(-0.5f, 0f, 0f)
@@ -73,31 +73,30 @@ class CamLocalGrass(val terrain: Terrain, val trees: Trees) {
     }
 
     fun setupGrass(grassColor: Texture2d) {
-        val shadowShader = GrassShader.Shadow(grassColor, trees.windDensity, true, false)
-        val aoShader = GrassShader.Shadow(grassColor, trees.windDensity, true, true)
+        val shadowShader = GrassShader.Shadow(grassColor, wind.density, true, false)
+        val aoShader = GrassShader.Shadow(grassColor, wind.density, true, true)
         grassQuads.depthShader = shadowShader
         grassQuads.normalLinearDepthShader = aoShader
 
-        grassQuads.onUpdate += { ev ->
+        camera.onCameraUpdated += {
             if (grassQuads.isVisible) {
                 grassShader?.let {
-                    it.windOffsetStrength = trees.windOffsetStrength
-                    it.windScale = 1f / trees.windScale
+                    it.windOffsetStrength = wind.offsetStrength
+                    it.windScale = 1f / wind.scale
                 }
 
-                shadowShader.windOffsetStrength = trees.windOffsetStrength
-                shadowShader.windScale = 1f / trees.windScale
-                aoShader.windOffsetStrength = trees.windOffsetStrength
-                aoShader.windScale = 1f / trees.windScale
+                shadowShader.windOffsetStrength = wind.offsetStrength
+                shadowShader.windScale = 1f / wind.scale
+                aoShader.windOffsetStrength = wind.offsetStrength
+                aoShader.windScale = 1f / wind.scale
 
-                val cam = ev.camera
                 val radius = 50f
-                instanceTrav.setup(cam.globalPos, radius, cam).traverse(instanceTree)
+                instanceTrav.setup(camera.globalPos, radius, camera).traverse(instanceTree)
 
                 grassInstances.clear()
                 grassInstances.addInstances(instanceTrav.result.size) { buf ->
                     for (grass in instanceTrav.result) {
-                        val distScale = ((grass.distance(cam.globalPos) / radius - 0.1f).clamp(0f, 1f) / (grass.p - 0.1f)).clamp(0f, 1f)
+                        val distScale = ((grass.distance(camera.globalPos) / radius - 0.1f).clamp(0f, 1f) / (grass.p - 0.1f)).clamp(0f, 1f)
                         buf.put(grass.transform.matrix)
                         buf.put(distScale * grass.s)
                     }

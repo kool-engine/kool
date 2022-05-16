@@ -40,7 +40,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         // put another infinitely large ground plane below terrain to catch stuff which falls of the edge of the world
         ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-        ground.position = Vec3f(0f, -5f, 0f)
+        ground.position = Vec3f(0f, -35f, 0f)
         ground.setRotation(Mat3f().rotate(90f, Vec3f.Z_AXIS))
         world.addActor(ground)
 

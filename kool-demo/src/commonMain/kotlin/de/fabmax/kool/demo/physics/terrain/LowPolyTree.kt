@@ -49,7 +49,7 @@ class LowPolyTree(seed: Int = 1337) {
                         val nodeHeight = (node.y - root.y)
                         val senseByHeight = nodeHeight / 50f
                         val senseByStrength = (1f - node.relStrength).pow(2) * (nodeHeight / 5f).clamp(0f, 1f)
-                        getFloatAttribute(TreeShader.WIND_SENSITIVITY)?.f = (senseByStrength + senseByHeight).clamp(0f, 1f)
+                        getFloatAttribute(Wind.WIND_SENSITIVITY)?.f = (senseByStrength + senseByHeight).clamp(0f, 1f)
                     }
                     withTransform {
                         transform.set(node.pose)
@@ -95,7 +95,7 @@ class LowPolyTree(seed: Int = 1337) {
         val leafColorRange = ColorGradient(0f to (MdColor.LIGHT_GREEN tone 900), 0.8f to MdColor.LIGHT_GREEN, 1f to MdColor.LIME)
         target.apply {
             vertexModFun = {
-                getFloatAttribute(TreeShader.WIND_SENSITIVITY)?.f = 1f
+                getFloatAttribute(Wind.WIND_SENSITIVITY)?.f = 1f
             }
             nodes.forEach {
                 trav.setup(it, 3f).traverse(tree)

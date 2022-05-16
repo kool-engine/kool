@@ -69,7 +69,7 @@ class Terrain(val heightMap: HeightMap) {
         val data = createUint8Buffer(width * height * 4)
 
         // water floor weight - height based
-        val wWater = SplatWeightFunc(-1f, 0f, 1.5f, 2.5f)
+        val wWater = SplatWeightFunc(-50f, -49f, 1.5f, 2.5f)
         // beach weight - height based
         val wBeach = SplatWeightFunc(1.5f, 2.5f, 5f, 8f)
         // grass weight - height based
@@ -92,8 +92,9 @@ class Terrain(val heightMap: HeightMap) {
                 val hc = heightMap.getHeightLinear(sx.toFloat() + sr, sy.toFloat() - sr) / sr
                 val hd = heightMap.getHeightLinear(sx.toFloat() + sr, sy.toFloat() + sr) / sr
                 val slope = maxOf(ha, hb, hc, hd) - minOf(ha, hb, hc, hd)
-
                 val ws = wRockSlope.weight(slope)
+                //val ws = if (h > 0f) wRockSlope.weight(slope) else 0f
+
                 val r = wBeach.weight(h) * (1f - ws)
                 val g = wGrass.weight(h) * (1f - ws)
                 val b = wWater.weight(h) * (1f - ws)
@@ -231,16 +232,28 @@ class Terrain(val heightMap: HeightMap) {
                             val splatMapSampler = texture2d("tSplatMap")
                             val splatWeights = float4Var(sampleTexture(splatMapSampler, splatCoords))
 
-                            val waterColor = MdColor.CYAN.toLinear().const
+                            val wDeepWater = 1f.const - smoothStep((-30f).const, (-2f).const, material.inFragmentPos.y)
+                            val wBeach = floatVar(splatWeights.r * (1f.const - wDeepWater))
+                            val wGrass = floatVar(splatWeights.g * (1f.const - wDeepWater))
+                            val wWater = floatVar(splatWeights.b * (1f.const - wDeepWater))
+                            val wRock = floatVar(splatWeights.a * (1f.const - wDeepWater))
+
+                            //val waterColor = MdColor.CYAN.toLinear().const
+                            //val deepWaterColor = MdColor.INDIGO.toLinear().const
+
                             val beachColor = (MdColor.AMBER toneLin 300).const
                             val grassColor = (MdColor.BROWN toneLin 800).const
                             val rockColor = (MdColor.GREY toneLin 500).const * (1f.const - material.inFragmentPos.y / 150f.const) * material.inNormal.y
 
+                            val waterColor = (MdColor.AMBER toneLin 500).const
+                            val deepWaterColor = waterColor
+
                             val terrainColor = float4Var(
-                                splatWeights.r * beachColor +   // beach
-                                        splatWeights.g * grassColor +   // grass
-                                        splatWeights.b * waterColor +   // water
-                                        splatWeights.a * rockColor      // rock
+                                wBeach * beachColor +
+                                        wGrass * grassColor +
+                                        wWater * waterColor +
+                                        wRock * rockColor +
+                                        wDeepWater * deepWaterColor
                             )
                             material.inBaseColor(baseColor * terrainColor.rgb)
 
