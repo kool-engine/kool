@@ -62,6 +62,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
+    val onCameraUpdated = mutableListOf<(KoolContext) -> Unit>()
+
     fun setClipRange(near: Float, far: Float) {
         clipNear = near
         clipFar = far
@@ -86,6 +88,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
         lazyInvProj.isDirty = true
         lazyViewProj.isDirty = true
         lazyInvViewProj.isDirty = true
+
+        if (onCameraUpdated.isNotEmpty()) {
+            for (i in onCameraUpdated.indices) {
+                onCameraUpdated[i](ctx)
+            }
+        }
     }
 
     protected open fun updateViewMatrix(renderPass: RenderPass, ctx: KoolContext) {

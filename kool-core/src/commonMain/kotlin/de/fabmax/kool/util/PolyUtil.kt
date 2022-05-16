@@ -420,7 +420,7 @@ object PolyUtil {
                 val maxX = max(it.pt0.x, it.pt1.x)
                 val maxY = max(it.pt0.y, it.pt1.y)
                 val inBounds = min.x <= maxX && max.x >= minX && min.y <= maxY && max.y >= minY
-                if (inBounds && isEdgeIntersect(edge.pt0, edge.pt1, it.pt0, it.pt1)) {
+                if (inBounds && filter(it) && isEdgeIntersect(edge.pt0, edge.pt1, it.pt0, it.pt1)) {
                     result += it
                 }
             }

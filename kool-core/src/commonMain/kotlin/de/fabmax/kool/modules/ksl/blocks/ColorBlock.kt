@@ -63,7 +63,7 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
 
             cfg.colorSources.forEach { source ->
                 val colorValue: KslVectorExpression<KslTypeFloat4, KslTypeFloat1> = when (source) {
-                    is ColorBlockConfig.ConstColor -> source.staticColor.const
+                    is ColorBlockConfig.ConstColor -> source.constColor.const
                     is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
                     is ColorBlockConfig.VertexColor -> vertexBlock.vertexColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.InstanceColor -> vertexBlock.instanceColors[source]?.output ?: Vec4f.ZERO.const
@@ -95,8 +95,8 @@ class ColorBlockFragmentStage(cfg: ColorBlockConfig, vertexColorBlock: ColorBloc
 class ColorBlockConfig(val colorName: String) {
     val colorSources = mutableListOf<ColorSource>()
 
-    fun constColor(staticColor: Color, mixMode: MixMode = MixMode.Set) {
-        colorSources += ConstColor(staticColor, mixMode)
+    fun constColor(constColor: Color, mixMode: MixMode = MixMode.Set) {
+        colorSources += ConstColor(constColor, mixMode)
     }
 
     fun uniformColor(defaultColor: Color? = null, uniformName: String = "u${colorName}", mixMode: MixMode = MixMode.Set) {
@@ -155,7 +155,7 @@ class ColorBlockConfig(val colorName: String) {
         get() = colorSources.find { it is TextureColor } as? TextureColor
 
     sealed class ColorSource(val mixMode: MixMode)
-    class ConstColor(val staticColor: Color, mixMode: MixMode) : ColorSource(mixMode)
+    class ConstColor(val constColor: Color, mixMode: MixMode) : ColorSource(mixMode)
     class UniformColor(val defaultColor: Color?, val uniformName: String, mixMode: MixMode) : ColorSource(mixMode)
     class VertexColor(val colorAttrib: Attribute, mixMode: MixMode) : ColorSource(mixMode)
     class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, mixMode: MixMode) : ColorSource(mixMode)
