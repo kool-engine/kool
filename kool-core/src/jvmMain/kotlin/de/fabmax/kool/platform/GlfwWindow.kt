@@ -39,6 +39,16 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
             }
         }
 
+    var isVisible = false
+        set(value) {
+            field = value
+            if (value) {
+                glfwShowWindow(windowPtr)
+            } else {
+                glfwHideWindow(windowPtr)
+            }
+        }
+
     private val fsMonitor: Long
     private var windowedWidth = props.width
     private var windowedHeight = props.height
@@ -91,7 +101,16 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
         windowedPosY = windowPosY
     }
 
+    fun setWindowSize(width: Int, height: Int) {
+        glfwSetWindowSize(windowPtr, width, height)
+    }
+
+    fun setWindowPos(x: Int, y: Int) {
+        glfwSetWindowPos(windowPtr, x, y)
+    }
+
     protected open fun onWindowSizeChanged(width: Int, height: Int) {
+        println("on size changed: $width x $height")
         windowWidth = width
         windowHeight = height
     }
@@ -109,6 +128,7 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowPositionChanged(x: Int, y: Int) {
+        println("on pos changed: $x, $y")
         windowPosX = x
         windowPosY = y
     }

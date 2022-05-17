@@ -203,6 +203,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = -1
         var isFullscreen = false
         var isWithHttpAssets = true
+        var showWindowOnStart = true
 
         var renderBackend = Backend.OPEN_GL
 

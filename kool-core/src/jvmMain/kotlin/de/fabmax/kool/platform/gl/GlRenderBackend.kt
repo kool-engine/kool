@@ -56,7 +56,9 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         // enable v-sync
         glfwSwapInterval(1)
         // make the window visible
-        glfwShowWindow(glfwWindow.windowPtr)
+        if (props.showWindowOnStart) {
+            glfwWindow.isVisible = true
+        }
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities

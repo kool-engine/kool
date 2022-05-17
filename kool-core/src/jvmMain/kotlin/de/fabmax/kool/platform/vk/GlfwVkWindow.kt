@@ -3,15 +3,12 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
-import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFW.glfwDestroyWindow
+import org.lwjgl.glfw.GLFW.glfwTerminate
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.KHRSurface
 
-class GlfwVkWindow(
-    val sys: VkSystem,
-    props: Lwjgl3Context.InitProps,
-    ctx: Lwjgl3Context
-) : GlfwWindow(props, ctx) {
+class GlfwVkWindow(val sys: VkSystem, props: Lwjgl3Context.InitProps, ctx: Lwjgl3Context) : GlfwWindow(props, ctx) {
 
     val onResize = mutableListOf<OnWindowResizeListener>()
 
@@ -20,7 +17,9 @@ class GlfwVkWindow(
 
     init {
         // make the window visible
-        glfwShowWindow(windowPtr)
+        if (props.showWindowOnStart) {
+            isVisible = true
+        }
     }
 
     override fun onFramebufferSizeChanged(width: Int, height: Int) {
