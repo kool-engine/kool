@@ -4,8 +4,8 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.InViewFrustumTraverser
+import de.fabmax.kool.math.spatial.ItemAdapter
 import de.fabmax.kool.math.spatial.KdTree
-import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
@@ -15,8 +15,8 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 class Ocean(val camera: Camera, val wind: Wind) {
 
     private val oceanInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
-    private val tileCenters: KdTree<Vec3f>
-    private val visibleTileTraverser = InViewFrustumTraverser<Vec3f>()
+    private val tileCenters: KdTree<OceanTilePose>
+    private val visibleTileTraverser = InViewFrustumTraverser<OceanTilePose>()
 
     var oceanShader: WindAffectedShader? = null
         set(value) {
@@ -49,30 +49,62 @@ class Ocean(val camera: Camera, val wind: Wind) {
     }
 
     init {
-        val sz = 20
-        val centerPoints = mutableListOf<Vec3f>()
-        for (y in -sz .. sz) {
-            for (x in -sz .. sz) {
-                centerPoints += Vec3f(x * TILE_SIZE, 0f, y * TILE_SIZE)
-            }
-        }
-        tileCenters = pointKdTree(centerPoints)
-
-        val instTransform = Mat4f()
+        tileCenters = KdTree(generateTilePoses(), TileAdapter)
         camera.onCameraUpdated += {
-            visibleTileTraverser.setup(camera, TILE_RADIUS).traverse(tileCenters)
+            visibleTileTraverser.setup(camera).traverse(tileCenters)
             oceanInstances.clear()
             oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
                 for (i in visibleTileTraverser.result.indices) {
-                    instTransform.setIdentity().translate(visibleTileTraverser.result[i])
-                    buf.put(instTransform.matrix)
+                    buf.put(visibleTileTraverser.result[i].transform.matrix)
                 }
             }
         }
     }
 
+    private fun generateTilePoses(): List<OceanTilePose> {
+        // generate tiles of increasing size at farther distance
+        val tilePoses = mutableListOf<OceanTilePose>()
+        for (y in 0 until 8) {
+            for (x in 0 until 8) {
+                // center 8x8 tiles at scale 1
+                tilePoses += OceanTilePose(Vec3f((x - 3.5f) * TILE_SIZE, 0f, (y - 3.5f) * TILE_SIZE), 1f)
+
+                // outer tiles at scales 2, 4, 8, 16, 32
+                if (x !in 2..5 || y !in 2..5) {
+                    for (i in 1..5) {
+                        val scale = (1 shl i).toFloat()
+                        tilePoses += OceanTilePose(Vec3f((x - 3.5f) * TILE_SIZE * scale, 0f, (y - 3.5f) * TILE_SIZE * scale), scale)
+                    }
+                }
+            }
+        }
+        return tilePoses
+    }
+
+    private class OceanTilePose(center: Vec3f, val scale: Float): Vec3f(center) {
+        val transform = Mat4f().translate(center).scale(scale)
+    }
+
+    private object TileAdapter : ItemAdapter<OceanTilePose> {
+        override fun getMinX(item: OceanTilePose): Float = item.x - item.scale * TILE_SIZE * 0.5f
+        override fun getMinY(item: OceanTilePose): Float = item.y - item.scale * TILE_SIZE * 0.5f
+        override fun getMinZ(item: OceanTilePose): Float = item.z - item.scale * TILE_SIZE * 0.5f
+
+        override fun getMaxX(item: OceanTilePose): Float = item.x + item.scale * TILE_SIZE * 0.5f
+        override fun getMaxY(item: OceanTilePose): Float = item.y + item.scale * TILE_SIZE * 0.5f
+        override fun getMaxZ(item: OceanTilePose): Float = item.z + item.scale * TILE_SIZE * 0.5f
+
+        override fun getCenterX(item: OceanTilePose): Float = item.x
+        override fun getCenterY(item: OceanTilePose): Float = item.y
+        override fun getCenterZ(item: OceanTilePose): Float = item.z
+
+        override fun getSzX(item: OceanTilePose): Float = item.scale * TILE_SIZE
+        override fun getSzY(item: OceanTilePose): Float = item.scale * TILE_SIZE
+        override fun getSzZ(item: OceanTilePose): Float = item.scale * TILE_SIZE
+    }
+
     companion object {
         const val TILE_SIZE = 64f
-        const val TILE_RADIUS = TILE_SIZE * 0.708f
+        const val TILE_HALF_COUNT = 12
     }
 }

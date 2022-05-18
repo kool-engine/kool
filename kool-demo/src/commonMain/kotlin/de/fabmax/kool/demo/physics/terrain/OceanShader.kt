@@ -57,7 +57,7 @@ object OceanShader {
 
     private fun pbrConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslPbrShader.Config().apply {
         baseConfig(shadowMap)
-        roughness(0.05f)
+        roughness(0.1f)
         with (TerrainDemo) {
             iblConfig(ibl)
         }
@@ -67,7 +67,7 @@ object OceanShader {
         baseConfig(shadowMap)
         imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
         specularStrength(1f)
-        shininess(50f)
+        shininess(500f)
     }
 
     private fun KslProgram.oceanMod() {
@@ -115,10 +115,14 @@ object OceanShader {
                 val baseColorPort = getFloat4Port("baseColor")
                 val baseColor = float3Var()
 
+                val lightColor = MdColor.LIGHT_BLUE toneLin 300
+                val midColor = MdColor.LIGHT_BLUE toneLin 500
+                val darkColor = MdColor.BLUE toneLin 700
+
                 `if`(waveHeight.output gt 0f.const) {
-                    baseColor set mix(MdColor.LIGHT_BLUE.toLinear().const.rgb, (MdColor.LIGHT_BLUE toneLin 300).const.rgb, clamp(waveHeight.output / 6f.const, 0f.const, 1f.const))
+                    baseColor set mix(midColor.const.rgb, lightColor.const.rgb, clamp(waveHeight.output / 6f.const, 0f.const, 1f.const))
                 }.`else` {
-                    baseColor set mix(MdColor.LIGHT_BLUE.toLinear().const.rgb, (MdColor.BLUE toneLin 700).const.rgb, clamp(-waveHeight.output / 6f.const, 0f.const, 1f.const))
+                    baseColor set mix(midColor.const.rgb, darkColor.const.rgb, clamp(-waveHeight.output / 6f.const, 0f.const, 1f.const))
                 }
                 baseColorPort.input(float4Value(baseColor, 1f.const))
 
@@ -133,7 +137,7 @@ object OceanShader {
                 val mapNormalA = sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.051f.const + offsetA).xyz * 2f.const - 1f.const
                 val mapNormalB = sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.017f.const + offsetB).xyz * 2f.const - 1f.const
                 val mapNormal = float3Var(normalize(mapNormalA + mapNormalB))
-                val bumpNormal = float3Var(calcBumpedNormal(worldNormal, tangent, mapNormal, 0.3f.const))
+                val bumpNormal = float3Var(calcBumpedNormal(worldNormal, tangent, mapNormal, 0.4f.const))
                 material.inNormal(bumpNormal)
             }
         }
