@@ -31,6 +31,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
     private lateinit var grassColor: Texture2d
+    private lateinit var oceanBump: Texture2d
     private lateinit var ibl: EnvironmentMaps
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
@@ -71,6 +72,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Loading textures...")
         colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
         normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
+        oceanBump = loadAndPrepareTexture("${Demo.materialPath}/ocean-bump-1k.jpg")
 
         val grassProps = TextureProps(
             addressModeU = AddressMode.CLAMP_TO_EDGE,
@@ -323,7 +325,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateOceanShader() {
-        ocean.oceanShader = OceanShader.makeOceanShader(ibl, shadowMap, wind.density, isGroundPbr)
+        ocean.oceanShader = OceanShader.makeOceanShader(ibl, shadowMap, wind.density, oceanBump, isGroundPbr)
     }
 
     private fun updateTreeShader() {
