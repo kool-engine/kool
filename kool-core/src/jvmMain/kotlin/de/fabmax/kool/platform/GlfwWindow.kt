@@ -110,7 +110,6 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowSizeChanged(width: Int, height: Int) {
-        println("on size changed: $width x $height")
         windowWidth = width
         windowHeight = height
     }
@@ -128,7 +127,6 @@ open class GlfwWindow(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowPositionChanged(x: Int, y: Int) {
-        println("on pos changed: $x, $y")
         windowPosX = x
         windowPosY = y
     }
