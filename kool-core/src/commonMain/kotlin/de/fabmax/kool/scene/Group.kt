@@ -32,6 +32,10 @@ open class Group(name: String? = null) : Node(name) {
 
     init {
         setIdentity()
+
+        // be default, frustum culling is disabled for groups. Potential benefit is rather small, and it can cause
+        // problems if group content is not frustum checked as well (e.g. an instaned mesh)
+        isFrustumChecked = false
     }
 
     fun setDirty() {

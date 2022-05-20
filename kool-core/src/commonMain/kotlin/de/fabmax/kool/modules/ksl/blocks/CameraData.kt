@@ -4,10 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.Uniform2f
-import de.fabmax.kool.pipeline.Uniform3f
-import de.fabmax.kool.pipeline.UniformMat4f
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
 fun KslProgram.cameraData() = CameraData(this)
@@ -23,6 +20,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val viewMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
     val projMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
     val viewProjMat: KslUniformMatrix<KslTypeMat4, KslTypeFloat4>
+    val viewport: KslUniformVector<KslTypeFloat4, KslTypeFloat1>
 
     val clipNear: KslExprFloat1
         get() = clip.x
@@ -31,13 +29,14 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     // todo: implement shared ubos
     val camUbo = KslUniformBuffer("CameraUniforms", program, false).apply {
-        position = uniformFloat3(UNIFORM_NAME_CAM_POSITION)
-        direction = uniformFloat3(UNIFORM_NAME_CAM_DIRECTION)
-        clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
-
         viewMat = uniformMat4(UNIFORM_NAME_VIEW_MAT)
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
         viewProjMat = uniformMat4(UNIFORM_NAME_VIEW_PROJ_MAT)
+        viewport = uniformFloat4(UNIFORM_NAME_VIEWPORT)
+
+        position = uniformFloat3(UNIFORM_NAME_CAM_POSITION)
+        direction = uniformFloat3(UNIFORM_NAME_CAM_DIRECTION)
+        clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
     }
 
     private var uPosition: Uniform3f? = null
@@ -47,6 +46,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     private var uViewMat: UniformMat4f? = null
     private var uProjMat: UniformMat4f? = null
     private var uViewProjMat: UniformMat4f? = null
+    private var uViewport: Uniform4f? = null
 
     init {
         program.shaderListeners += this
@@ -61,16 +61,19 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         uViewMat = shader.uniforms[UNIFORM_NAME_VIEW_MAT] as UniformMat4f?
         uProjMat = shader.uniforms[UNIFORM_NAME_PROJ_MAT] as UniformMat4f?
         uViewProjMat = shader.uniforms[UNIFORM_NAME_VIEW_PROJ_MAT] as UniformMat4f?
+        uViewport = shader.uniforms[UNIFORM_NAME_VIEWPORT] as Uniform4f?
     }
 
     override fun onUpdate(cmd: DrawCommand) {
         val cam = cmd.renderPass.camera
+        val vp = cmd.renderPass.viewport
         uPosition?.value?.set(cam.globalPos)
         uDirection?.value?.set(cam.globalLookDir)
         uClip?.value?.set(cam.clipNear, cam.clipFar)
         uViewMat?.value?.set(cam.view)
         uProjMat?.value?.set(cam.proj)
         uViewProjMat?.value?.set(cam.viewProj)
+        uViewport?.value?.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
     }
 
     companion object {
@@ -83,5 +86,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         const val UNIFORM_NAME_VIEW_MAT = "uViewMat"
         const val UNIFORM_NAME_PROJ_MAT = "uProjMat"
         const val UNIFORM_NAME_VIEW_PROJ_MAT = "uViewProjMat"
+
+        const val UNIFORM_NAME_VIEWPORT = "uViewport"
     }
 }

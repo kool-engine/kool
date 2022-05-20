@@ -133,10 +133,12 @@ object OceanShader {
 
                 val offsetA = float2Var(windOffsetStrength.float2("xz") * 0.73f.const * windScale)
                 val offsetB = float2Var(windOffsetStrength.float2("xz") * 0.37f.const * windScale)
+                val offsetC = float2Var(windOffsetStrength.float2("xz") * 0.15f.const * windScale)
 
                 val mapNormalA = sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.051f.const + offsetA).xyz * 2f.const - 1f.const
-                val mapNormalB = sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.017f.const + offsetB).xyz * 2f.const - 1f.const
-                val mapNormal = float3Var(normalize(mapNormalA + mapNormalB))
+                val mapNormalB = (sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.017f.const + offsetB).xyz * 2f.const - 1f.const) * 0.7f.const
+                val mapNormalC = (sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.005f.const + offsetC).xyz * 2f.const - 1f.const) * 0.3f.const
+                val mapNormal = float3Var(normalize(mapNormalA + mapNormalB + mapNormalC))
                 val bumpNormal = float3Var(calcBumpedNormal(worldNormal, tangent, mapNormal, 0.4f.const))
                 material.inNormal(bumpNormal)
             }

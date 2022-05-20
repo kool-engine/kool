@@ -21,7 +21,10 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.pbrShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.colorMesh
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
@@ -45,7 +48,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var playerModel: PlayerModel
     private lateinit var camRig: CharacterTrackingCamRig
-    private lateinit var terrainMeshes: Group
+    private lateinit var terrainTiles: TerrainTiles
     private lateinit var physicsObjects: PhysicsObjects
 
     private var boxMesh: Mesh? = null
@@ -88,11 +91,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
-        terrainMeshes = terrain.generateTerrainMeshes()
+        terrainTiles = TerrainTiles(terrain)
         showLoadText("Creating trees...")
         trees = Trees(terrain, 150, wind)
         showLoadText("Creating ocean...")
-        ocean = Ocean(mainScene.camera, wind)
+        ocean = Ocean(terrainTiles, mainScene.camera, wind)
         showLoadText("Creating grass (1/2, may take a bit)...")
         grass = Grass(terrain, wind)
         showLoadText("Creating grass (2/2, may take a bit)...")
@@ -261,7 +264,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +grass.grassQuads
         +camLocalGrass.grassQuads
         +playerModel
-        +terrainMeshes
+        +terrainTiles
         +ocean.oceanMesh
 
         +physicsObjects.debugLines
@@ -321,7 +324,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun updateTerrainShader() {
         val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, ibl, isGroundPbr)
-        terrainMeshes.children.forEach { (it as Mesh).shader = terrainShader }
+        terrainTiles.children.forEach { (it as Mesh).shader = terrainShader }
     }
 
     private fun updateOceanShader() {
@@ -463,8 +466,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             reflectionMap = ibl.reflectionMap
             irradianceMap = ibl.irradianceMap
             lightStrength = 3f
-            irradianceStrength = Color.LIGHT_GRAY.toLinear()
-            reflectionStrength = Color.LIGHT_GRAY.toLinear()
+
+            val hdriStrength = 0.6f
+            irradianceStrength = Color(hdriStrength, hdriStrength, hdriStrength, 1f)
+            reflectionStrength = Color(hdriStrength, hdriStrength, hdriStrength, 1f)
         }
     }
 }

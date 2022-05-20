@@ -205,13 +205,13 @@ respository is loaded.
 I'm currently working on my own shader language (called ksl), which is implemented as a
 [Kotlin Type-safe builder / DSL](https://kotlinlang.org/docs/type-safe-builders.html). The ksl shader code you write is
 used to generate the actual GLSL shader code. The benefit with this approach is that there is no hard-coded GLSL
-code in common code, and it should be easy to add different generators which generate shader code for different
-backends in the future (e.g. WebGPU, or maybe even metal). 
+code in common code, and it should be relatively easy to add different generators which generate shader code for
+different backends in the future (e.g. WGSL, or metal). 
 
 This is still work in progress and most shaders in this project still use my old approach, which used blocks of
 pre-defined GLSL code. However, in case you are curious, you can take a look at
-[KslBlinnPhongShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslBlinnPhongShader.kt), which already
-uses the new ksl approach (the interesting stuff happens in the `Model` inner class).
+[KslLitShader](kool-core/src/commonMain/kotlin/de/fabmax/kool/modules/ksl/KslLitShader.kt), which already
+uses the new ksl approach (the interesting stuff happens in the `LitShaderModel` inner class).
 
 ## Physics Simulation
 

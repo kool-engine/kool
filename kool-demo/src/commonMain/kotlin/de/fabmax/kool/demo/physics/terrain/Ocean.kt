@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
-class Ocean(val camera: Camera, val wind: Wind) {
+class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
 
     private val oceanInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     private val tileCenters: KdTree<OceanTilePose>
@@ -49,7 +49,7 @@ class Ocean(val camera: Camera, val wind: Wind) {
     }
 
     init {
-        tileCenters = KdTree(generateTilePoses(), TileAdapter)
+        tileCenters = KdTree(generateTilePoses(terrainTiles), TileAdapter)
         camera.onCameraUpdated += {
             visibleTileTraverser.setup(camera).traverse(tileCenters)
             oceanInstances.clear()
@@ -61,13 +61,15 @@ class Ocean(val camera: Camera, val wind: Wind) {
         }
     }
 
-    private fun generateTilePoses(): List<OceanTilePose> {
+    private fun generateTilePoses(terrainTiles: TerrainTiles): List<OceanTilePose> {
         // generate tiles of increasing size at farther distance
         val tilePoses = mutableListOf<OceanTilePose>()
         for (y in 0 until 8) {
             for (x in 0 until 8) {
                 // center 8x8 tiles at scale 1
-                tilePoses += OceanTilePose(Vec3f((x - 3.5f) * TILE_SIZE, 0f, (y - 3.5f) * TILE_SIZE), 1f)
+                if (terrainTiles.getMinElevation(x, y) < 0f) {
+                    tilePoses += OceanTilePose(Vec3f((x - 3.5f) * TILE_SIZE, 0f, (y - 3.5f) * TILE_SIZE), 1f)
+                }
 
                 // outer tiles at scales 2, 4, 8, 16, 32
                 if (x !in 2..5 || y !in 2..5) {
