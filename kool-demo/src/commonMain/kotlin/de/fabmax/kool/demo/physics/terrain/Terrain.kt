@@ -121,6 +121,7 @@ class Terrain(val heightMap: HeightMap) {
     }
 
     companion object {
+        const val TERRAIN_SHADER_DISCARD_HEIGHT = "uDiscardHeight"
         val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GlslType.VEC_2F)
 
         fun makeTerrainShader(
@@ -162,6 +163,10 @@ class Terrain(val heightMap: HeightMap) {
 
                             val material = findBlock<PbrMaterialBlock>() ?: findBlock<BlinnPhongMaterialBlock>()!!
                             val baseColor = material.inBaseColor.input!!
+
+                            `if` (material.inFragmentPos.y gt uniformFloat1(TERRAIN_SHADER_DISCARD_HEIGHT)) {
+                                discard()
+                            }
 
                             val splatMapSampler = texture2d("tSplatMap")
                             val splatWeights = float4Var(sampleTexture(splatMapSampler, splatCoords))
@@ -220,7 +225,10 @@ class Terrain(val heightMap: HeightMap) {
             }
             shader.apply {
                 // do not forget to assign the splat map to the corresponding sampler after the shader is created
-                onPipelineCreated += { _, _, _ -> texSamplers2d["tSplatMap"]?.texture = splatMap }
+                onPipelineCreated += { _, _, _ ->
+                    texSamplers2d["tSplatMap"]?.texture = splatMap
+                    (uniforms[TERRAIN_SHADER_DISCARD_HEIGHT] as? Uniform1f)?.value = 1000f
+                }
             }
 
             return shader

@@ -17,6 +17,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
     private val oceanInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     private val tileCenters: KdTree<OceanTilePose>
     private val visibleTileTraverser = InViewFrustumTraverser<OceanTilePose>()
+    private var updateFrameIdx = 0
 
     var oceanShader: WindAffectedShader? = null
         set(value) {
@@ -50,12 +51,15 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
 
     init {
         tileCenters = KdTree(generateTilePoses(terrainTiles), TileAdapter)
-        camera.onCameraUpdated += {
-            visibleTileTraverser.setup(camera).traverse(tileCenters)
-            oceanInstances.clear()
-            oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
-                for (i in visibleTileTraverser.result.indices) {
-                    buf.put(visibleTileTraverser.result[i].transform.matrix)
+        camera.onCameraUpdated += { ctx ->
+            if (ctx.frameIdx != updateFrameIdx) {
+                updateFrameIdx = ctx.frameIdx
+                visibleTileTraverser.setup(camera).traverse(tileCenters)
+                oceanInstances.clear()
+                oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
+                    for (i in visibleTileTraverser.result.indices) {
+                        buf.put(visibleTileTraverser.result[i].transform.matrix)
+                    }
                 }
             }
         }

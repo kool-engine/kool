@@ -67,7 +67,13 @@ open class GlslGenerator : KslGenerator() {
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val sampler = sampleTexture.sampler.generateExpression(this)
-        val coord = sampleTexture.coord.generateExpression(this)
+        val coord = if (sampleTexture.sampler.expressionType is KslTypeSampler1d && sampleTexture.coord.expressionType is KslTypeFloat1) {
+            // for better OpenGL ES compatibility 1d textures actually are 2d textures...
+            "vec2(${sampleTexture.coord.generateExpression(this)}, 0.5)"
+        } else {
+            sampleTexture.coord.generateExpression(this)
+        }
+
         return if (sampleTexture.lod != null) {
             "textureLod(${sampler}, ${coord}, ${sampleTexture.lod.generateExpression(this)})"
         } else {

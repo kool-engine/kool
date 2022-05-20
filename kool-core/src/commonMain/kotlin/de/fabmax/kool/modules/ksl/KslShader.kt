@@ -248,6 +248,8 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
     protected fun uniformMat4f(uniformName: String?, defaultVal: Mat4f? = null): UniformInputMat4f =
         UniformInputMat4f(uniformName, defaultVal).also { connectUniformListeners += it }
 
+    protected fun texture1d(uniformName: String?, defaultVal: Texture1d? = null): UniformInputTexture1d =
+        UniformInputTexture1d(uniformName, defaultVal).also { connectUniformListeners += it }
     protected fun texture2d(uniformName: String?, defaultVal: Texture2d? = null): UniformInputTexture2d =
         UniformInputTexture2d(uniformName, defaultVal).also { connectUniformListeners += it }
     protected fun texture3d(uniformName: String?, defaultVal: Texture3d? = null): UniformInputTexture3d =
@@ -303,6 +305,16 @@ open class KslShader(val program: KslProgram, val pipelineConfig: PipelineConfig
         override fun connect() { uniform = (uniforms[uniformName] as? UniformMat4f)?.apply { value.set(buffer) } }
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Mat4f = uniform?.value ?: buffer
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Mat4f) = (uniform?.value ?: buffer).set(value)
+    }
+
+    protected inner class UniformInputTexture1d(val uniformName: String?, defaultVal: Texture1d?) : ConnectUniformListener {
+        var uniform: TextureSampler1d? = null
+        private var buffer: Texture1d? = defaultVal
+        override fun connect() { uniform = texSamplers1d[uniformName]?.apply { texture = buffer } }
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Texture1d? = uniform?.texture ?: buffer
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Texture1d?) {
+            uniform?.let { it.texture = value } ?: run { buffer = value }
+        }
     }
 
     protected inner class UniformInputTexture2d(val uniformName: String?, defaultVal: Texture2d?) : ConnectUniformListener {

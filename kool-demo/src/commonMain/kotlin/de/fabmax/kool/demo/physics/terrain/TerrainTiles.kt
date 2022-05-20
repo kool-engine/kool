@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Group
@@ -11,6 +12,12 @@ import de.fabmax.kool.scene.mesh
 class TerrainTiles(val terrain: Terrain) : Group() {
 
     private val meshes = mutableMapOf<Vec2i, Mesh>()
+
+    var terrainShader: KslShader? = null
+        set(value) {
+            field = value
+            meshes.values.forEach { it.shader = value }
+        }
 
     init {
         isFrustumChecked = false
@@ -72,6 +79,10 @@ class TerrainTiles(val terrain: Terrain) : Group() {
             ap.normal.set(n)
             bp.normal.set(n)
         }
+    }
+
+    fun getTile(tileX: Int, tileY: Int): Mesh {
+        return meshes[Vec2i(tileX, TILE_CNT_XY - 1 - tileY)]!!
     }
 
     fun getMinElevation(tileX: Int, tileY: Int): Float {

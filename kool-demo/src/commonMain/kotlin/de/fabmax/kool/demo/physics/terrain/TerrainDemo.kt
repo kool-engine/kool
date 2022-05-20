@@ -38,6 +38,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var ibl: EnvironmentMaps
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
+    private lateinit var oceanFloorPass: OceanFloorRenderPass
 
     private lateinit var wind: Wind
     private lateinit var terrain: Terrain
@@ -92,10 +93,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
         terrainTiles = TerrainTiles(terrain)
+        showLoadText("Creating ocean...")
+        oceanFloorPass = OceanFloorRenderPass(mainScene, terrainTiles)
+        ocean = Ocean(terrainTiles, mainScene.camera, wind)
         showLoadText("Creating trees...")
         trees = Trees(terrain, 150, wind)
-        showLoadText("Creating ocean...")
-        ocean = Ocean(terrainTiles, mainScene.camera, wind)
         showLoadText("Creating grass (1/2, may take a bit)...")
         grass = Grass(terrain, wind)
         showLoadText("Creating grass (2/2, may take a bit)...")
@@ -125,7 +127,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun setupMenu(ctx: KoolContext) = controlUi {
-        //image(imageShader = ModeledShader.TextureColor(ssao.aoMap, model = AoDemo.aoMapColorModel()))
+        //image(oceanFloorPass.colorTexture)
 
         section("Terrain Demo") {
             button("ESC to unlock Cursor") {
@@ -244,6 +246,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             cascades.forEach {
                 it.directionalCamNearOffset = -200f
                 it.setDefaultDepthOffset(true)
+
+                oceanFloorPass.dependsOn(it)
             }
         }
 
@@ -323,12 +327,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateTerrainShader() {
-        val terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, ibl, isGroundPbr)
-        terrainTiles.children.forEach { (it as Mesh).shader = terrainShader }
+        terrainTiles.terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, ibl, isGroundPbr)
     }
 
     private fun updateOceanShader() {
-        ocean.oceanShader = OceanShader.makeOceanShader(ibl, shadowMap, wind.density, oceanBump, isGroundPbr)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, ibl, shadowMap, wind.density, oceanBump, isGroundPbr)
     }
 
     private fun updateTreeShader() {

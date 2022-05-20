@@ -53,7 +53,7 @@ class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoE
     private val defaultScene = "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() }
 
     private val demos = mutableMapOf(
-        "phys-terrain" to DemoEntry("Physics - Terrain") { TerrainDemo() },
+        "phys-terrain" to DemoEntry("Island") { TerrainDemo() },
         "phys-ragdoll" to DemoEntry("Physics - Ragdoll") { RagdollDemo() },
         "phys-vehicle" to DemoEntry("Physics - Vehicle") { VehicleDemo() },
         "phys-joints" to DemoEntry("Physics - Joints") { JointsDemo() },

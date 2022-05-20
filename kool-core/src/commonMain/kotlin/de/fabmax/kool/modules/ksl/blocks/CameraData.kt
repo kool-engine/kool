@@ -7,7 +7,9 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
-fun KslProgram.cameraData() = CameraData(this)
+fun KslProgram.cameraData(): CameraData {
+    return (dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(this)
+}
 
 class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 

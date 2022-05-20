@@ -39,8 +39,6 @@ class FresnelSchlick(parentScope: KslScopeBuilder) :
 
         body.apply {
             `return`(f0 + (1f.const - f0) * pow(1f.const - cosTheta, 5f.const))
-
-            //return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
         }
     }
 
