@@ -146,7 +146,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 }
             }
             text("[WASD / Cursor Keys]: Move").apply { font.setCustom(smallFont); menuY += 10f }
-            text("[Shift]: Run").apply { font.setCustom(smallFont); menuY += 10f }
+            text("[Shift]: Walk").apply { font.setCustom(smallFont); menuY += 10f }
             text("[Space]: Jump").apply { font.setCustom(smallFont); menuY += 10f }
         }
 //        button("Respawn Boxes") {
@@ -232,6 +232,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        //ctx.isProfileRenderPasses = true
         mainRenderPass.clearColor = MdColor.LIGHT_BLUE
 
         // lighting
@@ -272,6 +273,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +ocean.oceanMesh
 
         +physicsObjects.debugLines
+
+        //oceanFloorPass.renderGroup += playerModel
+        boxMesh?.let { oceanFloorPass.renderGroup += it }
 
         //defaultCamTransform()
 

@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.profiled
 
 class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
 
@@ -52,13 +53,15 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
     init {
         tileCenters = KdTree(generateTilePoses(terrainTiles), TileAdapter)
         camera.onCameraUpdated += { ctx ->
-            if (ctx.frameIdx != updateFrameIdx) {
-                updateFrameIdx = ctx.frameIdx
-                visibleTileTraverser.setup(camera).traverse(tileCenters)
-                oceanInstances.clear()
-                oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
-                    for (i in visibleTileTraverser.result.indices) {
-                        buf.put(visibleTileTraverser.result[i].transform.matrix)
+            profiled("update ocean tiles") {
+                if (ctx.frameIdx != updateFrameIdx) {
+                    updateFrameIdx = ctx.frameIdx
+                    visibleTileTraverser.setup(camera).traverse(tileCenters)
+                    oceanInstances.clear()
+                    oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
+                        for (i in visibleTileTraverser.result.indices) {
+                            buf.put(visibleTileTraverser.result[i].transform.matrix)
+                        }
                     }
                 }
             }

@@ -6,6 +6,7 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COLOR
 import de.fabmax.kool.platform.glOp
+import de.fabmax.kool.util.Profiling
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
@@ -36,6 +37,10 @@ class QueueRendererWebGl(val ctx: JsContext) {
     }
 
     fun renderQueue(queue: DrawQueue) {
+        if (ctx.isProfileRenderPasses) {
+            Profiling.enter(queue.renderPass.profileTag("render"))
+        }
+
         queue.renderPass.apply {
             ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
@@ -63,6 +68,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
             onBeforeRenderQueue(ctx)
         }
 
+        var numPrimitives = 0
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->
                 glAttribs.setupPipelineAttribs(pipeline)
@@ -73,10 +79,10 @@ class QueueRendererWebGl(val ctx: JsContext) {
                             val insts = cmd.mesh.instances
                             if (insts == null) {
                                 gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
-                                ctx.engineStats.addPrimitiveCount(cmd.geometry.numPrimitives)
+                                numPrimitives += cmd.geometry.numPrimitives
                             } else if (insts.numInstances > 0) {
                                 gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
-                                ctx.engineStats.addPrimitiveCount(cmd.geometry.numPrimitives * insts.numInstances)
+                                numPrimitives += cmd.geometry.numPrimitives * insts.numInstances
                             }
                             ctx.engineStats.addDrawCommandCount(1)
                         }
@@ -84,7 +90,12 @@ class QueueRendererWebGl(val ctx: JsContext) {
                 }
             }
         }
+        ctx.engineStats.addPrimitiveCount(numPrimitives)
         queue.renderPass.onAfterRenderQueue(ctx)
+
+        if (ctx.isProfileRenderPasses) {
+            Profiling.exit(queue.renderPass.profileTag("render"))
+        }
     }
 
     private inner class GlAttribs {

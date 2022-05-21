@@ -17,7 +17,11 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
     setDepthTexture(false)
 }) {
 
+    val renderGroup: Group
+        get() = drawNode as Group
+
     init {
+        isUpdateDrawNode = false
         clearColor = MdColor.GREY
         (drawNode as Group).apply {
             for (i in 0 until TerrainTiles.TILE_CNT_XY) {

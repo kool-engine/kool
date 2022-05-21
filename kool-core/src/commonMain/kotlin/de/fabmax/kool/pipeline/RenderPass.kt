@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Viewport
 
 abstract class RenderPass(var drawNode: Node) {
@@ -38,10 +39,20 @@ abstract class RenderPass(var drawNode: Node) {
     val onAfterRenderQueue: MutableList<(KoolContext) -> Unit> = mutableListOf()
     val onAfterDraw = mutableListOf<((KoolContext) -> Unit)>()
 
+    var isProfileDetailed = false
+
     private fun setupUpdateEvent(ctx: KoolContext): UpdateEvent {
         val event = updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
         event.meshFilter = drawMeshFilter
         return event
+    }
+
+    fun profileTag(subTag: String): String {
+        return if (isProfileDetailed) {
+            "RP:${name}-${subTag}"
+        } else {
+            "RP:${name}"
+        }
     }
 
     fun dependsOn(renderPass: RenderPass) {
@@ -49,15 +60,27 @@ abstract class RenderPass(var drawNode: Node) {
     }
 
     open fun update(ctx: KoolContext) {
+        if (ctx.isProfileRenderPasses) {
+            Profiling.enter(profileTag("update"))
+        }
         if (isUpdateDrawNode) {
             drawNode.update(setupUpdateEvent(ctx))
+        }
+        if (ctx.isProfileRenderPasses) {
+            Profiling.exit(profileTag("update"))
         }
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
+        if (ctx.isProfileRenderPasses) {
+            Profiling.enter(profileTag("collect"))
+        }
         beforeCollectDrawCommands(ctx)
         drawNode.collectDrawCommands(setupUpdateEvent(ctx))
         afterCollectDrawCommands(ctx)
+        if (ctx.isProfileRenderPasses) {
+            Profiling.exit(profileTag("collect"))
+        }
     }
 
     /**

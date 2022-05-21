@@ -77,9 +77,10 @@ class PlayerController(private val physicsObjects: PhysicsObjects, mainScene: Sc
         }
 
         val speedFactor = max(abs(axes.forwardBackward), abs(axes.leftRight))
+        val runFactor = 1f - axes.runFactor
         moveSpeed = walkSpeed * speedFactor
-        if (axes.runFactor > 0f) {
-            moveSpeed = moveSpeed * (1f - axes.runFactor) + runSpeed * speedFactor * axes.runFactor
+        if (runFactor > 0f) {
+            moveSpeed = moveSpeed * (1f - runFactor) + runSpeed * speedFactor * runFactor
             controller.jumpSpeed = 6f
         } else {
             controller.jumpSpeed = 4f

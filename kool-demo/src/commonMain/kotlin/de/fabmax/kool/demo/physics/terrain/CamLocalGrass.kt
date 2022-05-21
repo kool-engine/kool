@@ -1,9 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Random
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
@@ -13,6 +10,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.profiled
 import kotlin.math.sqrt
 
 class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
@@ -21,6 +19,9 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
     private val grassPositions = mutableListOf<GrassInstance>()
     private val instanceTree: KdTree<GrassInstance>
     private val instanceTrav = GrassTraverser()
+
+    private var updateFrameIdx = 0
+    private var lastTraversalPos = MutableVec3f()
 
     val grassQuads: Mesh
 
@@ -78,8 +79,10 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
         grassQuads.depthShader = shadowShader
         grassQuads.normalLinearDepthShader = aoShader
 
-        camera.onCameraUpdated += {
-            if (grassQuads.isVisible) {
+        camera.onCameraUpdated += { ctx ->
+            if (grassQuads.isVisible && updateFrameIdx != ctx.frameIdx) {
+                updateFrameIdx = ctx.frameIdx
+
                 grassShader?.let {
                     it.windOffsetStrength = wind.offsetStrength
                     it.windScale = 1f / wind.scale
@@ -90,15 +93,21 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
                 aoShader.windOffsetStrength = wind.offsetStrength
                 aoShader.windScale = 1f / wind.scale
 
-                val radius = 50f
-                instanceTrav.setup(camera.globalPos, radius, camera).traverse(instanceTree)
-
-                grassInstances.clear()
-                grassInstances.addInstances(instanceTrav.result.size) { buf ->
-                    for (grass in instanceTrav.result) {
-                        val distScale = ((grass.distance(camera.globalPos) / radius - 0.1f).clamp(0f, 1f) / (grass.p - 0.1f)).clamp(0f, 1f)
-                        buf.put(grass.transform.matrix)
-                        buf.put(distScale * grass.s)
+                profiled("traverse local grass") {
+                    val radius = 50f
+                    // near grass poses are only queried if the camera has moved
+                    if (camera.globalPos.distance(lastTraversalPos) > 2f) {
+                        lastTraversalPos.set(camera.globalPos)
+                        instanceTrav.setup(camera.globalPos, radius, camera).traverse(instanceTree)
+                    }
+                    // grass instances are updated every frame to achieve smooth scaling
+                    grassInstances.clear()
+                    grassInstances.addInstances(instanceTrav.result.size) { buf ->
+                        for (grass in instanceTrav.result) {
+                            val distScale = ((grass.distance(camera.globalPos) / radius - 0.1f).clamp(0f, 1f) / (grass.p - 0.1f)).clamp(0f, 1f)
+                            buf.put(grass.transform.matrix)
+                            buf.put(distScale * grass.s)
+                        }
                     }
                 }
             }

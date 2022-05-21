@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawQueue
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.createFloat32Buffer
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL31.glClearBufferfv
@@ -23,6 +24,10 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
     }
 
     fun renderQueue(queue: DrawQueue) {
+        if (ctx.isProfileRenderPasses) {
+            Profiling.enter(queue.renderPass.profileTag("render"))
+        }
+
         queue.renderPass.apply {
             glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
 
@@ -73,7 +78,10 @@ class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
         }
         ctx.engineStats.addPrimitiveCount(numPrimitives)
         queue.renderPass.onAfterRenderQueue(ctx)
-        //println("${queue.renderPass.name}: $numPrimitives triangles")
+
+        if (ctx.isProfileRenderPasses) {
+            Profiling.exit(queue.renderPass.profileTag("render"))
+        }
     }
 
     private inner class GlAttribs {
