@@ -32,7 +32,8 @@ class KslUniformMatrixArray<M, V>(value: KslArrayMatrix<M, V>)
         get() = super.value as KslArrayMatrix<M, V>
 }
 
-class KslUniformArray<T: KslType>(value: KslArrayGeneric<T>) : KslUniform<KslTypeArray<T>>(value, value.arraySize) {
+class KslUniformArray<T: KslType>(value: KslArrayGeneric<T>)
+    : KslUniform<KslTypeArray<T>>(value, value.arraySize), KslGenericArrayExpression<T> {
     override val value: KslArrayGeneric<T>
         get() = super.value as KslArrayGeneric<T>
 }

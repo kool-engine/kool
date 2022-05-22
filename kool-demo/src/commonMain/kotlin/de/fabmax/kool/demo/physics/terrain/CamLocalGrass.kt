@@ -13,7 +13,7 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.profiled
 import kotlin.math.sqrt
 
-class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
+class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
     private val grassInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, GrassShader.DISTANCE_SCALE))
     private val grassPositions = mutableListOf<GrassInstance>()
@@ -86,6 +86,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind) {
                 grassShader?.let {
                     it.windOffsetStrength = wind.offsetStrength
                     it.windScale = 1f / wind.scale
+                    it.updateEnvMaps(sky.weightedEnvs)
                 }
 
                 shadowShader.windOffsetStrength = wind.offsetStrength

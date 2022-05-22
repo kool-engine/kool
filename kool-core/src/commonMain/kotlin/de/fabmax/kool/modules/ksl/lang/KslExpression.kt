@@ -19,6 +19,7 @@ interface KslArrayExpression<T: KslType> : KslExpression<KslTypeArray<T>>
 interface KslScalarArrayExpression<S> : KslExpression<KslTypeArray<S>> where S: KslType, S: KslScalar
 interface KslVectorArrayExpression<V, S> : KslExpression<KslTypeArray<V>> where V: KslType, V: KslVector<S>, S: KslScalar
 interface KslMatrixArrayExpression<M, V> : KslExpression<KslTypeArray<M>> where M: KslType, M: KslMatrix<V>, V: KslVector<*>
+interface KslGenericArrayExpression<T: KslType> : KslExpression<KslTypeArray<T>>
 
 typealias KslExprFloat1 = KslScalarExpression<KslTypeFloat1>
 typealias KslExprFloat2 = KslVectorExpression<KslTypeFloat2, KslTypeFloat1>

@@ -26,7 +26,7 @@ import de.fabmax.kool.util.Color
 
 class PbrDemo : DemoScene("PBR Materials") {
 
-    private lateinit var skybox: Mesh
+    private lateinit var skybox: Skybox.Cube
     private lateinit var envMaps: EnvironmentMaps
 
     private val lightCycler = Cycler(lightSetups)
@@ -119,7 +119,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         loadHdri(idx, ctx) { tex ->
             envMaps.let { oldEnvMap -> ctx.runDelayed(1) { oldEnvMap.dispose() } }
             envMaps = EnvironmentHelper.hdriEnvironment(mainScene, tex, false)
-            (skybox.shader as Skybox.SkyboxCubeShader).environmentMapTex(envMaps.reflectionMap)
+            skybox.skyboxShader.setSingleSky(envMaps.reflectionMap)
             pbrContentCycler.forEach { it.updateEnvironmentMap(envMaps) }
         }
     }

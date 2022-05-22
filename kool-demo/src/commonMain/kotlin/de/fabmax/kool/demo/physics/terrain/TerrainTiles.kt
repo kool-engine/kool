@@ -2,22 +2,18 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.util.ShadowMap
 
-class TerrainTiles(val terrain: Terrain) : Group() {
+class TerrainTiles(val terrain: Terrain, val sky: Sky) : Group() {
 
     private val meshes = mutableMapOf<Vec2i, Mesh>()
-
-    var terrainShader: KslShader? = null
-        set(value) {
-            field = value
-            meshes.values.forEach { it.shader = value }
-        }
 
     init {
         isFrustumChecked = false
@@ -54,6 +50,25 @@ class TerrainTiles(val terrain: Terrain) : Group() {
                 fitNormalsX(meshes[Vec2i(j, i)]!!, meshes[Vec2i(j + 1, i)]!!, TILE_CNT_XY)
                 fitNormalsY(meshes[Vec2i(i, j)]!!, meshes[Vec2i(i, j + 1)]!!, TILE_CNT_XY)
             }
+        }
+
+        onUpdate += {
+            meshes.values.forEach { m ->
+                with(TerrainDemo) { (m.shader as KslLitShader).updateSky(sky.weightedEnvs) }
+            }
+        }
+    }
+
+    fun makeTerrainShaders(
+        colorMap: Texture2d,
+        normalMap: Texture2d,
+        splatMap: Texture2d,
+        shadowMap: ShadowMap,
+        ssaoMap: Texture2d,
+        isPbr: Boolean
+    ) {
+        meshes.values.forEach {
+            it.shader = Terrain.makeTerrainShader(colorMap, normalMap, splatMap, shadowMap, ssaoMap, isPbr)
         }
     }
 

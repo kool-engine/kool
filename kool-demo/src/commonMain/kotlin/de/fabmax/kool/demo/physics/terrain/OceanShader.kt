@@ -10,8 +10,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
@@ -26,8 +24,8 @@ object OceanShader {
         1.0f to (MdColor.INDIGO tone 800).mix(MdColor.BLUE tone 800, 0.5f),
         toLinear = true), isLinear = true)
 
-    class Pbr(oceanFloor: OceanFloorRenderPass, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
-        : KslPbrShader(pbrConfig(ibl, shadowMap)), WindAffectedShader {
+    class Pbr(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
+        : KslPbrShader(pbrConfig(shadowMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -38,10 +36,14 @@ object OceanShader {
         var oceanFloorColor by texture2d("tOceanFloorColor", oceanFloor.colorTexture)
         var oceanFloorDepth by texture2d("tOceanFloorDepth", oceanFloor.depthTexture)
         var oceanGradient by texture1d("tOceanGradient", oceanGradientTex)
+
+        override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
+            with(TerrainDemo) { updateSky(envMaps) }
+        }
     }
 
-    class BlinnPhong(oceanFloor: OceanFloorRenderPass, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
-        : KslBlinnPhongShader(blinnPhongConfig(ibl, shadowMap)), WindAffectedShader {
+    class BlinnPhong(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
+        : KslBlinnPhongShader(blinnPhongConfig(shadowMap)), WindAffectedShader {
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
@@ -52,13 +54,17 @@ object OceanShader {
         var oceanFloorColor by texture2d("tOceanFloorColor", oceanFloor.colorTexture)
         var oceanFloorDepth by texture2d("tOceanFloorDepth", oceanFloor.depthTexture)
         var oceanGradient by texture1d("tOceanGradient", oceanGradientTex)
+
+        override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
+            with(TerrainDemo) { updateSky(envMaps) }
+        }
     }
 
-    fun makeOceanShader(oceanFloor: OceanFloorRenderPass, ibl: EnvironmentMaps, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d, isPbr: Boolean): WindAffectedShader {
+    fun makeOceanShader(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d, isPbr: Boolean): WindAffectedShader {
         return if (isPbr) {
-            Pbr(oceanFloor, ibl, shadowMap, windTex, oceanBump)
+            Pbr(oceanFloor, shadowMap, windTex, oceanBump)
         } else {
-            BlinnPhong(oceanFloor, ibl, shadowMap, windTex, oceanBump)
+            BlinnPhong(oceanFloor, shadowMap, windTex, oceanBump)
         }
     }
 
@@ -66,21 +72,21 @@ object OceanShader {
         vertices { isInstanced = true }
         color { constColor(MdColor.CYAN.toLinear()) }
         shadow { addShadowMap(shadowMap) }
+        dualImageBasedAmbientColor()
         colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         modelCustomizer = { oceanMod() }
     }
 
-    private fun pbrConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslPbrShader.Config().apply {
+    private fun pbrConfig(shadowMap: ShadowMap) = KslPbrShader.Config().apply {
         baseConfig(shadowMap)
         roughness(0.1f)
         with (TerrainDemo) {
-            iblConfig(ibl)
+            iblConfig()
         }
     }
 
-    private fun blinnPhongConfig(ibl: EnvironmentMaps, shadowMap: ShadowMap) = KslBlinnPhongShader.Config().apply {
+    private fun blinnPhongConfig(shadowMap: ShadowMap) = KslBlinnPhongShader.Config().apply {
         baseConfig(shadowMap)
-        imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
         specularStrength(1f)
         shininess(500f)
     }
@@ -133,16 +139,6 @@ object OceanShader {
                 val material = findBlock<LitMaterialBlock>()!!
                 val baseColorPort = getFloat4Port("baseColor")
 
-//                val baseColor = float3Var()
-//                val lightColor = MdColor.LIGHT_BLUE toneLin 300
-//                val midColor = MdColor.LIGHT_BLUE toneLin 500
-//                val darkColor = MdColor.BLUE toneLin 700
-//                `if`(waveHeight.output gt 0f.const) {
-//                    baseColor set mix(midColor.const.rgb, lightColor.const.rgb, clamp(waveHeight.output / 6f.const, 0f.const, 1f.const))
-//                }.`else` {
-//                    baseColor set mix(midColor.const.rgb, darkColor.const.rgb, clamp(-waveHeight.output / 6f.const, 0f.const, 1f.const))
-//                }
-
                 // sample bump map and compute fragment normal
                 val worldPos = material.inFragmentPos.input!!
                 val worldNormal = material.inNormal.input!!
@@ -167,7 +163,7 @@ object OceanShader {
                 // 1st depth sample - water depth without refraction
                 val oceanFloorUv = posScreenSpace.output.float2("xy") / posScreenSpace.output.w * 0.5f.const + 0.5f.const
                 val oceanDepth1 = floatVar(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
-                oceanDepth1 set clamp(getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth, 0f.const, 50f.const)
+                oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
 
                 // compute water refraction based on initial depth estimate and water surface normal
                 //val refractPos = float3Var(worldPos + refract(normalize(camToFrag), bumpNormal, 1.33f.const) * oceanDepth)
@@ -177,13 +173,18 @@ object OceanShader {
 
                 // 2nd depth sample - water depth at refracted position
                 val oceanDepth2 = floatVar(floatVar(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x))
-                oceanDepth2 set clamp(getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth, 0f.const, 50f.const)
+                oceanDepth2 set getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth
+
+                `if`(oceanDepth2 lt 0f.const) {
+                    // we hit something which above water surface, use original uv as fallback
+                    refractUv set oceanFloorUv
+                    oceanDepth2 set oceanDepth1
+                }
 
                 val waveMod = dot(bumpNormal, Vec3f.X_AXIS.const)
-
-                val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0f.const, 1f.const)
                 val baseColor = float4Var(sampleTexture(texture1d("tOceanGradient"), oceanDepth2 / 50f.const + waveMod))
                 val oceanFloorColor = float4Var(Vec4f.ZERO.const)
+                val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0f.const, 1f.const)
                 `if`(oceanAlpha lt 1f.const) {
                     oceanFloorColor set sampleTexture(texture2d("tOceanFloorColor"), refractUv)
                     oceanFloorColor.rgb set convertColorSpace(oceanFloorColor.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)

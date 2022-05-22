@@ -11,14 +11,17 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.TriangleMesh
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.ShadowMap
 import kotlin.math.sqrt
 
-class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind) {
+class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
 
     val treeGroup = Group().apply {
         isFrustumChecked = false
@@ -35,12 +38,6 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind) {
     private val treeTree = OcTree(Vec3fAdapter, bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
 
     val trees = mutableListOf<Tree>()
-
-    var treeShader: WindAffectedShader? = null
-        set(value) {
-            field = value
-            treeGroup.children.filterIsInstance<Mesh>().forEach { it.shader = value?.shader }
-        }
 
     init {
         val treeGenerator = LowPolyTree(0x1deadb0b)
@@ -140,15 +137,24 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind) {
         }
 
         treeGroup.onUpdate += {
-            treeShader?.let {
-                it.windOffsetStrength = wind.offsetStrength
-                it.windScale = 1f / wind.scale
+            for (i in trees.indices) {
+                (trees[i].drawMesh.shader as WindAffectedShader?)?.let {
+                    it.windOffsetStrength = wind.offsetStrength
+                    it.windScale = 1f / wind.scale
+                    it.updateEnvMaps(sky.weightedEnvs)
+                }
             }
 
             shadowShader.windOffsetStrength = wind.offsetStrength
             shadowShader.windScale = 1f / wind.scale
             aoShader.windOffsetStrength = wind.offsetStrength
             aoShader.windScale = 1f / wind.scale
+        }
+    }
+
+    fun makeTreeShaders(shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isPbr: Boolean) {
+        trees.forEach {
+            it.drawMesh.shader = TreeShader.makeTreeShader(shadowMap, ssaoMap, windTex, isPbr).shader
         }
     }
 

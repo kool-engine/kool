@@ -7,48 +7,52 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.ShadowMap
 
 object GrassShader {
 
-    class Pbr(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
-        : KslPbrShader(pbrConfig(grassColor, ibl, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
+    class Pbr(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
+        : KslPbrShader(pbrConfig(grassColor, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
+        override val shader = this
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
 
-        override val shader = this
+        override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
+            with(TerrainDemo) { updateSky(envMaps) }
+        }
     }
 
-    class BlinnPhong(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
-        : KslBlinnPhongShader(blinnPhongConfig(grassColor, ibl, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
+    class BlinnPhong(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
+        : KslBlinnPhongShader(blinnPhongConfig(grassColor, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
+        override val shader = this
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
 
-        override val shader = this
+        override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
+            with(TerrainDemo) { updateSky(envMaps) }
+        }
     }
 
     class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean, isAoDepth: Boolean)
         : KslDepthShader(shadowConfig(isInstanced, isAoDepth)), WindAffectedShader {
         var grassAlpha by texture2d("grassAlpha", grassColor)
 
+        override val shader = this
         override var windOffsetStrength by uniform4f("uWindOffsetStrength")
         override var windScale by uniform1f("uWindScale", 0.01f)
         override var windDensity by texture3d("tWindTex", windTex)
 
-        override val shader = this
+        override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) { }
     }
 
     val DISTANCE_SCALE = Attribute("aDistScale", GlslType.FLOAT)
 
     fun makeGrassShader(
         grassColor: Texture2d,
-        ibl: EnvironmentMaps,
         shadowMap: ShadowMap,
         ssaoMap: Texture2d,
         windTex: Texture3d,
@@ -56,9 +60,9 @@ object GrassShader {
         isPbr: Boolean
     ): WindAffectedShader {
         return if (isPbr) {
-            Pbr(grassColor, ibl, shadowMap, ssaoMap, windTex, isInstanced)
+            Pbr(grassColor, shadowMap, ssaoMap, windTex, isInstanced)
         } else {
-            BlinnPhong(grassColor, ibl, shadowMap, ssaoMap, windTex, isInstanced)
+            BlinnPhong(grassColor, shadowMap, ssaoMap, windTex, isInstanced)
         }
     }
 
@@ -78,18 +82,18 @@ object GrassShader {
         }
     }
 
-    private fun pbrConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslPbrShader.Config().apply {
+    private fun pbrConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslPbrShader.Config().apply {
+        dualImageBasedAmbientColor()
         with(TerrainDemo) {
-            iblConfig(ibl)
+            iblConfig()
         }
         roughness(1f)
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }
 
-    private fun blinnPhongConfig(grassColor: Texture2d, ibl: EnvironmentMaps, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
-        imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+    private fun blinnPhongConfig(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, isInstanced: Boolean) = KslBlinnPhongShader.Config().apply {
+        dualImageBasedAmbientColor()
         specularStrength(0.15f)
-
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }
 
@@ -161,12 +165,11 @@ object GrassShader {
                     // adjust vertex normals to always point in light direction
                     val normalPort = getFloat3Port("worldNormal")
                     val normal = float3Var(normalPort.input.input!!)
+
+                    // modify normal so that it always points in light direction
                     val dotNormal = floatVar(dot(normal, lightData.encodedPositions[0].xyz))
-                    `if` (abs(dotNormal) lt 0.1f.const) {
-                        normal -= normalize(lightData.encodedPositions[0].xyz)
-                    }.elseIf(dotNormal gt 0f.const) {
-                        normal set normal * (-1f).const
-                    }
+                    val modFac = smoothStep((-0.15f).const, (-0.05f).const, dotNormal) * smoothStep(0.05f.const, 0.1f.const, -lightData.encodedPositions[0].y)
+                    normal -= normalize(lightData.encodedPositions[0].xyz) * modFac
 
                     // modify normal y-component by the same input as wind tint to magnify wind based
                     // darkening / brightening effect

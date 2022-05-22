@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -21,14 +21,23 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
     var metallic: Float by uniform1f(cfg.metallicCfg.primaryUniform?.uniformName, cfg.metallicCfg.primaryUniform?.defaultValue)
     var metallicMap: Texture2d? by texture2d(cfg.metallicCfg.primaryTexture?.textureName, cfg.metallicCfg.primaryTexture?.defaultTexture)
 
-    // image based lighting maps
-    var irradianceMap: TextureCube? by textureCube("tIrradianceMap", cfg.irradianceMap)
-    var reflectionMap: TextureCube? by textureCube("tReflectionMap", cfg.reflectionMap)
-    var brdfLut: Texture2d? by texture2d("tBrdfLut")
-    var irradianceStrength: Vec4f by uniform4f("uIrradianceStrength", cfg.irradianceStrength)
+    val reflectionMaps: Array<TextureCube?> by textureCubeArray("tReflectionMaps", 2)
+    var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
     var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", cfg.reflectionStrength)
 
-    var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
+    var brdfLut: Texture2d? by texture2d("tBrdfLut")
+
+    var reflectionMap: TextureCube?
+        get() = reflectionMaps[0]
+        set(value) {
+            reflectionMaps[0] = value
+            reflectionMaps[1] = value
+            reflectionMapWeights = Vec2f.X_AXIS
+        }
+
+    init {
+        reflectionMap = cfg.reflectionMap
+    }
 
     override fun onPipelineSetup(builder: Pipeline.Builder, mesh: Mesh, ctx: KoolContext) {
         super.onPipelineSetup(builder, mesh, ctx)
@@ -41,10 +50,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         val metallicCfg = PropertyBlockConfig("metallic").apply { constProperty(0f) }
         val roughnessCfg = PropertyBlockConfig("roughness").apply { constProperty(0.5f) }
 
-        var irradianceMap: TextureCube? = null
         var reflectionMap: TextureCube? = null
 
-        var irradianceStrength = Color.WHITE
         var reflectionStrength = Color.WHITE
 
         fun metallic(block: PropertyBlockConfig.() -> Unit) {
@@ -70,6 +77,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         override fun KslScopeBuilder.createMaterial(
             cfg: Config,
             camData: CameraData,
+            irradiance: KslExprFloat3,
             lightData: SceneLightData,
             shadowFactors: KslExprFloat1Array,
             aoFactor: KslExprFloat1,
@@ -82,15 +90,11 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             val uMetallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
-            val irradianceMap = textureCube("tIrradianceMap")
-            val reflectionMap = textureCube("tReflectionMap")
+            val reflectionMaps = textureArrayCube("tReflectionMaps", 2).value
             val brdfLut = texture2d("tBrdfLut")
-            val irradianceStrength = uniformFloat4("uIrradianceStrength").rgb
             val reflectionStrength = uniformFloat4("uReflectionStrength").rgb
 
-            val irradiance = float3Var(sampleTexture(irradianceMap, ambientOri * normal).rgb) * irradianceStrength
-
-            val material = pbrMaterialBlock(reflectionMap, brdfLut) {
+            val material = pbrMaterialBlock(reflectionMaps, brdfLut) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)
@@ -102,6 +106,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 inIrradiance(irradiance)
                 inAoFactor(aoFactor)
                 inAmbientOrientation(ambientOri)
+
+                inReflectionMapWeights(uniformFloat2("uReflectionWeights"))
                 inReflectionStrength(reflectionStrength)
 
                 setLightData(lightData, shadowFactors, cfg.lightStrength.const)

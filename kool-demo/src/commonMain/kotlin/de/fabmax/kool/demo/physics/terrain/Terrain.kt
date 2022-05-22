@@ -17,7 +17,6 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
@@ -130,7 +129,6 @@ class Terrain(val heightMap: HeightMap) {
             splatMap: Texture2d,
             shadowMap: ShadowMap,
             ssaoMap: Texture2d,
-            ibl: EnvironmentMaps,
             isPbr: Boolean
         ): KslShader {
 
@@ -140,13 +138,14 @@ class Terrain(val heightMap: HeightMap) {
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
                 enableSsao(ssaoMap)
+                dualImageBasedAmbientColor()
 
                 if (this is KslPbrShader.Config) {
                     with (TerrainDemo) {
-                        iblConfig(ibl)
+                        iblConfig()
                     }
                 } else if (this is KslBlinnPhongShader.Config) {
-                    imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
+                    //imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                     specularStrength(0.25f)
                 }
 

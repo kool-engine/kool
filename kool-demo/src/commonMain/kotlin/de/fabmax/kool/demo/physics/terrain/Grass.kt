@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
 
-class Grass(val terrain: Terrain, val wind: Wind) {
+class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
     val grassQuads = Group().apply { isFrustumChecked = false }
 
@@ -91,6 +91,7 @@ class Grass(val terrain: Terrain, val wind: Wind) {
                 (child.shader as? WindAffectedShader)?.let {
                     it.windOffsetStrength = wind.offsetStrength
                     it.windScale = 1f / wind.scale
+                    it.updateEnvMaps(sky.weightedEnvs)
                 }
                 (child.depthShader as? WindAffectedShader)?.let {
                     it.windOffsetStrength = wind.offsetStrength

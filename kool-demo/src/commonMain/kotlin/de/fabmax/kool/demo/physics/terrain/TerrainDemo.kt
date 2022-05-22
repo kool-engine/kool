@@ -6,6 +6,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.controlUi
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.loadGltfModel
@@ -18,9 +19,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
-import de.fabmax.kool.pipeline.shading.pbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
@@ -35,10 +33,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var normalMap: Texture2d
     private lateinit var grassColor: Texture2d
     private lateinit var oceanBump: Texture2d
-    private lateinit var ibl: EnvironmentMaps
+    //private lateinit var ibl: EnvironmentMaps
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
     private lateinit var oceanFloorPass: OceanFloorRenderPass
+    private lateinit var sky: Sky
 
     private lateinit var wind: Wind
     private lateinit var terrain: Terrain
@@ -57,7 +56,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var escKeyListener: InputManager.KeyEventListener
 
-    private var isSsao = false
+    private var isSsao = true
 
     private var isPlayerPbr = true
     private var isGroundPbr = true
@@ -87,21 +86,24 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Generating wind density texture...")
         wind = Wind()
 
-        ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
+        //ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
+
+        sky = Sky(mainScene).apply { generateMaps(this@TerrainDemo, loadingScreen!!, ctx) }
+        //ibl = sky.skies.ceilingValue(0.5f)!!.envMaps
 
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
-        terrainTiles = TerrainTiles(terrain)
+        terrainTiles = TerrainTiles(terrain, sky)
         showLoadText("Creating ocean...")
         oceanFloorPass = OceanFloorRenderPass(mainScene, terrainTiles)
-        ocean = Ocean(terrainTiles, mainScene.camera, wind)
+        ocean = Ocean(terrainTiles, mainScene.camera, wind, sky)
         showLoadText("Creating trees...")
-        trees = Trees(terrain, 150, wind)
+        trees = Trees(terrain, 150, wind, sky)
         showLoadText("Creating grass (1/2, may take a bit)...")
-        grass = Grass(terrain, wind)
+        grass = Grass(terrain, wind, sky)
         showLoadText("Creating grass (2/2, may take a bit)...")
-        camLocalGrass = CamLocalGrass(mainScene.camera, terrain, wind)
+        camLocalGrass = CamLocalGrass(mainScene.camera, terrain, wind, sky)
 
         showLoadText("Creating physics...")
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
@@ -166,6 +168,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             sliderWithValue("Wind Scale", wind.scale, 10f, 500f) {
                 wind.scale = value
             }
+//            sliderWithValue("Time of Day", sky.timeOfDay, 0f, 1f) {
+//                sky.timeOfDay = value
+//            }
         }
         section("Grass") {
             toggleButton("Grass", grass.grassQuads.isVisible) {
@@ -255,7 +260,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         ssao = AoPipeline.createForward(this).apply {
             // negative radius is used to set radius relative to camera distance
             radius = -0.05f
-            isEnabled = false
+            isEnabled = isSsao
         }
 
         camLocalGrass.setupGrass(grassColor)
@@ -271,10 +276,10 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +playerModel
         +terrainTiles
         +ocean.oceanMesh
-
+        +sky.skybox
         +physicsObjects.debugLines
 
-        //oceanFloorPass.renderGroup += playerModel
+        oceanFloorPass.renderGroup += playerModel
         boxMesh?.let { oceanFloorPass.renderGroup += it }
 
         //defaultCamTransform()
@@ -323,6 +328,17 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         onUpdate += {
             wind.updateWind(it.deltaT)
+            sky.updateSun(lighting.lights[0])
+
+            (playerModel.model.meshes.values.first().shader as KslLitShader).apply {
+                updateSky(sky.weightedEnvs)
+            }
+            (bridgeMesh?.shader as KslLitShader).apply {
+                updateSky(sky.weightedEnvs)
+            }
+            (boxMesh?.shader as KslLitShader).apply {
+                updateSky(sky.weightedEnvs)
+            }
         }
     }
 
@@ -331,21 +347,21 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateTerrainShader() {
-        terrainTiles.terrainShader = Terrain.makeTerrainShader(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, ibl, isGroundPbr)
+        terrainTiles.makeTerrainShaders(colorMap, normalMap, terrain.splatMap, shadowMap, ssao.aoMap, isGroundPbr)
     }
 
     private fun updateOceanShader() {
-        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, ibl, shadowMap, wind.density, oceanBump, isGroundPbr)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorPass, shadowMap, wind.density, oceanBump, isGroundPbr)
     }
 
     private fun updateTreeShader() {
-        trees.treeShader = TreeShader.makeTreeShader(ibl, shadowMap, ssao.aoMap, wind.density, isTreesPbr)
+        trees.makeTreeShaders(shadowMap, ssao.aoMap, wind.density, isTreesPbr)
     }
 
     private fun updateGrassShader() {
-        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, wind.density, true, isGrassPbr)
+        camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, true, isGrassPbr)
         grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
-            it.shader = GrassShader.makeGrassShader(grassColor, ibl, shadowMap, ssao.aoMap, wind.density, false, isGrassPbr).shader
+            it.shader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isGrassPbr).shader
         }
     }
 
@@ -363,34 +379,20 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             color { constColor(MdColor.PINK.toLinear()) }
             shadow { addShadowMap(shadowMap) }
             enableSsao(ssao.aoMap)
+            dualImageBasedAmbientColor()
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
 
         val shader = if (isPlayerPbr) {
-            val isKsl = true
-
-            if (isKsl) {
-                KslPbrShader {
-                    baseConfig()
-                    iblConfig(ibl)
-                    roughness(0.2f)
-                }
-            } else {
-                pbrShader {
-                    isSkinned = true
-                    maxJoints = 40
-                    useStaticAlbedo(MdColor.PINK.toLinear())
-                    shadowMaps += shadowMap
-                    useImageBasedLighting(ibl)
-                    metallic = 0.7f
-                    roughness = 0.2f
-                }
+            KslPbrShader {
+                baseConfig()
+                iblConfig()
+                roughness(0.2f)
             }
 
         } else {
             KslBlinnPhongShader {
                 baseConfig()
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                 specularStrength(0.5f)
             }
         }
@@ -411,19 +413,19 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             color { vertexColor() }
             shadow { addShadowMap(shadowMap) }
             enableSsao(ssao.aoMap)
+            dualImageBasedAmbientColor()
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
         return if (isPbr) {
             KslPbrShader {
                 baseConfig()
-                iblConfig(ibl)
+                iblConfig()
                 roughness(roughness)
                 metallic(metallic)
             }
         } else {
             KslBlinnPhongShader {
                 baseConfig()
-                imageBasedAmbientColor(ibl.irradianceMap, Color.GRAY)
                 specularStrength(1f - roughness)
             }
         }
@@ -469,14 +471,20 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     companion object {
-        fun KslPbrShader.Config.iblConfig(ibl: EnvironmentMaps) {
-            reflectionMap = ibl.reflectionMap
-            irradianceMap = ibl.irradianceMap
+        fun KslPbrShader.Config.iblConfig() {
             lightStrength = 3f
+        }
 
-            val hdriStrength = 0.6f
-            irradianceStrength = Color(hdriStrength, hdriStrength, hdriStrength, 1f)
-            reflectionStrength = Color(hdriStrength, hdriStrength, hdriStrength, 1f)
+        fun KslLitShader.updateSky(envMaps: Sky.WeightedEnvMaps) {
+            ambientTextures[0] = envMaps.envA.irradianceMap
+            ambientTextures[1] = envMaps.envB.irradianceMap
+            ambientTextureWeights = Vec2f(envMaps.weightA, envMaps.weightB)
+
+            if (this is KslPbrShader) {
+                reflectionMaps[0] = envMaps.envA.reflectionMap
+                reflectionMaps[1] = envMaps.envB.reflectionMap
+                reflectionMapWeights = Vec2f(envMaps.weightA, envMaps.weightB)
+            }
         }
     }
 }

@@ -1,12 +1,16 @@
 package de.fabmax.kool.modules.ksl
 
+import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.util.Color
 
 abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
 
@@ -18,6 +22,33 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.defaultSsaoMap)
 
+    var ambientFactor: Vec4f by uniform4f("uAmbientColor")
+    var ambientTextureOrientation: Mat3f by uniformMat3f("uAmbientTextureOri", Mat3f().setIdentity())
+    // if ambient color is image based
+    var ambientTexture: TextureCube? by textureCube("tAmbientTexture")
+    // if ambient color is dual image based
+    val ambientTextures: Array<TextureCube?> by textureCubeArray("tAmbientTextures", 2)
+    var ambientTextureWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
+
+    init {
+        when (val ambient = cfg.ambientColor) {
+            is AmbientColor.Uniform -> ambientFactor = ambient.color
+            is AmbientColor.ImageBased -> {
+                ambientTexture = ambient.ambientTexture
+                ambientFactor = ambient.colorFactor
+            }
+            is AmbientColor.DualImageBased -> {
+                ambientFactor = ambient.colorFactor
+            }
+        }
+    }
+
+    sealed class AmbientColor {
+        class Uniform(val color: Color) : AmbientColor()
+        class ImageBased(val ambientTexture: TextureCube?, val colorFactor: Color) : AmbientColor()
+        class DualImageBased(val colorFactor: Color) : AmbientColor()
+    }
+
     open class LitShaderConfig {
         val vertexCfg = BasicVertexConfig()
         val colorCfg = ColorBlockConfig("baseColor")
@@ -25,6 +56,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         val pipelineCfg = PipelineConfig()
         val shadowCfg = ShadowConfig()
 
+        var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         var maxNumberOfLights = 4
         var lightStrength = 1f
@@ -41,6 +73,18 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
         fun color(block: ColorBlockConfig.() -> Unit) {
             colorCfg.block()
+        }
+
+        fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()) {
+            ambientColor = AmbientColor.Uniform(color)
+        }
+
+        fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE) {
+            ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
+        }
+
+        fun dualImageBasedAmbientColor(colorFactor: Color = Color.WHITE) {
+            ambientColor = AmbientColor.DualImageBased(colorFactor)
         }
 
         fun normalMapping(block: NormalMapConfig.() -> Unit) {
@@ -170,8 +214,27 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                         aoFactor set sampleTexture(aoMap, aoUv).x
                     }
 
+                    val irradiance = when (cfg.ambientColor) {
+                        is AmbientColor.Uniform -> uniformFloat4("uAmbientColor").rgb
+                        is AmbientColor.ImageBased -> {
+                            val ambientOri = uniformMat3("uAmbientTextureOri")
+                            val ambientTex = textureCube("tAmbientTexture")
+                            (sampleTexture(ambientTex, ambientOri * normal) * uniformFloat4("uAmbientColor")).rgb
+                        }
+                        is AmbientColor.DualImageBased -> {
+                            val ambientOri = uniformMat3("uAmbientTextureOri")
+                            val ambientTexs = textureArrayCube("tAmbientTextures", 2)
+                            val ambientWeights = uniformFloat2("tAmbientWeights")
+                            val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * normal) * ambientWeights.x)
+                            `if`(ambientWeights.y gt 0f.const) {
+                                ambientColor += float4Var(sampleTexture(ambientTexs[1], ambientOri * normal) * ambientWeights.y)
+                            }
+                            (ambientColor * uniformFloat4("uAmbientColor")).rgb
+                        }
+                    }
+
                     // main material block
-                    val materialColor = createMaterial(cfg, camData, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColor)
+                    val materialColor = createMaterial(cfg, camData, irradiance, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColor)
 
                     // set fragment stage output color
                     val outRgb = float3Var(materialColor.rgb)
@@ -194,6 +257,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
         protected abstract fun KslScopeBuilder.createMaterial(
             cfg: T,
             camData: CameraData,
+            irradiance: KslExprFloat3,
             lightData: SceneLightData,
             shadowFactors: KslExprFloat1Array,
             aoFactor: KslExprFloat1,

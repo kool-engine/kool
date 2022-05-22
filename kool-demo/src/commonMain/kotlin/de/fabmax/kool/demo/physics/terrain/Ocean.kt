@@ -13,7 +13,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.profiled
 
-class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
+class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val sky: Sky) {
 
     private val oceanInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     private val tileCenters: KdTree<OceanTilePose>
@@ -46,6 +46,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind) {
 
                 it.windScale = 1f / (wind.scale * 1.5f)
                 it.windOffsetStrength = offStr
+                it.updateEnvMaps(sky.weightedEnvs)
             }
         }
     }

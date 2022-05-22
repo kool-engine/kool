@@ -2,7 +2,6 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.pipeline.OffscreenRenderPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -43,12 +42,12 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
             }
         }
 
-        onBeforeRenderQueue += {
-            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = OCEAN_FLOOR_HEIGHT_THRESH
-        }
-        onAfterRenderQueue += {
-            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = 1000f
-        }
+//        onBeforeRenderQueue += {
+//            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = OCEAN_FLOOR_HEIGHT_THRESH
+//        }
+//        onAfterRenderQueue += {
+//            (terrainTiles.terrainShader?.uniforms?.get(Terrain.TERRAIN_SHADER_DISCARD_HEIGHT) as? Uniform1f)?.value = 1000f
+//        }
 
         val proxyCamera = PerspectiveProxyCam(mainScene.camera as PerspectiveCamera)
         onBeforeCollectDrawCommands += {

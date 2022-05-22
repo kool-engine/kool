@@ -4,17 +4,17 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.lang.*
 import kotlin.math.PI
 
-fun KslScopeBuilder.pbrMaterialBlock(reflectionMap: KslExpression<KslTypeColorSamplerCube>,
+fun KslScopeBuilder.pbrMaterialBlock(reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>,
                                      brdfLut: KslExpression<KslTypeColorSampler2d>,
                                      block: PbrMaterialBlock.() -> Unit): PbrMaterialBlock {
-    val pbrMaterialBlock = PbrMaterialBlock(parentStage.program.nextName("pbrMaterialBlock"), reflectionMap, brdfLut, this)
+    val pbrMaterialBlock = PbrMaterialBlock(parentStage.program.nextName("pbrMaterialBlock"), reflectionMaps, brdfLut, this)
     ops += pbrMaterialBlock.apply(block)
     return pbrMaterialBlock
 }
 
 class PbrMaterialBlock(
     name: String,
-    reflectionMap: KslExpression<KslTypeColorSamplerCube>,
+    reflectionMaps: KslArrayExpression<KslTypeColorSamplerCube>,
     brdfLut: KslExpression<KslTypeColorSampler2d>,
     parentScope: KslScopeBuilder
 ) : LitMaterialBlock(name, parentScope) {
@@ -22,10 +22,12 @@ class PbrMaterialBlock(
     val inRoughness = inFloat1("inRoughness")
     val inMetallic = inFloat1("inRoughness")
 
+    val inReflectionMapWeights = inFloat2("inReflectionMapWeights")
+    val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
+
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
     val inAoFactor = inFloat1("inAoFactor", KslValueFloat1(1f))
-    val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
 
     init {
         body.apply {
@@ -64,7 +66,11 @@ class PbrMaterialBlock(
             val diffuse = float3Var(inIrradiance * inBaseColor)
 
             val r = inAmbientOrientation * reflect(-viewDir, inNormal)
-            val prefilteredColor = float3Var(sampleTexture(reflectionMap, r, roughness * 6f.const).rgb * inReflectionStrength)
+            val prefilteredColor = float3Var(sampleTexture(reflectionMaps[0], r, roughness * 6f.const).rgb * inReflectionMapWeights.x)
+            `if` (inReflectionMapWeights.y gt 0f.const) {
+                prefilteredColor += sampleTexture(reflectionMaps[1], r, roughness * 6f.const).rgb * inReflectionMapWeights.y
+            }
+            prefilteredColor set prefilteredColor * inReflectionStrength
 
             val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).float2("rg"))
             val specular = float3Var(prefilteredColor * (f * brdf.r + brdf.g))

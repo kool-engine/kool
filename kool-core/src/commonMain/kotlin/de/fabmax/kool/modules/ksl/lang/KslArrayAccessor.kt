@@ -28,6 +28,8 @@ class KslArrayVectorAccessor<V, S>(array: KslVectorArrayExpression<V, S>, index:
     KslArrayAccessor<V>(array, index), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslScalar
 class KslArrayMatrixAccessor<M, V>(array: KslMatrixArrayExpression<M, V>, index: KslExpression<KslTypeInt1>) :
     KslArrayAccessor<M>(array, index), KslMatrixExpression<M, V> where M: KslType, M : KslMatrix<V>, V: KslVector<*>
+class KslArrayGenericAccessor<T: KslType>(array: KslGenericArrayExpression<T>, index: KslExpression<KslTypeInt1>) :
+    KslArrayAccessor<T>(array, index)
 
 operator fun <T: KslType> KslArrayExpression<T>.get(index: Int) =
     KslArrayAccessor(this, KslValueInt1(index))
@@ -48,3 +50,6 @@ operator fun <M, V> KslMatrixArrayExpression<M, V>.get(index: Int) where M: KslT
     KslArrayMatrixAccessor(this, KslValueInt1(index))
 operator fun <M, V> KslMatrixArrayExpression<M, V>.get(index: KslExpression<KslTypeInt1>) where M: KslType, M : KslMatrix<V>, V: KslVector<*> =
     KslArrayMatrixAccessor(this, index)
+
+operator fun <T: KslType> KslGenericArrayExpression<T>.get(index: Int) = KslArrayGenericAccessor(this, KslValueInt1(index))
+operator fun <T: KslType> KslGenericArrayExpression<T>.get(index: KslExpression<KslTypeInt1>) = KslArrayGenericAccessor(this, index)
