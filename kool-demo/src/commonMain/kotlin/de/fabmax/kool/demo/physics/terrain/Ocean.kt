@@ -42,7 +42,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
         onUpdate += {
             oceanShader?.let {
                 val offStr = MutableVec4f(wind.offsetStrength).scale(0.4f)
-                offStr.w = wind.offsetStrength.w * 3f
+                offStr.w = wind.offsetStrength.w * 4f
 
                 it.windScale = 1f / (wind.scale * 1.5f)
                 it.windOffsetStrength = offStr

@@ -12,7 +12,7 @@ import de.fabmax.kool.util.MdColor
 class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : OffscreenRenderPass2d(Group(), renderPassConfig {
     name = "OceanFloorPass"
     setDynamicSize()
-    addColorTexture(TexFormat.RGB)
+    addColorTexture(TexFormat.RGBA)
     setDepthTexture(false)
 }) {
 

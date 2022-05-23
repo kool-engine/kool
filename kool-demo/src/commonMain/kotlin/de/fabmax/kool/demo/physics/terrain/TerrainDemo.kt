@@ -33,7 +33,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var normalMap: Texture2d
     private lateinit var grassColor: Texture2d
     private lateinit var oceanBump: Texture2d
-    //private lateinit var ibl: EnvironmentMaps
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
     private lateinit var oceanFloorPass: OceanFloorRenderPass
@@ -76,6 +75,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         colorMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine.png")
         normalMap = loadAndPrepareTexture("${Demo.materialPath}/tile_flat/tiles_flat_fine_normal.png")
         oceanBump = loadAndPrepareTexture("${Demo.materialPath}/ocean-bump-1k.jpg")
+        val moonTex = loadAndPrepareTexture("${Demo.materialPath}/moon-blueish.png")
 
         val grassProps = TextureProps(
             addressModeU = AddressMode.CLAMP_TO_EDGE,
@@ -86,11 +86,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         showLoadText("Generating wind density texture...")
         wind = Wind()
 
-        //ibl = EnvironmentHelper.hdriEnvironment(mainScene, "${Demo.hdriPath}/blaubeuren_outskirts_1k.rgbe.png", this)
-
-        sky = Sky(mainScene).apply { generateMaps(this@TerrainDemo, loadingScreen!!, ctx) }
-        //ibl = sky.skies.ceilingValue(0.5f)!!.envMaps
-
+        sky = Sky(mainScene, moonTex).apply { generateMaps(this@TerrainDemo, loadingScreen!!, ctx) }
         showLoadText("Creating terrain...")
         Physics.awaitLoaded()
         terrain = Terrain(heightMap)
@@ -170,6 +166,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
 //            sliderWithValue("Time of Day", sky.timeOfDay, 0f, 1f) {
 //                sky.timeOfDay = value
+//                println("time of day: ${sky.timeOfDay} (is day: ${sky.isDay}), sun progress: ${sky.sunProgress(sky.timeOfDay)}, moon progress: ${sky.moonProgress(sky.timeOfDay)}")
 //            }
         }
         section("Grass") {
@@ -247,8 +244,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 setColor(Color.WHITE, 1f)
             }
         }
-        shadowMap = CascadedShadowMap(this@setupMainScene, 0, 200f).apply {
-            setMapRanges(0.05f, 0.25f, 1f)
+        shadowMap = CascadedShadowMap(this@setupMainScene, 0, 300f).apply {
+            setMapRanges(0.035f, 0.17f, 1f)
             cascades.forEach {
                 it.directionalCamNearOffset = -200f
                 it.setDefaultDepthOffset(true)
@@ -261,6 +258,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             // negative radius is used to set radius relative to camera distance
             radius = -0.05f
             isEnabled = isSsao
+            kernelSz = 8
         }
 
         camLocalGrass.setupGrass(grassColor)
@@ -276,7 +274,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         +playerModel
         +terrainTiles
         +ocean.oceanMesh
-        +sky.skybox
+        +sky.skyGroup
         +physicsObjects.debugLines
 
         oceanFloorPass.renderGroup += playerModel
@@ -328,7 +326,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         onUpdate += {
             wind.updateWind(it.deltaT)
-            sky.updateSun(lighting.lights[0])
+            sky.updateLight(lighting.lights[0])
 
             (playerModel.model.meshes.values.first().shader as KslLitShader).apply {
                 updateSky(sky.weightedEnvs)

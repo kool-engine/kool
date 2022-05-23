@@ -2,57 +2,116 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
+import de.fabmax.kool.modules.ksl.lang.a
+import de.fabmax.kool.modules.ksl.lang.float4
+import de.fabmax.kool.modules.ksl.lang.getFloat4Port
+import de.fabmax.kool.modules.ksl.lang.times
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
-import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.Skybox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.TreeMap
-import kotlin.math.*
+import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.*
+import kotlin.collections.listOf
+import kotlin.collections.plusAssign
+import kotlin.collections.set
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.atan2
 
-class Sky(mainScene: Scene) {
+class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     var timeOfDay = 0.25f
     var fullDayDuration = 180f
 
-    val sunDirection = MutableVec3f()
-    val skybox = Skybox.Cube(texLod = 1f)
+    val isDay: Boolean
+        get() = timeOfDay > 0.25f && timeOfDay < 0.75f
+
     val skies = TreeMap<Float, SkyCubeIblSystem>()
+
+    val sunDirection = MutableVec3f()
+    val moonDirection = MutableVec3f()
+    private val skybox = Skybox.Cube(texLod = 1f)
+    private val sunShader = SkyObjectShader {
+        uniformColor(Color.WHITE.mix(MdColor.YELLOW, 0.15f).toLinear())
+    }
+    private val moonShader = SkyObjectShader {
+        textureColor(moonTex)
+    }
+    private val starShader = SkyObjectShader(isPointShader = true) {
+        vertexColor()
+    }
+
+    private val sunMesh = colorMesh {
+        isFrustumChecked = false
+        generate {
+            circle {
+                center.set(0f, 0f, -1f)
+                radius = 0.015f
+            }
+        }
+        shader = sunShader
+    }
+    private val moonMesh = textureMesh {
+        isFrustumChecked = false
+        generate {
+            rect {
+                size.set(0.15f, 0.15f)
+                origin.set(size.x * -0.5f, size.y * -0.5f, -1f)
+            }
+        }
+        shader = moonShader
+    }
+    private val starMesh = PointMesh().apply {
+        isFrustumChecked = false
+        val r = Random(1337)
+        for (i in 0..5_000) {
+            val p = MutableVec3f(1f, 1f, 1f)
+            while (p.sqrLength() > 1f) {
+                p.set(r.randomF(-1f, 1f), r.randomF(-1f, 1f), r.randomF(-1f, 1f))
+            }
+            p.norm()
+
+            val sz = r.randomF(1f, 3f)
+            addPoint(p, sz, Color.fromHsv(r.randomF(0f, 360f), r.randomF(0.2f, 0.5f), 1f, sz / 3f))
+        }
+        shader = starShader
+    }
+
+    val skyGroup = Group().apply {
+        +skybox
+        +sunMesh
+        +starMesh
+        +moonMesh
+    }
 
     lateinit var weightedEnvs: WeightedEnvMaps
 
-    private val sunOrientation = Mat3f()
     private val sunColorGradient = ColorGradient(
-        0.00f to MdColor.YELLOW.mix(Color.WHITE, 0.07f),
-        0.36f to MdColor.YELLOW.mix(Color.WHITE, 0.12f),
-        0.42f to MdColor.AMBER.mix(Color.WHITE, 0.3f),
-        0.46f to MdColor.AMBER,
-        0.50f to MdColor.ORANGE,
-        0.54f to Color.BLACK,
-        1.00f to Color.BLACK,
-
+        0.00f to MdColor.YELLOW.mix(Color.WHITE, 0.7f),
+        0.72f to MdColor.YELLOW.mix(Color.WHITE, 0.4f),
+        0.84f to MdColor.AMBER.mix(Color.WHITE, 0.3f),
+        0.92f to MdColor.AMBER,
+        1.00f to MdColor.ORANGE,
         toLinear = true
     )
 
     init {
         mainScene.onUpdate += {
-            // make the night pass faster
-            val x = (timeOfDay - 0.5f) * 4f
-            val timeAdvFac = ((x * x * 0.2f + cos(x * PI)) / 3f + 0.5f).toFloat()
-            val timeInc = timeAdvFac * it.deltaT / fullDayDuration
-
+            val timeInc = it.deltaT / fullDayDuration
             timeOfDay = (timeOfDay + timeInc) % 1f
-            computeLightDirection(timeOfDay, sunDirection)
 
-            val fKey = skies.floorKey(timeOfDay)!!
-            val cKey = skies.ceilingKey(timeOfDay)!!
+            var fKey = skies.floorKey(timeOfDay)
+            var cKey = skies.ceilingKey(timeOfDay)
+            if (fKey == null) fKey = cKey!!
+            if (cKey == null) cKey = fKey
 
             weightedEnvs.envA = skies[cKey]!!.envMaps
             weightedEnvs.envB = skies[fKey]!!.envMaps
-
             if (fKey != cKey) {
                 weightedEnvs.weightA = (timeOfDay - fKey) / (cKey - fKey)
                 weightedEnvs.weightB = (1f - weightedEnvs.weightA)
@@ -68,23 +127,17 @@ class Sky(mainScene: Scene) {
     }
 
     suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene, ctx: KoolContext) {
-        for (h in 0..23) {
+        val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
+        for (h in hours) {
             terrainDemo.showLoadText("Creating sky ($h:00)...", 0)
             precomputeSky(h / 24f, parentScene, ctx)
         }
-
-        // add a few extra steps at dusk and dawn
-        precomputeSky(5.5f / 24f, parentScene, ctx)
-        precomputeSky(6.5f / 24f, parentScene, ctx)
-        precomputeSky(17.5f / 24f, parentScene, ctx)
-        precomputeSky(18.5f / 24f, parentScene, ctx)
-
-        skies[1f] = skies[0f]!!
         weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
     }
 
     private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, ctx: KoolContext) {
-        val sunDir = computeLightDirection(timeOfDay, forceSun = true)
+        val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), Mat3f())
+        println("$timeOfDay, ${sunProgress(timeOfDay)} -> $sunDir")
         val sky = SkyCubeIblSystem(parentScene)
         sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
         sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()
@@ -93,43 +146,92 @@ class Sky(mainScene: Scene) {
         ctx.delayFrames(1)
     }
 
-    fun updateSun(sunLight: Light) {
-        if (timeOfDay > 0.23f && timeOfDay < 0.77f) {
+    fun updateLight(sceneLight: Light) {
+        computeLightDirection(SUN_TILT, sunProgress(timeOfDay), sunShader.orientation, sunDirection)
+        computeLightDirection(MOON_TILT, moonProgress(timeOfDay), moonShader.orientation, moonDirection)
+
+        starShader.orientation.set(moonShader.orientation)
+        starShader.alpha = 1f - smoothStep(0.23f, 0.28f, timeOfDay) + smoothStep(0.72f, 0.77f, timeOfDay)
+
+        if (isDay) {
             // daytime -> light is the sun
-            val sunColor = sunColorGradient.getColor(abs(timeOfDay - 0.5f) * 2f)
-            val sunIntensity = smoothStep(0.23f, 0.26f, timeOfDay) * (1f - smoothStep(0.74f, 0.77f, timeOfDay))
-            sunLight.setColor(sunColor, sunIntensity * 1.5f)
+            val sunProgress = sunProgress(timeOfDay)
+            val sunColor = sunColorGradient.getColorInterpolated(abs(sunProgress - 0.5f) * 2f, MutableColor())
+            val sunIntensity = smoothStep(0.0f, 0.06f, sunProgress) * (1f - smoothStep(0.94f, 1.0f, sunProgress))
+            sceneLight.setColor(sunColor, sunIntensity * 1.5f)
+            sceneLight.setDirectional(sunDirection)
+
         } else {
             // nighttime -> light is the moon
-            val moonColor = Color.WHITE.mix(MdColor.LIGHT_BLUE, 0.3f).toLinear()
             val moonProgress = moonProgress(timeOfDay)
-            val moonIntensity = smoothStep(0.27f, 0.3f, moonProgress) * (1f - smoothStep(0.7f, 0.73f, moonProgress))
-            sunLight.setColor(moonColor, moonIntensity * 0.06f)
+            val moonIntensity = smoothStep(0.0f, 0.06f, moonProgress) * (1f - smoothStep(0.94f, 1.0f, moonProgress))
+            sceneLight.setColor(moonColor, moonIntensity * 0.07f)
+            sceneLight.setDirectional(moonDirection)
         }
-        sunLight.setDirectional(sunDirection)
+
     }
 
-    private fun computeLightDirection(timeOfDay: Float, result: MutableVec3f = MutableVec3f(), forceSun: Boolean = false): Vec3f {
-        return if (forceSun || timeOfDay > 0.23f && timeOfDay < 0.77f) {
-            // daytime -> light is the sun
-            sunOrientation
-                .setIdentity()
-                .rotate(30f, Vec3f.Z_AXIS)
-                .rotate((timeOfDay - 0.25f) * 360f, Vec3f.X_AXIS)
-            sunOrientation.transform(result.set(0f, 0f, 1f))
-        } else {
-            // nighttime -> light is the moon
-            sunOrientation
-                .setIdentity()
-                .rotate(45f, Vec3f.Z_AXIS)
-                .rotate((moonProgress(timeOfDay) - 0.25f) * 360f, Vec3f.X_AXIS)
-            sunOrientation.transform(result.set(0f, 0f, 1f))
-        }
+    private fun computeLightDirection(tilt: Float, progress: Float, orientation: Mat3f, direction: MutableVec3f = MutableVec3f()): Vec3f {
+        orientation
+            .setIdentity()
+            .rotate(tilt, Vec3f.Z_AXIS)
+            .rotate(progress * 180f, Vec3f.X_AXIS)
+        return orientation.transform(direction.set(0f, 0f, 1f))
     }
 
-    private fun moonProgress(timeOfDay: Float): Float {
+    fun sunProgress(timeOfDay: Float): Float {
+        return (timeOfDay - 0.26f) * 2.083f
+    }
+
+    fun moonProgress(timeOfDay: Float): Float {
         val nightTime = (timeOfDay + 0.5f) % 1f
-        return ((nightTime - 0.5f) * 1.05f + 0.5f).clamp(0f, 1f)
+        return (nightTime - 0.26f) * 2.083f
+    }
+
+    private class SkyObjectShader(isPointShader: Boolean = false, colorBlock: ColorBlockConfig.() -> Unit)
+        : KslUnlitShader(config(isPointShader, colorBlock)) {
+
+        val orientation: Mat3f by uniformMat3f("uOrientation", Mat3f().setIdentity())
+        var alpha: Float by uniform1f("uAlpha", 1f)
+
+        companion object {
+            fun config(isPointShader: Boolean, colorBlock: ColorBlockConfig.() -> Unit) = Config().apply {
+                color {
+                    colorBlock()
+                }
+                pipeline {
+                    cullMethod = CullMethod.NO_CULLING
+                    isWriteDepth = false
+                }
+                modelCustomizer = {
+                    vertexStage {
+                        main {
+                            val mvpMat = mvpMatrix().matrix
+                            val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
+                            val orientation = uniformMat3("uOrientation")
+                            outPosition set (mvpMat * float4Value(orientation * localPos, 0f)).float4("xyww")
+                            if (isPointShader) {
+                                outPointSize set vertexAttribFloat1(PointMesh.ATTRIB_POINT_SIZE.name)
+                            }
+                        }
+                    }
+                    fragmentStage {
+                        main {
+                            val baseColorPort = getFloat4Port("baseColor")
+                            val alphaColor = float4Var(baseColorPort.input.input)
+                            alphaColor.a *= uniformFloat1("uAlpha")
+                            baseColorPort.input(alphaColor)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val SUN_TILT = 30f
+        private const val MOON_TILT = 45f
+        private val moonColor = MdColor.BLUE toneLin 200
     }
 
     class WeightedEnvMaps(var envA: EnvironmentMaps, var envB: EnvironmentMaps) {
