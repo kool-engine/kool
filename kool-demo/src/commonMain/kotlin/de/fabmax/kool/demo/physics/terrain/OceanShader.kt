@@ -192,8 +192,11 @@ object OceanShader {
 
                 val waterColor = mix(oceanFloorColor, baseColor, oceanAlpha)
                 val foamColor = float4Var(Vec4f(1f).const)
-                oceanDepth1 set oceanDepth1 * clamp(dot(camToFrag, worldNormal), 0.5f.const, 1f.const)
-                foamColor.a set 1f.const - smoothStep(0.2f.const, 0.25f.const, oceanDepth1)
+                val correctedOceanDepth = floatVar(oceanDepth1 * clamp(dot(camToFrag, worldNormal), 0.5f.const, 1f.const))
+                foamColor.a set (1f.const - smoothStep(0.5f.const, 1.5f.const, correctedOceanDepth)) * step((-0.1f).const, oceanDepth1)
+                if (material is PbrMaterialBlock) {
+                    material.inRoughness(foamColor.a * 0.3f.const + 0.1f.const)
+                }
 
                 baseColorPort.input(float4Value(mix(waterColor, foamColor, foamColor.a).rgb, 1f))
             }
