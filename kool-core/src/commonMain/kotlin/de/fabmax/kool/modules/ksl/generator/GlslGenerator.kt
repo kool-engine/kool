@@ -389,6 +389,7 @@ open class GlslGenerator : KslGenerator() {
             KslVertexStage.NAME_IN_VERTEX_INDEX -> "gl_VertexID"
             KslVertexStage.NAME_IN_INSTANCE_INDEX -> "gl_InstanceID"
             KslVertexStage.NAME_OUT_POSITION -> "gl_Position"
+            KslVertexStage.NAME_OUT_POINT_SIZE -> "gl_PointSize"
 
             KslFragmentStage.NAME_IN_FRAG_POSITION -> "gl_FragCoord"
             KslFragmentStage.NAME_IN_IS_FRONT_FACING -> "gl_FrontFacing"

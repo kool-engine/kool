@@ -127,7 +127,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     }
 
     companion object {
-        private val nightSkyColor = Color(0.02f, 0.07f, 0.15f).scaleRgb(2f, MutableColor()).toLinear()
+        private val nightSkyColor = Color(0.02f, 0.07f, 0.15f).scaleRgb(1.5f, MutableColor()).toLinear()
     }
 
     private class SkyShader(opticalDepthLut: Texture2d) : ModeledShader(model()) {

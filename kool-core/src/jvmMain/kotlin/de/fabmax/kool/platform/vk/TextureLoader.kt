@@ -215,7 +215,7 @@ object TextureLoader {
 
     private fun reshape(dstFormat: TexFormat, img: TextureData): ByteBuffer {
         if (img.data !is Uint8BufferImpl) {
-            TODO("Other texture data buffers than Uint8 are not yet implemented")
+            TODO("Other texture data buffers than Uint8 are not yet implemented, provided: ${img.data::class}, dstFormat: $dstFormat")
         }
         val imgData = img.data as Uint8BufferImpl
 

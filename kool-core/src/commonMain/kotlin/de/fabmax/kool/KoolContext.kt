@@ -8,8 +8,10 @@ import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Profiling
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
+import kotlinx.coroutines.CompletableDeferred
 import kotlin.math.roundToInt
 
 /**
@@ -34,6 +36,16 @@ abstract class KoolContext {
         internal set(value) {
             field = value
             onWindowFocusChanged.forEach { it(this) }
+        }
+
+    var isProfileRenderPasses = false
+        set(value) {
+            field = value
+            if (value) {
+                Profiling.enableAutoPrint(10.0, this)
+            } else {
+                Profiling.disableAutoPrint(this)
+            }
         }
 
     @Deprecated("Use windowScale instead", replaceWith = ReplaceWith("windowScale * 96f"))
@@ -114,6 +126,14 @@ abstract class KoolContext {
         delayedCallbacks += DelayedCallback(frameIdx + frames, callback)
     }
 
+    suspend fun delayFrames(frames: Int) {
+        if (frames > 0) {
+            val lock = CompletableDeferred<Any>()
+            runDelayed(frames) { lock.complete(Unit) }
+            lock.await()
+        }
+    }
+
     internal fun disposePipeline(pipeline: Pipeline) {
         disposablePipelines += pipeline
     }
@@ -127,6 +147,10 @@ abstract class KoolContext {
     }
 
     protected fun render(dt: Double) {
+        if (isProfileRenderPasses) {
+            Profiling.enter("!main-render-loop")
+        }
+
         if (delayedCallbacks.isNotEmpty()) {
             for (i in delayedCallbacks.indices.reversed()) {
                 val callback = delayedCallbacks[i]
@@ -166,6 +190,10 @@ abstract class KoolContext {
             if (scenes[i].isVisible) {
                 scenes[i].renderScene(this)
             }
+        }
+
+        if (isProfileRenderPasses) {
+            Profiling.exit("!main-render-loop")
         }
     }
 

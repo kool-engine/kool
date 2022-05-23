@@ -9,8 +9,13 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
 
-fun KslProgram.mvpMatrix() = MvpMatrixData(this)
-fun KslProgram.modelMatrix() = ModelMatrixData(this)
+fun KslProgram.mvpMatrix(): MvpMatrixData {
+    return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)
+}
+
+fun KslProgram.modelMatrix(): ModelMatrixData {
+    return (dataBlocks.find { it is ModelMatrixData } as? ModelMatrixData) ?: ModelMatrixData(this)
+}
 
 abstract class MatrixData(program: KslProgram, val uniformName: String) : KslDataBlock, KslShaderListener {
     val matrix = program.uniformMat4(uniformName)

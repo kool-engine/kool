@@ -55,11 +55,13 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
     val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslTypeInt1, false))
     val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslTypeInt1, false))
     val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslTypeFloat4, true))
+    val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslTypeFloat1, true))
 
     init {
         globalScope.definedStates += inVertexIndex.value
         globalScope.definedStates += inInstanceIndex.value
         globalScope.definedStates += outPosition.value
+        globalScope.definedStates += outPointSize.value
     }
 
     private inline fun <reified T: KslVertexAttribute<*>> getOrCreateAttribute(name: String, create: () -> T): T {
@@ -104,6 +106,7 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
         const val NAME_IN_VERTEX_INDEX = "inVertexIndex"
         const val NAME_IN_INSTANCE_INDEX = "inInstanceIndex"
         const val NAME_OUT_POSITION = "outPosition"
+        const val NAME_OUT_POINT_SIZE = "outPointSize"
     }
 }
 

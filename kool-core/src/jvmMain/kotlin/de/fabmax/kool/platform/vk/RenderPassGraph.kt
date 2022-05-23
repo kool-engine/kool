@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.platform.Lwjgl3Context
 
@@ -47,7 +48,11 @@ class RenderPassGraph {
                     if (offscreen.isEnabled) {
                         remainingPasses.add(offscreen)
                         // add additional cmd buffers for each offscreen pass (ping-pong passes can resolve to multiple passes)
-                        requiredCommandBuffers += if (offscreen is OffscreenRenderPass2dPingPong) offscreen.pingPongPasses else 1
+                        requiredCommandBuffers += when (offscreen) {
+                            is OffscreenRenderPass2dPingPong -> offscreen.pingPongPasses
+                            is OffscreenRenderPassCube -> 6
+                            else -> 1
+                        }
                     } else {
                         processedPasses.add(offscreen)
                     }

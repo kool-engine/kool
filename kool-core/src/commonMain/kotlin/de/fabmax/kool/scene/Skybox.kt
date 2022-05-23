@@ -62,7 +62,10 @@ object Skybox {
     }
 
     class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion)
-        : KslShader(Model(colorSpaceConversion), PipelineConfig().apply { cullMethod = CullMethod.CULL_FRONT_FACES }) {
+        : KslShader(Model(colorSpaceConversion), PipelineConfig().apply {
+            cullMethod = CullMethod.CULL_FRONT_FACES
+            isWriteDepth = false
+        }) {
 
         val skies: Array<TextureCube?> by textureCubeArray("tSkies", 2)
         var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
