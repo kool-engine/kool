@@ -16,8 +16,6 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import kotlin.collections.listOf
-import kotlin.collections.plusAssign
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.acos
@@ -60,7 +58,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         isFrustumChecked = false
         generate {
             rect {
-                size.set(0.15f, 0.15f)
+                size.set(0.17f, 0.17f)
                 origin.set(size.x * -0.5f, size.y * -0.5f, -1f)
             }
         }
@@ -128,8 +126,8 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     suspend fun generateMaps(terrainDemo: TerrainDemo, parentScene: Scene, ctx: KoolContext) {
         val hours = listOf(4f, 5f, 5.5f, 6f, 6.5f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f, 17f, 17.5f, 18f, 18.5f, 19f, 20f)
-        for (h in hours) {
-            terrainDemo.showLoadText("Creating sky ($h:00)...", 0)
+        hours.forEachIndexed { i, h ->
+            terrainDemo.showLoadText("Creating sky (${i * 100f / hours.lastIndex}%)...", 0)
             precomputeSky(h / 24f, parentScene, ctx)
         }
         weightedEnvs = WeightedEnvMaps(skies[0.5f]!!.envMaps, skies[0.5f]!!.envMaps)
@@ -137,7 +135,6 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
     private suspend fun precomputeSky(timeOfDay: Float, parentScene: Scene, ctx: KoolContext) {
         val sunDir = computeLightDirection(SUN_TILT, sunProgress(timeOfDay), Mat3f())
-        println("$timeOfDay, ${sunProgress(timeOfDay)} -> $sunDir")
         val sky = SkyCubeIblSystem(parentScene)
         sky.skyPass.elevation = 90f - acos(-sunDir.y).toDeg()
         sky.skyPass.azimuth = atan2(sunDir.x, -sunDir.z).toDeg()

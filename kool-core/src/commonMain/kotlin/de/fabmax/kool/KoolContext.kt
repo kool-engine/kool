@@ -151,6 +151,10 @@ abstract class KoolContext {
             Profiling.enter("!main-render-loop")
         }
 
+        this.deltaT = dt.toFloat()
+        time += dt
+        frameIdx++
+
         if (delayedCallbacks.isNotEmpty()) {
             for (i in delayedCallbacks.indices.reversed()) {
                 val callback = delayedCallbacks[i]
@@ -160,10 +164,6 @@ abstract class KoolContext {
                 }
             }
         }
-
-        this.deltaT = dt.toFloat()
-        time += dt
-        frameIdx++
 
         frameTimes[frameIdx % frameTimes.size] = dt
         var sum = 0.0

@@ -58,7 +58,7 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
     }
 
     companion object {
-        const val OCEAN_FLOOR_HEIGHT_THRESH = 3f
+        const val OCEAN_FLOOR_HEIGHT_THRESH = 4f
         const val RENDER_SIZE_FACTOR = 0.5f
     }
 }

@@ -7,15 +7,17 @@ class RaycastResult {
     val hitPosition = MutableVec3f()
     val hitNormal = MutableVec3f()
     var hitDistance = -1f
-    var hitActor: RigidActor? = null
+    var nearestActor: RigidActor? = null
+    val hitActors = mutableListOf<RigidActor>()
 
     val isHit: Boolean
-        get() = hitActor != null
+        get() = nearestActor != null
 
     fun clear() {
         hitPosition.set(Vec3f.ZERO)
         hitNormal.set(Vec3f.ZERO)
         hitDistance = -1f
-        hitActor = null
+        nearestActor = null
+        hitActors.clear()
     }
 }

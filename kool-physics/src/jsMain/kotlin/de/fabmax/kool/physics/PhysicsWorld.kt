@@ -116,6 +116,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
     }
 
     actual fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean {
+        result.clear()
         MemoryStack.stackPush().use { mem ->
             val ori = ray.origin.toPxVec3(mem.createPxVec3())
             val dir = ray.direction.toPxVec3(mem.createPxVec3())
@@ -125,18 +126,17 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
                 for (i in 0 until raycastResult.nbAnyHits) {
                     val hit = raycastResult.getAnyHit(i)
+                    pxActors[hit.actor.ptr]?.let { result.hitActors += it }
                     if (hit.distance < minDist) {
                         minDist = hit.distance
                         nearestHit = hit
                     }
                 }
                 if (nearestHit != null) {
-                    result.hitActor = pxActors[nearestHit.actor.ptr]
+                    result.nearestActor = pxActors[nearestHit.actor.ptr]
                     result.hitDistance = minDist
                     nearestHit.position.toVec3f(result.hitPosition)
                     nearestHit.normal.toVec3f(result.hitNormal)
-                } else {
-                    result.clear()
                 }
             }
         }

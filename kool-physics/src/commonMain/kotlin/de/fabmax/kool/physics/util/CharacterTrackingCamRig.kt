@@ -2,6 +2,8 @@ package de.fabmax.kool.physics.util
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RaycastResult
 import de.fabmax.kool.scene.Group
 import kotlin.math.*
 
@@ -21,10 +23,14 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
     var minZoom = 0.5f
     var maxZoom = 25f
 
+    private var actualZoom = zoom
+
     var trackedPose = Mat4f()
     val pivotPoint = MutableVec3f()
 
     val lookDirection = MutableVec3f(Vec3f.NEG_Z_AXIS)
+
+    var zoomModifier: (Float) -> Float = { it }
 
     private val poseOrigin = MutableVec3f()
     private var lookPhi = 0f
@@ -37,7 +43,28 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
             if (isCursorLocked) {
                 handlePointerInput()
             }
-            updateTracking()
+            updateTracking(it.deltaT)
+        }
+    }
+
+    fun setupCollisionAwareCamZoom(world: PhysicsWorld, hitOffset: Float = 0.5f) {
+        val testRay = Ray()
+        val rayResult = RaycastResult()
+
+        zoomModifier = { desiredZoom ->
+            var zoom = desiredZoom
+            transform.transform(testRay.origin.set(Vec3f.ZERO))
+            transform.transform(testRay.direction.set(-0.15f, -0.1f, 1f).norm(), 0f)
+            if (world.raycast(testRay, desiredZoom, rayResult)) {
+                val hitDist = rayResult.hitPosition.distance(testRay.origin)
+                zoom = max(minZoom, hitDist - hitOffset)
+            }
+            transform.transform(testRay.direction.set(0.15f, -0.1f, 1f).norm(), 0f)
+            if (world.raycast(testRay, desiredZoom, rayResult)) {
+                val hitDist = rayResult.hitPosition.distance(testRay.origin)
+                zoom = min(zoom, max(minZoom, hitDist - hitOffset))
+            }
+            zoom
         }
     }
 
@@ -61,7 +88,7 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         }
     }
 
-    private fun updateTracking() {
+    private fun updateTracking(deltaT: Float) {
         trackedPose.transform(poseOrigin.set(Vec3f.ZERO))
 
         setIdentity()
@@ -69,6 +96,10 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         rotate(lookPhi.toDeg() + 90f, Vec3f.Y_AXIS)
         translate(pivotPoint)
         rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
-        scale(zoom)
+
+        val modZoom = zoomModifier(zoom)
+        val wActual = (30f * deltaT).clamp(0f, 0.99f)
+        actualZoom = actualZoom * wActual + modZoom * (1f - wActual)
+        scale(actualZoom)
     }
 }

@@ -532,7 +532,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         fun initDrag() {
             physicsWorld.raycast(pickRay, 100f, hitResult)
-            hitActor = hitResult.hitActor as? RigidBody
+            hitActor = hitResult.nearestActor as? RigidBody
             hitActor?.let { actor ->
                 initGlobalPos.set(hitResult.hitPosition)
                 forceDragPos.set(hitResult.hitPosition)

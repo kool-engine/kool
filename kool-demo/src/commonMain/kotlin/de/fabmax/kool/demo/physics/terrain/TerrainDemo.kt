@@ -235,7 +235,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         //ctx.isProfileRenderPasses = true
-        mainRenderPass.clearColor = MdColor.LIGHT_BLUE
+        // no clear needed, we repaint the entire frame, each frame
+        mainRenderPass.clearColor = null
 
         // lighting
         lighting.apply {
@@ -283,38 +284,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         //defaultCamTransform()
 
         // setup camera tracking player
-        camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
-            camera.setClipRange(0.5f, 5000f)
-            trackedPose = physicsObjects.playerController.controller.actor.transform
-            +camera
-            minZoom = 0.75f
-            maxZoom = 100f
-            pivotPoint.set(0.25f, 0.75f, 0f)
-
-            // hardcoded start look direction
-            lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
-
-            // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
-            // consume the scroll event
-            onUpdate.add(0) { ev ->
-                // use camera look direction to control player move direction
-                physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
-
-                val gun = physicsObjects.playerController.tractorGun
-                val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
-                if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
-                    ptr.consume(InputManager.CONSUMED_SCROLL)
-                    if (ctx.inputMgr.isShiftDown) {
-                        gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
-                    } else {
-                        gun.rotationTorque += ptr.deltaScroll.toFloat()
-                    }
-                }
-            }
-        }
-        // don't forget to add the cam rig to the scene
-        +camRig
-        physicsObjects.playerController.tractorGun.camRig = camRig
+        setupCamera(ctx)
 
         updateTerrainShader()
         updateOceanShader()
@@ -338,6 +308,44 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 updateSky(sky.weightedEnvs)
             }
         }
+    }
+
+    private fun Scene.setupCamera(ctx: KoolContext) {
+        camRig = CharacterTrackingCamRig(ctx.inputMgr).apply {
+            camera.setClipRange(0.5f, 5000f)
+            trackedPose = physicsObjects.playerController.controller.actor.transform
+            +camera
+            minZoom = 0.75f
+            maxZoom = 100f
+            pivotPoint.set(0.25f, 0.75f, 0f)
+
+            setupCollisionAwareCamZoom(physicsObjects.world)
+
+            // hardcoded start look direction
+            lookDirection.set(-0.87f, 0.22f, 0.44f).norm()
+
+            // make sure onUpdate listener is called before internal one of CharacterTrackingCamRig, so we can
+            // consume the scroll event if the tractor gun is active
+            onUpdate.add(0) { ev ->
+                // use camera look direction to control player move direction
+                physicsObjects.playerController.frontHeading = atan2(lookDirection.x, -lookDirection.z).toDeg()
+
+                val gun = physicsObjects.playerController.tractorGun
+                val ptr = ev.ctx.inputMgr.pointerState.primaryPointer
+                if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
+                    ptr.consume(InputManager.CONSUMED_SCROLL)
+                    if (ctx.inputMgr.isShiftDown) {
+                        gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
+                    } else {
+                        gun.rotationTorque += ptr.deltaScroll.toFloat()
+                    }
+                }
+            }
+        }
+        // don't forget to add the cam rig to the scene
+        +camRig
+        // player / tractor gun needs the camRig to know where it is aiming at
+        physicsObjects.playerController.tractorGun.camRig = camRig
     }
 
     private fun updateSsaoEnabled() {

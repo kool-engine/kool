@@ -124,6 +124,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
     }
 
     actual fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean {
+        result.clear()
         MemoryStack.stackPush().use { mem ->
             synchronized(raycastResult) {
                 val ori = ray.origin.toPxVec3(mem.createPxVec3())
@@ -134,24 +135,36 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
                     for (i in 0 until raycastResult.nbAnyHits) {
                         val hit = raycastResult.getAnyHit(i)
+                        pxActors[hit.actor]?.let { result.hitActors += it }
                         if (hit.distance < minDist) {
                             minDist = hit.distance
                             nearestHit = hit
                         }
                     }
                     if (nearestHit != null) {
-                        result.hitActor = pxActors[nearestHit.actor]
+                        result.nearestActor = pxActors[nearestHit.actor]
                         result.hitDistance = minDist
                         nearestHit.position.toVec3f(result.hitPosition)
                         nearestHit.normal.toVec3f(result.hitNormal)
-                    } else {
-                        result.clear()
                     }
                 }
             }
         }
         return result.isHit
     }
+
+//    fun sweepTest(testGeom: CollisionGeometry, geomPose: Mat4f, testDirection: Vec3f, distance: Float) {
+//        MemoryStack.stackPush().use { mem ->
+//            val sweepPose = geomPose.toPxTransform(mem.createPxTransform())
+//            val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
+//            val queryFlags = mem.createPxHitFlags(PxQueryFlagEnum.eSTATIC or PxQueryFlagEnum.eDYNAMIC)
+//            val hit = PxSweepHit()
+//            if (PxSceneQueryExt.sweepSingle(pxScene, testGeom.pxGeometry, sweepPose, sweepDir, distance, queryFlags, hit)) {
+//                println("sweep hit: ${hit.distance}")
+//            }
+//            hit.destroy()
+//        }
+//    }
 
     private inner class SimEventCallback : JavaSimulationEventCallback() {
         val contacts = Vector_PxContactPairPoint(64)

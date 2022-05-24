@@ -87,7 +87,7 @@ object GrassShader {
         with(TerrainDemo) {
             iblConfig()
         }
-        roughness(1f)
+        roughness(0.8f)
         grassShaderConfig(grassColor, shadowMap, ssaoMap, isInstanced)
     }
 
