@@ -118,7 +118,6 @@ fun MemoryStack.createPxConvexFlags(flags: Int) = PxConvexFlags.createAt(this, M
 fun MemoryStack.createPxConvexMeshGeometryFlags(flags: Int) = PxConvexMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxHitFlags(flags: Int) = PxHitFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxMeshGeometryFlags(flags: Int) = PxMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
-//fun MemoryStack.createPxQueryFlags(flags: Int) = PxQueryFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxRevoluteJointFlags(flags: Int) = PxRevoluteJointFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())

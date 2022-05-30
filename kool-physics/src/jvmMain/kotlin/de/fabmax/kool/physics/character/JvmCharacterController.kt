@@ -11,11 +11,13 @@ import physx.character.PxControllerFilters
 import physx.character.PxExtendedVec3
 import physx.common.PxVec3
 
-class JvmCharacterController(private val pxController: PxController,
-                             private val hitListener: ControllerHitListener,
-                             private val behaviorCallback: ControllerBahaviorCallback,
-                             manager: CharacterControllerManager,
-                             world: PhysicsWorld) : CharacterController(manager, world) {
+class JvmCharacterController(
+    private val pxController: PxController,
+    private val hitListener: ControllerHitListener,
+    private val behaviorCallback: ControllerBahaviorCallback,
+    manager: CharacterControllerManager,
+    world: PhysicsWorld) : CharacterController(manager, world
+) {
 
     private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
@@ -25,6 +27,8 @@ class JvmCharacterController(private val pxController: PxController,
     init {
         hitListener.controller = this
         behaviorCallback.controller = this
+
+        println("controller actor: ${pxController.actor.address}")
     }
 
     override var position: Vec3d

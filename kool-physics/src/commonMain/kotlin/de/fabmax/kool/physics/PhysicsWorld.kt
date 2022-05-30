@@ -1,9 +1,11 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
@@ -12,7 +14,8 @@ expect class PhysicsWorld(scene: Scene? = null, isContinuousCollisionDetection: 
     var gravity: Vec3f
     val activeActors: Int
 
-    fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean
+    fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean
+    fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean
 }
 
 abstract class CommonPhysicsWorld : Releasable {

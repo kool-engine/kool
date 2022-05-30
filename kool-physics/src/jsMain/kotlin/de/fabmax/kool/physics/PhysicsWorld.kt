@@ -1,9 +1,11 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
@@ -12,7 +14,10 @@ import physx.*
 actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousCollisionDetection: Boolean, numWorkers: Int) : CommonPhysicsWorld(), Releasable {
     val pxScene: PxScene
 
+    private val cpuDispatcher: PxDefaultCpuDispatcher
+
     private val raycastResult = PxRaycastBuffer10()
+    private val sweepResult = PxSweepBuffer10()
     private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
@@ -29,6 +34,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
 
     init {
         Physics.checkIsLoaded()
+        cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
 
         MemoryStack.stackPush().use { mem ->
             var flags = PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS
@@ -38,7 +44,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             val sceneDesc = mem.createPxSceneDesc(Physics.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
-            sceneDesc.cpuDispatcher = Physics.Px.DefaultCpuDispatcherCreate(0)
+            sceneDesc.cpuDispatcher = cpuDispatcher
             sceneDesc.filterShader = Physics.Px.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
             sceneDesc.flags.set(flags)
@@ -113,9 +119,11 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
+        sweepResult.destroy()
+        cpuDispatcher.destroy()
     }
 
-    actual fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean {
+    actual fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             val ori = ray.origin.toPxVec3(mem.createPxVec3())
@@ -123,17 +131,52 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
             if (pxScene.raycast(ori, dir, maxDistance, raycastResult)) {
                 var minDist = maxDistance
                 var nearestHit: PxRaycastHit? = null
+                var nearestActor: RigidActor? = null
 
                 for (i in 0 until raycastResult.nbAnyHits) {
                     val hit = raycastResult.getAnyHit(i)
-                    pxActors[hit.actor.ptr]?.let { result.hitActors += it }
-                    if (hit.distance < minDist) {
+                    val actor = pxActors[hit.actor.ptr]
+                    if (actor != null && hit.distance < minDist) {
+                        result.hitActors += actor
                         minDist = hit.distance
                         nearestHit = hit
+                        nearestActor = actor
                     }
                 }
                 if (nearestHit != null) {
-                    result.nearestActor = pxActors[nearestHit.actor.ptr]
+                    result.nearestActor = nearestActor
+                    result.hitDistance = minDist
+                    nearestHit.position.toVec3f(result.hitPosition)
+                    nearestHit.normal.toVec3f(result.hitNormal)
+                }
+            }
+        }
+        return result.isHit
+    }
+
+    actual fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
+        result.clear()
+        MemoryStack.stackPush().use { mem ->
+            val sweepPose = geometryPose.toPxTransform(mem.createPxTransform())
+            val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
+
+            if (pxScene.sweep(testGeometry.pxGeometry, sweepPose, sweepDir, distance, sweepResult)) {
+                var minDist = distance
+                var nearestHit: PxSweepHit? = null
+                var nearestActor: RigidActor? = null
+
+                for (i in 0 until sweepResult.nbAnyHits) {
+                    val hit = sweepResult.getAnyHit(i)
+                    val actor = pxActors[hit.actor.ptr]
+                    if (actor != null && hit.distance < minDist) {
+                        result.hitActors += actor
+                        minDist = hit.distance
+                        nearestHit = hit
+                        nearestActor = actor
+                    }
+                }
+                if (nearestHit != null) {
+                    result.nearestActor = nearestActor
                     result.hitDistance = minDist
                     nearestHit.position.toVec3f(result.hitPosition)
                     nearestHit.normal.toVec3f(result.hitNormal)

@@ -3,7 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 
-class RaycastResult {
+class HitResult {
     val hitPosition = MutableVec3f()
     val hitNormal = MutableVec3f()
     var hitDistance = -1f

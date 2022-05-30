@@ -2,8 +2,9 @@ package de.fabmax.kool.physics.util
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RaycastResult
+import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.Group
 import kotlin.math.*
 
@@ -36,6 +37,9 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
     private var lookPhi = 0f
     private var lookTheta = PI.toFloat() / 2f
 
+    private val hitSweepGeometry by lazy { BoxGeometry(Vec3f(1f, 1f, 0.1f)) }
+    private val hitSweepGeometryPose = Mat4f()
+
     init {
         isCursorLocked = enableCursorLock
 
@@ -47,22 +51,16 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         }
     }
 
-    fun setupCollisionAwareCamZoom(world: PhysicsWorld, hitOffset: Float = 0.5f) {
-        val testRay = Ray()
-        val rayResult = RaycastResult()
+    fun setupCollisionAwareCamZoom(world: PhysicsWorld) {
+        val testDir = MutableVec3f()
+        val hitResult = HitResult()
 
         zoomModifier = { desiredZoom ->
             var zoom = desiredZoom
-            transform.transform(testRay.origin.set(Vec3f.ZERO))
-            transform.transform(testRay.direction.set(-0.15f, -0.1f, 1f).norm(), 0f)
-            if (world.raycast(testRay, desiredZoom, rayResult)) {
-                val hitDist = rayResult.hitPosition.distance(testRay.origin)
-                zoom = max(minZoom, hitDist - hitOffset)
-            }
-            transform.transform(testRay.direction.set(0.15f, -0.1f, 1f).norm(), 0f)
-            if (world.raycast(testRay, desiredZoom, rayResult)) {
-                val hitDist = rayResult.hitPosition.distance(testRay.origin)
-                zoom = min(zoom, max(minZoom, hitDist - hitOffset))
+            transform.transform(testDir.set(0f, 0f, 1f).norm(), 0f)
+            hitSweepGeometryPose.set(transform)
+            if (world.sweepTest(hitSweepGeometry, hitSweepGeometryPose, testDir, desiredZoom, hitResult)) {
+                zoom = max(minZoom, hitResult.hitDistance)
             }
             zoom
         }
@@ -98,8 +96,8 @@ class CharacterTrackingCamRig(private val inputManager: InputManager, enableCurs
         rotate(lookTheta.toDeg() - 90f, Vec3f.X_AXIS)
 
         val modZoom = zoomModifier(zoom)
-        val wActual = (30f * deltaT).clamp(0f, 0.99f)
-        actualZoom = actualZoom * wActual + modZoom * (1f - wActual)
+        val wMod = (15f * deltaT).clamp(0.05f, 0.95f)
+        actualZoom = modZoom * wMod + actualZoom * (1f - wMod)
         scale(actualZoom)
     }
 }

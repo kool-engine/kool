@@ -1,9 +1,11 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.articulations.Articulation
+import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
@@ -23,6 +25,7 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
     private val cpuDispatcher: PxDefaultCpuDispatcher
 
     private val raycastResult = PxRaycastBuffer10()
+    private val sweepResult = PxSweepBuffer10()
     private val bufPxGravity = Vec3f(0f, -9.81f, 0f).toPxVec3(PxVec3())
     private val bufGravity = MutableVec3f()
     actual var gravity: Vec3f
@@ -120,10 +123,11 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
+        sweepResult.destroy()
         cpuDispatcher.destroy()
     }
 
-    actual fun raycast(ray: Ray, maxDistance: Float, result: RaycastResult): Boolean {
+    actual fun raycast(ray: Ray, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
         MemoryStack.stackPush().use { mem ->
             synchronized(raycastResult) {
@@ -132,17 +136,20 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
                 if (pxScene.raycast(ori, dir, maxDistance, raycastResult)) {
                     var minDist = maxDistance
                     var nearestHit: PxRaycastHit? = null
+                    var nearestActor: RigidActor? = null
 
                     for (i in 0 until raycastResult.nbAnyHits) {
                         val hit = raycastResult.getAnyHit(i)
-                        pxActors[hit.actor]?.let { result.hitActors += it }
-                        if (hit.distance < minDist) {
+                        val actor = pxActors[hit.actor]
+                        if (actor != null && hit.distance < minDist) {
+                            result.hitActors += actor
                             minDist = hit.distance
                             nearestHit = hit
+                            nearestActor = actor
                         }
                     }
                     if (nearestHit != null) {
-                        result.nearestActor = pxActors[nearestHit.actor]
+                        result.nearestActor = nearestActor
                         result.hitDistance = minDist
                         nearestHit.position.toVec3f(result.hitPosition)
                         nearestHit.normal.toVec3f(result.hitNormal)
@@ -153,18 +160,37 @@ actual class PhysicsWorld actual constructor(scene: Scene?, val isContinuousColl
         return result.isHit
     }
 
-//    fun sweepTest(testGeom: CollisionGeometry, geomPose: Mat4f, testDirection: Vec3f, distance: Float) {
-//        MemoryStack.stackPush().use { mem ->
-//            val sweepPose = geomPose.toPxTransform(mem.createPxTransform())
-//            val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
-//            val queryFlags = mem.createPxHitFlags(PxQueryFlagEnum.eSTATIC or PxQueryFlagEnum.eDYNAMIC)
-//            val hit = PxSweepHit()
-//            if (PxSceneQueryExt.sweepSingle(pxScene, testGeom.pxGeometry, sweepPose, sweepDir, distance, queryFlags, hit)) {
-//                println("sweep hit: ${hit.distance}")
-//            }
-//            hit.destroy()
-//        }
-//    }
+    actual fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
+        result.clear()
+        MemoryStack.stackPush().use { mem ->
+            val sweepPose = geometryPose.toPxTransform(mem.createPxTransform())
+            val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
+
+            if (pxScene.sweep(testGeometry.pxGeometry, sweepPose, sweepDir, distance, sweepResult)) {
+                var minDist = distance
+                var nearestHit: PxSweepHit? = null
+                var nearestActor: RigidActor? = null
+
+                for (i in 0 until sweepResult.nbAnyHits) {
+                    val hit = sweepResult.getAnyHit(i)
+                    val actor = pxActors[hit.actor]
+                    if (actor != null && hit.distance < minDist) {
+                        result.hitActors += actor
+                        minDist = hit.distance
+                        nearestHit = hit
+                        nearestActor = actor
+                    }
+                }
+                if (nearestHit != null) {
+                    result.nearestActor = nearestActor
+                    result.hitDistance = minDist
+                    nearestHit.position.toVec3f(result.hitPosition)
+                    nearestHit.normal.toVec3f(result.hitNormal)
+                }
+            }
+        }
+        return result.isHit
+    }
 
     private inner class SimEventCallback : JavaSimulationEventCallback() {
         val contacts = Vector_PxContactPairPoint(64)
