@@ -75,7 +75,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
         for (y in 0 until 8) {
             for (x in 0 until 8) {
                 // center 8x8 tiles at scale 1
-                if (terrainTiles.getMinElevation(x, y) < 0f) {
+                if (terrainTiles.getMinElevation(x, y) < OCEAN_FLOOR_HEIGHT_THRESH) {
                     tilePoses += OceanTilePose(Vec3f((x - 3.5f) * TILE_SIZE, 0f, (y - 3.5f) * TILE_SIZE), 1f)
                 }
 
@@ -116,5 +116,6 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
     companion object {
         const val TILE_SIZE = 64f
         const val TILE_HALF_COUNT = 12
+        const val OCEAN_FLOOR_HEIGHT_THRESH = 3f
     }
 }

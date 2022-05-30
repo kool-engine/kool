@@ -502,7 +502,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private inner class ForceHelper : Scene.DragHandler {
         val pickRay = Ray()
-        val hitResult = RaycastResult()
+        val hitResult = HitResult()
         var hitActor: RigidBody? = null
 
         val initGlobalPos = MutableVec3f()

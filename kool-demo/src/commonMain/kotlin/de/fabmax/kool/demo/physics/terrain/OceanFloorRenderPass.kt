@@ -25,7 +25,7 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
         (drawNode as Group).apply {
             for (i in 0 until TerrainTiles.TILE_CNT_XY) {
                 for (j in 0 until TerrainTiles.TILE_CNT_XY) {
-                    if (terrainTiles.getMinElevation(i, j) < OCEAN_FLOOR_HEIGHT_THRESH) {
+                    if (terrainTiles.getMinElevation(i, j) < Ocean.OCEAN_FLOOR_HEIGHT_THRESH) {
                         +terrainTiles.getTile(i, j)
                     }
                 }
@@ -58,7 +58,6 @@ class OceanFloorRenderPass(mainScene: Scene, val terrainTiles: TerrainTiles) : O
     }
 
     companion object {
-        const val OCEAN_FLOOR_HEIGHT_THRESH = 4f
         const val RENDER_SIZE_FACTOR = 0.5f
     }
 }

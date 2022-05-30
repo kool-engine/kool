@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.RaycastResult
+import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.scene.Scene
@@ -72,7 +72,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
 
     private fun pickUp(): Boolean {
         val ray = Ray(mainScene.camera.globalPos, mainScene.camera.globalLookDir)
-        val hitResult = RaycastResult()
+        val hitResult = HitResult()
         if (physics.world.raycast(ray, tractorBeam.range, hitResult) && hitResult.nearestActor?.tags?.hasTag("isBox") == true) {
             tractorBox = hitResult.nearestActor as? RigidDynamic
             return true

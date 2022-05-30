@@ -61,7 +61,6 @@ kotlin {
                 runtimeOnly(DepsJvm.lwjglNatives("shaderc"))
                 runtimeOnly(DepsJvm.lwjglNatives("nfd"))
 
-                implementation("de.fabmax:physx-jni:1.0.0")
                 runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-windows")
                 runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-linux")
                 runtimeOnly("de.fabmax:physx-jni:1.0.0:natives-macos")
