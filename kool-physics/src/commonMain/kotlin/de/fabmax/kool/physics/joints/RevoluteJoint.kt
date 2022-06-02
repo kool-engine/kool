@@ -6,7 +6,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.RigidActor
 
-expect class RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f) : CommonRevoluteJoint, Joint {
+expect class RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f) : Joint {
     val bodyA: RigidActor
     val bodyB: RigidActor
 
