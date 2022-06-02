@@ -34,7 +34,7 @@ import kotlin.math.max
 class JointsDemo : DemoScene("Physics - Joints") {
 
     private var physicsWorld: PhysicsWorld? = null
-    private val physicsStepper = SimplePhysicsStepper()
+    private val physicsStepper = ConstantPhysicsStepper(isAsync = false)
 
     private var motorGearConstraint: RevoluteJoint? = null
     private var motorStrength = 50f

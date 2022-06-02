@@ -5,13 +5,15 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.joints.CommonRevoluteJoint.Companion.computeFrame
+import de.fabmax.kool.physics.joints.RevoluteJointHelper.computeFrame
 import de.fabmax.kool.physics.toPxTransform
-import physx.*
+import physx.PxRevoluteJoint
+import physx.PxRevoluteJointFlagEnum
+import physx.driveForceLimit
+import physx.driveVelocity
 
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : Joint() {
-
 
     actual val frameA = Mat4f().set(frameA)
     actual val frameB = Mat4f().set(frameB)

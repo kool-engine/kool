@@ -5,15 +5,13 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
-import de.fabmax.kool.physics.joints.CommonRevoluteJoint.Companion.computeFrame
+import de.fabmax.kool.physics.joints.RevoluteJointHelper.computeFrame
 import de.fabmax.kool.physics.toPxTransform
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
-import physx.physics.PxConstraintFlagEnum
 
-@Suppress("CanBeParameter")
 actual class RevoluteJoint actual constructor(actual val bodyA: RigidActor, actual val bodyB: RigidActor,
                                               frameA: Mat4f, frameB: Mat4f) : Joint() {
 

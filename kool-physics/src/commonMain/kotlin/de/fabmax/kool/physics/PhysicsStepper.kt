@@ -7,8 +7,28 @@ import kotlin.math.min
 /**
  * PhysicsStepper provides an interface for implementing different physics simulation time strategies.
  */
-interface PhysicsStepper {
-    fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float
+abstract class PhysicsStepper {
+    var simTimeFactor = 1f
+
+    private val perf = PerfTimer()
+    var perfCpuTime = 0f
+        private set
+    var perfTimeFactor = 1f
+        private set
+
+    fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+        perf.reset()
+
+        val timeAdvance = doSimSteps(world, ctx)
+
+        val ms = perf.takeMs().toFloat()
+        perfCpuTime = perfCpuTime * 0.8f + ms * 0.2f
+        perfTimeFactor = perfTimeFactor * 0.9f + (timeAdvance / (ctx.deltaT * simTimeFactor)) * 0.1f
+
+        return timeAdvance
+    }
+
+    protected abstract fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float
 }
 
 /**
@@ -17,30 +37,18 @@ interface PhysicsStepper {
  * frame time, physics simulation is not deterministic with this stepper.
  * Moreover, because simulation runs synchronously, the main thread is blocked while physics simulation is done.
  */
-class SimplePhysicsStepper : PhysicsStepper {
+class SimplePhysicsStepper : PhysicsStepper() {
     var maxSingleStepTime: Float = 0.02f
-    var simTimeFactor = 1f
 
-    private val perf = PerfTimer()
-    var perfCpuTime = 0f
-    var perfTimeFactor = 1f
-
-    override fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         var remainingStepTime = min(0.1f, ctx.deltaT * simTimeFactor)
         var timeAdvance = 0f
-
-        perf.reset()
         while (remainingStepTime > 0.001f) {
             val singleStep = min(remainingStepTime, maxSingleStepTime)
             world.singleStepSync(singleStep)
             remainingStepTime -= singleStep
             timeAdvance += singleStep
         }
-
-        val ms = perf.takeMs().toFloat()
-        perfCpuTime = perfCpuTime * 0.8f + ms * 0.2f
-        perfTimeFactor = perfTimeFactor * 0.9f + (timeAdvance / (ctx.deltaT * simTimeFactor)) * 0.1f
-
         return timeAdvance
     }
 }
@@ -52,17 +60,16 @@ class SimplePhysicsStepper : PhysicsStepper {
  * However, because a constant time step is used, physics may becomes jittery if the frame time diverges from physics
  * time step.
  */
-class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f) : PhysicsStepper {
+class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f, val isAsync: Boolean = true) : PhysicsStepper() {
     private var isStepInProgress = false
     private var internalSimTime = 0.0
     private var desiredSimTime = 0.0
 
-    var simTimeFactor = 1f
     var maxSubSteps = 5
 
     private var subStepLimit = maxSubSteps
 
-    override fun stepSimulation(world: CommonPhysicsWorld, ctx: KoolContext): Float {
+    override fun doSimSteps(world: CommonPhysicsWorld, ctx: KoolContext): Float {
         var timeAdvance = 0f
         desiredSimTime += min(0.1f, ctx.deltaT * simTimeFactor)
 
@@ -87,19 +94,23 @@ class ConstantPhysicsStepper(val constantTimeStep: Float = 1f / 60f) : PhysicsSt
         }
 
         if (shouldAdvance(internalSimTime, desiredSimTime + constantTimeStep, true)) {
-            world.singleStepAsync(constantTimeStep)
-            isStepInProgress = true
+            if (isAsync) {
+                world.singleStepAsync(constantTimeStep)
+                isStepInProgress = true
+            } else {
+                world.singleStepSync(constantTimeStep)
+            }
         }
 
         return timeAdvance
     }
 
     private fun shouldAdvance(currentTime: Double, desiredTime: Double, isFirst: Boolean): Boolean {
-        if (isFirst) {
-            return currentTime + constantTimeStep < desiredTime
+        return if (isFirst) {
+            currentTime + constantTimeStep < desiredTime
         } else {
             // only do additional steps if it's really necessary (i.e. allow some hysteresis to reduce jitter)
-            return currentTime + constantTimeStep * 1.5f < desiredTime
+            currentTime + constantTimeStep * 1.5f < desiredTime
         }
     }
 }
