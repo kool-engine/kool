@@ -19,10 +19,10 @@ class PbrMaterialBlock(
     parentScope: KslScopeBuilder
 ) : LitMaterialBlock(name, parentScope) {
 
-    val inRoughness = inFloat1("inRoughness")
-    val inMetallic = inFloat1("inRoughness")
+    val inRoughness = inFloat1("inRoughness", KslValueFloat1(0.5f))
+    val inMetallic = inFloat1("inMetallic", KslValueFloat1(0f))
 
-    val inReflectionMapWeights = inFloat2("inReflectionMapWeights")
+    val inReflectionMapWeights = inFloat2("inReflectionMapWeights", KslValueFloat2(1f, 0f))
     val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
