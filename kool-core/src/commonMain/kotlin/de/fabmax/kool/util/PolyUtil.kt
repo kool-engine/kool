@@ -100,8 +100,8 @@ object PolyUtil {
             edges.addRingEdges(outerRing)
             innerRings.forEach { edges.addRingEdges(it) }
 
-            edgeTree = KdTree(edges, EdgeAdapter)
-            vertTree = KdTree(verts, Vec3fAdapter)
+            edgeTree = KdTree(edges, EdgeAdapter())
+            vertTree = KdTree(verts, Vec3fAdapter())
 
             innerRings.forEach { hole -> insertBridgeEdge(hole) }
             verts.forEach { it.updateIsEar() }

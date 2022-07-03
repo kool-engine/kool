@@ -11,7 +11,7 @@ import kotlin.math.sqrt
  *
  * @author fabmax
  */
-class BoundingBox() {
+open class BoundingBox() {
 
     private val mutMin = MutableVec3f()
     private val mutMax = MutableVec3f()

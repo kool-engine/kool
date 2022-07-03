@@ -6,11 +6,11 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.ColorGradient
 
 fun <T: Vec3f> pointKdTree(points: List<T>, bucketSz: Int = 20): KdTree<T> {
-    return KdTree(points, Vec3fAdapter, bucketSz)
+    return KdTree(points, Vec3fAdapter(), bucketSz)
 }
 
 fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 20): OcTree<T> {
-    return OcTree(Vec3fAdapter, points, bounds, bucketSz = bucketSz)
+    return OcTree(Vec3fAdapter(), points, bounds, bucketSz = bucketSz)
 }
 
 fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 10): KdTree<Triangle> {
@@ -26,11 +26,11 @@ fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 10): KdTree<Triangle
 }
 
 fun <T: Triangle> triangleKdTree(triangles: List<T>, bucketSz: Int = 10): KdTree<T> {
-    return KdTree(triangles, TriangleAdapter, bucketSz)
+    return KdTree(triangles, TriangleAdapter(), bucketSz)
 }
 
 fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
-    return OcTree(TriangleAdapter, triangles, bounds, bucketSz = bucketSz)
+    return OcTree(TriangleAdapter(), triangles, bounds, bucketSz = bucketSz)
 }
 
 fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 10): OcTree<Triangle> {
@@ -46,11 +46,11 @@ fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 10): OcTree<Triangle
 }
 
 fun <T: Edge<*>> edgeKdTree(edges: List<T>, bucketSz: Int = 10): KdTree<T> {
-    return KdTree(edges, EdgeAdapter, bucketSz)
+    return KdTree(edges, EdgeAdapter(), bucketSz)
 }
 
 fun <T: Edge<*>> edgeOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
-    return OcTree(EdgeAdapter, triangles, bounds, bucketSz = bucketSz)
+    return OcTree(EdgeAdapter(), triangles, bounds, bucketSz = bucketSz)
 }
 
 abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection<T> {

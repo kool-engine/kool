@@ -65,7 +65,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
             }
         }
 
-        instanceTree = KdTree(grassPositions, Vec3fAdapter)
+        instanceTree = KdTree(grassPositions, Vec3fAdapter())
         logD { "Generated ${grassPositions.size} grass patches in ${pt.takeMs()} ms" }
     }
 

@@ -35,7 +35,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
     )
 
     private val random = Random(17)
-    private val treeTree = OcTree(Vec3fAdapter, bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
+    private val treeTree = OcTree(Vec3fAdapter(), bounds = BoundingBox(Vec3f(-200f), Vec3f(200f)))
 
     val trees = mutableListOf<Tree>()
 
