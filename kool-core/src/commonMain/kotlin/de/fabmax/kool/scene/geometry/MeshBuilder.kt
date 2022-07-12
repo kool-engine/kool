@@ -983,21 +983,21 @@ class RectProps {
     }
 
     fun mirrorTexCoordsX() {
-        val xul = texCoordUpperLeft.x
-        val xll = texCoordLowerLeft.x
-        texCoordUpperLeft.x = texCoordUpperRight.x
-        texCoordUpperRight.x = xul
-        texCoordLowerLeft.x = texCoordLowerRight.x
-        texCoordLowerRight.x = xll
+        texCoordUpperRight.x = texCoordUpperLeft.x.also {
+            texCoordUpperLeft.x = texCoordUpperRight.x
+        }
+        texCoordLowerRight.x = texCoordLowerLeft.x.also {
+            texCoordLowerLeft.x = texCoordLowerRight.x
+        }
     }
 
     fun mirrorTexCoordsY() {
-        val yul = texCoordUpperLeft.y
-        val yur = texCoordUpperRight.y
-        texCoordUpperLeft.y = texCoordLowerLeft.y
-        texCoordLowerLeft.y = yul
-        texCoordUpperRight.y = texCoordLowerRight.y
-        texCoordLowerRight.y = yur
+        texCoordLowerLeft.y = texCoordUpperLeft.y.also {
+            texCoordUpperLeft.y = texCoordLowerLeft.y
+        }
+        texCoordLowerRight.y = texCoordUpperRight.y.also {
+            texCoordUpperRight.y = texCoordLowerRight.y
+        }
     }
 }
 
