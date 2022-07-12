@@ -27,7 +27,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     private val quad: Mesh
 
     init {
-        clearColor = Color.RED
+        clearColor = Color.BLACK
 
         (drawNode as Group).apply {
             isFrustumChecked = false
@@ -76,6 +76,10 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
             set(value) {
                 thresholds.value = Vec2f(thresholds.value.x, value)
             }
+
+        init {
+            onPipelineSetup += { b, _, _ -> b.depthTest = DepthCompareOp.DISABLED }
+        }
 
         override fun onPipelineCreated(pipeline: Pipeline, mesh: Mesh, ctx: KoolContext) {
             inputTexture.connect(model)
