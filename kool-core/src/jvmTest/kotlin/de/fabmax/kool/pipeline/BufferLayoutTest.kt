@@ -15,10 +15,10 @@ class BufferLayoutTest {
         )
 
         val std140Layout = Std140BufferLayout(uniforms)
-        assertEquals(0, std140Layout.offsets[0])
-        assertEquals(16, std140Layout.offsets[1])
-        assertEquals(32, std140Layout.offsets[2])
-        assertEquals(96, std140Layout.offsets[3])
-        assertEquals(144, std140Layout.offsets[4])
+        assertEquals(0, std140Layout.uniformPositions[0].position)
+        assertEquals(16, std140Layout.uniformPositions[1].position)
+        assertEquals(32, std140Layout.uniformPositions[2].position)
+        assertEquals(96, std140Layout.uniformPositions[3].position)
+        assertEquals(144, std140Layout.uniformPositions[4].position)
     }
 }

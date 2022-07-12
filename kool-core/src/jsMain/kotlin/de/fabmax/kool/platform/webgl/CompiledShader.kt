@@ -81,20 +81,24 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     }
 
     private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
-        val blockSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
+        val bufferSize = ctx.gl.getActiveUniformBlockParameter(prog, blockIndex, UNIFORM_BLOCK_DATA_SIZE)
         val uniformNames = desc.uniforms.map {
             if (it.length > 1) { "${it.name}[0]" } else { it.name }
         }.toTypedArray()
 
         val indices = ctx.gl.getUniformIndices(prog, uniformNames)
         val offsets = ctx.gl.getActiveUniforms(prog, indices, UNIFORM_OFFSET)
-        ctx.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
-        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, offsets, blockSize)
 
-//        println("ubo: ${desc.name}, bufsize: $blockSize, binding: ${desc.binding}")
-//        desc.uniforms.forEachIndexed { i, u ->
-//            println("${u.name} -> idx: ${indices[i]}, off: ${offsets[i]}")
-//        }
+        val sortedOffsets = offsets.sorted()
+        val bufferPositions = Array(desc.uniforms.size) { i ->
+            val off = offsets[i]
+            val nextOffI = sortedOffsets.indexOf(off) + 1
+            val nextOff = if (nextOffI < sortedOffsets.size) sortedOffsets[nextOffI] else bufferSize
+            BufferPosition(off, nextOff - off)
+        }
+
+        ctx.gl.uniformBlockBinding(prog, blockIndex, desc.binding)
+        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, bufferPositions, bufferSize)
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): List<WebGLUniformLocation?> {

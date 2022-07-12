@@ -67,7 +67,7 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
     }
 
     private fun setupUboLayout(desc: UniformBuffer, blockIndex: Int) {
-        val blockSize = glGetActiveUniformBlocki(prog, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE)
+        val bufferSize = glGetActiveUniformBlocki(prog, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE)
         val indices = IntArray(desc.uniforms.size)
         val offsets = IntArray(desc.uniforms.size)
 
@@ -79,8 +79,17 @@ class CompiledShader(val prog: Int, pipeline: Pipeline, val renderBackend: GlRen
             glGetUniformIndices(prog, namePointers, indices)
             glGetActiveUniformsiv(prog, indices, GL_UNIFORM_OFFSET, offsets)
         }
+
+        val sortedOffsets = offsets.sorted()
+        val bufferPositions = Array(desc.uniforms.size) { i ->
+            val off = offsets[i]
+            val nextOffI = sortedOffsets.indexOf(off) + 1
+            val nextOff = if (nextOffI < sortedOffsets.size) sortedOffsets[nextOffI] else bufferSize
+            BufferPosition(off, nextOff - off)
+        }
+
         glUniformBlockBinding(prog, blockIndex, desc.binding)
-        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, offsets, blockSize)
+        uboLayouts[desc.name] = ExternalBufferLayout(desc.uniforms, bufferPositions, bufferSize)
     }
 
     private fun getUniformLocations(name: String, arraySize: Int): List<Int> {
