@@ -15,23 +15,30 @@ fun main() {
     //Demo.setProperty("assets.models", "models")
 
     // launch demo
-    demo(getParams()["demo"])
+    val params = getParams()
+    if ("webgpu" in params.keys) {
+        webGpuTest()
+    } else {
+        demo(getParams()["demo"])
+    }
 }
 
 @Suppress("UNUSED_VARIABLE")
 fun getParams(): Map<String, String> {
     val params: MutableMap<String, String> = mutableMapOf()
     if (window.location.search.length > 1) {
-        val vars = window.location.search.substring(1).split("&")
+        val vars = window.location.search.substring(1).split("&").filter { it.isNotBlank() }
         for (pair in vars) {
             val keyVal = pair.split("=")
-            if (keyVal.size == 2) {
-                val keyEnc = keyVal[0]
+            val keyEnc = keyVal[0]
+            val key = js("decodeURIComponent(keyEnc)").toString()
+            val value = if (keyVal.size == 2) {
                 val valEnc = keyVal[1]
-                val key = js("decodeURIComponent(keyEnc)").toString()
-                val value = js("decodeURIComponent(valEnc)").toString()
-                params[key] = value
+                js("decodeURIComponent(valEnc)").toString()
+            } else {
+                ""
             }
+            params[key] = value
         }
     }
     return params
