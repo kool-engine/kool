@@ -171,11 +171,11 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                 main {
                     // determine main color (albedo)
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
-                    val baseColor = float4Port("baseColor", colorBlock.outColor)
+                    val baseColorPort = float4Port("baseColor", colorBlock.outColor)
 
                     // discard fragment output if alpha mode is mask and fragment alpha value is below cutoff value
                     (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                        `if` (baseColor.a lt mask.cutOff.const) {
+                        `if` (baseColorPort.a lt mask.cutOff.const) {
                             discard()
                         }
                     }
@@ -234,17 +234,18 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     }
 
                     // main material block
-                    val materialColor = createMaterial(cfg, camData, irradiance, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColor)
+                    val materialColor = createMaterial(cfg, camData, irradiance, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColorPort)
+                    val materialColorPort = float4Port("materialColor", materialColor)
 
                     // set fragment stage output color
-                    val outRgb = float3Var(materialColor.rgb)
+                    val outRgb = float3Var(materialColorPort.rgb)
                     outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
-                        outRgb set outRgb * materialColor.a
+                        outRgb set outRgb * materialColorPort.a
                     }
 
                     when (cfg.alphaMode) {
-                        is AlphaMode.Blend -> colorOutput(outRgb, materialColor.a)
+                        is AlphaMode.Blend -> colorOutput(outRgb, materialColorPort.a)
                         is AlphaMode.Mask -> colorOutput(outRgb, 1f.const)
                         is AlphaMode.Opaque -> colorOutput(outRgb, 1f.const)
                     }

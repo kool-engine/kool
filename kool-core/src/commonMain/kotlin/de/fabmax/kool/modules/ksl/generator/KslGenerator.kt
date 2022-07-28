@@ -34,12 +34,18 @@ abstract class KslGenerator {
 
     open fun <T: KslNumericType> mathExpression(expression: KslExpressionMath<T>): String =
         "(${expression.left.generateExpression(this)} ${expression.operator.opChar} ${expression.right.generateExpression(this)})"
+    open fun <T: KslNumericType> bitExpression(expression: KslExpressionBit<T>): String =
+        "(${expression.left.generateExpression(this)} ${expression.operator.opString} ${expression.right.generateExpression(this)})"
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
         "(${expression.left.generateExpression(this)} ${expression.operator.opString} ${expression.right.generateExpression(this)})"
     open fun numericUnaryMinusExpression(expression: KslNumericScalarUnaryMinus<*>): String =
         "-(${expression.expr.generateExpression(this)})"
     open fun numericUnaryMinusExpression(expression: KslNumericVectorUnaryMinus<*, *>): String =
         "-(${expression.expr.generateExpression(this)})"
+    open fun intComplementExpression(expression: KslIntScalarComplement): String =
+        "~(${expression.expr.generateExpression(this)})"
+    open fun intComplementExpression(expression: KslIntVectorComplement<*>): String =
+        "~(${expression.expr.generateExpression(this)})"
 
     open fun boolVecExpression(expression: KslBoolVectorExpr<*>): String =
         "${expression.op.opString}(${expression.boolVec.generateExpression(this)})"
