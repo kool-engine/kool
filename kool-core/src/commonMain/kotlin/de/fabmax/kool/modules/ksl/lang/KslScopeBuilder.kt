@@ -334,6 +334,14 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ops += KslAugmentedAssign(this, KslMathOperator.Remainder, expr, this@KslScopeBuilder)
     }
 
+    // function invocation
+    operator fun <S> KslFunction<S>.invoke(vararg args: KslExpression<*>): KslScalarExpression<S> where S: KslType, S: KslScalar {
+        return KslInvokeFunctionScalar(this, this@KslScopeBuilder, returnType, *args)
+    }
+    operator fun <V, S> KslFunction<V>.invoke(vararg args: KslExpression<*>): KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
+        return KslInvokeFunctionVector(this, this@KslScopeBuilder, returnType, *args)
+    }
+
     // builtin general functions
     fun <S> abs(value: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinAbsScalar(value)
     fun <V, S> abs(vec: KslVectorExpression<V, S>)

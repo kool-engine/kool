@@ -30,6 +30,13 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         main.apply(block)
     }
 
+    fun createFunction(name: String, function: KslFunction<*>) {
+        if (name in functions.keys) {
+            throw IllegalStateException("Function with name $name is already defined")
+        }
+        functions[name] = function
+    }
+
     inline fun <reified T: KslFunction<*>> getOrCreateFunction(name: String, createFunc: () -> T): T {
         return functions.getOrPut(name, createFunc) as T
     }
