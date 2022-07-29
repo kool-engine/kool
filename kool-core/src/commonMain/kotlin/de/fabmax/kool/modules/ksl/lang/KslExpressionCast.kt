@@ -19,12 +19,33 @@ class KslExpressionCastVector<V, S>(value: KslExpression<*>, type: V)
 
 fun KslScalarExpression<KslTypeFloat1>.toInt1() = KslExpressionCastScalar(this, KslTypeInt1)
 fun KslScalarExpression<KslTypeInt1>.toFloat1() = KslExpressionCastScalar(this, KslTypeFloat1)
+fun KslScalarExpression<KslTypeInt1>.toUint1() = KslExpressionCastScalar(this, KslTypeUint1)
 
 fun KslVectorExpression<KslTypeFloat2, KslTypeFloat1>.toInt2() = KslExpressionCastVector(this, KslTypeInt2)
 fun KslVectorExpression<KslTypeInt2, KslTypeInt1>.toFloat2() = KslExpressionCastVector(this, KslTypeFloat2)
+fun KslVectorExpression<KslTypeInt2, KslTypeInt1>.toUint2() = KslExpressionCastVector(this, KslTypeUint2)
 
 fun KslVectorExpression<KslTypeFloat3, KslTypeFloat1>.toInt3() = KslExpressionCastVector(this, KslTypeInt3)
 fun KslVectorExpression<KslTypeInt3, KslTypeInt1>.toFloat3() = KslExpressionCastVector(this, KslTypeFloat3)
+fun KslVectorExpression<KslTypeInt3, KslTypeInt1>.toUint3() = KslExpressionCastVector(this, KslTypeUint3)
 
 fun KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.toInt4() = KslExpressionCastVector(this, KslTypeInt4)
 fun KslVectorExpression<KslTypeInt4, KslTypeInt1>.toFloat4() = KslExpressionCastVector(this, KslTypeFloat4)
+fun KslVectorExpression<KslTypeInt2, KslTypeInt1>.toUint4() = KslExpressionCastVector(this, KslTypeUint4)
+
+// unfortunately inconsistent naming is required to avoid clashing JVM signatures
+fun KslScalarExpression<KslTypeFloat1>.fToUint1() = KslExpressionCastScalar(this, KslTypeUint1)
+fun KslScalarExpression<KslTypeUint1>.uToFloat1() = KslExpressionCastScalar(this, KslTypeFloat1)
+fun KslScalarExpression<KslTypeUint1>.uToInt1() = KslExpressionCastScalar(this, KslTypeInt1)
+
+fun KslVectorExpression<KslTypeFloat2, KslTypeFloat1>.fToUint2() = KslExpressionCastVector(this, KslTypeUint2)
+fun KslVectorExpression<KslTypeUint2, KslTypeUint1>.uToFloat2() = KslExpressionCastVector(this, KslTypeFloat2)
+fun KslVectorExpression<KslTypeUint2, KslTypeUint1>.uToInt2() = KslExpressionCastVector(this, KslTypeInt2)
+
+fun KslVectorExpression<KslTypeFloat3, KslTypeFloat1>.fToUint3() = KslExpressionCastVector(this, KslTypeUint3)
+fun KslVectorExpression<KslTypeUint3, KslTypeUint1>.uToFloat3() = KslExpressionCastVector(this, KslTypeFloat3)
+fun KslVectorExpression<KslTypeUint3, KslTypeUint1>.uToInt3() = KslExpressionCastVector(this, KslTypeInt3)
+
+fun KslVectorExpression<KslTypeFloat2, KslTypeFloat1>.fToUint4() = KslExpressionCastVector(this, KslTypeUint4)
+fun KslVectorExpression<KslTypeUint4, KslTypeUint1>.uToFloat4() = KslExpressionCastVector(this, KslTypeFloat4)
+fun KslVectorExpression<KslTypeUint4, KslTypeUint1>.uToInt4() = KslExpressionCastVector(this, KslTypeInt4)

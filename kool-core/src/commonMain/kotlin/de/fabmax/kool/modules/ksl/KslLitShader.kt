@@ -175,14 +175,14 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
 
                     // discard fragment output if alpha mode is mask and fragment alpha value is below cutoff value
                     (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                        `if` (baseColorPort.a lt mask.cutOff.const) {
+                        `if`(baseColorPort.a lt mask.cutOff.const) {
                             discard()
                         }
                     }
 
                     val vertexNormal = float3Var(normalize(normalWorldSpace.output))
                     if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexCfg.isFlipBacksideNormals) {
-                        `if` (!inIsFrontFacing) {
+                        `if`(!inIsFrontFacing) {
                             vertexNormal *= (-1f).const3
                         }
                     }
@@ -203,11 +203,11 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     val normal = float3Port("normal", bumpedNormal)
 
                     // create an array with light strength values per light source (1.0 = full strength)
-                    val shadowFactors = floatArray(lightData.maxLightCount, 1f.const)
+                    val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
-                    val aoFactor = floatVar(1f.const)
+                    val aoFactor = float1Var(1f.const)
                     if (cfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.float2("xy") / projPosition.output.w * 0.5f.const + 0.5f.const)
@@ -234,7 +234,17 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     }
 
                     // main material block
-                    val materialColor = createMaterial(cfg, camData, irradiance, lightData, shadowFactors, aoFactor, normal, positionWorldSpace.output, baseColorPort)
+                    val materialColor = createMaterial(
+                        cfg = cfg,
+                        camData = camData,
+                        irradiance = irradiance,
+                        lightData = lightData,
+                        shadowFactors = shadowFactors,
+                        aoFactor = aoFactor,
+                        normal = normal,
+                        fragmentWorldPos = positionWorldSpace.output,
+                        baseColor = baseColorPort
+                    )
                     val materialColorPort = float4Port("materialColor", materialColor)
 
                     // set fragment stage output color

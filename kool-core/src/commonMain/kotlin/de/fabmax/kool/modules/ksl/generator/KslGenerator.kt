@@ -11,6 +11,7 @@ abstract class KslGenerator {
 
     open fun constBoolExpression(value: Boolean) = "$value"
     open fun constIntExpression(value: Int) = "$value"
+    open fun constUintExpression(value: UInt) = "${value}u"
     open fun constFloatExpression(value: Float): String {
         var str = "$value"
         if (!str.contains('.')) {
@@ -22,6 +23,7 @@ abstract class KslGenerator {
 
     abstract fun constFloatVecExpression(vararg values: KslExpression<KslTypeFloat1>): String
     abstract fun constIntVecExpression(vararg values: KslExpression<KslTypeInt1>): String
+    abstract fun constUintVecExpression(vararg values: KslExpression<KslTypeUint1>): String
     abstract fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String
     abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslTypeFloat1>): String
 
@@ -42,9 +44,9 @@ abstract class KslGenerator {
         "-(${expression.expr.generateExpression(this)})"
     open fun numericUnaryMinusExpression(expression: KslNumericVectorUnaryMinus<*, *>): String =
         "-(${expression.expr.generateExpression(this)})"
-    open fun intComplementExpression(expression: KslIntScalarComplement): String =
+    open fun intComplementExpression(expression: KslIntScalarComplement<*>): String =
         "~(${expression.expr.generateExpression(this)})"
-    open fun intComplementExpression(expression: KslIntVectorComplement<*>): String =
+    open fun intComplementExpression(expression: KslIntVectorComplement<*, *>): String =
         "~(${expression.expr.generateExpression(this)})"
 
     open fun boolVecExpression(expression: KslBoolVectorExpr<*>): String =

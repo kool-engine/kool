@@ -80,12 +80,12 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
             updateDependencies(it, defaultValue)
         }
 
-    protected fun outFloat1(name: String? = null): KslVarScalar<KslTypeFloat1> = parentScopeBuilder.floatVar(name = nextName(name ?: "outF1")).also { outputs += it }
+    protected fun outFloat1(name: String? = null): KslVarScalar<KslTypeFloat1> = parentScopeBuilder.float1Var(name = nextName(name ?: "outF1")).also { outputs += it }
     protected fun outFloat2(name: String? = null): KslVarVector<KslTypeFloat2, KslTypeFloat1> = parentScopeBuilder.float2Var(name = nextName(name ?: "outF2")).also { outputs += it }
     protected fun outFloat3(name: String? = null): KslVarVector<KslTypeFloat3, KslTypeFloat1> = parentScopeBuilder.float3Var(name = nextName(name ?: "outF3")).also { outputs += it }
     protected fun outFloat4(name: String? = null): KslVarVector<KslTypeFloat4, KslTypeFloat1> = parentScopeBuilder.float4Var(name = nextName(name ?: "outF4")).also { outputs += it }
 
-    protected fun outInt1(name: String? = null): KslVarScalar<KslTypeInt1> = parentScopeBuilder.intVar(name = nextName(name ?: "outI1")).also { outputs += it }
+    protected fun outInt1(name: String? = null): KslVarScalar<KslTypeInt1> = parentScopeBuilder.int1Var(name = nextName(name ?: "outI1")).also { outputs += it }
     protected fun outInt2(name: String? = null): KslVarVector<KslTypeInt2, KslTypeInt1> = parentScopeBuilder.int2Var(name = nextName(name ?: "outI2")).also { outputs += it }
     protected fun outInt3(name: String? = null): KslVarVector<KslTypeInt3, KslTypeInt1> = parentScopeBuilder.int3Var(name = nextName(name ?: "outI3")).also { outputs += it }
     protected fun outInt4(name: String? = null): KslVarVector<KslTypeInt4, KslTypeInt1> = parentScopeBuilder.int4Var(name = nextName(name ?: "outI4")).also { outputs += it }
@@ -116,15 +116,11 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
         }
     }
 
-    abstract class Testo<T: KslType, E: KslExpression<T>>
-
-    class TestoImpl<S> : Testo<S, KslScalarExpression<S>>() where S: KslType, S: KslScalar
-
     abstract inner class BlockInput<T: KslType, E: KslExpression<T>>(
         val name: String,
         override val expressionType: T,
-        defaultValue: E?)
-        : KslExpression<T> {
+        defaultValue: E?
+    ) : KslExpression<T> {
 
         var input: E? = defaultValue
             set(value) {
@@ -150,28 +146,28 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
         }
     }
 
-    inner class ScalarInput<S>(name: String, expressionType: S, defaultValue: KslScalarExpression<S>?)
-        : BlockInput<S, KslScalarExpression<S>>(name, expressionType, defaultValue), KslScalarExpression<S>
-            where S: KslType, S: KslScalar
+    inner class ScalarInput<S>(name: String, expressionType: S, defaultValue: KslScalarExpression<S>?) :
+        BlockInput<S, KslScalarExpression<S>>(name, expressionType, defaultValue), KslScalarExpression<S>
+            where S : KslType, S : KslScalar
 
-    inner class VectorInput<V, S>(name: String, expressionType: V, defaultValue: KslVectorExpression<V, S>?)
-        : BlockInput<V, KslVectorExpression<V, S>>(name, expressionType, defaultValue), KslVectorExpression<V, S>
-            where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
+    inner class VectorInput<V, S>(name: String, expressionType: V, defaultValue: KslVectorExpression<V, S>?) :
+        BlockInput<V, KslVectorExpression<V, S>>(name, expressionType, defaultValue), KslVectorExpression<V, S>
+            where V : KslType, V : KslVector<S>, S : KslType, S : KslScalar
 
-    inner class MatrixInput<M, V>(name: String, expressionType: M, defaultValue: KslMatrixExpression<M, V>?)
-        : BlockInput<M, KslMatrixExpression<M, V>>(name, expressionType, defaultValue), KslMatrixExpression<M, V>
-            where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
+    inner class MatrixInput<M, V>(name: String, expressionType: M, defaultValue: KslMatrixExpression<M, V>?) :
+        BlockInput<M, KslMatrixExpression<M, V>>(name, expressionType, defaultValue), KslMatrixExpression<M, V>
+            where M : KslType, M : KslMatrix<V>, V : KslType, V : KslVector<*>
 
-    inner class ScalarArrayInput<S>(name: String, expressionType: S)
-        : BlockInput<KslTypeArray<S>, KslScalarArrayExpression<S>>(name, KslTypeArray(expressionType), null), KslScalarArrayExpression<S>
-            where S: KslType, S: KslScalar
+    inner class ScalarArrayInput<S>(name: String, expressionType: S) :
+        BlockInput<KslTypeArray<S>, KslScalarArrayExpression<S>>(name, KslTypeArray(expressionType), null), KslScalarArrayExpression<S>
+            where S : KslType, S : KslScalar
 
-    inner class VectorArrayInput<V, S>(name: String, expressionType: V)
-        : BlockInput<KslTypeArray<V>, KslVectorArrayExpression<V, S>>(name, KslTypeArray(expressionType), null), KslVectorArrayExpression<V, S>
-            where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
+    inner class VectorArrayInput<V, S>(name: String, expressionType: V) :
+        BlockInput<KslTypeArray<V>, KslVectorArrayExpression<V, S>>(name, KslTypeArray(expressionType), null), KslVectorArrayExpression<V, S>
+            where V : KslType, V : KslVector<S>, S : KslType, S : KslScalar
 
-    inner class MatrixArrayInput<M, V>(name: String, expressionType: M)
-        : BlockInput<KslTypeArray<M>, KslMatrixArrayExpression<M, V>>(name, KslTypeArray(expressionType), null), KslMatrixArrayExpression<M, V>
-            where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
+    inner class MatrixArrayInput<M, V>(name: String, expressionType: M) :
+        BlockInput<KslTypeArray<M>, KslMatrixArrayExpression<M, V>>(name, KslTypeArray(expressionType), null), KslMatrixArrayExpression<M, V>
+            where M : KslType, M : KslMatrix<V>, V : KslType, V : KslVector<*>
 
 }

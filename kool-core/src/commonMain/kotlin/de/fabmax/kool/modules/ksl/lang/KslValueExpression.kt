@@ -69,6 +69,34 @@ class KslValueInt4(val x: KslExpression<KslTypeInt1>, val y: KslExpression<KslTy
     override fun toPseudoCode() = "ivec4(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()}, ${w.toPseudoCode()})"
 }
 
+class KslValueUint1(val value: UInt)
+    : KslValueExpression<KslTypeUint1>(KslTypeUint1), KslScalarExpression<KslTypeUint1> {
+    override fun collectStateDependencies() = emptySet<KslMutatedState>()
+    override fun generateExpression(generator: KslGenerator) = generator.constUintExpression(value)
+    override fun toPseudoCode() = "$value"
+}
+class KslValueUint2(val x: KslExpression<KslTypeUint1>, val y: KslExpression<KslTypeUint1>)
+    : KslValueExpression<KslTypeUint2>(KslTypeUint2), KslVectorExpression<KslTypeUint2, KslTypeUint1> {
+    constructor(x: UInt, y: UInt) : this(KslValueUint1(x), KslValueUint1(y))
+    override fun collectStateDependencies() = listOf(x, y).flatMap { it.collectStateDependencies() }.toSet()
+    override fun generateExpression(generator: KslGenerator) = generator.constUintVecExpression(x, y)
+    override fun toPseudoCode() = "uvec2(${x.toPseudoCode()}, ${y.toPseudoCode()})"
+}
+class KslValueUint3(val x: KslExpression<KslTypeUint1>, val y: KslExpression<KslTypeUint1>, val z: KslExpression<KslTypeUint1>)
+    : KslValueExpression<KslTypeUint3>(KslTypeUint3), KslVectorExpression<KslTypeUint3, KslTypeUint1> {
+    constructor(x: UInt, y: UInt, z: UInt) : this(KslValueUint1(x), KslValueUint1(y), KslValueUint1(z))
+    override fun collectStateDependencies() = listOf(x, y, z).flatMap { it.collectStateDependencies() }.toSet()
+    override fun generateExpression(generator: KslGenerator) = generator.constUintVecExpression(x, y, z)
+    override fun toPseudoCode() = "uvec3(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()})"
+}
+class KslValueUint4(val x: KslExpression<KslTypeUint1>, val y: KslExpression<KslTypeUint1>, val z: KslExpression<KslTypeUint1>, val w: KslExpression<KslTypeUint1>)
+    : KslValueExpression<KslTypeUint4>(KslTypeUint4), KslVectorExpression<KslTypeUint4, KslTypeUint1> {
+    constructor(x: UInt, y: UInt, z: UInt, w: UInt) : this(KslValueUint1(x), KslValueUint1(y), KslValueUint1(z), KslValueUint1(w))
+    override fun collectStateDependencies() = listOf(x, y, z, w).flatMap { it.collectStateDependencies() }.toSet()
+    override fun generateExpression(generator: KslGenerator) = generator.constUintVecExpression(x, y, z, w)
+    override fun toPseudoCode() = "uvec4(${x.toPseudoCode()}, ${y.toPseudoCode()}, ${z.toPseudoCode()}, ${w.toPseudoCode()})"
+}
+
 class KslValueBool1(val value: Boolean)
     : KslValueExpression<KslTypeBool1>(KslTypeBool1), KslScalarExpression<KslTypeBool1> {
     override fun collectStateDependencies() = emptySet<KslMutatedState>()

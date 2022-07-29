@@ -30,6 +30,13 @@ open class GlslGenerator : KslGenerator() {
         return "ivec${values.size}(${values.joinToString { it.generateExpression(this) }})"
     }
 
+    override fun constUintVecExpression(vararg values: KslExpression<KslTypeUint1>): String {
+        if (values.size !in 2..4) {
+            throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
+        }
+        return "uvec${values.size}(${values.joinToString { it.generateExpression(this) }})"
+    }
+
     override fun constBoolVecExpression(vararg values: KslExpression<KslTypeBool1>): String {
         if (values.size !in 2..4) {
             throw IllegalArgumentException("invalid number of values: ${values.size} (must be between 2 and 4)")
@@ -414,6 +421,10 @@ open class GlslGenerator : KslGenerator() {
             KslTypeInt2 -> "ivec2"
             KslTypeInt3 -> "ivec3"
             KslTypeInt4 -> "ivec4"
+            KslTypeUint1 -> "uint"
+            KslTypeUint2 -> "uvec2"
+            KslTypeUint3 -> "uvec3"
+            KslTypeUint4 -> "uvec4"
             KslTypeMat2 -> "mat2"
             KslTypeMat3 -> "mat3"
             KslTypeMat4 -> "mat4"

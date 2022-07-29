@@ -218,7 +218,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 findBlock<BlinnPhongMaterialBlock>()!!.apply {
                     val texCoordBlock: TexCoordAttributeBlock = vertexStage.findBlock()!!
                     val texCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
-                    val sparkle = floatVar((sampleTexture(shininessTex, texCoords).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
+                    val sparkle = float1Var((sampleTexture(shininessTex, texCoords).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
                     inShininess(10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const)
                 }
             }

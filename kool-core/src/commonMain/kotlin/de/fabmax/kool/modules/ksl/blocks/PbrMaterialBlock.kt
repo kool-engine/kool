@@ -32,25 +32,26 @@ class PbrMaterialBlock(
     init {
         body.apply {
             val viewDir = float3Var(normalize(inCamPos - inFragmentPos))
-            val roughness = floatVar(clamp(inRoughness, 0.05f.const, 1f.const))
+            val roughness = float1Var(clamp(inRoughness, 0.05f.const, 1f.const))
             val f0 = mix(Vec3f(0.04f).const, inBaseColor, inMetallic)
             val lo = float3Var(Vec3f.ZERO.const)
 
-            fori (0.const, inLightCount) { i ->
-                val lightDir = float3Var(normalize(getLightDirectionFromFragPos(inFragmentPos, inEncodedLightPositions[i])))
+            fori(0.const, inLightCount) { i ->
+                val lightDir =
+                    float3Var(normalize(getLightDirectionFromFragPos(inFragmentPos, inEncodedLightPositions[i])))
                 val h = float3Var(normalize(viewDir + lightDir))
-                val normalDotLight = floatVar(dot(inNormal, lightDir))
+                val normalDotLight = float1Var(dot(inNormal, lightDir))
                 val radiance = float3Var(inShadowFactors[i] * inLightStrength *
                         getLightRadiance(inFragmentPos, inEncodedLightPositions[i], inEncodedLightDirections[i], inEncodedLightColors[i]))
 
                 // cook-torrance BRDF
-                val ndf = floatVar(distributionGgx(inNormal, h, roughness))
-                val g = floatVar(geometrySmith(inNormal, viewDir, lightDir, roughness))
+                val ndf = float1Var(distributionGgx(inNormal, h, roughness))
+                val g = float1Var(geometrySmith(inNormal, viewDir, lightDir, roughness))
                 val f = float3Var(fresnelSchlick(max(dot(h, viewDir), 0f.const), f0))
 
                 val kD = float3Var(1f.const - f) * (1f.const - inMetallic)
 
-                val nDotL = floatVar(max(normalDotLight, 0f.const))
+                val nDotL = float1Var(max(normalDotLight, 0f.const))
                 val num = ndf * g * f
                 val denom = 4f.const * max(dot(inNormal, viewDir), 0f.const) * nDotL
                 val specular = float3Var(num / max(denom, 0.001f.const))
@@ -60,7 +61,7 @@ class PbrMaterialBlock(
             }
 
             // image based (ambient) lighting and reflection
-            val normalDotView = floatVar(max(dot(inNormal, viewDir), 0f.const))
+            val normalDotView = float1Var(max(dot(inNormal, viewDir), 0f.const))
             val f = float3Var(fresnelSchlickRoughness(normalDotView, f0, roughness))
             val kD = float3Var((1f.const - f) * (1f.const - inMetallic))
             val diffuse = float3Var(inIrradiance * inBaseColor)

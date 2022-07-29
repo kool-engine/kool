@@ -153,7 +153,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         bits = ((bits and 0x33333333) shl 2) or ((bits and 0xCCCCCCCC) shr 2)
         bits = ((bits and 0x0F0F0F0F) shl 4) or ((bits and 0xF0F0F0F0) shr 4)
         bits = ((bits and 0x00FF00FF) shl 8) or ((bits and 0xFF00FF00) shr 8)
-        return bits.toFloat() * 2.3283064365386963e-10f // / 0x100000000
+        return bits.toFloat() / 0x100000000
     }
 
     private fun hammersley(i: Int, n: Int): Vec2f {

@@ -57,6 +57,23 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     val Int.const4: KslValueInt4
         get() = KslValueInt4(this, this, this, this)
 
+    val UInt.const: KslValueUint1
+        get() = KslValueUint1(this)
+    val UInt.const2: KslValueUint2
+        get() = KslValueUint2(this, this)
+    val UInt.const3: KslValueUint3
+        get() = KslValueUint3(this, this, this)
+    val UInt.const4: KslValueUint4
+        get() = KslValueUint4(this, this, this, this)
+    val Int.uconst: KslValueUint1
+        get() = KslValueUint1(this.toUInt())
+    val Int.uconst2: KslValueUint2
+        get() = KslValueUint2(this.toUInt(), this.toUInt())
+    val Int.uconst3: KslValueUint3
+        get() = KslValueUint3(this.toUInt(), this.toUInt(), this.toUInt())
+    val Int.uconst4: KslValueUint4
+        get() = KslValueUint4(this.toUInt(), this.toUInt(), this.toUInt(), this.toUInt())
+
     val Boolean.const: KslValueBool1
         get() = KslValueBool1(this)
     val Boolean.const2: KslValueBool2
@@ -131,7 +148,18 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
                   col2: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>,
                   col3: KslVectorExpression<KslTypeFloat4, KslTypeFloat1>) = KslValueMat4(col0, col1, col2, col3)
 
-    fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
+    @Deprecated("Use float1Var instead", replaceWith = ReplaceWith("float1Var(initValue, name)"))
+    fun floatVar(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) = float1Var(initValue, name)
+    @Deprecated("Use float1Array instead", replaceWith = ReplaceWith("float1Array(arraySize, initExpr, name)"))
+    fun floatArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeFloat1>, name: String? = null) = float1Array(arraySize, initExpr, name)
+    @Deprecated("Use int1Var instead", replaceWith = ReplaceWith("int1Var(initValue, name)"))
+    fun intVar(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) = int1Var(initValue, name)
+    @Deprecated("Use int1Array instead", replaceWith = ReplaceWith("int1Array(arraySize, initExpr, name)"))
+    fun intArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeInt1>, name: String? = null) = int1Array(arraySize, initExpr, name)
+    @Deprecated("Use bool1Var instead", replaceWith = ReplaceWith("bool1Var(initValue, name)"))
+    fun boolVar(initValue: KslScalarExpression<KslTypeBool1>? = null, name: String? = null) = bool1Var(initValue, name)
+
+    fun float1Var(initValue: KslScalarExpression<KslTypeFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslTypeFloat1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
@@ -148,7 +176,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareVar(it, initValue, this)
         }
 
-    fun floatArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeFloat1>, name: String? = null) =
+    fun float1Array(arraySize: Int, initExpr: KslScalarExpression<KslTypeFloat1>, name: String? = null) =
         KslArrayScalar(name ?: nextName("f1Array"), KslTypeFloat1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
@@ -165,7 +193,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareArray(it, initExpr, this)
         }
 
-    fun intVar(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) =
+    fun int1Var(initValue: KslScalarExpression<KslTypeInt1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("i1"), KslTypeInt1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
@@ -182,7 +210,24 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareVar(it, initValue, this)
         }
 
-    fun intArray(arraySize: Int, initExpr: KslScalarExpression<KslTypeInt1>, name: String? = null) =
+    fun uint1Var(initValue: KslScalarExpression<KslTypeUint1>? = null, name: String? = null) =
+        KslVarScalar(name ?: nextName("u1"), KslTypeUint1, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun uint2Var(initValue: KslVectorExpression<KslTypeUint2, KslTypeUint1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("u2"), KslTypeUint2, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun uint3Var(initValue: KslVectorExpression<KslTypeUint3, KslTypeUint1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("u3"), KslTypeUint3, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+    fun uint4Var(initValue: KslVectorExpression<KslTypeUint4, KslTypeUint1>? = null, name: String? = null) =
+        KslVarVector(name ?: nextName("u4"), KslTypeUint4, true).also {
+            ops += KslDeclareVar(it, initValue, this)
+        }
+
+    fun int1Array(arraySize: Int, initExpr: KslScalarExpression<KslTypeInt1>, name: String? = null) =
         KslArrayScalar(name ?: nextName("i1Array"), KslTypeInt1, arraySize, true).also { definedStates += it }.also {
             ops += KslDeclareArray(it, initExpr, this)
         }
@@ -199,7 +244,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
             ops += KslDeclareArray(it, initExpr, this)
         }
 
-    fun boolVar(initValue: KslScalarExpression<KslTypeBool1>? = null, name: String? = null) =
+    fun bool1Var(initValue: KslScalarExpression<KslTypeBool1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("b1"), KslTypeBool1, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }
@@ -241,7 +286,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
 
     fun fori(fromInclusive: KslScalarExpression<KslTypeInt1>, toExclusive: KslScalarExpression<KslTypeInt1>,
              block: KslScopeBuilder.(KslScalarExpression<KslTypeInt1>) -> Unit) {
-        val i = intVar(fromInclusive)
+        val i = int1Var(fromInclusive)
         `for`(i, i lt toExclusive, 1.const, block)
     }
 

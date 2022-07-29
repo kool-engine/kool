@@ -26,11 +26,11 @@ class BlinnPhongMaterialBlock(name: String, parentScope: KslScopeBuilder) : LitM
                 val lightDir = float3Var(normalize(getLightDirectionFromFragPos(inFragmentPos, inEncodedLightPositions[i])))
 
                 `if` (inShadowFactors[i] gt 0f.const) {
-                    val lambertian = floatVar(max(dot(lightDir, inNormal), 0f.const))
-                    val specular = floatVar(0f.const)
-                    `if` (lambertian gt 0f.const) {
+                    val lambertian = float1Var(max(dot(lightDir, inNormal), 0f.const))
+                    val specular = float1Var(0f.const)
+                    `if`(lambertian gt 0f.const) {
                         val halfDir = float3Var(normalize(lightDir + viewDir))
-                        val specAngle = floatVar(max(dot(halfDir, inNormal), 0f.const))
+                        val specAngle = float1Var(max(dot(halfDir, inNormal), 0f.const))
                         specular set pow(specAngle, inShininess) * inSpecularStrength
                     }
 

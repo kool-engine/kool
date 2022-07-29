@@ -163,7 +163,7 @@ class Terrain(val heightMap: HeightMap) {
                             val material = findBlock<PbrMaterialBlock>() ?: findBlock<BlinnPhongMaterialBlock>()!!
                             val baseColor = material.inBaseColor.input!!
 
-                            `if` (material.inFragmentPos.y gt uniformFloat1(TERRAIN_SHADER_DISCARD_HEIGHT)) {
+                            `if`(material.inFragmentPos.y gt uniformFloat1(TERRAIN_SHADER_DISCARD_HEIGHT)) {
                                 discard()
                             }
 
@@ -171,10 +171,10 @@ class Terrain(val heightMap: HeightMap) {
                             val splatWeights = float4Var(sampleTexture(splatMapSampler, splatCoords))
 
                             val wDeepWater = 1f.const - smoothStep((-30f).const, (-2f).const, material.inFragmentPos.y)
-                            val wBeach = floatVar(splatWeights.r * (1f.const - wDeepWater))
-                            val wGrass = floatVar(splatWeights.g * (1f.const - wDeepWater))
-                            val wWater = floatVar(splatWeights.b * (1f.const - wDeepWater))
-                            val wRock = floatVar(splatWeights.a * (1f.const - wDeepWater))
+                            val wBeach = float1Var(splatWeights.r * (1f.const - wDeepWater))
+                            val wGrass = float1Var(splatWeights.g * (1f.const - wDeepWater))
+                            val wWater = float1Var(splatWeights.b * (1f.const - wDeepWater))
+                            val wRock = float1Var(splatWeights.a * (1f.const - wDeepWater))
 
                             //val waterColor = MdColor.CYAN.toLinear().const
                             //val deepWaterColor = MdColor.INDIGO.toLinear().const
@@ -196,7 +196,7 @@ class Terrain(val heightMap: HeightMap) {
                             material.inBaseColor(baseColor * terrainColor.rgb)
 
                             if (material is BlinnPhongMaterialBlock) {
-                                val specularStrength = floatVar(
+                                val specularStrength = float1Var(
                                             splatWeights.r * 0.3f.const +
                                             splatWeights.g * 0.0f.const +
                                             splatWeights.b * 1.0f.const +
@@ -204,8 +204,8 @@ class Terrain(val heightMap: HeightMap) {
                                 )
                                 material.inSpecularStrength(specularStrength)
                             } else if (material is PbrMaterialBlock) {
-                                val roughness = floatVar(
-                                    splatWeights.r * 0.6f.const +
+                                val roughness = float1Var(
+                                            splatWeights.r * 0.6f.const +
                                             splatWeights.g * 0.8f.const +
                                             splatWeights.b * 0.2f.const +
                                             splatWeights.a * 0.7f.const

@@ -110,7 +110,7 @@ object OceanShader {
                 val posUp = float3Var(pos + float3Value(0f.const, 0f.const, (-1f).const))
                 val posDn = float3Var(pos + float3Value(0f.const, 0f.const, 1f.const))
 
-                val windScale2 = floatVar(windScale * 0.71.const)
+                val windScale2 = float1Var(windScale * 0.71.const)
 
                 pos.y set (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale).y - 0.5f.const) * windOffsetStrength.w +
                         (sampleTexture(windTex, (windOffsetStrength.xyz + pos) * windScale2).y - 0.5f.const) * windOffsetStrength.w
@@ -157,12 +157,12 @@ object OceanShader {
 
                 // sample ocean floor and compute fragment color
                 val camToFrag = float3Var(worldPos - camData.position)
-                val fragDepth = floatVar(dot(camToFrag, camData.direction))
+                val fragDepth = float1Var(dot(camToFrag, camData.direction))
                 camToFrag set normalize(camToFrag)
 
                 // 1st depth sample - water depth without refraction
                 val oceanFloorUv = posScreenSpace.output.float2("xy") / posScreenSpace.output.w * 0.5f.const + 0.5f.const
-                val oceanDepth1 = floatVar(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
+                val oceanDepth1 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
                 oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
 
                 // compute water refraction based on initial depth estimate and water surface normal
@@ -172,7 +172,7 @@ object OceanShader {
                 val refractUv = float2Var(refractScreenSpace.float2("xy") / refractScreenSpace.w * 0.5f.const + 0.5f.const)
 
                 // 2nd depth sample - water depth at refracted position
-                val oceanDepth2 = floatVar(floatVar(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x))
+                val oceanDepth2 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x)
                 oceanDepth2 set getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth
 
                 `if`(oceanDepth2 lt 0f.const) {
@@ -192,7 +192,7 @@ object OceanShader {
 
                 val waterColor = mix(oceanFloorColor, baseColor, oceanAlpha)
                 val foamColor = float4Var(Vec4f(1f).const)
-                val correctedOceanDepth = floatVar(oceanDepth1 * clamp(dot(camToFrag, worldNormal), 0.5f.const, 1f.const))
+                val correctedOceanDepth = float1Var(oceanDepth1 * clamp(dot(camToFrag, worldNormal), 0.5f.const, 1f.const))
                 foamColor.a set (1f.const - smoothStep(0.5f.const, 1.5f.const, correctedOceanDepth)) * step((-0.1f).const, oceanDepth1)
                 if (material is PbrMaterialBlock) {
                     material.inRoughness(foamColor.a * 0.3f.const + 0.1f.const)

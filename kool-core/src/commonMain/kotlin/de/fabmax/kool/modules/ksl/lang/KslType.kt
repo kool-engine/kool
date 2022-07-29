@@ -45,6 +45,11 @@ object KslTypeInt2 : KslIntType("int2"), KslVector2<KslTypeInt1>
 object KslTypeInt3 : KslIntType("int3"), KslVector3<KslTypeInt1>
 object KslTypeInt4 : KslIntType("int4"), KslVector4<KslTypeInt1>
 
+object KslTypeUint1 : KslIntType("uint1"), KslScalar
+object KslTypeUint2 : KslIntType("uint2"), KslVector2<KslTypeUint1>
+object KslTypeUint3 : KslIntType("uint3"), KslVector3<KslTypeUint1>
+object KslTypeUint4 : KslIntType("uint4"), KslVector4<KslTypeUint1>
+
 object KslTypeBool1 : KslBoolType("bool1"), KslScalar
 object KslTypeBool2 : KslBoolType("bool2"), KslVector2<KslTypeBool1>
 object KslTypeBool3 : KslBoolType("bool3"), KslVector3<KslTypeBool1>

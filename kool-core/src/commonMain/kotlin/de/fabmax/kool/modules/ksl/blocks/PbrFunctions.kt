@@ -13,12 +13,12 @@ class DistributionGgx(parentScope: KslScopeBuilder) :
         val roughness = paramFloat1("roughness")
 
         body.apply {
-            val a = floatVar(roughness * roughness)
-            val a2 = floatVar(a * a)
-            val nDotH = floatVar(max(dot(n, h), 0f.const))
-            val nDotH2 = floatVar(nDotH * nDotH)
+            val a = float1Var(roughness * roughness)
+            val a2 = float1Var(a * a)
+            val nDotH = float1Var(max(dot(n, h), 0f.const))
+            val nDotH2 = float1Var(nDotH * nDotH)
 
-            val denom = floatVar(nDotH2 * (a2 - 1f.const) + 1f.const)
+            val denom = float1Var(nDotH2 * (a2 - 1f.const) + 1f.const)
             denom set PI.const * denom * denom
 
             `return`(a2 / denom)
@@ -56,7 +56,7 @@ class FresnelSchlickRoughness(parentScope: KslScopeBuilder) :
         val roughness = paramFloat1("roughness")
 
         body.apply {
-            val x = floatVar(1f.const - roughness)
+            val x = float1Var(1f.const - roughness)
             `return`(f0 + (max(float3Value(x, x, x), f0) - f0) * pow(1f.const - cosTheta, 5f.const))
         }
     }
@@ -76,10 +76,10 @@ class GeometrySmith(parentScope: KslScopeBuilder) :
         val roughness = paramFloat1("roughness")
 
         body.apply {
-            val nDotV = floatVar(max(dot(n, v), 0f.const))
-            val nDotL = floatVar(max(dot(n, l), 0f.const))
-            val ggx1 = floatVar(geometrySchlickGgx(nDotL, roughness))
-            val ggx2 = floatVar(geometrySchlickGgx(nDotV, roughness))
+            val nDotV = float1Var(max(dot(n, v), 0f.const))
+            val nDotL = float1Var(max(dot(n, l), 0f.const))
+            val ggx1 = float1Var(geometrySchlickGgx(nDotL, roughness))
+            val ggx2 = float1Var(geometrySchlickGgx(nDotV, roughness))
             `return`(ggx1 * ggx2)
         }
     }
@@ -97,8 +97,8 @@ class GeometrySchlickGgx(parentScope: KslScopeBuilder) :
         val roughness = paramFloat1("roughness")
 
         body.apply {
-            val r = floatVar(roughness + 1f.const)
-            val k = floatVar((r * r) / 8f.const)
+            val r = float1Var(roughness + 1f.const)
+            val k = float1Var((r * r) / 8f.const)
             val denom = nDotX * (1f.const - k) + k
             `return`(nDotX / denom)
         }

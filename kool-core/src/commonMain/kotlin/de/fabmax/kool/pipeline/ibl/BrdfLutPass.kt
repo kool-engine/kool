@@ -1,14 +1,13 @@
 package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.renderPassConfig
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
@@ -25,39 +24,16 @@ class BrdfLutPass(parentScene: Scene) :
 
     init {
         clearColor = null
-
-        camera = OrthographicCamera().apply {
-            projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
-            isKeepAspectRatio = false
-            left = 0f
-            right = 1f
-            top = 1f
-            bottom = 0f
-        }
-
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generate {
                     rect {
-                        size.set(1f, 1f)
+                        origin.set(-1f, -1f, 0f)
+                        size.set(2f, 2f)
                         mirrorTexCoordsY()
                     }
                 }
-
-                val model = ShaderModel("BRDF LUT").apply {
-                    val ifTexCoords: StageInterfaceNode
-                    vertexStage {
-                        ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
-                    }
-                    fragmentStage {
-                        val lutNd = addNode(BrdfLutNode(stage)).apply {
-                            inTexCoords = ifTexCoords.output
-                        }
-                        colorOutput(lutNd.outColor)
-                    }
-                }
-                shader = ModeledShader(model)
+                shader = brdfLutShader()
             }
         }
 
@@ -78,113 +54,192 @@ class BrdfLutPass(parentScene: Scene) :
         super.dispose(ctx)
     }
 
-    private class BrdfLutNode(graph: ShaderGraph) : ShaderNode("brdfLut", graph) {
-        var inTexCoords = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
-        val outColor = ShaderNodeIoVar(ModelVar4f("brdfLut_outColor"), this)
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inTexCoords)
+    private fun brdfLutShader(): KslShader {
+        val prog = KslProgram("BRDF LUT").apply {
+            dumpCode = true
+            val uv = interStageFloat2("uv")
+            vertexStage {
+                main {
+                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                    outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                }
+            }
+            fragmentStage {
+                main {
+                    val integratedBrdf = float2Var(integrateBrdf(uv.output.x, uv.output.y))
+                    colorOutput(float4Value(integratedBrdf.x, integratedBrdf.y, 0f.const, 1f.const))
+                }
+            }
         }
 
-        override fun generateCode(generator: CodeGenerator) {
-            super.generateCode(generator)
+        return KslShader(prog, KslShader.PipelineConfig().apply {
+            blendMode = BlendMode.DISABLED
+            cullMethod = CullMethod.NO_CULLING
+            depthTest = DepthCompareOp.DISABLED
+            isWriteDepth = false
+        })
+    }
 
-            generator.appendFunction("brdfLut", """
-                float RadicalInverse_VdC(uint bits) {
-                    bits = (bits << 16u) | (bits >> 16u);
-                    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-                    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-                    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-                    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-                    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
-                }
-                
-                vec2 Hammersley(uint i, uint N) {
-                    return vec2(float(i)/float(N), RadicalInverse_VdC(i));
-                }
-                
-                vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness) {
-                    float a = roughness*roughness;
-                    
-                    float phi = 2.0 * $PI * Xi.x;
-                    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
-                    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-                    
-                    // from spherical coordinates to cartesian coordinates
-                    vec3 H;
-                    H.x = cos(phi) * sinTheta;
-                    H.y = sin(phi) * sinTheta;
-                    H.z = cosTheta;
-                    
-                    // from tangent-space vector to world-space sample vector
-                    vec3 up = abs(N.z) < 0.9999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-                    vec3 tangent = normalize(cross(up, N));
-                    vec3 bitangent = cross(N, tangent);
-                    
-                    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
-                    return normalize(sampleVec);
-                }
-                
-                float GeometrySchlickGGX(float NdotV, float roughness) {
-                    float a = roughness;
-                    float k = (a * a) / 2.0;
-                
-                    float nom   = NdotV;
-                    float denom = NdotV * (1.0 - k) + k;
-                
-                    return nom / denom;
-                }
-                
-                float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
-                    float NdotV = max(dot(N, V), 0.0);
-                    float NdotL = max(dot(N, L), 0.0);
-                    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-                    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-                
-                    return ggx1 * ggx2;
-                }
-                
-                vec2 IntegrateBRDF(float NdotV, float roughness) {
-                    vec3 V;
-                    V.x = sqrt(1.0 - NdotV*NdotV);
-                    V.y = 0.0;
-                    V.z = NdotV;
-                
-                    float A = 0.0;
-                    float B = 0.0;
-                
-                    vec3 N = vec3(0.0, 0.0, 1.0);
-                
-                    const uint SAMPLE_COUNT = 1024u;
-                    for(uint i = 0u; i < SAMPLE_COUNT; ++i) {
-                        vec2 Xi = Hammersley(i, SAMPLE_COUNT);
-                        vec3 H  = ImportanceSampleGGX(Xi, N, roughness);
-                        vec3 L  = normalize(2.0 * dot(V, H) * H - V);
-                
-                        float NdotL = max(L.z, 0.0);
-                        float NdotH = max(H.z, 0.0);
-                        float VdotH = max(dot(V, H), 0.0);
-                
-                        if(NdotL > 0.0) {
-                            float G = GeometrySmith(N, V, L, roughness);
-                            float G_Vis = (G * VdotH) / (NdotH * NdotV);
-                            float Fc = pow(1.0 - VdotH, 5.0);
-                
-                            A += (1.0 - Fc) * G_Vis;
-                            B += Fc * G_Vis;
-                        }
+
+    private class IntegrateBrdf(parentScope: KslScopeBuilder) :
+        KslFunction<KslTypeFloat2>("integrateBrdf", KslTypeFloat2, parentScope.parentStage) {
+
+        init {
+            val nDotV = paramFloat1("nDotV")
+            val roughness = paramFloat1("roughness")
+
+            body.apply {
+                val v = float3Var(float3Value(sqrt(1f.const - nDotV * nDotV), 0f.const, nDotV), "v")
+                val a = float1Var(0f.const, "a")
+                val b = float1Var(0f.const, "b")
+                val n = float3Var(Vec3f.Z_AXIS.const, "n")
+
+                val sampleCount = 1024.const
+
+                fori(0.const, sampleCount) { i ->
+                    val xi = float2Var(hammersley(i, sampleCount))
+                    val h = float3Var(importanceSampleGgx(xi, n, roughness))
+                    val l = float3Var(2f.const * dot(v, h) * h - v)
+
+                    val nDotL = float1Var(max(l.z, 0f.const))
+                    val nDotH = float1Var(max(h.z, 0f.const))
+                    val vDotH = float1Var(max(dot(v, h), 0f.const))
+
+                    `if`(nDotL gt 0f.const) {
+                        val g = float1Var(geometrySmithBrdf(n, v, l, roughness))
+                        val gVis = float1Var((g * vDotH) / (nDotH * nDotV))
+                        val fc = float1Var(pow(1f.const - vDotH, 5f.const))
+
+                        a += (1f.const - fc) * gVis
+                        b += fc * gVis
                     }
-                    A /= float(SAMPLE_COUNT);
-                    B /= float(SAMPLE_COUNT);
-                    return vec2(A, B);
                 }
-            """)
+                `return`(float2Value(a / sampleCount.toFloat1(), b / sampleCount.toFloat1()))
+            }
+        }
+    }
 
-            generator.appendMain("""
-                vec2 integratedBRDF = IntegrateBRDF(${inTexCoords.ref2f()}.x, ${inTexCoords.ref2f()}.y);
-                ${outColor.declare()} = vec4(integratedBRDF, 0.0, 1.0);
-            """)
+    /**
+     * Very similar to GeometrySchlickGgx in PbrFunctions but uses slightly different parameters
+     */
+    private class GeometrySchlickGgxBrdf(parentScope: KslScopeBuilder) :
+        KslFunction<KslTypeFloat1>("geometrySchlickGgxBrdf", KslTypeFloat1, parentScope.parentStage) {
+
+        init {
+            val nDotV = paramFloat1("nDotV")
+            val roughness = paramFloat1("roughness")
+
+            body.apply {
+                val k = float1Var((roughness * roughness) / 2f.const)
+                val denom = nDotV * (1f.const - k) + k
+                `return`(nDotV / denom)
+            }
+        }
+    }
+
+    /**
+     * Very similar to GeometrySmith in PbrFunctions but uses GeometrySchlickGgxBrdf instead of GeometrySchlickGgx
+     */
+    private class GeometrySmithBrdf(parentScope: KslScopeBuilder) :
+        KslFunction<KslTypeFloat1>("geometrySmithBrdf", KslTypeFloat1, parentScope.parentStage) {
+
+        init {
+            val n = paramFloat3("n")
+            val v = paramFloat3("v")
+            val l = paramFloat3("l")
+            val roughness = paramFloat1("roughness")
+
+            body.apply {
+                val nDotV = float1Var(max(dot(n, v), 0f.const))
+                val nDotL = float1Var(max(dot(n, l), 0f.const))
+                val ggx1 = float1Var(geometrySchlickGgxBrdf(nDotL, roughness))
+                val ggx2 = float1Var(geometrySchlickGgxBrdf(nDotV, roughness))
+                `return`(ggx1 * ggx2)
+            }
+        }
+    }
+
+    private class Hammersley(parentScope: KslScopeBuilder) :
+        KslFunction<KslTypeFloat2>("hammersley", KslTypeFloat2, parentScope.parentStage) {
+
+        init {
+            val i = paramInt1("i")
+            val n = paramInt1("n")
+
+            body.apply {
+                val bits = uint1Var(i.toUint1())
+                bits set ((bits shl 16u.const) or (bits shr 16u.const))
+                bits set (((bits and 0x55555555u.const) shl 1u.const) or ((bits and 0xaaaaaaaau.const) shr 1u.const))
+                bits set (((bits and 0x33333333u.const) shl 2u.const) or ((bits and 0xccccccccu.const) shr 2u.const))
+                bits set (((bits and 0x0f0f0f0fu.const) shl 4u.const) or ((bits and 0xf0f0f0f0u.const) shr 4u.const))
+                bits set (((bits and 0x00ff00ffu.const) shl 8u.const) or ((bits and 0xff00ff00u.const) shr 8u.const))
+                val radicalInverse = float1Var(bits.uToFloat1() * (1f / 0x100000000).const)
+                `return`(float2Value(i.toFloat1() / n.toFloat1(), radicalInverse))
+            }
+        }
+    }
+
+    private class ImportanceSampleGgx(parentScope: KslScopeBuilder) :
+        KslFunction<KslTypeFloat3>("importanceSampleGgx", KslTypeFloat3, parentScope.parentStage) {
+
+        init {
+            val xi = paramFloat2("xi")
+            val n = paramFloat3("n")
+            val roughness = paramFloat1("roughness")
+
+            body.apply {
+                val a = float1Var(roughness * roughness)
+                val phi = float1Var(2f.const * PI.const * xi.x)
+                val cosTheta = float1Var(sqrt((1f.const - xi.y) / (1f.const + (a * a - 1f.const) * xi.y)))
+                val sinTheta = float1Var(sqrt(1f.const - cosTheta * cosTheta))
+
+                // from spherical coordinates to cartesian coordinates
+                val h = float3Var(
+                    float3Value(
+                        cos(phi) * sinTheta,
+                        sin(phi) * sinTheta,
+                        cosTheta
+                    )
+                )
+
+                // from tangent-space vector to world-space sample vector
+                val up = float3Var(Vec3f.X_AXIS.const)
+                `if`(abs(n.z) lt 0.9999f.const) {
+                    up set Vec3f.Z_AXIS.const
+                }
+                val tangent = float3Var(normalize(cross(up, n)))
+                val bitangent = cross(n, tangent)
+
+                // sample vector
+                `return`(normalize(tangent * h.x + bitangent * h.y + n * h.z))
+            }
+        }
+    }
+
+    companion object {
+        private fun KslScopeBuilder.integrateBrdf(nDotV: KslExprFloat1, roughness: KslExprFloat1): KslExprFloat2 {
+            val func = parentStage.getOrCreateFunction("integrateBrdf") { IntegrateBrdf(this) }
+            return KslInvokeFunctionVector(func, this, KslTypeFloat2, nDotV, roughness)
+        }
+
+        fun KslScopeBuilder.geometrySchlickGgxBrdf(nDotX: KslExprFloat1, roughness: KslExprFloat1): KslExprFloat1 {
+            val func = parentStage.getOrCreateFunction("geometrySchlickGgxBrdf") { GeometrySchlickGgxBrdf(this) }
+            return KslInvokeFunctionScalar(func, this, KslTypeFloat1, nDotX, roughness)
+        }
+
+        private fun KslScopeBuilder.geometrySmithBrdf(n: KslExprFloat3, v: KslExprFloat3, l: KslExprFloat3, roughness: KslExprFloat1): KslExprFloat1 {
+            val func = parentStage.getOrCreateFunction("geometrySmithBrdf") { GeometrySmithBrdf(this) }
+            return KslInvokeFunctionScalar(func, this, KslTypeFloat1, n, v, l, roughness)
+        }
+
+        private fun KslScopeBuilder.hammersley(i: KslExprInt1, n: KslExprInt1): KslExprFloat2 {
+            val func = parentStage.getOrCreateFunction("hammersley") { Hammersley(this) }
+            return KslInvokeFunctionVector(func, this, KslTypeFloat2, i, n)
+        }
+
+        private fun KslScopeBuilder.importanceSampleGgx(xi: KslExprFloat2, n: KslExprFloat3, roughness: KslExprFloat1): KslExprFloat3 {
+            val func = parentStage.getOrCreateFunction("importanceSampleGgx") { ImportanceSampleGgx(this) }
+            return KslInvokeFunctionVector(func, this, KslTypeFloat3, xi, n, roughness)
         }
     }
 }

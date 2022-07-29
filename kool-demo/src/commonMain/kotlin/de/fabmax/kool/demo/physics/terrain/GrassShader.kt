@@ -116,8 +116,8 @@ object GrassShader {
                 main {
                     val tex = texture2d("grassAlpha")
                     val uv = texCoords.getAttributeCoords(Attribute.TEXTURE_COORDS)
-                    val texAlpha = floatVar(sampleTexture(tex, uv).a)
-                    `if` (texAlpha lt 0.35f.const) {
+                    val texAlpha = float1Var(sampleTexture(tex, uv).a)
+                    `if`(texAlpha lt 0.35f.const) {
                         discard()
                     }
                 }
@@ -167,7 +167,7 @@ object GrassShader {
                     val normal = float3Var(normalPort.input.input!!)
 
                     // modify normal so that it always points in light direction
-                    val dotNormal = floatVar(dot(normal, lightData.encodedPositions[0].xyz))
+                    val dotNormal = float1Var(dot(normal, lightData.encodedPositions[0].xyz))
                     val modFac = smoothStep((-0.15f).const, (-0.05f).const, dotNormal) * smoothStep(0.05f.const, 0.1f.const, -lightData.encodedPositions[0].y)
                     normal -= normalize(lightData.encodedPositions[0].xyz) * modFac
 
