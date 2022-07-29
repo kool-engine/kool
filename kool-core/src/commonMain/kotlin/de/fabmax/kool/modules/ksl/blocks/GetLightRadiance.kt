@@ -12,16 +12,17 @@ class GetLightRadiance(parentScope: KslScopeBuilder) :
         val encLightDir = paramFloat4("encLightDir")
         val encLightColor = paramFloat4("encLightColor")
 
-        body.apply {
+        body {
+            val radiance = float3Var()
             `if` (encLightPos.w eq Light.Type.DIRECTIONAL.encoded.const) {
-                `return`(encLightColor.rgb)
+                radiance set encLightColor.rgb
 
             }.`else` {
                 // spot or point light
                 val dist = float1Var(length(fragPos - encLightPos.xyz))
                 val strength = float1Var(1f.const / (dist * dist + 1f.const))
                 `if`(encLightPos.w eq Light.Type.POINT.encoded.const) {
-                    `return`(encLightColor.rgb * strength)
+                    radiance set encLightColor.rgb * strength
 
                 }.`else` {
                     // spot light
@@ -31,9 +32,10 @@ class GetLightRadiance(parentScope: KslScopeBuilder) :
                     val innerAngle = float1Var(outerAngle + (1f.const - outerAngle) * (1f.const - innerFac))
                     val angle = float1Var(dot(lightDirToFrag, encLightDir.xyz))
                     val angleStrength = 1f.const - smoothStep(innerAngle, outerAngle, angle)
-                    `return`(encLightColor.rgb * strength * angleStrength)
+                    radiance set encLightColor.rgb * strength * angleStrength
                 }
             }
+            return@body radiance
         }
     }
 
@@ -49,5 +51,5 @@ fun KslScopeBuilder.getLightRadiance(
     encodedLightColor: KslExprFloat4
 ): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(GetLightRadiance.FUNC_NAME) { GetLightRadiance(this) }
-    return KslInvokeFunctionVector(func, this, KslTypeFloat3, fragPos, encodedLightPos, encodedLightDir, encodedLightColor)
+    return func(fragPos, encodedLightPos, encodedLightDir, encodedLightColor)
 }

@@ -10,12 +10,14 @@ class GetLightDirectionFromFragPos(parentScope: KslScopeBuilder) :
         val fragPos = paramFloat3("fragPos")
         val encLightPos = paramFloat4("encLightPos")
 
-        body.apply {
+        body {
+            val dir = float3Var()
             `if` (encLightPos.w eq Light.Type.DIRECTIONAL.encoded.const) {
-                `return`(encLightPos.xyz * -(1f.const))
+                dir set encLightPos.xyz * -(1f.const)
             }.`else` {
-                `return`(encLightPos.xyz - fragPos)
+                dir set encLightPos.xyz - fragPos
             }
+            return@body dir
         }
     }
 
@@ -29,5 +31,5 @@ fun KslScopeBuilder.getLightDirectionFromFragPos(
     encodedLightPos: KslExprFloat4
 ): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(GetLightDirectionFromFragPos.FUNC_NAME) { GetLightDirectionFromFragPos(this) }
-    return KslInvokeFunctionVector(func, this, KslTypeFloat3, fragPos, encodedLightPos)
+    return func(fragPos, encodedLightPos)
 }

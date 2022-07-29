@@ -67,6 +67,11 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramUint3(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramU3"), KslTypeUint3)
     fun paramUint4(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramU4"), KslTypeUint4)
 
+    fun paramBool1(name: String? = null) = paramScalar(name ?: parentStage.program.nextName("paramB1"), KslTypeBool1)
+    fun paramBool2(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramB2"), KslTypeBool2)
+    fun paramBool3(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramB3"), KslTypeBool3)
+    fun paramBool4(name: String? = null) = paramVector(name ?: parentStage.program.nextName("paramB4"), KslTypeBool4)
+
     fun paramMat2(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM2"), KslTypeMat2)
     fun paramMat3(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM3"), KslTypeMat3)
     fun paramMat4(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM4"), KslTypeMat4)

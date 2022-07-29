@@ -11,11 +11,11 @@ class CalcBumpedNormal(parentScope: KslScopeBuilder) :
         val bumpNormal = paramFloat3("bumpNormal")
         val strength = paramFloat1("strength")
 
-        body.apply {
+        body {
             val tang = float3Var(normalize(tangent.xyz - dot(tangent.xyz, normal) * normal))
             val bitangent = cross(normal, tang) * tangent.w
             val tbn = mat3Var(mat3Value(tang, bitangent, normal))
-            `return`(normalize(mix(normal, tbn * bumpNormal, strength)))
+            return@body normalize(mix(normal, tbn * bumpNormal, strength))
         }
     }
 
@@ -31,5 +31,5 @@ fun KslScopeBuilder.calcBumpedNormal(
     strength: KslExprFloat1
 ): KslExprFloat3 {
     val func = parentStage.getOrCreateFunction(CalcBumpedNormal.FUNC_NAME) { CalcBumpedNormal(this) }
-    return KslInvokeFunctionVector(func, this, KslTypeFloat3, normal, tangent, bumpNormal, strength)
+    return func(normal, tangent, bumpNormal, strength)
 }

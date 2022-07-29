@@ -11,7 +11,7 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
         val depthMap = paramDepthTex2d("depthMap")
         val positionLightSpace = paramFloat4("positionLightSpace")
 
-        body.apply {
+        body {
             val sampleStep = float2Var(1f.const / textureSize2d(depthMap).toFloat2())
             val shadowFactor = float1Var(0f.const)
             val projPos = float3Var(positionLightSpace.xyz / positionLightSpace.w)
@@ -32,7 +32,7 @@ class GetShadowMapFactor(name: String, parentScope: KslScopeBuilder, samplePatte
             }.`else` {
                 shadowFactor set 1f.const
             }
-            `return`(shadowFactor)
+            return@body shadowFactor
         }
     }
 
@@ -48,5 +48,5 @@ fun KslScopeBuilder.getShadowMapFactor(
 ): KslExprFloat1 {
     val funcName = "${GetShadowMapFactor.FUNC_NAME_PREFIX}_${samplePattern.size}"
     val func = parentStage.getOrCreateFunction(funcName) { GetShadowMapFactor(funcName, this, samplePattern) }
-    return KslInvokeFunctionScalar(func, this, KslTypeFloat1, depthMap, positionLightSpace)
+    return func(depthMap, positionLightSpace)
 }

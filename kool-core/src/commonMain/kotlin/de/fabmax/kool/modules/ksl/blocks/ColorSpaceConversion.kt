@@ -20,7 +20,7 @@ class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
     init {
         val linearColor = paramFloat3("linearColor")
 
-        body.apply {
+        body {
             val a = A.const
             val b = B.const
             val c = C.const
@@ -30,7 +30,7 @@ class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
 
             val x = float3Var(linearColor * exposureBias.const)
             val curr = float3Var(((x * (a*x + c*b) + d*e) / (x * (a*x + b) + d*f)) - e/f)
-            `return`(curr * whiteScale.const)
+            return@body curr * whiteScale.const
         }
     }
 
@@ -63,7 +63,7 @@ fun KslScopeBuilder.convertColorSpace(inputColor: KslExprFloat3, conversion: Col
         ColorSpaceConversion.LINEAR_TO_sRGB -> pow(inputColor, Vec3f(Color.GAMMA_LINEAR_TO_sRGB).const)
         ColorSpaceConversion.LINEAR_TO_sRGB_HDR -> {
             val func = parentStage.getOrCreateFunction(ToneMapLinearColorUncharted2.FUNC_NAME) { ToneMapLinearColorUncharted2(this) }
-            pow(KslInvokeFunctionVector(func, this, KslTypeFloat3, inputColor), Vec3f(Color.GAMMA_LINEAR_TO_sRGB).const)
+            pow(func(inputColor), Vec3f(Color.GAMMA_LINEAR_TO_sRGB).const)
         }
     }
 }

@@ -10,9 +10,9 @@ class GetLinearDepth(parentScope: KslScopeBuilder) :
         val camNear = paramFloat1("camNear")
         val camFar = paramFloat1("camFar")
 
-        body.apply {
+        body {
             val depthN = float1Var(2f.const * depth - 1f.const)
-            `return`(2f.const * camNear * camFar / (camFar + camNear - depthN * (camFar - camNear)))
+            return@body 2f.const * camNear * camFar / (camFar + camNear - depthN * (camFar - camNear))
         }
     }
 
@@ -27,5 +27,5 @@ fun KslScopeBuilder.getLinearDepth(
     camFar: KslExprFloat1
 ): KslExprFloat1 {
     val func = parentStage.getOrCreateFunction(GetLinearDepth.FUNC_NAME) { GetLinearDepth(this) }
-    return KslInvokeFunctionScalar(func, this, KslTypeFloat1, depth, camNear, camFar)
+    return func(depth, camNear, camFar)
 }
