@@ -85,11 +85,27 @@ val <V, S> KslVectorExpression<V, S>.a: KslVectorAccessorScalar<S> where V: KslT
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.xyz get() = float3("xyz")
 val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.rgb get() = float3("rgb")
 
+fun <V> KslVectorExpression<V, *>.float1(component: String): KslVectorAccessorScalar<KslTypeFloat1> where V: KslFloatType, V: KslVector<*> {
+    return KslVectorAccessorScalar(this, component, KslTypeFloat1)
+}
+fun <V> KslVectorExpression<V, *>.int1(component: String): KslVectorAccessorScalar<KslTypeInt1> where V: KslIntType, V: KslVector<*> {
+    return KslVectorAccessorScalar(this, component, KslTypeInt1)
+}
+fun <V> KslVectorExpression<V, *>.uint1(component: String): KslVectorAccessorScalar<KslTypeUint1> where V: KslIntType, V: KslVector<*> {
+    return KslVectorAccessorScalar(this, component, KslTypeUint1)
+}
+fun <V> KslVectorExpression<V, *>.bool1(component: String): KslVectorAccessorScalar<KslTypeBool1> where V: KslBoolType, V: KslVector<*> {
+    return KslVectorAccessorScalar(this, component, KslTypeBool1)
+}
+
 fun <V> KslVectorExpression<V, *>.float2(components: String): KslVectorAccessorVector<KslTypeFloat2, KslTypeFloat1> where V: KslFloatType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeFloat2)
 }
 fun <V> KslVectorExpression<V, *>.int2(components: String): KslVectorAccessorVector<KslTypeInt2, KslTypeInt1> where V: KslIntType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeInt2)
+}
+fun <V> KslVectorExpression<V, *>.uint2(components: String): KslVectorAccessorVector<KslTypeUint2, KslTypeUint1> where V: KslIntType, V: KslVector<*> {
+    return KslVectorAccessorVector(this, components, KslTypeUint2)
 }
 fun <V> KslVectorExpression<V, *>.bool2(components: String): KslVectorAccessorVector<KslTypeBool2, KslTypeBool1> where V: KslBoolType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeBool2)
@@ -101,6 +117,9 @@ fun <V> KslVectorExpression<V, *>.float3(components: String): KslVectorAccessorV
 fun <V> KslVectorExpression<V, *>.int3(components: String): KslVectorAccessorVector<KslTypeInt3, KslTypeInt1> where V: KslIntType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeInt3)
 }
+fun <V> KslVectorExpression<V, *>.uint3(components: String): KslVectorAccessorVector<KslTypeUint3, KslTypeUint1> where V: KslIntType, V: KslVector<*> {
+    return KslVectorAccessorVector(this, components, KslTypeUint3)
+}
 fun <V> KslVectorExpression<V, *>.bool3(components: String): KslVectorAccessorVector<KslTypeBool3, KslTypeBool1> where V: KslBoolType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeBool3)
 }
@@ -110,6 +129,9 @@ fun <V> KslVectorExpression<V, *>.float4(components: String): KslVectorAccessorV
 }
 fun <V> KslVectorExpression<V, *>.int4(components: String): KslVectorAccessorVector<KslTypeInt4, KslTypeInt1> where V: KslIntType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeInt4)
+}
+fun <V> KslVectorExpression<V, *>.uint4(components: String): KslVectorAccessorVector<KslTypeUint4, KslTypeUint1> where V: KslIntType, V: KslVector<*> {
+    return KslVectorAccessorVector(this, components, KslTypeUint4)
 }
 fun <V> KslVectorExpression<V, *>.bool4(components: String): KslVectorAccessorVector<KslTypeBool4, KslTypeBool1> where V: KslBoolType, V: KslVector<*> {
     return KslVectorAccessorVector(this, components, KslTypeBool4)

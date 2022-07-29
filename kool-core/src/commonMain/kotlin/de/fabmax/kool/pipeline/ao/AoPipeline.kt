@@ -134,8 +134,8 @@ abstract class AoPipeline {
 
         override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
             aoPass.sceneCam = currentPasses.materialPass.camera
-            aoPass.deferredPosition(currentPasses.materialPass.positionFlags)
-            aoPass.deferredNormal(currentPasses.materialPass.normalRoughness)
+            aoPass.deferredPosition = currentPasses.materialPass.positionFlags
+            aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
             denoisePass.depthInput(currentPasses.materialPass.positionFlags)
         }
 
