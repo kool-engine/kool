@@ -104,7 +104,7 @@ class BrdfLutPass(parentScene: Scene) :
                         bits set (((bits and 0x33333333u.const) shl 2u.const) or ((bits and 0xccccccccu.const) shr 2u.const))
                         bits set (((bits and 0x0f0f0f0fu.const) shl 4u.const) or ((bits and 0xf0f0f0f0u.const) shr 4u.const))
                         bits set (((bits and 0x00ff00ffu.const) shl 8u.const) or ((bits and 0xff00ff00u.const) shr 8u.const))
-                        val radicalInverse = float1Var(bits.uToFloat1() * (1f / 0x100000000).const)
+                        val radicalInverse = float1Var(bits.toFloat1() * (1f / 0x100000000).const)
                         return@body float2Value(i.toFloat1() / n.toFloat1(), radicalInverse)
                     }
                 }

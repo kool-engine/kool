@@ -73,7 +73,7 @@ class PbrMaterialBlock(
             }
             prefilteredColor set prefilteredColor * inReflectionStrength
 
-            val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).float2("rg"))
+            val brdf = float2Var(sampleTexture(brdfLut, float2Value(normalDotView, roughness)).rg)
             val specular = float3Var(prefilteredColor * (f * brdf.r + brdf.g))
             val ambient = float3Var(kD * diffuse * inAoFactor)
             val reflection = float3Var(specular * inAoFactor)

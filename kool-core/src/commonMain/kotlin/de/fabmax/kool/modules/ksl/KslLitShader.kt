@@ -210,7 +210,7 @@ abstract class KslLitShader(cfg: LitShaderConfig, model: KslProgram) : KslShader
                     val aoFactor = float1Var(1f.const)
                     if (cfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
-                        val aoUv = float2Var(projPosition.output.float2("xy") / projPosition.output.w * 0.5f.const + 0.5f.const)
+                        val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
                         aoFactor set sampleTexture(aoMap, aoUv).x
                     }
 

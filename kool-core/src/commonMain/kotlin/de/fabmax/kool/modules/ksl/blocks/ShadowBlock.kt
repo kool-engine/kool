@@ -106,7 +106,7 @@ class ShadowBlockFragmentStage(
 
                                     // determine how close proj pos is to shadow map border and use that to blend
                                     // between cascades
-                                    val p = float2Var(abs((projPos.float2("xy") - 0.5f.const) * 2f.const))
+                                    val p = float2Var(abs((projPos.xy - 0.5f.const) * 2f.const))
                                     val c = 1f.const - clamp(max(p.x, p.y) - 0.9f.const, 0f.const, 0.05f.const) * 10f.const
                                     val w = float1Var(c * (1f.const - sampleW))
 

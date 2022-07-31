@@ -144,13 +144,13 @@ object OceanShader {
                 val worldNormal = material.inNormal.input!!
                 val tangent = float4Value(cross(worldNormal, Vec3f.X_AXIS.const), 1f.const)
 
-                val offsetA = float2Var(windOffsetStrength.float2("xz") * 0.73f.const * windScale)
-                val offsetB = float2Var(windOffsetStrength.float2("xz") * 0.37f.const * windScale)
-                val offsetC = float2Var(windOffsetStrength.float2("xz") * 0.15f.const * windScale)
+                val offsetA = float2Var(windOffsetStrength.xz * 0.73f.const * windScale)
+                val offsetB = float2Var(windOffsetStrength.xz * 0.37f.const * windScale)
+                val offsetC = float2Var(windOffsetStrength.xz * 0.15f.const * windScale)
 
-                val mapNormalA = sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.051f.const + offsetA).xyz * 2f.const - 1f.const
-                val mapNormalB = (sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.017f.const + offsetB).xyz * 2f.const - 1f.const) * 0.7f.const
-                val mapNormalC = (sampleTexture(oceanBumpTex, worldPos.float2("xz") * 0.005f.const + offsetC).xyz * 2f.const - 1f.const) * 0.3f.const
+                val mapNormalA = sampleTexture(oceanBumpTex, worldPos.xz * 0.051f.const + offsetA).xyz * 2f.const - 1f.const
+                val mapNormalB = (sampleTexture(oceanBumpTex, worldPos.xz * 0.017f.const + offsetB).xyz * 2f.const - 1f.const) * 0.7f.const
+                val mapNormalC = (sampleTexture(oceanBumpTex, worldPos.xz * 0.005f.const + offsetC).xyz * 2f.const - 1f.const) * 0.3f.const
                 val mapNormal = float3Var(normalize(mapNormalA + mapNormalB + mapNormalC))
                 val bumpNormal = float3Var(calcBumpedNormal(worldNormal, tangent, mapNormal, 0.4f.const))
                 material.inNormal(bumpNormal)
@@ -161,7 +161,7 @@ object OceanShader {
                 camToFrag set normalize(camToFrag)
 
                 // 1st depth sample - water depth without refraction
-                val oceanFloorUv = posScreenSpace.output.float2("xy") / posScreenSpace.output.w * 0.5f.const + 0.5f.const
+                val oceanFloorUv = posScreenSpace.output.xy / posScreenSpace.output.w * 0.5f.const + 0.5f.const
                 val oceanDepth1 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), oceanFloorUv).x)
                 oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
 
@@ -169,7 +169,7 @@ object OceanShader {
                 //val refractPos = float3Var(worldPos + refract(normalize(camToFrag), bumpNormal, 1.33f.const) * oceanDepth)
                 val refractPos = float3Var(worldPos + camToFrag * oceanDepth1 + bumpNormal * clamp(oceanDepth1 / 3f.const, 0f.const, 1f.const))
                 val refractScreenSpace = float4Var(camData.viewProjMat * float4Value(refractPos, 1f))
-                val refractUv = float2Var(refractScreenSpace.float2("xy") / refractScreenSpace.w * 0.5f.const + 0.5f.const)
+                val refractUv = float2Var(refractScreenSpace.xy / refractScreenSpace.w * 0.5f.const + 0.5f.const)
 
                 // 2nd depth sample - water depth at refracted position
                 val oceanDepth2 = float1Var(sampleTexture(texture2d("tOceanFloorDepth"), refractUv).x)

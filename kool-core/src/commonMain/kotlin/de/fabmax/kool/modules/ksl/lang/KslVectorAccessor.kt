@@ -82,9 +82,6 @@ val <V, S> KslVectorExpression<V, S>.b: KslVectorAccessorScalar<S> where V: KslT
 val <V, S> KslVectorExpression<V, S>.a: KslVectorAccessorScalar<S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
     get() = KslVectorAccessorScalar(this, "a", scalarTypeOf(this))
 
-val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.xyz get() = float3("xyz")
-val KslVectorExpression<KslTypeFloat4, KslTypeFloat1>.rgb get() = float3("rgb")
-
 fun <V> KslVectorExpression<V, *>.float1(component: String): KslVectorAccessorScalar<KslTypeFloat1> where V: KslFloatType, V: KslVector<*> {
     return KslVectorAccessorScalar(this, component, KslTypeFloat1)
 }

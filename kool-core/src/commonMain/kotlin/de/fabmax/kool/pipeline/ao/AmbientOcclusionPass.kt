@@ -183,7 +183,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                     normal = normalDepth.xyz
 
                     val projPos = float4Var(Vec4f(0f, 0f, 1f, 1f).const)
-                    projPos.float2("xy") set uv.output * 2f.const - 1f.const
+                    projPos.xy set uv.output * 2f.const - 1f.const
                     projPos set uInvProj * projPos
                     origin = float3Var(projPos.xyz / projPos.w)
                     origin set origin * (normalDepth.w / origin.z)
@@ -216,7 +216,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                             `if`((sampleProj.x gt (-1f).const) and (sampleProj.x lt 1f.const) and
                                     (sampleProj.y gt (-1f).const) and (sampleProj.y lt 1f.const)) {
 
-                                val sampleUv = float2Var(sampleProj.float2("xy") * 0.5f.const + 0.5f.const)
+                                val sampleUv = float2Var(sampleProj.xy * 0.5f.const + 0.5f.const)
                                 val sampleDepth = sampleTexture(depthTex, sampleUv).float1(depthComponent)
                                 val rangeCheck = float1Var(1f.const - smoothStep(0f.const, 1f.const, abs(origin.z - sampleDepth) / (4f.const * sampleR)))
                                 val occlusionInc = float1Var(clamp((sampleDepth - (samplePos.z + uBias)) * 10f.const, 0f.const, 1f.const))
