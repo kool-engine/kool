@@ -87,7 +87,7 @@ abstract class AoPipeline {
             aoPass.sceneCam = proxyCamera
             aoPass.dependsOn(depthPass)
             denoisePass = AoDenoisePass(aoPass, "a")
-            denoisePass.depthInput(depthPass.colorTexture)
+            denoisePass.depth = depthPass.colorTexture
             denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
@@ -136,7 +136,7 @@ abstract class AoPipeline {
             aoPass.sceneCam = currentPasses.materialPass.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
-            denoisePass.depthInput(currentPasses.materialPass.positionFlags)
+            denoisePass.depth = currentPasses.materialPass.positionFlags
         }
 
         fun checkSize(viewportW: Int, viewportH: Int, ctx: KoolContext) {

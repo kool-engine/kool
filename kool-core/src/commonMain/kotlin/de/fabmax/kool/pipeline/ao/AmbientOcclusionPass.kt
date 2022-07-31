@@ -27,14 +27,14 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     private val aoPassShader = AoPassShader()
 
-    var fwdNormalDepth by aoPassShader::depthTex
-    var deferredPosition by aoPassShader::depthTex
-    var deferredNormal by aoPassShader::normalTex
+    var fwdNormalDepth: Texture2d? by aoPassShader::depthTex
+    var deferredPosition: Texture2d? by aoPassShader::depthTex
+    var deferredNormal: Texture2d? by aoPassShader::normalTex
 
-    var radius by aoPassShader::uRadius
-    var strength by aoPassShader::uStrength
-    var power by aoPassShader::uPower
-    var bias by aoPassShader::uBias
+    var radius: Float by aoPassShader::uRadius
+    var strength: Float by aoPassShader::uStrength
+    var power: Float by aoPassShader::uPower
+    var bias: Float by aoPassShader::uBias
 
     var kernelSz = 16
         get() = aoPassShader.uKernelSize
@@ -66,7 +66,10 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         aoPassShader.uProj.set(it.proj)
                         aoPassShader.uInvProj.set(it.invProj)
                     }
-                    aoPassShader.uNoiseScale = tmpVec2f.set(width / 4f, height / 4f)
+                    aoPassShader.uNoiseScale = tmpVec2f.set(
+                        this@AmbientOcclusionPass.width / NOISE_TEX_SIZE.toFloat(),
+                        this@AmbientOcclusionPass.height / NOISE_TEX_SIZE.toFloat()
+                    )
                 }
             }
         }
@@ -117,10 +120,11 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     }
 
     private fun makeNoiseTexture(): Texture2d {
-        val buf = createUint8Buffer(4 * 16)
-        val rotAngles = (0 until 16).map { PI.toFloat() * it / 8 }.shuffled()
+        val noiseLen = NOISE_TEX_SIZE * NOISE_TEX_SIZE
+        val buf = createUint8Buffer(4 * noiseLen)
+        val rotAngles = (0 until noiseLen).map { 2f * PI.toFloat() * it / noiseLen }.shuffled()
 
-        for (i in 0 until 16) {
+        for (i in 0 until (NOISE_TEX_SIZE * NOISE_TEX_SIZE)) {
             val ang = rotAngles[i]
             val x = cos(ang)
             val y = sin(ang)
@@ -130,7 +134,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             buf[i*4+3] = 1
         }
 
-        val data = TextureData2d(buf, 4, 4, TexFormat.RGBA)
+        val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
         val texProps = TextureProps(TexFormat.RGBA, AddressMode.REPEAT, AddressMode.REPEAT,
                 minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST,
                 mipMapping = false, maxAnisotropy = 1)
@@ -257,6 +261,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     companion object {
         const val MAX_KERNEL_SIZE = 64
+        const val NOISE_TEX_SIZE = 4
     }
 }
 

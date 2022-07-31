@@ -2,100 +2,54 @@ package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.pipeline.shading.Texture2dInput
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.Color
 
-class AoDenoisePass(aoPass: AmbientOcclusionPass, depthComponent: String) :
+class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         OffscreenRenderPass2d(Group(), renderPassConfig {
             name = "AoDenoisePass"
             setSize(aoPass.config.width, aoPass.config.height)
-            addColorTexture(TexFormat.R)
             clearDepthTexture()
+            addColorTexture(TexFormat.R)
         }) {
 
-    private val uRadius = Uniform1f(1f, "uRadius")
+    private val denoiseShader = DenoiseShader(aoPass, depthComponent)
 
-    var radius: Float
-        get() = uRadius.value
-        set(value) { uRadius.value = value }
+    var radius: Float by denoiseShader::uRadius
+    var noisyAo: Texture2d? by denoiseShader::noisyAoTex
+    var depth: Texture2d? by denoiseShader::depthTex
 
     var clearAndDisable = false
+
     private val denoiseMesh: Mesh
     private val clearMesh: Mesh
-
-    val noisyAoInput = Texture2dInput("noisyAo", aoPass.colorTexture)
-    val depthInput = Texture2dInput("depth")
 
     init {
         clearColor = Color.BLACK
 
         denoiseMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-            generate {
-                rect {
-                    size.set(1f, 1f)
-                    mirrorTexCoordsY()
-                }
-            }
-
-            val model = ShaderModel("AoDenoisePass").apply {
-                val ifTexCoords: StageInterfaceNode
-                vertexStage {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                }
-                fragmentStage {
-                    val noisyAo = texture2dNode("noisyAo")
-                    val depth = texture2dNode("depth")
-                    val radius = pushConstantNode1f(uRadius)
-                    val blurNd = addNode(BlurNode(noisyAo, depth, depthComponent, stage))
-                    blurNd.inScreenPos = ifTexCoords.output
-                    blurNd.radius = radius.output
-                    colorOutput(blurNd.outColor)
-                }
-            }
-            shader = ModeledShader(model).apply {
-                onPipelineSetup += { builder, _, _ ->
-                    builder.blendMode = BlendMode.DISABLED
-                    builder.depthTest = DepthCompareOp.DISABLED
-                }
-                onPipelineCreated += { _, _, _ ->
-                    noisyAoInput.connect(model)
-                    depthInput.connect(model)
-                }
-            }
+            generateFullscreenQuad()
+            shader = denoiseShader
         }
 
         clearMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
             isVisible = false
-            generate {
-                rect {
-                    size.set(1f, 1f)
-                    mirrorTexCoordsY()
-                }
-            }
-
-            val model = ShaderModel("ClearAoDenoisePass").apply {
-                vertexStage {
-                    // fixme: currently Vulkan pipeline creation fails if a shader has no uniform inputs, add mvpNode as a dummy
-                    mvpNode()
-                    positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                }
+            generateFullscreenQuad()
+            shader = KslShader(KslProgram("AO Clear").apply {
+                // fixme: currently Vulkan pipeline creation fails if a shader has no uniform inputs -> add a dummy
+                uniformFloat4("uDummy")
+                fullscreenQuadVertexStage(null)
                 fragmentStage {
-                    colorOutput(constVec4f(Color.WHITE))
+                    main {
+                        colorOutput(Color.WHITE.const)
+                    }
                 }
-            }
-            shader = ModeledShader(model).apply {
-                onPipelineSetup += { builder, _, _ ->
-                    builder.blendMode = BlendMode.DISABLED
-                    builder.depthTest = DepthCompareOp.DISABLED
-                }
-            }
+            }, pipelineCfg)
         }
 
         (drawNode as Group).apply {
@@ -126,44 +80,71 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass, depthComponent: String) :
         super.dispose(ctx)
     }
 
-    private class BlurNode(val noisyAo: Texture2dNode, val depth: Texture2dNode,
-                           val depthComponent: String, shaderGraph: ShaderGraph) :
-            ShaderNode("blurNode", shaderGraph) {
+    private fun denoiseProg(depthComponent: String) = KslProgram("Ambient Occlusion Denoise Pass").apply {
+        val uv = interStageFloat2("uv")
 
-        var inScreenPos = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
-        var radius = ShaderNodeIoVar(ModelVar1fConst(1f))
+        fullscreenQuadVertexStage(uv)
 
-        val outColor = ShaderNodeIoVar(ModelVar4f("colorOut"), this)
+        fragmentStage {
+            val noisyAoTex = texture2d("noisyAoTex")
+            val depthTex = texture2d("depthTex")
 
-        override fun setup(shaderGraph: ShaderGraph) {
-            dependsOn(noisyAo)
-            dependsOn(depth)
-            dependsOn(inScreenPos, radius)
-            super.setup(shaderGraph)
-        }
+            val uRadius = uniformFloat1("uRadius")
 
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("""
-                int blurSize = 4;
-                vec2 texelSize = 1.0 / vec2(textureSize(${noisyAo.name}, 0));
-                float depthOri = ${generator.sampleTexture2d(depth.name, inScreenPos.ref2f())}.$depthComponent;
-                float depthThreshold = ${radius.ref1f()} * 0.1;
-                
-                float result = 0.0;
-                float weight = 0.0;
-                vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);
-                for (int x = 0; x < blurSize; x++) {
-                    for (int y = 0; y < blurSize; y++) {
-                        vec2 uv = ${inScreenPos.ref2f()} + (hlim + vec2(float(x), float(y))) * texelSize;
-                        float w = 1.0 - step(depthThreshold, abs(${generator.sampleTexture2d(depth.name, "uv")}.$depthComponent - depthOri)) * 0.99;
-                        
-                        result += ${generator.sampleTexture2d(noisyAo.name, "uv")}.r * w;
-                        weight += w;
+            main {
+                val texelSize = float2Var(1f.const / textureSize2d(noisyAoTex).toFloat2())
+                val baseDepth = float1Var(sampleTexture(depthTex, uv.output).float1(depthComponent))
+                val depthThresh = float1Var(uRadius * 0.1.const)
+
+                val result = float1Var(0f.const)
+                val weight = float1Var(0f.const)
+                val hlim = float2Var(Vec2f(-AmbientOcclusionPass.NOISE_TEX_SIZE.toFloat()).const * 0.5f.const + 0.5f.const)
+                fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { y ->
+                    fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { x ->
+                        val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
+                        val sampleDepth = abs(sampleTexture(depthTex, sampleUv).float1(depthComponent) - baseDepth)
+                        val w = 1f.const - step(depthThresh, sampleDepth) * 0.99.const
+                        result += sampleTexture(noisyAoTex, sampleUv).r * w
+                        weight += w
                     }
                 }
-                result /= weight;
-                ${outColor.declare()} = vec4(result, result, result, 1.0);
-            """)
+                result /= weight
+                colorOutput(float4Value(result, result, result, 1f.const))
+            }
+        }
+    }
+
+    private inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String)
+        : KslShader(denoiseProg(depthComponent), pipelineCfg) {
+        var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
+        var depthTex by texture2d("depthTex")
+        var uRadius by uniform1f("uRadius", 1f)
+    }
+
+    companion object {
+        private val pipelineCfg = KslShader.PipelineConfig().apply {
+            blendMode = BlendMode.DISABLED
+            cullMethod = CullMethod.NO_CULLING
+            depthTest = DepthCompareOp.DISABLED
+        }
+    }
+
+    private fun Mesh.generateFullscreenQuad() {
+        generate {
+            rect {
+                origin.set(-1f, -1f, 0f)
+                size.set(2f, 2f)
+                mirrorTexCoordsY()
+            }
+        }
+    }
+
+    private fun KslProgram.fullscreenQuadVertexStage(uv: KslInterStageVector<KslTypeFloat2, KslTypeFloat1>?) {
+        vertexStage {
+            main {
+                uv?.let { it.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name) }
+                outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+            }
         }
     }
 }
