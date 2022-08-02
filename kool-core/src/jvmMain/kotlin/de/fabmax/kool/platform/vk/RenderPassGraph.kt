@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
@@ -36,6 +37,7 @@ class RenderPassGraph {
             val offscreen = ctx.backgroundPasses[j]
             if (offscreen.isEnabled) {
                 remainingPasses.add(offscreen)
+                requiredCommandBuffers += offscreen.requiredBuffers
             } else {
                 processedPasses.add(offscreen)
             }
@@ -47,12 +49,7 @@ class RenderPassGraph {
                     val offscreen = scene.offscreenPasses[j]
                     if (offscreen.isEnabled) {
                         remainingPasses.add(offscreen)
-                        // add additional cmd buffers for each offscreen pass (ping-pong passes can resolve to multiple passes)
-                        requiredCommandBuffers += when (offscreen) {
-                            is OffscreenRenderPass2dPingPong -> offscreen.pingPongPasses
-                            is OffscreenRenderPassCube -> 6
-                            else -> 1
-                        }
+                        requiredCommandBuffers += offscreen.requiredBuffers
                     } else {
                         processedPasses.add(offscreen)
                     }
@@ -118,6 +115,13 @@ class RenderPassGraph {
             groups[i].dependencies += groups[i-1]
         }
     }
+
+    private val OffscreenRenderPass.requiredBuffers: Int
+        get() = when (this) {
+            is OffscreenRenderPass2dPingPong -> pingPongPasses
+            is OffscreenRenderPassCube -> 6
+            else -> 1
+        }
 
     private fun newGroup(isOnScreen: Boolean): RenderPassGroup {
         val group = if (groupPool.isNotEmpty()) {

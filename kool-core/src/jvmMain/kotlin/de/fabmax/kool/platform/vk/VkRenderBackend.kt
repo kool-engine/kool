@@ -426,8 +426,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                         if (instanceCnt > 0) {
                             vkCmdBindVertexBuffers(commandBuffer, 0, pBuffers, pOffsets)
                             vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
-                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
+                            val descriptorSetPtr = descriptorSet.getDescriptorSet(imageIndex)
+                            if (descriptorSetPtr != 0L) {
+                                vkCmdBindDescriptorSets(
+                                    commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipeline.pipelineLayout, 0, longs(descriptorSetPtr), null
+                                )
+                            }
                             vkCmdDrawIndexed(commandBuffer, model.numIndices, instanceCnt, 0, 0, 0)
 
                             ctx.engineStats.addDrawCommandCount(1)

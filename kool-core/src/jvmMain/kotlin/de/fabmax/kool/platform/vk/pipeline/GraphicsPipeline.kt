@@ -328,24 +328,27 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     }
 
     private fun createDescriptorPool(descriptorSetLayout: DescriptorSetLayout): Long {
-        memStack {
-            val poolSize = callocVkDescriptorPoolSizeN(descriptorSetLayout.descriptors.size) {
-                descriptorSetLayout.descriptors.forEachIndexed { i, b ->
-                    this[i].apply {
-                        type(b.type.intType())
-                        descriptorCount(nImages * descriptorSetPoolSize)
+        if (descriptorSetLayout.descriptors.isNotEmpty()) {
+            memStack {
+                val poolSize = callocVkDescriptorPoolSizeN(descriptorSetLayout.descriptors.size) {
+                    descriptorSetLayout.descriptors.forEachIndexed { i, b ->
+                        this[i].apply {
+                            type(b.type.intType())
+                            descriptorCount(nImages * descriptorSetPoolSize)
+                        }
                     }
                 }
-            }
 
-            val poolInfo = callocVkDescriptorPoolCreateInfo {
-                sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
-                pPoolSizes(poolSize)
-                maxSets(nImages * descriptorSetPoolSize)
-            }
+                val poolInfo = callocVkDescriptorPoolCreateInfo {
+                    sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
+                    pPoolSizes(poolSize)
+                    maxSets(nImages * descriptorSetPoolSize)
+                }
 
-            return checkCreatePointer { vkCreateDescriptorPool(sys.device.vkDevice, poolInfo, null, it) }
+                return checkCreatePointer { vkCreateDescriptorPool(sys.device.vkDevice, poolInfo, null, it) }
+            }
         }
+        return 0L
     }
 
     fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
@@ -382,7 +385,9 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
         vkDestroyPipeline(sys.device.vkDevice, vkGraphicsPipeline, null)
         vkDestroyPipelineLayout(sys.device.vkDevice, pipelineLayout, null)
         vkDestroyDescriptorSetLayout(sys.device.vkDevice, descriptorSetLayout, null)
-        vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
+        if (descriptorPool != 0L) {
+            vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
+        }
 
         descriptorSetInstances.clear()
         sys.ctx.engineStats.pipelineDestroyed(vkGraphicsPipeline)

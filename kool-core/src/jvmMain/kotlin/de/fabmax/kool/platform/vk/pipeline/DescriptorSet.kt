@@ -2,7 +2,10 @@ package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.drawqueue.DrawCommand
-import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.VkSystem
+import de.fabmax.kool.platform.vk.callocVkDescriptorSetAllocateInfo
+import de.fabmax.kool.platform.vk.callocVkWriteDescriptorSetN
+import de.fabmax.kool.platform.vk.memStack
 import org.lwjgl.vulkan.VK10.*
 
 class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
@@ -21,21 +24,29 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
     fun getDescriptorSet(imageIdx: Int) = descriptorSets[imageIdx]
 
     private fun createDescriptorSets() {
-        memStack {
-            val layouts = mallocLong(graphicsPipeline.nImages)
-            for (i in 0 until graphicsPipeline.nImages) {
-                layouts.put(i, graphicsPipeline.descriptorSetLayout)
-            }
-            val allocInfo = callocVkDescriptorSetAllocateInfo {
-                sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
-                descriptorPool(graphicsPipeline.descriptorPool)
-                pSetLayouts(layouts)
-            }
+        // check if graphicsPipeline has a valid descriptorPool, if not the pipeline does not use any descriptors
+        // i.e. the shader does not have any uniform inputs
+        if (graphicsPipeline.descriptorPool != 0L) {
+            memStack {
+                val layouts = mallocLong(graphicsPipeline.nImages)
+                for (i in 0 until graphicsPipeline.nImages) {
+                    layouts.put(i, graphicsPipeline.descriptorSetLayout)
+                }
+                val allocInfo = callocVkDescriptorSetAllocateInfo {
+                    sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
+                    descriptorPool(graphicsPipeline.descriptorPool)
+                    pSetLayouts(layouts)
+                }
 
-            val sets = mallocLong(graphicsPipeline.nImages)
-            check(vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
+                val sets = mallocLong(graphicsPipeline.nImages)
+                check(vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
+                for (i in 0 until graphicsPipeline.nImages) {
+                    descriptorSets += sets[i]
+                }
+            }
+        } else {
             for (i in 0 until graphicsPipeline.nImages) {
-                descriptorSets += sets[i]
+                descriptorSets += 0L
             }
         }
     }

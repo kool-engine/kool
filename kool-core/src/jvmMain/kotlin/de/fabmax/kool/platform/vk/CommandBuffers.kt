@@ -29,7 +29,11 @@ class CommandBuffers(val commandPool: CommandPool, nBuffers: Int) : VkResource()
     }
 
     fun nextCommandBuffer(): VkCommandBuffer {
-        return vkCommandBuffers[index++]
+        return if (index < vkCommandBuffers.size) {
+            vkCommandBuffers[index++]
+        } else {
+            throw IllegalStateException("Command buffer pool exhausted")
+        }
     }
 
     override fun freeResources() {

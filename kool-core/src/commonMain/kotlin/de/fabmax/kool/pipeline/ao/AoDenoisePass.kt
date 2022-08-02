@@ -41,8 +41,6 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
             isVisible = false
             generateFullscreenQuad()
             shader = KslShader(KslProgram("AO Clear").apply {
-                // fixme: currently Vulkan pipeline creation fails if a shader has no uniform inputs -> add a dummy
-                uniformFloat4("uDummy")
                 fullscreenQuadVertexStage(null)
                 fragmentStage {
                     main {
