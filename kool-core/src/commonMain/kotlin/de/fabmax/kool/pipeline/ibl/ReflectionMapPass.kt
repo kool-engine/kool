@@ -2,14 +2,14 @@ package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
-import kotlin.math.PI
 
 class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
@@ -20,52 +20,25 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
             clearDepthTexture()
         }) {
 
-    private val uRoughness = Uniform1f(0.5f, "uRoughness")
+    private val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
+
     var isAutoRemove = true
 
     init {
+        clearColor = null
         isEnabled = true
-
-        onSetupMipLevel = { mipLevel, _ ->
-            uRoughness.value = mipLevel.toFloat() / (config.mipLevels - 1)
-        }
 
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS), "reflectionMap") {
                 generate {
                     cube { centered() }
                 }
-
-                val texName = "colorTex"
-                val model = ShaderModel("Reflectance Convolution Sampler").apply {
-                    val ifLocalPos: StageInterfaceNode
-                    vertexStage {
-                        ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
-                    }
-                    fragmentStage {
-                        if (hdriMap != null) {
-                            addNode(EnvEquiRectSamplerNode(texture2dNode(texName), stage))
-                        } else {
-                            addNode(EnvCubeSamplerNode(textureCubeNode(texName), stage))
-                        }
-                        val convNd = addNode(ConvoluteReflectionNode(stage)).apply {
-                            inLocalPos = ifLocalPos.output
-                            inRoughness = pushConstantNode1f(uRoughness).output
-                        }
-                        colorOutput(convNd.outColor)
-                    }
-                }
-                if (hdriMap != null) {
-                    shader = ModeledShader.TextureColor(hdriMap, texName, model).apply {
-                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
-                    }
-                } else {
-                    shader = ModeledShader.CubeMapColor(cubeMap, texName, model).apply {
-                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
-                    }
-                }
+                shader = reflectionMapShader
             }
+        }
+
+        onSetupMipLevel = { mipLevel, _ ->
+            reflectionMapShader.uRoughness = mipLevel.toFloat() / (config.mipLevels - 1)
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
@@ -89,82 +62,49 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
         super.dispose(ctx)
     }
 
-    private class ConvoluteReflectionNode(graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
-        var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-        var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
-        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
-        val outColor = ShaderNodeIoVar(ModelVar4f("convReflection_outColor"), this)
+    private class ReflectionMapShader(hdri2d: Texture2d?, hdriCube: TextureCube?) : KslShader(
+        KslProgram("Reflection Map Pass").apply {
+            val localPos = interStageFloat3("localPos")
 
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inLocalPos)
-            dependsOn(maxLightIntensity)
-        }
+            fullscreenCubeVertexStage(localPos)
 
-        override fun generateCode(generator: CodeGenerator) {
-            super.generateCode(generator)
+            fragmentStage {
+                val uRoughness = uniformFloat1("uRoughness")
+                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d(this@apply, "hdri2d") }
+                    ?: environmentMapSamplerCube(this@apply, "hdriCube")
 
-            generator.appendFunction("reflMapFuncs", """
-                float RadicalInverse_VdC(uint bits) {
-                    bits = (bits << 16u) | (bits >> 16u);
-                    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-                    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-                    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-                    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-                    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
-                }
-                
-                vec2 Hammersley(uint i, uint N) {
-                    return vec2(float(i)/float(N), RadicalInverse_VdC(i));
-                }
-                
-                vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness) {
-                    float a = roughness*roughness;
-                    
-                    float phi = 2.0 * $PI * Xi.x;
-                    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
-                    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
-                    
-                    // from spherical coordinates to cartesian coordinates
-                    vec3 H;
-                    H.x = cos(phi) * sinTheta;
-                    H.y = sin(phi) * sinTheta;
-                    H.z = cosTheta;
-                    
-                    // from tangent-space vector to world-space sample vector
-                    vec3 up = abs(N.z) < 0.9999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-                    vec3 tangent = normalize(cross(up, N));
-                    vec3 bitangent = cross(N, tangent);
-                    
-                    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
-                    return normalize(sampleVec);
-                }
-            """)
+                main {
+                    val normal = float3Var(normalize(localPos.output))
 
-            generator.appendMain("""
-                vec3 N = normalize(${inLocalPos.ref3f()});
-                vec3 R = N;
-                vec3 V = R;
-                
-                float mipLevel = ${inRoughness.ref1f()} * 16.0;
-                uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));
-                float totalWeight = 0.0;
-                vec3 prefilteredColor = vec3(0.0);
-                for(uint i = 0u; i < SAMPLE_COUNT; ++i) {
-                    vec2 Xi = Hammersley(i, SAMPLE_COUNT);
-                    vec3 H  = ImportanceSampleGGX(Xi, N, ${inRoughness.ref1f()});
-                    vec3 L  = normalize(2.0 * dot(V, H) * H - V);
-            
-                    float NdotL = max(dot(N, L), 0.0);
-                    if(NdotL > 0.0) {
-                        prefilteredColor += sampleEnv(L, mipLevel) * NdotL;
-                        totalWeight += NdotL;
+                    `if`(uRoughness eq 0f.const) {
+                        colorOutput(sampleEnvMap(normal, 0f.const))
+
+                    }.`else` {
+                        val mipLevel = float1Var(uRoughness * 16f.const)
+                        val sampleCount = int1Var((1024f.const * (1f.const + mipLevel)).toInt1())
+                        val totalWeight = float1Var(0f.const)
+                        val prefilteredColor = float3Var(Vec3f.ZERO.const)
+                        fori(0.const, sampleCount) { i ->
+                            val xi = float2Var(hammersley(i, sampleCount))
+                            val h = float3Var(importanceSampleGgx(xi, normal, uRoughness))
+                            val l = float3Var(2f.const * dot(normal, h) * h - normal)
+
+                            val nDotL = float1Var(max(dot(normal, l), 0f.const))
+                            `if`(nDotL gt 0f.const) {
+                                prefilteredColor += sampleEnvMap(l, mipLevel) * nDotL
+                                totalWeight += nDotL
+                            }
+                        }
+                        colorOutput(prefilteredColor / totalWeight)
                     }
                 }
-                prefilteredColor = prefilteredColor / totalWeight;
-                ${outColor.declare()} = vec4(prefilteredColor, 1.0);
-            """)
-        }
+            }
+        },
+        FullscreenShaderUtil.fullscreenShaderPipelineCfg
+    ) {
+        val hdri2dTex by texture2d("hdri2d", hdri2d)
+        val hdriCubeTex by textureCube("hdriCube", hdriCube)
+        var uRoughness by uniform1f("uRoughness", 0f)
     }
 
     companion object {

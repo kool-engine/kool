@@ -146,12 +146,15 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
         globalScope.definedStates += outDepth.value
     }
 
-    fun colorOutput(location: Int = 0) =
-        KslStageOutputVector(KslVarVector("${NAME_OUT_COLOR_PREFIX}${location}", KslTypeFloat4, true)).also {
-            it.location = location
-            globalScope.definedStates += it.value
-            outColors += it
-        }
+    fun colorOutput(location: Int = 0): KslStageOutputVector<KslTypeFloat4, KslTypeFloat1> {
+        val name = "${NAME_OUT_COLOR_PREFIX}${location}"
+        return outColors.find { it.value.stateName == name }
+            ?: KslStageOutputVector(KslVarVector(name, KslTypeFloat4, true)).also {
+                it.location = location
+                globalScope.definedStates += it.value
+                outColors += it
+            }
+    }
 
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslTypeFloat3, KslTypeFloat1>, a: KslScalarExpression<KslTypeFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }

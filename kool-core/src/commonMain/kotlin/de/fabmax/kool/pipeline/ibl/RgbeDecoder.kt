@@ -1,12 +1,16 @@
 package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.ShaderModel
-import de.fabmax.kool.pipeline.shadermodel.StageInterfaceNode
-import de.fabmax.kool.pipeline.shadermodel.fragmentStage
-import de.fabmax.kool.pipeline.shadermodel.vertexStage
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
@@ -22,36 +26,17 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
             name = "RgbeDecoder"
             setSize(sz, sz)
             addColorTexture(TexFormat.RGBA_F16)
-
             clearDepthTexture()
             addMipLevels(drawMipLevels = false)
         }) {
 
     init {
+        clearColor = null
         (drawNode as Group).apply {
             +textureMesh {
-                isFrustumChecked = false
-                generate {
-                    rect {  }
-                }
+                generateFullscreenQuad()
 
-                val texName = "colorTex"
-                val model = ShaderModel("RgbeDecoder").apply {
-                    val ifTexCoords: StageInterfaceNode
-                    vertexStage {
-                        ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                        positionOutput = fullScreenQuadPositionNode(attrTexCoords().output).outQuadPos
-                    }
-                    fragmentStage {
-                        val decoded = addNode(RgbeDecoderNode(stage)).apply {
-                            inRgbe = texture2dSamplerNode(texture2dNode(texName), ifTexCoords.output).outColor
-                        }
-                        colorOutput(multiplyNode(decoded.outColor, brightness).output)
-                    }
-                }
-                shader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {
-                    onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.NO_CULLING }
-                }
+                shader = RgbeDecoderShader(hdriTexture, brightness)
             }
         }
 
@@ -63,6 +48,31 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
                 dispose(ctx)
             }
         }
+    }
+
+    class RgbeDecoderShader(hdriTexture: Texture2d, brightness: Float) : KslShader(
+        KslProgram("RGBe Decoder").apply {
+            val uv = interStageFloat2("uv")
+
+            fullscreenQuadVertexStage(uv)
+
+            fragmentStage {
+                val rgbeTex = texture2d("rgbeTex")
+                val uMaxBrightness = uniformFloat3("uMaxBrightness")
+                val uBrightness = uniformFloat1("uBrightness")
+
+                main {
+                    val rgbe = float4Var(sampleTexture(rgbeTex, uv.output))
+                    val exp = float1Var(rgbe.w * 255f.const - 128f.const)
+                    colorOutput(min(rgbe.rgb * pow(2f.const, exp) * uBrightness, uMaxBrightness))
+                }
+            }
+        },
+        fullscreenShaderPipelineCfg
+    ) {
+        val rgbeTex by texture2d("rgbeTex", hdriTexture)
+        val uBrightness by uniform1f("uBrightness", brightness)
+        val uMaxBrightness by uniform3f("uMaxBrightness", Vec3f(20f))
     }
 
     override fun dispose(ctx: KoolContext) {

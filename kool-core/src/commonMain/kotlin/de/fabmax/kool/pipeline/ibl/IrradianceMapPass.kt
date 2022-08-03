@@ -2,9 +2,11 @@ package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
@@ -23,41 +25,11 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
     init {
         clearColor = null
-
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS)) {
-                generate {
-                    cube { centered() }
-                }
+                generateFullscreenCube()
 
-                val texName = "colorTex"
-                val model = ShaderModel("IrradianceMapPass").apply {
-                    val ifLocalPos: StageInterfaceNode
-                    vertexStage {
-                        ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                        positionOutput = simpleVertexPositionNode().outVec4
-                    }
-                    fragmentStage {
-                        if (hdriMap != null) {
-                            addNode(EnvEquiRectSamplerNode(texture2dNode(texName), stage))
-                        } else {
-                            addNode(EnvCubeSamplerNode(textureCubeNode(texName), stage))
-                        }
-                        val convNd = addNode(ConvoluteIrradianceNode(stage)).apply {
-                            inLocalPos = ifLocalPos.output
-                        }
-                        colorOutput(convNd.outColor)
-                    }
-                }
-                if (hdriMap != null) {
-                    shader = ModeledShader.TextureColor(hdriMap, texName, model).apply {
-                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
-                    }
-                } else {
-                    shader = ModeledShader.CubeMapColor(cubeMap, texName, model).apply {
-                        onPipelineSetup += { builder, _, _ -> builder.cullMethod = CullMethod.CULL_FRONT_FACES }
-                    }
-                }
+                shader = IrradianceMapPassShader(hdriMap, cubeMap)
             }
         }
 
@@ -82,44 +54,47 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         super.dispose(ctx)
     }
 
-    private class ConvoluteIrradianceNode(graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
-        var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-        val outColor = ShaderNodeIoVar(ModelVar4f("convIrradiance_outColor"), this)
+    private class IrradianceMapPassShader(hdri2d: Texture2d?, hdriCube: TextureCube?) : KslShader(
+        KslProgram("Irradiance Map Pass").apply {
+            val localPos = interStageFloat3("localPos")
 
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inLocalPos)
-        }
+            fullscreenCubeVertexStage(localPos)
 
-        override fun generateCode(generator: CodeGenerator) {
-            super.generateCode(generator)
+            fragmentStage {
+                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d(this@apply, "hdri2d") }
+                     ?: environmentMapSamplerCube(this@apply, "hdriCube")
 
-            val phiMax = 2.0 * PI
-            val thetaMax = 0.5 * PI
-            generator.appendMain("""
-                vec3 normal = normalize(${inLocalPos.ref3f()});
-                vec3 up = vec3(0.0, 1.0, 0.0);
-                vec3 right = normalize(cross(up, normal));
-                up = cross(normal, right);
+                main {
+                    val normal = float3Var(normalize(localPos.output))
+                    val up = float3Var(Vec3f.Y_AXIS.const)
+                    val right = float3Var(normalize(cross(up, normal)))
+                    up set cross(normal, right)
 
-                float sampleDelta = 0.03737;
-                vec3 irradiance = vec3(0.0);
-                int nrSamples = 0; 
+                    val sampleDelta = 0.03737.const
+                    val irradiance = float3Var(Vec3f.ZERO.const)
+                    val nrSamples = int1Var(0.const)
 
-                for (float theta = 0.0; theta < $thetaMax; theta += sampleDelta) {
-                    float deltaPhi = sampleDelta / sin(theta);
-                    for (float phi = 0.0; phi < $phiMax; phi += deltaPhi) {
-                        vec3 tempVec = cos(phi) * right + sin(phi) * up;
-                        vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;
-                        vec3 envColor = sampleEnv(sampleVector, 3.0);
-                        irradiance += envColor * cos(theta) * 0.6;
-                        nrSamples++;
+                    val theta = float1Var(0f.const)
+                    `for`(theta, theta lt (0.5 * PI).const, sampleDelta) {
+                        val deltaPhi = float1Var(sampleDelta / sin(theta))
+                        val phi = float1Var(0f.const)
+                        `for`(phi, phi lt (2.0 * PI).const, deltaPhi) {
+                            val tempVec = float3Var(right * cos(phi) + up * sin(phi))
+                            val sampleVector = normal * cos(theta) + tempVec * sin(theta)
+                            val envColor = float3Var(sampleEnvMap(sampleVector, 3f.const))
+                            irradiance += envColor * cos(theta) * 0.6f.const
+                            nrSamples += 1.const
+                        }
                     }
+
+                    colorOutput(irradiance * PI.const / nrSamples.toFloat1())
                 }
-                irradiance = irradiance * $PI / float(nrSamples);
-                ${outColor.declare()} = vec4(irradiance, 1.0);
-            """)
-        }
+            }
+        },
+        FullscreenShaderUtil.fullscreenShaderPipelineCfg
+    ) {
+        val hdri2dTex by texture2d("hdri2d", hdri2d)
+        val hdriCubeTex by textureCube("hdriCube", hdriCube)
     }
 
     companion object {

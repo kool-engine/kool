@@ -8,6 +8,9 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.mesh
@@ -50,13 +53,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                generate {
-                    rect {
-                        origin.set(-1f, -1f, 0f)
-                        size.set(2f, 2f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
 
                 shader = aoPassShader
 
@@ -150,12 +147,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     private fun aoPassProg() = KslProgram("Ambient Occlusion Pass").apply {
         val uv = interStageFloat2("uv")
 
-        vertexStage {
-            main {
-                uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
-            }
-        }
+        fullscreenQuadVertexStage(uv)
 
         fragmentStage {
             val noiseTex = texture2d("noiseTex")
@@ -238,12 +230,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         }
     }
 
-    private inner class AoPassShader : KslShader(aoPassProg(), PipelineConfig().apply {
-        blendMode = BlendMode.DISABLED
-        cullMethod = CullMethod.NO_CULLING
-        depthTest = DepthCompareOp.DISABLED
-        isWriteDepth = false
-    }) {
+    private inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
         var noiseTex by texture2d("noiseTex", makeNoiseTexture())
         var depthTex by texture2d("depthTex")
         var normalTex by texture2d("normalTex")

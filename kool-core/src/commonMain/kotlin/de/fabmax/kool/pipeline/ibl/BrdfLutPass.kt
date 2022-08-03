@@ -4,12 +4,17 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.renderPassConfig
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
-import kotlin.math.PI
 
 
 class BrdfLutPass(parentScene: Scene) :
@@ -26,13 +31,7 @@ class BrdfLutPass(parentScene: Scene) :
         clearColor = null
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                generate {
-                    rect {
-                        origin.set(-1f, -1f, 0f)
-                        size.set(2f, 2f)
-                        mirrorTexCoordsY()
-                    }
-                }
+                generateFullscreenQuad()
                 shader = brdfLutShader()
             }
         }
@@ -58,12 +57,7 @@ class BrdfLutPass(parentScene: Scene) :
         val prog = KslProgram("BRDF LUT").apply {
             val uv = interStageFloat2("uv")
 
-            vertexStage {
-                main {
-                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                    outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
-                }
-            }
+            fullscreenQuadVertexStage(uv)
 
             fragmentStage {
                 // Very similar to geometrySchlickGgx in PbrFunctions but uses slightly different parameters
@@ -90,55 +84,6 @@ class BrdfLutPass(parentScene: Scene) :
                         val ggx1 = float1Var(geometrySchlickGgx(nDotL, roughness))
                         val ggx2 = float1Var(geometrySchlickGgx(nDotV, roughness))
                         return@body ggx1 * ggx2
-                    }
-                }
-
-                val hammersley = functionFloat2("hammersley") {
-                    val i = paramInt1("i")
-                    val n = paramInt1("n")
-
-                    body {
-                        val bits = uint1Var(i.toUint1())
-                        bits set ((bits shl 16u.const) or (bits shr 16u.const))
-                        bits set (((bits and 0x55555555u.const) shl 1u.const) or ((bits and 0xaaaaaaaau.const) shr 1u.const))
-                        bits set (((bits and 0x33333333u.const) shl 2u.const) or ((bits and 0xccccccccu.const) shr 2u.const))
-                        bits set (((bits and 0x0f0f0f0fu.const) shl 4u.const) or ((bits and 0xf0f0f0f0u.const) shr 4u.const))
-                        bits set (((bits and 0x00ff00ffu.const) shl 8u.const) or ((bits and 0xff00ff00u.const) shr 8u.const))
-                        val radicalInverse = float1Var(bits.toFloat1() * (1f / 0x100000000).const)
-                        return@body float2Value(i.toFloat1() / n.toFloat1(), radicalInverse)
-                    }
-                }
-
-                val importanceSampleGgx = functionFloat3("importanceSampleGgx") {
-                    val xi = paramFloat2("xi")
-                    val n = paramFloat3("n")
-                    val roughness = paramFloat1("roughness")
-
-                    body {
-                        val a = float1Var(roughness * roughness)
-                        val phi = float1Var(2f.const * PI.const * xi.x)
-                        val cosTheta = float1Var(sqrt((1f.const - xi.y) / (1f.const + (a * a - 1f.const) * xi.y)))
-                        val sinTheta = float1Var(sqrt(1f.const - cosTheta * cosTheta))
-
-                        // from spherical coordinates to cartesian coordinates
-                        val h = float3Var(
-                            float3Value(
-                                cos(phi) * sinTheta,
-                                sin(phi) * sinTheta,
-                                cosTheta
-                            )
-                        )
-
-                        // from tangent-space vector to world-space sample vector
-                        val up = float3Var(Vec3f.X_AXIS.const)
-                        `if`(abs(n.z) lt 0.9999f.const) {
-                            up set Vec3f.Z_AXIS.const
-                        }
-                        val tangent = float3Var(normalize(cross(up, n)))
-                        val bitangent = cross(n, tangent)
-
-                        // sample vector
-                        return@body normalize(tangent * h.x + bitangent * h.y + n * h.z)
                     }
                 }
 
@@ -184,11 +129,6 @@ class BrdfLutPass(parentScene: Scene) :
             }
         }
 
-        return KslShader(prog, KslShader.PipelineConfig().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = CullMethod.NO_CULLING
-            depthTest = DepthCompareOp.DISABLED
-            isWriteDepth = false
-        })
+        return KslShader(prog, fullscreenShaderPipelineCfg)
     }
 }

@@ -5,6 +5,9 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.mesh
@@ -30,7 +33,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     private val clearMesh: Mesh
 
     init {
-        clearColor = Color.BLACK
+        clearColor = null
 
         denoiseMesh = mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
             generateFullscreenQuad()
@@ -47,7 +50,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
                         colorOutput(Color.WHITE.const)
                     }
                 }
-            }, pipelineCfg)
+            }, fullscreenShaderPipelineCfg)
         }
 
         (drawNode as Group).apply {
@@ -113,36 +116,9 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
     }
 
     private inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String)
-        : KslShader(denoiseProg(depthComponent), pipelineCfg) {
+        : KslShader(denoiseProg(depthComponent), fullscreenShaderPipelineCfg) {
         var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
         var depthTex by texture2d("depthTex")
         var uRadius by uniform1f("uRadius", 1f)
-    }
-
-    companion object {
-        private val pipelineCfg = KslShader.PipelineConfig().apply {
-            blendMode = BlendMode.DISABLED
-            cullMethod = CullMethod.NO_CULLING
-            depthTest = DepthCompareOp.DISABLED
-        }
-    }
-
-    private fun Mesh.generateFullscreenQuad() {
-        generate {
-            rect {
-                origin.set(-1f, -1f, 0f)
-                size.set(2f, 2f)
-                mirrorTexCoordsY()
-            }
-        }
-    }
-
-    private fun KslProgram.fullscreenQuadVertexStage(uv: KslInterStageVector<KslTypeFloat2, KslTypeFloat1>?) {
-        vertexStage {
-            main {
-                uv?.let { it.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name) }
-                outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
-            }
-        }
     }
 }
