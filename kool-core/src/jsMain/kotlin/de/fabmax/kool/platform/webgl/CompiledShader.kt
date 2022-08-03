@@ -292,14 +292,14 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 texturesCube[i].onUpdate?.invoke(texturesCube[i], drawCmd)
             }
 
-            // update uniform values
+            // update buffers (vertex data, instance data, UBOs)
+            checkBuffers()
+
+            // bind uniform values
             var uniformsValid = true
             for (i in mappings.indices) {
                 uniformsValid = uniformsValid && mappings[i].setUniform(ctx)
             }
-
-            // update vertex data
-            checkBuffers()
 
             if (uniformsValid) {
                 // bind vertex data

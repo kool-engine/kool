@@ -177,13 +177,12 @@ open class KslProgram(val name: String) {
 
             // remove unused uniforms
             uniformBuffers.filter { !it.isShared }.forEach {
-                it.uniforms.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
+                it.uniforms.values.retainAll { u -> vertexStage.dependsOn(u) || fragmentStage.dependsOn(u) }
             }
             uniformBuffers.removeAll { it.uniforms.isEmpty() }
 
             // remove unused texture samplers
-            uniformSamplers.values.removeAll { u -> u.value !in vertexStage.main.dependencies && u.value !in fragmentStage.main.dependencies }
+            uniformSamplers.values.retainAll { u -> vertexStage.dependsOn(u) || fragmentStage.dependsOn(u) }
         }
     }
-
 }

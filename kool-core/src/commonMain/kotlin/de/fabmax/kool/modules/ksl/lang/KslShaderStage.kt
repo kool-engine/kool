@@ -45,8 +45,23 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return main.getBlocks(name, mutableListOf()).find { it is T } as? T
     }
 
+    fun dependsOn(uniform: KslUniform<*>): Boolean {
+        return uniform.value in main.dependencies || functions.values.any { f -> uniform.value in f.body.dependencies }
+    }
+
+    fun getUsedSamplers(): List<KslUniform<*>> {
+        return program.uniformSamplers.values.filter { dependsOn(it) }
+    }
+
+    fun getUsedUbos(): List<KslUniformBuffer> {
+        return program.uniformBuffers.filter { ubo ->
+            ubo.uniforms.values.any { dependsOn(it) }
+        }
+    }
+
     open fun prepareGenerate() {
         KslProcessor().process(hierarchy)
+        functions.values.forEach { it.prepareGenerate() }
     }
 }
 

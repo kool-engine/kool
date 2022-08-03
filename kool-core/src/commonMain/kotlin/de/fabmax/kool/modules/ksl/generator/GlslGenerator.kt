@@ -148,7 +148,7 @@ open class GlslGenerator : KslGenerator() {
     }
 
     protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage) {
-        val samplers = stage.program.uniformSamplers.values.filter { it.value in stage.main.dependencies }
+        val samplers = stage.getUsedSamplers()
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
@@ -160,7 +160,7 @@ open class GlslGenerator : KslGenerator() {
     }
 
     protected open fun StringBuilder.generateUbos(stage: KslShaderStage) {
-        val ubos = stage.program.uniformBuffers.filter { it.uniforms.values.any { u -> u.value in stage.main.dependencies } }
+        val ubos = stage.getUsedUbos()
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
@@ -323,8 +323,8 @@ open class GlslGenerator : KslGenerator() {
 
     override fun builtinAbs(func: KslBuiltinAbsScalar<*>) = "abs(${generateArgs(func.args, 1)})"
     override fun builtinAbs(func: KslBuiltinAbsVector<*, *>) = "abs(${generateArgs(func.args, 1)})"
-    override fun builtinAtan2(func: KslBuiltinAtan2Scalar) = "atan2(${generateArgs(func.args, 2)})"
-    override fun builtinAtan2(func: KslBuiltinAtan2Vector<*>) = "atan2(${generateArgs(func.args, 2)})"
+    override fun builtinAtan2(func: KslBuiltinAtan2Scalar) = "atan(${generateArgs(func.args, 2)})"
+    override fun builtinAtan2(func: KslBuiltinAtan2Vector<*>) = "atan(${generateArgs(func.args, 2)})"
     override fun builtinCeil(func: KslBuiltinCeilScalar) = "ceil(${generateArgs(func.args, 1)})"
     override fun builtinCeil(func: KslBuiltinCeilVector<*>) = "ceil(${generateArgs(func.args, 1)})"
     override fun builtinClamp(func: KslBuiltinClampScalar<*>) = "clamp(${generateArgs(func.args, 3)})"

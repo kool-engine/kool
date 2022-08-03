@@ -89,6 +89,7 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramDepthTexCubeArray(name: String? = null) = paramVar(name ?: parentStage.program.nextName("paramDepthCubeArray"), KslTypeDepthSamplerCubeArray)
 
     fun prepareGenerate() {
+        hierarchy.globalScope.definedStates += parentStage.globalScope.definedStates
         KslProcessor().process(hierarchy)
     }
 
