@@ -47,15 +47,18 @@ class Mat3f {
     }
 
     fun transpose(): Mat3f {
-        var d = this[1]
-        this[1] = this[3]
-        this[3] = d
-        d = this[2]
-        this[2] = this[6]
-        this[6] = d
-        d = this[5]
-        this[5] = this[7]
-        this[7] = d
+        this[1] = this[3].also {
+            this[3] = this[1]
+        }
+
+        this[2] = this[6].also {
+            this[6] = this[2]
+        }
+
+        this[5] = this[7].also {
+            this[7] = this[5]
+        }
+
         return this
     }
 
