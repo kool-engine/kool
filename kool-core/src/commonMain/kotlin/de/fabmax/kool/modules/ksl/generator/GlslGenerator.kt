@@ -96,6 +96,13 @@ open class GlslGenerator : KslGenerator() {
         return "textureSize(${textureSize.sampler.generateExpression(this)}, ${textureSize.lod.generateExpression(this)})"
     }
 
+    override fun texelFetch(expression: KslTexelFetch<*>): String {
+        val sampler = expression.sampler.generateExpression(this)
+        val coords = expression.coord.generateExpression(this)
+        val lod = expression.lod?.generateExpression(this)
+        return "texelFetch($sampler, $coords, ${lod ?: 0})"
+    }
+
     private fun generateVertexSrc(vertexStage: KslVertexStage): String {
         val src = StringBuilder()
         src.appendLine("""

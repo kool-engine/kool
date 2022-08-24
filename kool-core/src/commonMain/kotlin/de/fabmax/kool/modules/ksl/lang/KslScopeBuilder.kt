@@ -491,6 +491,16 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <T: KslTypeDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)
 
+    /**
+     * texelFetch — perform a lookup of a single texel within a texture
+     * @param sampler Specifies the sampler to which the texture from which texels will be retrieved is bound.
+     * @param coord Specifies the texture coordinates at which texture will be sampled.
+     * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
+     */
+    fun <T: KslTypeColorSampler<R>, R : KslFloatType> texelFetch(sampler: KslExpression<T>, coord: KslExpression<KslTypeInt2>,
+                                                  lod: KslScalarExpression<KslTypeFloat1>? = null) =
+        KslTexelFetch(sampler, coord, lod)
+
     fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
         where T: KslTypeSampler<*>, T: KslTypeSampler1d = KslTextureSize1d(sampler, lod)
     fun <T> textureSize2d(sampler: KslExpression<T>, lod: KslScalarExpression<KslTypeInt1> = 0.const)
