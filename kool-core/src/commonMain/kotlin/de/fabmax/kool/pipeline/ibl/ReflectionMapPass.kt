@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.util.logD
 
-class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
+class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "ReflectionMapPass"
             setSize(size, size)
@@ -20,14 +20,13 @@ class ReflectionMapPass private constructor(val parentScene: Scene, hdriMap: Tex
             clearDepthTexture()
         }) {
 
-    private val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
-
     var isAutoRemove = true
 
     init {
         clearColor = null
         isEnabled = true
 
+        val reflectionMapShader = ReflectionMapShader(hdriMap, cubeMap)
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS), "reflectionMap") {
                 generate {

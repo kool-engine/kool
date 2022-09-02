@@ -22,7 +22,7 @@ object OceanShader {
         0.2f to MdColor.BLUE,
         0.5f to MdColor.INDIGO.mix(MdColor.BLUE, 0.5f),
         1.0f to (MdColor.INDIGO tone 800).mix(MdColor.BLUE tone 800, 0.5f),
-        toLinear = true), isLinear = true)
+        toLinear = true))
 
     class Pbr(oceanFloor: OceanFloorRenderPass, shadowMap: ShadowMap, windTex: Texture3d, oceanBump: Texture2d)
         : KslPbrShader(pbrConfig(shadowMap)), WindAffectedShader {

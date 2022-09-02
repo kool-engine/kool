@@ -12,8 +12,8 @@ class ColorGradient(vararg colors: Pair<Float, Color>, n: Int = DEFAULT_N, toLin
 
     private val gradient = Array(n) { MutableColor() }
 
-    constructor(vararg colors: Color, n: Int = DEFAULT_N) :
-            this(*Array(colors.size) { i -> i.toFloat() to colors[i] }, n = n)
+    constructor(vararg colors: Color, n: Int = DEFAULT_N, toLinear: Boolean = false) :
+            this(*Array(colors.size) { i -> i.toFloat() to colors[i] }, n = n, toLinear = toLinear)
 
     init {
         if (colors.size < 2) {

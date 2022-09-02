@@ -2,9 +2,13 @@ package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.modules.ksl.lang.div
+import de.fabmax.kool.modules.ksl.lang.y
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.textureMesh
@@ -14,7 +18,7 @@ import de.fabmax.kool.util.createUint8Buffer
 import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
-class GradientCubeGenerator(scene: Scene, val gradientTex: Texture2d, ctx: KoolContext, size: Int = 128) :
+class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 128) :
         OffscreenRenderPassCube(Group(), renderPassConfig {
             name = "GradientEnvGenerator"
             setSize(size, size)
@@ -30,27 +34,16 @@ class GradientCubeGenerator(scene: Scene, val gradientTex: Texture2d, ctx: KoolC
                         centered()
                     }
                 }
-                shader = ModeledShader.TextureColor(gradientTex, "gradTex", gradientEnvModel())
-                shader!!.onPipelineSetup += { builder, _, _ ->
-                    builder.depthTest = DepthCompareOp.DISABLED
-                    builder.cullMethod = CullMethod.NO_CULLING
-                }
+                shader = GradientEnvShader(gradientTex)
             }
         }
 
         // remove render pass as soon as the gradient texture is loaded and rendered
-        onAfterDraw += {
+        onAfterDraw += { ctx ->
             logD { "Generated gradient cube map" }
             scene.removeOffscreenPass(this)
-            ctx.runDelayed(1) {
-                dispose(ctx)
-            }
+            ctx.runDelayed(1) { dispose(ctx) }
         }
-    }
-
-    override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        gradientTex.dispose()
     }
 
     private fun gradientEnvModel() = ShaderModel("gradientEnvModel()").apply {
@@ -103,5 +96,23 @@ class GradientCubeGenerator(scene: Scene, val gradientTex: Texture2d, ctx: KoolC
             val props = TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, mipMapping = false, maxAnisotropy = 1)
             return ctx.assetMgr.loadAndPrepareTexture(data, props, "gradientEnvTex")
         }
+    }
+
+    private class GradientEnvShader(gradient: Texture1d) : KslShader(
+        KslProgram("Reflection Map Pass").apply {
+            val localPos = interStageFloat3("localPos")
+
+            fullscreenCubeVertexStage(localPos)
+
+            fragmentStage {
+                main {
+                    val normal = float3Var(normalize(localPos.output))
+                    colorOutput(sampleTexture(texture1d("gradientTex"), acos(normal.y) / PI.const))
+                }
+            }
+        },
+        FullscreenShaderUtil.fullscreenShaderPipelineCfg
+    ) {
+        val gradientTex by texture1d("gradientTex", gradient)
     }
 }

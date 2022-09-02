@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.ibl
 
 import de.fabmax.kool.AssetManager
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -29,13 +28,11 @@ object EnvironmentHelper {
         return maps
     }
 
-    suspend fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, ctx: KoolContext, autoDispose: Boolean = true): EnvironmentMaps {
-        val gradientTex = GradientCubeGenerator.makeGradientTex(gradient, ctx)
-        val gradientPass = GradientCubeGenerator(scene, gradientTex, ctx)
-        if (autoDispose) {
-            scene.onDispose += {
-                gradientTex.dispose()
-            }
+    fun gradientColorEnvironment(scene: Scene, gradient: ColorGradient, autoDispose: Boolean = true): EnvironmentMaps {
+        val gradientTex = GradientTexture(gradient)
+        val gradientPass = GradientCubeGenerator(scene, gradientTex)
+        scene.onDispose += {
+            gradientTex.dispose()
         }
         return renderPassEnvironment(scene, gradientPass, autoDispose)
     }

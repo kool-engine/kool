@@ -13,6 +13,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
 import kotlin.math.*
@@ -74,7 +75,8 @@ class MultiLightDemo : DemoScene("Reflections") {
     }
 
     private fun setupDeferred(scene: Scene, ctx: KoolContext) {
-        val envMaps = EnvironmentHelper.singleColorEnvironment(scene, Color(0.15f, 0.15f, 0.15f))
+        val envMaps = EnvironmentHelper.gradientColorEnvironment(
+            mainScene, ColorGradient(Color.DARK_GRAY.mix(Color.BLACK, 0.75f), Color.DARK_GRAY, toLinear = true))
         val defCfg = DeferredPipelineConfig().apply {
             isWithAmbientOcclusion = false
             isWithScreenSpaceReflections = true

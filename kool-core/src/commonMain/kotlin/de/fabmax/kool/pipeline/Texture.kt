@@ -112,9 +112,9 @@ class SingleColorTexture(color: Color) : Texture2d(
     }
 }
 
-class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boolean = true, isLinear: Boolean = false) : Texture1d(
+class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boolean = true) : Texture1d(
         TextureProps(
-            format = if (isLinear) TexFormat.RGBA_F16 else TexFormat.RGBA,
+            format = TexFormat.RGBA_F16,    // use f16 texture for better results together with linear color gradients
             addressModeU = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
             addressModeV = if (isClamped) AddressMode.CLAMP_TO_EDGE else AddressMode.REPEAT,
             minFilter = FilterMethod.LINEAR,
@@ -122,11 +122,7 @@ class GradientTexture(gradient: ColorGradient, size: Int = 256, isClamped: Boole
             mipMapping = false,
             maxAnisotropy = 1),
         "gradientTex-$size",
-        loader = BufferedTextureLoader(if (isLinear) {
-            TextureData1d.hdrGradient(gradient, size)
-        } else {
-            TextureData1d.gradient(gradient, size)
-        })) {
+        loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))) {
 
     override val type = "Gradient"
 
@@ -188,7 +184,7 @@ class TextureData1d(override val data: Buffer, width: Int, format: TexFormat) : 
             return TextureData1d(buf, size, TexFormat.RGBA)
         }
 
-        fun hdrGradient(gradient: ColorGradient, size: Int): TextureData1d {
+        fun gradientF16(gradient: ColorGradient, size: Int): TextureData1d {
             val buf = createFloat32Buffer(4 * size)
             val color = MutableColor()
             for (i in 0 until size) {
