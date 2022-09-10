@@ -3,8 +3,6 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.util.Color
 
 open class UiModifier {
-//    var x: Dimension = Dp.ZERO
-//    var y: Dimension = Dp.ZERO
     var width: Dimension = WrapContent
     var height: Dimension = WrapContent
 
@@ -22,10 +20,28 @@ open class UiModifier {
     var alignY = AlignmentY.Top
 
     var background: Color? = null
+
+    open fun resetDefaults() {
+        width = WrapContent
+        height = WrapContent
+
+        paddingStart = Dp.ZERO
+        paddingEnd = Dp.ZERO
+        paddingTop = Dp.ZERO
+        paddingBottom = Dp.ZERO
+
+        marginStart = Dp.ZERO
+        marginEnd = Dp.ZERO
+        marginTop = Dp.ZERO
+        marginBottom = Dp.ZERO
+
+        alignX = AlignmentX.Start
+        alignY = AlignmentY.Top
+
+        background = null
+    }
 }
 
-//fun <T: UiModifier> T.x(x: Dimension): T { this.x = x; return this }
-//fun <T: UiModifier> T.y(y: Dimension): T { this.y = y; return this }
 fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return this }
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
 

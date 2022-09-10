@@ -15,5 +15,5 @@ interface UiScope {
     val Float.dp: Dp
         get() = Dp(this)
 
-    fun MutableState<*>.use() = use(uiCtx)
+    fun <T: Any?> MutableState<T>.use(): T = use(uiCtx)
 }

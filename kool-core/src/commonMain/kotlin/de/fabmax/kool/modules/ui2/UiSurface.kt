@@ -10,18 +10,6 @@ class UiSurface(
     private val uiCtx = UiContext(this)
 
     init {
-
-//        +colorMesh {
-//            generate {
-//                color = Color.RED
-//                rect {
-//                    origin.set(100f, -100f, 0f)
-//                    size.set(500f, 500f)
-//                }
-//            }
-//            shader = KslUnlitShader { color { vertexColor() } }
-//        }
-
         onUpdate += {
             uiCtx.updateUi(it, block)
         }

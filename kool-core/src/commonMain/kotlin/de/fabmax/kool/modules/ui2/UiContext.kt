@@ -19,7 +19,7 @@ class UiContext(val surface: UiSurface) {
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
 
     private val viewportBox = BoxNode(null, this)
-    private val uiHierarchy = BoxNode(viewportBox, this)
+    private val uiHierarchy = viewportBox.createChild(RootBox::class) { parent, _ -> RootBox(parent) }
 
     val requiresUpdate: Boolean
         get() = usedState.any { it.isChanged }
@@ -28,10 +28,8 @@ class UiContext(val surface: UiSurface) {
         private set
 
     init {
-        viewportBox.children += uiHierarchy
         // add some initial state to enforce initial UI update
         mutableStateOf(0).use(this)
-
         surface += defaultMesh
     }
 
@@ -46,7 +44,7 @@ class UiContext(val surface: UiSurface) {
         viewportBox.setClipBounds(0f, 0f, vp.width.toFloat(), vp.height.toFloat())
 
         usedState.clear()
-        uiHierarchy.children.clear()
+        uiHierarchy.reset()
         uiHierarchy.block()
 
         usedState.forEach { it.isChanged = false }
@@ -86,6 +84,12 @@ class UiContext(val surface: UiSurface) {
             for (i in node.children.indices) {
                 renderUiNode(node.children[i], ctx)
             }
+        }
+    }
+
+    private inner class RootBox(parent: UiNode) : BoxNode(parent, this@UiContext) {
+        fun reset() {
+            resetDefaults()
         }
     }
 
