@@ -163,10 +163,10 @@ class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
         lighting = scene.lighting
     }
 
-    override fun collectDrawCommands(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         if (useWindowViewport) {
             ctx.getWindowViewport(viewport)
         }
-        super.collectDrawCommands(ctx)
+        super.update(ctx)
     }
 }
