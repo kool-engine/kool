@@ -6,46 +6,46 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-interface ScrollBarScope : UiScope {
-    override val modifier: ScrollBarModifier
+interface ScrollbarScope : UiScope {
+    override val modifier: ScrollbarModifier
 }
 
-open class ScrollBarModifier : UiModifier() {
+open class ScrollbarModifier : UiModifier() {
     var scrollPane: ScrollPaneScope? = null
-    var orientation = ScrollBarOrientation.Vertical
+    var orientation = ScrollbarOrientation.Vertical
     var barColor: Color = (MdColor.GREY tone 400).withAlpha(0.5f)
     var hideIfFull = true
 
     override fun resetDefaults() {
         super.resetDefaults()
         scrollPane = null
-        orientation = ScrollBarOrientation.Vertical
+        orientation = ScrollbarOrientation.Vertical
         barColor = (MdColor.GREY tone 400).withAlpha(0.5f)
         hideIfFull = true
     }
 }
 
 
-fun <T: ScrollBarModifier> T.scrollPane(scrollPane: ScrollPaneScope): T {
+fun <T: ScrollbarModifier> T.scrollPane(scrollPane: ScrollPaneScope): T {
     this.scrollPane = scrollPane
     return this
 }
 
-fun <T: ScrollBarModifier> T.orientation(orientation: ScrollBarOrientation): T {
+fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
     this.orientation = orientation
     return this
 }
 
-fun <T: ScrollBarModifier> T.barColor(color: Color): T { barColor = color; return this }
-fun <T: ScrollBarModifier> T.hideIfFull(flag: Boolean): T { hideIfFull = flag; return this }
+fun <T: ScrollbarModifier> T.barColor(color: Color): T { barColor = color; return this }
+fun <T: ScrollbarModifier> T.hideIfFull(flag: Boolean): T { hideIfFull = flag; return this }
 
-enum class ScrollBarOrientation {
+enum class ScrollbarOrientation {
     Horizontal,
     Vertical
 }
 
-inline fun UiScope.ScrollBar(scrollPane: ScrollPaneScope? = null, block: ScrollBarScope.() -> Unit) {
-    val scrollBar = uiNode.createChild(ScrollBarNode::class, ScrollBarNode.factory)
+inline fun UiScope.Scrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) {
+    val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.modifier.pointerCallbacks.onDragStart = scrollBar::onDragStart
     scrollBar.modifier.pointerCallbacks.onDrag = scrollBar::onDrag
 
@@ -59,16 +59,16 @@ inline fun UiScope.ScrollBar(scrollPane: ScrollPaneScope? = null, block: ScrollB
     scrollBar.block()
 }
 
-inline fun UiScope.ScrollBarV(scrollPane: ScrollPaneScope? = null, block: ScrollBarScope.() -> Unit) = ScrollBar(scrollPane) {
+inline fun UiScope.VerticalScrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) = Scrollbar(scrollPane) {
     modifier
-        .orientation(ScrollBarOrientation.Vertical)
+        .orientation(ScrollbarOrientation.Vertical)
         .width(12.dp)
         .height(Grow())
         .padding(2.dp)
         .alignX(AlignmentX.End)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
-    val horizontalBar = uiNode.parent?.children?.find { it is ScrollBarScope && it.modifier.orientation == ScrollBarOrientation.Horizontal }
+    val horizontalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.modifier.orientation == ScrollbarOrientation.Horizontal }
     if (horizontalBar != null) {
         val horizontalBarHeight = (horizontalBar.modifier.height as? Dp) ?: 12.dp
         if (horizontalBar.modifier.alignY == AlignmentY.Bottom) {
@@ -81,16 +81,16 @@ inline fun UiScope.ScrollBarV(scrollPane: ScrollPaneScope? = null, block: Scroll
     block()
 }
 
-inline fun UiScope.ScrollBarH(scrollPane: ScrollPaneScope? = null, block: ScrollBarScope.() -> Unit) = ScrollBar(scrollPane) {
+inline fun UiScope.HorizontalScrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) = Scrollbar(scrollPane) {
     modifier
-        .orientation(ScrollBarOrientation.Horizontal)
+        .orientation(ScrollbarOrientation.Horizontal)
         .height(12.dp)
         .width(Grow())
         .padding(2.dp)
         .alignY(AlignmentY.Bottom)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar
-    val verticalBar = uiNode.parent?.children?.find { it is ScrollBarScope && it.modifier.orientation == ScrollBarOrientation.Vertical }
+    val verticalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.modifier.orientation == ScrollbarOrientation.Vertical }
     if (verticalBar != null) {
         val verticalBarWidth = (verticalBar.modifier.width as? Dp) ?: 12.dp
         if (verticalBar.modifier.alignX == AlignmentX.End) {
@@ -103,8 +103,8 @@ inline fun UiScope.ScrollBarH(scrollPane: ScrollPaneScope? = null, block: Scroll
     block()
 }
 
-open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollBarScope {
-    override val modifier = ScrollBarModifier()
+open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollbarScope {
+    override val modifier = ScrollbarModifier()
 
     private val dragHelper = DragHelper()
     private var barMinX = 0f
@@ -116,7 +116,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         val spNode = modifier.scrollPane?.uiNode ?: return 1f
         val size: Float
         val view: Float
-        if (modifier.orientation == ScrollBarOrientation.Vertical) {
+        if (modifier.orientation == ScrollbarOrientation.Vertical) {
             size = spNode.height
             view = spNode.clippedMaxY - spNode.clippedMinY
         } else {
@@ -132,7 +132,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         val max: Float
         val clipMin: Float
         val clipMax: Float
-        if (modifier.orientation == ScrollBarOrientation.Vertical) {
+        if (modifier.orientation == ScrollbarOrientation.Vertical) {
             min = spNode.minY
             max = spNode.maxY
             clipMin = spNode.clippedMinY
@@ -161,7 +161,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
                 val refWidth = uiNode.width - paddingStart - paddingEnd
 
                 cornerSteps = 4
-                if (modifier.orientation == ScrollBarOrientation.Vertical) {
+                if (modifier.orientation == ScrollbarOrientation.Vertical) {
                     cornerRadius = refWidth * 0.5f
                     origin.set(paddingStart, pos * (1f - len) * refHeight + paddingTop, 0f)
                     size.set(refWidth, len * refHeight)
@@ -200,7 +200,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         var barStartPx = 0f
 
         fun captureDragStart() {
-            if (modifier.orientation == ScrollBarOrientation.Vertical) {
+            if (modifier.orientation == ScrollbarOrientation.Vertical) {
                 trackLenPx = uiNode.height - paddingTop - paddingBottom
                 barLenPx = barMaxY - barMinY
                 barStartPx = barMinY
@@ -212,7 +212,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         }
 
         fun computeScrollPos(dragPointer: InputManager.Pointer, scrollPane: ScrollPaneNode) {
-            val dragPos = if (modifier.orientation == ScrollBarOrientation.Vertical) {
+            val dragPos = if (modifier.orientation == ScrollbarOrientation.Vertical) {
                 dragPointer.dragDeltaY.toFloat()
             } else {
                 dragPointer.dragDeltaX.toFloat()
@@ -222,7 +222,7 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             val spaceAfter = trackLenPx - (barPos + barLenPx)
             val relativeScroll = if (barPos + spaceAfter > 0f) barPos / (barPos + spaceAfter) else 0f
 
-            if (modifier.orientation == ScrollBarOrientation.Vertical) {
+            if (modifier.orientation == ScrollbarOrientation.Vertical) {
                 val absoluteScroll = scrollPane.computeScrollPosY(relativeScroll)
                 scrollPane.modifier.onScrollPosChanged?.invoke(scrollPane.modifier.scrollPosX.value, absoluteScroll)
             } else {
@@ -233,6 +233,6 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
     }
 
     companion object {
-        val factory: (UiNode, UiSurface) -> ScrollBarNode = { parent, surface -> ScrollBarNode(parent, surface) }
+        val factory: (UiNode, UiSurface) -> ScrollbarNode = { parent, surface -> ScrollbarNode(parent, surface) }
     }
 }

@@ -95,9 +95,13 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         }
     }
 
-    open fun measureContentSize(ctx: KoolContext) = CellLayout.measureContentSize(this)
+    open fun measureContentSize(ctx: KoolContext) {
+        modifier.layout.measureContentSize(this, ctx)
+    }
 
-    open fun layoutChildren(ctx: KoolContext) = CellLayout.layoutChildren(this)
+    open fun layoutChildren(ctx: KoolContext) {
+        modifier.layout.layoutChildren(this, ctx)
+    }
 
     protected open fun resetDefaults() {
         oldChildren.clear()

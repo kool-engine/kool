@@ -60,11 +60,11 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             modifier
                 .width(200.dp)
                 .height(500.dp)
-                .padding(8.dp)
                 .margin(64.dp)
+                .layout(ColumnLayout)
                 .alignX(AlignmentX.End)
-                .layoutDirection(LayoutDirection.TopToBottom)
                 .background(MdColor.PINK.withAlpha(0.3f))
+                .padding(8.dp)
 
             Text("Some static text, clicked: ${clickCnt.use()}") {
                 modifier
@@ -81,8 +81,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 scrollState,
                 height = Grow(0.7f),
                 backgroundColor = MdColor.LIME,
-                scrollBarColor = Color.BLACK.withAlpha(0.5f),
-                cellModifier = { it.margin(8.dp) }
+                scrollBarColor = Color.BLACK.withAlpha(0.5f)
             ) {
                 Column {
                     Text("Text with two lines:\nThe second line is a little longer than the first one") {
@@ -93,8 +92,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     }
                     Text("Another text with a lot of height") {
                         modifier
-                            .margin(2.dp)
                             .height(300.dp)
+                            .margin(2.dp)
                             .background(MdColor.LIGHT_GREEN)
                     }
                 }
@@ -107,6 +106,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .textAlignY(AlignmentY.Center)
                     .width(100.dp)
                     .height(Grow(0.3f))
+                    .margin(8.dp)
                     .background(MdColor.AMBER)
             }
             Text("Yet another text") {
@@ -116,7 +116,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .textAlignX(AlignmentX.End)
                     .textAlignY(AlignmentY.Bottom)
                     .background(MdColor.PURPLE)
-                    .margin(16.dp)
             }
         }
     }

@@ -1,52 +1,39 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.KoolContext
 import kotlin.math.max
 import kotlin.math.round
 
-object CellLayout {
-    fun measureContentSize(uiNode: UiNode) {
-        uiNode.apply {
-            var measuredWidth = 0f
-            var measuredHeight = 0f
+object CellLayout : Layout {
+    override fun measureContentSize(uiNode: UiNode, ctx: KoolContext) = uiNode.run {
+        val modWidth = modifier.width
+        val modHeight = modifier.height
 
-            val modWidth = modifier.width
-            val modHeight = modifier.height
-            val isFixedWidth: Boolean
-            val isFixedHeight: Boolean
+        // if width / height is Grow, content size will remain 0
+        var measuredWidth = if (modWidth is Dp) modWidth.value * surface.measuredScale else 0f
+        var measuredHeight = if (modHeight is Dp) modHeight.value * surface.measuredScale else 0f
+        val isDynamicWidth = modWidth === WrapContent
+        val isDynamicHeight = modHeight === WrapContent
 
-            if (modWidth is Dp) {
-                measuredWidth = modWidth.value * surface.measuredScale
-                isFixedWidth = true
-            } else {
-                isFixedWidth = false
-            }
-            if (modHeight is Dp) {
-                measuredHeight = modHeight.value * surface.measuredScale
-                isFixedHeight = true
-            } else {
-                isFixedHeight = false
-            }
-
-            if (!isFixedWidth || !isFixedHeight) {
-                for (i in children.indices) {
-                    val child = children[i]
-                    if (!isFixedWidth) {
-                        val pStart = max(paddingStart, child.marginStart)
-                        val pEnd = max(paddingEnd, child.marginEnd)
-                        measuredWidth = max(measuredWidth, child.contentWidth + pStart + pEnd)
-                    }
-                    if (!isFixedHeight) {
-                        val pTop = max(paddingTop, child.marginTop)
-                        val pBottom = max(paddingBottom, child.marginBottom)
-                        measuredHeight = max(measuredHeight, child.contentHeight + pTop + pBottom)
-                    }
+        if (isDynamicWidth || isDynamicHeight) {
+            for (i in children.indices) {
+                val child = children[i]
+                if (isDynamicWidth) {
+                    val pStart = max(paddingStart, child.marginStart)
+                    val pEnd = max(paddingEnd, child.marginEnd)
+                    measuredWidth = max(measuredWidth, child.contentWidth + pStart + pEnd)
+                }
+                if (isDynamicHeight) {
+                    val pTop = max(paddingTop, child.marginTop)
+                    val pBottom = max(paddingBottom, child.marginBottom)
+                    measuredHeight = max(measuredHeight, child.contentHeight + pTop + pBottom)
                 }
             }
-            setContentSize(measuredWidth, measuredHeight)
         }
+        setContentSize(measuredWidth, measuredHeight)
     }
 
-    fun layoutChildren(uiNode: UiNode) {
+    override fun layoutChildren(uiNode: UiNode, ctx: KoolContext) {
         uiNode.apply {
             children.forEach { child ->
                 val childWidth = when (val w = child.modifier.width) {

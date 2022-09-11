@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.FontProps
 
-class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> Unit) : Group(name) {
+class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> Unit) : Group(name) {
 
     private val defaultMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) {
         shader = Ui2Shader()
@@ -17,8 +17,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
 
     private val inputHandler = InputHandler()
-    private val viewportBox = BoxNode(null, this)
-    private val uiHierarchy = viewportBox.createChild(RootBox::class) { parent, _ -> RootBox(parent) }
+    private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
+    private val content = viewport.createChild(RootCell::class) { _, _ -> RootCell() }
 
     private val registeredState = mutableListOf<MutableState>()
     var requiresUpdate: Boolean = true
@@ -40,22 +40,21 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
             return
         }
         requiresUpdate = false
-        registeredState.forEach { it.clear() }
+        registeredState.forEach { it.clearUsage() }
         registeredState.clear()
 
         val vp = updateEvent.renderPass.viewport
         measuredScale = updateEvent.ctx.windowScale
-        viewportBox.setBounds(0f, 0f, vp.width.toFloat(), vp.height.toFloat())
-
-        uiHierarchy.reset()
-        uiHierarchy.uiBlock()
+        viewport.setBounds(0f, 0f, vp.width.toFloat(), vp.height.toFloat())
+        content.reset()
+        content.uiBlock()
 
         textMeshes.values.forEach { it.clear() }
         defaultMesh.geometry.clear()
 
-        measureUiNodeContent(viewportBox, updateEvent.ctx)
-        layoutUiNodeChildren(viewportBox, updateEvent.ctx)
-        renderUiNode(uiHierarchy, updateEvent.ctx)
+        measureUiNodeContent(viewport, updateEvent.ctx)
+        layoutUiNodeChildren(viewport, updateEvent.ctx)
+        renderUiNode(content, updateEvent.ctx)
     }
 
     fun triggerUpdate(changedState: MutableState) {
@@ -102,7 +101,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
 
         fun handleInput(updateEvent: RenderPass.UpdateEvent) {
             val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
-            uiHierarchy.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+            content.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
 
             val ptrEv = PointerEvent(ptr, updateEvent.ctx)
             hoveredNode?.let { handleHover(it, ptrEv) }
@@ -198,7 +197,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
         }
     }
 
-    private inner class RootBox(parent: UiNode) : BoxNode(parent, this@UiSurface) {
+    private inner class RootCell : BoxNode(viewport, this@UiSurface) {
         fun reset() {
             resetDefaults()
         }

@@ -5,6 +5,7 @@ import de.fabmax.kool.util.Color
 open class UiModifier {
     var width: Dimension = WrapContent
     var height: Dimension = WrapContent
+    var layout: Layout = CellLayout
     var background: Color? = null
 
     var paddingStart: Dp = Dp.ZERO
@@ -25,6 +26,7 @@ open class UiModifier {
     open fun resetDefaults() {
         width = WrapContent
         height = WrapContent
+        layout = CellLayout
         background = null
 
         paddingStart = Dp.ZERO
@@ -46,6 +48,7 @@ open class UiModifier {
 
 fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return this }
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
+fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.background(color: Color?): T { background = color; return this }
 
 fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }

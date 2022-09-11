@@ -1,50 +1,52 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.KoolContext
+inline fun UiScope.Column(
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+) = Box(ColumnLayout, width, height, block)
 
-interface BoxScope : UiScope {
-    override val modifier: BoxModifier
-}
+inline fun UiScope.Row(
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+) = Box(RowLayout, width, height, block)
 
-open class BoxModifier : UiModifier() {
-    var layoutDirection = LayoutDirection.TopToBottom
+inline fun UiScope.ReverseColumn(
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+) = Box(ReverseColumnLayout, width, height, block)
 
-    override fun resetDefaults() {
-        super.resetDefaults()
-        layoutDirection = LayoutDirection.TopToBottom
-    }
-}
+inline fun UiScope.ReverseRow(
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+) = Box(ReverseRowLayout, width, height, block)
 
-fun <T: BoxModifier> T.layoutDirection(direction: LayoutDirection): T { layoutDirection = direction; return this }
+inline fun UiScope.Cell(
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+) = Box(CellLayout, width, height, block)
 
-enum class LayoutDirection(val isVertical: Boolean) {
-    StartToEnd(false),
-    EndToStart(false),
-    TopToBottom(true),
-    BottomToTop(true),
-}
-
-inline fun UiScope.Row(block: BoxScope.() -> Unit) = Box(LayoutDirection.StartToEnd, block)
-
-inline fun UiScope.Column(block: BoxScope.() -> Unit) = Box(LayoutDirection.TopToBottom, block)
-
-inline fun UiScope.Box(layoutDirection: LayoutDirection, block: BoxScope.() -> Unit): BoxScope {
+inline fun UiScope.Box(
+    layout: Layout,
+    width: Dimension = WrapContent,
+    height: Dimension = WrapContent,
+    block: UiScope.() -> Unit
+): UiScope {
     val box = uiNode.createChild(BoxNode::class, BoxNode.factory)
-    box.modifier.layoutDirection(layoutDirection)
+    box.modifier
+        .width(width)
+        .height(height)
+        .layout(layout)
     box.block()
     return box
 }
 
-open class BoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), BoxScope {
-    override val modifier = BoxModifier()
-
-    override fun measureContentSize(ctx: KoolContext) {
-        BoxLayout.measureContentSize(this, modifier.layoutDirection)
-    }
-
-    override fun layoutChildren(ctx: KoolContext) {
-        BoxLayout.layoutChildren(this, modifier.layoutDirection)
-    }
+open class BoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), UiScope {
+    override val modifier = UiModifier()
 
     companion object {
         val factory: (UiNode, UiSurface) -> BoxNode = { parent, surface -> BoxNode(parent, surface) }

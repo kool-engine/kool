@@ -1,5 +1,8 @@
 package de.fabmax.kool.modules.ui2
 
+fun <T> mutableStateOf(value: T) = MutableValueState(value)
+fun <T: Any> mutableListStateOf(vararg elements: T) = MutableListState<T>().apply { addAll(elements) }
+
 open class MutableState {
     private var isStateChanged = true
     private var usedBy: UiSurface? = null
@@ -18,7 +21,7 @@ open class MutableState {
         }
     }
 
-    fun clear() {
+    open fun clearUsage() {
         usedBy = null
         isStateChanged = false
     }
@@ -43,4 +46,67 @@ class MutableValueState<T: Any?>(initValue: T) : MutableState() {
     }
 }
 
-fun <T> mutableStateOf(value: T) = MutableValueState(value)
+class MutableListState<T: Any>(private val values: MutableList<T> = mutableListOf()) :
+    MutableState(), MutableList<T> by values
+{
+    override fun add(element: T): Boolean {
+        stateChanged()
+        return values.add(element)
+    }
+
+    override fun add(index: Int, element: T) {
+        stateChanged()
+        values.add(index, element)
+    }
+
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        stateChanged()
+        return values.addAll(index, elements)
+    }
+
+    override fun addAll(elements: Collection<T>): Boolean {
+        stateChanged()
+        return values.addAll(elements)
+    }
+
+    override fun clear() {
+        if (isNotEmpty()) {
+            stateChanged()
+        }
+        values.clear()
+    }
+
+    override fun remove(element: T): Boolean {
+        val result = values.remove(element)
+        if (result) {
+            stateChanged()
+        }
+        return result
+    }
+
+    override fun removeAll(elements: Collection<T>): Boolean {
+        val result = values.removeAll(elements)
+        if (result) {
+            stateChanged()
+        }
+        return result
+    }
+
+    override fun removeAt(index: Int): T {
+        stateChanged()
+        return values.removeAt(index)
+    }
+
+    override fun retainAll(elements: Collection<T>): Boolean {
+        val result = values.retainAll(elements)
+        if (result) {
+            stateChanged()
+        }
+        return result
+    }
+
+    override fun set(index: Int, element: T): T {
+        stateChanged()
+        return values.set(index, element)
+    }
+}
