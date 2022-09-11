@@ -12,20 +12,11 @@ interface TextScope : UiScope {
 }
 
 open class TextModifier : UiModifier() {
-    var text = ""
-    var font = Font.DEFAULT_FONT
-    var foreground: Color = MdColor.GREY tone 200
-    var textAlignX = AlignmentX.Start
-    var textAlignY = AlignmentY.Top
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        text = ""
-        font = Font.DEFAULT_FONT
-        foreground = MdColor.GREY tone 200
-        textAlignX = AlignmentX.Start
-        textAlignY = AlignmentY.Top
-    }
+    var text: String by property("")
+    var font: Font by property(Font.DEFAULT_FONT)
+    var foreground: Color by property(MdColor.GREY tone 200)
+    var textAlignX: AlignmentX by property(AlignmentX.Start)
+    var textAlignY: AlignmentY by property(AlignmentY.Top)
 }
 
 fun <T: TextModifier> T.text(text: String): T { this.text = text; return this }

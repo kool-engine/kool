@@ -48,7 +48,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         val scrollState = ScrollState()
         val listState = LazyListState()
         val buttonBgColor = mutableStateOf(MdColor.LIGHT_BLUE)
-        val listItemBgColor = mutableStateOf(MdColor.DEEP_PURPLE)
+        val hoveredListItem = mutableStateOf<String?>(null)
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
@@ -114,18 +114,25 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 scrollbarColor = Color.BLACK.withAlpha(0.5f)
             ) {
                 items(listItems) { item ->
+                    val isHovered = item == hoveredListItem.use()
+                    val bgColor = when {
+                        isHovered && item == "Item 17" -> MdColor.GREEN
+                        isHovered -> MdColor.RED
+                        !isHovered && item == "Item 17" -> MdColor.GREEN tone 200
+                        else -> MdColor.RED tone 200
+                    }
                     Text(item) {
-                        if (item == "Item 17") {
-                            modifier
-                                .background(listItemBgColor.use())
-                                .onEnter { listItemBgColor.set(MdColor.PINK) }
-                                .onExit { listItemBgColor.set(MdColor.DEEP_PURPLE) }
-                                .onClick { listItems += "Item ${nextItem++}" }
-                        } else {
-                            modifier
-                                .background(MdColor.PURPLE)
-                                .onClick { listItems.remove(item) }
-                        }
+                        modifier
+                            .background(bgColor)
+                            .onEnter { hoveredListItem.set(item) }
+                            .onExit { hoveredListItem.set(null) }
+                            .onClick {
+                                if (item == "Item 17") {
+                                    listItems += "Item ${nextItem++}"
+                                } else {
+                                    listItems.remove(item)
+                                }
+                            }
                     }
                 }
             }

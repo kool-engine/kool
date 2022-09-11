@@ -11,18 +11,10 @@ interface ScrollbarScope : UiScope {
 }
 
 open class ScrollbarModifier : UiModifier() {
-    var scrollPane: ScrollPaneScope? = null
-    var orientation = ScrollbarOrientation.Vertical
-    var barColor: Color = (MdColor.GREY tone 400).withAlpha(0.5f)
-    var hideIfFull = true
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        scrollPane = null
-        orientation = ScrollbarOrientation.Vertical
-        barColor = (MdColor.GREY tone 400).withAlpha(0.5f)
-        hideIfFull = true
-    }
+    var scrollPane: ScrollPaneScope? by property(null)
+    var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
+    var barColor: Color by property((MdColor.GREY tone 400).withAlpha(0.5f))
+    var hideIfFull: Boolean by property(true)
 }
 
 
@@ -46,8 +38,8 @@ enum class ScrollbarOrientation {
 
 inline fun UiScope.Scrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) {
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
-    scrollBar.modifier.pointerCallbacks.onDragStart = scrollBar::onDragStart
-    scrollBar.modifier.pointerCallbacks.onDrag = scrollBar::onDrag
+    scrollBar.modifier.onDragStart = scrollBar::onDragStart
+    scrollBar.modifier.onDrag = scrollBar::onDrag
 
     if (scrollPane != null) {
         scrollBar.modifier.scrollPane(scrollPane)

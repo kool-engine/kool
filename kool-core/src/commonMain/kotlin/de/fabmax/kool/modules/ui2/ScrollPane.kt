@@ -10,21 +10,12 @@ interface ScrollPaneScope : UiScope {
 }
 
 open class ScrollPaneModifier : UiModifier() {
-    var scrollPosX = Dp.ZERO
-    var scrollPosY = Dp.ZERO
-    var onScrollPosChanged: ((Float, Float) -> Unit)? = null
+    var scrollPosX by property(Dp.ZERO)
+    var scrollPosY by property(Dp.ZERO)
+    var onScrollPosChanged: ((Float, Float) -> Unit)? by property(null)
 
-    var allowOverscrollX = false
-    var allowOverscrollY = false
-
-    override fun resetDefaults() {
-        super.resetDefaults()
-        scrollPosX = Dp.ZERO
-        scrollPosY = Dp.ZERO
-        onScrollPosChanged = null
-        allowOverscrollX = false
-        allowOverscrollY = false
-    }
+    var allowOverscrollX by property(false)
+    var allowOverscrollY by property(false)
 }
 
 fun <T: ScrollPaneModifier> T.scrollPos(x: Dp = scrollPosX, y: Dp = scrollPosY): T {

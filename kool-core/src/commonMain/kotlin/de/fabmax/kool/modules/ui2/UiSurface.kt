@@ -46,22 +46,31 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         requiresUpdate = false
         registeredState.forEach { it.clearUsage() }
         registeredState.clear()
+        val prep = pt.takeMs().also { pt.reset() }
 
         val vp = updateEvent.renderPass.viewport
         measuredScale = updateEvent.ctx.windowScale
         viewport.setBounds(0f, 0f, vp.width.toFloat(), vp.height.toFloat())
         content.reset()
         content.uiBlock()
+        val build = pt.takeMs().also { pt.reset() }
 
         textMeshes.values.forEach { it.clear() }
         defaultMesh.geometry.clear()
 
         measureUiNodeContent(viewport, updateEvent.ctx)
+        val measure = pt.takeMs().also { pt.reset() }
         layoutUiNodeChildren(viewport, updateEvent.ctx)
+        val layout = pt.takeMs().also { pt.reset() }
         if (content.isInBounds) {
             renderUiNode(content, updateEvent.ctx)
         }
-        logD { "ui update took ${pt.takeMs()} ms" }
+        val render = pt.takeMs().also { pt.reset() }
+        logD { "UI update: prep: ${(prep * 1000).toInt()} us, " +
+                "build: ${(build * 1000).toInt()} us, " +
+                "measure: ${(measure * 1000).toInt()} us, " +
+                "layout: ${(layout * 1000).toInt()} us, " +
+                "render: ${(render * 1000).toInt()} us" }
     }
 
     fun triggerUpdate(changedState: MutableState) {
@@ -125,12 +134,12 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             // check if we still hover previously hovered node
             if (currentHover in nodeResult) {
                 // hovering continues, hover event can be rejected, by hoverNode to stop hovering
-                if (!invokeCallback(ptrEv, currentHover.modifier.pointerCallbacks.onHover, true)) {
+                if (!invokeCallback(ptrEv, currentHover.modifier.onHover, true)) {
                     hoveredNode = null
                 }
             } else {
                 // hovering stopped, cannot be rejected...
-                currentHover.modifier.pointerCallbacks.onExit?.invoke(ptrEv)
+                currentHover.modifier.onExit?.invoke(ptrEv)
                 hoveredNode = null
             }
         }
@@ -139,12 +148,12 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             val ptr = ptrEv.pointer
             if (ptr.isDrag) {
                 // dragging continues, drag event can be rejected, by dragNode to stop dragging
-                if (!invokeCallback(ptrEv, currentDrag.modifier.pointerCallbacks.onDrag, true)) {
+                if (!invokeCallback(ptrEv, currentDrag.modifier.onDrag, true)) {
                     dragNode = null
                 }
             } else {
                 // dragging stopped, cannot be rejected...
-                currentDrag.modifier.pointerCallbacks.onDragEnd?.invoke(ptrEv)
+                currentDrag.modifier.onDragEnd?.invoke(ptrEv)
                 dragNode = null
             }
         }
@@ -164,30 +173,30 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             wasDrag = ptr.isDrag
 
             relevantNodes.forEach { node ->
-                val cbs = node.modifier.pointerCallbacks
+                val mod = node.modifier
 
                 // onRawPointer is called for any node below pointer position
-                cbs.onRawPointer?.invoke(ptrEv)
+                mod.onRawPointer?.invoke(ptrEv)
 
-                if (hoveredNode == null && cbs.hasAnyHoverCallback && invokeCallback(ptrEv, cbs.onEnter, true)) {
+                if (hoveredNode == null && mod.hasAnyHoverCallback && invokeCallback(ptrEv, mod.onEnter, true)) {
                     // no node was hovered before (or we just exited it) and we found a new one which has hover
                     // callbacks installed -> select it as new hovered node
                     hoveredNode = node
                 }
 
-                if (isDragStart && dragNode == null && cbs.hasAnyDragCallback && invokeCallback(ptrEv, cbs.onDragStart, true)) {
+                if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokeCallback(ptrEv, mod.onDragStart, true)) {
                     dragNode = node
                 }
 
-                if (isAnyClick && invokeCallback(ptrEv, cbs.onClick)) {
+                if (isAnyClick && invokeCallback(ptrEv, mod.onClick)) {
                     // click was consumed
                     isAnyClick = false
                 }
-                if (isWheelX && invokeCallback(ptrEv, cbs.onWheelX)) {
+                if (isWheelX && invokeCallback(ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
                     isWheelX = false
                 }
-                if (isWheelY && invokeCallback(ptrEv, cbs.onWheelY)) {
+                if (isWheelY && invokeCallback(ptrEv, mod.onWheelY)) {
                     // wheel y was consumed
                     isWheelY = false
                 }
@@ -263,6 +272,6 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             invertFaceOrientation = true
         }
 
-        private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.pointerCallbacks.hasAnyCallback }
+        private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.hasAnyCallback }
     }
 }

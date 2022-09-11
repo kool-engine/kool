@@ -7,6 +7,8 @@ class LazyListState : ScrollState() {
 }
 
 interface LazyListScope : UiScope {
+    override val uiNode: LazyListNode
+
     fun <T> items(items: Collection<T>, block: LazyListScope.(T) -> Unit) {
         if (items is MutableListState) items.use()
         // todo: find a clever way to call this only for visible items instead of all
@@ -58,6 +60,7 @@ fun UiScope.LazyList(
 
 class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), LazyListScope {
     override val modifier = UiModifier()
+    override val uiNode: LazyListNode get() = this
 
     lateinit var state: LazyListState
 

@@ -1,48 +1,85 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.InputManager
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Color
+import kotlin.reflect.KProperty
 
 open class UiModifier {
-    var width: Dimension = WrapContent
-    var height: Dimension = WrapContent
-    var layout: Layout = CellLayout
-    var background: Color? = null
+    private val properties = mutableListOf<PropertyHolder<*>>()
 
-    var paddingStart: Dp = Dp.ZERO
-    var paddingEnd: Dp = Dp.ZERO
-    var paddingTop: Dp = Dp.ZERO
-    var paddingBottom: Dp = Dp.ZERO
+    var width: Dimension by property(WrapContent)
+    var height: Dimension by property(WrapContent)
+    var layout: Layout by property(CellLayout)
+    var background: Color? by property(null)
 
-    var marginStart: Dp = Dp(8f)
-    var marginEnd: Dp = Dp(8f)
-    var marginTop: Dp = Dp(8f)
-    var marginBottom: Dp = Dp(8f)
+    var paddingStart: Dp by property(Dp.ZERO)
+    var paddingEnd: Dp by property(Dp.ZERO)
+    var paddingTop: Dp by property(Dp.ZERO)
+    var paddingBottom: Dp by property(Dp.ZERO)
 
-    var alignX = AlignmentX.Start
-    var alignY = AlignmentY.Top
+    var marginStart: Dp by property(Dp(8f))
+    var marginEnd: Dp by property(Dp(8f))
+    var marginTop: Dp by property(Dp(8f))
+    var marginBottom: Dp by property(Dp(8f))
 
-    val pointerCallbacks = PointerCallbacks()
+    var alignX: AlignmentX by property(AlignmentX.Start)
+    var alignY: AlignmentY by property(AlignmentY.Top)
+
+    var onRawPointer: ((PointerEvent) -> Unit)? by property(null)
+    var onClick: ((PointerEvent) -> Unit)? by property(null)
+    var onWheelX: ((PointerEvent) -> Unit)? by property(null)
+    var onWheelY: ((PointerEvent) -> Unit)? by property(null)
+
+    var onEnter: ((PointerEvent) -> Unit)? by property(null)
+    var onExit: ((PointerEvent) -> Unit)? by property(null)
+    var onHover: ((PointerEvent) -> Unit)? by property(null)
+
+    var onDragStart: ((PointerEvent) -> Unit)? by property(null)
+    var onDrag: ((PointerEvent) -> Unit)? by property(null)
+    var onDragEnd: ((PointerEvent) -> Unit)? by property(null)
+
+    protected fun <T> property(defaultVal: T): PropertyHolder<T> {
+        val holder = PropertyHolder(defaultVal)
+        properties += holder
+        return holder
+    }
 
     open fun resetDefaults() {
-        width = WrapContent
-        height = WrapContent
-        layout = CellLayout
-        background = null
+        for (i in properties.indices) {
+            properties[i].resetDefault()
+        }
+    }
 
-        paddingStart = Dp.ZERO
-        paddingEnd = Dp.ZERO
-        paddingTop = Dp.ZERO
-        paddingBottom = Dp.ZERO
+    val hasAnyCallback: Boolean
+        get() = onRawPointer != null ||
+                onClick != null ||
+                onWheelX != null ||
+                onWheelY != null ||
+                onEnter != null ||
+                onExit != null ||
+                onHover != null ||
+                onDragStart != null ||
+                onDrag != null ||
+                onDragEnd != null
 
-        marginStart = Dp(8f)
-        marginEnd = Dp(8f)
-        marginTop = Dp(8f)
-        marginBottom = Dp(8f)
+    val hasAnyHoverCallback: Boolean
+        get() = onEnter != null ||
+                onExit != null ||
+                onHover != null
 
-        alignX = AlignmentX.Start
-        alignY = AlignmentY.Top
+    val hasAnyDragCallback: Boolean
+        get() = onDragStart != null ||
+                onDrag != null ||
+                onDragEnd != null
 
-        pointerCallbacks.resetDefaults()
+    protected inner class PropertyHolder<T>(val defaultVal: T) {
+        var field = defaultVal
+
+        fun resetDefault() { field = defaultVal }
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T = field
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) { field = value }
     }
 }
 
@@ -50,9 +87,6 @@ fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return th
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.background(color: Color?): T { background = color; return this }
-
-fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }
-fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
 
 fun <T: UiModifier> T.padding(all: Dp): T {
     paddingStart = all
@@ -131,4 +165,28 @@ enum class AlignmentY {
     Center,
     Bottom
 }
+
+fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }
+fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
+
+class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
+    var isConsumed = true
+
+    fun reject() {
+        isConsumed = false
+    }
+}
+
+fun <T: UiModifier> T.onRawPointer(block: (PointerEvent) -> Unit): T { onRawPointer = block; return this }
+fun <T: UiModifier> T.onClick(block: (PointerEvent) -> Unit): T { onClick = block; return this }
+fun <T: UiModifier> T.onWheelX(block: (PointerEvent) -> Unit): T { onWheelX = block; return this }
+fun <T: UiModifier> T.onWheelY(block: (PointerEvent) -> Unit): T { onWheelY = block; return this }
+
+fun <T: UiModifier> T.onEnter(block: (PointerEvent) -> Unit): T { onEnter = block; return this }
+fun <T: UiModifier> T.onExit(block: (PointerEvent) -> Unit): T { onExit = block; return this }
+fun <T: UiModifier> T.onHover(block: (PointerEvent) -> Unit): T { onHover = block; return this }
+
+fun <T: UiModifier> T.onDragStart(block: (PointerEvent) -> Unit): T { onDragStart = block; return this }
+fun <T: UiModifier> T.onDrag(block: (PointerEvent) -> Unit): T { onDrag = block; return this }
+fun <T: UiModifier> T.onDragEnd(block: (PointerEvent) -> Unit): T { onDragEnd = block; return this }
 
