@@ -160,12 +160,14 @@ abstract class InputManager internal constructor() {
         internal var consumptionMask = 0
         internal var dragMovement = 0.0
 
+        val isAnyButtonDown: Boolean get() = buttonMask != 0
         val isLeftButtonDown: Boolean get() = (buttonMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonDown: Boolean get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
         val isMiddleButtonDown: Boolean get() = (buttonMask and MIDDLE_BUTTON_MASK) != 0
         val isBackButtonDown: Boolean get() = (buttonMask and BACK_BUTTON_MASK) != 0
         val isForwardButtonDown: Boolean get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
 
+        val isAnyButtonEvent: Boolean get() = buttonEventMask != 0
         val isLeftButtonEvent: Boolean get() = (buttonEventMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonEvent: Boolean get() = (buttonEventMask and RIGHT_BUTTON_MASK) != 0
         val isMiddleButtonEvent: Boolean get() = (buttonEventMask and MIDDLE_BUTTON_MASK) != 0
@@ -194,6 +196,8 @@ abstract class InputManager internal constructor() {
                 && now() - buttonDownTimes[3] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
         val isForwardButtonClicked: Boolean get() = isForwardButtonReleased
                 && now() - buttonDownTimes[4] < MAX_CLICK_TIME_MS && dragMovement < MAX_CLICK_MOVE_PX
+
+        val isDrag: Boolean get() = isAnyButtonDown && (dragDeltaX != 0.0 || dragDeltaY != 0.0)
 
         fun consume(mask: Int = CONSUMED_ALL) {
             consumptionMask = consumptionMask or mask
@@ -252,7 +256,7 @@ abstract class InputManager internal constructor() {
         }
 
         fun movePointer(x: Double, y: Double) {
-            if (buttonMask != 0) {
+            if (isAnyButtonDown) {
                 dragDeltaX += x - this.x
                 dragDeltaY += y - this.y
                 dragMovement += abs(x - this.x) + abs(y - this.y)

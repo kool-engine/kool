@@ -13,7 +13,7 @@ class PointerCallbacks {
     var onExit: ((PointerEvent) -> Unit)? = null
     var onHover: ((PointerEvent) -> Unit)? = null
 
-    var onDragStart: ((PointerEvent) -> Boolean)? = null
+    var onDragStart: ((PointerEvent) -> Unit)? = null
     var onDrag: ((PointerEvent) -> Unit)? = null
     var onDragEnd: ((PointerEvent) -> Unit)? = null
 
@@ -33,6 +33,11 @@ class PointerCallbacks {
         get() = onEnter != null ||
                 onExit != null ||
                 onHover != null
+
+    val hasAnyDragCallback: Boolean
+        get() = onDragStart != null ||
+                onDrag != null ||
+                onDragEnd != null
 
     fun resetDefaults() {
         onRawPointer = null
@@ -65,6 +70,6 @@ fun <T: UiModifier> T.onEnter(block: (PointerEvent) -> Unit): T { pointerCallbac
 fun <T: UiModifier> T.onExit(block: (PointerEvent) -> Unit): T { pointerCallbacks.onExit = block; return this }
 fun <T: UiModifier> T.onHover(block: (PointerEvent) -> Unit): T { pointerCallbacks.onHover = block; return this }
 
-fun <T: UiModifier> T.onDragStart(block: (PointerEvent) -> Boolean): T { pointerCallbacks.onDragStart = block; return this }
+fun <T: UiModifier> T.onDragStart(block: (PointerEvent) -> Unit): T { pointerCallbacks.onDragStart = block; return this }
 fun <T: UiModifier> T.onDrag(block: (PointerEvent) -> Unit): T { pointerCallbacks.onDrag = block; return this }
 fun <T: UiModifier> T.onDragEnd(block: (PointerEvent) -> Unit): T { pointerCallbacks.onDragEnd = block; return this }

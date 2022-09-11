@@ -16,11 +16,9 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
     val defaultBuilder = MeshBuilder(defaultMesh.geometry).apply { setupUiBuilder() }
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
 
+    private val inputHandler = InputHandler()
     private val viewportBox = BoxNode(null, this)
     private val uiHierarchy = viewportBox.createChild(RootBox::class) { parent, _ -> RootBox(parent) }
-
-    private val nodeResult = mutableListOf<UiNode>()
-    private var hoveredNode: UiNode? = null
 
     private val registeredState = mutableListOf<MutableState>()
     var requiresUpdate: Boolean = true
@@ -32,90 +30,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
     init {
         this += defaultMesh
         onUpdate += {
-            doInput(it)
+            inputHandler.handleInput(it)
             updateUi(it)
-        }
-    }
-
-    private fun doInput(updateEvent: RenderPass.UpdateEvent) {
-        val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
-        uiHierarchy.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
-
-        if (hoveredNode == null && nodeResult.isEmpty()) {
-            // nothing else to check
-            return
-        }
-
-        val ptrEv = PointerEvent(ptr, updateEvent.ctx)
-        var isWheelX = ptr.deltaScrollX != 0.0
-        var isWheelY = ptr.deltaScrollY != 0.0
-        var isAnyClick = ptr.isLeftButtonClicked ||
-                ptr.isRightButtonClicked ||
-                ptr.isMiddleButtonClicked ||
-                ptr.isForwardButtonClicked ||
-                ptr.isBackButtonClicked
-
-        // check if we still hover previously hovered node
-        if (hoveredNode != null) {
-            if (hoveredNode in nodeResult) {
-                // hovering continues
-                hoveredNode?.modifier?.pointerCallbacks?.onHover?.invoke(ptrEv)
-                if (!ptrEv.isConsumed) {
-                    // hovering was rejected, do not treat this node as hover node anymore
-                    hoveredNode = null
-                }
-            } else {
-                // hovering stopped, cannot be rejected...
-                hoveredNode?.modifier?.pointerCallbacks?.onExit?.invoke(ptrEv)
-                hoveredNode = null
-            }
-        }
-
-        nodeResult.forEach { node ->
-            val cbs = node.modifier.pointerCallbacks
-
-            // onRawPointer is called for any node below pointer position
-            cbs.onRawPointer?.invoke(ptrEv)
-
-            // make sure consumed flag is true, as this is the default. if a node does not want to consume an event
-            // it has to actively reject() it
-            ptrEv.isConsumed = true
-
-            if (hoveredNode == null && cbs.hasAnyHoverCallback) {
-                // no node was hovered before (or we just exited it) and we found a new one which has hover
-                // callbacks installed -> select it as new hovered node
-                cbs.onEnter?.invoke(ptrEv)
-                if (ptrEv.isConsumed) {
-                    hoveredNode = node
-                }
-                ptrEv.isConsumed = true
-            }
-
-            if (isAnyClick) {
-                cbs.onClick?.invoke(ptrEv)
-                if (ptrEv.isConsumed) {
-                    // click was consumed
-                    isAnyClick = false
-                }
-                ptrEv.isConsumed = true
-            }
-
-            if (isWheelX) {
-                cbs.onWheelX?.invoke(ptrEv)
-                if (ptrEv.isConsumed) {
-                    // wheel was consumed
-                    isWheelX = false
-                }
-                ptrEv.isConsumed = true
-            }
-            if (isWheelY) {
-                cbs.onWheelY?.invoke(ptrEv)
-                if (ptrEv.isConsumed) {
-                    // wheel was consumed
-                    isWheelY = false
-                }
-                ptrEv.isConsumed = true
-            }
         }
     }
 
@@ -175,6 +91,110 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: BoxScope.() -> 
             if (node.children[i].isInBounds) {
                 renderUiNode(node.children[i], ctx)
             }
+        }
+    }
+
+    private inner class InputHandler {
+        private val nodeResult = mutableListOf<UiNode>()
+        private var hoveredNode: UiNode? = null
+        private var wasDrag = false
+        private var dragNode: UiNode? = null
+
+        fun handleInput(updateEvent: RenderPass.UpdateEvent) {
+            val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
+            uiHierarchy.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+
+            val ptrEv = PointerEvent(ptr, updateEvent.ctx)
+            hoveredNode?.let { handleHover(it, ptrEv) }
+            if (nodeResult.isNotEmpty()) {
+                handlePointerEvents(nodeResult, ptrEv)
+            }
+            dragNode?.let { handleDrag(it, ptrEv) }
+        }
+
+        private fun handleHover(currentHover: UiNode, ptrEv: PointerEvent) {
+            // check if we still hover previously hovered node
+            if (currentHover in nodeResult) {
+                // hovering continues, hover event can be rejected, by hoverNode to stop hovering
+                if (!invokeCallback(ptrEv, currentHover.modifier.pointerCallbacks.onHover, true)) {
+                    hoveredNode = null
+                }
+            } else {
+                // hovering stopped, cannot be rejected...
+                currentHover.modifier.pointerCallbacks.onExit?.invoke(ptrEv)
+                hoveredNode = null
+            }
+        }
+
+        private fun handleDrag(currentDrag: UiNode, ptrEv: PointerEvent) {
+            val ptr = ptrEv.pointer
+            if (ptr.isDrag) {
+                // dragging continues, drag event can be rejected, by dragNode to stop dragging
+                if (!invokeCallback(ptrEv, currentDrag.modifier.pointerCallbacks.onDrag, true)) {
+                    dragNode = null
+                }
+            } else {
+                // dragging stopped, cannot be rejected...
+                currentDrag.modifier.pointerCallbacks.onDragEnd?.invoke(ptrEv)
+                dragNode = null
+            }
+        }
+
+        fun handlePointerEvents(relevantNodes: List<UiNode>, ptrEv: PointerEvent) {
+            val ptr = ptrEv.pointer
+
+            var isWheelX = ptr.deltaScrollX != 0.0
+            var isWheelY = ptr.deltaScrollY != 0.0
+            val isDragStart = !wasDrag && ptr.isDrag
+            var isAnyClick = ptr.isLeftButtonClicked ||
+                    ptr.isRightButtonClicked ||
+                    ptr.isMiddleButtonClicked ||
+                    ptr.isForwardButtonClicked ||
+                    ptr.isBackButtonClicked
+
+            wasDrag = ptr.isDrag
+
+            relevantNodes.forEach { node ->
+                val cbs = node.modifier.pointerCallbacks
+
+                // onRawPointer is called for any node below pointer position
+                cbs.onRawPointer?.invoke(ptrEv)
+
+                if (hoveredNode == null && cbs.hasAnyHoverCallback && invokeCallback(ptrEv, cbs.onEnter, true)) {
+                    // no node was hovered before (or we just exited it) and we found a new one which has hover
+                    // callbacks installed -> select it as new hovered node
+                    hoveredNode = node
+                }
+
+                if (isDragStart && dragNode == null && cbs.hasAnyDragCallback && invokeCallback(ptrEv, cbs.onDragStart, true)) {
+                    dragNode = node
+                }
+
+                if (isAnyClick && invokeCallback(ptrEv, cbs.onClick)) {
+                    // click was consumed
+                    isAnyClick = false
+                }
+                if (isWheelX && invokeCallback(ptrEv, cbs.onWheelX)) {
+                    // wheel x was consumed
+                    isWheelX = false
+                }
+                if (isWheelY && invokeCallback(ptrEv, cbs.onWheelY)) {
+                    // wheel y was consumed
+                    isWheelY = false
+                }
+            }
+        }
+
+        private fun invokeCallback(ptrEvent: PointerEvent, cb: ((PointerEvent) -> Unit)?, consumedIfNull: Boolean = false): Boolean {
+            var wasConsumed = consumedIfNull
+            if (cb != null) {
+                // make sure consumed flag is set by default, callback has to actively reject() the
+                // event to not consume it
+                ptrEvent.isConsumed = true
+                cb(ptrEvent)
+                wasConsumed = ptrEvent.isConsumed
+            }
+            return wasConsumed
         }
     }
 

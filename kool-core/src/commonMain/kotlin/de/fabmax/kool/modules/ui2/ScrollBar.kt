@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
@@ -45,6 +46,9 @@ enum class ScrollBarOrientation {
 
 inline fun UiScope.ScrollBar(scrollPane: ScrollPaneScope? = null, block: ScrollBarScope.() -> Unit) {
     val scrollBar = uiNode.createChild(ScrollBarNode::class, ScrollBarNode.factory)
+    scrollBar.modifier.pointerCallbacks.onDragStart = scrollBar::onDragStart
+    scrollBar.modifier.pointerCallbacks.onDrag = scrollBar::onDrag
+
     if (scrollPane != null) {
         scrollBar.modifier.scrollPane(scrollPane)
     } else {
@@ -101,6 +105,12 @@ inline fun UiScope.ScrollBarH(scrollPane: ScrollPaneScope? = null, block: Scroll
 
 open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollBarScope {
     override val modifier = ScrollBarModifier()
+
+    private val dragHelper = DragHelper()
+    private var barMinX = 0f
+    private var barMaxX = 0f
+    private var barMinY = 0f
+    private var barMaxY = 0f
 
     open fun computeRelativeBarLen(): Float {
         val spNode = modifier.scrollPane?.uiNode ?: return 1f
@@ -160,6 +170,64 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
                     origin.set(pos * (1f - len) * refWidth + paddingStart, paddingTop, 0f)
                     size.set(len * refWidth, refHeight)
                 }
+
+                barMinX = minX + origin.x
+                barMinY = minY + origin.y
+                barMaxX = minX + origin.x + size.x
+                barMaxY = minY + origin.y + size.y
+            }
+        }
+    }
+
+    fun onDragStart(ev: PointerEvent) {
+        if (ev.pointer.x in barMinX..barMaxX && ev.pointer.y in barMinY..barMaxY) {
+            dragHelper.captureDragStart()
+        } else {
+            ev.reject()
+        }
+    }
+
+    fun onDrag(ev: PointerEvent) {
+        modifier.scrollPane?.uiNode?.let {
+            dragHelper.computeScrollPos(ev.pointer, it)
+        }
+    }
+
+    private inner class DragHelper {
+        var trackLenPx = 0f
+        var barLenPx = 0f
+        var barStartPx = 0f
+
+        fun captureDragStart() {
+            if (modifier.orientation == ScrollBarOrientation.Vertical) {
+                trackLenPx = uiNode.height - paddingTop - paddingBottom
+                barLenPx = barMaxY - barMinY
+                barStartPx = barMinY - minY
+            } else {
+                trackLenPx = uiNode.width - paddingStart - paddingEnd
+                barLenPx = barMaxX - barMinX
+                barStartPx = barMinX - minX
+            }
+        }
+
+        fun computeScrollPos(dragPointer: InputManager.Pointer, scrollPane: ScrollPaneNode) {
+            val dragPos = if (modifier.orientation == ScrollBarOrientation.Vertical) {
+                dragPointer.dragDeltaY.toFloat()
+            } else {
+                dragPointer.dragDeltaX.toFloat()
+            }
+
+            val barPos = (barStartPx + dragPos).clamp(0f, trackLenPx - barLenPx)
+            val spaceAfter = trackLenPx - (barPos + barLenPx)
+            val relativeScroll = if (barPos + spaceAfter > 0f) barPos / (barPos + spaceAfter) else 0f
+
+            if (modifier.orientation == ScrollBarOrientation.Vertical) {
+                val absoluteScroll = scrollPane.computeScrollPosY(relativeScroll)
+                scrollPane.modifier.onScrollPosChanged?.invoke(scrollPane.modifier.scrollPosX.value, absoluteScroll)
+            } else {
+                val absoluteScroll = scrollPane.computeScrollPosX(relativeScroll)
+                //println("rel: $relativeScroll -> abs: $absoluteScroll")
+                scrollPane.modifier.onScrollPosChanged?.invoke(absoluteScroll, scrollPane.modifier.scrollPosY.value)
             }
         }
     }

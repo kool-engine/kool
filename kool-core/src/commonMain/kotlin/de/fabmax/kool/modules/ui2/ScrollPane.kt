@@ -3,10 +3,10 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.logW
 import kotlin.math.max
-import kotlin.math.min
 
 interface ScrollPaneScope : UiScope {
     override val modifier: ScrollPaneModifier
+    override val uiNode: ScrollPaneNode
 }
 
 open class ScrollPaneModifier : UiModifier() {
@@ -52,6 +52,7 @@ inline fun UiScope.ScrollPane(block: ScrollPaneScope.() -> Unit): ScrollPaneScop
 
 open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollPaneScope {
     override val modifier = ScrollPaneModifier()
+    override val uiNode: ScrollPaneNode get() = this
 
     private var scrollPosX = 0f
     private var scrollPosY = 0f
@@ -67,18 +68,21 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     }
 
     override fun setBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
+        updateScrollPos()
+        val scrollX = scrollPosX * surface.measuredScale
+        val scrollY = scrollPosY * surface.measuredScale
+        super.setBounds(minX - scrollX, minY - scrollY, maxX - scrollX, maxY - scrollY)
+    }
+
+    protected open fun updateScrollPos() {
         scrollPosX = modifier.scrollPosX.value
         scrollPosY = modifier.scrollPosY.value
 
         if (parent != null) {
             val contentWidthDp = contentWidth / surface.measuredScale
             val contentHeightDp = contentHeight / surface.measuredScale
-            val lt = max(parent.clippedMinX, minX) / surface.measuredScale
-            val up = max(parent.clippedMinY, minY) / surface.measuredScale
-            val rt = min(parent.clippedMaxX, maxX) / surface.measuredScale
-            val dn = min(parent.clippedMaxY, maxY) / surface.measuredScale
-            val viewWidthDp = rt - lt
-            val viewHeightDp = dn - up
+            val viewWidthDp = (parent.clippedMaxX - parent.clippedMinX) / surface.measuredScale
+            val viewHeightDp = (parent.clippedMaxY - parent.clippedMinY) / surface.measuredScale
 
             if (!modifier.allowOverscrollX) {
                 if (scrollPosX + viewWidthDp > contentWidthDp) {
@@ -88,7 +92,7 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
             }
             if (!modifier.allowOverscrollY) {
                 if (scrollPosY + viewHeightDp > contentHeightDp) {
-                    scrollPosY = contentHeightDp - viewWidthDp
+                    scrollPosY = contentHeightDp - viewHeightDp
                 }
                 scrollPosY = max(0f, scrollPosY)
             }
@@ -97,10 +101,26 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
         if (scrollPosX != modifier.scrollPosX.value || scrollPosY != modifier.scrollPosY.value) {
             modifier.onScrollPosChanged?.invoke(scrollPosX, scrollPosY)
         }
+    }
 
-        val scrollX = scrollPosX * surface.measuredScale
-        val scrollY = scrollPosY * surface.measuredScale
-        super.setBounds(minX - scrollX, minY - scrollY, maxX - scrollX, maxY - scrollY)
+    open fun computeScrollPosX(relativeX: Float): Float {
+        if (parent == null) {
+            return 0f
+        }
+        var contentWidthDp = contentWidth / surface.measuredScale
+        val viewWidthDp = (parent.clippedMaxX - parent.clippedMinX) / surface.measuredScale
+        contentWidthDp = max(contentWidthDp, viewWidthDp)
+        return (contentWidthDp - viewWidthDp) * relativeX
+    }
+
+    open fun computeScrollPosY(relativeY: Float): Float {
+        if (parent == null) {
+            return 0f
+        }
+        var contentHeightDp = contentHeight / surface.measuredScale
+        val viewHeightDp = (parent.clippedMaxY - parent.clippedMinY) / surface.measuredScale
+        contentHeightDp = max(contentHeightDp, viewHeightDp)
+        return (contentHeightDp - viewHeightDp) * relativeY
     }
 
     companion object {
