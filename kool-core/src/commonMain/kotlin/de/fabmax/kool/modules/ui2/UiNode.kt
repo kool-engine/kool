@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
@@ -56,6 +57,9 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     protected val setBoundsVertexMod: VertexView.() -> Unit = {
         getVec4fAttribute(Ui2Shader.ATTRIB_BOUNDS)?.set(clippedMinX, -clippedMaxY, clippedMaxX, -clippedMinY)
     }
+
+    fun toLocal(screenX: Double, screenY: Double) = Vec2f(screenX.toFloat() - minX, screenY.toFloat() - minY)
+    fun toLocal(screenX: Float, screenY: Float) = Vec2f(screenX - minX, screenY - minY)
 
     open fun setContentSize(width: Float, height: Float) {
         contentWidth = width

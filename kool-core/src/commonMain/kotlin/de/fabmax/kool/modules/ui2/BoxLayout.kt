@@ -190,7 +190,7 @@ object BoxLayout {
 
             val layoutH = when (childH) {
                 is Dp -> childH.value * surface.measuredScale
-                is Grow -> max(relativeSpace * childH.weight, child.contentHeight)
+                is Grow -> relativeSpace * childH.weight
                 WrapContent -> child.contentHeight
             }
 
@@ -233,7 +233,7 @@ object BoxLayout {
 
             val layoutW = when (childW) {
                 is Dp -> childW.value * surface.measuredScale
-                is Grow -> max(relativeSpace * childW.weight, child.contentWidth)
+                is Grow -> relativeSpace * childW.weight
                 WrapContent -> child.contentWidth
             }
 

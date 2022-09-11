@@ -33,6 +33,10 @@ class MutableValueState<T: Any?>(initValue: T) : MutableState() {
             field = value
         }
 
+    fun set(value: T) {
+        this.value = value
+    }
+
     fun use(surface: UiSurface): T {
         usedBy(surface)
         return value

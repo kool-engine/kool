@@ -171,16 +171,17 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
                     size.set(len * refWidth, refHeight)
                 }
 
-                barMinX = minX + origin.x
-                barMinY = minY + origin.y
-                barMaxX = minX + origin.x + size.x
-                barMaxY = minY + origin.y + size.y
+                barMinX = origin.x
+                barMinY = origin.y
+                barMaxX = origin.x + size.x
+                barMaxY = origin.y + size.y
             }
         }
     }
 
     fun onDragStart(ev: PointerEvent) {
-        if (ev.pointer.x in barMinX..barMaxX && ev.pointer.y in barMinY..barMaxY) {
+        val localPtrPos = toLocal(ev.pointer.x, ev.pointer.y)
+        if (localPtrPos.x in barMinX..barMaxX && localPtrPos.y in barMinY..barMaxY) {
             dragHelper.captureDragStart()
         } else {
             ev.reject()
@@ -202,11 +203,11 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             if (modifier.orientation == ScrollBarOrientation.Vertical) {
                 trackLenPx = uiNode.height - paddingTop - paddingBottom
                 barLenPx = barMaxY - barMinY
-                barStartPx = barMinY - minY
+                barStartPx = barMinY
             } else {
                 trackLenPx = uiNode.width - paddingStart - paddingEnd
                 barLenPx = barMaxX - barMinX
-                barStartPx = barMinX - minX
+                barStartPx = barMinX
             }
         }
 
@@ -226,7 +227,6 @@ open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
                 scrollPane.modifier.onScrollPosChanged?.invoke(scrollPane.modifier.scrollPosX.value, absoluteScroll)
             } else {
                 val absoluteScroll = scrollPane.computeScrollPosX(relativeScroll)
-                //println("rel: $relativeScroll -> abs: $absoluteScroll")
                 scrollPane.modifier.onScrollPosChanged?.invoke(absoluteScroll, scrollPane.modifier.scrollPosY.value)
             }
         }
