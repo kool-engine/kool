@@ -99,21 +99,21 @@ inline fun UiScope.ScrollBarH(scrollPane: ScrollPaneScope? = null, block: Scroll
     block()
 }
 
-open class ScrollBarNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), ScrollBarScope {
+open class ScrollBarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollBarScope {
     override val modifier = ScrollBarModifier()
 
     open fun computeRelativeBarLen(): Float {
         val spNode = modifier.scrollPane?.uiNode ?: return 1f
         val size: Float
-        val window: Float
+        val view: Float
         if (modifier.orientation == ScrollBarOrientation.Vertical) {
             size = spNode.height
-            window = spNode.clippedMaxY - spNode.clippedMinY
+            view = spNode.clippedMaxY - spNode.clippedMinY
         } else {
             size = spNode.width
-            window = spNode.clippedMaxX - spNode.clippedMinX
+            view = spNode.clippedMaxX - spNode.clippedMinX
         }
-        return (window / size).clamp()
+        return (view / size).clamp()
     }
 
     open fun computeRelativeBarPos(): Float  {
@@ -144,7 +144,7 @@ open class ScrollBarNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiC
         }
 
         super.render(ctx)
-        uiCtx.defaultBuilder.configured(modifier.barColor) {
+        surface.defaultBuilder.configured(modifier.barColor) {
             rect {
                 val pos = computeRelativeBarPos()
                 val refHeight = uiNode.height - paddingTop - paddingBottom
@@ -165,6 +165,6 @@ open class ScrollBarNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiC
     }
 
     companion object {
-        val factory: (UiNode, UiContext) -> ScrollBarNode = { parent, uiCtx -> ScrollBarNode(parent, uiCtx) }
+        val factory: (UiNode, UiSurface) -> ScrollBarNode = { parent, surface -> ScrollBarNode(parent, surface) }
     }
 }

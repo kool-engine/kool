@@ -6,11 +6,12 @@ import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.round
 import kotlin.reflect.KClass
 
-abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiScope {
+abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : UiScope {
     override val uiNode: UiNode get() = this
+
+    val layer: Int = parent?.let { it.layer + 1 } ?: 0
 
     private val oldChildren = mutableListOf<UiNode>()
     private val mutChildren = mutableListOf<UiNode>()
@@ -42,15 +43,15 @@ abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiSc
         private set
     val isInBounds: Boolean get() = clippedMaxX - clippedMinX > 0.5f && clippedMaxY - clippedMinY > 0.5f
 
-    val paddingStart: Float get() = modifier.paddingStart.value * uiCtx.measuredScale
-    val paddingEnd: Float get() = modifier.paddingEnd.value * uiCtx.measuredScale
-    val paddingTop: Float get() = modifier.paddingTop.value * uiCtx.measuredScale
-    val paddingBottom: Float get() = modifier.paddingBottom.value * uiCtx.measuredScale
+    val paddingStart: Float get() = modifier.paddingStart.value * surface.measuredScale
+    val paddingEnd: Float get() = modifier.paddingEnd.value * surface.measuredScale
+    val paddingTop: Float get() = modifier.paddingTop.value * surface.measuredScale
+    val paddingBottom: Float get() = modifier.paddingBottom.value * surface.measuredScale
 
-    val marginStart: Float get() = modifier.marginStart.value * uiCtx.measuredScale
-    val marginEnd: Float get() = modifier.marginEnd.value * uiCtx.measuredScale
-    val marginTop: Float get() = modifier.marginTop.value * uiCtx.measuredScale
-    val marginBottom: Float get() = modifier.marginBottom.value * uiCtx.measuredScale
+    val marginStart: Float get() = modifier.marginStart.value * surface.measuredScale
+    val marginEnd: Float get() = modifier.marginEnd.value * surface.measuredScale
+    val marginTop: Float get() = modifier.marginTop.value * surface.measuredScale
+    val marginBottom: Float get() = modifier.marginBottom.value * surface.measuredScale
 
     protected val setBoundsVertexMod: VertexView.() -> Unit = {
         getVec4fAttribute(Ui2Shader.ATTRIB_BOUNDS)?.set(clippedMinX, -clippedMaxY, clippedMaxX, -clippedMinY)
@@ -66,18 +67,23 @@ abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiSc
         this.minY = minY
         this.maxX = maxX
         this.maxY = maxY
-    }
 
-    open fun setClipBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
-        this.clippedMinX = minX
-        this.clippedMinY = minY
-        this.clippedMaxX = maxX
-        this.clippedMaxY = maxY
+        if (parent != null) {
+            clippedMinX = max(parent.clippedMinX, minX)
+            clippedMinY = max(parent.clippedMinY, minY)
+            clippedMaxX = min(parent.clippedMaxX, maxX)
+            clippedMaxY = min(parent.clippedMaxY, maxY)
+        } else {
+            clippedMinX = minX
+            clippedMinY = minY
+            clippedMaxX = maxX
+            clippedMaxY = maxY
+        }
     }
 
     open fun render(ctx: KoolContext) {
         modifier.background?.let {
-            uiCtx.defaultBuilder.configured(it) {
+            surface.defaultBuilder.configured(it) {
                 rect {
                     size.set(this@UiNode.width, this@UiNode.height)
                 }
@@ -89,15 +95,6 @@ abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiSc
 
     open fun layoutChildren(ctx: KoolContext) = CellLayout.layoutChildren(this)
 
-    open fun setChildBoundsClipped(child: UiNode, x: Float, y: Float, w: Float, h: Float) {
-        val minX = round(x)
-        val minY = round(y)
-        val maxX = round(x + w)
-        val maxY = round(y + h)
-        child.setBounds(minX, minY, maxX, maxY)
-        child.setClipBounds(max(clippedMinX, minX), max(clippedMinY, minY), min(clippedMaxX, maxX), min(clippedMaxY, maxY))
-    }
-
     protected open fun resetDefaults() {
         oldChildren.clear()
         for (i in mutChildren.lastIndex downTo 0) {
@@ -107,7 +104,7 @@ abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiSc
         modifier.resetDefaults()
     }
 
-    fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiContext) -> T): T {
+    fun <T: UiNode> createChild(type: KClass<T>, factory: (UiNode, UiSurface) -> T): T {
         var child: T? = null
         if (oldChildren.isNotEmpty()) {
             val old = oldChildren.removeLast()
@@ -118,8 +115,7 @@ abstract class UiNode(val parent: UiNode?, override val uiCtx: UiContext) : UiSc
             }
         }
         if (child == null) {
-            println("cache miss for type $type")
-            child = factory(this, uiCtx)
+            child = factory(this, surface)
         }
         mutChildren += child
         return child

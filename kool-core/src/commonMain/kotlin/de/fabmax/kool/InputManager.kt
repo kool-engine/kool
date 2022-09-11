@@ -112,7 +112,7 @@ abstract class InputManager internal constructor() {
 
     fun handleMouseButtonStates(mask: Int) = pointerState.handleMouseButtonStates(mask)
 
-    fun handleMouseScroll(ticks: Double) = pointerState.handleMouseScroll(ticks)
+    fun handleMouseScroll(xTicks: Double, yTicks: Double) = pointerState.handleMouseScroll(xTicks, yTicks)
 
     fun handleMouseExit() = pointerState.handleMouseExit()
 
@@ -133,8 +133,14 @@ abstract class InputManager internal constructor() {
             internal set
         var dragDeltaY = 0.0
             internal set
-        var deltaScroll = 0.0
+
+        var deltaScrollY = 0.0
             internal set
+        var deltaScrollX = 0.0
+            internal set
+
+        val deltaScroll: Double
+            get() = deltaScrollY
 
         var buttonMask = 0
             internal set(value) {
@@ -239,7 +245,8 @@ abstract class InputManager internal constructor() {
             dragDeltaX = 0.0
             dragDeltaY = 0.0
             dragMovement = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             updateState = UpdateState.STARTED
             isValid = true
         }
@@ -271,7 +278,8 @@ abstract class InputManager internal constructor() {
             buttonEventMask = 0
             deltaX = 0.0
             deltaY = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             dragDeltaX = 0.0
             dragDeltaY = 0.0
             dragMovement = 0.0
@@ -291,7 +299,8 @@ abstract class InputManager internal constructor() {
             target.dragDeltaX = dragDeltaX
             target.dragDeltaY = dragDeltaY
             target.dragMovement = dragMovement
-            target.deltaScroll = deltaScroll
+            target.deltaScrollX = deltaScrollX
+            target.deltaScrollY = deltaScrollY
             target.x = x
             target.y = y
             target.isValid = true
@@ -312,7 +321,8 @@ abstract class InputManager internal constructor() {
 
             deltaX = 0.0
             deltaY = 0.0
-            deltaScroll = 0.0
+            deltaScrollX = 0.0
+            deltaScrollY = 0.0
             buttonEventMask = 0
 
             processedState = updateState
@@ -423,7 +433,7 @@ abstract class InputManager internal constructor() {
                     TouchGestureEvaluator.PINCH -> {
                         // set primary pointer deltaScroll for compatibility with mouse input
                         primaryPointer.consumptionMask = 0
-                        primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
+                        primaryPointer.deltaScrollY = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
                         primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
                         primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
                         primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
@@ -532,10 +542,11 @@ abstract class InputManager internal constructor() {
             }
         }
 
-        internal fun handleMouseScroll(ticks: Double) {
+        internal fun handleMouseScroll(xTicks: Double, yTicks: Double) {
             lock(inputPointers) {
                 val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-                ptr.deltaScroll += ticks
+                ptr.deltaScrollX += xTicks
+                ptr.deltaScrollY += yTicks
             }
         }
 

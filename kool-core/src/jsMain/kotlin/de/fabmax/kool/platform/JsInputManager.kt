@@ -54,14 +54,15 @@ class JsInputManager(private val canvas: HTMLCanvasElement, private val props: J
         }
         canvas.onmouseleave = { handleMouseExit() }
         canvas.onwheel = { ev ->
-            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse
-            // scroll wheel tick
-            var ticks = -ev.deltaY.toFloat() / 3.0
+            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll wheel tick
+            var yTicks = -ev.deltaY.toFloat() / 3.0
+            var xTicks = -ev.deltaX.toFloat() / 3.0
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
-                ticks /= 30.0
+                yTicks /= 30.0
+                xTicks /= 30.0
             }
-            handleMouseScroll(ticks)
+            handleMouseScroll(xTicks, yTicks)
             ev.preventDefault()
         }
 

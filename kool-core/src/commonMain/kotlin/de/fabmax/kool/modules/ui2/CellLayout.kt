@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import kotlin.math.max
+import kotlin.math.round
 
 object CellLayout {
     fun measureContentSize(uiNode: UiNode) {
@@ -14,13 +15,13 @@ object CellLayout {
             val isFixedHeight: Boolean
 
             if (modWidth is Dp) {
-                measuredWidth = modWidth.value * uiCtx.measuredScale
+                measuredWidth = modWidth.value * surface.measuredScale
                 isFixedWidth = true
             } else {
                 isFixedWidth = false
             }
             if (modHeight is Dp) {
-                measuredHeight = modHeight.value * uiCtx.measuredScale
+                measuredHeight = modHeight.value * surface.measuredScale
                 isFixedHeight = true
             } else {
                 isFixedHeight = false
@@ -49,12 +50,12 @@ object CellLayout {
         uiNode.apply {
             children.forEach { child ->
                 val childWidth = when (val w = child.modifier.width) {
-                    is Dp -> w.value * uiCtx.measuredScale
+                    is Dp -> w.value * surface.measuredScale
                     is Grow -> width - max(paddingStart, child.marginStart) - max(paddingEnd, child.marginEnd)
                     WrapContent -> child.contentWidth
                 }
                 val childHeight = when (val h = child.modifier.height) {
-                    is Dp -> h.value * uiCtx.measuredScale
+                    is Dp -> h.value * surface.measuredScale
                     is Grow -> height - max(paddingTop, child.marginTop) - max(paddingBottom, child.marginBottom)
                     WrapContent -> child.contentHeight
                 }
@@ -70,7 +71,7 @@ object CellLayout {
                     AlignmentY.Bottom -> height - childHeight - max(paddingBottom, child.marginBottom)
                 }
 
-                uiNode.setChildBoundsClipped(child, childX, childY, childWidth, childHeight)
+                child.setBounds(round(childX), round(childY), round(childX + childWidth), round(childY + childHeight))
             }
         }
     }

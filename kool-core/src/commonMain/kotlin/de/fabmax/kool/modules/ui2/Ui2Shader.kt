@@ -42,7 +42,6 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
                     }.`else` {
                         discard()
                     }
-
                 }
             }
         }
@@ -56,7 +55,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
         private val noFontTex = SingleColorTexture(Color.WHITE)
         private val pipelineConfig = PipelineConfig().apply {
             blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
-            //cullMethod = CullMethod.NO_CULLING
+            cullMethod = CullMethod.NO_CULLING
             depthTest = DepthCompareOp.DISABLED
         }
     }

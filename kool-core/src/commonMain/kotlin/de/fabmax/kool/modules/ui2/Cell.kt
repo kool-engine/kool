@@ -6,10 +6,10 @@ inline fun UiScope.Cell(block: UiScope.() -> Unit): UiScope {
     return cell
 }
 
-class CellNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), UiScope {
+class CellNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), UiScope {
     override val modifier = UiModifier()
 
     companion object {
-        val factory: (UiNode, UiContext) -> CellNode = { parent, uiCtx -> CellNode(parent, uiCtx) }
+        val factory: (UiNode, UiSurface) -> CellNode = { parent, surface -> CellNode(parent, surface) }
     }
 }

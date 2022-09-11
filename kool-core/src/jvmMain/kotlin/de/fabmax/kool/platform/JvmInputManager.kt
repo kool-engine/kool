@@ -55,8 +55,8 @@ class JvmInputManager(private val windowHandle: Long, private val ctx: Lwjgl3Con
                 handleMouseExit()
             }
         }
-        glfwSetScrollCallback(windowHandle) { _, _, yOff ->
-            handleMouseScroll(yOff)
+        glfwSetScrollCallback(windowHandle) { _, xOff, yOff ->
+            handleMouseScroll(xOff, yOff)
         }
 
         // install keyboard callbacks

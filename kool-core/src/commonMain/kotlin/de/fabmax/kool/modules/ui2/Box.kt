@@ -35,7 +35,7 @@ inline fun UiScope.Box(layoutDirection: LayoutDirection, block: BoxScope.() -> U
     return box
 }
 
-open class BoxNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), BoxScope {
+open class BoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), BoxScope {
     override val modifier = BoxModifier()
 
     override fun measureContentSize(ctx: KoolContext) {
@@ -47,6 +47,6 @@ open class BoxNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), B
     }
 
     companion object {
-        val factory: (UiNode, UiContext) -> BoxNode = { parent, uiCtx -> BoxNode(parent, uiCtx) }
+        val factory: (UiNode, UiSurface) -> BoxNode = { parent, surface -> BoxNode(parent, surface) }
     }
 }

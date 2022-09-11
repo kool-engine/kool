@@ -5,7 +5,7 @@ annotation class UiScopeMarker
 
 @UiScopeMarker
 interface UiScope {
-    val uiCtx: UiContext
+    val surface: UiSurface
     val uiNode: UiNode
     val modifier: UiModifier
 
@@ -15,5 +15,5 @@ interface UiScope {
     val Float.dp: Dp
         get() = Dp(this)
 
-    fun <T: Any?> MutableState<T>.use(): T = use(uiCtx)
+    fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
 }

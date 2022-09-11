@@ -5,6 +5,7 @@ import de.fabmax.kool.util.Color
 open class UiModifier {
     var width: Dimension = WrapContent
     var height: Dimension = WrapContent
+    var background: Color? = null
 
     var paddingStart: Dp = Dp.ZERO
     var paddingEnd: Dp = Dp.ZERO
@@ -19,11 +20,12 @@ open class UiModifier {
     var alignX = AlignmentX.Start
     var alignY = AlignmentY.Top
 
-    var background: Color? = null
+    val pointerCallbacks = PointerCallbacks()
 
     open fun resetDefaults() {
         width = WrapContent
         height = WrapContent
+        background = null
 
         paddingStart = Dp.ZERO
         paddingEnd = Dp.ZERO
@@ -38,17 +40,16 @@ open class UiModifier {
         alignX = AlignmentX.Start
         alignY = AlignmentY.Top
 
-        background = null
+        pointerCallbacks.resetDefaults()
     }
 }
 
 fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return this }
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
+fun <T: UiModifier> T.background(color: Color?): T { background = color; return this }
 
 fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }
 fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
-
-fun <T: UiModifier> T.background(color: Color?): T { background = color; return this }
 
 fun <T: UiModifier> T.padding(all: Dp): T {
     paddingStart = all
@@ -103,3 +104,4 @@ enum class AlignmentY {
     Center,
     Bottom
 }
+

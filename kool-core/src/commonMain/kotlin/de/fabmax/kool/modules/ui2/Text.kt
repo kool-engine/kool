@@ -41,7 +41,7 @@ inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextSco
     return textNd
 }
 
-class TextNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), TextScope {
+class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), TextScope {
     override val modifier = TextModifier()
 
     private val textMetrics = TextMetrics()
@@ -53,12 +53,12 @@ class TextNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), TextS
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {
-            modWidth.value * uiCtx.measuredScale
+            modWidth.value * surface.measuredScale
         } else {
             textMetrics.width + paddingStart + paddingEnd
         }
         val measuredHeight = if (modHeight is Dp) {
-            modHeight.value * uiCtx.measuredScale
+            modHeight.value * surface.measuredScale
         } else {
             textMetrics.height + paddingTop + paddingBottom
         }
@@ -68,7 +68,7 @@ class TextNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), TextS
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        uiCtx.getTextBuilder(modifier.font, ctx).configured(modifier.foreground) {
+        surface.getTextBuilder(modifier.font, ctx).configured(modifier.foreground) {
             text(textProps.apply {
                 font = modifier.font
                 isYAxisUp = false
@@ -89,6 +89,6 @@ class TextNode(parent: UiNode?, uiCtx: UiContext) : UiNode(parent, uiCtx), TextS
     }
 
     companion object {
-        val factory: (UiNode, UiContext) -> TextNode = { parent, uiCtx -> TextNode(parent, uiCtx) }
+        val factory: (UiNode, UiSurface) -> TextNode = { parent, surface -> TextNode(parent, surface) }
     }
 }

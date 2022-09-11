@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import kotlin.math.max
+import kotlin.math.round
 
 object BoxLayout {
 
@@ -17,13 +18,13 @@ object BoxLayout {
             val isFixedHeight: Boolean
 
             if (modWidth is Dp) {
-                measuredWidth = modWidth.value * uiCtx.measuredScale
+                measuredWidth = modWidth.value * surface.measuredScale
                 isFixedWidth = true
             } else {
                 isFixedWidth = false
             }
             if (modHeight is Dp) {
-                measuredHeight = modHeight.value * uiCtx.measuredScale
+                measuredHeight = modHeight.value * surface.measuredScale
                 isFixedHeight = true
             } else {
                 isFixedHeight = false
@@ -125,7 +126,7 @@ object BoxLayout {
 
             if (layoutDirection.isVertical) {
                 when (childH) {
-                    is Dp -> remainingSpace -= childH.value * uiNode.uiCtx.measuredScale
+                    is Dp -> remainingSpace -= childH.value * uiNode.surface.measuredScale
                     is Grow -> totalWeight += childH.weight
                     WrapContent -> remainingSpace -= child.contentHeight
                 }
@@ -145,7 +146,7 @@ object BoxLayout {
 
             } else if (!layoutDirection.isVertical) {
                 when (childW) {
-                    is Dp -> remainingSpace -= childW.value * uiNode.uiCtx.measuredScale
+                    is Dp -> remainingSpace -= childW.value * uiNode.surface.measuredScale
                     is Grow -> totalWeight += childW.weight
                     WrapContent -> remainingSpace -= child.contentWidth
                 }
@@ -188,7 +189,7 @@ object BoxLayout {
             val childH = child.modifier.height
 
             val layoutH = when (childH) {
-                is Dp -> childH.value * uiCtx.measuredScale
+                is Dp -> childH.value * surface.measuredScale
                 is Grow -> max(relativeSpace * childH.weight, child.contentHeight)
                 WrapContent -> child.contentHeight
             }
@@ -207,7 +208,7 @@ object BoxLayout {
             }
 
             val layoutW = when (childW) {
-                is Dp -> childW.value * uiCtx.measuredScale
+                is Dp -> childW.value * surface.measuredScale
                 is Grow -> width - max(paddingStart, child.marginStart) - max(paddingEnd, child.marginEnd)
                 WrapContent -> child.contentWidth
             }
@@ -217,7 +218,7 @@ object BoxLayout {
                 AlignmentX.End -> maxX - layoutW - max(paddingEnd, child.marginEnd)
             }
 
-            setChildBoundsClipped(child, layoutX, layoutY, layoutW, layoutH)
+            child.setBounds(round(layoutX), round(layoutY), round(layoutX + layoutW), round(layoutY + layoutH))
         }
     }
 
@@ -231,7 +232,7 @@ object BoxLayout {
             val childH = child.modifier.height
 
             val layoutW = when (childW) {
-                is Dp -> childW.value * uiCtx.measuredScale
+                is Dp -> childW.value * surface.measuredScale
                 is Grow -> max(relativeSpace * childW.weight, child.contentWidth)
                 WrapContent -> child.contentWidth
             }
@@ -250,7 +251,7 @@ object BoxLayout {
             }
 
             val layoutH = when (childH) {
-                is Dp -> childH.value * uiCtx.measuredScale
+                is Dp -> childH.value * surface.measuredScale
                 is Grow -> height - max(paddingTop, child.marginTop) - max(paddingBottom, child.marginBottom)
                 WrapContent -> child.contentHeight
             }
@@ -260,7 +261,7 @@ object BoxLayout {
                 AlignmentY.Bottom -> maxY - layoutH - max(paddingBottom, child.marginBottom)
             }
 
-            setChildBoundsClipped(child, layoutX, layoutY, layoutW, layoutH)
+            child.setBounds(round(layoutX), round(layoutY), round(layoutX + layoutW), round(layoutY + layoutH))
         }
     }
 }
