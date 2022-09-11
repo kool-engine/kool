@@ -46,7 +46,15 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         val clickCnt = mutableStateOf(0)
         val scrollState = ScrollState()
+        val listState = LazyListState()
         val buttonBgColor = mutableStateOf(MdColor.LIGHT_BLUE)
+        val listItemBgColor = mutableStateOf(MdColor.DEEP_PURPLE)
+
+        val listItems = mutableListStateOf<String>()
+        var nextItem = 1
+        for (i in 1..50) {
+            listItems += "Item ${nextItem++}"
+        }
 
         val guiCam = OrthographicCamera().also { camera = it }
         onUpdate += {
@@ -59,18 +67,16 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         +UiSurface {
             modifier
                 .width(200.dp)
-                .height(500.dp)
-                .margin(64.dp)
+                .height(Grow())
+                .margin(start = 300.dp)
                 .layout(ColumnLayout)
-                .alignX(AlignmentX.End)
+                .alignX(AlignmentX.Start)
                 .background(MdColor.PINK.withAlpha(0.3f))
-                .padding(8.dp)
 
             Text("Some static text, clicked: ${clickCnt.use()}") {
                 modifier
                     .alignX(AlignmentX.Start)
                     .background(buttonBgColor.use())
-                    .margin(8.dp)
                     .padding(4.dp)
                     .onClick { clickCnt.value += 1 }
                     .onEnter { buttonBgColor.set(MdColor.PINK) }
@@ -79,11 +85,13 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
             ScrollArea(
                 scrollState,
-                height = Grow(0.7f),
+                height = 200.dp,
                 backgroundColor = MdColor.LIME,
-                scrollBarColor = Color.BLACK.withAlpha(0.5f)
+                scrollbarColor = Color.BLACK.withAlpha(0.5f)
             ) {
                 Column {
+                    modifier.margin(0.dp)
+
                     Text("Text with two lines:\nThe second line is a little longer than the first one") {
                         modifier
                             .width(300.dp)
@@ -99,6 +107,29 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 }
             }
 
+            LazyList(
+                listState,
+                height = 400.dp,
+                backgroundColor = MdColor.YELLOW,
+                scrollbarColor = Color.BLACK.withAlpha(0.5f)
+            ) {
+                items(listItems) { item ->
+                    Text(item) {
+                        if (item == "Item 17") {
+                            modifier
+                                .background(listItemBgColor.use())
+                                .onEnter { listItemBgColor.set(MdColor.PINK) }
+                                .onExit { listItemBgColor.set(MdColor.DEEP_PURPLE) }
+                                .onClick { listItems += "Item ${nextItem++}" }
+                        } else {
+                            modifier
+                                .background(MdColor.PURPLE)
+                                .onClick { listItems.remove(item) }
+                        }
+                    }
+                }
+            }
+
             Text("Lorem ipsum") {
                 modifier
                     .alignX(AlignmentX.End)
@@ -106,7 +137,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .textAlignY(AlignmentY.Center)
                     .width(100.dp)
                     .height(Grow(0.3f))
-                    .margin(8.dp)
                     .background(MdColor.AMBER)
             }
             Text("Yet another text") {

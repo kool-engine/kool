@@ -62,9 +62,9 @@ inline fun UiScope.Scrollbar(scrollPane: ScrollPaneScope? = null, block: Scrollb
 inline fun UiScope.VerticalScrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) = Scrollbar(scrollPane) {
     modifier
         .orientation(ScrollbarOrientation.Vertical)
-        .width(12.dp)
+        .width(10.dp)
         .height(Grow())
-        .padding(2.dp)
+        .margin(2.dp)
         .alignX(AlignmentX.End)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
@@ -84,9 +84,9 @@ inline fun UiScope.VerticalScrollbar(scrollPane: ScrollPaneScope? = null, block:
 inline fun UiScope.HorizontalScrollbar(scrollPane: ScrollPaneScope? = null, block: ScrollbarScope.() -> Unit) = Scrollbar(scrollPane) {
     modifier
         .orientation(ScrollbarOrientation.Horizontal)
-        .height(12.dp)
+        .height(10.dp)
         .width(Grow())
-        .padding(2.dp)
+        .margin(2.dp)
         .alignY(AlignmentY.Bottom)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar

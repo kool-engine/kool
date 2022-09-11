@@ -16,4 +16,5 @@ interface UiScope {
         get() = Dp(this)
 
     fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
+    fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)
 }

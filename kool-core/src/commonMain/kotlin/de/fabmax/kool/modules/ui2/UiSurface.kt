@@ -7,6 +7,8 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.FontProps
+import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.logD
 
 class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> Unit) : Group(name) {
 
@@ -39,6 +41,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         if (!requiresUpdate) {
             return
         }
+
+        val pt = PerfTimer()
         requiresUpdate = false
         registeredState.forEach { it.clearUsage() }
         registeredState.clear()
@@ -54,7 +58,10 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
 
         measureUiNodeContent(viewport, updateEvent.ctx)
         layoutUiNodeChildren(viewport, updateEvent.ctx)
-        renderUiNode(content, updateEvent.ctx)
+        if (content.isInBounds) {
+            renderUiNode(content, updateEvent.ctx)
+        }
+        logD { "ui update took ${pt.takeMs()} ms" }
     }
 
     fun triggerUpdate(changedState: MutableState) {
@@ -102,6 +109,9 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         fun handleInput(updateEvent: RenderPass.UpdateEvent) {
             val ptr = updateEvent.ctx.inputMgr.pointerState.primaryPointer
             content.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+            if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
+                return
+            }
 
             val ptrEv = PointerEvent(ptr, updateEvent.ctx)
             hoveredNode?.let { handleHover(it, ptrEv) }

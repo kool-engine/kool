@@ -13,10 +13,10 @@ open class UiModifier {
     var paddingTop: Dp = Dp.ZERO
     var paddingBottom: Dp = Dp.ZERO
 
-    var marginStart: Dp = Dp.ZERO
-    var marginEnd: Dp = Dp.ZERO
-    var marginTop: Dp = Dp.ZERO
-    var marginBottom: Dp = Dp.ZERO
+    var marginStart: Dp = Dp(8f)
+    var marginEnd: Dp = Dp(8f)
+    var marginTop: Dp = Dp(8f)
+    var marginBottom: Dp = Dp(8f)
 
     var alignX = AlignmentX.Start
     var alignY = AlignmentY.Top
@@ -34,10 +34,10 @@ open class UiModifier {
         paddingTop = Dp.ZERO
         paddingBottom = Dp.ZERO
 
-        marginStart = Dp.ZERO
-        marginEnd = Dp.ZERO
-        marginTop = Dp.ZERO
-        marginBottom = Dp.ZERO
+        marginStart = Dp(8f)
+        marginEnd = Dp(8f)
+        marginTop = Dp(8f)
+        marginBottom = Dp(8f)
 
         alignX = AlignmentX.Start
         alignY = AlignmentY.Top
@@ -62,6 +62,18 @@ fun <T: UiModifier> T.padding(all: Dp): T {
     return this
 }
 
+fun <T: UiModifier> T.verticalPadding(padding: Dp): T {
+    paddingTop = padding
+    paddingBottom = padding
+    return this
+}
+
+fun <T: UiModifier> T.horizontalPadding(padding: Dp): T {
+    paddingStart = padding
+    paddingEnd = padding
+    return this
+}
+
 fun <T: UiModifier> T.padding(
     start: Dp = paddingStart,
     end: Dp = paddingEnd,
@@ -80,6 +92,18 @@ fun <T: UiModifier> T.margin(all: Dp): T {
     marginEnd = all
     marginTop = all
     marginBottom = all
+    return this
+}
+
+fun <T: UiModifier> T.verticalMargin(margin: Dp): T {
+    marginTop = margin
+    marginBottom = margin
+    return this
+}
+
+fun <T: UiModifier> T.horizontalMargin(margin: Dp): T {
+    marginStart = margin
+    marginEnd = margin
     return this
 }
 

@@ -11,13 +11,13 @@ fun UiScope.ScrollArea(
     state: ScrollState,
     width: Dimension = Grow(),
     height: Dimension = Grow(),
-    withVerticalScrollBar: Boolean = true,
-    withHorizontalScrollBar: Boolean = true,
+    withVerticalScrollbar: Boolean = true,
+    withHorizontalScrollbar: Boolean = true,
     backgroundColor: Color? = null,
-    scrollBarColor: Color? = null,
-    cellModifier: ((UiModifier) -> Unit)? = null,
-    vScrollBarModifier: ((ScrollbarModifier) -> Unit)? = null,
-    hScrollBarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    scrollbarColor: Color? = null,
+    containerModifier: ((UiModifier) -> Unit)? = null,
+    vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     block: ScrollPaneScope.() -> Unit
 ) {
     Cell {
@@ -26,11 +26,12 @@ fun UiScope.ScrollArea(
             .height(height)
             .background(backgroundColor)
             .onWheelX { state.scrollPosX.value -= it.pointer.deltaScrollX.toFloat() * 10f }
-            .onWheelY { state.scrollPosY.value -= it.pointer.deltaScrollY.toFloat() * 10f }
-        cellModifier?.invoke(modifier)
+            .onWheelY { state.scrollPosY.value -= it.pointer.deltaScrollY.toFloat() * 20f }
+        containerModifier?.invoke(modifier)
 
         ScrollPane {
             modifier
+                .margin(0.dp)
                 .scrollPos(state.scrollPosX.use().dp, state.scrollPosY.use().dp)
                 .onScrollPosChanged { x, y ->
                     state.scrollPosX.set(x)
@@ -38,16 +39,16 @@ fun UiScope.ScrollArea(
                 }
             block()
         }
-        if (withVerticalScrollBar) {
+        if (withVerticalScrollbar) {
             VerticalScrollbar {
-                scrollBarColor?.let { modifier.barColor(it) }
-                vScrollBarModifier?.invoke(modifier)
+                scrollbarColor?.let { modifier.barColor(it) }
+                vScrollbarModifier?.invoke(modifier)
             }
         }
-        if (withHorizontalScrollBar) {
+        if (withHorizontalScrollbar) {
             HorizontalScrollbar {
-                scrollBarColor?.let { modifier.barColor(it) }
-                hScrollBarModifier?.invoke(modifier)
+                scrollbarColor?.let { modifier.barColor(it) }
+                hScrollbarModifier?.invoke(modifier)
             }
         }
     }
