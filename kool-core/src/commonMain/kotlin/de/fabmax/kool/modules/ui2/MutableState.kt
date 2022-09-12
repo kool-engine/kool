@@ -4,7 +4,8 @@ fun <T> mutableStateOf(value: T) = MutableValueState(value)
 fun <T: Any> mutableListStateOf(vararg elements: T) = MutableListState<T>().apply { addAll(elements) }
 
 abstract class MutableState {
-    private var isStateChanged = true
+    var isStateChanged = true
+        private set
     private var usedBy: UiSurface? = null
 
     protected fun stateChanged() {

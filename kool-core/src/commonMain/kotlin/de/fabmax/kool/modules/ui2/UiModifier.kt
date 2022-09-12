@@ -18,10 +18,10 @@ open class UiModifier {
     var paddingTop: Dp by property(Dp.ZERO)
     var paddingBottom: Dp by property(Dp.ZERO)
 
-    var marginStart: Dp by property(Dp(8f))
-    var marginEnd: Dp by property(Dp(8f))
-    var marginTop: Dp by property(Dp(8f))
-    var marginBottom: Dp by property(Dp(8f))
+    var marginStart: Dp by property(Dp.ZERO)
+    var marginEnd: Dp by property(Dp.ZERO)
+    var marginTop: Dp by property(Dp.ZERO)
+    var marginBottom: Dp by property(Dp.ZERO)
 
     var alignX: AlignmentX by property(AlignmentX.Start)
     var alignY: AlignmentY by property(AlignmentY.Top)
