@@ -45,15 +45,15 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         private set
     val isInBounds: Boolean get() = clippedMaxX - clippedMinX > 0.5f && clippedMaxY - clippedMinY > 0.5f
 
-    val paddingStart: Float get() = modifier.paddingStart.value * surface.measuredScale
-    val paddingEnd: Float get() = modifier.paddingEnd.value * surface.measuredScale
-    val paddingTop: Float get() = modifier.paddingTop.value * surface.measuredScale
-    val paddingBottom: Float get() = modifier.paddingBottom.value * surface.measuredScale
+    val paddingStart: Float get() = modifier.paddingStart.px
+    val paddingEnd: Float get() = modifier.paddingEnd.px
+    val paddingTop: Float get() = modifier.paddingTop.px
+    val paddingBottom: Float get() = modifier.paddingBottom.px
 
-    val marginStart: Float get() = modifier.marginStart.value * surface.measuredScale
-    val marginEnd: Float get() = modifier.marginEnd.value * surface.measuredScale
-    val marginTop: Float get() = modifier.marginTop.value * surface.measuredScale
-    val marginBottom: Float get() = modifier.marginBottom.value * surface.measuredScale
+    val marginStart: Float get() = modifier.marginStart.px
+    val marginEnd: Float get() = modifier.marginEnd.px
+    val marginTop: Float get() = modifier.marginTop.px
+    val marginBottom: Float get() = modifier.marginBottom.px
 
     protected val setBoundsVertexMod: VertexView.() -> Unit = {
         getVec4fAttribute(Ui2Shader.ATTRIB_BOUNDS)?.set(clippedMinX, -clippedMaxY, clippedMaxX, -clippedMinY)

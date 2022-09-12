@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import kotlin.math.max
 
 interface ScrollbarScope : UiScope {
     override val modifier: ScrollbarModifier
@@ -16,6 +17,7 @@ interface ScrollbarScope : UiScope {
 open class ScrollbarModifier : UiModifier() {
     var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
     var barColor: Color by property((MdColor.GREY tone 400).withAlpha(0.5f))
+    var minBarSize: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
 }
 
@@ -25,7 +27,7 @@ fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
 }
 
 fun <T: ScrollbarModifier> T.barColor(color: Color): T { barColor = color; return this }
-fun <T: ScrollbarModifier> T.hideIfFull(flag: Boolean): T { hideIfFullyExtended = flag; return this }
+fun <T: ScrollbarModifier> T.hideIfFullyExtended(flag: Boolean): T { hideIfFullyExtended = flag; return this }
 
 enum class ScrollbarOrientation {
     Horizontal,
@@ -118,16 +120,17 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             rect {
                 val refHeight = uiNode.height - paddingTop - paddingBottom
                 val refWidth = uiNode.width - paddingStart - paddingEnd
+                val clampLen = max(len, modifier.minBarSize.px / if (isVertical) refHeight else refWidth)
 
                 cornerSteps = 4
                 if (isVertical) {
                     cornerRadius = refWidth * 0.5f
-                    origin.set(paddingStart, pos * (1f - len) * refHeight + paddingTop, 0f)
-                    size.set(refWidth, len * refHeight)
+                    origin.set(paddingStart, pos * (1f - clampLen) * refHeight + paddingTop, 0f)
+                    size.set(refWidth, clampLen * refHeight)
                 } else {
                     cornerRadius = refHeight * 0.5f
-                    origin.set(pos * (1f - len) * refWidth + paddingStart, paddingTop, 0f)
-                    size.set(len * refWidth, refHeight)
+                    origin.set(pos * (1f - clampLen) * refWidth + paddingStart, paddingTop, 0f)
+                    size.set(clampLen * refWidth, refHeight)
                 }
 
                 barMinX = origin.x

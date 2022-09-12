@@ -30,8 +30,8 @@ private object HorizontalLayout {
         val modHeight = modifier.height
 
         // if width / height is Grow, content size will remain 0
-        var measuredWidth = if (modWidth is Dp) modWidth.value * surface.measuredScale else 0f
-        var measuredHeight = if (modHeight is Dp) modHeight.value * surface.measuredScale else 0f
+        var measuredWidth = if (modWidth is Dp) modWidth.px else 0f
+        var measuredHeight = if (modHeight is Dp) modHeight.px else 0f
         val isDynamicWidth = modWidth === WrapContent
         val isDynamicHeight = modHeight === WrapContent
 
@@ -67,19 +67,19 @@ private object HorizontalLayout {
             val child = children[i]
 
             val layoutW = when (val childW = child.modifier.width) {
-                is Dp -> childW.value * surface.measuredScale
+                is Dp -> childW.px
                 is Grow -> width - max(paddingStart, child.marginStart) - max(paddingEnd, child.marginEnd)
                 WrapContent -> child.contentWidth
             }
             val layoutH = when (val childH = child.modifier.height) {
-                is Dp -> childH.value * surface.measuredScale
+                is Dp -> childH.px
                 is Grow -> growSpace * childH.weight
                 WrapContent -> child.contentHeight
             }
             val layoutY = when (child.modifier.alignY) {
-                AlignmentY.Top -> minX + max(paddingStart, child.marginStart)
-                AlignmentY.Center -> minX + (width - layoutW) * 0.5f
-                AlignmentY.Bottom -> maxX - layoutW - max(paddingEnd, child.marginEnd)
+                AlignmentY.Top -> minY + max(paddingTop, child.marginTop)
+                AlignmentY.Center -> minY + (height - layoutH) * 0.5f
+                AlignmentY.Bottom -> maxY - layoutH - max(paddingBottom, child.marginBottom)
             }
 
             val layoutX: Float
@@ -107,7 +107,7 @@ private object HorizontalLayout {
         for (i in indices) {
             val child = children[i]
             when (val childW = child.modifier.width) {
-                is Dp -> remainingSpace -= childW.value * uiNode.surface.measuredScale
+                is Dp -> remainingSpace -= childW.px
                 is Grow -> totalWeight += childW.weight
                 WrapContent -> remainingSpace -= child.contentHeight
             }

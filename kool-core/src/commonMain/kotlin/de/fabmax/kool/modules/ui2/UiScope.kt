@@ -9,11 +9,9 @@ interface UiScope {
     val uiNode: UiNode
     val modifier: UiModifier
 
-    val Int.dp: Dp
-        get() = Dp(this.toFloat())
-
-    val Float.dp: Dp
-        get() = Dp(this)
+    val Int.dp: Dp get() = Dp(this.toFloat())
+    val Float.dp: Dp get() = Dp(this)
+    val Dp.px: Float get() = value * surface.measuredScale
 
     fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
     fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)

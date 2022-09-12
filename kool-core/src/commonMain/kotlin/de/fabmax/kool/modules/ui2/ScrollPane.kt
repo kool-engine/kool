@@ -26,6 +26,14 @@ open class ScrollState {
         return if (div == 0f) 0f else (yScrollDp.value / (div))
     }
 
+    fun xScrollClamped(amount: Float) {
+        xScrollDp.set((xScrollDp.value + amount).clamp(0f, contentSizeDp.x - viewSizeDp.x))
+    }
+
+    fun yScrollClamped(amount: Float) {
+        yScrollDp.set((yScrollDp.value + amount).clamp(0f, contentSizeDp.y - viewSizeDp.y))
+    }
+
     fun setXScrollRelative(relativeX: Float) {
         val width = max(contentSizeDp.x, viewSizeDp.x)
         xScrollDp.set((width - viewSizeDp.x) * relativeX)
@@ -39,7 +47,6 @@ open class ScrollState {
 
 interface ScrollPaneScope : UiScope {
     override val modifier: ScrollPaneModifier
-    override val uiNode: ScrollPaneNode
 }
 
 open class ScrollPaneModifier : UiModifier() {
@@ -69,7 +76,6 @@ inline fun UiScope.ScrollPane(state: ScrollState, block: ScrollPaneScope.() -> U
 
 open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollPaneScope {
     override val modifier = ScrollPaneModifier()
-    override val uiNode: ScrollPaneNode get() = this
 
     lateinit var state: ScrollState
 

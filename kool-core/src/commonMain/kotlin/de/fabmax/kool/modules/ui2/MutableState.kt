@@ -11,15 +11,18 @@ abstract class MutableState {
     protected fun stateChanged() {
         if (!isStateChanged) {
             isStateChanged = true
-            usedBy?.triggerUpdate(this)
+            usedBy?.triggerUpdate()
         }
     }
 
     protected fun usedBy(surface: UiSurface) {
-        usedBy = surface
-        if (isStateChanged) {
-            surface.triggerUpdate(this)
+        if (surface !== usedBy) {
+            surface.registerState(this)
+            if (isStateChanged) {
+                surface.triggerUpdate()
+            }
         }
+        usedBy = surface
     }
 
     open fun clearUsage() {

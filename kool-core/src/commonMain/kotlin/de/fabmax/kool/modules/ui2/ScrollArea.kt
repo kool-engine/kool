@@ -20,8 +20,8 @@ fun UiScope.ScrollArea(
             .width(width)
             .height(height)
             .background(backgroundColor)
-            .onWheelX { state.xScrollDp.value -= it.pointer.deltaScrollX.toFloat() * 10f }
-            .onWheelY { state.yScrollDp.value -= it.pointer.deltaScrollY.toFloat() * 20f }
+            .onWheelX { state.xScrollClamped(it.pointer.deltaScrollX.toFloat() * -10f) }
+            .onWheelY { state.yScrollClamped(it.pointer.deltaScrollY.toFloat() * -20f) }
         containerModifier?.invoke(modifier)
 
         ScrollPane(state) {

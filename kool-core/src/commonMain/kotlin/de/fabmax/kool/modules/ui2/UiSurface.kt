@@ -19,6 +19,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
 
     private val inputHandler = InputHandler()
+    private val viewportWidth = mutableStateOf(0f)
+    private val viewportHeight = mutableStateOf(0f)
     private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
     private val content = viewport.createChild(RootCell::class) { _, _ -> RootCell() }
 
@@ -32,6 +34,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
     init {
         this += defaultMesh
         onUpdate += {
+            viewportWidth.set(it.renderPass.viewport.width.toFloat())
+            viewportHeight.set(it.renderPass.viewport.height.toFloat())
             inputHandler.handleInput(it)
             updateUi(it)
         }
@@ -48,9 +52,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         registeredState.clear()
         val prep = pt.takeMs().also { pt.reset() }
 
-        val vp = updateEvent.renderPass.viewport
         measuredScale = updateEvent.ctx.windowScale
-        viewport.setBounds(0f, 0f, vp.width.toFloat(), vp.height.toFloat())
+        viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
         content.reset()
         content.uiBlock()
         val build = pt.takeMs().also { pt.reset() }
@@ -73,9 +76,12 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
                 "render: ${(render * 1000).toInt()} us" }
     }
 
-    fun triggerUpdate(changedState: MutableState) {
+    fun registerState(state: MutableState) {
+        registeredState += state
+    }
+
+    fun triggerUpdate() {
         requiresUpdate = true
-        registeredState += changedState
     }
 
     fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {

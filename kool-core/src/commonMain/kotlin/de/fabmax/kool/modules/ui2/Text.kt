@@ -44,12 +44,12 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {
-            modWidth.value * surface.measuredScale
+            modWidth.px
         } else {
             textMetrics.width + paddingStart + paddingEnd
         }
         val measuredHeight = if (modHeight is Dp) {
-            modHeight.value * surface.measuredScale
+            modHeight.px
         } else {
             textMetrics.height + paddingTop + paddingBottom
         }

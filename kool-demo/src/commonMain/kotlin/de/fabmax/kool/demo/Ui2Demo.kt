@@ -16,6 +16,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // desired features
         // - [x] traditional ui coord system: top left origin
         // - [x] layout via nested boxes
+        // - [x] lazy list for fast update of large scrolling lists
         //   - [ ] pie menu?
         // - [x] clip content to bounds
         // - [x] scrollable content
@@ -28,10 +29,8 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [ ] arbitrary number of textures / images
 
         // todo
-        //  lazy list for fast update of large scrolling lists
-        //  layer based z-coordinate
-        //  use mutable state for surface size (auto update if viewport changes)
-        //  smart update: only update nodes which actually changed (might not work with shared meshes)
+        //  theming (colors, sizes)
+        //  customizable renderers
         //  icons + images
         //  instanced meshes for primitive objects (round-/rects, circles)? might be difficult to solve correct depth
         //  keyboard input
@@ -39,10 +38,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  clipboard
         //  more ui elements: button, slider, checkbox, switch, radiobutton
         //  input context stack
-        //  theming (colors, sizes)
-        //  background style (e.g. rect vs. round-rect)
         //  animations
         //  custom drawing / canvas?
+        //  modifiable z-coordinate
+
+        // most likely not
+        //  smart update: only update nodes which actually changed (might not work with shared meshes)
 
         val clickCnt = mutableStateOf(0)
         val scrollState = ScrollState()
@@ -52,7 +53,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
-        for (i in 1..50) {
+        for (i in 1..500) {
             listItems += "Item ${nextItem++}"
         }
 
@@ -69,14 +70,15 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 .width(200.dp)
                 .height(Grow())
                 .margin(start = 300.dp)
+                .padding(8.dp)
                 .layout(ColumnLayout)
                 .alignX(AlignmentX.Start)
                 .background(MdColor.PINK.withAlpha(0.3f))
 
             Text("Some static text, clicked: ${clickCnt.use()}") {
                 modifier
-                    .alignX(AlignmentX.Start)
                     .background(buttonBgColor.use())
+                    .margin(8.dp)
                     .padding(4.dp)
                     .onClick { clickCnt.value += 1 }
                     .onEnter { buttonBgColor.set(MdColor.PINK) }
@@ -111,8 +113,10 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 listState,
                 height = 400.dp,
                 backgroundColor = MdColor.YELLOW,
-                scrollbarColor = Color.BLACK.withAlpha(0.5f)
+                scrollbarColor = Color.BLACK.withAlpha(0.5f),
+                containerModifier = { it.margin(8.dp) }
             ) {
+                var loopCnt = 0
                 items(listItems) { item ->
                     val isHovered = item == hoveredListItem.use()
                     val bgColor = when {
@@ -121,18 +125,26 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         !isHovered && item == "Item 17" -> MdColor.GREEN tone 200
                         else -> MdColor.RED tone 200
                     }
-                    Text(item) {
-                        modifier
-                            .background(bgColor)
-                            .onEnter { hoveredListItem.set(item) }
-                            .onExit { hoveredListItem.set(null) }
-                            .onClick {
-                                if (item == "Item 17") {
-                                    listItems += "Item ${nextItem++}"
-                                } else {
-                                    listItems.remove(item)
+                    Row {
+                        modifier.margin(8.dp)
+                        Text(item) {
+                            modifier
+                                .background(bgColor)
+                                .margin(end =  8.dp)
+                                .onEnter { hoveredListItem.set(item) }
+                                .onExit { hoveredListItem.set(null) }
+                                .onClick {
+                                    if (item == "Item 17") {
+                                        listItems += "Item ${nextItem++}"
+                                    } else {
+                                        listItems.remove(item)
+                                    }
                                 }
-                            }
+                        }
+                        Text("Loop Item: ${loopCnt++}") {
+                            modifier
+                                .background(Color.GRAY)
+                        }
                     }
                 }
             }
@@ -145,6 +157,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .width(100.dp)
                     .height(Grow(0.3f))
                     .background(MdColor.AMBER)
+                    .margin(8.dp)
             }
             Text("Yet another text") {
                 modifier
@@ -153,6 +166,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .textAlignX(AlignmentX.End)
                     .textAlignY(AlignmentY.Bottom)
                     .background(MdColor.PURPLE)
+                    .margin(8.dp)
             }
         }
     }
