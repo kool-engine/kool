@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
@@ -35,14 +36,11 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val width: Float get() = maxX - minX
     val height: Float get() = maxY - minY
 
-    var clippedMinX = 0f
-        private set
-    var clippedMinY = 0f
-        private set
-    var clippedMaxX = 0f
-        private set
-    var clippedMaxY = 0f
-        private set
+    val clipBounds = MutableVec4f()
+    val clippedMinX: Float get() = clipBounds.x
+    val clippedMinY: Float get() = clipBounds.y
+    val clippedMaxX: Float get() = clipBounds.z
+    val clippedMaxY: Float get() = clipBounds.w
     val isInBounds: Boolean get() = clippedMaxX - clippedMinX > 0.5f && clippedMaxY - clippedMinY > 0.5f
 
     val paddingStart: Float get() = modifier.paddingStart.px
@@ -74,25 +72,21 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         this.maxY = maxY
 
         if (parent != null) {
-            clippedMinX = max(parent.clippedMinX, minX)
-            clippedMinY = max(parent.clippedMinY, minY)
-            clippedMaxX = min(parent.clippedMaxX, maxX)
-            clippedMaxY = min(parent.clippedMaxY, maxY)
+            clipBounds.x = max(parent.clippedMinX, minX)
+            clipBounds.y = max(parent.clippedMinY, minY)
+            clipBounds.z = min(parent.clippedMaxX, maxX)
+            clipBounds.w = min(parent.clippedMaxY, maxY)
         } else {
-            clippedMinX = minX
-            clippedMinY = minY
-            clippedMaxX = maxX
-            clippedMaxY = maxY
+            clipBounds.x = minX
+            clipBounds.y = minY
+            clipBounds.z = maxX
+            clipBounds.w = maxY
         }
     }
 
     open fun render(ctx: KoolContext) {
         modifier.background?.let {
-            surface.defaultBuilder.configured(it) {
-                rect {
-                    size.set(this@UiNode.width, this@UiNode.height)
-                }
-            }
+            surface.defaultPrimitives.addRect(minX, minY, width, height, it, clipBounds)
         }
     }
 

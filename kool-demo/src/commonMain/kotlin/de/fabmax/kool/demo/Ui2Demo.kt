@@ -29,10 +29,10 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [ ] arbitrary number of textures / images
 
         // todo
-        //  theming (colors, sizes)
+        //  theming (colors, fonts, sizes)
         //  customizable renderers
+        //  borders
         //  icons + images
-        //  instanced meshes for primitive objects (round-/rects, circles)? might be difficult to solve correct depth
         //  keyboard input
         //  focus
         //  clipboard
@@ -40,7 +40,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  input context stack
         //  animations
         //  custom drawing / canvas?
-        //  modifiable z-coordinate
+        //  z-layers (determine draw order)
 
         // most likely not
         //  smart update: only update nodes which actually changed (might not work with shared meshes)

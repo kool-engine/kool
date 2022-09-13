@@ -20,13 +20,13 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             val texCoords = interStageFloat2()
             val screenPos = interStageFloat2()
             val color = interStageFloat4()
-            val bounds = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
+            val clipBounds = interStageFloat4(interpolation = KslInterStageInterpolation.Flat)
 
             vertexStage {
                 main {
                     texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                     color.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    bounds.input set vertexAttribFloat4(ATTRIB_CLIP.name)
+                    clipBounds.input set vertexAttribFloat4(ATTRIB_CLIP.name)
 
                     val vertexPos = float4Var(float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f))
                     screenPos.input set vertexPos.xy
@@ -35,8 +35,8 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             }
             fragmentStage {
                 main {
-                    `if` (all(screenPos.output gt bounds.output.xy) and
-                            all(screenPos.output lt bounds.output.zw)) {
+                    `if` (all(screenPos.output gt clipBounds.output.xy) and
+                            all(screenPos.output lt clipBounds.output.zw)) {
                         val alpha = sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a
                         colorOutput(color.output.rgb * alpha, alpha)
                     }.`else` {

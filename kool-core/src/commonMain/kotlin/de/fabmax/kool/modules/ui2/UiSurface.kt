@@ -12,10 +12,7 @@ import de.fabmax.kool.util.logD
 
 class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> Unit) : Group(name) {
 
-    private val defaultMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) {
-        shader = Ui2Shader()
-    }
-    val defaultBuilder = MeshBuilder(defaultMesh.geometry).apply { setupUiBuilder() }
+    val defaultPrimitives = UiPrimitiveMesh()
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
 
     private val inputHandler = InputHandler()
@@ -32,7 +29,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         private set
 
     init {
-        this += defaultMesh
+        this += defaultPrimitives
         // mirror y-axis
         scale(1f, -1f, 1f)
         onUpdate += {
@@ -52,6 +49,9 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         requiresUpdate = false
         registeredState.forEach { it.clearUsage() }
         registeredState.clear()
+
+        textMeshes.values.forEach { it.clear() }
+        defaultPrimitives.instances?.clear()
         val prep = pt.takeMs().also { pt.reset() }
 
         measuredScale = updateEvent.ctx.windowScale
@@ -59,9 +59,6 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         content.reset()
         content.uiBlock()
         val build = pt.takeMs().also { pt.reset() }
-
-        textMeshes.values.forEach { it.clear() }
-        defaultMesh.geometry.clear()
 
         measureUiNodeContent(viewport, updateEvent.ctx)
         val measure = pt.takeMs().also { pt.reset() }

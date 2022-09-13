@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -115,30 +116,31 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             return
         }
 
-        // draw bar
-        surface.defaultBuilder.configured(modifier.barColor) {
-            rect {
-                val refHeight = uiNode.height - paddingTop - paddingBottom
-                val refWidth = uiNode.width - paddingStart - paddingEnd
-                val clampLen = max(len, modifier.minBarSize.px / if (isVertical) refHeight else refWidth)
+        // compute scrollbar dimensions
+        val refHeight = uiNode.height - paddingTop - paddingBottom
+        val refWidth = uiNode.width - paddingStart - paddingEnd
+        val clampLen = max(len, modifier.minBarSize.px / if (isVertical) refHeight else refWidth)
 
-                cornerSteps = 4
-                if (isVertical) {
-                    cornerRadius = refWidth * 0.5f
-                    origin.set(paddingStart, pos * (1f - clampLen) * refHeight + paddingTop, 0f)
-                    size.set(refWidth, clampLen * refHeight)
-                } else {
-                    cornerRadius = refHeight * 0.5f
-                    origin.set(pos * (1f - clampLen) * refWidth + paddingStart, paddingTop, 0f)
-                    size.set(clampLen * refWidth, refHeight)
-                }
-
-                barMinX = origin.x
-                barMinY = origin.y
-                barMaxX = origin.x + size.x
-                barMaxY = origin.y + size.y
-            }
+        val radius: Float
+        val origin = MutableVec2f()
+        val size = MutableVec2f()
+        if (isVertical) {
+            radius = refWidth * 0.5f
+            origin.set(paddingStart, pos * (1f - clampLen) * refHeight + paddingTop)
+            size.set(refWidth, clampLen * refHeight)
+        } else {
+            radius = refHeight * 0.5f
+            origin.set(pos * (1f - clampLen) * refWidth + paddingStart, paddingTop)
+            size.set(clampLen * refWidth, refHeight)
         }
+
+        barMinX = origin.x
+        barMinY = origin.y
+        barMaxX = origin.x + size.x
+        barMaxY = origin.y + size.y
+
+        // draw scrollbar
+        surface.defaultPrimitives.addRoundRect(minX + origin.x, minY + origin.y, size.x, size.y, radius, modifier.barColor, clipBounds)
     }
 
     fun onDragStart(ev: PointerEvent) {
