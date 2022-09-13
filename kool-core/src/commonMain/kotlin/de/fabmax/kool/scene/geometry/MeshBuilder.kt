@@ -829,36 +829,34 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
 
                 val metrics = charMap[c]
                 if (metrics != null) {
-                    withTransform {
-                        var advOffset = 0f
-                        if (ct == null) {
-                            advOffset = advanced
-                        } else {
-                            ct(advanced)
-                        }
-                        rect(rectProps.apply {
-                            val x = advOffset - metrics.xOffset
-                            val y = if (props.isYAxisUp) metrics.yBaseline - metrics.height else -metrics.yBaseline
-                            if (props.roundOriginToUnits) {
-                                origin.set(round(x), round(y), 0f)
-                            } else {
-                                origin.set(x, y, 0f)
-                            }
-                            size.set(metrics.width, metrics.height)
-
-                            if (props.isYAxisUp) {
-                                texCoordUpperLeft.set(metrics.uvMin)
-                                texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
-                                texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
-                                texCoordLowerRight.set(metrics.uvMax)
-                            } else {
-                                texCoordLowerLeft.set(metrics.uvMin)
-                                texCoordLowerRight.set(metrics.uvMax.x, metrics.uvMin.y)
-                                texCoordUpperLeft.set(metrics.uvMin.x, metrics.uvMax.y)
-                                texCoordUpperRight.set(metrics.uvMax)
-                            }
-                        })
+                    var advOffset = 0f
+                    if (ct == null) {
+                        advOffset = advanced
+                    } else {
+                        ct(advanced)
                     }
+                    rect(rectProps.apply {
+                        val x = advOffset - metrics.xOffset
+                        val y = if (props.isYAxisUp) metrics.yBaseline - metrics.height else -metrics.yBaseline
+                        if (props.roundOriginToUnits) {
+                            origin.set(round(x), round(y), 0f)
+                        } else {
+                            origin.set(x, y, 0f)
+                        }
+                        size.set(metrics.width, metrics.height)
+
+                        if (props.isYAxisUp) {
+                            texCoordUpperLeft.set(metrics.uvMin)
+                            texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                            texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                            texCoordLowerRight.set(metrics.uvMax)
+                        } else {
+                            texCoordLowerLeft.set(metrics.uvMin)
+                            texCoordLowerRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                            texCoordUpperLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                            texCoordUpperRight.set(metrics.uvMax)
+                        }
+                    })
                     advanced += metrics.advance
                 }
             }

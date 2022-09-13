@@ -26,7 +26,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
                 main {
                     texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                     color.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    bounds.input set vertexAttribFloat4(ATTRIB_BOUNDS.name)
+                    bounds.input set vertexAttribFloat4(ATTRIB_CLIP.name)
 
                     val vertexPos = float4Var(float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f))
                     screenPos.input set vertexPos.xy
@@ -48,9 +48,9 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     }
 
     companion object {
-        val ATTRIB_BOUNDS = Attribute("aBounds", GlslType.VEC_4F)
+        val ATTRIB_CLIP = Attribute("aClip", GlslType.VEC_4F)
 
-        val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_BOUNDS, Attribute.TEXTURE_COORDS)
+        val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_CLIP, Attribute.TEXTURE_COORDS)
 
         private val noFontTex = SingleColorTexture(Color.WHITE)
         private val pipelineConfig = PipelineConfig().apply {

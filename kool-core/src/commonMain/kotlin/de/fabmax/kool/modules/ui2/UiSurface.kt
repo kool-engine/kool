@@ -33,6 +33,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
 
     init {
         this += defaultMesh
+        // mirror y-axis
+        scale(1f, -1f, 1f)
         onUpdate += {
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
@@ -274,7 +276,6 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
 
     companion object {
         fun MeshBuilder.setupUiBuilder() {
-            scale(1f, -1f, 1f)
             invertFaceOrientation = true
         }
 

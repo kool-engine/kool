@@ -56,7 +56,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val marginBottom: Float get() = modifier.marginBottom.px
 
     protected val setBoundsVertexMod: VertexView.() -> Unit = {
-        getVec4fAttribute(Ui2Shader.ATTRIB_BOUNDS)?.set(clippedMinX, -clippedMaxY, clippedMaxX, -clippedMinY)
+        getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clippedMinX, clippedMinY, clippedMaxX, clippedMaxY)
     }
 
     fun toLocal(screenX: Double, screenY: Double) = Vec2f(screenX.toFloat() - minX, screenY.toFloat() - minY)

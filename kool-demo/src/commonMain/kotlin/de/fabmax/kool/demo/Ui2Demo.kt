@@ -53,12 +53,17 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
-        for (i in 1..500) {
+        for (i in 1..50) {
             listItems += "Item ${nextItem++}"
         }
 
         val guiCam = OrthographicCamera().also { camera = it }
         onUpdate += {
+            // setup camera to cover viewport size with origin in upper left corner
+            // camera clip space uses OpenGL coordinates -> y-axis points downwards, i.e. bottom coordinate has to be
+            // set to negative viewport height
+            // UI surface internally mirrors y-axis to get a regular UI coordinate system (however, this means tirangle
+            // index order or face orientation has to be inverted)
             guiCam.left = 0f
             guiCam.top = 0f
             guiCam.right = it.renderPass.viewport.width.toFloat()
