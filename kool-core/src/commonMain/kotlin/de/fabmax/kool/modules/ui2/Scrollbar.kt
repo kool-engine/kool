@@ -117,8 +117,8 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         }
 
         // compute scrollbar dimensions
-        val refHeight = uiNode.height - paddingTop - paddingBottom
-        val refWidth = uiNode.width - paddingStart - paddingEnd
+        val refHeight = uiNode.heightPx - paddingTopPx - paddingBottomPx
+        val refWidth = uiNode.widthPx - paddingStartPx - paddingEndPx
         val clampLen = max(len, modifier.minBarSize.px / if (isVertical) refHeight else refWidth)
 
         val radius: Float
@@ -126,11 +126,11 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         val size = MutableVec2f()
         if (isVertical) {
             radius = refWidth * 0.5f
-            origin.set(paddingStart, pos * (1f - clampLen) * refHeight + paddingTop)
+            origin.set(paddingStartPx, pos * (1f - clampLen) * refHeight + paddingTopPx)
             size.set(refWidth, clampLen * refHeight)
         } else {
             radius = refHeight * 0.5f
-            origin.set(pos * (1f - clampLen) * refWidth + paddingStart, paddingTop)
+            origin.set(pos * (1f - clampLen) * refWidth + paddingStartPx, paddingTopPx)
             size.set(clampLen * refWidth, refHeight)
         }
 
@@ -163,11 +163,11 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
 
         fun captureDragStart() {
             if (isVertical) {
-                trackLenPx = uiNode.height - paddingTop - paddingBottom
+                trackLenPx = uiNode.heightPx - paddingTopPx - paddingBottomPx
                 barLenPx = barMaxY - barMinY
                 barStartPx = barMinY
             } else {
-                trackLenPx = uiNode.width - paddingStart - paddingEnd
+                trackLenPx = uiNode.widthPx - paddingStartPx - paddingEndPx
                 barLenPx = barMaxX - barMinX
                 barStartPx = barMinX
             }
@@ -184,9 +184,9 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             val spaceAfter = trackLenPx - (barPos + barLenPx)
             val relativeScroll = if (barPos + spaceAfter > 0f) barPos / (barPos + spaceAfter) else 0f
             if (isVertical) {
-                state.setYScrollRelative(relativeScroll)
+                state.scrollRelativeY(relativeScroll)
             } else {
-                state.setXScrollRelative(relativeScroll)
+                state.scrollRelativeX(relativeScroll)
             }
         }
     }

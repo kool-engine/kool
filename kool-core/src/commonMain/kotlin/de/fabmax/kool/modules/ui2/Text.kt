@@ -54,12 +54,12 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
         val measuredWidth = if (modWidth is Dp) {
             modWidth.px
         } else {
-            textMetrics.width + paddingStart + paddingEnd
+            textMetrics.width + paddingStartPx + paddingEndPx
         }
         val measuredHeight = if (modHeight is Dp) {
             modHeight.px
         } else {
-            textMetrics.height + paddingTop + paddingBottom
+            textMetrics.height + paddingTopPx + paddingBottomPx
         }
 
         setContentSize(measuredWidth, measuredHeight)
@@ -73,16 +73,16 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
             isYAxisUp = false
             text = modifier.text
             val oriX = when (modifier.textAlignX) {
-                AlignmentX.Start -> paddingStart
-                AlignmentX.Center -> (width - textMetrics.width) / 2f
-                AlignmentX.End -> width - textMetrics.width - paddingEnd
+                AlignmentX.Start -> paddingStartPx
+                AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
+                AlignmentX.End -> widthPx - textMetrics.width - paddingEndPx
             }
             val oriY = when (modifier.textAlignY) {
-                AlignmentY.Top -> textMetrics.yBaseline + paddingTop
-                AlignmentY.Center -> (height - textMetrics.height) / 2f + textMetrics.yBaseline
-                AlignmentY.Bottom -> height - textMetrics.height + textMetrics.yBaseline - paddingBottom
+                AlignmentY.Top -> textMetrics.yBaseline + paddingTopPx
+                AlignmentY.Center -> (heightPx - textMetrics.height) / 2f + textMetrics.yBaseline
+                AlignmentY.Bottom -> heightPx - textMetrics.height + textMetrics.yBaseline - paddingBottomPx
             }
-            origin.set(minX + oriX, minY + oriY, 0f)
+            origin.set(leftPx + oriX, topPx + oriY, 0f)
         }
         textCache.addTextGeometry(surface.getTextBuilder(modifier.font, ctx).geometry, textProps)
     }
@@ -108,9 +108,9 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
             if (cachedText != textProps.text || cachedFont !== textProps.font) {
                 buildCache(textProps)
             }
-            if (cachedTextPos.x != minX || cachedTextPos.y != minY ||
-                cachedClip.x != clippedMinX || cachedClip.y != clippedMinY ||
-                cachedClip.z != clippedMaxX || cachedClip.w != clippedMaxX ||
+            if (cachedTextPos.x != leftPx || cachedTextPos.y != topPx ||
+                cachedClip.x != clipLeftPx || cachedClip.y != clipTopPx ||
+                cachedClip.z != clipRightPx || cachedClip.w != clipRightPx ||
                 cachedColor != modifier.foreground) {
                 updateCachedPositions(textProps)
             }
@@ -142,16 +142,16 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
             val posOffX = textProps.origin.x - cachedTextPos.x
             val posOffY = textProps.origin.y - cachedTextPos.y
             cachedTextPos.set(textProps.origin)
-            cachedClip.set(clippedMinX, clippedMinY, clippedMaxX, clippedMaxY)
+            cachedClip.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
             cachedColor.set(modifier.foreground)
             for (i in 0 until cacheData.numVertices) {
                 val j = i * cacheData.vertexSizeF
                 cacheData.dataF[j + posOffset] += posOffX
                 cacheData.dataF[j + posOffset + 1] += posOffY
-                cacheData.dataF[j + clipOffset] = clippedMinX
-                cacheData.dataF[j + clipOffset + 1] = clippedMinY
-                cacheData.dataF[j + clipOffset + 2] = clippedMaxX
-                cacheData.dataF[j + clipOffset + 3] = clippedMaxY
+                cacheData.dataF[j + clipOffset] = clipLeftPx
+                cacheData.dataF[j + clipOffset + 1] = clipTopPx
+                cacheData.dataF[j + clipOffset + 2] = clipRightPx
+                cacheData.dataF[j + clipOffset + 3] = clipBottomPx
                 cacheData.dataF[j + colorOffset + 0] = cachedColor.r
                 cacheData.dataF[j + colorOffset + 1] = cachedColor.g
                 cacheData.dataF[j + colorOffset + 2] = cachedColor.b

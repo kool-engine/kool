@@ -106,7 +106,11 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         } else {
             // use the element size seen in previous layout runs to estimate the total list dimensions
             val elemSize = state.averageElementSizeDp
-            val listPos = if (isVertical) state.yScrollDp.value else state.xScrollDp.value
+            val listPos = if (isVertical) {
+                state.computeSmoothScrollPosDpY(surface.deltaT)
+            } else {
+                state.computeSmoothScrollPosDpX(surface.deltaT)
+            }
             val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
 
             state.itemsFrom = max(0, (listPos / elemSize).toInt() - modifier.extraItemsBefore)
@@ -155,11 +159,11 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
         for (i in from..to) {
             val child = children[i]
             if (isVertical) {
-                size += child.contentHeight + max(prevMargin, child.marginTop)
-                prevMargin = child.marginBottom
+                size += child.contentHeightPx + max(prevMargin, child.marginTopPx)
+                prevMargin = child.marginBottomPx
             } else {
-                size += child.contentWidth + max(prevMargin, child.marginStart)
-                prevMargin = child.marginEnd
+                size += child.contentWidthPx + max(prevMargin, child.marginStartPx)
+                prevMargin = child.marginEndPx
             }
             count++
         }

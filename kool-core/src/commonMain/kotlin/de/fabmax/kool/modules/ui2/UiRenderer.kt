@@ -9,7 +9,7 @@ interface UiRenderer<in T: UiNode> {
 class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
-            surface.defaultPrimitives.localRect(0f, 0f, width, height, backgroundColor)
+            surface.defaultPrimitives.localRect(0f, 0f, widthPx, heightPx, backgroundColor)
         }
     }
 }
@@ -17,7 +17,7 @@ class RectBackground(val backgroundColor: Color) : UiRenderer<UiNode> {
 class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
-            surface.defaultPrimitives.localRoundRect(0f, 0f, width, height, cornerRadius.px, backgroundColor)
+            surface.defaultPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, cornerRadius.px, backgroundColor)
         }
     }
 }
@@ -27,7 +27,7 @@ class RectBorder(val borderColor: Color, val inset: Dp, val borderWidth: Dp) : U
         node.apply {
             val inPx = inset.px
             surface.defaultPrimitives.localRectBorder(
-                inPx, inPx, width - inPx * 2f, height - inPx * 2f, borderWidth.px, borderColor
+                inPx, inPx, widthPx - inPx * 2f, heightPx - inPx * 2f, borderWidth.px, borderColor
             )
         }
     }
@@ -38,7 +38,7 @@ class RoundRectBorder(val borderColor: Color, val inset: Dp, val cornerRadius: D
         node.apply {
             val inPx = inset.px
             surface.defaultPrimitives.localRoundRectBorder(
-                inPx, inPx, width - inPx * 2f, height - inPx * 2f, cornerRadius.px, borderWidth.px, borderColor
+                inPx, inPx, widthPx - inPx * 2f, heightPx - inPx * 2f, cornerRadius.px, borderWidth.px, borderColor
             )
         }
     }

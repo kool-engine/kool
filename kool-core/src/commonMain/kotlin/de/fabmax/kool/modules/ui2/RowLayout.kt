@@ -37,21 +37,21 @@ private object HorizontalLayout {
 
         if (isDynamicWidth || isDynamicHeight) {
             // determine content size based on child sizes
-            var prevMargin = paddingTop
+            var prevMargin = paddingTopPx
             val indices = if (isStartToEnd) children.indices else children.indices.reversed()
             for (i in indices) {
                 val child = children[i]
                 if (isDynamicWidth) {
-                    measuredWidth += child.contentWidth + max(prevMargin, child.marginStart)
-                    prevMargin = child.marginEnd
+                    measuredWidth += child.contentWidthPx + max(prevMargin, child.marginStartPx)
+                    prevMargin = child.marginEndPx
                 }
                 if (isDynamicHeight) {
-                    val pTop = max(paddingTop, child.marginTop)
-                    val pBottom = max(paddingBottom, child.marginBottom)
-                    measuredHeight = max(measuredHeight, child.contentHeight + pTop + pBottom)
+                    val pTop = max(paddingTopPx, child.marginTopPx)
+                    val pBottom = max(paddingBottomPx, child.marginBottomPx)
+                    measuredHeight = max(measuredHeight, child.contentHeightPx + pTop + pBottom)
                 }
                 if (i == children.lastIndex && isDynamicWidth) {
-                    measuredWidth += max(prevMargin, paddingEnd)
+                    measuredWidth += max(prevMargin, paddingEndPx)
                 }
             }
         }
@@ -60,37 +60,37 @@ private object HorizontalLayout {
 
     fun layout(uiNode: UiNode, isStartToEnd: Boolean) = uiNode.run {
         val growSpace = determineAvailableGrowSpace(isStartToEnd)
-        var x = if (isStartToEnd) minX else maxX
-        var prevMargin = if (isStartToEnd) paddingStart else paddingEnd
+        var x = if (isStartToEnd) leftPx else rightPx
+        var prevMargin = if (isStartToEnd) paddingStartPx else paddingEndPx
 
         for (i in children.indices) {
             val child = children[i]
 
             val layoutW = when (val childW = child.modifier.width) {
                 is Dp -> childW.px
-                is Grow -> width - max(paddingStart, child.marginStart) - max(paddingEnd, child.marginEnd)
-                WrapContent -> child.contentWidth
+                is Grow -> widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
+                WrapContent -> child.contentWidthPx
             }
             val layoutH = when (val childH = child.modifier.height) {
                 is Dp -> childH.px
                 is Grow -> growSpace * childH.weight
-                WrapContent -> child.contentHeight
+                WrapContent -> child.contentHeightPx
             }
             val layoutY = when (child.modifier.alignY) {
-                AlignmentY.Top -> minY + max(paddingTop, child.marginTop)
-                AlignmentY.Center -> minY + (height - layoutH) * 0.5f
-                AlignmentY.Bottom -> maxY - layoutH - max(paddingBottom, child.marginBottom)
+                AlignmentY.Top -> topPx + max(paddingTopPx, child.marginTopPx)
+                AlignmentY.Center -> topPx + (heightPx - layoutH) * 0.5f
+                AlignmentY.Bottom -> bottomPx - layoutH - max(paddingBottomPx, child.marginBottomPx)
             }
 
             val layoutX: Float
             if (isStartToEnd) {
-                x += max(prevMargin, child.marginStart)
-                prevMargin = child.marginEnd
+                x += max(prevMargin, child.marginStartPx)
+                prevMargin = child.marginEndPx
                 layoutX = x
                 x += layoutW
             } else {
-                x -= max(prevMargin, child.marginEnd)
-                prevMargin = child.marginStart
+                x -= max(prevMargin, child.marginEndPx)
+                prevMargin = child.marginStartPx
                 x -= layoutW
                 layoutX = x
             }
@@ -100,8 +100,8 @@ private object HorizontalLayout {
     }
 
     private fun UiNode.determineAvailableGrowSpace(isStartToEnd: Boolean): Float {
-        var prevMargin = paddingStart
-        var remainingSpace = width
+        var prevMargin = paddingStartPx
+        var remainingSpace = widthPx
         var totalWeight = 0f
         val indices = if (isStartToEnd) children.indices else children.indices.reversed()
         for (i in indices) {
@@ -109,12 +109,12 @@ private object HorizontalLayout {
             when (val childW = child.modifier.width) {
                 is Dp -> remainingSpace -= childW.px
                 is Grow -> totalWeight += childW.weight
-                WrapContent -> remainingSpace -= child.contentHeight
+                WrapContent -> remainingSpace -= child.contentHeightPx
             }
-            remainingSpace -= max(prevMargin, child.marginStart)
-            prevMargin = child.marginEnd
+            remainingSpace -= max(prevMargin, child.marginStartPx)
+            prevMargin = child.marginEndPx
             if (i == uiNode.children.lastIndex) {
-                remainingSpace -= max(prevMargin, uiNode.paddingEnd)
+                remainingSpace -= max(prevMargin, uiNode.paddingEndPx)
             }
         }
         if (totalWeight == 0f) totalWeight = 1f

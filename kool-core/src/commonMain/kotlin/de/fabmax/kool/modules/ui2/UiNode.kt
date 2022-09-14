@@ -20,67 +20,67 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     private val mutChildren = mutableListOf<UiNode>()
     val children: List<UiNode> get() = mutChildren
 
-    var contentWidth = 0f
+    var contentWidthPx = 0f
         private set
-    var contentHeight = 0f
+    var contentHeightPx = 0f
         private set
 
-    var minX = 0f
+    var leftPx = 0f
         private set
-    var minY = 0f
+    var topPx = 0f
         private set
-    var maxX = 0f
+    var rightPx = 0f
         private set
-    var maxY = 0f
+    var bottomPx = 0f
         private set
-    val width: Float get() = maxX - minX
-    val height: Float get() = maxY - minY
+    val widthPx: Float get() = rightPx - leftPx
+    val heightPx: Float get() = bottomPx - topPx
 
-    val clipBounds = MutableVec4f()
-    val clippedMinX: Float get() = clipBounds.x
-    val clippedMinY: Float get() = clipBounds.y
-    val clippedMaxX: Float get() = clipBounds.z
-    val clippedMaxY: Float get() = clipBounds.w
-    val isInBounds: Boolean get() = clippedMaxX - clippedMinX > 0.5f && clippedMaxY - clippedMinY > 0.5f
+    val clipBoundsPx = MutableVec4f()
+    val clipLeftPx: Float get() = clipBoundsPx.x
+    val clipTopPx: Float get() = clipBoundsPx.y
+    val clipRightPx: Float get() = clipBoundsPx.z
+    val clipBottomPx: Float get() = clipBoundsPx.w
+    val isInBounds: Boolean get() = clipRightPx - clipLeftPx > 0.5f && clipBottomPx - clipTopPx > 0.5f
 
-    val paddingStart: Float get() = modifier.paddingStart.px
-    val paddingEnd: Float get() = modifier.paddingEnd.px
-    val paddingTop: Float get() = modifier.paddingTop.px
-    val paddingBottom: Float get() = modifier.paddingBottom.px
+    val paddingStartPx: Float get() = modifier.paddingStart.px
+    val paddingEndPx: Float get() = modifier.paddingEnd.px
+    val paddingTopPx: Float get() = modifier.paddingTop.px
+    val paddingBottomPx: Float get() = modifier.paddingBottom.px
 
-    val marginStart: Float get() = modifier.marginStart.px
-    val marginEnd: Float get() = modifier.marginEnd.px
-    val marginTop: Float get() = modifier.marginTop.px
-    val marginBottom: Float get() = modifier.marginBottom.px
+    val marginStartPx: Float get() = modifier.marginStart.px
+    val marginEndPx: Float get() = modifier.marginEnd.px
+    val marginTopPx: Float get() = modifier.marginTop.px
+    val marginBottomPx: Float get() = modifier.marginBottom.px
 
     protected val setBoundsVertexMod: VertexView.() -> Unit = {
-        getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clippedMinX, clippedMinY, clippedMaxX, clippedMaxY)
+        getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
     }
 
-    fun toLocal(screenX: Double, screenY: Double) = Vec2f(screenX.toFloat() - minX, screenY.toFloat() - minY)
-    fun toLocal(screenX: Float, screenY: Float) = Vec2f(screenX - minX, screenY - minY)
+    fun toLocal(screenX: Double, screenY: Double) = Vec2f(screenX.toFloat() - leftPx, screenY.toFloat() - topPx)
+    fun toLocal(screenX: Float, screenY: Float) = Vec2f(screenX - leftPx, screenY - topPx)
 
     open fun setContentSize(width: Float, height: Float) {
-        contentWidth = width
-        contentHeight = height
+        contentWidthPx = width
+        contentHeightPx = height
     }
 
     open fun setBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
-        this.minX = minX
-        this.minY = minY
-        this.maxX = maxX
-        this.maxY = maxY
+        this.leftPx = minX
+        this.topPx = minY
+        this.rightPx = maxX
+        this.bottomPx = maxY
 
         if (parent != null) {
-            clipBounds.x = max(parent.clippedMinX, minX)
-            clipBounds.y = max(parent.clippedMinY, minY)
-            clipBounds.z = min(parent.clippedMaxX, maxX)
-            clipBounds.w = min(parent.clippedMaxY, maxY)
+            clipBoundsPx.x = max(parent.clipLeftPx, minX)
+            clipBoundsPx.y = max(parent.clipTopPx, minY)
+            clipBoundsPx.z = min(parent.clipRightPx, maxX)
+            clipBoundsPx.w = min(parent.clipBottomPx, maxY)
         } else {
-            clipBounds.x = minX
-            clipBounds.y = minY
-            clipBounds.z = maxX
-            clipBounds.w = maxY
+            clipBoundsPx.x = minX
+            clipBoundsPx.y = minY
+            clipBoundsPx.z = maxX
+            clipBoundsPx.w = maxY
         }
     }
 
@@ -131,7 +131,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         color?.let { this.color = it }
 
         withTransform {
-            translate(minX, minY, 0f)
+            translate(leftPx, topPx, 0f)
             this.block()
         }
 
@@ -140,34 +140,34 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     }
 
     fun UiPrimitiveMesh.localRect(x: Float, y: Float, width: Float, height: Float, color: Color) {
-        rect(minX + x, minY + y, width, height, color, clipBounds)
+        rect(leftPx + x, topPx + y, width, height, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localRoundRect(x: Float, y: Float, width: Float, height: Float, radius: Float, color: Color) {
-        roundRect(minX + x, minY + y, width, height, radius, color, clipBounds)
+        roundRect(leftPx + x, topPx + y, width, height, radius, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localCircle(x: Float, y: Float, radius: Float, color: Color) {
-        circle(minX + x, minY + y, radius, color, clipBounds)
+        circle(leftPx + x, topPx + y, radius, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localOval(x: Float, y: Float, xRadius: Float, yRadius: Float, color: Color) {
-        oval(minX + x, minY + y, xRadius, yRadius, color, clipBounds)
+        oval(leftPx + x, topPx + y, xRadius, yRadius, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localRectBorder(x: Float, y: Float, width: Float, height: Float, borderWidth: Float, color: Color) {
-        rectBorder(minX + x, minY + y, width, height, borderWidth, color, clipBounds)
+        rectBorder(leftPx + x, topPx + y, width, height, borderWidth, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localRoundRectBorder(x: Float, y: Float, width: Float, height: Float, radius: Float, borderWidth: Float, color: Color) {
-        roundRectBorder(minX + x, minY + y, width, height, radius, borderWidth, color, clipBounds)
+        roundRectBorder(leftPx + x, topPx + y, width, height, radius, borderWidth, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localCircleBorder(x: Float, y: Float, radius: Float, borderWidth: Float, color: Color) {
-        circleBorder(minX + x, minY + y, radius, borderWidth, color, clipBounds)
+        circleBorder(leftPx + x, topPx + y, radius, borderWidth, color, clipBoundsPx)
     }
 
     fun UiPrimitiveMesh.localOvalBorder(x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float, color: Color) {
-        ovalBorder(minX + x, minY + y, xRadius, yRadius, borderWidth, color, clipBounds)
+        ovalBorder(leftPx + x, topPx + y, xRadius, yRadius, borderWidth, color, clipBoundsPx)
     }
 }

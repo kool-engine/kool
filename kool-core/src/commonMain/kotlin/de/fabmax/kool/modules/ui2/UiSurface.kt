@@ -27,6 +27,8 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
 
     var measuredScale = 1f
         private set
+    var deltaT = 0f
+        private set
 
     init {
         this += defaultPrimitives
@@ -35,6 +37,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         onUpdate += {
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
+            deltaT = it.deltaT
             inputHandler.handleInput(it)
             updateUi(it)
         }
@@ -249,7 +252,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
         }
 
         fun UiNode.isInClip(x: Float, y: Float): Boolean {
-            return x in clippedMinX..clippedMaxX && y in clippedMinY..clippedMaxY
+            return x in clipLeftPx..clipRightPx && y in clipTopPx..clipBottomPx
         }
     }
 

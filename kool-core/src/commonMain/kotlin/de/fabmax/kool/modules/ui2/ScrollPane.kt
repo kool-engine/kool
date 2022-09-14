@@ -4,11 +4,14 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.logW
+import kotlin.math.abs
 import kotlin.math.max
 
 open class ScrollState {
     val xScrollDp = mutableStateOf(0f)
     val yScrollDp = mutableStateOf(0f)
+    val xScrollDpDesired = mutableStateOf(0f)
+    val yScrollDpDesired = mutableStateOf(0f)
 
     val contentSizeDp = MutableVec2f()
     val viewSizeDp = MutableVec2f()
@@ -26,22 +29,64 @@ open class ScrollState {
         return if (div == 0f) 0f else (yScrollDp.value / (div))
     }
 
-    fun xScrollClamped(amount: Float) {
-        xScrollDp.set((xScrollDp.value + amount).clamp(0f, contentSizeDp.x - viewSizeDp.x))
+    fun scrollDpX(amount: Float, smooth: Boolean = true) {
+        if (smooth) {
+            xScrollDpDesired.set((xScrollDpDesired.value + amount))
+        } else {
+            xScrollDp.set(xScrollDp.value + amount)
+            xScrollDpDesired.set(xScrollDp.value)
+        }
     }
 
-    fun yScrollClamped(amount: Float) {
-        yScrollDp.set((yScrollDp.value + amount).clamp(0f, contentSizeDp.y - viewSizeDp.y))
+    fun scrollDpY(amount: Float, smooth: Boolean = true) {
+        if (smooth) {
+            yScrollDpDesired.set((yScrollDpDesired.value + amount))
+        } else {
+            yScrollDp.set(yScrollDp.value + amount)
+            yScrollDpDesired.set(yScrollDp.value)
+        }
     }
 
-    fun setXScrollRelative(relativeX: Float) {
+    fun scrollRelativeX(relativeX: Float, smooth: Boolean = true) {
         val width = max(contentSizeDp.x, viewSizeDp.x)
-        xScrollDp.set((width - viewSizeDp.x) * relativeX)
+        xScrollDpDesired.set((width - viewSizeDp.x) * relativeX)
+        if (!smooth) {
+            xScrollDp.set(xScrollDpDesired.value)
+        }
     }
 
-    fun setYScrollRelative(relativeY: Float) {
+    fun scrollRelativeY(relativeY: Float, smooth: Boolean = true) {
         val height = max(contentSizeDp.y, viewSizeDp.y)
-        yScrollDp.set((height - viewSizeDp.y) * relativeY)
+        yScrollDpDesired.set((height - viewSizeDp.y) * relativeY)
+        if (!smooth) {
+            yScrollDp.set(yScrollDpDesired.value)
+        }
+    }
+
+    fun computeSmoothScrollPosDpX(deltaT: Float): Float {
+        val error = xScrollDpDesired.value - xScrollDp.value
+        return if (abs(error) < 1f) {
+            xScrollDpDesired.value
+        } else {
+            var step = error * 15f * deltaT
+            if (abs(step) > abs(error)) {
+                step = error
+            }
+            xScrollDp.value + step
+        }
+    }
+
+    fun computeSmoothScrollPosDpY(deltaT: Float): Float {
+        val error = yScrollDpDesired.value - yScrollDp.value
+        return if (abs(error) < 1f) {
+            yScrollDpDesired.value
+        } else {
+            var step = error * 15f * deltaT
+            if (abs(step) > abs(error)) {
+                step = error
+            }
+            yScrollDp.value + step
+        }
     }
 }
 
@@ -97,28 +142,40 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     }
 
     protected open fun updateScrollPos() {
-        var desiredScrollX = state.xScrollDp.use()
-        var desiredScrollY = state.yScrollDp.use()
+        var currentScrollX = state.xScrollDp.use()
+        var currentScrollY = state.yScrollDp.use()
+        var desiredScrollX = state.xScrollDpDesired.use()
+        var desiredScrollY = state.yScrollDpDesired.use()
 
         if (parent != null) {
-            state.contentSizeDp.set(contentWidth, contentHeight).scale(1f / surface.measuredScale)
-            state.viewSizeDp.set(parent.clippedMaxX - parent.clippedMinX, parent.clippedMaxY - parent.clippedMinY)
-                .scale(1f / surface.measuredScale)
+            state.viewSizeDp.set(parent.widthPx, parent.heightPx).scale(1f / surface.measuredScale)
+            state.contentSizeDp.set(contentWidthPx, contentHeightPx).scale(1f / surface.measuredScale)
 
+            // clamp scroll positions to  content size
             if (!modifier.allowOverscrollX) {
+                if (currentScrollX + state.viewSizeDp.x > state.contentSizeDp.x) {
+                    currentScrollX = state.contentSizeDp.x - state.viewSizeDp.x
+                }
                 if (desiredScrollX + state.viewSizeDp.x > state.contentSizeDp.x) {
                     desiredScrollX = state.contentSizeDp.x - state.viewSizeDp.x
                 }
-                state.xScrollDp.set(max(0f, desiredScrollX))
+                state.xScrollDp.set(max(0f, currentScrollX))
+                state.xScrollDpDesired.set(max(0f, desiredScrollX))
             }
             if (!modifier.allowOverscrollY) {
+                if (currentScrollY + state.viewSizeDp.y > state.contentSizeDp.y) {
+                    currentScrollY = state.contentSizeDp.y - state.viewSizeDp.y
+                }
                 if (desiredScrollY + state.viewSizeDp.y > state.contentSizeDp.y) {
                     desiredScrollY = state.contentSizeDp.y - state.viewSizeDp.y
                 }
-                state.yScrollDp.set(max(0f, desiredScrollY))
+                state.yScrollDp.set(max(0f, currentScrollY))
+                state.yScrollDpDesired.set(max(0f, desiredScrollY))
             }
         }
 
+        state.xScrollDp.set(state.computeSmoothScrollPosDpX(surface.deltaT))
+        state.yScrollDp.set(state.computeSmoothScrollPosDpY(surface.deltaT))
         if (state.xScrollDp.isStateChanged || state.yScrollDp.isStateChanged) {
             modifier.onScrollPosChanged?.invoke(state.xScrollDp.value, state.yScrollDp.value)
         }

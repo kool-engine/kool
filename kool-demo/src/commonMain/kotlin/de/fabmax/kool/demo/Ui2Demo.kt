@@ -30,6 +30,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         // todo
         //  theming (colors, fonts, sizes)
+        //  z-layers (determine draw order)
         //  smooth scroll, elastic overscroll
         //  icons + images
         //  keyboard input
@@ -40,7 +41,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  input context stack
         //  animations
         //  custom drawing / canvas?
-        //  z-layers (determine draw order)
 
         // most likely not
         //  smart update: only update nodes which actually changed (might not work with shared meshes)
@@ -53,7 +53,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
-        for (i in 1..50) {
+        for (i in 1..500) {
             listItems += "Item ${nextItem++}"
         }
 
@@ -123,7 +123,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 scrollbarColor = Color.BLACK.withAlpha(0.5f),
                 containerModifier = { it.margin(8.dp) }
             ) {
-                var loopCnt = 0
+//                var loopCnt = 0
                 items(listItems) { item ->
                     val isHovered = item == hoveredListItem.use()
                     val bgColor = when {
@@ -148,10 +148,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                                     }
                                 }
                         }
-                        Text("Loop Item: ${loopCnt++}") {
-                            modifier
-                                .background(RectBackground(Color.GRAY))
-                        }
+//                        Text("Loop Item: ${loopCnt++}") { }
                     }
                 }
             }

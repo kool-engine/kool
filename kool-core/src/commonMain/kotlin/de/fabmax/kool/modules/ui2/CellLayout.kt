@@ -19,14 +19,14 @@ object CellLayout : Layout {
             for (i in children.indices) {
                 val child = children[i]
                 if (isDynamicWidth) {
-                    val pStart = max(paddingStart, child.marginStart)
-                    val pEnd = max(paddingEnd, child.marginEnd)
-                    measuredWidth = max(measuredWidth, child.contentWidth + pStart + pEnd)
+                    val pStart = max(paddingStartPx, child.marginStartPx)
+                    val pEnd = max(paddingEndPx, child.marginEndPx)
+                    measuredWidth = max(measuredWidth, child.contentWidthPx + pStart + pEnd)
                 }
                 if (isDynamicHeight) {
-                    val pTop = max(paddingTop, child.marginTop)
-                    val pBottom = max(paddingBottom, child.marginBottom)
-                    measuredHeight = max(measuredHeight, child.contentHeight + pTop + pBottom)
+                    val pTop = max(paddingTopPx, child.marginTopPx)
+                    val pBottom = max(paddingBottomPx, child.marginBottomPx)
+                    measuredHeight = max(measuredHeight, child.contentHeightPx + pTop + pBottom)
                 }
             }
         }
@@ -38,24 +38,24 @@ object CellLayout : Layout {
             children.forEach { child ->
                 val childWidth = when (val w = child.modifier.width) {
                     is Dp -> w.px
-                    is Grow -> width - max(paddingStart, child.marginStart) - max(paddingEnd, child.marginEnd)
-                    WrapContent -> child.contentWidth
+                    is Grow -> widthPx - max(paddingStartPx, child.marginStartPx) - max(paddingEndPx, child.marginEndPx)
+                    WrapContent -> child.contentWidthPx
                 }
                 val childHeight = when (val h = child.modifier.height) {
                     is Dp -> h.px
-                    is Grow -> height - max(paddingTop, child.marginTop) - max(paddingBottom, child.marginBottom)
-                    WrapContent -> child.contentHeight
+                    is Grow -> heightPx - max(paddingTopPx, child.marginTopPx) - max(paddingBottomPx, child.marginBottomPx)
+                    WrapContent -> child.contentHeightPx
                 }
 
-                val childX = minX + when (child.modifier.alignX) {
-                    AlignmentX.Start -> max(paddingStart, child.marginStart)
-                    AlignmentX.Center -> (width - childWidth) * 0.5f
-                    AlignmentX.End -> width - childWidth - max(paddingEnd, child.marginEnd)
+                val childX = leftPx + when (child.modifier.alignX) {
+                    AlignmentX.Start -> max(paddingStartPx, child.marginStartPx)
+                    AlignmentX.Center -> (widthPx - childWidth) * 0.5f
+                    AlignmentX.End -> widthPx - childWidth - max(paddingEndPx, child.marginEndPx)
                 }
-                val childY = minY + when (child.modifier.alignY) {
-                    AlignmentY.Top -> max(paddingTop, child.marginTop)
-                    AlignmentY.Center -> (height - childHeight) * 0.5f
-                    AlignmentY.Bottom -> height - childHeight - max(paddingBottom, child.marginBottom)
+                val childY = topPx + when (child.modifier.alignY) {
+                    AlignmentY.Top -> max(paddingTopPx, child.marginTopPx)
+                    AlignmentY.Center -> (heightPx - childHeight) * 0.5f
+                    AlignmentY.Bottom -> heightPx - childHeight - max(paddingBottomPx, child.marginBottomPx)
                 }
 
                 child.setBounds(round(childX), round(childY), round(childX + childWidth), round(childY + childHeight))
