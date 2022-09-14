@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.Color
 import kotlin.reflect.KProperty
 
 open class UiModifier {
@@ -11,7 +10,8 @@ open class UiModifier {
     var width: Dimension by property(WrapContent)
     var height: Dimension by property(WrapContent)
     var layout: Layout by property(CellLayout)
-    var background: Color? by property(null)
+    var background: UiRenderer<UiNode>? by property(null)
+    var border: UiRenderer<UiNode>? by property(null)
 
     var paddingStart: Dp by property(Dp.ZERO)
     var paddingEnd: Dp by property(Dp.ZERO)
@@ -86,7 +86,8 @@ open class UiModifier {
 fun <T: UiModifier> T.width(width: Dimension): T { this.width = width; return this }
 fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; return this }
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
-fun <T: UiModifier> T.background(color: Color?): T { background = color; return this }
+fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
+fun <T: UiModifier> T.background(background: UiRenderer<UiNode>?): T { this.background = background; return this }
 
 fun <T: UiModifier> T.padding(all: Dp): T {
     paddingStart = all

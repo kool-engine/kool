@@ -140,7 +140,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         barMaxY = origin.y + size.y
 
         // draw scrollbar
-        surface.defaultPrimitives.addRoundRect(minX + origin.x, minY + origin.y, size.x, size.y, radius, modifier.barColor, clipBounds)
+        surface.defaultPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, modifier.barColor)
     }
 
     fun onDragStart(ev: PointerEvent) {

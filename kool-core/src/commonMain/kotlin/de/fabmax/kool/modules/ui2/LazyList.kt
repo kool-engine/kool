@@ -49,7 +49,7 @@ fun UiScope.LazyList(
     height: Dimension = Grow(),
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = false,
-    backgroundColor: Color? = null,
+    background: UiRenderer<UiNode>? = null,
     scrollbarColor: Color? = null,
     containerModifier: ((UiModifier) -> Unit)? = null,
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
@@ -61,7 +61,7 @@ fun UiScope.LazyList(
         state,
         width, height,
         withVerticalScrollbar, withHorizontalScrollbar,
-        backgroundColor, scrollbarColor,
+        background, scrollbarColor,
         containerModifier, vScrollbarModifier, hScrollbarModifier
     ) {
         scrollPaneModifier?.let { it(modifier) }

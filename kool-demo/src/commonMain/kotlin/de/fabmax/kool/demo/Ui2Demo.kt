@@ -30,13 +30,13 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         // todo
         //  theming (colors, fonts, sizes)
-        //  customizable renderers
-        //  borders
+        //  smooth scroll, elastic overscroll
         //  icons + images
         //  keyboard input
         //  focus
         //  clipboard
-        //  more ui elements: button, slider, checkbox, switch, radiobutton
+        //  more ui elements: button, slider, checkbox, switch, radiobutton, combo-box
+        //  popup menus, tooltips
         //  input context stack
         //  animations
         //  custom drawing / canvas?
@@ -78,11 +78,11 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 .padding(8.dp)
                 .layout(ColumnLayout)
                 .alignX(AlignmentX.Start)
-                .background(MdColor.PINK.withAlpha(0.3f))
+                .background(RectBackground(MdColor.PINK.withAlpha(0.3f)))
 
             Text("Some static text, clicked: ${clickCnt.use()}") {
                 modifier
-                    .background(buttonBgColor.use())
+                    .background(RectBackground(buttonBgColor.use()))
                     .margin(8.dp)
                     .padding(4.dp)
                     .onClick { clickCnt.value += 1 }
@@ -93,7 +93,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             ScrollArea(
                 scrollState,
                 height = 200.dp,
-                backgroundColor = MdColor.LIME,
+                background = RectBackground(MdColor.LIME),
                 scrollbarColor = Color.BLACK.withAlpha(0.5f)
             ) {
                 Column {
@@ -103,13 +103,15 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         modifier
                             .width(300.dp)
                             .margin(2.dp)
-                            .background(MdColor.LIGHT_GREEN)
+                            .background(RectBackground(MdColor.LIGHT_GREEN))
                     }
                     Text("Another text with a lot of height") {
                         modifier
                             .height(300.dp)
                             .margin(2.dp)
-                            .background(MdColor.LIGHT_GREEN)
+                            .padding(20.dp)
+                            .border(RoundRectBorder(Color.RED, 6.dp, 14.dp, 2.dp))
+                            .background(RoundRectBackground(MdColor.LIGHT_GREEN, 20.dp))
                     }
                 }
             }
@@ -117,7 +119,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             LazyList(
                 listState,
                 height = 400.dp,
-                backgroundColor = MdColor.YELLOW,
+                background = RectBackground(MdColor.YELLOW),
                 scrollbarColor = Color.BLACK.withAlpha(0.5f),
                 containerModifier = { it.margin(8.dp) }
             ) {
@@ -134,7 +136,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         modifier.margin(8.dp)
                         Text(item) {
                             modifier
-                                .background(bgColor)
+                                .background(RectBackground(bgColor))
                                 .margin(end =  8.dp)
                                 .onEnter { hoveredListItem.set(item) }
                                 .onExit { hoveredListItem.set(null) }
@@ -148,7 +150,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                         }
                         Text("Loop Item: ${loopCnt++}") {
                             modifier
-                                .background(Color.GRAY)
+                                .background(RectBackground(Color.GRAY))
                         }
                     }
                 }
@@ -161,7 +163,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .textAlignY(AlignmentY.Center)
                     .width(100.dp)
                     .height(Grow(0.3f))
-                    .background(MdColor.AMBER)
+                    .background(RectBackground(MdColor.AMBER))
                     .margin(8.dp)
             }
             Text("Yet another text") {
@@ -170,7 +172,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                     .height(32.dp)
                     .textAlignX(AlignmentX.End)
                     .textAlignY(AlignmentY.Bottom)
-                    .background(MdColor.PURPLE)
+                    .background(RectBackground(MdColor.PURPLE))
                     .margin(8.dp)
             }
         }

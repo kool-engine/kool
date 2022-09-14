@@ -85,9 +85,8 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     }
 
     open fun render(ctx: KoolContext) {
-        modifier.background?.let {
-            surface.defaultPrimitives.addRect(minX, minY, width, height, it, clipBounds)
-        }
+        modifier.background?.renderUi(this)
+        modifier.border?.renderUi(this)
     }
 
     open fun measureContentSize(ctx: KoolContext) {
@@ -138,5 +137,37 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
 
         this.vertexModFun = prevMod
         this.color = prevColor
+    }
+
+    fun UiPrimitiveMesh.localRect(x: Float, y: Float, width: Float, height: Float, color: Color) {
+        rect(minX + x, minY + y, width, height, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localRoundRect(x: Float, y: Float, width: Float, height: Float, radius: Float, color: Color) {
+        roundRect(minX + x, minY + y, width, height, radius, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localCircle(x: Float, y: Float, radius: Float, color: Color) {
+        circle(minX + x, minY + y, radius, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localOval(x: Float, y: Float, xRadius: Float, yRadius: Float, color: Color) {
+        oval(minX + x, minY + y, xRadius, yRadius, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localRectBorder(x: Float, y: Float, width: Float, height: Float, borderWidth: Float, color: Color) {
+        rectBorder(minX + x, minY + y, width, height, borderWidth, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localRoundRectBorder(x: Float, y: Float, width: Float, height: Float, radius: Float, borderWidth: Float, color: Color) {
+        roundRectBorder(minX + x, minY + y, width, height, radius, borderWidth, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localCircleBorder(x: Float, y: Float, radius: Float, borderWidth: Float, color: Color) {
+        circleBorder(minX + x, minY + y, radius, borderWidth, color, clipBounds)
+    }
+
+    fun UiPrimitiveMesh.localOvalBorder(x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float, color: Color) {
+        ovalBorder(minX + x, minY + y, xRadius, yRadius, borderWidth, color, clipBounds)
     }
 }

@@ -8,7 +8,7 @@ fun UiScope.ScrollArea(
     height: Dimension = Grow(),
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = true,
-    backgroundColor: Color? = null,
+    background: UiRenderer<UiNode>? = null,
     scrollbarColor: Color? = null,
     containerModifier: ((UiModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
@@ -19,7 +19,7 @@ fun UiScope.ScrollArea(
         modifier
             .width(width)
             .height(height)
-            .background(backgroundColor)
+            .background(background)
             .onWheelX { state.xScrollClamped(it.pointer.deltaScrollX.toFloat() * -10f) }
             .onWheelY { state.yScrollClamped(it.pointer.deltaScrollY.toFloat() * -20f) }
         containerModifier?.invoke(modifier)
