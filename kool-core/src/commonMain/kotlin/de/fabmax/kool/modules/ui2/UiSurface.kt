@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.Font
 import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.TreeMap
 import de.fabmax.kool.util.logD
 
 class UiSurface(
@@ -16,14 +17,15 @@ class UiSurface(
     private val uiBlock: UiScope.() -> Unit
 ) : Group(name) {
 
-    val defaultPrimitives = UiPrimitiveMesh()
-    private val textMeshes = mutableMapOf<FontProps, TextMesh>()
+    private val meshLayers = TreeMap<Int, MeshLayer>()
 
     private val inputHandler = InputHandler()
     private val viewportWidth = mutableStateOf(0f)
     private val viewportHeight = mutableStateOf(0f)
     private val viewport = BoxNode(null, this).apply { modifier.layout(CellLayout) }
     private val content = viewport.createChild(RootCell::class) { _, _ -> RootCell() }
+
+    internal var nodeIndex = 0
 
     private val registeredState = mutableListOf<MutableState>()
     var requiresUpdate: Boolean = true
@@ -40,7 +42,6 @@ class UiSurface(
     var colors: Colors by colorsState::value
 
     init {
-        this += defaultPrimitives
         // mirror y-axis
         scale(1f, -1f, 1f)
         onUpdate += {
@@ -58,31 +59,42 @@ class UiSurface(
 
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
         val pt = PerfTimer()
+        nodeIndex = 0
         registeredState.forEach { it.clearUsage() }
         registeredState.clear()
-        textMeshes.values.forEach { it.clear() }
-        defaultPrimitives.instances?.clear()
+        meshLayers.values.forEach {
+            it.clear()
+            removeNode(it)
+        }
         val prep = pt.takeMs().also { pt.reset() }
 
         measuredScale = updateEvent.ctx.windowScale
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
         content.reset()
         content.uiBlock()
-        val build = pt.takeMs().also { pt.reset() }
+        val compose = pt.takeMs().also { pt.reset() }
 
         measureUiNodeContent(viewport, updateEvent.ctx)
         val measure = pt.takeMs().also { pt.reset() }
         layoutUiNodeChildren(viewport, updateEvent.ctx)
         val layout = pt.takeMs().also { pt.reset() }
-        if (content.isInBounds) {
+        if (content.isInClip) {
             renderUiNode(content, updateEvent.ctx)
         }
+
+        // re-add mesh layers in correct order
+        meshLayers.values.forEach {
+            if (it.isUsed) {
+                +it
+            }
+        }
+
         val render = pt.takeMs().also { pt.reset() }
         logD { "UI update: prep: ${(prep * 1000).toInt()} us, " +
-                "build: ${(build * 1000).toInt()} us, " +
+                "compose: ${(compose * 1000).toInt()} us, " +
                 "measure: ${(measure * 1000).toInt()} us, " +
                 "layout: ${(layout * 1000).toInt()} us, " +
-                "render: ${(render * 1000).toInt()} us, " }
+                "render: ${(render * 1000).toInt()} us" }
     }
 
     fun registerState(state: MutableState) {
@@ -93,10 +105,18 @@ class UiSurface(
         requiresUpdate = true
     }
 
-    fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
-        val textMesh =  textMeshes.getOrPut(font.fontProps) { TextMesh(font, ctx).also { this += it.mesh } }
-        textMesh.used = true
-        return textMesh.builder
+    fun getMeshLayer(layer: Int): MeshLayer {
+        val meshLayer = meshLayers[layer] ?: MeshLayer().also { meshLayers[layer] = it }
+        meshLayer.isUsed = true
+        return meshLayer
+    }
+
+    fun getUiPrimitives(layer: Int = LAYER_DEFAULT): UiPrimitiveMesh {
+        return getMeshLayer(layer).uiPrimitives
+    }
+
+    fun getTextBuilder(font: Font, ctx: KoolContext, layer: Int = LAYER_DEFAULT): MeshBuilder {
+        return getMeshLayer(layer).getTextBuilder(font, ctx)
     }
 
     private fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
@@ -109,7 +129,7 @@ class UiSurface(
     private fun layoutUiNodeChildren(node: UiNode, ctx: KoolContext) {
         node.layoutChildren(ctx)
         for (i in node.children.indices) {
-            if (node.children[i].isInBounds) {
+            if (node.children[i].isInClip) {
                 layoutUiNodeChildren(node.children[i], ctx)
             }
         }
@@ -118,7 +138,7 @@ class UiSurface(
     private fun renderUiNode(node: UiNode, ctx: KoolContext) {
         node.render(ctx)
         for (i in node.children.indices) {
-            if (node.children[i].isInBounds) {
+            if (node.children[i].isInClip) {
                 renderUiNode(node.children[i], ctx)
             }
         }
@@ -193,10 +213,14 @@ class UiSurface(
                 // onPointer is called for any node below pointer position
                 invokePointerCallback(node, ptrEv, mod.onPointer)
 
-                if (hoveredNode == null && mod.hasAnyHoverCallback && invokePointerCallback(node, ptrEv, mod.onEnter, true)) {
-                    // no node was hovered before (or we just exited it) and we found a new one which has hover
-                    // callbacks installed -> select it as new hovered node
-                    hoveredNode = node
+                // check for new hover bodes
+                if (mod.hasAnyHoverCallback && node.nodeIndex > (hoveredNode?.nodeIndex ?: -1)) {
+                    // stop hovering of previous hoveredNode - we found a new one on top of it
+                    hoveredNode?.let { invokePointerCallback(it, ptrEv, it.modifier.onExit) }
+                    // start hovering new node
+                    if (invokePointerCallback(node, ptrEv, mod.onEnter, true)) {
+                        hoveredNode = node
+                    }
                 }
 
                 if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
@@ -248,20 +272,17 @@ class UiSurface(
             if (isInClip(x, y)) {
                 traverseChildren(this, x, y, result, predicate)
             }
-            if (result.size > 1) {
-                result.sortBy { -it.layer }
-            }
         }
 
         private fun traverseChildren(node: UiNode, x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {
+            if (predicate(node)) {
+                result += node
+            }
             for (i in node.children.indices) {
                 val child = node.children[i]
                 if (child.isInClip(x, y)) {
                     traverseChildren(child, x, y, result, predicate)
                 }
-            }
-            if (predicate(node)) {
-                result += node
             }
         }
 
@@ -276,7 +297,7 @@ class UiSurface(
         }
 
         val builder = MeshBuilder(mesh.geometry)
-        var used = false
+        var isUsed = false
 
         init {
             builder.setupUiBuilder()
@@ -284,11 +305,37 @@ class UiSurface(
 
         fun clear() {
             mesh.geometry.clear()
-            used = false
+            isUsed = false
+        }
+    }
+
+    inner class MeshLayer : Group() {
+        val uiPrimitives = UiPrimitiveMesh()
+        private val textMeshes = mutableMapOf<FontProps, TextMesh>()
+
+        var isUsed = false
+
+        init {
+            +uiPrimitives
+        }
+
+        fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
+            val textMesh =  textMeshes.getOrPut(font.fontProps) { TextMesh(font, ctx).also { this += it.mesh } }
+            textMesh.isUsed = true
+            return textMesh.builder
+        }
+
+        fun clear() {
+            textMeshes.values.forEach { it.clear() }
+            uiPrimitives.instances?.clear()
+            isUsed = false
         }
     }
 
     companion object {
+        const val LAYER_DEFAULT = 0
+        const val LAYER_FLOATING = 1000
+
         fun MeshBuilder.setupUiBuilder() {
             invertFaceOrientation = true
         }

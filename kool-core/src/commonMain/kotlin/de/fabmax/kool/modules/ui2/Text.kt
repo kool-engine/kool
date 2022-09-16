@@ -42,13 +42,11 @@ inline fun UiScope.Text(text: String = "", block: TextScope.() -> Unit): TextSco
 class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), TextScope {
     override val modifier = TextModifier()
 
-    private val textMetrics = TextMetrics()
     private val textProps = TextProps(modifier.font)
     private val textCache = CachedTextGeometry()
 
     override fun measureContentSize(ctx: KoolContext) {
-        modifier.font.textDimensions(modifier.text, ctx, textMetrics)
-
+        val textMetrics = textCache.getTextMetrics(modifier.text, modifier.font, ctx)
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {
@@ -61,7 +59,6 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
         } else {
             textMetrics.height + paddingTopPx + paddingBottomPx
         }
-
         setContentSize(measuredWidth, measuredHeight)
     }
 
@@ -72,6 +69,7 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
             font = modifier.font
             isYAxisUp = false
             text = modifier.text
+            val textMetrics = textCache.textMetrics
             val oriX = when (modifier.textAlignX) {
                 AlignmentX.Start -> paddingStartPx
                 AlignmentX.Center -> (widthPx - textMetrics.width) / 2f
@@ -103,6 +101,20 @@ class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), T
         private val posOffset = cacheData.attributeByteOffsets[Attribute.POSITIONS]!! / 4
         private val colorOffset = cacheData.attributeByteOffsets[Attribute.COLORS]!! / 4
         private val clipOffset = cacheData.attributeByteOffsets[Ui2Shader.ATTRIB_CLIP]!! / 4
+
+        val textMetrics = TextMetrics()
+        private var metricsText: String? = null
+        private var metricsFont: Font? = null
+
+        fun getTextMetrics(text: String, font: Font, ctx: KoolContext): TextMetrics {
+            return if (font === metricsFont && metricsText == text) {
+                textMetrics
+            } else {
+                metricsFont = font
+                metricsText = text
+                font.textDimensions(text, ctx, textMetrics)
+            }
+        }
 
         fun addTextGeometry(target: IndexedVertexList, textProps: TextProps) {
             if (cachedText != textProps.text || cachedFont !== textProps.font) {

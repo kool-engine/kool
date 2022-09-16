@@ -18,14 +18,11 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
-        // - somewhat jetpack compose inspired ui
-        // - is purely functional possible without compiler plugin?
-        // - top element is surface, below that boxes
         // desired features
+        // - [x] somewhat jetpack compose inspired api
         // - [x] traditional ui coord system: top left origin
         // - [x] layout via nested boxes
         // - [x] lazy list for fast update of large scrolling lists
-        //   - [ ] pie menu?
         // - [x] clip content to bounds
         // - [x] scrollable content
         // - [ ] docking
@@ -33,25 +30,23 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] alignment: start, center, end / top, center, bottom
         // - [x] margin / outside gap
         // - [x] padding / inside gap
-        // - [x] arbitrary number of fonts
-        // - [ ] arbitrary number of textures / images
 
         // todo
-        //  z-layers (determine draw order)
+        //  more ui elements: button, text field, slider, checkbox, switch, radiobutton, combo-box
         //  scale-aware fonts
         //  elastic overscroll
         //  icons + images
         //  keyboard input
         //  focus
         //  clipboard
-        //  more ui elements: button, text field, slider, checkbox, switch, radiobutton, combo-box
         //  popup menus, tooltips
         //  input context stack
         //  animations
         //  custom drawing / canvas?
 
-        // most likely not
-        //  smart update: only update nodes which actually changed (might not work with shared meshes)
+        // not for now
+        //  smart update: only update nodes which actually changed (might not work with shared meshes), also not really
+        //  needed because update is fast enough
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
@@ -224,10 +219,11 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 modifier.margin(start = 32.dp)
                 Box {
                     modifier
-                        .width(40.dp)
-                        .height(20.dp)
+                        .margin(start = 2.dp)
+                        .width(36.dp)
+                        .height(16.dp)
                         .alignY(AlignmentY.Center)
-                        .background(RoundRectBackground(trackActive, 10.dp))
+                        .background(RoundRectBackground(trackActive, 8.dp))
                 }
                 Box {
                     modifier

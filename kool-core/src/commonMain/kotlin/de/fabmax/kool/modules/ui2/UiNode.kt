@@ -15,7 +15,8 @@ import kotlin.reflect.KClass
 abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : UiScope {
     override val uiNode: UiNode get() = this
 
-    val layer: Int = parent?.let { it.layer + 1 } ?: 0
+    var nodeIndex = 0
+        private set
 
     private val oldChildren = mutableListOf<UiNode>()
     private val mutChildren = mutableListOf<UiNode>()
@@ -42,7 +43,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val clipTopPx: Float get() = clipBoundsPx.y
     val clipRightPx: Float get() = clipBoundsPx.z
     val clipBottomPx: Float get() = clipBoundsPx.w
-    val isInBounds: Boolean get() = clipRightPx - clipLeftPx > 0.5f && clipBottomPx - clipTopPx > 0.5f
+    val isInClip: Boolean get() = clipRightPx - clipLeftPx > 0.5f && clipBottomPx - clipTopPx > 0.5f
 
     val paddingStartPx: Float get() = modifier.paddingStart.px
     val paddingEndPx: Float get() = modifier.paddingEnd.px
@@ -109,6 +110,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     }
 
     protected open fun resetDefaults() {
+        nodeIndex = surface.nodeIndex++
         oldChildren.clear()
         for (i in mutChildren.lastIndex downTo 0) {
             oldChildren += mutChildren[i]

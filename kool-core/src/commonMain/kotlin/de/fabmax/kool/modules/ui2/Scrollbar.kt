@@ -118,7 +118,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
 
     override fun resetDefaults() {
         super.resetDefaults()
-        modifier.barColor = colors.secondary.withAlpha(0.3f)
+        modifier.barColor = colors.secondary.withAlpha(0.5f)
         modifier.barColorHovered = colors.secondary
     }
 
@@ -162,10 +162,12 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
             modifier.barColorHovered?.let { barColor = it }
             modifier.trackColorHovered?.let { trackColor = it }
         }
+
+        val uiPrimitives = surface.getUiPrimitives(UiSurface.LAYER_FLOATING)
         if (trackColor != null) {
-            surface.defaultPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
+            uiPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
         }
-        surface.defaultPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, barColor)
+        uiPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, barColor)
     }
 
     private fun isPointerHovering(ev: PointerEvent): Boolean {

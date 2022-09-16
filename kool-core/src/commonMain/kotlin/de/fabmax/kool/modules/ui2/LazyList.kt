@@ -114,9 +114,10 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
                 state.computeSmoothScrollPosDpX(surface.deltaT)
             }
             val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x
+            val numViewItems = (viewSize / elemSize).toInt() + modifier.extraItemsAfter
 
-            state.itemsFrom = max(0, (listPos / elemSize).toInt() - modifier.extraItemsBefore)
-            state.itemsTo = min(items.lastIndex, (state.itemsFrom + viewSize / elemSize).toInt() + modifier.extraItemsAfter)
+            state.itemsFrom = min(items.size - numViewItems, max(0, (listPos / elemSize).toInt() - modifier.extraItemsBefore))
+            state.itemsTo = min(items.lastIndex, state.itemsFrom + numViewItems)
 
             state.spaceBeforeVisibleItems = state.itemsFrom * elemSize
             state.spaceAfterVisibleItems = (items.lastIndex - state.itemsTo) * elemSize
