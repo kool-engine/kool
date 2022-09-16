@@ -1,9 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.logW
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -123,16 +121,6 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     override val modifier = ScrollPaneModifier()
 
     lateinit var state: ScrollState
-
-    private var complainedAboutSize = false
-
-    override fun measureContentSize(ctx: KoolContext) {
-        if ((modifier.width !== WrapContent || modifier.height !== WrapContent) && !complainedAboutSize) {
-            complainedAboutSize = true
-            logW { "ScrollPane width / height should be set to WrapContent for scrolling to work as expected" }
-        }
-        super.measureContentSize(ctx)
-    }
 
     override fun setBounds(minX: Float, minY: Float, maxX: Float, maxY: Float) {
         updateScrollPos()

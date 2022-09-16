@@ -9,6 +9,8 @@ interface UiScope {
     val uiNode: UiNode
     val modifier: UiModifier
 
+    val colors: Colors get() = surface.colors
+
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
     val Dp.px: Float get() = value * surface.measuredScale

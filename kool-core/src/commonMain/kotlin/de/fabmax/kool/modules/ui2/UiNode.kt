@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -57,8 +58,18 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
     }
 
-    fun toLocal(screenX: Double, screenY: Double) = Vec2f(screenX.toFloat() - leftPx, screenY.toFloat() - topPx)
-    fun toLocal(screenX: Float, screenY: Float) = Vec2f(screenX - leftPx, screenY - topPx)
+    fun toLocal(screenX: Double, screenY: Double, result: MutableVec2f = MutableVec2f()): MutableVec2f =
+        result.set(screenX.toFloat() - leftPx, screenY.toFloat() - topPx)
+    fun toLocal(screenX: Float, screenY: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f =
+        result.set(screenX - leftPx, screenY - topPx)
+
+    fun isInBounds(point: Vec2f): Boolean {
+        return point.x in leftPx..rightPx && point.y in topPx..bottomPx
+    }
+
+    fun isInClipBounds(point: Vec2f): Boolean {
+        return point.x in clipLeftPx..clipRightPx && point.y in clipTopPx..clipBottomPx
+    }
 
     open fun setContentSize(width: Float, height: Float) {
         contentWidthPx = width

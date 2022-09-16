@@ -24,7 +24,7 @@ inline fun UiScope.ReverseRow(
     block: UiScope.() -> Unit
 ) = Box(ReverseRowLayout, width, height, block)
 
-inline fun UiScope.Cell(
+inline fun UiScope.Box(
     width: Dimension = WrapContent,
     height: Dimension = WrapContent,
     block: UiScope.() -> Unit

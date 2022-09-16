@@ -8,6 +8,14 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class Ui2Demo : DemoScene("UI2 Demo") {
+    private val themeColors = Colors.darkColors()
+
+    private val clickCnt = mutableStateOf(0)
+    private val scrollState = ScrollState()
+    private val listState = LazyListState()
+    private val buttonBgColor = mutableStateOf(themeColors.primaryVariant)
+    private val hoveredListItem = mutableStateOf<String?>(null)
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
         // - somewhat jetpack compose inspired ui
@@ -29,14 +37,14 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [ ] arbitrary number of textures / images
 
         // todo
-        //  theming (colors, fonts, sizes)
         //  z-layers (determine draw order)
-        //  smooth scroll, elastic overscroll
+        //  scale-aware fonts
+        //  elastic overscroll
         //  icons + images
         //  keyboard input
         //  focus
         //  clipboard
-        //  more ui elements: button, slider, checkbox, switch, radiobutton, combo-box
+        //  more ui elements: button, text field, slider, checkbox, switch, radiobutton, combo-box
         //  popup menus, tooltips
         //  input context stack
         //  animations
@@ -44,12 +52,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         // most likely not
         //  smart update: only update nodes which actually changed (might not work with shared meshes)
-
-        val clickCnt = mutableStateOf(0)
-        val scrollState = ScrollState()
-        val listState = LazyListState()
-        val buttonBgColor = mutableStateOf(MdColor.LIGHT_BLUE)
-        val hoveredListItem = mutableStateOf<String?>(null)
 
         val listItems = mutableListStateOf<String>()
         var nextItem = 1
@@ -70,107 +72,171 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             guiCam.bottom = -it.renderPass.viewport.height.toFloat()
         }
 
-        +UiSurface {
+        +UiSurface(themeColors) {
             modifier
-                .width(200.dp)
-                .height(Grow())
-                .margin(start = 300.dp)
+                .width(500.dp)
+                .height(WrapContent)
+                .margin(top = 100.dp, bottom = 100.dp)
                 .padding(8.dp)
                 .layout(ColumnLayout)
-                .alignX(AlignmentX.Start)
-                .background(RectBackground(MdColor.PINK.withAlpha(0.3f)))
+                .alignX(AlignmentX.Center)
+                .alignY(AlignmentY.Center)
 
-            Text("Some static text, clicked: ${clickCnt.use()}") {
-                modifier
-                    .background(RectBackground(buttonBgColor.use()))
-                    .margin(8.dp)
-                    .padding(4.dp)
-                    .onClick { clickCnt.value += 1 }
-                    .onEnter { buttonBgColor.set(MdColor.PINK) }
-                    .onExit { buttonBgColor.set(MdColor.LIGHT_BLUE) }
-            }
+            TestContent(listItems)
 
-            ScrollArea(
-                scrollState,
-                height = 200.dp,
-                background = RectBackground(MdColor.LIME),
-                scrollbarColor = Color.BLACK.withAlpha(0.5f)
-            ) {
-                Column {
-                    modifier.margin(0.dp)
+//            Column {
+//                modifier.width(Grow())
+//                Text("Hallo Welt") {
+//                    modifier.width(Grow()).background(Color.RED)
+//                }
+//            }
+        }
+    }
 
-                    Text("Text with two lines:\nThe second line is a little longer than the first one") {
-                        modifier
-                            .width(300.dp)
-                            .margin(2.dp)
-                            .background(RectBackground(MdColor.LIGHT_GREEN))
-                    }
-                    Text("Another text with a lot of height") {
-                        modifier
-                            .height(300.dp)
-                            .margin(2.dp)
-                            .padding(20.dp)
-                            .border(RoundRectBorder(Color.RED, 6.dp, 14.dp, 2.dp))
-                            .background(RoundRectBackground(MdColor.LIGHT_GREEN, 20.dp))
-                    }
+    fun UiScope.TestContent(listItems: MutableList<String>) {
+        Text("Some static text, clicked: ${clickCnt.use()}") {
+            modifier
+                .background(RectBackground(buttonBgColor.use()))
+                .margin(8.dp)
+                .padding(4.dp)
+                .onClick { clickCnt.value += 1 }
+                .onEnter { buttonBgColor.set(colors.primary) }
+                .onExit { buttonBgColor.set(colors.primaryVariant) }
+                .foreground(colors.onPrimary)
+        }
+
+        ScrollArea(scrollState, height = 200.dp) {
+            Column {
+                modifier.margin(0.dp)
+
+                Text("Text with two lines:\nThe second line is a little longer than the first one") {
+                    modifier
+                        .width(300.dp)
+                        .margin(2.dp)
                 }
-            }
-
-            LazyList(
-                listState,
-                height = 400.dp,
-                background = RectBackground(MdColor.YELLOW),
-                scrollbarColor = Color.BLACK.withAlpha(0.5f),
-                containerModifier = { it.margin(8.dp) }
-            ) {
-//                var loopCnt = 0
-                items(listItems) { item ->
-                    val isHovered = item == hoveredListItem.use()
-                    val bgColor = when {
-                        isHovered && item == "Item 17" -> MdColor.GREEN
-                        isHovered -> MdColor.RED
-                        !isHovered && item == "Item 17" -> MdColor.GREEN tone 200
-                        else -> MdColor.RED tone 200
-                    }
-                    Row {
-                        modifier.margin(8.dp)
-                        Text(item) {
+                Row {
+                    for (i in 1..5) {
+                        Text("Another text no. $i with a lot of height") {
                             modifier
-                                .background(RectBackground(bgColor))
-                                .margin(end =  8.dp)
-                                .onEnter { hoveredListItem.set(item) }
-                                .onExit { hoveredListItem.set(null) }
-                                .onClick {
-                                    if (item == "Item 17") {
-                                        listItems += "Item ${nextItem++}"
-                                    } else {
-                                        listItems.remove(item)
-                                    }
-                                }
+                                .height(300.dp)
+                                .margin(2.dp)
+                                .padding(20.dp)
+                                .border(RoundRectBorder(colors.primary, 14.dp, 2.dp, 6.dp))
                         }
-//                        Text("Loop Item: ${loopCnt++}") { }
                     }
                 }
             }
+        }
 
-            Text("Lorem ipsum") {
-                modifier
-                    .alignX(AlignmentX.End)
-                    .textAlignX(AlignmentX.Start)
-                    .textAlignY(AlignmentY.Center)
-                    .width(100.dp)
-                    .height(Grow(0.3f))
-                    .background(RectBackground(MdColor.AMBER))
-                    .margin(8.dp)
+        LazyList(
+            listState,
+            height = 400.dp,
+            containerModifier = {
+                it.margin(top = 16.dp)
+            },
+            vScrollbarModifier = {
+                //it.trackColor = colors.secondaryVariant.withAlpha(0.15f)
+                it.trackColorHovered = colors.secondaryVariant.withAlpha(0.1f)
             }
-            Text("Yet another text") {
-                modifier
-                    .width(Grow())
-                    .height(32.dp)
-                    .textAlignX(AlignmentX.End)
-                    .textAlignY(AlignmentY.Bottom)
-                    .background(RectBackground(MdColor.PURPLE))
-                    .margin(8.dp)
+        ) {
+            itemsIndexed(listItems) { i, item ->
+                val isHovered = item == hoveredListItem.use()
+                val itemColor = when (item) {
+                    "Item 17" -> MdColor.GREEN tone 200
+                    else -> MdColor.RED tone 200
+                }
+                val bgColor = if (isHovered) {
+                    itemColor
+                } else if (i % 2 == 0) {
+                    MdColor.GREY.withAlpha(0.05f)
+                } else {
+                    null
+                }
+                val textColor = if (isHovered) Color.BLACK else itemColor
+
+                Text(item) {
+                    modifier
+                        .foreground(textColor)
+                        .padding(8.dp)
+                        .width(Grow())
+                        .background(bgColor)
+                        .onHover { hoveredListItem.set(item) }
+                        .onExit { hoveredListItem.set(null) }
+                        .onClick {
+                            if (item == "Item 17") {
+                                listItems += "Item ${listItems.size}"
+                            } else {
+                                listItems.remove(item)
+                            }
+                        }
+                }
+            }
+        }
+
+        val accent1500 = Color.fromHex("FF6F00")
+        val accent1700 = Color.fromHex("7F4519")
+        val accent1900 = Color.fromHex("4C301A")
+
+        val accent2500 = Color.fromHex("197CFF")
+        val accent2700 = Color.fromHex("18467A")
+        val accent2900 = Color.fromHex("1C324F")
+
+        val neutral500 = Color.fromHex("C7D4E5")
+        val neutral700 = Color.fromHex("858B93")
+        val neutral900 = Color.fromHex("505459")
+
+        SwitchDummy(neutral500, neutral700, neutral700, neutral900)
+        SwitchDummy(accent1500, accent1700, accent1700, accent1900)
+        SwitchDummy(accent2500, accent2700, accent2700, accent2900)
+
+        Text("Yet another text") {
+            modifier
+                .width(Grow())
+                .height(32.dp)
+                .textAlignX(AlignmentX.End)
+                .textAlignY(AlignmentY.Bottom)
+                .margin(8.dp)
+        }
+    }
+
+    fun UiScope.SwitchDummy(knobActive: Color, trackActive: Color, knobInactive: Color, trackInactive: Color) {
+        Row {
+            modifier.margin(32.dp)
+            Box {
+                Box {
+                    modifier
+                        .width(40.dp)
+                        .height(20.dp)
+                        .alignY(AlignmentY.Center)
+                        .background(RoundRectBackground(trackInactive, 10.dp))
+                }
+                Box {
+                    modifier
+                        .margin(start = 0.dp)
+                        .width(20.dp)
+                        .height(20.dp)
+                        .alignY(AlignmentY.Center)
+                        .background(RoundRectBackground(knobInactive, 10.dp))
+                }
+            }
+
+            Box {
+                modifier.margin(start = 32.dp)
+                Box {
+                    modifier
+                        .width(40.dp)
+                        .height(20.dp)
+                        .alignY(AlignmentY.Center)
+                        .background(RoundRectBackground(trackActive, 10.dp))
+                }
+                Box {
+                    modifier
+                        .margin(start = 20.dp)
+                        .width(20.dp)
+                        .height(20.dp)
+                        .alignY(AlignmentY.Center)
+                        .background(RoundRectBackground(knobActive, 10.dp))
+                }
             }
         }
     }

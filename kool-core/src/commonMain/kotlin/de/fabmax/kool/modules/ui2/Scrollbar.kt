@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
 import kotlin.math.max
 
 interface ScrollbarScope : UiScope {
@@ -17,9 +16,14 @@ interface ScrollbarScope : UiScope {
 
 open class ScrollbarModifier : UiModifier() {
     var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
-    var barColor: Color by property((MdColor.GREY tone 400).withAlpha(0.5f))
     var minBarSize: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
+
+    // default color value are overridden by theme colors
+    var barColor: Color by property(Color.GRAY)
+    var barColorHovered: Color? by property(null)
+    var trackColor: Color? by property(null)
+    var trackColorHovered: Color? by property(null)
 }
 
 fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
@@ -41,8 +45,13 @@ inline fun UiScope.Scrollbar(
 ) {
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.state = state
+    scrollBar.modifier.onClick = scrollBar::onClick
+    scrollBar.modifier.onEnter = scrollBar::onEnter
+    scrollBar.modifier.onHover = scrollBar::onHover
+    scrollBar.modifier.onExit = scrollBar::onExit
     scrollBar.modifier.onDragStart = scrollBar::onDragStart
     scrollBar.modifier.onDrag = scrollBar::onDrag
+    scrollBar.modifier.onDragEnd = scrollBar::onDragEnd
     scrollBar.block()
 }
 
@@ -52,15 +61,14 @@ inline fun UiScope.VerticalScrollbar(
 ) = Scrollbar(state) {
     modifier
         .orientation(ScrollbarOrientation.Vertical)
-        .width(10.dp)
+        .width(8.dp)
         .height(Grow())
-        .margin(2.dp)
         .alignX(AlignmentX.End)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a horizontal scrollbar
     val horizontalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isHorizontal }
     if (horizontalBar != null) {
-        val horizontalBarHeight = (horizontalBar.modifier.height as? Dp) ?: 12.dp
+        val horizontalBarHeight = (horizontalBar.modifier.height as? Dp) ?: 8.dp
         if (horizontalBar.modifier.alignY == AlignmentY.Bottom) {
             modifier.margin(bottom = horizontalBarHeight)
         } else if (horizontalBar.modifier.alignY == AlignmentY.Top) {
@@ -77,15 +85,14 @@ inline fun UiScope.HorizontalScrollbar(
 ) = Scrollbar(state) {
     modifier
         .orientation(ScrollbarOrientation.Horizontal)
-        .height(10.dp)
+        .height(8.dp)
         .width(Grow())
-        .margin(2.dp)
         .alignY(AlignmentY.Bottom)
 
     // try to be smart: add some margin if parent scope (which hopefully is a cell) already contains a vertical scrollbar
     val verticalBar = uiNode.parent?.children?.find { it is ScrollbarScope && it.isVertical }
     if (verticalBar != null) {
-        val verticalBarWidth = (verticalBar.modifier.width as? Dp) ?: 12.dp
+        val verticalBarWidth = (verticalBar.modifier.width as? Dp) ?: 8.dp
         if (verticalBar.modifier.alignX == AlignmentX.End) {
             modifier.margin(end = verticalBarWidth)
         } else if (verticalBar.modifier.alignX == AlignmentX.Start) {
@@ -100,11 +107,20 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
     override val modifier = ScrollbarModifier()
     lateinit var state: ScrollState
 
+    private val isTrackVisible: Boolean get() = modifier.trackColor != null
+    private var isHovered = mutableStateOf(false)
+
     private val dragHelper = DragHelper()
     private var barMinX = 0f
     private var barMaxX = 0f
     private var barMinY = 0f
     private var barMaxY = 0f
+
+    override fun resetDefaults() {
+        super.resetDefaults()
+        modifier.barColor = colors.secondary.withAlpha(0.3f)
+        modifier.barColorHovered = colors.secondary
+    }
 
     override fun render(ctx: KoolContext) {
         // draw background
@@ -140,12 +156,53 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         barMaxY = origin.y + size.y
 
         // draw scrollbar
-        surface.defaultPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, modifier.barColor)
+        var barColor = modifier.barColor
+        var trackColor = modifier.trackColor
+        if (isHovered.use()) {
+            modifier.barColorHovered?.let { barColor = it }
+            modifier.trackColorHovered?.let { trackColor = it }
+        }
+        if (trackColor != null) {
+            surface.defaultPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
+        }
+        surface.defaultPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, barColor)
+    }
+
+    private fun isPointerHovering(ev: PointerEvent): Boolean {
+        return (isTrackVisible && isInBounds(ev.position)) ||
+                ev.position.x in barMinX..barMaxX && ev.position.y in barMinY..barMaxY
+    }
+
+    fun onClick(ev: PointerEvent) {
+        if (isTrackVisible) {
+            // todo: move scrollbar towards clicked pos
+        } else {
+            ev.reject()
+        }
+    }
+
+    fun onEnter(ev: PointerEvent) {
+        if (isPointerHovering(ev)) {
+            isHovered.set(true)
+        } else {
+            ev.reject()
+        }
+    }
+
+    fun onHover(ev: PointerEvent) {
+        if (!isPointerHovering(ev)) {
+            isHovered.set(false)
+            ev.reject()
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    fun onExit(ev: PointerEvent) {
+        isHovered.set(false)
     }
 
     fun onDragStart(ev: PointerEvent) {
-        val localPtrPos = toLocal(ev.pointer.x, ev.pointer.y)
-        if (localPtrPos.x in barMinX..barMaxX && localPtrPos.y in barMinY..barMaxY) {
+        if (ev.position.x in barMinX..barMaxX && ev.position.y in barMinY..barMaxY) {
             dragHelper.captureDragStart()
         } else {
             ev.reject()
@@ -154,6 +211,13 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
 
     fun onDrag(ev: PointerEvent) {
         dragHelper.updateScrollPos(ev.pointer)
+        isHovered.set(true)
+    }
+
+    fun onDragEnd(ev: PointerEvent) {
+        if (!isPointerHovering(ev)) {
+            isHovered.set(false)
+        }
     }
 
     private inner class DragHelper {

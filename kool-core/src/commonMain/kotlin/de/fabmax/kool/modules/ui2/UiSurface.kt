@@ -10,7 +10,11 @@ import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
 
-class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> Unit) : Group(name) {
+class UiSurface(
+    colors: Colors = Colors.darkColors(),
+    name: String = "uiSurface",
+    private val uiBlock: UiScope.() -> Unit
+) : Group(name) {
 
     val defaultPrimitives = UiPrimitiveMesh()
     private val textMeshes = mutableMapOf<FontProps, TextMesh>()
@@ -30,6 +34,11 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
     var deltaT = 0f
         private set
 
+    // colorsState is private and use()d internally by UiSurface
+    // for all other consumers the colors value is directly exposed
+    private val colorsState = mutableStateOf(colors)
+    var colors: Colors by colorsState::value
+
     init {
         this += defaultPrimitives
         // mirror y-axis
@@ -38,21 +47,19 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
             deltaT = it.deltaT
+
             inputHandler.handleInput(it)
-            updateUi(it)
+            if (requiresUpdate) {
+                requiresUpdate = false
+                updateUi(it)
+            }
         }
     }
 
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
-        if (!requiresUpdate) {
-            return
-        }
-
         val pt = PerfTimer()
-        requiresUpdate = false
         registeredState.forEach { it.clearUsage() }
         registeredState.clear()
-
         textMeshes.values.forEach { it.clear() }
         defaultPrimitives.instances?.clear()
         val prep = pt.takeMs().also { pt.reset() }
@@ -75,7 +82,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
                 "build: ${(build * 1000).toInt()} us, " +
                 "measure: ${(measure * 1000).toInt()} us, " +
                 "layout: ${(layout * 1000).toInt()} us, " +
-                "render: ${(render * 1000).toInt()} us" }
+                "render: ${(render * 1000).toInt()} us, " }
     }
 
     fun registerState(state: MutableState) {
@@ -142,12 +149,12 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             // check if we still hover previously hovered node
             if (currentHover in nodeResult) {
                 // hovering continues, hover event can be rejected, by hoverNode to stop hovering
-                if (!invokeCallback(ptrEv, currentHover.modifier.onHover, true)) {
+                if (!invokePointerCallback(currentHover, ptrEv, currentHover.modifier.onHover, true)) {
                     hoveredNode = null
                 }
             } else {
                 // hovering stopped, cannot be rejected...
-                currentHover.modifier.onExit?.invoke(ptrEv)
+                invokePointerCallback(currentHover, ptrEv, currentHover.modifier.onExit)
                 hoveredNode = null
             }
         }
@@ -156,12 +163,12 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             val ptr = ptrEv.pointer
             if (ptr.isDrag) {
                 // dragging continues, drag event can be rejected, by dragNode to stop dragging
-                if (!invokeCallback(ptrEv, currentDrag.modifier.onDrag, true)) {
+                if (!invokePointerCallback(currentDrag, ptrEv, currentDrag.modifier.onDrag, true)) {
                     dragNode = null
                 }
             } else {
                 // dragging stopped, cannot be rejected...
-                currentDrag.modifier.onDragEnd?.invoke(ptrEv)
+                invokePointerCallback(currentDrag, ptrEv, currentDrag.modifier.onDragEnd)
                 dragNode = null
             }
         }
@@ -183,37 +190,43 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
             relevantNodes.forEach { node ->
                 val mod = node.modifier
 
-                // onRawPointer is called for any node below pointer position
-                mod.onRawPointer?.invoke(ptrEv)
+                // onPointer is called for any node below pointer position
+                invokePointerCallback(node, ptrEv, mod.onPointer)
 
-                if (hoveredNode == null && mod.hasAnyHoverCallback && invokeCallback(ptrEv, mod.onEnter, true)) {
+                if (hoveredNode == null && mod.hasAnyHoverCallback && invokePointerCallback(node, ptrEv, mod.onEnter, true)) {
                     // no node was hovered before (or we just exited it) and we found a new one which has hover
                     // callbacks installed -> select it as new hovered node
                     hoveredNode = node
                 }
 
-                if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokeCallback(ptrEv, mod.onDragStart, true)) {
+                if (isDragStart && dragNode == null && mod.hasAnyDragCallback && invokePointerCallback(node, ptrEv, mod.onDragStart, true)) {
                     dragNode = node
                 }
 
-                if (isAnyClick && invokeCallback(ptrEv, mod.onClick)) {
+                if (isAnyClick && invokePointerCallback(node, ptrEv, mod.onClick)) {
                     // click was consumed
                     isAnyClick = false
                 }
-                if (isWheelX && invokeCallback(ptrEv, mod.onWheelX)) {
+                if (isWheelX && invokePointerCallback(node, ptrEv, mod.onWheelX)) {
                     // wheel x was consumed
                     isWheelX = false
                 }
-                if (isWheelY && invokeCallback(ptrEv, mod.onWheelY)) {
+                if (isWheelY && invokePointerCallback(node, ptrEv, mod.onWheelY)) {
                     // wheel y was consumed
                     isWheelY = false
                 }
             }
         }
 
-        private fun invokeCallback(ptrEvent: PointerEvent, cb: ((PointerEvent) -> Unit)?, consumedIfNull: Boolean = false): Boolean {
+        private fun invokePointerCallback(
+            uiNode: UiNode,
+            ptrEvent: PointerEvent,
+            cb: ((PointerEvent) -> Unit)?,
+            consumedIfNull: Boolean = false
+        ): Boolean {
             var wasConsumed = consumedIfNull
             if (cb != null) {
+                uiNode.toLocal(ptrEvent.pointer.x, ptrEvent.pointer.y, ptrEvent.position)
                 // make sure consumed flag is set by default, callback has to actively reject() the
                 // event to not consume it
                 ptrEvent.isConsumed = true
@@ -227,6 +240,7 @@ class UiSurface(name: String = "uiSurface", private val uiBlock: UiScope.() -> U
     private inner class RootCell : BoxNode(viewport, this@UiSurface) {
         fun reset() {
             resetDefaults()
+            modifier.background(colorsState.use().surface)
         }
 
         fun collectNodesAt(x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {

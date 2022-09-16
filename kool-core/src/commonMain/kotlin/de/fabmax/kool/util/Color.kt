@@ -156,6 +156,8 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     }
 }
 
+fun Color(hex: String): Color = Color.fromHex(hex)
+
 open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b, a) {
 
     override var r

@@ -8,20 +8,20 @@ fun UiScope.ScrollArea(
     height: Dimension = Grow(),
     withVerticalScrollbar: Boolean = true,
     withHorizontalScrollbar: Boolean = true,
-    background: UiRenderer<UiNode>? = null,
     scrollbarColor: Color? = null,
     containerModifier: ((UiModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
     block: ScrollPaneScope.() -> Unit
 ) {
-    Cell {
+    Box {
         modifier
             .width(width)
             .height(height)
-            .background(background)
+            .background(colors.background)
             .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
             .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
+
         containerModifier?.invoke(modifier)
 
         ScrollPane(state) {

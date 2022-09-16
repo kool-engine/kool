@@ -2,6 +2,8 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.util.Color
 import kotlin.reflect.KProperty
 
 open class UiModifier {
@@ -26,7 +28,7 @@ open class UiModifier {
     var alignX: AlignmentX by property(AlignmentX.Start)
     var alignY: AlignmentY by property(AlignmentY.Top)
 
-    var onRawPointer: ((PointerEvent) -> Unit)? by property(null)
+    var onPointer: ((PointerEvent) -> Unit)? by property(null)
     var onClick: ((PointerEvent) -> Unit)? by property(null)
     var onWheelX: ((PointerEvent) -> Unit)? by property(null)
     var onWheelY: ((PointerEvent) -> Unit)? by property(null)
@@ -52,7 +54,7 @@ open class UiModifier {
     }
 
     val hasAnyCallback: Boolean
-        get() = onRawPointer != null ||
+        get() = onPointer != null ||
                 onClick != null ||
                 onWheelX != null ||
                 onWheelY != null ||
@@ -88,6 +90,10 @@ fun <T: UiModifier> T.height(height: Dimension): T { this.height = height; retur
 fun <T: UiModifier> T.layout(layout: Layout): T { this.layout = layout; return this }
 fun <T: UiModifier> T.border(border: UiRenderer<UiNode>?): T { this.border = border; return this }
 fun <T: UiModifier> T.background(background: UiRenderer<UiNode>?): T { this.background = background; return this }
+fun <T: UiModifier> T.background(color: Color?): T {
+    background = if (color != null) RectBackground(color) else null
+    return this
+}
 
 fun <T: UiModifier> T.padding(all: Dp): T {
     paddingStart = all
@@ -171,14 +177,29 @@ fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; ret
 fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
 
 class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
+    /**
+     * Pointer position in UiNode local coordinates.
+     */
+    val position = MutableVec2f()
+
+    /**
+     * Can be set to false by listeners to reject the event. Rejected events will be passed on to potential other
+     * consumers.
+     * @see [reject]
+     */
     var isConsumed = true
 
+    /**
+     * Can be called by listeners to reject the event. Rejected events will be passed on to potential other
+     * consumers.
+     * @see [reject]
+     */
     fun reject() {
         isConsumed = false
     }
 }
 
-fun <T: UiModifier> T.onRawPointer(block: (PointerEvent) -> Unit): T { onRawPointer = block; return this }
+fun <T: UiModifier> T.onRawPointer(block: (PointerEvent) -> Unit): T { onPointer = block; return this }
 fun <T: UiModifier> T.onClick(block: (PointerEvent) -> Unit): T { onClick = block; return this }
 fun <T: UiModifier> T.onWheelX(block: (PointerEvent) -> Unit): T { onWheelX = block; return this }
 fun <T: UiModifier> T.onWheelY(block: (PointerEvent) -> Unit): T { onWheelY = block; return this }

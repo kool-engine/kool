@@ -22,7 +22,7 @@ class RoundRectBackground(val backgroundColor: Color, val cornerRadius: Dp) : Ui
     }
 }
 
-class RectBorder(val borderColor: Color, val inset: Dp, val borderWidth: Dp) : UiRenderer<UiNode> {
+class RectBorder(val borderColor: Color, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
             val inPx = inset.px
@@ -33,7 +33,7 @@ class RectBorder(val borderColor: Color, val inset: Dp, val borderWidth: Dp) : U
     }
 }
 
-class RoundRectBorder(val borderColor: Color, val inset: Dp, val cornerRadius: Dp, val borderWidth: Dp) : UiRenderer<UiNode> {
+class RoundRectBorder(val borderColor: Color, val cornerRadius: Dp, val borderWidth: Dp, val inset: Dp = Dp.ZERO) : UiRenderer<UiNode> {
     override fun renderUi(node: UiNode) {
         node.apply {
             val inPx = inset.px
