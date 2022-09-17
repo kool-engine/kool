@@ -28,21 +28,27 @@ open class UiModifier {
     var alignX: AlignmentX by property(AlignmentX.Start)
     var alignY: AlignmentY by property(AlignmentY.Top)
 
-    var onPointer: ((PointerEvent) -> Unit)? by property(null)
-    var onClick: ((PointerEvent) -> Unit)? by property(null)
-    var onWheelX: ((PointerEvent) -> Unit)? by property(null)
-    var onWheelY: ((PointerEvent) -> Unit)? by property(null)
+    val onPointer: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onClick: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onWheelX: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onWheelY: MutableList<(PointerEvent) -> Unit> by listProperty()
 
-    var onEnter: ((PointerEvent) -> Unit)? by property(null)
-    var onExit: ((PointerEvent) -> Unit)? by property(null)
-    var onHover: ((PointerEvent) -> Unit)? by property(null)
+    val onEnter: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onExit: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onHover: MutableList<(PointerEvent) -> Unit> by listProperty()
 
-    var onDragStart: ((PointerEvent) -> Unit)? by property(null)
-    var onDrag: ((PointerEvent) -> Unit)? by property(null)
-    var onDragEnd: ((PointerEvent) -> Unit)? by property(null)
+    val onDragStart: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onDrag: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onDragEnd: MutableList<(PointerEvent) -> Unit> by listProperty()
 
     protected fun <T> property(defaultVal: T): PropertyHolder<T> {
         val holder = PropertyHolder(defaultVal)
+        properties += holder
+        return holder
+    }
+
+    protected fun <T> listProperty(): ListPropertyHolder<T> {
+        val holder = ListPropertyHolder<T>()
         properties += holder
         return holder
     }
@@ -53,35 +59,41 @@ open class UiModifier {
         }
     }
 
-    val hasAnyCallback: Boolean
-        get() = onPointer != null ||
-                onClick != null ||
-                onWheelX != null ||
-                onWheelY != null ||
-                onEnter != null ||
-                onExit != null ||
-                onHover != null ||
-                onDragStart != null ||
-                onDrag != null ||
-                onDragEnd != null
+    val hasAnyPointerCallback: Boolean
+        get() = onPointer.isNotEmpty() ||
+                onClick.isNotEmpty() ||
+                onWheelX.isNotEmpty() ||
+                onWheelY.isNotEmpty() ||
+                onEnter.isNotEmpty() ||
+                onExit.isNotEmpty() ||
+                onHover.isNotEmpty() ||
+                onDragStart.isNotEmpty() ||
+                onDrag.isNotEmpty() ||
+                onDragEnd.isNotEmpty()
 
     val hasAnyHoverCallback: Boolean
-        get() = onEnter != null ||
-                onExit != null ||
-                onHover != null
+        get() = onEnter.isNotEmpty() ||
+                onExit.isNotEmpty() ||
+                onHover.isNotEmpty()
 
     val hasAnyDragCallback: Boolean
-        get() = onDragStart != null ||
-                onDrag != null ||
-                onDragEnd != null
+        get() = onDragStart.isNotEmpty() ||
+                onDrag.isNotEmpty() ||
+                onDragEnd.isNotEmpty()
 
-    protected inner class PropertyHolder<T>(val defaultVal: T) {
+    protected open inner class PropertyHolder<T>(private val defaultVal: T) {
         var field = defaultVal
 
-        fun resetDefault() { field = defaultVal }
+        open fun resetDefault() { field = defaultVal }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): T = field
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) { field = value }
+    }
+
+    protected inner class ListPropertyHolder<T> : PropertyHolder<MutableList<T>>(mutableListOf()) {
+        override fun resetDefault() {
+            field.clear()
+        }
     }
 }
 
@@ -103,15 +115,15 @@ fun <T: UiModifier> T.padding(all: Dp): T {
     return this
 }
 
-fun <T: UiModifier> T.verticalPadding(padding: Dp): T {
-    paddingTop = padding
-    paddingBottom = padding
-    return this
-}
-
-fun <T: UiModifier> T.horizontalPadding(padding: Dp): T {
-    paddingStart = padding
-    paddingEnd = padding
+fun <T: UiModifier> T.padding(vertical: Dp? = null, horizontal: Dp? = null): T {
+    vertical?.let {
+        paddingTop = it
+        paddingBottom = it
+    }
+    horizontal?.let {
+        paddingStart = it
+        paddingEnd = it
+    }
     return this
 }
 
@@ -136,15 +148,15 @@ fun <T: UiModifier> T.margin(all: Dp): T {
     return this
 }
 
-fun <T: UiModifier> T.verticalMargin(margin: Dp): T {
-    marginTop = margin
-    marginBottom = margin
-    return this
-}
-
-fun <T: UiModifier> T.horizontalMargin(margin: Dp): T {
-    marginStart = margin
-    marginEnd = margin
+fun <T: UiModifier> T.margin(vertical: Dp? = null, horizontal: Dp? = null): T {
+    vertical?.let {
+        marginTop = it
+        marginBottom = it
+    }
+    horizontal?.let {
+        marginStart = it
+        marginEnd = it
+    }
     return this
 }
 
@@ -199,16 +211,29 @@ class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
     }
 }
 
-fun <T: UiModifier> T.onRawPointer(block: (PointerEvent) -> Unit): T { onPointer = block; return this }
-fun <T: UiModifier> T.onClick(block: (PointerEvent) -> Unit): T { onClick = block; return this }
-fun <T: UiModifier> T.onWheelX(block: (PointerEvent) -> Unit): T { onWheelX = block; return this }
-fun <T: UiModifier> T.onWheelY(block: (PointerEvent) -> Unit): T { onWheelY = block; return this }
+fun <T: UiModifier> T.onClick(block: (PointerEvent) -> Unit): T { onClick += block; return this }
+fun <T: UiModifier> T.onWheelX(block: (PointerEvent) -> Unit): T { onWheelX += block; return this }
+fun <T: UiModifier> T.onWheelY(block: (PointerEvent) -> Unit): T { onWheelY += block; return this }
+fun <T: UiModifier> T.onPointer(block: (PointerEvent) -> Unit): T { onPointer += block; return this }
 
-fun <T: UiModifier> T.onEnter(block: (PointerEvent) -> Unit): T { onEnter = block; return this }
-fun <T: UiModifier> T.onExit(block: (PointerEvent) -> Unit): T { onExit = block; return this }
-fun <T: UiModifier> T.onHover(block: (PointerEvent) -> Unit): T { onHover = block; return this }
+fun <T: UiModifier> T.onEnter(block: (PointerEvent) -> Unit): T { onEnter += block; return this }
+fun <T: UiModifier> T.onExit(block: (PointerEvent) -> Unit): T { onExit += block; return this }
+fun <T: UiModifier> T.onHover(block: (PointerEvent) -> Unit): T { onHover += block; return this }
 
-fun <T: UiModifier> T.onDragStart(block: (PointerEvent) -> Unit): T { onDragStart = block; return this }
-fun <T: UiModifier> T.onDrag(block: (PointerEvent) -> Unit): T { onDrag = block; return this }
-fun <T: UiModifier> T.onDragEnd(block: (PointerEvent) -> Unit): T { onDragEnd = block; return this }
+fun <T: UiModifier> T.onDragStart(block: (PointerEvent) -> Unit): T { onDragStart += block; return this }
+fun <T: UiModifier> T.onDrag(block: (PointerEvent) -> Unit): T { onDrag += block; return this }
+fun <T: UiModifier> T.onDragEnd(block: (PointerEvent) -> Unit): T { onDragEnd += block; return this }
 
+fun <T: UiModifier> T.onClick(clickable: Clickable): T { onClick += clickable::onClick; return this }
+
+fun <T: UiModifier> T.hoverListener(hoverable: Hoverable) {
+    onEnter(hoverable::onEnter)
+    onHover(hoverable::onHover)
+    onExit(hoverable::onExit)
+}
+
+fun <T: UiModifier> T.dragListener(draggable: Draggable) {
+    onDragStart(draggable::onDragStart)
+    onDrag(draggable::onDrag)
+    onDragEnd(draggable::onDragEnd)
+}

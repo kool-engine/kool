@@ -10,10 +10,13 @@ interface UiScope {
     val modifier: UiModifier
 
     val colors: Colors get() = surface.colors
+    val deltaT: Float get() = surface.deltaT
 
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
     val Dp.px: Float get() = value * surface.measuredScale
+
+    fun pxToDp(px: Float) = px / surface.measuredScale
 
     fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
     fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)

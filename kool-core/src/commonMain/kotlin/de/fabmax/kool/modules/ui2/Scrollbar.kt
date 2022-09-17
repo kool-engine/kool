@@ -16,14 +16,14 @@ interface ScrollbarScope : UiScope {
 
 open class ScrollbarModifier : UiModifier() {
     var orientation: ScrollbarOrientation by property(ScrollbarOrientation.Vertical)
-    var minBarSize: Dp by property(Dp(24f))
+    var minBarLength: Dp by property(Dp(24f))
     var hideIfFullyExtended: Boolean by property(true)
 
     // default color value are overridden by theme colors
     var barColor: Color by property(Color.GRAY)
-    var barColorHovered: Color? by property(null)
+    var hoverColor: Color? by property(null)
     var trackColor: Color? by property(null)
-    var trackColorHovered: Color? by property(null)
+    var trackHoverColor: Color? by property(null)
 }
 
 fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
@@ -31,8 +31,21 @@ fun <T: ScrollbarModifier> T.orientation(orientation: ScrollbarOrientation): T {
     return this
 }
 
-fun <T: ScrollbarModifier> T.barColor(color: Color): T { barColor = color; return this }
+fun <T: ScrollbarModifier> T.minBarLength(length: Dp): T { minBarLength = length; return this }
 fun <T: ScrollbarModifier> T.hideIfFullyExtended(flag: Boolean): T { hideIfFullyExtended = flag; return this }
+
+fun <T: ScrollbarModifier> T.colors(
+    color: Color = barColor,
+    hoverColor: Color? = this.hoverColor,
+    trackColor: Color? = this.trackColor,
+    trackHoverColor: Color? = this.trackHoverColor
+): T {
+    barColor = color
+    this.hoverColor = hoverColor
+    this.trackColor = trackColor
+    this.trackHoverColor = trackHoverColor
+    return this
+}
 
 enum class ScrollbarOrientation {
     Horizontal,
@@ -45,13 +58,9 @@ inline fun UiScope.Scrollbar(
 ) {
     val scrollBar = uiNode.createChild(ScrollbarNode::class, ScrollbarNode.factory)
     scrollBar.state = state
-    scrollBar.modifier.onClick = scrollBar::onClick
-    scrollBar.modifier.onEnter = scrollBar::onEnter
-    scrollBar.modifier.onHover = scrollBar::onHover
-    scrollBar.modifier.onExit = scrollBar::onExit
-    scrollBar.modifier.onDragStart = scrollBar::onDragStart
-    scrollBar.modifier.onDrag = scrollBar::onDrag
-    scrollBar.modifier.onDragEnd = scrollBar::onDragEnd
+    scrollBar.modifier.onClick(scrollBar)
+    scrollBar.modifier.hoverListener(scrollBar)
+    scrollBar.modifier.dragListener(scrollBar)
     scrollBar.block()
 }
 
@@ -103,7 +112,9 @@ inline fun UiScope.HorizontalScrollbar(
     block()
 }
 
-open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), ScrollbarScope {
+open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
+    : UiNode(parent, surface), ScrollbarScope, Clickable, Draggable, Hoverable {
+
     override val modifier = ScrollbarModifier()
     lateinit var state: ScrollState
 
@@ -118,8 +129,10 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
 
     override fun resetDefaults() {
         super.resetDefaults()
-        modifier.barColor = colors.secondary.withAlpha(0.5f)
-        modifier.barColorHovered = colors.secondary
+        modifier.colors(
+            color = colors.secondary.withAlpha(0.5f),
+            hoverColor = colors.secondary
+        )
     }
 
     override fun render(ctx: KoolContext) {
@@ -135,7 +148,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         // compute scrollbar dimensions
         val refHeight = uiNode.heightPx - paddingTopPx - paddingBottomPx
         val refWidth = uiNode.widthPx - paddingStartPx - paddingEndPx
-        val clampLen = max(len, modifier.minBarSize.px / if (isVertical) refHeight else refWidth)
+        val clampLen = max(len, modifier.minBarLength.px / if (isVertical) refHeight else refWidth)
 
         val radius: Float
         val origin = MutableVec2f()
@@ -159,8 +172,8 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         var barColor = modifier.barColor
         var trackColor = modifier.trackColor
         if (isHovered.use()) {
-            modifier.barColorHovered?.let { barColor = it }
-            modifier.trackColorHovered?.let { trackColor = it }
+            modifier.hoverColor?.let { barColor = it }
+            modifier.trackHoverColor?.let { trackColor = it }
         }
 
         val uiPrimitives = surface.getUiPrimitives(UiSurface.LAYER_FLOATING)
@@ -170,20 +183,28 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         uiPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, barColor)
     }
 
-    private fun isPointerHovering(ev: PointerEvent): Boolean {
-        return (isTrackVisible && isInBounds(ev.position)) ||
-                ev.position.x in barMinX..barMaxX && ev.position.y in barMinY..barMaxY
+    private fun isOnBar(ev: PointerEvent): Boolean {
+        return ev.position.x in barMinX..barMaxX && ev.position.y in barMinY..barMaxY
     }
 
-    fun onClick(ev: PointerEvent) {
-        if (isTrackVisible) {
-            // todo: move scrollbar towards clicked pos
+    private fun isPointerHovering(ev: PointerEvent): Boolean {
+        return (isTrackVisible && isInBoundsLocal(ev.position)) || isOnBar(ev)
+    }
+
+    override fun onClick(ev: PointerEvent) {
+        if (isTrackVisible && !isOnBar(ev)) {
+            when {
+                isVertical && ev.position.y < barMinY -> { state.scrollDpY(-state.viewSizeDp.y) }
+                isVertical && ev.position.y > barMaxY -> { state.scrollDpY(state.viewSizeDp.y) }
+                isHorizontal && ev.position.x < barMinX -> { state.scrollDpX(-state.viewSizeDp.x) }
+                isHorizontal && ev.position.x > barMaxX -> { state.scrollDpX(state.viewSizeDp.x) }
+            }
         } else {
             ev.reject()
         }
     }
 
-    fun onEnter(ev: PointerEvent) {
+    override fun onEnter(ev: PointerEvent) {
         if (isPointerHovering(ev)) {
             isHovered.set(true)
         } else {
@@ -191,32 +212,31 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, s
         }
     }
 
-    fun onHover(ev: PointerEvent) {
+    override fun onHover(ev: PointerEvent) {
         if (!isPointerHovering(ev)) {
             isHovered.set(false)
             ev.reject()
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    fun onExit(ev: PointerEvent) {
+    override fun onExit(ev: PointerEvent) {
         isHovered.set(false)
     }
 
-    fun onDragStart(ev: PointerEvent) {
-        if (ev.position.x in barMinX..barMaxX && ev.position.y in barMinY..barMaxY) {
+    override fun onDragStart(ev: PointerEvent) {
+        if (isOnBar(ev)) {
             dragHelper.captureDragStart()
         } else {
             ev.reject()
         }
     }
 
-    fun onDrag(ev: PointerEvent) {
+    override fun onDrag(ev: PointerEvent) {
         dragHelper.updateScrollPos(ev.pointer)
         isHovered.set(true)
     }
 
-    fun onDragEnd(ev: PointerEvent) {
+    override fun onDragEnd(ev: PointerEvent) {
         if (!isPointerHovering(ev)) {
             isHovered.set(false)
         }

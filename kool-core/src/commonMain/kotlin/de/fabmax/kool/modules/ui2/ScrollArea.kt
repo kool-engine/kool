@@ -29,13 +29,13 @@ fun UiScope.ScrollArea(
         }
         if (withVerticalScrollbar) {
             VerticalScrollbar(state) {
-                scrollbarColor?.let { modifier.barColor(it) }
+                scrollbarColor?.let { modifier.colors(it) }
                 vScrollbarModifier?.invoke(modifier)
             }
         }
         if (withHorizontalScrollbar) {
             HorizontalScrollbar(state) {
-                scrollbarColor?.let { modifier.barColor(it) }
+                scrollbarColor?.let { modifier.colors(it) }
                 hScrollbarModifier?.invoke(modifier)
             }
         }

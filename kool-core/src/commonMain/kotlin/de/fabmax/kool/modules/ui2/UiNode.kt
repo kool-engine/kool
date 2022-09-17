@@ -68,8 +68,16 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return point.x in leftPx..rightPx && point.y in topPx..bottomPx
     }
 
+    fun isInBoundsLocal(point: Vec2f): Boolean {
+        return (point.x + leftPx) in leftPx..rightPx && (point.y + topPx) in topPx..bottomPx
+    }
+
     fun isInClipBounds(point: Vec2f): Boolean {
         return point.x in clipLeftPx..clipRightPx && point.y in clipTopPx..clipBottomPx
+    }
+
+    fun isInClipBoundsLocal(point: Vec2f): Boolean {
+        return (point.x + leftPx) in clipLeftPx..clipRightPx && (point.y + topPx) in clipTopPx..clipBottomPx
     }
 
     open fun setContentSize(width: Float, height: Float) {

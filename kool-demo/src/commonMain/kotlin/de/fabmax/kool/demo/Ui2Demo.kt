@@ -89,15 +89,9 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     }
 
     fun UiScope.TestContent(listItems: MutableList<String>) {
-        Text("Some static text, clicked: ${clickCnt.use()}") {
+        Button("A regular button... clicked: ${clickCnt.use()}") {
             modifier
-                .background(RectBackground(buttonBgColor.use()))
-                .margin(8.dp)
-                .padding(4.dp)
                 .onClick { clickCnt.value += 1 }
-                .onEnter { buttonBgColor.set(colors.primary) }
-                .onExit { buttonBgColor.set(colors.primaryVariant) }
-                .foreground(colors.onPrimary)
         }
 
         ScrollArea(scrollState, height = 200.dp) {
@@ -130,8 +124,10 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 it.margin(top = 16.dp)
             },
             vScrollbarModifier = {
-                //it.trackColor = colors.secondaryVariant.withAlpha(0.15f)
-                it.trackColorHovered = colors.secondaryVariant.withAlpha(0.1f)
+                it.colors(
+                    trackColor = colors.secondaryVariant.withAlpha(0.1f),
+                    trackHoverColor = colors.secondaryVariant.withAlpha(0.15f)
+                )
             }
         ) {
             itemsIndexed(listItems) { i, item ->
@@ -151,7 +147,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
                 Text(item) {
                     modifier
-                        .foreground(textColor)
+                        .textColor(textColor)
                         .padding(8.dp)
                         .width(Grow())
                         .background(bgColor)

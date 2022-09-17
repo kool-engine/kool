@@ -245,16 +245,16 @@ class UiSurface(
         private fun invokePointerCallback(
             uiNode: UiNode,
             ptrEvent: PointerEvent,
-            cb: ((PointerEvent) -> Unit)?,
+            callbacks: List<(PointerEvent) -> Unit>,
             consumedIfNull: Boolean = false
         ): Boolean {
             var wasConsumed = consumedIfNull
-            if (cb != null) {
+            if (callbacks.isNotEmpty()) {
                 uiNode.toLocal(ptrEvent.pointer.x, ptrEvent.pointer.y, ptrEvent.position)
                 // make sure consumed flag is set by default, callback has to actively reject() the
                 // event to not consume it
                 ptrEvent.isConsumed = true
-                cb(ptrEvent)
+                callbacks.forEach { it.invoke(ptrEvent) }
                 wasConsumed = ptrEvent.isConsumed
             }
             return wasConsumed
@@ -272,17 +272,20 @@ class UiSurface(
             if (isInClip(x, y)) {
                 traverseChildren(this, x, y, result, predicate)
             }
+            if (result.size > 1) {
+                result.sortBy { -it.nodeIndex }
+            }
         }
 
         private fun traverseChildren(node: UiNode, x: Float, y: Float, result: MutableList<UiNode>, predicate: (UiNode) -> Boolean) {
-            if (predicate(node)) {
-                result += node
-            }
             for (i in node.children.indices) {
                 val child = node.children[i]
                 if (child.isInClip(x, y)) {
                     traverseChildren(child, x, y, result, predicate)
                 }
+            }
+            if (predicate(node)) {
+                result += node
             }
         }
 
@@ -340,6 +343,6 @@ class UiSurface(
             invertFaceOrientation = true
         }
 
-        private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.hasAnyCallback }
+        private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.hasAnyPointerCallback }
     }
 }
