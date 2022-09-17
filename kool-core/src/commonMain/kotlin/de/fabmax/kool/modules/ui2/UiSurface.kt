@@ -115,6 +115,10 @@ class UiSurface(
         return getMeshLayer(layer).uiPrimitives
     }
 
+    fun getPlainBuilder(layer: Int = LAYER_DEFAULT): MeshBuilder {
+        return getMeshLayer(layer).plainBuilder
+    }
+
     fun getTextBuilder(font: Font, ctx: KoolContext, layer: Int = LAYER_DEFAULT): MeshBuilder {
         return getMeshLayer(layer).getTextBuilder(font, ctx)
     }
@@ -307,19 +311,23 @@ class UiSurface(
         }
 
         fun clear() {
-            mesh.geometry.clear()
+            builder.clear()
             isUsed = false
         }
     }
 
     inner class MeshLayer : Group() {
-        val uiPrimitives = UiPrimitiveMesh()
         private val textMeshes = mutableMapOf<FontProps, TextMesh>()
+        private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
+
+        val uiPrimitives = UiPrimitiveMesh()
+        val plainBuilder = MeshBuilder(plainMesh.geometry)
 
         var isUsed = false
 
         init {
             +uiPrimitives
+            +plainMesh
         }
 
         fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
@@ -331,6 +339,7 @@ class UiSurface(
         fun clear() {
             textMeshes.values.forEach { it.clear() }
             uiPrimitives.instances?.clear()
+            plainBuilder.clear()
             isUsed = false
         }
     }

@@ -103,7 +103,7 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
 
     fun circleBorder(x: Float, y: Float, radius: Float, borderWidth: Float, color: Color, clip: Vec4f) {
         addPrimitive(
-            x, y,
+            x - radius, y - radius,
             radius * 2f, radius * 2f, radius, radius,
             (radius - borderWidth) * 2f, (radius - borderWidth) * 2f, radius - borderWidth, radius - borderWidth,
             color, clip
@@ -112,7 +112,7 @@ class UiPrimitiveMesh : Mesh(IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNE
 
     fun ovalBorder(x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float, color: Color, clip: Vec4f) {
         addPrimitive(
-            x, y,
+            x - xRadius, y - yRadius,
             xRadius * 2f, yRadius * 2f, xRadius, yRadius,
             (xRadius - borderWidth) * 2f, (yRadius - borderWidth) * 2f, xRadius - borderWidth, yRadius - borderWidth,
             color, clip

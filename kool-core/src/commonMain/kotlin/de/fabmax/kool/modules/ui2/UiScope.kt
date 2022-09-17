@@ -20,4 +20,8 @@ interface UiScope {
 
     fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
     fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)
+    fun AnimationState.progressAndUse(): Float {
+        progress(deltaT)
+        return use(surface)
+    }
 }

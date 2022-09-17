@@ -31,7 +31,7 @@ abstract class MutableState {
     }
 }
 
-class MutableValueState<T: Any?>(initValue: T) : MutableState() {
+open class MutableValueState<T: Any?>(initValue: T) : MutableState() {
     var value: T = initValue
         set(value) {
             if (value != field) {

@@ -16,6 +16,10 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val buttonBgColor = mutableStateOf(themeColors.primaryVariant)
     private val hoveredListItem = mutableStateOf<String?>(null)
 
+    private val radioButtonState = mutableStateOf(false)
+    private val checkboxState = mutableStateOf(false)
+    private val switchState = mutableStateOf(false)
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
         // desired features
@@ -32,7 +36,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] padding / inside gap
 
         // todo
-        //  more ui elements: button, text field, slider, checkbox, switch, radiobutton, combo-box
+        //  more ui elements: text field, slider, combo-box
         //  scale-aware fonts
         //  elastic overscroll
         //  icons + images
@@ -164,21 +168,22 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             }
         }
 
-        val accent1500 = Color.fromHex("FF6F00")
-        val accent1700 = Color.fromHex("7F4519")
-        val accent1900 = Color.fromHex("4C301A")
+        Row {
+            Text("Checkbox") { modifier.alignY(AlignmentY.Center) }
+            Checkbox(checkboxState.use()) {
+                modifier.onToggle { checkboxState.set(it) }
+            }
 
-        val accent2500 = Color.fromHex("197CFF")
-        val accent2700 = Color.fromHex("18467A")
-        val accent2900 = Color.fromHex("1C324F")
+            Text("Radio Button") { modifier.alignY(AlignmentY.Center).margin(start = 16.dp) }
+            RadioButton(radioButtonState.use()) {
+                modifier.onToggle { radioButtonState.set(it) }
+            }
 
-        val neutral500 = Color.fromHex("C7D4E5")
-        val neutral700 = Color.fromHex("858B93")
-        val neutral900 = Color.fromHex("505459")
-
-        SwitchDummy(neutral500, neutral700, neutral700, neutral900)
-        SwitchDummy(accent1500, accent1700, accent1700, accent1900)
-        SwitchDummy(accent2500, accent2700, accent2700, accent2900)
+            Text("Switch") { modifier.alignY(AlignmentY.Center).margin(start = 16.dp) }
+            Switch(switchState.use()) {
+                modifier.onToggle { switchState.set(it) }
+            }
+        }
 
         Text("Yet another text") {
             modifier
@@ -187,49 +192,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
                 .textAlignX(AlignmentX.End)
                 .textAlignY(AlignmentY.Bottom)
                 .margin(8.dp)
-        }
-    }
-
-    fun UiScope.SwitchDummy(knobActive: Color, trackActive: Color, knobInactive: Color, trackInactive: Color) {
-        Row {
-            modifier.margin(32.dp)
-            Box {
-                Box {
-                    modifier
-                        .width(40.dp)
-                        .height(20.dp)
-                        .alignY(AlignmentY.Center)
-                        .background(RoundRectBackground(trackInactive, 10.dp))
-                }
-                Box {
-                    modifier
-                        .margin(start = 0.dp)
-                        .width(20.dp)
-                        .height(20.dp)
-                        .alignY(AlignmentY.Center)
-                        .background(RoundRectBackground(knobInactive, 10.dp))
-                }
-            }
-
-            Box {
-                modifier.margin(start = 32.dp)
-                Box {
-                    modifier
-                        .margin(start = 2.dp)
-                        .width(36.dp)
-                        .height(16.dp)
-                        .alignY(AlignmentY.Center)
-                        .background(RoundRectBackground(trackActive, 8.dp))
-                }
-                Box {
-                    modifier
-                        .margin(start = 20.dp)
-                        .width(20.dp)
-                        .height(20.dp)
-                        .alignY(AlignmentY.Center)
-                        .background(RoundRectBackground(knobActive, 10.dp))
-                }
-            }
         }
     }
 }

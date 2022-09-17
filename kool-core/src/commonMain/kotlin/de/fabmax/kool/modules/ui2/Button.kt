@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 
 interface ButtonScope : UiScope {
@@ -48,7 +47,8 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     override val modifier = ButtonModifier()
 
     private var isHovered = mutableStateOf(false)
-    private val clickAnimator = ClickAnimator()
+    private val clickAnimator = AnimationState(0.3f)
+    private val clickPos = MutableVec2f()
 
     override fun resetDefaults() {
         super.resetDefaults()
@@ -72,10 +72,10 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
         super.render(ctx)
 
         if (modifier.isClickFeedback && clickAnimator.isActive) {
-            clickAnimator.animate(deltaT)
-            val p = clickAnimator.progress.use()
+            clickAnimator.progress(deltaT)
+            val p = clickAnimator.use()
             surface.getUiPrimitives().localCircle(
-                clickAnimator.center.x, clickAnimator.center.y,
+                clickPos.x, clickPos.y,
                 p * 128.dp.px,
                 Color.WHITE.withAlpha(0.7f - p * 0.5f)
             )
@@ -83,8 +83,8 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     }
 
     override fun onClick(ev: PointerEvent) {
-        println("on click")
-        clickAnimator.spawn(ev)
+        clickAnimator.start()
+        clickPos.set(ev.position)
     }
 
     override fun onEnter(ev: PointerEvent) {
@@ -97,29 +97,5 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
 
     companion object {
         val factory: (UiNode, UiSurface) -> ButtonNode = { parent, surface -> ButtonNode(parent, surface) }
-    }
-
-    class ClickAnimator(val duration: Float = 0.3f) {
-        var isActive = false
-        var time = 0f
-        var progress = mutableStateOf(0f)
-        val center = MutableVec2f()
-
-        fun spawn(ev: PointerEvent) {
-            isActive = true
-            time = 0f
-            progress.set(0.001f)
-            center.set(ev.position)
-        }
-
-        fun animate(deltaT: Float) {
-            if (time < duration) {
-                time = (time + deltaT).clamp(0f, duration)
-                progress.set(time / duration)
-            } else {
-                progress.set(0f)
-                isActive = false
-            }
-        }
     }
 }
