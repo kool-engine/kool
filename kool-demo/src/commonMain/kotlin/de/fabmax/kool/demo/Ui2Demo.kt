@@ -13,12 +13,12 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val clickCnt = mutableStateOf(0)
     private val scrollState = ScrollState()
     private val listState = LazyListState()
-    private val buttonBgColor = mutableStateOf(themeColors.primaryVariant)
     private val hoveredListItem = mutableStateOf<String?>(null)
 
     private val radioButtonState = mutableStateOf(false)
     private val checkboxState = mutableStateOf(false)
     private val switchState = mutableStateOf(false)
+    private val sliderValue = mutableStateOf(0.5f)
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
@@ -36,7 +36,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         // - [x] padding / inside gap
 
         // todo
-        //  more ui elements: text field, slider, combo-box
+        //  more ui elements: text field, combo-box
         //  scale-aware fonts
         //  elastic overscroll
         //  icons + images
@@ -183,6 +183,15 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             Switch(switchState.use()) {
                 modifier.onToggle { switchState.set(it) }
             }
+        }
+        Row {
+            Text("Slider") { modifier.alignY(AlignmentY.Center) }
+            Slider(sliderValue.use()) {
+                modifier
+                    .orientation(SliderOrientation.Horizontal)
+                    .onChange { sliderValue.set(it) }
+            }
+            Text("Value: ${sliderValue.use()}") { modifier.alignY(AlignmentY.Center) }
         }
 
         Text("Yet another text") {

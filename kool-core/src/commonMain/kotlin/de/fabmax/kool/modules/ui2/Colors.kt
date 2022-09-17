@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 
 /**
  * Material Design color system:
@@ -42,8 +43,8 @@ data class Colors(
         fun darkColors(
             primary: Color = Color("b2ff00"),
             primaryVariant: Color = Color("7cb200"),
-            secondary: Color = Color("ff0066"),
-            secondaryVariant: Color = Color("af235b"),
+            secondary: Color = MdColor.PINK,
+            secondaryVariant: Color = MdColor.PINK tone 800,
             background: Color = Color("25252580"),
             surface: Color = Color("16161680"),
             error: Color = Color("b00020"),

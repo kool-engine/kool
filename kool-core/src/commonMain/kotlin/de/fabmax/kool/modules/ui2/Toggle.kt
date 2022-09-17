@@ -92,7 +92,7 @@ abstract class ToggleNode(
             .colors(
                 foregroundColor = colors.secondary,
                 backgroundColor = colors.secondaryVariant.withAlpha(0.5f),
-                borderColor = colors.secondary
+                borderColor = colors.secondaryVariant
             )
     }
 
@@ -117,7 +117,7 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
 
         val p = animationPos()
         if (p > 0f) {
-            surface.getPlainBuilder().configured(modifier.borderColor) {
+            surface.getPlainBuilder().configured(modifier.foregroundColor) {
                 translate(c.x, c.y, 0f)
                 val sz = buttonWidth.px * 0.8f * p
                 rotate(45f, Vec3f.Z_AXIS)
@@ -154,7 +154,7 @@ class RadioButtonNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, 
 
         val p = animationPos()
         if (p > 0f) {
-            draw.localCircle(c.x, c.y, (r - 4.dp.px) * p, modifier.borderColor)
+            draw.localCircle(c.x, c.y, (r - 4.dp.px) * p, modifier.foregroundColor)
         }
     }
 
