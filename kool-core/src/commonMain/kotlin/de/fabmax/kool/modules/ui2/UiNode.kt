@@ -55,7 +55,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val marginTopPx: Float get() = modifier.marginTop.px
     val marginBottomPx: Float get() = modifier.marginBottom.px
 
-    protected val setBoundsVertexMod: VertexView.() -> Unit = {
+    val setBoundsVertexMod: VertexView.() -> Unit = {
         getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
     }
 
@@ -145,7 +145,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return child
     }
 
-    protected inline fun MeshBuilder.configured(color: Color?, block: MeshBuilder.() -> Unit) {
+    inline fun MeshBuilder.configured(color: Color?, block: MeshBuilder.() -> Unit) {
         val prevMod = vertexModFun
         vertexModFun = setBoundsVertexMod
         val prevColor = this.color

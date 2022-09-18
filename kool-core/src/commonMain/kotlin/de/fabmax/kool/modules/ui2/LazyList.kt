@@ -170,7 +170,7 @@ class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface
             }
             count++
         }
-        size /= surface.measuredScale
+        size = pxToDp(size)
         state.averageElementSizeDp = size / count
 
         val viewSize = if (isVertical) state.viewSizeDp.y else state.viewSizeDp.x

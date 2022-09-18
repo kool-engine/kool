@@ -14,9 +14,9 @@ interface UiScope {
 
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
-    val Dp.px: Float get() = value * surface.measuredScale
+    val Dp.px: Float get() = value * UiScale.measuredScale
 
-    fun pxToDp(px: Float) = px / surface.measuredScale
+    fun pxToDp(px: Float) = px / UiScale.measuredScale
 
     fun <T: Any?> MutableValueState<T>.use(): T = use(surface)
     fun <T> MutableListState<T>.use(): MutableListState<T> = use(surface)

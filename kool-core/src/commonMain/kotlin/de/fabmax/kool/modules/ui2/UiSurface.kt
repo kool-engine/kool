@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.ui.Font
@@ -31,10 +32,10 @@ class UiSurface(
     var requiresUpdate: Boolean = true
         private set
 
-    var measuredScale = 1f
-        private set
     var deltaT = 0f
         private set
+
+    var printTiming = false
 
     // colorsState is private and use()d internally by UiSurface
     // for all other consumers the colors value is directly exposed
@@ -45,6 +46,7 @@ class UiSurface(
         // mirror y-axis
         scale(1f, -1f, 1f)
         onUpdate += {
+            UiScale.windowScale.set(it.ctx.windowScale)
             viewportWidth.set(it.renderPass.viewport.width.toFloat())
             viewportHeight.set(it.renderPass.viewport.height.toFloat())
             deltaT = it.deltaT
@@ -60,15 +62,15 @@ class UiSurface(
     private fun updateUi(updateEvent: RenderPass.UpdateEvent) {
         val pt = PerfTimer()
         nodeIndex = 0
-        registeredState.forEach { it.clearUsage() }
+        registeredState.forEach { it.clearUsage(this) }
         registeredState.clear()
         meshLayers.values.forEach {
             it.clear()
             removeNode(it)
         }
+        UiScale.updateScale(this, updateEvent.ctx)
         val prep = pt.takeMs().also { pt.reset() }
 
-        measuredScale = updateEvent.ctx.windowScale
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
         content.reset()
         content.uiBlock()
@@ -88,13 +90,15 @@ class UiSurface(
                 +it
             }
         }
-
         val render = pt.takeMs().also { pt.reset() }
-        logD { "UI update: prep: ${(prep * 1000).toInt()} us, " +
-                "compose: ${(compose * 1000).toInt()} us, " +
-                "measure: ${(measure * 1000).toInt()} us, " +
-                "layout: ${(layout * 1000).toInt()} us, " +
-                "render: ${(render * 1000).toInt()} us" }
+
+        if (printTiming) {
+            logD { "UI update: prep: ${(prep * 1000).toInt()} us, " +
+                    "compose: ${(compose * 1000).toInt()} us, " +
+                    "measure: ${(measure * 1000).toInt()} us, " +
+                    "layout: ${(layout * 1000).toInt()} us, " +
+                    "render: ${(render * 1000).toInt()} us" }
+        }
     }
 
     fun registerState(state: MutableState) {
@@ -119,9 +123,11 @@ class UiSurface(
         return getMeshLayer(layer).plainBuilder
     }
 
-    fun getTextBuilder(font: Font, ctx: KoolContext, layer: Int = LAYER_DEFAULT): MeshBuilder {
-        return getMeshLayer(layer).getTextBuilder(font, ctx)
+    fun getTextBuilder(fontProps: FontProps, ctx: KoolContext, layer: Int = LAYER_DEFAULT): MeshBuilder {
+        return getMeshLayer(layer).getTextBuilder(fontProps, ctx)
     }
+
+    fun getFont(fontProps: FontProps, ctx: KoolContext) = UiScale.getOrCreateFont(fontProps, ctx)
 
     private fun measureUiNodeContent(node: UiNode, ctx: KoolContext) {
         for (i in node.children.indices) {
@@ -298,7 +304,7 @@ class UiSurface(
         }
     }
 
-    private class TextMesh(font: Font, ctx: KoolContext) {
+    private class TextMesh(val font: Font, ctx: KoolContext) {
         val mesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) {
             shader = Ui2Shader().apply { setFont(font, ctx) }
         }
@@ -321,7 +327,8 @@ class UiSurface(
         private val plainMesh = mesh(Ui2Shader.UI_MESH_ATTRIBS) { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh()
-        val plainBuilder = MeshBuilder(plainMesh.geometry)
+        val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
+        val customNodes = mutableListOf<Node>()
 
         var isUsed = false
 
@@ -330,16 +337,30 @@ class UiSurface(
             +plainMesh
         }
 
-        fun getTextBuilder(font: Font, ctx: KoolContext): MeshBuilder {
-            val textMesh =  textMeshes.getOrPut(font.fontProps) { TextMesh(font, ctx).also { this += it.mesh } }
+        fun getTextBuilder(fontProps: FontProps, ctx: KoolContext): MeshBuilder {
+            val textMesh =  textMeshes.getOrPut(fontProps) {
+                val font = UiScale.getOrCreateFont(fontProps, ctx)
+                TextMesh(font, ctx).also { this += it.mesh }
+            }
             textMesh.isUsed = true
             return textMesh.builder
+        }
+
+        fun addCustomNode(drawNode: Node, index: Int = -1) {
+            addNode(drawNode, index)
+            customNodes += drawNode
         }
 
         fun clear() {
             textMeshes.values.forEach { it.clear() }
             uiPrimitives.instances?.clear()
             plainBuilder.clear()
+
+            if (customNodes.isNotEmpty()) {
+                customNodes.forEach { removeNode(it) }
+                customNodes.clear()
+            }
+
             isUsed = false
         }
     }
@@ -349,7 +370,7 @@ class UiSurface(
         const val LAYER_FLOATING = 1000
 
         fun MeshBuilder.setupUiBuilder() {
-            invertFaceOrientation = true
+            isInvertFaceOrientation = true
         }
 
         private val hasPointerListener: (UiNode) -> Boolean = { it.modifier.hasAnyPointerCallback }

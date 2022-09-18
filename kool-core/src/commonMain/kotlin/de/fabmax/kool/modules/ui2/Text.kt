@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.TextProps
 import de.fabmax.kool.scene.ui.Font
+import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.scene.ui.TextMetrics
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
@@ -19,14 +20,14 @@ interface TextScope : UiScope {
 
 open class TextModifier : UiModifier() {
     var text: String by property("")
-    var font: Font by property(Font.DEFAULT_FONT)
+    var font: FontProps by property(Font.DEFAULT_FONT_PROPS)
     var textColor: Color by property(Color.WHITE)
     var textAlignX: AlignmentX by property(AlignmentX.Start)
     var textAlignY: AlignmentY by property(AlignmentY.Top)
 }
 
 fun <T: TextModifier> T.text(text: String): T { this.text = text; return this }
-fun <T: TextModifier> T.font(font: Font): T { this.font = font; return this }
+fun <T: TextModifier> T.font(font: FontProps): T { this.font = font; return this }
 fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return this }
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
@@ -50,7 +51,8 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
     }
 
     override fun measureContentSize(ctx: KoolContext) {
-        val textMetrics = textCache.getTextMetrics(modifier.text, modifier.font, ctx)
+        val font = surface.getFont(modifier.font, ctx)
+        val textMetrics = textCache.getTextMetrics(modifier.text, font, ctx)
         val modWidth = modifier.width
         val modHeight = modifier.height
         val measuredWidth = if (modWidth is Dp) {
@@ -70,9 +72,9 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
         super.render(ctx)
 
         textProps.apply {
-            font = modifier.font
-            isYAxisUp = false
+            font = surface.getFont(modifier.font, ctx)
             text = modifier.text
+            isYAxisUp = false
             val textMetrics = textCache.textMetrics
             val oriX = when (modifier.textAlignX) {
                 AlignmentX.Start -> paddingStartPx
@@ -95,40 +97,51 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
 
     private inner class CachedTextGeometry {
         private val cacheData = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
-        private val cacheBuilder = MeshBuilder(cacheData).apply { invertFaceOrientation = true }
-        private var cachedText: String? = null
-        private var cachedFont: Font? = null
-        private val cachedTextPos = MutableVec3f()
-        private val cachedClip = MutableVec4f()
-        private val cachedColor = MutableColor()
+        private val cacheBuilder = MeshBuilder(cacheData).apply { isInvertFaceOrientation = true }
 
         private val posOffset = cacheData.attributeByteOffsets[Attribute.POSITIONS]!! / 4
         private val colorOffset = cacheData.attributeByteOffsets[Attribute.COLORS]!! / 4
         private val clipOffset = cacheData.attributeByteOffsets[Ui2Shader.ATTRIB_CLIP]!! / 4
 
         val textMetrics = TextMetrics()
-        private var metricsText: String? = null
-        private var metricsFont: Font? = null
 
-        fun getTextMetrics(text: String, font: Font, ctx: KoolContext): TextMetrics {
-            return if (font === metricsFont && metricsText == text) {
-                textMetrics
-            } else {
-                metricsFont = font
-                metricsText = text
-                font.textDimensions(text, ctx, textMetrics)
+        private var cachedFont: Font? = null
+        private var cachedText: String? = null
+        private var cachedScale = 0f
+        private val cachedTextPos = MutableVec3f()
+        private val cachedClip = MutableVec4f()
+        private val cachedColor = MutableColor()
+
+        private var metricsValid = false
+        private var geometryValid = false
+
+        private fun checkCache(text: String, font: Font) {
+            val fontScale = font.charMap?.scale
+            if (text != cachedText || font !== cachedFont || cachedScale != fontScale) {
+                cachedFont = font
+                cachedText = text
+                metricsValid = false
+                geometryValid = false
             }
         }
 
+        fun getTextMetrics(text: String, font: Font, ctx: KoolContext): TextMetrics {
+            checkCache(text, font)
+            if (!metricsValid) {
+                metricsValid = true
+                font.textDimensions(text, ctx, textMetrics)
+            }
+            return textMetrics
+        }
+
         fun addTextGeometry(target: IndexedVertexList, textProps: TextProps) {
-            if (cachedText != textProps.text || cachedFont !== textProps.font) {
-                buildCache(textProps)
+            if (!geometryValid) {
+                geometryValid = true
+                buildGeometry(textProps)
             }
             if (cachedTextPos.x != leftPx || cachedTextPos.y != topPx ||
-                cachedClip.x != clipLeftPx || cachedClip.y != clipTopPx ||
-                cachedClip.z != clipRightPx || cachedClip.w != clipRightPx ||
-                cachedColor != modifier.textColor) {
-                updateCachedPositions(textProps)
+                cachedClip != clipBoundsPx || cachedColor != modifier.textColor) {
+                updateVertexAttribs(textProps)
             }
 
             val i0 = target.numVertices
@@ -142,19 +155,18 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
             target.numVertices += cacheData.numVertices
         }
 
-        private fun buildCache(textProps: TextProps) {
+        private fun buildGeometry(textProps: TextProps) {
+            cachedScale = textProps.font.charMap!!.scale
             cacheBuilder.configured(modifier.textColor) {
                 clear()
                 text(textProps)
-                cachedText = textProps.text
-                cachedFont = textProps.font
                 cachedTextPos.set(textProps.origin)
                 cachedClip.set(Vec4f.ZERO)
             }
             cacheData.dataF.flip()
         }
 
-        private fun updateCachedPositions(textProps: TextProps) {
+        private fun updateVertexAttribs(textProps: TextProps) {
             val posOffX = textProps.origin.x - cachedTextPos.x
             val posOffY = textProps.origin.y - cachedTextPos.y
             cachedTextPos.set(textProps.origin)

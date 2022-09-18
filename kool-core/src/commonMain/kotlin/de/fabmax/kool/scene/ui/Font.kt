@@ -174,10 +174,13 @@ class CharMap internal constructor(val fontProps: FontProps, private val map: Mu
     var normHeight = fontProps.sizePts * 0.7f
         private set
 
+    var scale = 1f
+
     val isInitialized: Boolean
         get() = textureData != null
 
     fun applyScale(scale: Float) {
+        this.scale = scale
         lineSpace = round(fontProps.sizePts * 1.2f * scale)
         normHeight = fontProps.sizePts * 0.7f * scale
     }

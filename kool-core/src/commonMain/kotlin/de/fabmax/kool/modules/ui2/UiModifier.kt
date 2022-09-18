@@ -187,6 +187,11 @@ enum class AlignmentY {
 
 fun <T: UiModifier> T.alignX(alignment: AlignmentX): T { alignX = alignment; return this }
 fun <T: UiModifier> T.alignY(alignment: AlignmentY): T { alignY = alignment; return this }
+fun <T: UiModifier> T.align(xAlignment: AlignmentX, yAlignment: AlignmentY): T {
+    alignX = xAlignment
+    alignY = yAlignment
+    return this
+}
 
 class PointerEvent(val pointer: InputManager.Pointer, val ctx: KoolContext) {
     /**

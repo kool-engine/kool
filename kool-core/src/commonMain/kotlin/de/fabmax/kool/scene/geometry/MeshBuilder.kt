@@ -13,7 +13,7 @@ import kotlin.math.*
 open class MeshBuilder(val geometry: IndexedVertexList) {
 
     val transform = Mat4fStack()
-    var invertFaceOrientation = false
+    var isInvertFaceOrientation = false
 
     var color = Color.GRAY
     var emissiveColor = Color.BLACK
@@ -47,7 +47,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     fun addTriIndices(i0: Int, i1: Int, i2: Int) {
-        if (invertFaceOrientation) {
+        if (isInvertFaceOrientation) {
             geometry.addTriIndices(i2, i1, i0)
         } else {
             geometry.addTriIndices(i0, i1, i2)

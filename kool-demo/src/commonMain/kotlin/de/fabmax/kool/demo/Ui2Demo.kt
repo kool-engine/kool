@@ -2,7 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -18,7 +17,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
     private val radioButtonState = mutableStateOf(false)
     private val checkboxState = mutableStateOf(false)
     private val switchState = mutableStateOf(false)
-    private val sliderValue = mutableStateOf(0.5f)
+    private val sliderValue = mutableStateOf(1f)
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // new improved ui system
@@ -37,7 +36,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
         // todo
         //  more ui elements: text field, combo-box
-        //  scale-aware fonts
         //  elastic overscroll
         //  icons + images
         //  keyboard input
@@ -45,8 +43,6 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         //  clipboard
         //  popup menus, tooltips
         //  input context stack
-        //  animations
-        //  custom drawing / canvas?
 
         // not for now
         //  smart update: only update nodes which actually changed (might not work with shared meshes), also not really
@@ -58,18 +54,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
             listItems += "Item ${nextItem++}"
         }
 
-        val guiCam = OrthographicCamera().also { camera = it }
-        onUpdate += {
-            // setup camera to cover viewport size with origin in upper left corner
-            // camera clip space uses OpenGL coordinates -> y-axis points downwards, i.e. bottom coordinate has to be
-            // set to negative viewport height
-            // UI surface internally mirrors y-axis to get a regular UI coordinate system (however, this means tirangle
-            // index order or face orientation has to be inverted)
-            guiCam.left = 0f
-            guiCam.top = 0f
-            guiCam.right = it.renderPass.viewport.width.toFloat()
-            guiCam.bottom = -it.renderPass.viewport.height.toFloat()
-        }
+        setupUiScene(true)
 
         +UiSurface(themeColors) {
             modifier
@@ -83,13 +68,7 @@ class Ui2Demo : DemoScene("UI2 Demo") {
 
             TestContent(listItems)
 
-//            Column {
-//                modifier.width(Grow())
-//                Text("Hallo Welt") {
-//                    modifier.width(Grow()).background(Color.RED)
-//                }
-//            }
-        }
+        }.apply { printTiming = true }
     }
 
     fun UiScope.TestContent(listItems: MutableList<String>) {
@@ -186,12 +165,13 @@ class Ui2Demo : DemoScene("UI2 Demo") {
         }
         Row {
             Text("Slider") { modifier.alignY(AlignmentY.Center) }
-            Slider(sliderValue.use()) {
+            Slider(sliderValue.use(), 0.8f, 3f) {
                 modifier
                     .orientation(SliderOrientation.Horizontal)
                     .onChange { sliderValue.set(it) }
+                    .onChangeEnd { UiScale.uiScale.set(it) }
             }
-            Text("Value: ${sliderValue.use()}") { modifier.alignY(AlignmentY.Center) }
+            Text("UI Scale: ${sliderValue.use()}") { modifier.alignY(AlignmentY.Center) }
         }
 
         Text("Yet another text") {

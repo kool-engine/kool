@@ -6,27 +6,29 @@ fun <T: Any> mutableListStateOf(vararg elements: T) = MutableListState<T>().appl
 abstract class MutableState {
     var isStateChanged = true
         private set
-    private var usedBy: UiSurface? = null
+    private var usedBy = mutableListOf<UiSurface>()
 
     protected fun stateChanged() {
         if (!isStateChanged) {
             isStateChanged = true
-            usedBy?.triggerUpdate()
+            for (i in usedBy.indices) {
+                usedBy[i].triggerUpdate()
+            }
         }
     }
 
     protected fun usedBy(surface: UiSurface) {
-        if (surface !== usedBy) {
+        if (surface !in usedBy) {
+            usedBy += surface
             surface.registerState(this)
             if (isStateChanged) {
                 surface.triggerUpdate()
             }
         }
-        usedBy = surface
     }
 
-    open fun clearUsage() {
-        usedBy = null
+    open fun clearUsage(surface: UiSurface) {
+        usedBy -= surface
         isStateChanged = false
     }
 }

@@ -148,6 +148,21 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
         }
     }
 
+    private fun computeValue(ev: PointerEvent): Float {
+        val kD = knobDiameter.dp.px
+        return if (modifier.orientation == SliderOrientation.Horizontal) {
+            val innerW = widthPx - paddingStartPx - paddingEndPx - kD
+            val dragKnobPos = dragStart.x + ev.pointer.dragDeltaX.toFloat() - paddingStartPx - kD * 0.5f
+            val f = (dragKnobPos / innerW).clamp()
+            f * (modifier.maxValue - modifier.minValue) + modifier.minValue
+        } else {
+            val innerH = heightPx - paddingTopPx - paddingBottomPx - knobDiameter.dp.px
+            val dragKnobPos = dragStart.y + ev.pointer.dragDeltaY.toFloat() - paddingTopPx - kD * 0.5f
+            val f = 1f - (dragKnobPos / innerH).clamp()
+            f * (modifier.maxValue - modifier.minValue) + modifier.minValue
+        }
+    }
+
     override fun onDragStart(ev: PointerEvent) {
         if (ev.position.distance(knobCenter) < knobDiameter.dp.px) {
             dragStart.set(knobCenter)
@@ -157,19 +172,11 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
     }
 
     override fun onDrag(ev: PointerEvent) {
-        val kD = knobDiameter.dp.px
-        if (modifier.orientation == SliderOrientation.Horizontal) {
-            val innerW = widthPx - paddingStartPx - paddingEndPx - kD
-            val dragKnobPos = dragStart.x + ev.pointer.dragDeltaX.toFloat() - paddingStartPx - kD * 0.5f
-            val f = (dragKnobPos / innerW).clamp()
-            modifier.onChange?.invoke(f * (modifier.maxValue - modifier.minValue) + modifier.minValue)
+        modifier.onChange?.invoke(computeValue(ev))
+    }
 
-        } else {
-            val innerH = heightPx - paddingTopPx - paddingBottomPx - knobDiameter.dp.px
-            val dragKnobPos = dragStart.y + ev.pointer.dragDeltaY.toFloat() - paddingTopPx - kD * 0.5f
-            val f = 1f - (dragKnobPos / innerH).clamp()
-            modifier.onChange?.invoke(f * (modifier.maxValue - modifier.minValue) + modifier.minValue)
-        }
+    override fun onDragEnd(ev: PointerEvent) {
+        modifier.onChangeEnd?.invoke(computeValue(ev))
     }
 
     companion object {
