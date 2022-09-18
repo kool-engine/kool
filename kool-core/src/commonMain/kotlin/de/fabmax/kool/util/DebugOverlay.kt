@@ -1,13 +1,16 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
-import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.scene.ui.Font
+import de.fabmax.kool.scene.ui.FontProps
 import de.fabmax.kool.toString
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -16,220 +19,113 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-fun debugOverlay(ctx: KoolContext, position: DebugOverlay.Position = DebugOverlay.Position.UPPER_RIGHT): Scene {
-    return DebugOverlay(ctx, position).ui
+fun debugOverlay(position: DebugOverlay.Position = DebugOverlay.Position.UPPER_RIGHT): Scene {
+    return DebugOverlay(position).ui
 }
 
-class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) {
+class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     val ui: Scene
-    var xOffset = 0f
-        set(value) {
-            if (field != value) {
-                field = value
-                menuContainer.requestUpdateTransform()
-            }
-        }
 
-    private lateinit var menuContainer: UiContainer
+    private val fpsText = mutableStateOf("")
+    private val sysInfos = mutableListStateOf<String>()
+    private val viewportText = mutableStateOf("")
+    private val uptimeText = mutableStateOf("")
+    private val numTexText = mutableStateOf("")
+    private val numBufText = mutableStateOf("")
+    private val numCmdsText = mutableStateOf("")
+    private val numFacesText = mutableStateOf("")
+
+    private var lastUpSecs = -1
+
+    private val deltaTGraph = DeltaTGraph()
 
     init {
-        ui = uiScene("debug-overlay") {
-            isInputEnabled = false
+        val fpsFont = FontProps(Font.SYSTEM_FONT, 20f)
 
-            theme = theme(UiTheme.DARK_SIMPLE) {
-                componentUi { BlankComponentUi() }
-                containerUi(::SimpleComponentUi)
-                standardFont(FontProps(Font.SYSTEM_FONT, 12f))
-            }
-            content.ui.setCustom(BlankComponentUi())
+        ui = Ui2Scene("debug-overlay") {
+            onUpdate += this@DebugOverlay::updateStats
 
-            +container("dbgPanel") {
-                menuContainer = this
-                customTransform = {
-                    translate(xOffset, 0f, 0f)
-                }
-
-                val height = 168 + ctx.getSysInfos().size * 18f
-                val width = 180f
+            +UiSurface(name = "overview") {
+                modifier.layout(ColumnLayout)
 
                 when (position) {
-                    Position.UPPER_LEFT -> layoutSpec.setOrigin(zero(), dps(-height, true), zero())
-                    Position.UPPER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(-height, true), zero())
-                    Position.LOWER_LEFT -> layoutSpec.setOrigin(zero(), zero(), zero())
-                    Position.LOWER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), zero(), zero())
-                }
-                layoutSpec.setSize(dps(width, true), dps(height, true), full())
-
-                +DeltaTGraph(this@uiScene).apply {
-                    layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(40f, true), full())
+                    Position.UPPER_LEFT -> modifier.align(AlignmentX.Start, AlignmentY.Top)
+                    Position.UPPER_RIGHT -> modifier.align(AlignmentX.End, AlignmentY.Top)
+                    Position.LOWER_LEFT -> modifier.align(AlignmentX.Start, AlignmentY.Bottom)
+                    Position.LOWER_RIGHT -> modifier.align(AlignmentX.End, AlignmentY.Bottom)
                 }
 
-                +label("lblFps") {
-                    layoutSpec.setOrigin(zero(), dps(-37f, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(37f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-                    text = ""
-                    font.setCustom(UiTheme.DARK_SIMPLE.standardFont())
-                    textColor.setCustom(root.theme.accentColor)
-
-                    onUpdate += {
-                        text = "${it.ctx.fps.toString(1)} fps"
-                    }
+                Text(fpsText.use()) {
+                    modifier
+                        .alignX(AlignmentX.Center)
+                        .padding(4.dp)
+                        .width(Grow())
+                        .textAlignX(AlignmentX.Center)
+                        .font(fpsFont)
+                        .textColor(colors.primary)
+                        .background(deltaTGraph)
                 }
 
-                var yOri = -60f
-                +label("lblKoolVersion") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                    text = "Kool v${KoolContext.KOOL_VERSION}"
-                }
-                yOri -= 18f
-
-                for (i in ctx.getSysInfos().indices) {
-                    +label("lblSysInfo_$i") {
-                        layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                        layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                        padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                        textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                        text = ""
-                        onUpdate += {
-                            text = it.ctx.getSysInfos()[i]
-                        }
-                    }
-                    yOri -= 18f
-                }
-
-                +label("lblVpSize") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
-                    var lastWndW = -1
-                    var lastWndH = -1
-                    onUpdate += {
-                        if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
-                            lastWndW = ctx.windowWidth
-                            lastWndH = ctx.windowHeight
-                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight} / ${(ctx.windowScale * 100f).roundToInt()} %"
-                        }
-                    }
-                }
-
-                yOri -= 18f
-                +label("lblUpTime") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                    text = "Up: 00:00.00"
-
-                    var updateT = 1f
-                    onUpdate += {
-                        updateT -= ctx.deltaT
-                        if (updateT < 0) {
-                            updateT += 1f
-
-                            // still no javascript compatible string formatting in kotlin 1.1... :(
-                            var hh = "" + (ctx.time / 3600.0).toInt()
-                            if (hh.length == 1) {
-                                hh = "0" + hh
-                            }
-                            var mm = "" + (ctx.time % 3600.0 / 60.0).toInt()
-                            if (mm.length == 1) {
-                                mm = "0" + mm
-                            }
-                            var ss = "" + (ctx.time % 60.0).toInt()
-                            if (ss.length == 1) {
-                                ss = "0" + ss
-                            }
-                            text = "Up: $hh:$mm.$ss"
-                        }
-                    }
-                }
-
-                yOri -= 18f
-                +label("lblNumTextures") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
-                    var last = -1
-                    var lastMem = -1.0
-                    onUpdate += {
-                        val num = ctx.engineStats.textureAllocations.size
-                        val mem = ctx.engineStats.totalTextureSize.toDouble()
-                        if (num != last || mem != lastMem) {
-                            last = num
-                            lastMem = mem
-                            text = "$num Textures: ${(mem / (1024.0 * 1024.0)).toString(1)}M"
-                        }
-                    }
-                }
-
-                yOri -= 18f
-                +label("lblNumBuffers") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
-                    var last = -1
-                    var lastMem = -1.0
-                    onUpdate += {
-                        val num = ctx.engineStats.bufferAllocations.size
-                        val mem = ctx.engineStats.totalBufferSize.toDouble()
-                        if (num != last || mem != lastMem) {
-                            last = num
-                            lastMem = mem
-                            text = "$num Buffers: ${(mem / (1024.0 * 1024.0)).toString(1)}M"
-                        }
-                    }
-                }
-
-                yOri -= 18f
-                +label("lblNumShaders") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
-                    var lastPipelines = -1
-                    var lastInstances = -1
-                    onUpdate += {
-                        val numPipelines = ctx.engineStats.pipelines.size
-                        val numDrawCmds = ctx.engineStats.numDrawCommands
-                        if (numDrawCmds != lastInstances || numPipelines != lastPipelines) {
-                            lastPipelines = numPipelines
-                            lastInstances = numDrawCmds
-                            text = "$numPipelines Shaders / $numDrawCmds Cmds"
-                        }
-                    }
-                }
-
-                yOri -= 18f
-                +label("lblNumFaces") {
-                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
-                    var lastPrimitives = -1
-                    onUpdate += {
-                        val numPrimitives = ctx.engineStats.numPrimitives
-                        if (numPrimitives != lastPrimitives) {
-                            lastPrimitives = numPrimitives
-                            text = "$numPrimitives Faces"
-                        }
-                    }
-                }
+                Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
+                sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
+                Text(viewportText.use()) { debugTextStyle() }
+                Text(uptimeText.use()) { debugTextStyle() }
+                Text(numTexText.use()) { debugTextStyle() }
+                Text(numBufText.use()) { debugTextStyle() }
+                Text(numCmdsText.use()) { debugTextStyle() }
+                Text(numFacesText.use()) { debugTextStyle() }
             }
+        }
+    }
+
+    private fun updateStats(ev: RenderPass.UpdateEvent) {
+        fpsText.set("${ev.ctx.fps.toString(1)} fps")
+        viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.windowScale * 100f).roundToInt()} %")
+        updateUpText(ev.time)
+
+        val numTex = ev.ctx.engineStats.textureAllocations.size
+        val memTex = ev.ctx.engineStats.totalTextureSize.toDouble()
+        numTexText.set("$numTex Textures: ${(memTex / (1024.0 * 1024.0)).toString(1)}M")
+
+        val numBuf = ev.ctx.engineStats.bufferAllocations.size
+        val memBuf = ev.ctx.engineStats.totalBufferSize.toDouble()
+        numBufText.set("$numBuf Buffers: ${(memBuf / (1024.0 * 1024.0)).toString(1)}M")
+
+        val numPipelines = ev.ctx.engineStats.pipelines.size
+        val numDrawCmds = ev.ctx.engineStats.numDrawCommands
+        numCmdsText.set("$numPipelines Shaders / $numDrawCmds Cmds")
+
+        val numPrimitives = ev.ctx.engineStats.numPrimitives
+        numFacesText.set("$numPrimitives Faces")
+
+        ev.ctx.getSysInfos().forEachIndexed { i, txt ->
+            val clampedTxt = if (txt.length > 32) txt.substring(0..31) else txt
+            if (i == sysInfos.size) {
+                sysInfos += clampedTxt
+            } else if (clampedTxt != sysInfos[i]) {
+                sysInfos[i] = clampedTxt
+            }
+        }
+    }
+
+    private fun TextScope.debugTextStyle() {
+        modifier
+            .alignX(AlignmentX.End)
+            .margin(top = (-2).dp, bottom = (-2).dp, start = 4.dp, end = 4.dp)
+    }
+
+    private fun updateUpText(time: Double) {
+        if (time.toInt() != lastUpSecs) {
+            lastUpSecs = time.toInt()
+
+            var hh = "" + (time / 3600.0).toInt()
+            var mm = "" + (time % 3600.0 / 60.0).toInt()
+            var ss = "" + (time % 60.0).toInt()
+            if (hh.length == 1) hh = "0$hh"
+            if (mm.length == 1) mm = "0$mm"
+            if (ss.length == 1) ss = "0$ss"
+            uptimeText.set("Up: $hh:$mm.$ss")
         }
     }
 
@@ -241,22 +137,44 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
     }
 }
 
-private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
+private class DeltaTGraph : UiRenderer<UiNode> {
     val graphMesh: Mesh
-    val graphGeom = IndexedVertexList(UiShader.UI_MESH_ATTRIBS)
-    val graphBuilder = MeshBuilder(graphGeom)
+    val graphGeom = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
+    val graphBuilder = MeshBuilder(graphGeom).apply { isInvertFaceOrientation = true }
     val graphVertex = graphGeom[0]
 
     var graphIdx = 0
     var prevDeltaT = 0f
 
+    val prevClip = MutableVec4f()
+    var width = 0
+    var height = 0
+
     init {
         graphMesh = Mesh(graphGeom)
         graphMesh.geometry.usage = Usage.DYNAMIC
-        graphMesh.shader = UiShader()
+        graphMesh.shader = Ui2Shader()
+        graphMesh.onUpdate += this::updateGraph
     }
 
-    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+    override fun renderUi(node: UiNode) {
+        if (node.clipBoundsPx != prevClip) {
+            prevClip.set(node.clipBoundsPx)
+            node.apply {
+                width = widthPx.toInt()
+                height = heightPx.toInt()
+                graphBuilder.clear()
+                graphBuilder.configured(Color.WHITE) {
+                    for (i in 1..width) {
+                        line(i - 0.5f, heightPx, i - 0.5f, heightPx - 1f, 1f)
+                    }
+                }
+            }
+        }
+        node.surface.getMeshLayer(UiSurface.LAYER_DEFAULT).addCustomNode(graphMesh, 1)
+    }
+
+    fun updateGraph(updateEvent: RenderPass.UpdateEvent) {
         // set previous bar color according to previous deltaT
         var color = Color.WHITE
         if (prevDeltaT > 0.05f) {
@@ -268,19 +186,17 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         prevDeltaT = updateEvent.deltaT
 
         // modify vertices in graph mesh to change line height of current bar
-        graphIdx = (graphIdx + 4) % (width.toInt() * 4)
+        graphIdx = (graphIdx + 4) % (width * 4)
         graphVertex.index = graphIdx
         val y0 = graphVertex.position.y
-        val h = min(updateEvent.deltaT * 250, height)
+        val h = min(updateEvent.deltaT * 250, height.toFloat())
         graphVertex.index++
-        graphVertex.position.y = y0 + h
+        graphVertex.position.y = y0 - h
         graphVertex.index++
-        graphVertex.position.y = y0 + h
+        graphVertex.position.y = y0 - h
 
         setCurrentBarColor(Color.MAGENTA)
         graphGeom.hasChanged = true
-
-        super.collectDrawCommands(updateEvent)
     }
 
     fun setCurrentBarColor(color: Color) {
@@ -289,26 +205,5 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
             graphVertex.index = graphIdx + i
             graphVertex.color.set(color)
         }
-    }
-
-    override fun updateUi(ctx: KoolContext) {
-        super.updateUi(ctx)
-
-        setupBuilder(graphBuilder)
-        graphBuilder.color = Color.WHITE
-        graphBuilder.withTransform {
-            translate(0f, 0f, 0f)
-            for (i in 1..width.toInt()) {
-                graphBuilder.line(i - 0.5f, 0f, i - 0.5f, 1f, 1f)
-            }
-        }
-    }
-
-    override fun updateTheme(ctx: KoolContext) {
-        super.updateTheme(ctx)
-
-        // re-add graph mesh to make sure it is drawn after the background
-        this -= graphMesh
-        this += graphMesh
     }
 }

@@ -41,7 +41,7 @@ fun demo(startScene: String? = null, ctx: KoolContext = createDefaultContext(), 
 
 class Demo(ctx: KoolContext, startScene: String? = null, extraScenes: List<DemoEntry>?) {
 
-    private val dbgOverlay = DebugOverlay(ctx, DebugOverlay.Position.LOWER_RIGHT)
+    private val dbgOverlay = DebugOverlay(DebugOverlay.Position.LOWER_RIGHT)
     private val loadingScreen = LoadingScreen(ctx)
     private var currentDemo: DemoScene? = null
     private var switchDemo: Pair<String?, DemoScene>? = null
